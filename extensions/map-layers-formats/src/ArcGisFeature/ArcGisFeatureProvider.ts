@@ -6,15 +6,15 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
-import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
+import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
+import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
-import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
-import { ArcGisFeatureCanvasRenderer } from "./ArcGisFeatureCanvasRenderer";
+
+import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -22,7 +22,7 @@ const loggerCategory = "MapLayersFormats.ArcGISFeature";
 */
 interface ArcGisFeatureUrl {
   url: string;
-  envelope?: ArcGisExtent;    // envelope representing the current computed URL, requiered to refine request.
+  envelope?: ArcGisExtent;    // envelope representing the current computed URL, required to refine request.
 }
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
@@ -34,7 +34,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   private _debugFeatureGeom = true;
 
   private _supportsCoordinatesQuantization = false;
-  private _querySupported = false;
+
   private _layerId = 0;
   private _layerMetadata: any;
   private _format: ArcGisFeatureFormat | undefined;
@@ -240,7 +240,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     return "";
   }
 
-  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean): ArcGisFeatureUrl | undefined {
+  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean, maxAllowableOffset?: number): ArcGisFeatureUrl | undefined {
 
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     const tileEnvelope = {
@@ -285,6 +285,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         outFields,
         returnGeometry,
         distance: (tolerance ? tolerance * toleranceWorld : undefined),
+        maxAllowableOffset,
       });
 
     let envelope: ArcGisExtent | undefined;
@@ -309,8 +310,12 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       spatialReference: { wkid: 102100, latestWkid: 3857 },
     };
 
+    const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
+    const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
-      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", { geom: cartoPoint, type: "esriGeometryPoint" }, outFields, 3 /* tolerance in pixel*/, returnGeometry);
+      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", { geom: cartoPoint, type: "esriGeometryPoint" },
+        outFields, 3 /* tolerance in pixel*/, returnGeometry, 2*toleranceWorld);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);
@@ -350,9 +355,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         return;
       }
 
-      const featureReader = new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      const featureReader = new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
-      const renderer = new ArcGisFeatureGraphicsRenderer(hit.iModel);
+      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {
@@ -441,8 +446,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         }
       }
 
-      const renderer = new ArcGisFeatureCanvasRenderer(ctx, this._symbologyRenderer, transfo);
-      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer, transfo);
+      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
         const dx = (envelope.xmax - envelope.xmin) * 0.5;

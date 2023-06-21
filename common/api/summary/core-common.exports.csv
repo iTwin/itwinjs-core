@@ -97,13 +97,13 @@ public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-beta;ChangesetFileProps 
+internal;ChangesetFileProps 
 public;ChangesetId = string
 public;ChangesetIdWithIndex
 public;ChangesetIndex = number
 public;ChangesetIndexAndId
 public;ChangesetIndexOrId = ChangesetIndexAndId |
-beta;ChangesetProps
+public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
 alpha;ChannelConstraintError 
@@ -127,7 +127,7 @@ public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
+internal;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
@@ -404,7 +404,7 @@ internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
-internal;IpcAppChannel
+internal;ipcAppChannels:
 internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
@@ -478,10 +478,9 @@ public;ModelQueryParams
 public;ModelSelectorProps 
 public;MonochromeMode
 internal;MultiModelPackedFeatureTable 
-internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
+internal;nativeAppIpcStrings:
 internal;NativeAppNotifications
-internal;nativeAppNotify = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -573,7 +572,9 @@ beta;PropertyMetaDataMap
 beta;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
+alpha;QParams2dProps
 public;QParams3d
+alpha;QParams3dProps
 public;QPoint2d
 public;QPoint2dBuffer
 public;QPoint2dBuffer
@@ -668,6 +669,7 @@ internal;RpcOperation
 internal;RpcOperationPolicy
 internal;RpcOperationPolicyProps = Partial
 internal;RpcOperationsProfile
+internal;rpcOverIpcStrings:
 internal;RpcPendingQueue
 public;RpcPendingResponse 
 internal;class RpcProtocol
@@ -796,6 +798,7 @@ internal;TileContentDescription
 beta;TileContentIdentifier
 internal;TileContentMetadata
 internal;TileContentSource
+internal;TileEdgeType = "compact" | "indexed" | "non-indexed"
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader

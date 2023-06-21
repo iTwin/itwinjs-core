@@ -29,7 +29,8 @@ describe("ArcGisUtilities tests", () => {
           serviceBaseUrl: "https://dtlgeoarcgis.adtl.com",
           clientId: "dummy_clientId2",
         }],
-      }});
+      },
+    });
 
   });
 
@@ -95,12 +96,23 @@ describe("ArcGisUtilities tests", () => {
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
-      acOnPremiseEndpoint = onPremiseEndpoint ;
+      acOnPremiseEndpoint = onPremiseEndpoint;
 
     expect(acOnPremiseEndpoint).to.not.undefined;
     expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
     expect(acOnPremiseEndpoint?.getUrl()).to.equals(sampleOnPremiseMapServerAuthorizeUrl);
 
+  });
+
+  it("should only allow URLs with valid host", async () => {
+    const validUrl = new URL("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyTransportationImprovementProject/MapServer");
+    expect((fakeAccessClient as any).isArcGisHostValid(validUrl)).to.true;
+
+    const invalidUrl = new URL("https://services7.randomurl.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyTransportationImprovementProject/MapServer");
+    expect((fakeAccessClient as any).isArcGisHostValid(invalidUrl)).to.false;
+
+    const capitalUrl = new URL("https://services7.ArcGis.Com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyTransportationImprovementProject/MapServer");
+    expect((fakeAccessClient as any).isArcGisHostValid(capitalUrl)).to.true;
   });
 
   it("should build proper OAuth2 enterprise endpoint URL if no generateTokenUrl response", async () => {

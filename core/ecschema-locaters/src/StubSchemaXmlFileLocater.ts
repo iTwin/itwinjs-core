@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
@@ -57,6 +57,17 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    */
   public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     return this.getSchemaSync(key, matchType, context) as T;
+  }
+
+  /**
+    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+    * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
+    * @param schemaKey The SchemaKey describing the schema to get from the cache.
+    * @param matchType The match type to use when locating the schema
+    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+    */
+  public async getSchemaInfo(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    return this.getSchemaSync(key, matchType, context) as SchemaInfo;
   }
 
   /**
@@ -143,7 +154,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     if (!file)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
 
-    const data = file.toString().replace(/(\s*)<!--.*?-->/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
+    const data = file.toString().replace(/(\s*)<!--[\s\S]*?--!?>/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
 
     const keys: SchemaKey[] = [];
     const matches = data.match(/<ECSchemaReference ([^]+?)\/>/g);

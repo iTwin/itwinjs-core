@@ -21,13 +21,12 @@ describe("Default supplemental rules", async () => {
     await terminate();
   });
 
-  describe("Overrides", () => {
-    describe("Content modifiers", () => {
-      it("removes 'Source Element ID' property", async function () {
-        let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
+  describe("Content modifiers", () => {
+    describe("bis.Element", () => {
+      describe("Related properties", () => {
+        it("loads `Element -> ExternalSourceAspect.Identifier` property into 'Source Information' group", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
             db.elements.insertAspect({
               classFullName: "BisCore:ExternalSourceAspect",
@@ -38,67 +37,210 @@ describe("Default supplemental rules", async () => {
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-          }
-        );
-        const rules: Ruleset = {
-          id: "test",
-          rules: [
-            {
-              ruleType: "Content",
-              specifications: [
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+            ],
+          };
+          const content = await Presentation.getManager().getContent({
+            imodel,
+            rulesetOrId: rules,
+            descriptor: {},
+            keys: new KeySet([elementKey!]),
+          });
+          assert(!!content);
+          const externalSourceAspectField = getFieldByLabel(content.descriptor.fields, "External Source Aspect");
+          assert(externalSourceAspectField.isNestedContentField());
+          const identifierField = getFieldByLabel(externalSourceAspectField.nestedFields, "Source Element ID");
+          expect(identifierField.category.label).to.eq("Source Information");
+          expect(content.contentSet[0]).to.containSubset({
+            values: {
+              [externalSourceAspectField.name]: [
                 {
-                  specType: "SelectedNodeInstances",
+                  values: {
+                    [identifierField.name]: "test identifier",
+                  },
                 },
               ],
             },
-            {
-              ruleType: "ContentModifier",
-              class: { schemaName: "BisCore", className: "Element" },
-              relatedProperties: [
+          });
+        });
+
+        it("loads `Element -> ExternalSourceAspect -> ExternalSource -> RepositoryLink` properties into 'Source Information' group", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
+            const schema = `<?xml version="1.0" encoding="UTF-8"?>
+                  <ECSchema schemaName="TestDomain" alias="td" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+                      <ECSchemaReference name="BisCore" version="01.00" alias="bis" />
+                      <ECEntityClass typeName="MyRepositoryLink" displayLabel="My Repository Link">
+                          <BaseClass>bis:RepositoryLink</BaseClass>
+                          <ECProperty propertyName="MyProperty" displayLabel="My Property" typeName="string" />
+                      </ECEntityClass>
+                  </ECSchema>`;
+            await db.importSchemaStrings([schema]);
+            db.saveChanges();
+
+            elementKey = insertPhysicalElement(db);
+            const repositoryLinkId = db.elements.insertElement({
+              classFullName: "TestDomain:MyRepositoryLink",
+              model: IModel.repositoryModelId,
+              code: Code.createEmpty(),
+              userLabel: "test user label",
+              url: "test url",
+              myProperty: "test my property",
+            } as ElementProps);
+            const externalSourceId = db.elements.insertElement({
+              classFullName: "BisCore:ExternalSource",
+              model: IModel.dictionaryId,
+              code: Code.createEmpty(),
+              repository: {
+                relClassName: "BisCore:ExternalSourceIsInRepository",
+                id: repositoryLinkId,
+              },
+            } as ElementProps);
+            db.elements.insertAspect({
+              classFullName: "BisCore:ExternalSourceAspect",
+              element: {
+                relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+                id: elementKey.id,
+              },
+              source: {
+                relClassName: "BisCore:ElementIsFromSource",
+                id: externalSourceId,
+              },
+              kind: "",
+              identifier: "test identifier",
+            } as ElementAspectProps);
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+            ],
+          };
+          const content = await Presentation.getManager().getContent({
+            imodel,
+            rulesetOrId: rules,
+            descriptor: {},
+            keys: new KeySet([elementKey!]),
+          });
+          assert(!!content);
+          const externalSourceAspectField = getFieldByLabel(content.descriptor.fields, "External Source Aspect");
+          assert(externalSourceAspectField.isNestedContentField());
+          const repositoryLinkField = getFieldByLabel(externalSourceAspectField.nestedFields, "My Repository Link");
+          assert(repositoryLinkField.isNestedContentField());
+          expect(repositoryLinkField.nestedFields.length).to.eq(6);
+          repositoryLinkField.nestedFields.forEach((f) => {
+            expect(f.category.label).to.eq("Document Link");
+            expect(f.category.parent!.label).to.eq("Source Information");
+          });
+          expect(content.contentSet[0]).to.containSubset({
+            values: {
+              [externalSourceAspectField.name]: [
                 {
-                  propertiesSource: [
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ElementOwnsMultiAspects",
+                  values: {
+                    [repositoryLinkField.name]: [
+                      {
+                        values: {
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "Code").name]: undefined,
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "Name").name]: "test user label",
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "Path").name]: "test url",
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "Description").name]: undefined,
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "Format").name]: undefined,
+                          [getFieldByLabel(repositoryLinkField.nestedFields, "My Property").name]: "test my property",
+                        },
                       },
-                      direction: "Forward",
-                      targetClass: {
-                        schemaName: "BisCore",
-                        className: "ExternalSourceAspect",
-                      },
-                    },
-                  ],
-                  properties: [],
+                    ],
+                  },
                 },
               ],
             },
-          ],
-        };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
+          });
+        });
+
+        it("allows removing 'Source Element ID' property", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
+            elementKey = insertPhysicalElement(db);
+            db.elements.insertAspect({
+              classFullName: "BisCore:ExternalSourceAspect",
+              element: {
+                relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+                id: elementKey.id,
+              },
+              kind: "",
+              identifier: "test identifier",
+            } as ElementAspectProps);
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+              {
+                ruleType: "ContentModifier",
+                class: { schemaName: "BisCore", className: "Element" },
+                relatedProperties: [
+                  {
+                    propertiesSource: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementOwnsMultiAspects",
+                        },
+                        direction: "Forward",
+                        targetClass: {
+                          schemaName: "BisCore",
+                          className: "ExternalSourceAspect",
+                        },
+                      },
+                    ],
+                    properties: [],
+                  },
+                ],
+              },
+            ],
+          };
+          const descriptor = await Presentation.getManager().getContentDescriptor({
             imodel,
             rulesetOrId: rules,
             displayType: DefaultContentDisplayTypes.PropertyPane,
             keys: new KeySet([elementKey!]),
-          }
-        );
-        assert(!!descriptor);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Source Information",
-          },
-        ]);
-        expect(() =>
-          getFieldByLabel(descriptor.fields, "Source Element ID")
-        ).to.throw();
-      });
+          });
+          assert(!!descriptor);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Source Information",
+            },
+          ]);
+          expect(() => getFieldByLabel(descriptor.fields, "Source Element ID")).to.throw();
+        });
 
-      it("removes 'Source Information -> Model Source' properties", async function () {
-        let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
+        it("allows removing 'Source Information -> Model Source' properties", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             const partitionId = db.elements.insertElement({
               classFullName: "BisCore:PhysicalPartition",
               model: IModel.repositoryModelId,
@@ -107,9 +249,7 @@ describe("Default supplemental rules", async () => {
                 id: IModel.rootSubjectId,
               },
               code: new Code({
-                spec: db.codeSpecs.getByName(
-                  BisCodeSpec.informationPartitionElement
-                ).id,
+                spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
                 scope: IModel.rootSubjectId,
                 value: "physical model",
               }),
@@ -131,85 +271,80 @@ describe("Default supplemental rules", async () => {
               modeledElement: { id: partitionId },
             });
             elementKey = insertPhysicalElement(db, modelId);
-          }
-        );
-        const rules: Ruleset = {
-          id: "test",
-          rules: [
-            {
-              ruleType: "Content",
-              specifications: [
-                {
-                  specType: "SelectedNodeInstances",
-                },
-              ],
-            },
-            {
-              ruleType: "ContentModifier",
-              class: { schemaName: "BisCore", className: "Element" },
-              relatedProperties: [
-                {
-                  propertiesSource: [
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ModelContainsElements",
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+              {
+                ruleType: "ContentModifier",
+                class: { schemaName: "BisCore", className: "Element" },
+                relatedProperties: [
+                  {
+                    propertiesSource: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ModelContainsElements",
+                        },
+                        direction: "Backward",
                       },
-                      direction: "Backward",
-                    },
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ModelModelsElement",
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ModelModelsElement",
+                        },
+                        direction: "Forward",
                       },
-                      direction: "Forward",
-                    },
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ElementHasLinks",
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementHasLinks",
+                        },
+                        targetClass: {
+                          schemaName: "BisCore",
+                          className: "RepositoryLink",
+                        },
+                        direction: "Forward",
                       },
-                      targetClass: {
-                        schemaName: "BisCore",
-                        className: "RepositoryLink",
-                      },
-                      direction: "Forward",
-                    },
-                  ],
-                  properties: [],
-                },
-              ],
-            },
-          ],
-        };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
+                    ],
+                    properties: [],
+                  },
+                ],
+              },
+            ],
+          };
+          const descriptor = await Presentation.getManager().getContentDescriptor({
             imodel,
             rulesetOrId: rules,
             displayType: DefaultContentDisplayTypes.PropertyPane,
             keys: new KeySet([elementKey!]),
-          }
-        );
-        assert(!!descriptor);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Model Source",
-          },
-        ]);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Source Information",
-          },
-        ]);
-        expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
-        expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
-      });
+          });
+          assert(!!descriptor);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Model Source",
+            },
+          ]);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Source Information",
+            },
+          ]);
+          expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
+          expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
+        });
 
-      it("removes 'Source Information' ExternalSource properties", async function () {
-        let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
+        it("allows removing 'Source Information' ExternalSource properties", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
             const repositoryLinkId = db.elements.insertElement({
               classFullName: "BisCore:RepositoryLink",
@@ -240,87 +375,82 @@ describe("Default supplemental rules", async () => {
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-          }
-        );
-        const rules: Ruleset = {
-          id: "test",
-          rules: [
-            {
-              ruleType: "Content",
-              specifications: [
-                {
-                  specType: "SelectedNodeInstances",
-                },
-              ],
-            },
-            {
-              ruleType: "ContentModifier",
-              class: { schemaName: "BisCore", className: "Element" },
-              relatedProperties: [
-                {
-                  propertiesSource: [
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ElementOwnsMultiAspects",
-                      },
-                      direction: "Forward",
-                      targetClass: {
-                        schemaName: "BisCore",
-                        className: "ExternalSourceAspect",
-                      },
-                    },
-                  ],
-                  properties: [],
-                  nestedRelatedProperties: [
-                    {
-                      propertiesSource: [
-                        {
-                          relationship: {
-                            schemaName: "BisCore",
-                            className: "ElementIsFromSource",
-                          },
-                          direction: "Forward",
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+              {
+                ruleType: "ContentModifier",
+                class: { schemaName: "BisCore", className: "Element" },
+                relatedProperties: [
+                  {
+                    propertiesSource: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementOwnsMultiAspects",
                         },
-                        {
-                          relationship: {
-                            schemaName: "BisCore",
-                            className: "ExternalSourceIsInRepository",
-                          },
-                          direction: "Forward",
+                        direction: "Forward",
+                        targetClass: {
+                          schemaName: "BisCore",
+                          className: "ExternalSourceAspect",
                         },
-                      ],
-                      properties: [],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
+                      },
+                    ],
+                    properties: [],
+                    nestedRelatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: {
+                              schemaName: "BisCore",
+                              className: "ElementIsFromSource",
+                            },
+                            direction: "Forward",
+                          },
+                          {
+                            relationship: {
+                              schemaName: "BisCore",
+                              className: "ExternalSourceIsInRepository",
+                            },
+                            direction: "Forward",
+                          },
+                        ],
+                        properties: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+          const descriptor = await Presentation.getManager().getContentDescriptor({
             imodel,
             rulesetOrId: rules,
             displayType: DefaultContentDisplayTypes.PropertyPane,
             keys: new KeySet([elementKey!]),
-          }
-        );
-        assert(!!descriptor);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Source Information",
-          },
-        ]);
-        expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
-        expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
-      });
+          });
+          assert(!!descriptor);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Source Information",
+            },
+          ]);
+          expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
+          expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
+        });
 
-      it("removes 'Source Information -> Secondary Sources' properties", async function () {
-        let elementKey: InstanceKey | undefined;
-        const { db: imodel } = buildTestIModelDb(
-          this.test!.fullTitle(),
-          (db) => {
+        it("allows removing 'Source Information -> Secondary Sources' properties", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
             const repositoryLinkId = db.elements.insertElement({
               classFullName: "BisCore:RepositoryLink",
@@ -361,96 +491,94 @@ describe("Default supplemental rules", async () => {
               kind: "",
               identifier: "test identifier",
             } as ElementAspectProps);
-          }
-        );
-        const rules: Ruleset = {
-          id: "test",
-          rules: [
-            {
-              ruleType: "Content",
-              specifications: [
-                {
-                  specType: "SelectedNodeInstances",
-                },
-              ],
-            },
-            {
-              ruleType: "ContentModifier",
-              class: { schemaName: "BisCore", className: "Element" },
-              relatedProperties: [
-                {
-                  propertiesSource: [
-                    {
-                      relationship: {
-                        schemaName: "BisCore",
-                        className: "ElementOwnsMultiAspects",
+          });
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+              {
+                ruleType: "ContentModifier",
+                class: { schemaName: "BisCore", className: "Element" },
+                relatedProperties: [
+                  {
+                    propertiesSource: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementOwnsMultiAspects",
+                        },
+                        direction: "Forward",
+                        targetClass: {
+                          schemaName: "BisCore",
+                          className: "ExternalSourceAspect",
+                        },
                       },
-                      direction: "Forward",
-                      targetClass: {
-                        schemaName: "BisCore",
-                        className: "ExternalSourceAspect",
+                    ],
+                    properties: [],
+                    nestedRelatedProperties: [
+                      {
+                        propertiesSource: [
+                          {
+                            relationship: {
+                              schemaName: "BisCore",
+                              className: "ElementIsFromSource",
+                            },
+                            direction: "Forward",
+                            targetClass: {
+                              schemaName: "BisCore",
+                              className: "ExternalSourceGroup",
+                            },
+                          },
+                          {
+                            relationship: {
+                              schemaName: "BisCore",
+                              className: "ExternalSourceGroupGroupsSources",
+                            },
+                            direction: "Forward",
+                          },
+                          {
+                            relationship: {
+                              schemaName: "BisCore",
+                              className: "ExternalSourceIsInRepository",
+                            },
+                            direction: "Forward",
+                          },
+                        ],
+                        properties: [],
                       },
-                    },
-                  ],
-                  properties: [],
-                  nestedRelatedProperties: [
-                    {
-                      propertiesSource: [
-                        {
-                          relationship: {
-                            schemaName: "BisCore",
-                            className: "ElementIsFromSource",
-                          },
-                          direction: "Forward",
-                          targetClass: {
-                            schemaName: "BisCore",
-                            className: "ExternalSourceGroup",
-                          },
-                        },
-                        {
-                          relationship: {
-                            schemaName: "BisCore",
-                            className: "ExternalSourceGroupGroupsSources",
-                          },
-                          direction: "Forward",
-                        },
-                        {
-                          relationship: {
-                            schemaName: "BisCore",
-                            className: "ExternalSourceIsInRepository",
-                          },
-                          direction: "Forward",
-                        },
-                      ],
-                      properties: [],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        };
-        const descriptor = await Presentation.getManager().getContentDescriptor(
-          {
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+          const descriptor = await Presentation.getManager().getContentDescriptor({
             imodel,
             rulesetOrId: rules,
             displayType: DefaultContentDisplayTypes.PropertyPane,
             keys: new KeySet([elementKey!]),
-          }
-        );
-        assert(!!descriptor);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Source Information",
-          },
-        ]);
-        expect(descriptor.categories).to.not.containSubset([
-          {
-            label: "Secondary Sources",
-          },
-        ]);
-        expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
-        expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
+          });
+          assert(!!descriptor);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Source Information",
+            },
+          ]);
+          expect(descriptor.categories).to.not.containSubset([
+            {
+              label: "Secondary Sources",
+            },
+          ]);
+          expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
+          expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
+        });
       });
     });
   });
@@ -466,9 +594,7 @@ function insertPhysicalElement(db: IModelDb, modelId?: Id64String, categoryId?: 
         id: IModel.rootSubjectId,
       },
       code: new Code({
-        spec: db.codeSpecs.getByName(
-          BisCodeSpec.informationPartitionElement
-        ).id,
+        spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
         scope: IModel.rootSubjectId,
         value: "physical model",
       }),

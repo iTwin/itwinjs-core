@@ -137,7 +137,7 @@ export class V2CheckpointManager {
     return cloudCachePath;
   }
 
-  /* only used by tests that reset the state of the v2checkpointmanager. all dbs should be closed before calling this function. */
+  /* only used by tests that reset the state of the v2CheckpointManager. all dbs should be closed before calling this function. */
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
@@ -179,13 +179,14 @@ export class V2CheckpointManager {
 
   /** Member names differ slightly between the V2Checkpoint api and the CloudSqlite api. Add aliases `accessName` for `accountName` and `accessToken` for `sasToken` */
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
-    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+    return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
+      // note checkpoint tokens can't be auto-refreshed because they rely on user credentials supplied through RPC. They're refreshed in SnapshotDb._refreshSas.
+      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds: -1, logId: process.env.POD_NAME });
       this.containers.set(v2Props.containerId, container);
     }
     return container;
@@ -207,15 +208,25 @@ export class V2CheckpointManager {
       if (!container.isConnected)
         container.connect(this.cloudCache);
       container.checkForChanges();
+      const dbStats = container.queryDatabase(dbName);
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
-          const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
-          const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
-        };
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
+        const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
+        const minRequests = getPrefetchConfig("minRequests", 3);
+        const maxRequests = getPrefetchConfig("maxRequests", 6);
+        const timeout = getPrefetchConfig("timeout", 100);
+        const maxBlocks = getPrefetchConfig("maxBlocks", 500); // default size of 2GB. Assumes a checkpoint block size of 4MB.
+        if (dbStats?.totalBlocks !== undefined && dbStats.totalBlocks <= maxBlocks) {
+          const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
+            const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
+            Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
+            const done = await prefetch.promise;
+            Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, { minRequests, maxRequests, timeout });
+          };
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
+        } else {
+          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits.`, { maxBlocks, totalBlocksInDb: dbStats?.totalBlocks, v2props });
+        }
       }
       return { dbName, container };
     } catch (e: any) {

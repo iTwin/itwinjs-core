@@ -9,16 +9,15 @@ import * as chaiAsPromised from "chai-as-promised";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisFeatureProvider } from "../../map-layers-formats";
 import * as sinon from "sinon";
-import { ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
-import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
-import { ArcGisFeatureGraphicsRenderer } from "../../ArcGisFeature/ArcGisFeatureGraphicsRenderer";
+import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -45,6 +44,7 @@ function makeHitDetail(noGcsDefined: boolean) {
 }
 
 function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
+
   sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
     const test = {
       headers: { "content-type": "application/json" },
@@ -75,12 +75,15 @@ function stubGetServiceJson(sandbox: sinon.SinonSandbox) {
   });
 }
 
-async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
+async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: any, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
 
   const settings = ImageMapLayerSettings.fromJSON({
     ...esriFeatureSampleSource,
     subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
   });
+
+  // sandbox.resetBehavior();    // Reset default stub made by 'beforeEach'
+  fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
 
   stubGetLayerMetadata(sandbox);
   stubGetServiceJson(sandbox);
@@ -89,21 +92,26 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
   await provider.initialize();
   const featureInfos: MapLayerFeatureInfo[] = [];
   const logErrorSpy = sandbox.spy(Logger, "logError");
-  const toSpatialFromEcfSpy = sandbox.stub((ArcGisFeatureGraphicsRenderer.prototype as any), "toSpatialFromEcf").callsFake(function _(geoPoints: unknown) {
+  const toSpatialFromEcfSpy = sandbox.stub((ArcGisGraphicsRenderer.prototype as any), "toSpatialFromEcf").callsFake(function _(geoPoints: unknown) {
     return geoPoints;
   });
-  const toSpatialFromGcs = sandbox.spy(ArcGisFeatureGraphicsRenderer.prototype as any, "toSpatialFromGcs");
+  const toSpatialFromGcs = sandbox.spy(ArcGisGraphicsRenderer.prototype as any, "toSpatialFromGcs");
   await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0),
     Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
     (undefined as unknown) as ImageryMapTileTree, makeHitDetail(noGcsDefined));
   expect(featureInfos.length).to.equals(1);
-  const info = featureInfos[0].info;
-  if (info && !(info instanceof HTMLElement)) {
+  const info = featureInfos[0].subLayerInfos;
+  if (info) {
     expect(info.length).to.equals(1);
-    const graphics = info[0].graphics;
-    expect(graphics).to.not.undefined;
-    expect(graphics!.length).to.equals(nbGraphics);
-    expect(graphics![0].type).to.equals(expectedPrimitiveType);
+    const features = info[0].features;
+    expect(features.length).to.equals(1);
+    const geometries = features[0].geometries;
+    expect(geometries).to.not.undefined;
+    if (geometries) {
+      expect(geometries.length).to.equals(nbGraphics);
+      expect(geometries[0].graphic.type).to.equals(expectedPrimitiveType);
+    }
+
   }
   expect(logErrorSpy.calledOnce).to.be.false;
   expect(toSpatialFromEcfSpy.called).to.equals(noGcsDefined);
@@ -112,6 +120,12 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
 
 describe("ArcGisFeatureProvider", () => {
   const sandbox = sinon.createSandbox();
+  let fetchStub: any;
+
+  beforeEach(async () => {
+    // Make sure no call to fetch is made, other it creates leaks
+    fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
+  });
 
   afterEach(async () => {
     sandbox.restore();
@@ -512,7 +526,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } };
     });
-
+    fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
     sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
       const test = {
         headers: { "content-type": "application/json" },
@@ -537,36 +551,35 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should process polygon data in getFeatureInfo (ECF)", async () => {
 
-    await testGetFeatureInfoGeom(sandbox, "loop", false, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", false, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
   });
 
   it("should process polygon data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "loop", true, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", true, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
   });
 
   it("should process multi path data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", false, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
   });
 
   it("should process multi path data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
   });
 
-
   it("should process linestring data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
   });
 
   it("should process linestring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillySimplePathQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", true, PhillyLandmarksDataset.phillySimplePathQueryJson);
   });
 
   it("should process pointstring data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "pointstring", false, PhillyLandmarksDataset.phillySimplePointQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", false, PhillyLandmarksDataset.phillySimplePointQueryJson);
   });
 
   it("should process pointstring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "pointstring", true, PhillyLandmarksDataset.phillySimplePointQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", true, PhillyLandmarksDataset.phillySimplePointQueryJson);
   });
 
   it("should log error when exceed transfer limit", async () => {
@@ -762,7 +775,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     //    toDataURL string;
-    const readAndRenderSpy = sandbox.spy(ArcGisFeaturePBF.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisPbfFeatureReader.prototype, "readAndRender");
     const computeTransfoSpy = sandbox.spy(ArcGisFeatureProvider.prototype as any, "computeTileWorld2CanvasTransform");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -811,7 +824,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    const readAndRenderSpy = sandbox.spy(ArcGisFeatureJSON.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisJsonFeatureReader.prototype, "readAndRender");
     const computeTransfoSpy = sandbox.spy(ArcGisFeatureProvider.prototype as any, "computeTileWorld2CanvasTransform");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -874,7 +887,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    const readAndRenderSpy = sandbox.spy(ArcGisFeatureJSON.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisJsonFeatureReader.prototype, "readAndRender");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
     await provider.loadTile(0, 0, 0);
@@ -941,7 +954,6 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
     });
-    const fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
-import { imageElementFromImageSource } from "../../ImageUtil";
+import { imageElementFromImageSource } from "../../common/ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";

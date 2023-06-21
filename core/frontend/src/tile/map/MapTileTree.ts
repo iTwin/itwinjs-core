@@ -25,7 +25,7 @@ import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile,
   MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -59,6 +59,15 @@ export enum MapTileTreeScaleRangeVisibility {
 
   /** currently selected tree tiles are partially visible (i.e some tiles are within the scale range, and some are outside.) */
   Partial
+}
+
+/**
+* Provided Map layer information from its underlying tile tree.
+* @internal
+*/
+export interface MapLayerInfoFromTileTree {
+  settings: MapLayerSettings;
+  provider?: MapLayerImageryProvider;
 }
 
 /** A [quad tree](https://en.wikipedia.org/wiki/Quadtree) consisting of [[MapTile]]s representing the map imagery draped onto the surface of the Earth.
@@ -250,10 +259,19 @@ export class MapTileTree extends RealityTileTree {
     const childAvailable = this.mapLoader.isTileAvailable(quadId);
     if (!childAvailable && this.produceGeometry)
       return undefined;
+
     const patch = new PlanarTilePatch(corners, normal, chordHeight);
     const cornerNormals = this.getCornerRays(rectangle);
-    const ctor = childAvailable ? MapTile : UpsampledMapTile;
-    return new ctor(params, this, quadId, patch, rectangle, heightRange, cornerNormals);
+    if (childAvailable)
+      return new MapTile(params, this, quadId, patch, rectangle, heightRange, cornerNormals);
+
+    assert(params.parent instanceof MapTile);
+    let loadableTile: MapTile | undefined = params.parent;
+    while (loadableTile?.isUpsampled)
+      loadableTile = loadableTile.parent as MapTile | undefined;
+
+    assert(undefined !== loadableTile);
+    return new UpsampledMapTile(params, this, quadId, patch, rectangle, heightRange, cornerNormals, loadableTile);
   }
 
   /** @internal */
@@ -1053,9 +1071,11 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTrees;
   }
 
-  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[] {
+  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
-    return imageryTree.map(tree => tree.layerSettings);
+    return imageryTree.map((tree) => {
+      return {settings: tree.layerSettings, provider: tree.imageryProvider};
+    });
   }
 
   // Utility method that execute the provided function for every *imagery* tiles under a given HitDetail object.
@@ -1069,9 +1089,9 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    let cartoGraphic: Cartographic | undefined;
+    let cartoGraphic: Cartographic|undefined;
     try {
-      cartoGraphic = await backgroundMapGeometry.dbToWGS84CartographicFromGcs(worldPoint);
+      cartoGraphic = (await backgroundMapGeometry.dbToWGS84CartographicFromGcs([worldPoint]))[0];
     } catch {
     }
     if (!cartoGraphic) {
@@ -1085,7 +1105,7 @@ export class MapTileTreeReference extends TileTreeReference {
         const terrainTile = tree.tileFromQuadId(terrainQuadId);
 
         for (const treeRef of imageryTreeRef) {
-          const processedTileIds: string[] = []
+          const processedTileIds: string[] = [];
           if (terrainTile && terrainTile.imageryTiles) {
             const imageryTree = treeRef.treeOwner.tileTree as ImageryMapTileTree;
             if (imageryTree) {

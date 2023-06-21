@@ -136,8 +136,16 @@ export class TestUtility {
     const iopts = { ...TestUtility.iModelAppOptions, ...opts };
     if (mockRender)
       iopts.renderSys = this.systemFactory();
-    if (ProcessDetector.isElectronAppFrontend)
+
+    if (ProcessDetector.isElectronAppFrontend) {
+      // electron version of certa does not serve assets like worker scripts.
+      if (iopts.tileAdmin)
+        iopts.tileAdmin.decodeImdlInWorker = false;
+      else
+        iopts.tileAdmin = { decodeImdlInWorker: false };
+
       return ElectronApp.startup({ iModelApp: iopts });
+    }
 
     if (enableWebEdit) {
       let socketUrl = new URL(window.location.toString());

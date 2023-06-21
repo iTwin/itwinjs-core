@@ -18,3 +18,5 @@ Range3d       | [LowAndHighXYZ]($core-geometry)
 string        | string
 Struct        | JavaScript object matching the members of the struct. The member values can be primitives, arrays, or objects of the above types
 Array         | JavaScript array of primitives or objects of the above types
+
+> Looking for how to use this in with the iTwin API? See [ECSQL Binding Code Examples](./ECSQLCodeExamples.md#parameter-bindings).

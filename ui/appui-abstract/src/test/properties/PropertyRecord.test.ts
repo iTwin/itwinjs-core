@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../appui-abstract";
 import { ArrayValue, PrimitiveValue, StructValue } from "../../appui-abstract/properties/Value";
 
@@ -64,20 +64,15 @@ describe("PropertyRecord", () => {
 
   describe("fromString", () => {
 
-    it("should create a valid PropertyRecord with provided description", () => {
-      const description = getPropertyDescription();
-      const record = PropertyRecord.fromString("test", description);
-      expect(record).to.matchSnapshot();
-    });
-
     it("should create a valid PropertyRecord with provided description name", () => {
       const record = PropertyRecord.fromString("test value", "test description");
-      expect(record).to.matchSnapshot();
+      assert(record.property.name === "test description");
+      assert(record.property.displayLabel === "test description");
     });
 
     it("should create a valid PropertyRecord without description", () => {
       const record = PropertyRecord.fromString("test");
-      expect(record).to.matchSnapshot();
+      expect(record.description).to.be.undefined;
     });
 
   });

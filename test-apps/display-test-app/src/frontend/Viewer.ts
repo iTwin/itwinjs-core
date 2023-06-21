@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
@@ -29,7 +29,6 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { MapFeatureInfoTool } from "@itwin/map-layers-formats";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -313,12 +312,6 @@ export class Viewer extends Window {
       tooltip: "Measure distance",
     }));
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ueb08",
-      click: async () => IModelApp.tools.run("Measure.Location", IModelApp.viewManager.selectedView!),
-      tooltip: "Measure location",
-    }));
-
     this.toolBar.addDropDown({
       iconUnicode: "\ue90e",
       tooltip: "View settings",
@@ -412,17 +405,6 @@ export class Viewer extends Window {
       },
       tooltip: "Point cloud settings",
     });
-
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue928",
-      click: async () => {
-
-        // this.viewport.displayStyle.backgroundMapBase = ColorDef.white;
-        const tool = new MapFeatureInfoTool();
-        await tool.run();
-      },
-      tooltip: "MapFeatureInfo",
-    }));
 
     this.updateTitle();
     this.updateActiveSettings();

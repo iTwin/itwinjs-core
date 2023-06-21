@@ -72,3 +72,17 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 /** @beta */
 export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
+
+/**
+ *  Holds the SchemaKeys for a schema and it's references.  Designed so that Schema fulfills this interface.
+ * @beta
+ */
+export interface SchemaInfo {
+  schemaKey: Readonly<SchemaKey>;
+  references: WithSchemaKey[];
+}
+
+/** @beta */
+export interface WithSchemaKey {
+  schemaKey: Readonly<SchemaKey>;
+}

@@ -19,6 +19,14 @@ import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 
+/** Options supplied to [[SpatialViewState.computeFitRange]].
+ * @public
+ */
+export interface ComputeSpatialViewFitRangeOptions {
+  /** The minimal extents. The computed range will be unioned with this range if supplied. */
+  baseExtents?: Range3d;
+}
+
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
  * @public
@@ -135,10 +143,18 @@ export class SpatialViewState extends ViewState3d {
     return extents;
   }
 
-  /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
-  public computeFitRange(): AxisAlignedBox3d {
+  /** Compute a volume in world coordinates tightly encompassing the contents of the view. The volume is computed from the union of the volumes of the
+   * view's viewed models, including [GeometricModel]($backend)s and reality models.
+   * Those volumes are obtained from the [[TileTree]]s used to render those models, so any tile tree that has not yet been loaded will not contribute to the computation.
+   * If `options.baseExtents` is defined, it will be unioned with the computed volume.
+   * If the computed volume is null (empty), a default volume will be computed from [IModel.projectExtents]($common), which may be a looser approximation of the
+   * models' volumes.
+   * @param options Options used to customize how the volume is computed.
+   * @returns A non-null volume in world coordinates encompassing the contents of the view.
+   */
+  public computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d {
     // Fit to the union of the ranges of all loaded tile trees.
-    const range = new Range3d();
+    const range = options?.baseExtents?.clone() ?? new Range3d();
     this.forEachTileTreeRef((ref) => {
       ref.unionFitRange(range);
     });

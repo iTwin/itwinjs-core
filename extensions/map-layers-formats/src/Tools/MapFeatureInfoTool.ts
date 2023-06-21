@@ -5,34 +5,43 @@
 
 import {
   BeButtonEvent,
-  DecorateContext,
   EventHandled,
   HitDetail,
   IModelApp,
   LocateFilterStatus,
   LocateResponse,
   MapFeatureInfo,
-  MapLayerTileTreeReference,
-  MapTileTreeReference,
+  MapLayerInfoFromTileTree,
   PrimitiveTool,
-  TileTreeReference,
-  Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
+/** Data provided every time [[MapFeatureInfoTool]] retrieve feature information.
+ * @see [[MapFeatureInfoToolData]]
+ * @alpha
+ */
+export interface MapFeatureInfoToolData {
+  hit: HitDetail;
+  mapInfo?: MapFeatureInfo;
+}
+
+/** Tools that allow extracting feature information from map-layers.
+ * Simulate feature highlight by drawing overlay decorations.  It also
+ * fire an event that provide further feature information meant to be displayed in a UI / Widget.
+ * @see [[MapFeatureInfoToolData]]
+ * @alpha
+ */
 export class MapFeatureInfoTool extends PrimitiveTool {
-  public readonly onInfoReady = new BeEvent<(hit: HitDetail | undefined, mapInfo: MapFeatureInfo | undefined) => void>();
+  public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
 
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
 
   private _decorator: MapFeatureInfoDecorator = new MapFeatureInfoDecorator();
-  private _layerSettingsCache = new Map<string, MapLayerSettings[]>;
+  private _layerSettingsCache = new Map<string, MapLayerInfoFromTileTree[]>();
   private readonly _detachListeners: VoidFunction[] = [];
-
-  private static readonly _supportedFormats = ['ArcGISFeature'];
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -68,33 +77,31 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
-  private getSettingsFromHit(hit: HitDetail) {
-    let settings: MapLayerSettings[] = [];
+  /** @internal */
+  private getMapLayerInfoFromHit(hit: HitDetail) {
+    let mapLayerFromHit: MapLayerInfoFromTileTree[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);
     if (fromCache) {
-      settings = fromCache;
+      mapLayerFromHit = fromCache;
     } else if (this.targetView) {
-      settings = this.targetView?.mapLayerFromHit(hit).filter((settings => settings instanceof ImageMapLayerSettings && MapFeatureInfoTool._supportedFormats.includes(settings.formatId)));
-      this._layerSettingsCache.set(hit.sourceId, settings);
+      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
     }
 
-    return settings;
+    return mapLayerFromHit;
   }
 
-
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-
-    const settings = this.getSettingsFromHit(hit);
-    if (settings.length > 0) {
-      const names = settings.map(setting => setting.name);
-      return `Layer${names.length > 1 ? 's' : ''}: ${names.join(', ')}`
+    const infos = this.getMapLayerInfoFromHit(hit);
+    if (infos.length > 0) {
+      const names = infos.map((info) => info.settings.name);
+      return `Layer${names.length > 1 ? "s" : ""}: ${names.join(", ")}`;
     }
-
     return "";
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
-    return this.getSettingsFromHit(hit).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return this.getMapLayerInfoFromHit(hit).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onDataButtonDown(
@@ -107,24 +114,23 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       ev.viewport,
       ev.inputSource
     );
-    if (hit !== undefined && this.getSettingsFromHit(hit).length > 0) {
+    if (hit !== undefined) {
       let mapInfo: MapFeatureInfo | undefined;
-      IModelApp.toolAdmin.setCursor("wait");
-      try {
-        mapInfo = await hit.viewport.getMapFeatureInfo(hit);
-        if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
-          const layerInfo = mapInfo.layerInfo[0];
-          if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
-            this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+      if (this.getMapLayerInfoFromHit(hit).length > 0) {
+        IModelApp.toolAdmin.setCursor("wait");
+        try {
+          mapInfo = await hit.viewport.getMapFeatureInfo(hit);
+          if (mapInfo) {
+            this._decorator.setState({ hit, mapInfo });
+          }
+        } finally {
+          IModelApp.toolAdmin.setCursor(undefined);
         }
-      } finally {
-        IModelApp.toolAdmin.setCursor(undefined);
       }
 
-      this.onInfoReady.raiseEvent(hit, mapInfo);
+      this.onInfoReady.raiseEvent({ hit, mapInfo });
       return EventHandled.Yes;
     }
-    this.onInfoReady.raiseEvent(hit, undefined);
     return EventHandled.No;
   }
 
@@ -136,7 +142,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onRestartTool() {
+  public override async onRestartTool() {
     const tool = new MapFeatureInfoTool();
     if (!(await tool.run()))
       return this.exitTool();

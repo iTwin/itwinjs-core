@@ -9,6 +9,7 @@ packageClassification:
           "core-frontend",
           "core-common",
           "core-backend",
+          "core-electron",
           "core-markup",
           "core-mobile",
           "core-i18n",
@@ -65,7 +66,7 @@ packageClassification:
     },
     {
       "order": "7",
-      "header": "Auth",
+      "header": "Authorization",
       "packages":
         [
           "browser-authorization",

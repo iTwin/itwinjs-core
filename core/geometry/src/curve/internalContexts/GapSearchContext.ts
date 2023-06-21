@@ -11,12 +11,16 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
 
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
-/** Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
+/**
+ * Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
  * @internal
  */
 export class GapSearchContext extends RecursiveCurveProcessorWithStack {
   public maxGap: number;
-  constructor() { super(); this.maxGap = 0.0; }
+  constructor() {
+    super();
+    this.maxGap = 0.0;
+  }
   public static maxGap(target: CurveCollection): number {
     const context = new GapSearchContext();
     target.announceToCurveProcessor(context);

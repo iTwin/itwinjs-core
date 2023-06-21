@@ -5,9 +5,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { IModelDb } from "@itwin/core-backend";
 import { Guid, Id64, using } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, IModel } from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes, Descriptor, ECInstancesNodeKey, getInstancesCount, GroupingSpecificationTypes, HierarchyRequestOptions, InstanceKey,
@@ -15,7 +14,7 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
-import { buildTestIModelConnection } from "../Utils";
+import { buildTestIModelConnection, insertDocumentPartition } from "../Utils";
 
 describe("Hierarchies", () => {
 
@@ -32,7 +31,7 @@ describe("Hierarchies", () => {
     it("filters root instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a"),
           insertDocumentPartition(db, "b"),
@@ -115,7 +114,7 @@ describe("Hierarchies", () => {
     it("filters child instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a"),
           insertDocumentPartition(db, "b"),
@@ -231,10 +230,103 @@ describe("Hierarchies", () => {
       });
     });
 
+    it("filters guid properties", async function () {
+      const imodelElementKeys: InstanceKey[] = [];
+      const guidA = "814f3e14-63f2-4511-89a8-43ff3b527492";
+      const guidB = "182238d2-e836-4640-9b40-38be6ca49623";
+
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        imodelElementKeys.push(
+          insertDocumentPartition(db, "a", "a", guidA),
+          insertDocumentPartition(db, "b", "b", guidB),
+        );
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["DocumentPartition"],
+              arePolymorphic: true,
+            }],
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }, {
+          ruleType: RuleTypes.Grouping,
+          class: { schemaName: "BisCore", className: "DocumentPartition" },
+          groups: [{
+            specType: GroupingSpecificationTypes.Property,
+            propertyName: "FederationGuid",
+            createGroupForSingleItem: true,
+          }],
+        }],
+      };
+
+      // validate nodes without any filter
+      await validateHierarchy({
+        requestParams: { imodel, rulesetOrId: ruleset },
+        expectedHierarchy: [
+          NodeValidators.createForPropertyGroupingNode({
+            propertyName: "FederationGuid",
+            className: "BisCore:DocumentPartition",
+            groupingValues: [guidA],
+            label: guidA,
+            children: [
+              NodeValidators.createForInstanceNode({
+                instanceKeys: [imodelElementKeys[0]],
+                label: "a",
+              }),
+            ],
+            supportsFiltering: true,
+          }),
+          NodeValidators.createForPropertyGroupingNode({
+            propertyName: "FederationGuid",
+            className: "BisCore:DocumentPartition",
+            groupingValues: [guidB],
+            label: guidB,
+            children: [
+              NodeValidators.createForInstanceNode({
+                instanceKeys: [imodelElementKeys[1]],
+                label: "b",
+              }),
+            ],
+            supportsFiltering: true,
+          }),
+        ],
+        supportsFiltering: true,
+      });
+
+      // validate nodes with partially matching filter
+      await validateHierarchy({
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `GuidToStr(this.FederationGuid) = "${guidA}"`,
+          },
+        },
+        expectedHierarchy: [
+          NodeValidators.createForPropertyGroupingNode({
+            className: "BisCore:DocumentPartition",
+            propertyName: "FederationGuid",
+            children: [
+              NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[0]], label: "a" }),
+            ],
+          }),
+        ],
+      });
+    });
+
     it("filters grouped hierarchy levels", async function () {
       // set up imodel with 3 DocumentPartition elements: "a", "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a1", "a"),
           insertDocumentPartition(db, "a2", "a"),
@@ -380,7 +472,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to filter non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -435,7 +527,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a"),
             insertDocumentPartition(db, "b"),
@@ -495,7 +587,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a"),
             insertDocumentPartition(db, "b"),
@@ -579,7 +671,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a1", "a"),
             insertDocumentPartition(db, "a2", "a"),
@@ -695,7 +787,7 @@ describe("Hierarchies", () => {
 
     it("creates descriptor for root hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject for our test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -738,7 +830,7 @@ describe("Hierarchies", () => {
 
     it("creates descriptor for child hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject and default Models for our test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -790,7 +882,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to get descriptor non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -1267,15 +1359,4 @@ async function validateHierarchy(props: {
   }
 
   return resultHierarchy;
-}
-
-function insertDocumentPartition(db: IModelDb, code: string, label?: string) {
-  const id = db.elements.insertElement({
-    classFullName: "BisCore:DocumentPartition",
-    model: IModel.repositoryModelId,
-    parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
-    code: new Code({ spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id, scope: IModel.rootSubjectId, value: code }),
-    userLabel: label,
-  });
-  return { className: "BisCore:DocumentPartition", id };
 }

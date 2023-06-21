@@ -26,23 +26,22 @@ interface HitDetailProps {
 }
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
-  const hitPoint = props?.hitPoint ?? [0, 0, 0];
-  return new HitDetail(
-    Point3d.fromJSON(props?.testPoint ?? hitPoint),
-    vp,
-    HitSource.AccuSnap,
-    Point3d.fromJSON(hitPoint),
-    props?.sourceId ?? "0",
-    HitPriority.Unknown,
-    0,
-    0,
-    props?.subCategoryId,
-    props?.geometryClass,
-    props?.modelId,
-    props?.iModel,
-    undefined,
-    props?.isClassifier
-  );
+  const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
+  return new HitDetail({
+    testPoint: Point3d.fromJSON(props?.testPoint ?? hitPoint),
+    viewport: vp,
+    hitSource: HitSource.AccuSnap,
+    hitPoint: Point3d.fromJSON(hitPoint),
+    sourceId: props?.sourceId ?? "0",
+    priority: HitPriority.Unknown,
+    distXY: 0,
+    distFraction: 0,
+    subCategoryId: props?.subCategoryId,
+    geometryClass: props?.geometryClass,
+    modelId: props?.modelId,
+    sourceIModel: props?.iModel,
+    isClassifier: props?.isClassifier,
+  });
 }
 
 describe("AccuSnap", () => {

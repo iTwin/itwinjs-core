@@ -433,6 +433,7 @@ export class BarycentricTriangle {
     centroid(result?: Point3d): Point3d;
     circumcenter(result?: Point3d): Point3d;
     clone(result?: BarycentricTriangle): BarycentricTriangle;
+    cloneTransformed(transform: Transform, result?: BarycentricTriangle): BarycentricTriangle;
     closestPoint(b0: number, b1: number, b2: number): {
         closestEdgeIndex: number;
         closestEdgeParam: number;
@@ -2211,6 +2212,7 @@ export class Geometry {
     static readonly smallAngleRadians = 1e-12;
     static readonly smallAngleRadiansSquared = 1e-24;
     static readonly smallAngleSeconds = 2e-7;
+    static readonly smallFloatingPoint = 1e-15;
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
@@ -3209,11 +3211,11 @@ export interface IStrokeHandler {
 
 // @public
 export class JointOptions {
-    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, preserveEllipticalArcs?: boolean);
+    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, preserveEllipticalArcs?: boolean, allowSharpestCorners?: boolean);
+    allowSharpestCorners: boolean;
     clone(): JointOptions;
     static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions;
     leftOffsetDistance: number;
-    // (undocumented)
     maxChamferTurnDegrees: number;
     minArcDegrees: number;
     needArc(theta: Angle): boolean;
@@ -3623,6 +3625,7 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyMatrixMatrixTranspose(other: Matrix3d, result?: Matrix3d): Matrix3d;
     multiplyMatrixTransform(other: Transform, result?: Transform): Transform;
     multiplyMatrixTransposeMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d;
+    multiplyPoint(point: Point3d, result?: Point3d): Point3d;
     multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d;
     multiplyTransposeVectorInPlace(vectorU: XYZ): void;
     multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
@@ -3792,6 +3795,15 @@ export class MomentData {
     toJSON(): any;
 }
 
+// @internal
+export class MultiChainCollector {
+    constructor(endPointShiftTolerance?: number, planeTolerance?: number | undefined);
+    announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void;
+    captureCurve(candidate: GeometryQuery): void;
+    captureCurvePrimitive(candidate: CurvePrimitive): void;
+    grabResult(makeLoopIfClosed?: boolean): ChainTypes;
+}
+
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
@@ -3956,6 +3968,9 @@ export interface OffsetMeshSelectiveOutputOptions {
 // @public
 export class OffsetOptions {
     constructor(offsetDistanceOrOptions: number | JointOptions, strokeOptions?: StrokeOptions);
+    // (undocumented)
+    get allowSharpestCorners(): boolean;
+    set allowSharpestCorners(value: boolean);
     clone(): OffsetOptions;
     static create(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): OffsetOptions;
     static getOffsetDistance(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): number;
@@ -4124,12 +4139,10 @@ export class PathFragment {
     // @deprecated (undocumented)
     childFractionTChainDistance(fraction: number): number;
     childFractionToChainDistance(fraction: number): number;
-    // (undocumented)
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
     containsChildCurveAndChildFraction(curve: CurvePrimitive, fraction: number): boolean;
     fractionScaleFactor(globalDistance: number): number;
-    // (undocumented)
     quickMinDistanceToChildCurve(spacePoint: Point3d): number;
     range?: Range3d;
     reverseFractionsAndDistances(totalDistance: number): void;
@@ -4875,7 +4888,7 @@ export class PolygonOps {
 // @internal
 export class PolygonWireOffsetContext {
     constructor();
-    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
+    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
 }
 
 // @public
@@ -4975,7 +4988,6 @@ export class Range1d extends RangeBase {
     intersectsRange(other: Range1d): boolean;
     isAlmostEqual(other: Readonly<Range1d>): boolean;
     get isAlmostZeroLength(): boolean;
-    // (undocumented)
     get isExact01(): boolean;
     get isNull(): boolean;
     get isSinglePoint(): boolean;
@@ -5218,8 +5230,8 @@ export class Ray2d {
 export class Ray3d implements BeJSONFunctions {
     a?: number;
     clone(result?: Ray3d): Ray3d;
-    cloneInverseTransformed(transform: Transform): Ray3d | undefined;
-    cloneTransformed(transform: Transform): Ray3d;
+    cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined;
+    cloneTransformed(transform: Transform, result?: Ray3d): Ray3d;
     static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair;
     static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d;
     static createCapture(origin: Point3d, direction: Vector3d): Ray3d;
@@ -5241,6 +5253,7 @@ export class Ray3d implements BeJSONFunctions {
     static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d;
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
+    intersectionWithTriangle(vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d): Point3d | undefined;
     isAlmostEqual(other: Ray3d): boolean;
     isAlmostEqualPointSet(other: Ray3d): boolean;
     origin: Point3d;
@@ -5365,9 +5378,9 @@ export class RegionOps {
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
-    static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[];
+    static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
-    static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
+    static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean, consolidateAdjacentPrimitives?: boolean): CurveCollection | undefined;
     static curveArrayRange(data: any, worldToLocal?: Transform): Range3d;
     static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[];

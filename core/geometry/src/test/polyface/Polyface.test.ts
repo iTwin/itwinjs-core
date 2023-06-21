@@ -380,50 +380,71 @@ describe("Polyface.Box", () => {
   it("Polyface.IntersectLocalRangeBoxes", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
-    // data from iModel (soil nail, bolt, plate)
-    const localRange: Range3d[] = [];
-    localRange.push(Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722));
-    localRange.push(Range3d.createXYZXYZ(-0.024019658687571166, -0.020559836132079568, -0.047579717945438915, 0.10484869637410554, 0.09055983613204432, 0.0975797179454645));
-    localRange.push(Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074));
-    const localToWorld: Transform[] = [];
-    localToWorld.push(Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()));
-    localToWorld.push(Transform.createRefs(Point3d.create(-95.29966304738043, 66.6762028551563, 72.28348554781851), YawPitchRollAngles.createDegrees(42.04343086998508, -4.9775680764904035e-11, 74.99999999999397).toMatrix3d()));
-    localToWorld.push(Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d()));
-
-    const xRange = Math.max(localRange[0].xLength(), localRange[1].xLength(), localRange[2].xLength());
-    const yRange = Math.max(localRange[0].yLength(), localRange[1].yLength(), localRange[2].yLength());
-    const zRange = Math.max(localRange[0].zLength(), localRange[1].zLength(), localRange[2].zLength());
-    const delta = Math.max(xRange, yRange, zRange);
-    const delta10 = 10 * delta;
+    interface TestCase {
+      data: {localRange: Range3d, localToWorld: Transform}[];
+      expectedClash: boolean; // each entry is a set of mutually clashing or non-clashing local ranges from iModel
+    }
+    const testCases: TestCase[] = [
+      { data: [
+          { localRange: Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722), localToWorld: Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.024019658687571166, -0.020559836132079568, -0.047579717945438915, 0.10484869637410554, 0.09055983613204432, 0.0975797179454645), localToWorld: Transform.createRefs(Point3d.create(-95.29966304738043, 66.6762028551563, 72.28348554781851), YawPitchRollAngles.createDegrees(42.04343086998508, -4.9775680764904035e-11, 74.99999999999397).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074), localToWorld: Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d())},
+        ],
+        expectedClash: true},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(1.1546319456101628e-14, -1.4328815911568427e-14, -5.1535165024318985e-14, 11.999999999999943, 0.03199999999999116, 0.031999999999948535), localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14), localToWorld: Transform.createRefs(Point3d.create(-107.5899903512084, 42.11371219204531, 71.59835123713896), YawPitchRollAngles.createDegrees(173.55196028882585, -14.99999999999978, 2.0579703138818464e-16).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.02213513258379224, -0.018579865396888717, -0.19678412188787828, 0.5721351325838432, 0.5685798653970273, 0.22178412188785057), localToWorld: Transform.createRefs(Point3d.create(-107.61315829094143, 42.393081259141205, 71.29907515904608), YawPitchRollAngles.createDegrees(173.5519602888134, 74.99999999996545, 5.981534282323202e-12).toMatrix3d()) },
+        ],
+        expectedClash: true},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(-5,-5,-5,5,5,5), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3,-6,-9), Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(33)))},
+          { localRange: Range3d.createXYZXYZ(-2,-2,-2,2,2,2), localToWorld: Transform.createOriginAndMatrix(Point3d.create(5,5,5), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,-1), Angle.createDegrees(-115)))},
+          { localRange: Range3d.createXYZXYZ(-1,-1,-1,1,1,1), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10,4,3), Matrix3d.createRotationAroundVector(Vector3d.create(0,1,-1), Angle.createDegrees(245)))},
+        ],
+        expectedClash: false},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(7.993605777301127e-15, 1.1483869410966463e-15, -8.895661984809067e-15, 11.999999999999961, 0.03200000000001247, 0.03200000000001958), localToWorld: Transform.createRefs(Point3d.create(-118.75022305842617, 45.954529463039, 68.47641991136159), YawPitchRollAngles.createDegrees(-9.408029798593397, 15.000000000007361, 2.455595252575587).toMatrix3d())},
+          { localRange: Range3d.createXYZXYZ(-0.03474118660066772, -3.3591167872492598, -1.714177531529474, 11.744741186600766, 3.4591167872486275, 1.8141775315289306), localToWorld: Transform.createRefs(Point3d.create(-118.82046236854137, 46.0485514387863, 68.44465610136753), YawPitchRollAngles.createDegrees(-9.40802979863332, 15.000000000003949, 113.91380925648686).toMatrix3d())},
+        ],
+        expectedClash: true},
+    ];
     let z = 0;
-    for (const marginJ of [undefined, 1.0]) {
-      let y = 0;
-      for (const perturbJ of [false, true]) {
-        let x = 0;
-        for (let i = 0; i < localRange.length; ++i) {
-          const j = (i + 1) % localRange.length;
-
-          const localRangeJ = localRange[j].clone();
-          const localToWorldJ = localToWorld[j].clone();
-          if (marginJ)
-            localRangeJ.expandInPlace(marginJ);
-          if (perturbJ)  // perturb with local translation to set up negative results
-            localToWorldJ.multiplyTransformTransform(Transform.createTranslationXYZ(1.1 * delta), localToWorldJ);
-
-          // doLocalRangesIntersect converts i_th range to a polyface transformed into j_th range's local coordinates
-          GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, localRange[i], localToWorldJ.inverse()?.multiplyTransformTransform(localToWorld[i]), x, y, z);
-          GeometryCoreTestIO.captureRangeEdges(allGeometry, localRangeJ, x, y, z);
-
-          const isClash = ClipUtilities.doLocalRangesIntersect(localRange[i], localToWorld[i], localRange[j], localToWorldJ, marginJ);
-          ck.testBoolean(isClash, !perturbJ, `ranges clash as expected: margin=${marginJ} perturb=${perturbJ} i=${i} j=${j}`);
-          x += delta10;
-        }
+    for (const testCase of testCases) {
+      const maxRange = Point3d.createZero();
+      for (const datum of testCase.data)
+        maxRange.set(Math.max(maxRange.x, datum.localRange.xLength()), Math.max(maxRange.y, datum.localRange.yLength()), Math.max(maxRange.z, datum.localRange.zLength()));
+      const delta = maxRange.maxAbs();
+      const delta10 = 10 * delta;
+      let x = 0;
+      for (let i = 0; i < testCase.data.length; ++i) {
+        const j = (i + 1) % testCase.data.length;
+        let y = 0;
+        // lambda to exercise local range clash detector
+        const clashDetect = (index0: number, index1: number, captureLocal: boolean = true, captureWorld: boolean = false): boolean => {
+          if (captureLocal) {
+            // doLocalRangesIntersect converts range0 to a polyface transformed into range1's local coordinates
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index1].localToWorld.inverse()?.multiplyTransformTransform(testCase.data[index0].localToWorld), x, y, z);
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, testCase.data[index1].localRange, x, y, z);
+          }
+          if (captureWorld) {
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index0].localToWorld, x, y, z);
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index1].localRange, testCase.data[index1].localToWorld, x, y, z);
+          }
+          const isClash = ClipUtilities.doLocalRangesIntersect(testCase.data[index0].localRange, testCase.data[index0].localToWorld, testCase.data[index1].localRange, testCase.data[index1].localToWorld);
+          ck.testBoolean(isClash, testCase.expectedClash, `ranges clash as expected: i=${index0} j=${index1}`);
+          return isClash;
+          };
+        const clashIJ = clashDetect(i, j);
         y += delta10;
+        const clashJI = clashDetect(j, i);
+        ck.testBoolean(clashIJ, clashJI, `symmetric arguments: i=${i} j=${j}`);
+        // cover the margin case, no output or test
+        ClipUtilities.doLocalRangesIntersect(testCase.data[i].localRange, testCase.data[i].localToWorld, testCase.data[j].localRange, testCase.data[j].localToWorld, 1.0);
+        x += delta10;
       }
       z += delta10;
     }
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectLocalRangeBoxes");
     expect(ck.getNumErrors()).equals(0);
   });

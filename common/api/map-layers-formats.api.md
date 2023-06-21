@@ -5,11 +5,20 @@
 ```ts
 
 import { ArcGISImageryProvider } from '@itwin/core-frontend';
+import { BeButtonEvent } from '@itwin/core-frontend';
+import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
+import { EventHandled } from '@itwin/core-frontend';
+import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
+import { Localization } from '@itwin/core-common';
+import { LocateFilterStatus } from '@itwin/core-frontend';
+import { LocateResponse } from '@itwin/core-frontend';
+import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 
@@ -19,7 +28,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected computeTileWorld2CanvasTransform(row: number, column: number, zoomLevel: number): Transform | undefined;
     // (undocumented)
-    constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean): ArcGisFeatureUrl | undefined;
+    constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean, maxAllowableOffset?: number): ArcGisFeatureUrl | undefined;
     // (undocumented)
     constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string>;
     // (undocumented)
@@ -27,7 +36,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
     // (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)
     protected getLayerMetadata(layerId: number): Promise<any>;
     // (undocumented)
@@ -44,9 +53,52 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
+// @alpha
+export class MapFeatureInfoTool extends PrimitiveTool {
+    // (undocumented)
+    filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    readonly onInfoReady: BeEvent<(data: MapFeatureInfoToolData) => void>;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export interface MapFeatureInfoToolData {
+    // (undocumented)
+    hit: HitDetail;
+    // (undocumented)
+    mapInfo?: MapFeatureInfo;
+}
+
 // @beta
 export class MapLayersFormats {
-    static initialize(): void;
+    static initialize(config?: MapLayersFormatsConfig): Promise<void>;
+    // (undocumented)
+    static localization: Localization;
+    static get localizationNamespace(): string;
+}
+
+// @beta
+export interface MapLayersFormatsConfig {
+    // (undocumented)
+    localization?: Localization;
 }
 
 // (No @packageDocumentation comment for this package)

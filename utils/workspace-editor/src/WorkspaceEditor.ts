@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb, SqliteStatement, WorkspaceAccount,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb, SqliteStatement,
   WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
@@ -37,7 +37,7 @@ interface EditorProps {
   curlDiagnostics?: boolean;
 }
 
-interface EditorOpts extends EditorProps, WorkspaceContainer.Props, WorkspaceAccount.Props {
+interface EditorOpts extends EditorProps, WorkspaceContainer.Props {
   /** user name for write lock */
   user: string;
 }
@@ -147,7 +147,7 @@ function friendlyFileSize(size: number) {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   args.writeable = true;
-  const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args, args));
+  const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
   wsFile.close();
@@ -167,7 +167,7 @@ async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceD
 /** get a WorkspaceContainer that may or may not be a cloud container. */
 function getContainer(args: EditorOpts) {
   args.writeable = true;
-  return IModelHost.appWorkspace.getContainer(args, args);
+  return IModelHost.appWorkspace.getContainer(args);
 }
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
@@ -434,7 +434,7 @@ function sayContainer(args: EditorOpts) {
 
 /** initialize (empty if it exists) a cloud WorkspaceContainer. */
 async function initializeWorkspace(args: InitializeOpts) {
-  if (undefined === args.storageType || !args.accessName)
+  if (undefined === args.storageType || !args.baseUri)
     throw new Error("No cloud container supplied");
   if (!args.noPrompt) {
     const yesNo = await askQuestion(`Are you sure you want to initialize ${sayContainer(args)}"? [y/n]: `);
@@ -442,7 +442,7 @@ async function initializeWorkspace(args: InitializeOpts) {
       return;
   }
   const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
-  container.initializeContainer({ checksumBlockNames: true });
+  container.initializeContainer({ checksumBlockNames: true, blockSize: 4 * 1024 * 1024 });
   showMessage(`container "${args.containerId} initialized`);
 }
 
@@ -594,9 +594,9 @@ Yargs.options({
   nRequests: { describe: "Number of simultaneous http requests for cloud operations", number: true, hidden: true },
   containerId: { alias: "c", describe: "ContainerId for WorkspaceDb", string: true, demandOption: true },
   user: { describe: "String shown in cloud container locked message", string: true, default: "workspace-editor" },
-  accessName: { alias: "a", describe: "Cloud storage account name for container", string: true },
+  baseUri: { alias: "b", describe: "The base uri for the container", string: true },
   accessToken: { describe: "Token that grants access to the container (either SAS or account key)", string: true, default: "" },
-  storageType: { describe: "Cloud storage module type", string: true, default: "azure?sas=1" },
+  storageType: { describe: "Cloud storage module type", string: true, default: "azure" },
   logging: { describe: "enable log messages", boolean: true, default: false, hidden: true },
   prefetch: { boolean: true, default: false, hidden: true },
   curlDiagnostics: { boolean: true, default: false, hidden: true },

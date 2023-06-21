@@ -48,6 +48,9 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get status() { return this._status; }
 
+  /** @alpha */
+  public get supportsMapFeatureInfo() { return false; }
+
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
   /** @internal */

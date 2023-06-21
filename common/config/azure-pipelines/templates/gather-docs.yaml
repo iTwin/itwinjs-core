@@ -20,6 +20,9 @@ parameters:
   - name: useCurrentTransformerDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentAuthClientsDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # build script exists outside of any project so manually install fs-extra
@@ -38,7 +41,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
-      defaultBranch: refs/heads/bdp/typedoc-0.23-attempt
+      defaultBranch: refs/heads/release/4.0.x
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # Download BIS Docs artifact
@@ -50,11 +53,11 @@ steps:
       artifactName: Bis Docs
       useCurrentDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
       stagingSteps:
-      - task: CopyFiles@2
-        displayName: Copy Bis Docs to staging
-        inputs:
-          SourceFolder: $(Pipeline.Workspace)/Bis Docs
-          TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+        - task: CopyFiles@2
+          displayName: Copy Bis Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/Bis Docs
+            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # Download Presentation Docs artifact
   - template: ./copy-docs-artifact.yaml
@@ -63,6 +66,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8602 # iTwin Presentation/iTwin Presentation Docs
       artifactName: Presentation Docs
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
   # Download Transformer Docs artifact
@@ -72,8 +76,24 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
-      defaultBranch: refs/heads/bdp/typedoc-0.23
+      specificBuild: 2212281
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
+
+  # Download Auth Clients artifact
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 9108 # iTwin.js/clients/iTwin.auth-clients.docs build
+      artifactName: iTwin-Auth-Clients Docs
+      buildTag: hasDocs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Auth Clients Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
+            TargetFolder: ${{ parameters.stagingDir }}/reference/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

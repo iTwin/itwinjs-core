@@ -9,7 +9,7 @@
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { DisplayParams } from "../primitives/DisplayParams";
+import { DisplayParams } from "../../common/render/primitives/DisplayParams";
 import { BatchOptions } from "../GraphicBuilder";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";

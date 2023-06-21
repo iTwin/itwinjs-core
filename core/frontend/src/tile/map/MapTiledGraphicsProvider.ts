@@ -11,7 +11,7 @@ import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itw
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
-import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
+import { MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
 /** Position of a map-layer in the display style's map (i.e. background/overlay map)
  * @public
@@ -126,7 +126,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[] {
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
     const bgMapLayers = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
     const ovlMapLayers = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
     return [...bgMapLayers, ...ovlMapLayers];

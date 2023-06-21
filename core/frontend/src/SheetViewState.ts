@@ -26,14 +26,14 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
+import { ViewRect } from "./common/ViewRect";
 
 // cSpell:ignore ovrs
 
@@ -312,6 +312,10 @@ class ViewAttachments {
     for (const attachment of this._attachments)
       attachment.addToScene(context);
   }
+
+  public findById(attachmentId: Id64String): Attachment | undefined {
+    return this._attachments.find((attachment: Attachment) => attachment.viewAttachmentProps.id === attachmentId);
+  }
 }
 
 /** A view of a [SheetModel]($backend).
@@ -533,6 +537,18 @@ export class SheetViewState extends ViewState2d {
     if (0 >= size.x || 0 >= size.y)
       return super.computeFitRange();
     return new Range3d(0, 0, -1, size.x, size.y, 1);
+  }
+
+  /** @internal */
+  public override getAttachmentViewport(id: Id64String): Viewport | undefined {
+    return this._attachments?.findById(id)?.viewport;
+  }
+
+  /** @internal */
+  public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
+    // ###TODO check if the attached view has a display transform...
+    const attachment = undefined !== args.viewAttachmentId ? this._attachments?.findById(args.viewAttachmentId) : undefined;
+    return attachment && attachment instanceof OrthographicAttachment ? attachment.toSheet.clone() : undefined;
   }
 }
 
@@ -788,6 +804,7 @@ class OrthographicAttachment {
 
     // Extract scene graphics and insert into on-screen scene context.
     const options = {
+      viewAttachmentId: this._props.id,
       clipVolume: this._clipVolume,
       hline: this._hiddenLineSettings,
       frustum: {
@@ -842,6 +859,10 @@ class OrthographicAttachment {
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
     // Handled by discloseTileTrees()
+  }
+
+  public get toSheet(): Transform {
+    return this._toSheet;
   }
 }
 

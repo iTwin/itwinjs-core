@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Split iMdl tile decoding into two phases: parsing and graphics creation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

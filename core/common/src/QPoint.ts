@@ -61,6 +61,12 @@ export namespace Quantization {
   }
 }
 
+/** @alpha */
+export interface QParams2dProps {
+  origin: XAndY;
+  scale: XAndY;
+}
+
 /** Parameters used for [[Quantization]] of 2d points such that the `x` and `y` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
@@ -143,6 +149,19 @@ export class QParams2d {
   /** Return true if the point point is quantizable using these parameters. */
   public isQuantizable(point: Point2d) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y);
+  }
+
+  /** @alpha */
+  public toJSON(): QParams2dProps {
+    return {
+      origin: { x: this.origin.x, y: this.origin.y },
+      scale: { x: this.scale.x, y: this.scale.y },
+    };
+  }
+
+  /** @alpha */
+  public static fromJSON(src: QParams2dProps): QParams2d {
+    return this.fromOriginAndScale(src.origin.x, src.origin.y, src.scale.x, src.scale.y);
   }
 }
 
@@ -393,6 +412,12 @@ export class QPoint2dList {
   }
 }
 
+/** @alpha */
+export interface QParams3dProps {
+  origin: XYAndZ;
+  scale: XYAndZ;
+}
+
 /** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
@@ -507,6 +532,19 @@ export class QParams3d {
     range.extendPoint(this.origin);
     range.extendPoint(this.origin.plus(this.rangeDiagonal));
     return range;
+  }
+
+  /** @alpha */
+  public toJSON(): QParams3dProps {
+    return {
+      origin: { x: this.origin.x, y: this.origin.y, z: this.origin.z },
+      scale: { x: this.scale.x, y: this.scale.y, z: this.scale.z },
+    };
+  }
+
+  /** @alpha */
+  public static fromJSON(src: QParams3dProps, out?: QParams3d): QParams3d {
+    return this.fromOriginAndScale(Point3d.fromJSON(src.origin), Point3d.fromJSON(src.scale), out);
   }
 }
 

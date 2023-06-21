@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -70,7 +70,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
 class LocalSession extends IpcSession {
   public override async handleRpc(info: InterceptedRpcRequest) {
-    return IpcApp.callIpcChannel("RPC", "request", info);
+    return IpcApp.callIpcChannel(rpcOverIpcStrings.channelName, "request", info);
   }
 }
 

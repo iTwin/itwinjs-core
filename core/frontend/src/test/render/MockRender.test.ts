@@ -8,7 +8,7 @@ import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
-import { ViewRect } from "../../ViewRect";
+import { ViewRect } from "../../common/ViewRect";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }

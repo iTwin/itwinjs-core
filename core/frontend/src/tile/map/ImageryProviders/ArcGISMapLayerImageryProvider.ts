@@ -8,9 +8,9 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
   ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeature, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -25,7 +25,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
   private _copyrightText = "Copyright";
-  private _querySupported = false;
   private _tileMapSupported = false;
   private _mapSupported = false;
   private _tilesOnly = false;
@@ -210,12 +209,13 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number): Promise<any>   {
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, maxAllowableOffset?: number): Promise<any>   {
     const returnGeometry = "true;";
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const maxAllowableOffsetStr = maxAllowableOffset ? `&maxAllowableOffset=${maxAllowableOffset}` : "";
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}${maxAllowableOffsetStr}`;
     const urlObj = new URL(tmpUrl);
 
     const response = await this.fetch(urlObj, { method: "GET" } );
@@ -246,38 +246,62 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
     if (!this._querySupported)
       return;
 
-    const json = await this.getIdentifyData(quadId, carto,5 );
+    const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
+    const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+    const maxAllowableOffsetFactor = 2;
+    const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
+
+    const json = await this.getIdentifyData(quadId, carto, 5, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
-      const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name};
+      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
+
+      const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
+
+      // The 'identify' service returns us a flat/unordered list of records..
+      // results may represent features for the a common subLayer.
+      // For simplicity, we group together features for a given sub-layer.
+      const subLayers = new Map<string, MapSubLayerFeatureInfo> ();
 
       for (const result of json.results) {
 
-        const subLayerInfo: MapSubLayerFeatureInfo = {
-          subLayerName: result.layerName ?? "",
-          displayFieldName: result.displayFieldName,
-          records : [],
-        };
+        let subLayerInfo = subLayers.get(result.layerName);
+        if (!subLayerInfo) {
+          subLayerInfo = {
+            subLayerName: result.layerName ?? "",
+            displayFieldName: result.displayFieldName,
+            features: [],
+          };
+          subLayers.set(result.layerName, subLayerInfo);
+        }
+        const feature: MapLayerFeature = {geometries: [], attributes: []};
+
+        // Read all feature attributes
         for (const [key, value] of Object.entries(result.attributes)) {
           // Convert everything to string for now
           const strValue = String(value);
-          subLayerInfo.records?.push(new MapFeatureInfoRecord (
-            {valueFormat:PropertyValueFormat.Primitive, value:strValue, displayValue: strValue},
-            {name: key, displayLabel: key, typename:StandardTypeNames.String}
-          ));
+          feature.attributes.push({
+            value: { valueFormat: PropertyValueFormat.Primitive, value: strValue, displayValue: strValue },
+            property: { name: key, displayLabel: key, typename: StandardTypeNames.String },
+          });
         }
 
-        if (layerInfo.info === undefined) {
-          layerInfo.info = [];
-        }
+        // Read feature geometries
+        const geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
+        await geomReader.readGeometry(result.geometry);
+        const graphics = renderer.moveGraphics();
+        feature.geometries = graphics.map((graphic) => {
+          return {graphic};
+        });
+        subLayerInfo.features.push(feature);
 
-        if (!(layerInfo.info instanceof HTMLElement)) {
-          layerInfo.info.push(subLayerInfo);
-        }
+      }
 
+      for ( const value of subLayers.values()) {
+        layerInfo.subLayerInfos!.push(value);
       }
 
       featureInfos.push(layerInfo);
