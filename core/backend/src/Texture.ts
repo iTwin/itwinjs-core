@@ -31,8 +31,7 @@ export class Texture extends DefinitionElement {
   public data: Uint8Array;
   public description?: string;
 
-  /** @internal */
-  constructor(props: TextureCreateProps, iModel: IModelDb) {
+  protected constructor(props: TextureCreateProps, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
     this.data = typeof props.data === "string" ? Base64EncodedString.toUint8Array(props.data) : props.data;

@@ -51,7 +51,6 @@ export class Entity {
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public id: Id64String;
 
-  /** @internal */
   protected constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);

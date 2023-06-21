@@ -992,7 +992,7 @@ export abstract class IModelDb extends IModel {
   /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
-  public constructEntity<T extends Entity>(props: EntityProps): T {
+  public constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T {
     const jsClass = this.getJsClass(props.classFullName);
     return Entity.instantiate(jsClass, props, this) as T;
   }

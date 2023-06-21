@@ -30,8 +30,8 @@ export class ExternalSource extends InformationReferenceElement {
   public connectorVersion?: string;
   /** @internal */
   public static override get className(): string { return "ExternalSource"; }
-  /** @internal */
-  public constructor(props: ExternalSourceProps, iModel: IModelDb) {
+
+  protected constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.repository)
       this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
@@ -87,8 +87,8 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   public scale?: Point3d;
   /** @internal */
   public static override get className(): string { return "ExternalSourceAttachment"; }
-  /** @internal */
-  public constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
+
+  protected constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.attaches)
       this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
@@ -131,8 +131,8 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
 export class ExternalSourceGroup extends ExternalSource {
   /** @internal */
   public static override get className(): string { return "ExternalSourceGroup"; }
-  /** @internal */
-  public constructor(props: ExternalSourceProps, iModel: IModelDb) {
+
+  protected constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -146,8 +146,8 @@ export class SynchronizationConfigLink extends UrlLink {
   public lastSuccessfulRun?: string;
   /** @internal */
   public static override get className(): string { return "SynchronizationConfigLink"; }
-  /** @internal */
-  public constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb) {
+
+  protected constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb) {
     super(props, iModel);
   }
 

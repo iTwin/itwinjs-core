@@ -32,8 +32,8 @@ export class ModelSelector extends DefinitionElement {
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
-  /** @internal */
-  constructor(props: ModelSelectorProps, iModel: IModelDb) {
+
+  protected constructor(props: ModelSelectorProps, iModel: IModelDb) {
     super(props, iModel);
     this.models = props.models;
   }
@@ -103,8 +103,8 @@ export class CategorySelector extends DefinitionElement {
   public static override get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
-  /** @internal */
-  constructor(props: CategorySelectorProps, iModel: IModelDb) {
+
+  protected constructor(props: CategorySelectorProps, iModel: IModelDb) {
     super(props, iModel);
     this.categories = props.categories;
   }
@@ -187,7 +187,6 @@ export abstract class ViewDefinition extends DefinitionElement {
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64String;
 
-  /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
 
@@ -296,8 +295,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
-  /** @internal */
-  public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
+  protected constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
@@ -342,8 +340,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
 
-  /** @internal */
-  public constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
+  protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     if (!Id64.isValid(this.modelSelectorId))
@@ -436,7 +433,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   /** @internal */
   public static override get className(): string { return "OrthographicViewDefinition"; }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
+
   /**
    * Create an OrthographicViewDefinition
    * @param iModelDb The iModel
@@ -516,8 +515,7 @@ export class ViewDefinition2d extends ViewDefinition {
   /** The rotation of this view. */
   public angle: Angle;
 
-  /** @internal */
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
@@ -553,8 +551,8 @@ export class ViewDefinition2d extends ViewDefinition {
 export class DrawingViewDefinition extends ViewDefinition2d {
   /** @internal */
   public static override get className(): string { return "DrawingViewDefinition"; }
-  /** @internal */
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
 
@@ -727,6 +725,6 @@ export class LightLocation extends SpatialLocationElement {
   public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
-  /** @internal */
-  constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
+
+  protected constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
