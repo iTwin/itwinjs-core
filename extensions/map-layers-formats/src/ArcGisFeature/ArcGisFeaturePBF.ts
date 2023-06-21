@@ -45,6 +45,100 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
   }
 
+
+
+  private getNumericValue (attrValue: esriPBuffer.FeatureCollectionPBuffer.Value)  {
+    const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
+    let typename = StandardTypeNames.Number;
+    if (attrValue.has_double_value) {
+      const value = this.toFixedWithoutPadding(attrValue.double_value);
+      propertyValue.value = value;
+      typename = StandardTypeNames.Double;
+    } else if (attrValue.has_float_value) {
+      const value = this.toFixedWithoutPadding(attrValue.float_value);
+      propertyValue.value = value;
+      typename = StandardTypeNames.Float;
+    } else if (attrValue.has_int64_value) {
+      propertyValue.value = attrValue.int64_value;
+      typename = StandardTypeNames.Integer;
+    } else if (attrValue.has_sint64_value) {
+      propertyValue.value = attrValue.sint64_value;
+      typename = StandardTypeNames.Integer;
+    } else if (attrValue.has_sint_value) {
+      propertyValue.value = attrValue.sint_value;
+      typename = StandardTypeNames.Integer;
+    } else if (attrValue.has_uint64_value) {
+      propertyValue.value = attrValue.uint64_value;
+      typename = StandardTypeNames.Integer;
+    } else if (attrValue.has_uint_value) {
+      propertyValue.value = attrValue.uint_value;
+      typename = StandardTypeNames.Integer;
+    } else {
+      propertyValue.value = undefined;
+    }
+
+    return { propertyValue,  typename };
+  };
+
+  private getRecordInfo (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value)  {
+    let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
+
+    let typename = StandardTypeNames.String;
+    if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDouble
+      || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeInteger
+      || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeSmallInteger
+      || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeOID
+      || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeSingle
+      || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDate
+    ) {
+      const value = this.getNumericValue(attrValue);
+      if (value.propertyValue === undefined) {
+        Logger.logError(loggerCategory, `Could not read numeric value for field ${fieldInfo.name}`);
+        return undefined;
+      }
+
+      if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDate) {
+        const test = (value.propertyValue.value as unknown) as number;
+        propertyValue.value = new Date(test);
+        typename = StandardTypeNames.DateTime;
+      } else {
+        typename = value.typename;
+        propertyValue = value.propertyValue;
+      }
+    } else if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeString) {
+      if (attrValue.has_string_value) {
+        propertyValue.value = attrValue.string_value;
+        typename = StandardTypeNames.String;
+      }
+    } else if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeGlobalID) {
+      if (attrValue.has_string_value) {
+        propertyValue.value = attrValue.string_value;
+        typename = StandardTypeNames.String;
+      } else {
+        const value = this.getNumericValue(attrValue);
+        if (value.propertyValue === undefined) {
+          Logger.logError(loggerCategory, `Could not read GlobalId value for field ${fieldInfo.name}`);
+          return undefined;
+        }
+      }
+    } else if (attrValue.has_string_value) {
+      // If we reach this case that probably mean we don't support the field type, simply try to output string value
+      typename = StandardTypeNames.String;
+      propertyValue.value = attrValue.string_value;
+    } else if (attrValue.value_type === "none") {
+      // Sometimes fields are just empty, use an empty string
+      typename = StandardTypeNames.String;
+      propertyValue.value = undefined;
+    } else {
+      Logger.logError(loggerCategory, `Could not read value for field ${fieldInfo.name}`);
+      return undefined;
+    }
+
+    propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
+
+    return new MapFeatureInfoRecord(propertyValue, { name: fieldInfo.name, displayLabel: fieldInfo.name, typename });
+  }
+
   public async readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
@@ -56,19 +150,52 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
+      const symbologyRenderer = renderer.symbologyRenderer;
+
+    // Fields metadata is stored outside feature results, create dedicated array first
+    const fields: PbfFieldInfo[] = [];
+    for (const field of collection.queryResult.featureResult.fields)
+      fields.push({name: field.name, type:field.fieldType});
+
     const geomType = collection.queryResult.featureResult.geometryType;
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
+    const relativeCoords = renderer.transform === undefined;
+    for (const feature of collection.queryResult.featureResult.features) {
 
-    // console.log(`Nb Feature: ${collection.queryResult.featureResult.features.length}`);
-    if (geomType === esriGeometryType.esriGeometryTypePoint ||
-      geomType === esriGeometryType.esriGeometryTypeMultipoint) {
-      for (const feature of collection.queryResult.featureResult.features)
-        await renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, renderer.transform === undefined);
-    } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
-      const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
-      for (const feature of collection.queryResult.featureResult.features)
-        if (feature?.has_geometry)
-          await renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, renderer.transform === undefined);
+      // Render geometries
+      if (renderer && feature?.has_geometry) {
+        if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
+          await renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, relativeCoords);
+        } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
+          const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
+          await renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, relativeCoords);
+        }
+      }
+
+      // Read attributes if needed (dynamic symbology)
+      if (symbologyRenderer) {
+        const symbolFields = symbologyRenderer.rendererFields;
+        if (symbolFields && symbolFields.length > 0 && feature.attributes) {
+          let fieldIdx = 0;
+          const featureAttr: {[key: string]: any} = {};
+          for (const attrValue of feature.attributes) {
+            if (fieldIdx > fields.length) {
+              Logger.logError(loggerCategory, "Error while read feature info data: fields metadata missing");
+              break;
+            }
+            const fieldInfo = fields[fieldIdx++];
+            if (symbolFields.includes(fieldInfo.name)) {
+              const recordInfo = this.getRecordInfo(fieldInfo, attrValue);
+              if (recordInfo) {
+                const primitiveValue = recordInfo.value as PrimitiveValue;
+                featureAttr[fieldInfo.name] = primitiveValue.value;
+              }
+            }
+
+          }
+          symbologyRenderer.setActiveFeatureAttributes(featureAttr);
+        }
+      }
     }
   }
 
@@ -88,98 +215,6 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     const fields: PbfFieldInfo[] = [];
     for (const field of collection.queryResult.featureResult.fields)
       fields.push({name: field.name, type:field.fieldType});
-
-    const getNumericValue = (attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
-      const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
-      let typename = StandardTypeNames.Number;
-      if (attrValue.has_double_value) {
-        const value = this.toFixedWithoutPadding(attrValue.double_value);
-        propertyValue.value = value;
-        typename = StandardTypeNames.Double;
-      } else if (attrValue.has_float_value) {
-        const value = this.toFixedWithoutPadding(attrValue.float_value);
-        propertyValue.value = value;
-        typename = StandardTypeNames.Float;
-      } else if (attrValue.has_int64_value) {
-        propertyValue.value = attrValue.int64_value;
-        typename = StandardTypeNames.Integer;
-      } else if (attrValue.has_sint64_value) {
-        propertyValue.value = attrValue.sint64_value;
-        typename = StandardTypeNames.Integer;
-      } else if (attrValue.has_sint_value) {
-        propertyValue.value = attrValue.sint_value;
-        typename = StandardTypeNames.Integer;
-      } else if (attrValue.has_uint64_value) {
-        propertyValue.value = attrValue.uint64_value;
-        typename = StandardTypeNames.Integer;
-      } else if (attrValue.has_uint_value) {
-        propertyValue.value = attrValue.uint_value;
-        typename = StandardTypeNames.Integer;
-      } else {
-        propertyValue.value = undefined;
-      }
-
-      return { propertyValue,  typename };
-    };
-
-    const getRecordInfo = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
-      let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
-
-      let typename = StandardTypeNames.String;
-      if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDouble
-        || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeInteger
-        || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeSmallInteger
-        || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeOID
-        || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeSingle
-        || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDate
-      ) {
-        const value = getNumericValue(attrValue);
-        if (value.propertyValue === undefined) {
-          Logger.logError(loggerCategory, `Could not read numeric value for field ${fieldInfo.name}`);
-          return undefined;
-        }
-
-        if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDate) {
-          const test = (value.propertyValue.value as unknown) as number;
-          propertyValue.value = new Date(test);
-          typename = StandardTypeNames.DateTime;
-        } else {
-          typename = value.typename;
-          propertyValue = value.propertyValue;
-        }
-      } else if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeString) {
-        if (attrValue.has_string_value) {
-          propertyValue.value = attrValue.string_value;
-          typename = StandardTypeNames.String;
-        }
-      } else if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeGlobalID) {
-        if (attrValue.has_string_value) {
-          propertyValue.value = attrValue.string_value;
-          typename = StandardTypeNames.String;
-        } else {
-          const value = getNumericValue(attrValue);
-          if (value.propertyValue === undefined) {
-            Logger.logError(loggerCategory, `Could not read GlobalId value for field ${fieldInfo.name}`);
-            return undefined;
-          }
-        }
-      } else if (attrValue.has_string_value) {
-        // If we reach this case that probably mean we don't support the field type, simply try to output string value
-        typename = StandardTypeNames.String;
-        propertyValue.value = attrValue.string_value;
-      } else if (attrValue.value_type === "none") {
-        // Sometimes fields are just empty, use an empty string
-        typename = StandardTypeNames.String;
-        propertyValue.value = undefined;
-      } else {
-        Logger.logError(loggerCategory, `Could not read value for field ${fieldInfo.name}`);
-        return undefined;
-      }
-
-      propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
-
-      return new MapFeatureInfoRecord(propertyValue, { name: fieldInfo.name, displayLabel: fieldInfo.name, typename });
-    };
 
     const geomType = collection.queryResult.featureResult.geometryType;
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
@@ -209,13 +244,14 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
           break;
         }
         // Convert everything to string for now
-        const info = getRecordInfo(fields[fieldIdx], attrValue);
+        const info = this.getRecordInfo(fields[fieldIdx], attrValue);
         if (info) {
           subLayerInfo.records?.push(info);
         }
 
         fieldIdx++;
       }
+
       if (layerInfo.info === undefined) {
         layerInfo.info = [];
       }

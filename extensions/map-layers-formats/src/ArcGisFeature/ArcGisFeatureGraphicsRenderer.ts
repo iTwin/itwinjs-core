@@ -17,6 +17,9 @@ export class ArcGisFeatureGraphicsRenderer extends ArcGisFeatureBaseRenderer {
   private _graphics: GraphicPrimitive[] = [];
   private _iModel: IModelConnection;
 
+  // No symbology is applied in this renderer
+  public override get symbologyRenderer() {return undefined;}
+
   public moveGraphics() {
     const graphics = this._graphics;
     this._graphics = [];

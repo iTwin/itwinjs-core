@@ -49,10 +49,22 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
 
   public async readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     const responseObj = response.data;
-
+    const symbologyRenderer = renderer.symbologyRenderer;
     if (responseObj?.geometryType === "esriGeometryPolyline" || responseObj?.geometryType === "esriGeometryPolygon") {
       const fill = (responseObj.geometryType === "esriGeometryPolygon");
       for (const feature of responseObj.features) {
+        if (symbologyRenderer) {
+          const fields = symbologyRenderer.rendererFields;
+          if (fields && fields.length > 0 && feature.attributes) {
+            const featureAttr: {[key: string]: any} = {};
+            for (const [key, value] of Object.entries(feature.attributes)) {
+              if (fields.includes(key)) {
+                featureAttr[key] = value;
+              }
+            }
+            symbologyRenderer.setActiveFeatureAttributes(featureAttr);
+          }
+        }
         await this.readRingsAndPaths(feature, renderer, fill, renderer.transform === undefined);
       }
     } else if (responseObj?.geometryType === "esriGeometryPoint" || responseObj?.geometryType === "esriGeometryMultiPoint") {

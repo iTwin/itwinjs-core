@@ -1,0 +1,239 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+
+import { ColorDef } from "@itwin/core-common";
+
+// Convert a channel array [r, g, b, a] to ColorDef
+function colorFromArray(channels?: number[]) {
+  if (channels && channels.length === 4) {
+    // Alpha channel is reversed, 255 = opaque
+    return ColorDef.from(channels[0], channels[1], channels[2], 255 - channels[3]);
+  }
+  return undefined;
+}
+
+
+/** @internal */
+export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
+
+/** @internal */
+export interface EsriSymbolCommonProps {
+  type: EsriSymbolPropsType;
+}
+
+/** @internal */
+export type EsriSymbolProps = EsriSLSProps | EsriPMSProps | EsriSFSProps;
+
+/** @internal */
+export abstract class EsriSymbol implements EsriSymbolCommonProps {
+  public readonly abstract type: EsriSymbolPropsType;
+
+  public static fromJSON(props: EsriSymbolProps) {
+    if (props.type === "esriSFS") {
+      return EsriSFS.fromJSON(props as EsriSFSProps);
+    } else if (props.type === "esriSLS") {
+        return EsriSLS.fromJSON(props as EsriSLSProps);
+    } else if (props.type === "esriPMS") {
+      return EsriPMS.fromJSON(props as EsriPMSProps);
+    }
+    throw new Error("Unknown ESRI symbology type")
+  }
+}
+
+/** @internal */
+export type EsriSLSStyle = "esriSLSDash" | "esriSLSDashDot" | "esriSLSDashDotDot" | "esriSLSDot" | "esriSLSLongDash" | "esriSLSLongDashDot" |
+"esriSLSNull" | "esriSLSShortDash" | "esriSLSShortDashDot" | "esriSLSShortDashDotDot" | "esriSLSShortDot" | "esriSLSSolid";
+
+/** @internal */
+export interface EsriSLSProps extends EsriSymbolCommonProps {
+  color: number[];
+  type: EsriSymbolPropsType;
+  width: number;
+  style: EsriSLSStyle;
+}
+
+/** @internal */
+export class EsriSLS implements EsriSymbolCommonProps {
+  public readonly props: EsriSLSProps;
+
+  public get color() { return colorFromArray(this.props.color); }
+  public get type() { return this.props.type; }
+  public get width() { return this.props.width; }
+  public get style() { return this.props.style; }
+
+  constructor(json: EsriSLSProps) {
+    this.props = json;
+  }
+
+  public static fromJSON(json: EsriSLSProps) {
+    return new EsriSLS(json);
+  }
+}
+
+/** @internal */
+export interface EsriPMSProps extends EsriSymbolCommonProps {
+  type: EsriSymbolPropsType;
+  url: string;
+  imageData: string;
+  contentType: string;
+  width?: number;
+  height?: number;
+  xoffset?: number;
+  yoffset?: number;
+  angle?: number;
+}
+
+/** @internal */
+export class EsriPMS implements EsriSymbolCommonProps {
+  public readonly props: EsriPMSProps;
+  private _image: HTMLImageElement;
+
+  public get type() { return this.props.type; }
+  public get url() { return this.props.url; }
+  public get imageData() { return this.props.imageData; }
+  public get imageUrl() { return `data:${this.contentType};base64,${this.imageData}`; }
+  public get image() { return this._image; }
+  public get contentType() { return this.props.contentType; }
+  public get width() { return this.props.width; }
+  public get height() { return this.props.height; }
+  public get xoffset() { return this.props.xoffset; }
+  public get yoffset() { return this.props.yoffset; }
+  public get angle() { return this.props.angle; }
+
+  constructor(json: EsriPMSProps) {
+    this.props = json;
+    this._image = new Image();
+    this._image.src = this.imageUrl;
+  }
+
+  public static fromJSON(json: EsriPMSProps) {
+    return new EsriPMS(json);
+  }
+}
+
+/** @internal */
+export type EsriSFSStyleProps = "esriSFSBackwardDiagonal" | "esriSFSCross" | "esriSFSDiagonalCross" | "esriSFSForwardDiagonal" | "esriSFSHorizontal" | "esriSFSNull" | "esriSFSSolid" | "esriSFSVertical";
+
+/** @internal */
+export interface EsriSFSProps {
+  color?: number[];
+  type: EsriSymbolPropsType;
+  style: EsriSFSStyleProps;
+  outline?: EsriSLSProps;
+}
+
+/** @internal */
+export class EsriSFS implements EsriSymbolCommonProps {
+  public readonly props: EsriSFSProps;
+  private _outline: EsriSLS | undefined;
+
+  public get color() { return colorFromArray(this.props.color); }
+  public get type() { return this.props.type; }
+  public get style() { return this.props.style; }
+  public get outline() { return this._outline; }
+  constructor(json: EsriSFSProps) {
+    this.props = json;
+    if (json.outline)
+      this._outline = EsriSLS.fromJSON(json.outline);
+  }
+
+  public static fromJSON(json: EsriSFSProps): EsriSFS {
+    return new EsriSFS(json);
+  }
+}
+
+/** @internal */
+export interface EsriUniqueValueInfoProps {
+  value: string;
+  label?: string
+  description?: string
+  symbol: EsriSymbolProps;
+
+}
+
+/** @internal */
+export interface EsriRendererBaseProps {
+  type: EsriRendererType;
+}
+
+/** @internal */
+export interface EsriSimpleRendererProps extends EsriRendererBaseProps {
+  symbol: EsriSymbolProps;
+}
+
+/** @internal */
+export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
+  symbol?: EsriSymbolProps;
+}
+
+/** @internal */
+export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
+  field1: string;
+  field2?: string;
+  field3?: string;
+  defaultSymbol?: EsriSymbolProps;
+  uniqueValueInfos: EsriUniqueValueInfoProps[];
+}
+
+/** @internal */
+export type EsriRendererType = "simple" | "uniqueValue";
+
+/** @internal */
+export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRendererProps;
+
+/** @internal */
+export abstract class EsriRenderer {
+  public readonly abstract type: EsriRendererType;
+  public static fromJSON(json: EsriRendererProps) : EsriRenderer {
+    if (json.type === "simple")
+      return EsriSimpleRenderer.fromJSON(json as EsriSimpleRendererProps);
+    else if (json.type === "uniqueValue")
+      return EsriUniqueValueRenderer.fromJSON(json as EsriUniqueValueRendererProps);
+    else
+      throw Error("Unknown renderer type")
+  }
+}
+
+/** @internal */
+export class EsriSimpleRenderer extends EsriRenderer {
+  public readonly type: EsriRendererType = "simple";
+  public readonly symbol: EsriSymbol;
+
+  protected constructor(json: EsriSimpleRendererProps) {
+    super();
+    this.type = json.type;
+    this.symbol = EsriSymbol.fromJSON(json.symbol)
+  }
+
+  public static override fromJSON(json: EsriSimpleRendererProps) {
+    return new EsriSimpleRenderer(json);
+  }
+}
+
+/** @internal */
+export class EsriUniqueValueRenderer extends EsriRenderer {
+  private _props: EsriUniqueValueRendererProps;
+  public readonly type: EsriRendererType = "uniqueValue";
+  public readonly defaultSymbol?: EsriSymbol;
+  public readonly uniqueValueInfos: EsriUniqueValueInfoProps[];
+
+  public get field1() { return this._props.field1 ?? undefined; }
+  public get field2() { return this._props.field2 ?? undefined; }
+  public get field3() { return this._props.field3 ?? undefined; }
+
+
+  protected constructor(json: EsriUniqueValueRendererProps) {
+    super();
+    if (json.defaultSymbol)
+      this.defaultSymbol = EsriSymbol.fromJSON(json.defaultSymbol);
+    this.uniqueValueInfos = json.uniqueValueInfos;
+    this._props = json;
+  }
+
+  public static override fromJSON(json: EsriUniqueValueRendererProps) {
+    return new EsriUniqueValueRenderer(json);
+  }
+}

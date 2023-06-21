@@ -10,6 +10,10 @@ import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 export class ArcGisFeatureCanvasRenderer extends ArcGisFeatureBaseRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyRenderer;
+  // public override get rendererFields() {return this._symbol.rendererFields;}
+  public override get symbologyRenderer() {
+    return this._symbol;
+  }
 
   constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyRenderer, world2PixelTransform?: Transform) {
     super(world2PixelTransform);

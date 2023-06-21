@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
+import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 
 /** @internal */
 export interface ArcGisFeatureRenderer  {
   transform:  Transform | undefined;
+  // rendererFields: string[] | undefined;
+  // setFeatureAttributes(attributes: { [key: string]: any }): void;
+  symbologyRenderer?: ArcGisSymbologyRenderer;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
@@ -19,6 +23,11 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
     this._transform = world2PixelTransform;
   }
 
+  // public abstract setFeatureAttributes(attributes: { [key: string]: any }): void;
+   public abstract get symbologyRenderer(): ArcGisSymbologyRenderer | undefined;
+
+  // public get rendererFields(): string[] | undefined {return undefined;}
+
   public get transform() {return this._transform;}
 
   protected abstract beginPath(): void;
@@ -29,6 +38,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
   protected abstract fill(): Promise<void> ;
   protected abstract drawPoint(x: number, y: number): void;
   protected abstract finishPoints(): Promise<void>;
+
 
   /**
    * Render a path on the renderer's context.

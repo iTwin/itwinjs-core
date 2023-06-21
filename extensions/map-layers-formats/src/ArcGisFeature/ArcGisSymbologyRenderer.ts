@@ -6,125 +6,26 @@
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
-
-// Convert a channel array [r, g, b, a] to ColorDef
-function colorFromArray(channels?: number[]) {
-  if (channels && channels.length === 4) {
-    // Alpha channel is reversed, 255 = opaque
-    return ColorDef.from(channels[0], channels[1], channels[2], 255 - channels[3]);
-  }
-  return undefined;
-}
+import { EsriSymbol, EsriPMSProps, EsriSFS, EsriSLS, EsriPMS, EsriSLSProps, EsriSFSProps, EsriRenderer, EsriSimpleRenderer, EsriUniqueValueRenderer } from "./EsriSymbology";
 
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
 /** @internal */
-export type EsriSymbolType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
-interface EsriSymbol {
-  type: EsriSymbolType;
-}
-
-/** @internal */
-export type EsriSLSStyle = "esriSLSDash" | "esriSLSDashDot" | "esriSLSDashDotDot" | "esriSLSDot" | "esriSLSLongDash" | "esriSLSLongDashDot" |
-"esriSLSNull" | "esriSLSShortDash" | "esriSLSShortDashDot" | "esriSLSShortDashDotDot" | "esriSLSShortDot" | "esriSLSSolid";
-
-interface EsriSLSProps {
-  color: number[];
-  type: EsriSymbolType;
-  width: number;
-  style: EsriSLSStyle;
-}
-
-/** @internal */
-export class EsriSLS implements EsriSymbol {
-  public readonly props: EsriSLSProps;
-
-  public get color() { return colorFromArray(this.props.color); }
-  public get type() { return this.props.type; }
-  public get width() { return this.props.width; }
-  public get style() { return this.props.style; }
-
-  constructor(json: EsriSLSProps) {
-    this.props = json;
-  }
-
-  public static fromJSON(json: EsriSLSProps) {
-    return new EsriSLS(json);
-  }
-}
-
-interface EsriPMSProps {
-  type: EsriSymbolType;
-  url: string;
-  imageData: string;
-  contentType: string;
-  width?: number;
-  height?: number;
-  xoffset?: number;
-  yoffset?: number;
-  angle?: number;
-}
-
-/** @internal */
-export class EsriPMS implements EsriSymbol {
-  public readonly props: EsriPMSProps;
-  private _image: HTMLImageElement;
-
-  public get type() { return this.props.type; }
-  public get url() { return this.props.url; }
-  public get imageData() { return this.props.imageData; }
-  public get imageUrl() { return `data:${this.contentType};base64,${this.imageData}`; }
-  public get image() { return this._image; }
-  public get contentType() { return this.props.contentType; }
-  public get width() { return this.props.width; }
-  public get height() { return this.props.height; }
-  public get xoffset() { return this.props.xoffset; }
-  public get yoffset() { return this.props.yoffset; }
-  public get angle() { return this.props.angle; }
-
-  constructor(json: EsriPMSProps) {
-    this.props = json;
-    this._image = new Image();
-    this._image.src = this.imageUrl;
-  }
-
-  public static fromJSON(json: EsriPMSProps) {
-    return new EsriPMS(json);
-  }
-}
-
-/** @internal */
-export type EsriSFSStyleProps = "esriSFSBackwardDiagonal" | "esriSFSCross" | "esriSFSDiagonalCross" | "esriSFSForwardDiagonal" | "esriSFSHorizontal" | "esriSFSNull" | "esriSFSSolid" | "esriSFSVertical";
-interface EsriSFSProps {
-  color?: number[];
-  type: EsriSymbolType;
-  style: EsriSFSStyleProps;
-  outline?: EsriSLSProps;
-}
-
-/** @internal */
-export class EsriSFS implements EsriSymbol {
-  public readonly props: EsriSFSProps;
-  private _outline: EsriSLS | undefined;
-
-  public get color() { return colorFromArray(this.props.color); }
-  public get type() { return this.props.type; }
-  public get style() { return this.props.style; }
-  public get outline() { return this._outline; }
-  constructor(json: EsriSFSProps) {
-    this.props = json;
-    if (json.outline)
-      this._outline = EsriSLS.fromJSON(json.outline);
-  }
-
-  public static fromJSON(json: EsriSFSProps): EsriSFS {
-    return new EsriSFS(json);
-  }
-}
-
-/** @internal */
 export class ArcGisSymbologyRenderer {
+  private _activeFeatureAttributes:  {[key: string]: any} | undefined;
   private _symbol: EsriSymbol | undefined;
+  private _renderer: EsriRenderer | undefined;
+
+  public get rendererFields() {
+    if (this._renderer && this._renderer?.type == "uniqueValue") {
+      return [(this._renderer as EsriUniqueValueRenderer).field1];
+    }
+    return undefined;
+  }
+
+  setActiveFeatureAttributes(attributes?: { [key: string]: any }) {
+    this._activeFeatureAttributes = attributes;
+  }
 
   private static readonly defaultPMS: EsriPMSProps = {
     type: "esriPMS",
@@ -151,28 +52,25 @@ export class ArcGisSymbologyRenderer {
   };
 
   constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
-    let symbol;
-    if (rendererDefinition?.symbol !== undefined) {
-      symbol = rendererDefinition.symbol;
-    } else if (rendererDefinition?.defaultSymbol !== undefined) {
-      symbol = rendererDefinition?.defaultSymbol;
+    try {
+      this._renderer = EsriRenderer.fromJSON(rendererDefinition);
+      if (this._renderer.type === "simple") {
+        this._symbol = (this._renderer as EsriSimpleRenderer).symbol;
+      } else if (this._renderer.type === "uniqueValue") {
+        const uv = (this._renderer as EsriUniqueValueRenderer);
+        if (uv.defaultSymbol) {
+          this._symbol = uv.defaultSymbol;
+        }
+      }
+    } catch {
+      Logger.logWarning(loggerCategory, "Could not read symbology from metadata");
     }
 
-    if (symbol !== undefined) {
-      if (symbol.type === "esriSFS") {
-        this._symbol = EsriSFS.fromJSON(symbol);
-      } else if (symbol.type === "esriSLS") {
-        this._symbol = EsriSLS.fromJSON(symbol);
-      } else if (symbol.type === "esriPMS") {
-        this._symbol = EsriPMS.fromJSON(symbol);
-      }
-    }
 
     // If '_symbol' is still undefined at this point, that means we could not find
     // any symbology definition from the metadata, let's use some default symbology
     // so that we display at least something.
-    if (this._symbol === undefined) {
-      Logger.logWarning(loggerCategory, "Symbology definition not supported, using default symbology");
+    if (!this._symbol) {
       if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
         this._symbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
       } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
@@ -210,7 +108,7 @@ export class ArcGisSymbologyRenderer {
         sls = sfs.outline;
       }
     } else if (this._symbol?.type === "esriSLS") {
-      sls = this._symbol as EsriSLS;
+      sls = EsriSLS.fromJSON(this._symbol as EsriSLSProps);
     }
 
     if (sls) {
@@ -225,7 +123,7 @@ export class ArcGisSymbologyRenderer {
       return;
 
     if (this._symbol?.type === "esriPMS") {
-      const pms = this._symbol as EsriPMS;
+      const pms = EsriPMS.fromJSON(this._symbol as EsriPMSProps);
       let xOffset = 0, yOffset = 0;
       if (pms.xoffset)
         xOffset = pms.xoffset;
