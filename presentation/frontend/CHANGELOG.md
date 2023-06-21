@@ -1,6 +1,19 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Tue, 20 Jun 2023 12:51:02 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 19:52:33 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Update to eslint@8
+- Stop "eating" exceptions that occur when handling `PresentationManager` requests and re-throw them for API consumers to handle.
+- Promoted some `@internal` APIs to `@public`.
+- Add a way to specify requests timeout when initializing `PresentationManager`
+- Removed UI state tracking on the backend
+- Deprecate `PresentationManager.activeUnitSystem` in favor of active unit system in `QuantityFormatter`
+- Added content values formatting to `PresentationManager`
 
 ## 3.7.9
 Tue, 20 Jun 2023 12:51:02 GMT

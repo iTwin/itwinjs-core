@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Tue, 20 Jun 2023 12:51:02 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 19:52:33 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- added PickMethods utility type
+- Update to eslint@8
+- Added DataTransformRequired flag to DbResult enum.
+- Add RequireAtLeastOne utility type.
 
 ## 3.7.9
 Tue, 20 Jun 2023 12:51:02 GMT
