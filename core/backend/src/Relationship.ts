@@ -30,7 +30,6 @@ export class Relationship extends Entity {
     this.targetId = Id64.fromJSON(props.targetId);
   }
 
-  /** @internal */
   public override toJSON(): RelationshipProps {
     const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;

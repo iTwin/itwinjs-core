@@ -36,7 +36,7 @@ export class ExternalSource extends InformationReferenceElement {
     if (props.repository)
       this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
   }
-  /** @internal */
+
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
   }
@@ -99,7 +99,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
     if (props.scale)
       this.scale = Point3d.fromJSON(props.scale);
   }
-  /** @internal */
+
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
     return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
   }
@@ -150,7 +150,7 @@ export class SynchronizationConfigLink extends UrlLink {
   public constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb) {
     super(props, iModel);
   }
-  /** @internal */
+
   public override toJSON(): SynchronizationConfigLinkProps { // This override only specializes the return type
     return super.toJSON() as SynchronizationConfigLinkProps; // Entity.toJSON takes care of auto-handled properties
   }

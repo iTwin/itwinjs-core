@@ -52,7 +52,6 @@ export class ElementAspect extends Entity {
     this.element = RelatedElement.fromJSON(props.element)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
-  /** @internal */
   public override toJSON(): ElementAspectProps {
     const val = super.toJSON() as ElementAspectProps;
     val.element = this.element;
@@ -223,7 +222,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     return found;
   }
 
-  /** @internal */
   public override toJSON(): ExternalSourceAspectProps {
     const val = super.toJSON() as ExternalSourceAspectProps;
     val.scope = this.scope;

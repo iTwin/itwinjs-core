@@ -85,9 +85,6 @@ export class Model extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  /** Add all properties of a Model to a json object.
-   * @internal
-   */
   public override toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.name = this.name; // for cloning
@@ -281,7 +278,7 @@ export abstract class GeometricModel3d extends GeometricModel {
     this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
   }
-  /** @internal */
+
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
     if (this.isNotSpatiallyLocated)
@@ -304,7 +301,7 @@ export abstract class GeometricModel2d extends GeometricModel {
   public static override get className(): string { return "GeometricModel2d"; }
   /** @internal */
   constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
-  /** @internal */
+
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
     if (undefined !== this.globalOrigin)

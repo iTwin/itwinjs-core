@@ -39,7 +39,6 @@ export class Texture extends DefinitionElement {
     this.description = props.description;
   }
 
-  /** @internal */
   public override toJSON(): TextureProps {
     const val = super.toJSON() as TextureProps;
     val.format = this.format;

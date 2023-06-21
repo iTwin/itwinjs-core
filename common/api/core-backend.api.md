@@ -604,7 +604,7 @@ export class CategorySelector extends DefinitionElement {
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): CategorySelectorProps;
 }
 
@@ -1306,7 +1306,7 @@ export abstract class DefinitionElement extends InformationContentElement {
     // @internal (undocumented)
     static get className(): string;
     isPrivate: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): DefinitionElementProps;
 }
 
@@ -1910,7 +1910,7 @@ class Element_2 extends Entity {
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
-    // @internal
+    // (undocumented)
     toJSON(): ElementProps;
     update(): void;
     userLabel?: string;
@@ -1937,7 +1937,7 @@ export class ElementAspect extends Entity {
     protected static onUpdate(arg: OnAspectPropsArg): void;
     // @beta
     protected static onUpdated(_arg: OnAspectPropsArg): void;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ElementAspectProps;
 }
 
@@ -2339,7 +2339,7 @@ export class ExternalSource extends InformationReferenceElement {
     static createCode(iModelDb: IModelDb, codeValue: string): Code;
     static ensureCodeSpec(iModelDb: IModelDb): Id64String;
     repository?: ExternalSourceIsInRepository;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ExternalSourceProps;
 }
 
@@ -2366,7 +2366,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     kind: string;
     scope: RelatedElement;
     source?: RelatedElement;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ExternalSourceAspectProps;
     version?: string;
 }
@@ -2393,7 +2393,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
     role?: ExternalSourceAttachmentRole;
     roll?: number;
     scale?: Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ExternalSourceAttachmentProps;
     translation?: Point3d;
     yaw?: number;
@@ -2614,6 +2614,7 @@ export abstract class GeometricElement extends Element_2 {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // (undocumented)
     toJSON(): GeometricElementProps;
 }
 
@@ -2627,7 +2628,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement2d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometricElement2dProps;
     // (undocumented)
     typeDefinition?: TypeDefinition;
@@ -2650,7 +2651,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement3d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometricElement3dProps;
     // (undocumented)
     typeDefinition?: TypeDefinition;
@@ -2682,7 +2683,7 @@ export abstract class GeometricModel2d extends GeometricModel {
     // @internal (undocumented)
     static get className(): string;
     globalOrigin?: Point2d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometricModel2dProps;
 }
 
@@ -2695,7 +2696,7 @@ export abstract class GeometricModel3d extends GeometricModel {
     readonly isNotSpatiallyLocated: boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometricModel3dProps;
 }
 
@@ -2712,7 +2713,7 @@ export class GeometryPart extends DefinitionElement {
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometryPartProps;
 }
 
@@ -3374,7 +3375,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
     static get className(): string;
     static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     description?: string;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): InformationPartitionElementProps;
 }
 
@@ -4026,7 +4027,7 @@ export class Model extends Entity {
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
-    // @internal
+    // (undocumented)
     toJSON(): ModelProps;
     update(): void;
 }
@@ -4043,7 +4044,7 @@ export class ModelSelector extends DefinitionElement {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
     models: Id64String[];
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ModelSelectorProps;
 }
 
@@ -4212,7 +4213,7 @@ export abstract class PhysicalElement extends SpatialElement {
     // @internal (undocumented)
     static get className(): string;
     physicalMaterial?: RelatedElement;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): PhysicalElementProps;
 }
 
@@ -4279,7 +4280,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     physicalMaterial?: RelatedElement;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): PhysicalTypeProps;
 }
 
@@ -4425,7 +4426,7 @@ export class Relationship extends Entity {
     readonly sourceId: Id64String;
     // (undocumented)
     readonly targetId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): RelationshipProps;
     update(): void;
 }
@@ -4457,7 +4458,7 @@ export class RenderMaterialElement extends DefinitionElement {
     description?: string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     paletteName: string;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): RenderMaterialProps;
 }
 
@@ -4523,7 +4524,7 @@ export class RepositoryLink extends UrlLink {
     format?: string;
     // (undocumented)
     repositoryGuid?: GuidString;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): RepositoryLinkProps;
 }
 
@@ -4608,6 +4609,7 @@ export class SectionDrawing extends Drawing {
     sectionType: SectionType;
     sheetToSpatialTransform?: Transform;
     spatialView: RelatedElement;
+    // (undocumented)
     toJSON(): SectionDrawingProps;
 }
 
@@ -4617,7 +4619,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
     // @internal (undocumented)
     static get className(): string;
     sectionView: RelatedElement;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): SectionDrawingLocationProps;
 }
 
@@ -4920,6 +4922,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
 
@@ -5179,7 +5182,7 @@ export class Subject extends InformationReferenceElement {
     // (undocumented)
     description?: string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): SubjectProps;
 }
 
@@ -5204,7 +5207,7 @@ export class SynchronizationConfigLink extends UrlLink {
     // @internal (undocumented)
     static get className(): string;
     lastSuccessfulRun?: string;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): SynchronizationConfigLinkProps;
 }
 
@@ -5285,7 +5288,7 @@ export class Texture extends DefinitionElement {
     // (undocumented)
     format: ImageSourceFormat;
     static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): TextureProps;
 }
 
@@ -5440,7 +5443,7 @@ export class UrlLink extends LinkElement {
     static get className(): string;
     // (undocumented)
     description?: string;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): UrlLinkProps;
     // (undocumented)
     url?: string;
@@ -5560,7 +5563,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ViewDefinitionProps;
 }
 
@@ -5578,7 +5581,7 @@ export class ViewDefinition2d extends ViewDefinition {
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ViewDefinition2dProps;
 }
 
@@ -5595,7 +5598,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;
     origin: Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): ViewDefinition3dProps;
 }
 

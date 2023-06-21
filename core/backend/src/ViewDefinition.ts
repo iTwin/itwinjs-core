@@ -38,7 +38,6 @@ export class ModelSelector extends DefinitionElement {
     this.models = props.models;
   }
 
-  /** @internal */
   public override toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
@@ -110,7 +109,6 @@ export class CategorySelector extends DefinitionElement {
     this.categories = props.categories;
   }
 
-  /** @internal */
   public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
@@ -202,7 +200,6 @@ export abstract class ViewDefinition extends DefinitionElement {
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -310,7 +307,6 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this._details = new ViewDetails3d(this.jsonProperties);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
@@ -359,7 +355,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     return new SpatialViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
   }
 
-  /** Convert this view to its JSON representation. */
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -531,7 +526,6 @@ export class ViewDefinition2d extends ViewDefinition {
     this._details = new ViewDetails(this.jsonProperties);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;

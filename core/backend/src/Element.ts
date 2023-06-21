@@ -329,9 +329,6 @@ export class Element extends Entity {
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
-  /** Save this Element's properties to an object for serializing to JSON.
-   * @internal
-   */
   public override toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
 
@@ -486,7 +483,6 @@ export abstract class GeometricElement extends Element {
   public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
-  /** Obtain the JSON representation of this element. */
   public override toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
@@ -528,7 +524,6 @@ export abstract class GeometricElement3d extends GeometricElement {
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  /** @internal */
   public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
@@ -572,7 +567,6 @@ export abstract class GeometricElement2d extends GeometricElement {
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
-  /** @internal */
   public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
@@ -662,7 +656,7 @@ export abstract class PhysicalElement extends SpatialElement {
     super(props, iModel);
     this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
   }
-  /** @internal */
+
   public override toJSON(): PhysicalElementProps {
     const val = super.toJSON() as PhysicalElementProps;
     val.physicalMaterial = this.physicalMaterial?.toJSON();
@@ -707,7 +701,6 @@ export class SectionDrawingLocation extends SpatialLocationElement {
     this.sectionView = RelatedElement.fromJSON(props.sectionView) ?? RelatedElement.none;
   }
 
-  /** @internal */
   public override toJSON(): SectionDrawingLocationProps {
     return {
       ...super.toJSON(),
@@ -759,7 +752,7 @@ export class Subject extends InformationReferenceElement {
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
-  /** @internal */
+
   public override toJSON(): SubjectProps { // This override only specializes the return type
     return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
   }
@@ -906,7 +899,6 @@ export class SectionDrawing extends Drawing {
       this.drawingBoundaryClip = ClipVector.fromJSON(json.drawingBoundaryClip);
   }
 
-  /** Convert to JSON representation. */
   public override toJSON(): SectionDrawingProps {
     const props: SectionDrawingProps = {
       ...super.toJSON(),
@@ -1019,7 +1011,6 @@ export abstract class DefinitionElement extends InformationContentElement {
     this.isPrivate = true === props.isPrivate;
   }
 
-  /** @internal */
   public override toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
@@ -1153,7 +1144,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
     super(props, iModel);
     this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
   }
-  /** @internal */
+
   public override toJSON(): PhysicalTypeProps {
     const val = super.toJSON() as PhysicalTypeProps;
     val.physicalMaterial = this.physicalMaterial?.toJSON();
@@ -1326,7 +1317,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   public description?: string;
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
-  /** @internal */
+
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
     return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
   }
@@ -1461,7 +1452,6 @@ export class UrlLink extends LinkElement {
     this.url = props.url;
   }
 
-  /** @internal */
   public override toJSON(): UrlLinkProps {
     const val = super.toJSON() as UrlLinkProps;
     val.description = this.description;
@@ -1496,7 +1486,6 @@ export class RepositoryLink extends UrlLink {
     this.format = props.format;
   }
 
-  /** @internal */
   public override toJSON(): RepositoryLinkProps {
     const val = super.toJSON() as RepositoryLinkProps;
     val.repositoryGuid = this.repositoryGuid;
@@ -1543,7 +1532,6 @@ export class GeometryPart extends DefinitionElement {
     this.bbox = Range3d.fromJSON(props.bbox);
   }
 
-  /** @internal */
   public override toJSON(): GeometryPartProps {
     const val = super.toJSON() as GeometryPartProps;
     val.geom = this.geom;
