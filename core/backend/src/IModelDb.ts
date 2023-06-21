@@ -425,7 +425,7 @@ export abstract class IModelDb extends IModel {
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this.nativeDb && this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
