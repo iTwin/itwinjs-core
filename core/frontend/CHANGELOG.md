@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 21 Jun 2023 19:52:33 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 20:29:13 GMT and should not be manually modified.
+
+## 4.0.1
+Wed, 21 Jun 2023 20:29:13 GMT
+
+### Updates
+
+- Two map-layers instances having different formatId or subLayers set should not share the same tile tree.
+- Fix gaps in certain reprojected tiles.
+- Ensure element Ids are loaded for RenderTimeline element when schedule scripts are applied on the frontend.
 
 ## 4.0.0
 Mon, 22 May 2023 15:34:14 GMT
