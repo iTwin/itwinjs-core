@@ -443,9 +443,8 @@ export namespace BlobContainer {
     }
     export interface Metadata {
         [propertyName: string]: string;
-        application: string;
+        containerType: string;
         description: string;
-        format: string;
     }
     export type Provider = "azure" | "google" | "aws";
     export interface RequestTokenProps extends AccessContainerProps {
