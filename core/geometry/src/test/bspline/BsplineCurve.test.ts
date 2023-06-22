@@ -9,7 +9,6 @@ import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-import { Point3dArray, Point4dArray } from "../../core-geometry";
 import { CurveChain } from "../../curve/CurveCollection";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -25,6 +24,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
@@ -257,7 +257,6 @@ describe("BsplineCurve", () => {
       const leftKnotFromArray = knots.knots[spanIndex + knots.leftKnotIndex];
       ck.testCoordinate(leftKnotFromArray, leftKnotFromSpan, "left of span reproduces knots");
       ck.testCoordinate(knots.spanIndexToSpanLength(spanIndex), rightKnotFromSpan - leftKnotFromSpan, "span length");
-
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -738,6 +737,64 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("KnotVectorCoverage", () => {
+    const ck = new Checker();
+    const degree = 4;
+    const order = degree + 1;
+    const numPoles = 15;
+    const numKnots = numPoles + order - 2;
+    const numInteriorKnots = numKnots - 2 * degree;
+    const numKnotIntervals = numInteriorKnots + 1;
+    const startKnot = 1;
+    const endKnot = 10;
+
+    const wrappedKnots = KnotVector.createUniformWrapped(numKnotIntervals, degree, startKnot, endKnot);
+    ck.testTrue(wrappedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "wrapped knots are closable with wrap mode OpenByAddingControlPoints");
+    ck.testFalse(wrappedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "wrapped knots are not closable with wrap mode OpenByRemovingKnots");
+    wrappedKnots.wrappable = BSplineWrapMode.OpenByAddingControlPoints; // simulate B-spline imported from legacy data closed with full continuity
+    const wrappedKnotsLegacy = wrappedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, wrappedKnotsLegacy.length, "copyKnots with wrapMode OpenByAddingControlPoints added two extra knots");
+    ck.testLT(wrappedKnotsLegacy[0], wrappedKnotsLegacy[1], "copyKnots with wrapMode OpenByAddingControlPoints prepended first knot less than second");
+    ck.testLT(wrappedKnotsLegacy[wrappedKnotsLegacy.length - 2], wrappedKnotsLegacy[wrappedKnotsLegacy.length - 1], "copyKnots appended last knot greater than penultimate");
+
+    const clampedKnots = KnotVector.createUniformClamped(numPoles, degree, startKnot, endKnot);
+    ck.testTrue(clampedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "clamped knots are closable with wrap mode OpenByRemovingKnots");
+    ck.testFalse(clampedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "clamped knots are not closable with wrap mode OpenByAddingControlPoints");
+    let clampedKnotsLegacy = clampedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, clampedKnotsLegacy.length, "copyKnots without wrapMode added two extra knots");
+    ck.testExactNumber(clampedKnotsLegacy[0], startKnot, "copyKnots without wrapMode prepended start knot");
+    ck.testExactNumber(clampedKnotsLegacy[clampedKnotsLegacy.length - 1], endKnot, "copyKnots without wrapMode appended end knot");
+    clampedKnots.wrappable = BSplineWrapMode.OpenByRemovingKnots; // simulate B-spline imported from legacy "fake" closed data
+    clampedKnotsLegacy = clampedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, clampedKnotsLegacy.length, "copyKnots with wrapMode OpenByRemovingKnots added two extra knots");
+    ck.testExactNumber(clampedKnotsLegacy[0], startKnot, "copyKnots with wrapMode OpenByRemovingKnots prepended start knot");
+    ck.testExactNumber(clampedKnotsLegacy[clampedKnotsLegacy.length - 1], endKnot, "copyKnots with wrapMode OpenByRemovingKnots appended end knot");
+
+    let clampedKnotsCopy = NumberArray.cloneWithStartAndEndMultiplicity(clampedKnotsLegacy, degree, degree);
+    ck.testTrue(NumberArray.isExactEqual(clampedKnots.knots, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity trims knots");
+    clampedKnotsCopy = NumberArray.cloneWithStartAndEndMultiplicity(clampedKnotsCopy, order, order);
+    ck.testTrue(NumberArray.isExactEqual(clampedKnotsLegacy, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity adds knots");
+
+    // related number[] coverage
+    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity(undefined, degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on undefined input");
+    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity([], degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on empty input");
+    ck.testUndefined(NumberArray.unpack2d(wrappedKnots.knots, 0), "unpack2d on invalid numPerBlock");
+    ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
+    ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
+    const primes = [2,3,5,7,11,13];
+    const xyzPropsArray = [{x:primes[0], y:primes[1], z:primes[2]}, {x:primes[3], y:primes[4], z:primes[5]}];
+    const xyzNumberArray2d = Point3dArray.cloneXYZPropsAsNumberArray(xyzPropsArray);
+    ck.testDefined(xyzNumberArray2d, "cloneXYZPropsAsNumberArray returns an array");
+    ck.testExactNumber(xyzPropsArray.length, xyzNumberArray2d.length, "cloneXYZPropsAsNumberArray returns array of expected length");
+    ck.testTrue(
+      xyzNumberArray2d[0][0] === primes[0] && xyzNumberArray2d[0][1] === primes[1] && xyzNumberArray2d[0][2] === primes[2] &&
+      xyzNumberArray2d[1][0] === primes[3] && xyzNumberArray2d[1][1] === primes[4] && xyzNumberArray2d[1][2] === primes[5],
+      "cloneXYZPropsAsNumberArray returns expected array values"
+      );
+
     expect(ck.getNumErrors()).equals(0);
   });
 });

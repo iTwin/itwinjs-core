@@ -75,12 +75,13 @@ export class NumberArray {
   public static isAlmostEqual(
     dataA: number[] | Float64Array | undefined,
     dataB: number[] | Float64Array | undefined,
-    tolerance: number): boolean {
+    tolerance: number = Geometry.smallMetricDistance): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
       for (let i = 0; i < dataA.length; i++)
-        if (Math.abs(dataA[i] - dataB[i]) >= tolerance) return false;
+        if (Math.abs(dataA[i] - dataB[i]) > tolerance)
+          return false;
       return true;
     }
     return (dataA === undefined && dataB === undefined);
@@ -928,7 +929,15 @@ export class Point3dArray {
       if (p instanceof Point3d) {
         result.push([p.x, p.y, p.z]);
       } else if (Array.isArray(p)) {
-        result.push([p[0], p[1], p.length > 2 ? p[2] : 0.0]);
+        const x = p.length > 0 ? p[0] : 0.0;
+        const y = p.length > 1 ? p[1] : 0.0;
+        const z = p.length > 2 ? p[2] : 0.0;
+        result.push([x, y, z]);
+      } else {
+        const x = p.x !== undefined ? p.x : 0.0;
+        const y = p.y !== undefined ? p.y : 0.0;
+        const z = p.z !== undefined ? p.z : 0.0;
+        result.push([x, y, z]);
       }
     }
     return result;

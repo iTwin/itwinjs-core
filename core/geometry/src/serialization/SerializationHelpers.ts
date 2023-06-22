@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { assert } from "console";
+import { assert } from "@itwin/core-bentley";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -267,7 +267,7 @@ export namespace SerializationHelpers {
       const startKnot = knots[order - 1];
       const endKnot = knots[numKnots - order];
       const iStart0 = Math.floor(order / 2);  // index of first expected multiple of the start knot
-      const iEnd0 = iStart0 + numPoles;     // index of first expected multiple of the end knot
+      const iEnd0 = iStart0 + numPoles;       // index of first expected multiple of the end knot
       const iEnd1 = iEnd0 + order;            // one past index of last expected multiple of the end knot
       for (let i = 0; i < order; ++i) {
         if (Math.abs(knots[iStart0 + i] - startKnot) >= KnotVector.knotTolerance)
@@ -438,7 +438,7 @@ export namespace SerializationHelpers {
      * @param order B-spline order
      * @param options for output type
      * @param wrapMode wrap mode of the knots
-     * @returns legacy periodic knots with (classic extraneous start/end knot) if wrapMode recognized; otherwise, undefined
+     * @returns legacy periodic knots (with classic extraneous start/end knot) if wrapMode recognized; otherwise, undefined
      * @see Import.openLegacyPeriodicKnots
      */
     private static closeLegacyPeriodicKnots(knots: Float64Array | number[], order: number, options?: BSplineDataOptions, wrapMode?: BSplineWrapMode): Float64Array | number[] | undefined {

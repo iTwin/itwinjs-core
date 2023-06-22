@@ -450,10 +450,7 @@ export class KnotVector {
     this.knots.reverse();
   }
 
-  /**
-   * return a simple array form of the knots.  optionally replicate the first and last
-   * in classic over-clamped manner
-   */
+  /** Return a simple array form of the knots. Optionally replicate the first and last in classic over-clamped manner. */
   public static copyKnots(knots: number[] | Float64Array, degree: number, includeExtraEndKnot?: boolean, wrapMode?: BSplineWrapMode): number[] {
     const isExtraEndKnotPeriodic = (includeExtraEndKnot && wrapMode === BSplineWrapMode.OpenByAddingControlPoints);
     const leftIndex = degree - 1;
@@ -480,10 +477,7 @@ export class KnotVector {
     return values;
   }
 
-  /**
-   * return a simple array form of the knots.  optionally replicate the first and last
-   * in classic over-clamped manner
-   */
+  /** Return a simple array form of the knots. Optionally replicate the first and last in classic over-clamped manner. */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
     const wrapMode = (includeExtraEndKnot && this.testClosable()) ? this.wrappable : undefined;
     return KnotVector.copyKnots(this.knots, this.degree, includeExtraEndKnot, wrapMode);
