@@ -12,3 +12,4 @@ perftest
 !public/**
 !*.md
 !*.schema.json
+!installPlaywright.js
