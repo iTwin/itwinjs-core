@@ -8,6 +8,7 @@
  */
 
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { AnyCurve } from "../curve/CurveChain";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -42,7 +43,7 @@ export class RuledSweep extends SolidPrimitive {
    * Create a ruled sweep from an array of contours.
    * * the contours are CAPTURED (not cloned)
    */
-  public static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined {
+  public static create(contours: AnyCurve[], capped: boolean): RuledSweep | undefined {
     const sweepContours = [];
     for (const contour of contours) {
       const sweepable = SweepContour.createForLinearSweep(contour);

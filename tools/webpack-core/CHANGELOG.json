@@ -2,6 +2,18 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "4.0.2",
+      "tag": "@itwin/core-webpack-tools_v4.0.2",
+      "date": "Wed, 21 Jun 2023 22:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.0.1",
+      "tag": "@itwin/core-webpack-tools_v4.0.1",
+      "date": "Wed, 21 Jun 2023 20:29:13 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.0",
       "tag": "@itwin/core-webpack-tools_v4.0.0",
       "date": "Mon, 22 May 2023 15:34:14 GMT",
@@ -15,6 +27,24 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.7.9",
+      "tag": "@itwin/core-webpack-tools_v3.7.9",
+      "date": "Tue, 20 Jun 2023 12:51:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.8",
+      "tag": "@itwin/core-webpack-tools_v3.7.8",
+      "date": "Thu, 01 Jun 2023 17:00:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.7",
+      "tag": "@itwin/core-webpack-tools_v3.7.7",
+      "date": "Wed, 24 May 2023 17:27:09 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.6",

@@ -11,6 +11,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("Transform.Inverse", () => {
   it("Transform.Inverse", () => {
@@ -334,6 +335,7 @@ describe("Transform.GetMatrix", () => {
     ck.testTransform(transform0, transform1);
     const matrix = transform1.getMatrix();
     ck.testMatrix3d(matrix, Matrix3d.identity);
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
@@ -346,5 +348,33 @@ describe("Transform.CreateMatrixPickupPutdown", () => {
     const transform = Transform.createMatrixPickupPutdown(matrix, a, b);
     const c = transform.multiplyPoint3d(a);
     ck.testPoint3d(b, c);
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Transform.createFlattenAlongVectorToPlane", () => {
+  it("Transform.createFlattenAlongVectorToPlane", () => {
+    const ck = new Checker();
+    const spacePoints = Sample.point3d;
+    for (const planeOrigin of spacePoints) {
+      for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(2, 3, -1)]) {
+        for (const sweepDirection of ([Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)])) {
+          const transform = Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
+          if (ck.testDefined(transform, "expect good transform") && transform !== undefined) {
+            for (const pointA of spacePoints) {
+              const pointB = transform.multiplyPoint3d(pointA);
+              const dotB = planeNormal.dotProductStartEnd(planeOrigin, pointB);
+              if (!ck.testCoordinate(0.0, dotB, "ProjectedPoint on plane")) {
+                GeometryCoreTestIO.consoleLog({ planeOrigin, planeNormal, sweepDirection, trans: transform.toJSON() });
+                GeometryCoreTestIO.consoleLog({ pointA, pointB });
+                Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 });

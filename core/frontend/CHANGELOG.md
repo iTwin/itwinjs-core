@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 22:04:43 GMT and should not be manually modified.
+
+## 4.0.2
+Wed, 21 Jun 2023 22:04:43 GMT
+
+_Version update only_
+
+## 4.0.1
+Wed, 21 Jun 2023 20:29:13 GMT
+
+### Updates
+
+- Two map-layers instances having different formatId or subLayers set should not share the same tile tree.
+- Fix gaps in certain reprojected tiles.
+- Ensure element Ids are loaded for RenderTimeline element when schedule scripts are applied on the frontend.
 
 ## 4.0.0
 Mon, 22 May 2023 15:34:14 GMT
@@ -34,6 +48,21 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.7.9
+Tue, 20 Jun 2023 12:51:02 GMT
+
+_Version update only_
+
+## 3.7.8
+Thu, 01 Jun 2023 17:00:39 GMT
+
+_Version update only_
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT
