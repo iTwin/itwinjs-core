@@ -13,7 +13,9 @@
       "typescript"
     ]
   },
-  "globalOverrides": {},
+  "globalOverrides": {
+    "@types/node": "18.16.1"
+  },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
@@ -23,9 +25,7 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": [
-          "CVE-2023-26132" // https://github.com/advisories/GHSA-4gxf-g5gf-22h4 full-stack-tests__backend>azurite>sequelize>dottie
-        ]
+        "ignoreCves": []
       }
     }
   }
