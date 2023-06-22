@@ -231,21 +231,23 @@ export class FrameBuilder {
         return result;
       }
     }
-    // try direct evaluation of curve primitives?
+
+    const evaluatePrimitiveFrame = (curve: CurvePrimitive): Transform | undefined => {
+      return curve.fractionToFrenetFrame(0.0);
+    };
+
+    // try direct evaluation of curve primitives using the above lambda
     for (const data of params) {
-      if (data instanceof CurveCollection) {
-        const children = data.children;
-        if (children) {
-          for (const curve of children) {
-            if (curve instanceof CurvePrimitive) {
-              const frenetFrame = curve.fractionToFrenetFrame(0.0);
-              if (frenetFrame)
-                return frenetFrame;
-            }
-          }
+      if (data instanceof CurvePrimitive) {
+        return evaluatePrimitiveFrame(data);
+      } else if (data instanceof CurveCollection) {
+        const children = data.collectCurvePrimitives();
+        for (const curve of children) {
+          const frenetFrame = evaluatePrimitiveFrame(curve);
+          if (frenetFrame)
+            return frenetFrame;
         }
       }
-
     }
     return undefined;
   }
