@@ -35,7 +35,7 @@ import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
-import { SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
+import { ClipSweptLineStringContext, SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
@@ -46,6 +46,83 @@ import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+
+/**
+ * Options carrier for sweeping linework onto meshes.
+ * * All options are well defined after the static create method.
+ * @public
+ */
+export class SweepLineStringToFacetsOptions {
+  /** vector "towards the eye"
+   * * In the common case of sweeping to an XY (e.g. ground or DTM) mesh,
+   *    use the positive Z vector as an up vector.
+   * * In general case, this is a vector from the mesh towards an eye at infinity.
+   */
+  public vectorToEye: Vector3d;
+  /** true to collect edges from facets that face towards the eye */
+  public collectOnForwardFacets: boolean;
+  /** true to collect facets that face away from the eye */
+  public collectOnSideFacets: boolean;
+  /** true to collect facets that are "on the side", i.e. their outward vector is perpendicular to vectorToEye. */
+  public collectOnRearFacets: boolean;
+  /** (small) angle to use as tolerance for deciding if a facet is "on the side".  Default (if given in degrees) is Geometry.smallAngleDegrees */
+  public sideAngle: Angle;
+  /** option to assemble lines into chains */
+  public assembleChains: boolean;
+
+  /** constructor -- captures fully-checked parameters from static create method.
+  */
+  private constructor(vectorToEye: Vector3d, sideAngle: Angle, assembleChains: boolean, collectOnForwardFacets: boolean, collectOnSideFacets: boolean, collectOnRearFacets: boolean) {
+    this.vectorToEye = vectorToEye;
+    this.sideAngle = sideAngle;
+    this.assembleChains = assembleChains;
+    this.collectOnForwardFacets = collectOnForwardFacets;
+    this.collectOnSideFacets = collectOnSideFacets;
+    this.collectOnRearFacets = collectOnRearFacets;
+  }
+
+  /** Create an options structure.
+   * * Default vectorToEye is positive Z
+   * * Default sideAngle has radians value Geometry.smallAngleRadians
+   * * Default assembleChains is true
+   * * Default collectOnForwardFacets, collectOnSideFacets, collectOnRearFacets are all true.
+   */
+  public static create(vectorToEye?: Vector3d, sideAngle?: Angle, assembleChains?: boolean,
+    collectOnForwardFacets?: boolean,
+    collectOnSideFacets?: boolean,
+    collectOnRearFacets?: boolean) {
+    return new SweepLineStringToFacetsOptions(
+      vectorToEye === undefined ? Vector3d.unitZ() : vectorToEye.clone(),
+      sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : sideAngle,
+      Geometry.resolveValue(assembleChains, true),
+      Geometry.resolveValue(collectOnForwardFacets, true),
+      Geometry.resolveValue(collectOnSideFacets, true),
+      Geometry.resolveValue(collectOnRearFacets, true)
+    );
+
+
+  }
+  /** Return the vectorToEye value, resolved to default if it has not been specified */
+  public get resolvedVectorToEye(): Vector3d { return this.vectorToEye !== undefined ? this.vectorToEye.clone() : Vector3d.unitZ(); }
+  /** Return the angle for facets to be considered side-facing, with default of Geometry.smallAngleRadians */
+  public get resolvedSideAngle(): Angle { return this.sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : this.sideAngle; }
+  /** Return true if all outputs are requested */
+  public get collectAll() { return this.collectOnForwardFacets === true && this.collectOnRearFacets === true && this.collectOnRearFacets === true; }
+
+  /** Decide if direction collect flags accept this facet.
+   * * (Undefined facet normal returns false)
+  */
+  public collectFromThisFacetNormal(facetNormal: Vector3d | undefined): boolean {
+    if (facetNormal === undefined)
+      return false;
+    const theta = facetNormal.angleFromPerpendicular(this.vectorToEye);
+    if (theta.isMagnitudeLessThanOrEqual(this.sideAngle))
+      return this.collectOnSideFacets;
+    return facetNormal.dotProduct(this.vectorToEye) > 0 ? this.collectOnForwardFacets : this.collectOnRearFacets;
+  }
+}
+
 /**
  * Options carrier for cloneWithHolesFilled
  * @public
@@ -952,9 +1029,51 @@ export class PolyfaceQuery {
       });
     return builder.claimPolyface(true);
   }
+
   /** Find segments (within the linestring) which project to facets.
+   * * Default sweep direction (if no options are given is towards XY plane.)
+   * * Sweep options can indicate other direction and filter out any subset of forward, side and rear facets.
    * * Return collected line segments
+   *
    */
+  public static sweepLinestringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
+    let result: CurvePrimitive[] = [];
+    // setup default options:
+    if (options === undefined)
+      options = SweepLineStringToFacetsOptions.create(
+        Vector3d.unitZ(),
+        Angle.createRadians(Geometry.smallAngleRadians),   // tight geometry tolerance for vertical side facets
+        true,   // assemble chains
+        true, true, true); // accept all outputs
+    let chainContext: ChainMergeContext | undefined;
+    if (options.assembleChains)
+      chainContext = ChainMergeContext.create();
+    const drapeGeometry: LineSegment3d[] = [];
+    const collectAll = options.collectAll;
+    const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
+    if (context) {
+      const visitor = polyface.createVisitor(0);
+      for (visitor.reset(); visitor.moveToNextFacet();) {
+        if (options?.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point))) {
+          context.processPolygon(visitor.point.getArray(),
+            (pointA: Point3d, pointB: Point3d) => {
+              if (chainContext !== undefined)
+                chainContext.addSegment(pointA, pointB);
+              else
+                result.push(LineSegment3d.create(pointA, pointB));
+            });
+        }
+      }
+      if (chainContext !== undefined) {
+        chainContext.clusterAndMergeVerticesXYZ();
+        result = chainContext.collectMaximalChains();
+      }
+    }
+    return result;
+  }
+  /** Find segments (within the linestring) which project to facets.
+    * * Return collected line segments
+    */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const drapeGeometry: LineSegment3d[] = [];
     this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
@@ -979,6 +1098,8 @@ export class PolyfaceQuery {
     chainContext.clusterAndMergeVerticesXYZ();
     return chainContext.collectMaximalChains();
   }
+
+
   /** Find segments (within the linestring) which project to facets.
    * * This is done as a sequence of "await" steps.
    * * Each "await" step deals with approximately PolyfaceQuery.asyncWorkLimit pairings of (linestring edge) with (facet edge)

@@ -26,7 +26,9 @@ import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-
+//cspell:word zlow
+//cspell:word zhigh
+//cspell wor
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
  * @public
