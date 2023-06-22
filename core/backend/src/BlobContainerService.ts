@@ -45,8 +45,6 @@ export namespace BlobContainer {
     iTwinId: Id64String;
     /** optionally, an iModelId within the iTwin. If present, container is deleted when the iModel is deleted. */
     iModelId?: Id64String;
-    /** optionally, an owner of the container. Owners always have administrator rights for the container. */
-    owner?: string;
   }
 
   /**
@@ -54,15 +52,14 @@ export namespace BlobContainer {
    *  - administrators can understand why a container exists for assigning RBAC permissions appropriately
    *  - usage reports can aggregate types of containers
    *  - applications can identify their containers
-   *  - applications can store important (to them) properties "on" their containers
    */
   export interface Metadata {
+    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Non-unique.*/
+    name: string;
     /** The machine-readable string that describes what the container is being used for (e.g. "workspaces"). Always lowercase and singular. */
     containerType: string;
-    /** Human readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
-    description: string;
-    /** Additional properties stored on the container */
-    [propertyName: string]: string;
+    /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
+    description?: string;
   }
 
   /** Properties returned by `Service.requestToken` */
