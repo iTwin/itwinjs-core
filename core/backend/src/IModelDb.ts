@@ -2752,6 +2752,20 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.closeIModel();
   }
 
+  /** Creates or updates views in the iModel to permit visualizing the EC content as ECClasses and ECProperties rather than raw database tables and columns.
+   * This can be helpful when debugging the EC data, especially when the raw tables make use of shared columns or spread data across multiple tables.
+   * @throws IModelError if view creation failed.
+   * @note The views are strictly intended for developers and debugging purposes only - they should not be used in application code.
+   * @beta
+   */
+  public createClassViews(): void {
+    const result = this.nativeDb.createClassViewsInDb();
+    if (BentleyStatus.SUCCESS !== result)
+      throw new IModelError(result, "Error creating class views");
+    else
+      this.saveChanges();
+  }
+
   /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
