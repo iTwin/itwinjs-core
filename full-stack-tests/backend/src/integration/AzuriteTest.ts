@@ -43,7 +43,6 @@ export namespace AzuriteTest {
           name: "Test Container",
           description: "CloudSqlite container for tests",
           containerType: "workspace",
-          blockSize: "64K",
         },
         id: container.containerId ?? Guid.createValue(),
         scope: {
