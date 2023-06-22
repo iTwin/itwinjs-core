@@ -13,10 +13,7 @@
       "typescript"
     ]
   },
-  "globalOverrides": {
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
-    "@types/node": "18.16.1"
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
