@@ -627,7 +627,7 @@ export class BezierPolynomialAlgebra {
     static univariateDifference(data: Float64Array, difference: Float64Array): void;
 }
 
-// @internal
+// @public
 export class BilinearPatch implements UVSurface {
     constructor(point00: Point3d, point10: Point3d, point01: Point3d, point11: Point3d);
     clone(): BilinearPatch;
