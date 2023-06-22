@@ -64,6 +64,48 @@ export enum ToolAssistanceInputMethod {
   Touch,
 }
 
+/** Common Tool Assistance main instruction prompt messages
+ * @public
+ * @extensions
+ */
+export enum ToolAssistancePromptKey {
+  /** Prompt to specify an element */
+  IdentifyElement = "IdentifyElement",
+  /** Prompt to specify a location */
+  IdentifyPoint = "IdentifyPoint",
+  /** Prompt to specify a start location */
+  StartPoint = "StartPoint",
+  /** Prompt to specify an end location */
+  EndPoint = "EndPoint",
+}
+
+/** Common Tool Assistance input instruction messages
+ * @public
+ * @extensions
+ */
+export enum ToolAssistanceInputKey {
+  /** Input accepts current selection */
+  AcceptSelection = "AcceptSelection",
+  /** Input accepts current element */
+  AcceptElement = "AcceptElement",
+  /** Input accepts current location */
+  AcceptPoint = "AcceptPoint",
+  /** Input specifies another element */
+  AdditionalElement = "AdditionalElement",
+  /** Input specifies another location */
+  AdditionalPoint = "AdditionalPoint",
+  /** Input accepts current tool phase */
+  Accept = "Accept",
+  /** Input accepts current tool result */
+  Complete = "Complete",
+  /** Input cancels current tool phase */
+  Cancel = "Cancel",
+  /** Input accepts tool restart */
+  Restart = "Restart",
+  /** Input accepts tool exit */
+  Exit = "Exit",
+}
+
 /** Tool Assistance image keyboard keys
  * @public
  * @extensions
@@ -139,6 +181,16 @@ export class ToolAssistance {
 
   private static translateKey(key: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`); }
   private static translateTouch(cursor: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`); }
+
+  /** Return the translated string for the specified main instruction key */
+  public static translatePrompt(key: ToolAssistancePromptKey): string {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.tools}ElementSet.Prompts.${key}`);
+  }
+
+  /** Return the translated string for the specified input instruction key */
+  public static translateInput(key: ToolAssistanceInputKey): string {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.tools}ElementSet.Inputs.${key}`);
+  }
 
   /** Alt key text. */
   public static get altKey(): string {
