@@ -1368,7 +1368,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Query for the last modified time for a [[Model]].
      * @param modelId The Id of the model.
-     * @throws IModelError `modelId` does not identify a model in the iModel.
+     * @throws IModelError if `modelId` does not identify a model in the iModel.
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;

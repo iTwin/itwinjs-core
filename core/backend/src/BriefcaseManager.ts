@@ -91,7 +91,7 @@ export class BriefcaseManager {
   public static getChangedElementsPathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
   private static _briefcaseSubDir = "briefcases";
-  /** @internal */
+  /** Get the local path of the folder storing briefcases associated with the specified iModel. */
   public static getBriefcaseBasePath(iModelId: GuidString): LocalDirName {
     return path.join(this.getIModelPath(iModelId), this._briefcaseSubDir);
   }
