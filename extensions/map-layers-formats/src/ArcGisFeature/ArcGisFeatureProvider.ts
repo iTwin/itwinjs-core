@@ -170,7 +170,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     // Read range using full extent from service metadata
     if (this._layerMetadata?.extent) {
-      const layerExtent = this._layerMetadata?.extent;
+      const layerExtent = this._layerMetadata.extent;
       if (layerExtent.spatialReference.latestWkid === 3857 || layerExtent.spatialReference.wkid === 102100) {
         this.setCartoRangeFromExtentJson(layerExtent);
       }
