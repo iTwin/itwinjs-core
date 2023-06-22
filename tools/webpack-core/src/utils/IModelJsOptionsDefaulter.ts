@@ -9,8 +9,4 @@ export class IModelJsOptionsDefaulter extends WebpackOptionsDefaulter {
   constructor(private _enableSourceMaps = true) {
     super();
   }
-
-  public override process(_options: any) {
-    return _options;
-  }
 }
