@@ -81,8 +81,22 @@ export class Checker {
     halfEdgeGraphFromIndexedLoops: false,
     offsetMesh: false,
   };
-  public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
-  public getNumErrors(): number { return this._savedErrors + this._numErrors; }
+  /**
+   * Constructor that allows setting statics in `GeometryCoreTestIO` as a debugging convenience.
+   * * Do not push to server an invocation that passes true.
+   */
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false) {
+    this._numErrors = 0;
+    this._numOK = 0;
+    this._savedErrors = 0;
+    this._savedOK = 0;
+    GeometryCoreTestIO.enableConsole = enableConsole;
+    GeometryCoreTestIO.enableSave = enableSave;
+    // Note that GeometryCoreTestIO.enableLongTests remains unchanged.
+  }
+  public getNumErrors(): number {
+    return this._savedErrors + this._numErrors;
+  }
   public getNumOK(): number { return this._numOK + this._savedOK; }
 
   // ===================================================================================
@@ -100,8 +114,8 @@ export class Checker {
   }
   public announceError(...params: any[]): boolean {
     this._numErrors++;
-    GeometryCoreTestIO.consoleLog("ERROR");
-    this.show(params);
+    GeometryCoreTestIO.consoleLogGo("ERROR");
+    this.showGo(params);
     return false;
   }
   public announceOK(): boolean {
@@ -356,6 +370,12 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }
+  public testNumberInRange1d(dataA: number, range: Range1d, ...params: any[]): boolean {
+    if (range.containsX(dataA))
+      return this.announceOK();
+    return this.announceError("Expect number in range", dataA, range, params);
+  }
+
   public testSmallRelative(dataA: number, ...params: any[]): boolean {
     if (Geometry.isSmallRelative(dataA))
       return this.announceOK();
@@ -521,6 +541,8 @@ export class Checker {
 
   // ===================================================================================
   // Output
+  // ck.show () -- obeys enableConsole
+  // ck.showGo () -- ignores enableConsole
   // ===================================================================================
 
   public show(...params: any[]) {
@@ -529,6 +551,14 @@ export class Checker {
       GeometryCoreTestIO.consoleLog(p);
     }
   }
+
+  public showGo(...params: any[]) {
+    let p;
+    for (p of params) {
+      GeometryCoreTestIO.consoleLogGo(p);
+    }
+  }
+
   public static clearGeometry(name: string, outDir: string) {
     GeometryCoreTestIO.saveGeometry(Checker._cache, outDir, name);
 
