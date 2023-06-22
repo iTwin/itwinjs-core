@@ -442,9 +442,9 @@ export namespace BlobContainer {
         userToken: UserToken;
     }
     export interface Metadata {
-        [propertyName: string]: string;
         containerType: string;
-        description: string;
+        description?: string;
+        name: string;
     }
     export type Provider = "azure" | "google" | "aws";
     export interface RequestTokenProps extends AccessContainerProps {
@@ -454,7 +454,6 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
-        owner?: string;
     }
     export interface TokenProps {
         expiration: Date;
