@@ -13921,6 +13921,8 @@ export class ToolAssistance {
     static get shiftKeyboardInfoNoSymbol(): ToolAssistanceKeyboardInfo;
     static readonly shiftSymbol: string;
     static get shiftSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo;
+    static translateInput(key: ToolAssistanceInputKey): string;
+    static translatePrompt(key: ToolAssistancePromptKey): string;
     static readonly upSymbol: string;
 }
 
@@ -13943,6 +13945,20 @@ export enum ToolAssistanceImage {
     TwoTouchDrag = 13,
     TwoTouchPinch = 14,
     TwoTouchTap = 12
+}
+
+// @public
+export enum ToolAssistanceInputKey {
+    Accept = "Accept",
+    AcceptElement = "AcceptElement",
+    AcceptPoint = "AcceptPoint",
+    AcceptSelection = "AcceptSelection",
+    AdditionalElement = "AdditionalElement",
+    AdditionalPoint = "AdditionalPoint",
+    Cancel = "Cancel",
+    Complete = "Complete",
+    Exit = "Exit",
+    Restart = "Restart"
 }
 
 // @public
@@ -13971,6 +13987,14 @@ export interface ToolAssistanceInstructions {
 export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
+}
+
+// @public
+export enum ToolAssistancePromptKey {
+    EndPoint = "EndPoint",
+    IdentifyElement = "IdentifyElement",
+    IdentifyPoint = "IdentifyPoint",
+    StartPoint = "StartPoint"
 }
 
 // @public

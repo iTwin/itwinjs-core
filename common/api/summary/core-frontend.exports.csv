@@ -826,10 +826,12 @@ public;Tool
 public;ToolAdmin
 public;ToolAssistance
 public;ToolAssistanceImage
+public;ToolAssistanceInputKey
 public;ToolAssistanceInputMethod
 public;ToolAssistanceInstruction
 public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
+public;ToolAssistancePromptKey
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
