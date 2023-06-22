@@ -64,47 +64,22 @@ export enum ToolAssistanceInputMethod {
   Touch,
 }
 
-/** Common Tool Assistance main instruction prompt messages
+/** Identifies one of a set of commonly-used [[ToolAssistance]] messages prompting the user to specify
+ * an element or location for a tool operation.
+ * @see [[ToolAssistance.translatePrompt]] to obtain a corresponding localized message appropriate for displaying to the user.
  * @public
  * @extensions
  */
-export enum ToolAssistancePromptKey {
-  /** Prompt to specify an element */
-  IdentifyElement = "IdentifyElement",
-  /** Prompt to specify a location */
-  IdentifyPoint = "IdentifyPoint",
-  /** Prompt to specify a start location */
-  StartPoint = "StartPoint",
-  /** Prompt to specify an end location */
-  EndPoint = "EndPoint",
-}
+export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint";
 
-/** Common Tool Assistance input instruction messages
+/** Identifies one of a set of commonly-used [[ToolAssistance]] messages notifying the user of the result of
+ * the next input.
+ * @see [[ToolAssistance.translateInput]] to obtain a corresponding localizaed message appropriate for displaying to the user.
  * @public
  * @extensions
  */
-export enum ToolAssistanceInputKey {
-  /** Input accepts current selection */
-  AcceptSelection = "AcceptSelection",
-  /** Input accepts current element */
-  AcceptElement = "AcceptElement",
-  /** Input accepts current location */
-  AcceptPoint = "AcceptPoint",
-  /** Input specifies another element */
-  AdditionalElement = "AdditionalElement",
-  /** Input specifies another location */
-  AdditionalPoint = "AdditionalPoint",
-  /** Input accepts current tool phase */
-  Accept = "Accept",
-  /** Input accepts current tool result */
-  Complete = "Complete",
-  /** Input cancels current tool phase */
-  Cancel = "Cancel",
-  /** Input accepts tool restart */
-  Restart = "Restart",
-  /** Input accepts tool exit */
-  Exit = "Exit",
-}
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" |
+  "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
 
 /** Tool Assistance image keyboard keys
  * @public

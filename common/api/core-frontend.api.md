@@ -13948,18 +13948,7 @@ export enum ToolAssistanceImage {
 }
 
 // @public
-export enum ToolAssistanceInputKey {
-    Accept = "Accept",
-    AcceptElement = "AcceptElement",
-    AcceptPoint = "AcceptPoint",
-    AcceptSelection = "AcceptSelection",
-    AdditionalElement = "AdditionalElement",
-    AdditionalPoint = "AdditionalPoint",
-    Cancel = "Cancel",
-    Complete = "Complete",
-    Exit = "Exit",
-    Restart = "Restart"
-}
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
 
 // @public
 export enum ToolAssistanceInputMethod {
@@ -13990,12 +13979,7 @@ export interface ToolAssistanceKeyboardInfo {
 }
 
 // @public
-export enum ToolAssistancePromptKey {
-    EndPoint = "EndPoint",
-    IdentifyElement = "IdentifyElement",
-    IdentifyPoint = "IdentifyPoint",
-    StartPoint = "StartPoint"
-}
+export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint";
 
 // @public
 export interface ToolAssistanceSection {

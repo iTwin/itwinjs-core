@@ -826,12 +826,12 @@ public;Tool
 public;ToolAdmin
 public;ToolAssistance
 public;ToolAssistanceImage
-public;ToolAssistanceInputKey
+public;ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit"
 public;ToolAssistanceInputMethod
 public;ToolAssistanceInstruction
 public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
-public;ToolAssistancePromptKey
+public;ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint"
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
