@@ -948,6 +948,10 @@
           "description": "ID of the category pointed to by this identifier",
           "type": "string"
         },
+        "createClassCategory": {
+          "description": "Controls whether a class category should be included under a custom one",
+          "type": "boolean"
+        },
         "type": {
           "description": "Type of the identifier",
           "enum": [

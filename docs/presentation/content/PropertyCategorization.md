@@ -280,6 +280,34 @@ Or, we can also move the properties into the root category by using `Root` categ
 
 !['Related properties nesting customized with root category identifier'](./media/property-grid-example-related-properties-nesting-customized-with-root-category.png)
 
+### Creating class categories under custom ones
+
+The `Id` category identifier has an attribute `createClassCategory`. The attribute specifies whether the class category should be created under a custom category.
+
+!['Related properties nesting customized with id category identifier and createClassCategory attribute'](./media/property-grid-example-custom-categories-with-createclasscategory-attribute.png)
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchema", "className": "A" },
+  "propertyCategories": [{
+    "id": "custom-category",
+    "label": "Custom category"
+  }],
+  "relatedProperties": [{
+    "propertiesSource": {
+      "relationship": {"schemaName": "MySchema", "className": "AB"},
+      "direction": "Forward",
+      "targetClass": {"schemaName": "MySchema", "className": "B"}
+    },
+    "properties": [{
+      "name": "*",
+      "categoryId": { "type": "Id", "categoryId": "custom-category", "createClassCategory": true }
+    }]
+  }]
+}
+```
+
 Below is a table of how category identifiers work in different situations:
 
 |                      | Direct Property    | Direct Categorized Property                | Related Property (`SameInstance` meaning) | Related Property (`RelatedInstance` meaning) | Nested Related Property (`RelatedInstance` & `SameInstance`) | Nested Related Property (`RelatedInstance` & `RelatedInstance`) | Nested Related Categorized Property (`RelatedInstance` & `SameInstance`) |

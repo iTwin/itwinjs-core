@@ -10,6 +10,7 @@ Table of contents:
   - [Smaller edge encoding](#smaller-edge-encoding)
 - [Presentation](#presentation)
  - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+ - [Class property categories under custom custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -27,3 +28,6 @@ When rendering the contents of a view with [edge display](https://www.itwinjs.or
 
 Previously, the [calculated properties specification](../presentation/content/CalculatedPropertiesSpecification.md) only allowed specifying property [label](../presentation/content/CalculatedPropertiesSpecification.md#attribute-label) and [value](../presentation/content/CalculatedPropertiesSpecification.md#attribute-value). Now the specification has an ability to assign [renderer](../presentation/content/CalculatedPropertiesSpecification.md#attribute-renderer), [editor](../presentation/content/CalculatedPropertiesSpecification.md#attribute-editor) and [category](../presentation/content/CalculatedPropertiesSpecification.md#attribute-categoryid) to calculated properties.
 
+### Class property categories under custom categories
+
+Now when assigning [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid) a custom category, the `Id` category identifier will have an attribute `createClassCategory`, which specifies whether the class category should be created under the custom category or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-class-categories-under-custom-ones) for more details.

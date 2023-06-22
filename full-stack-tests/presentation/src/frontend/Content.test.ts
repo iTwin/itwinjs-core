@@ -464,6 +464,56 @@ describe("Content", () => {
 
   });
 
+  describe("Custom categories", () => {
+
+    it("creates class category under custom", async function () {
+      const guid = Guid.createValue();
+      let instanceKey: InstanceKey;
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        instanceKey = insertDocumentPartition(db, "Test", undefined, guid);
+      });
+
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+            propertyCategories: [{
+              id: "custom-category",
+              label: "Custom Category",
+            }],
+            propertyOverrides: [{
+              name: "*",
+              categoryId: { type: "Id", categoryId: "custom-category", createClassCategory: true },
+            }],
+          }],
+        }],
+      };
+      const content = await Presentation.presentation.getContent({
+        imodel: imodelConnection,
+        rulesetOrId: ruleset,
+        keys: new KeySet([instanceKey!]),
+        descriptor: {},
+      });
+
+      expect(content!.descriptor.categories).to.containSubset([
+        { label: "Document Partition" },
+        { label: "Custom Category" },
+      ]);
+
+      expect(content!.descriptor.fields).to.containSubset([{
+        category: {
+          label: "Document Partition",
+          parent: {
+            label: "Custom Category",
+          },
+        },
+      }]);
+    });
+
+  });
+
   describe("Instance filter", () => {
 
     it("filters content instances using direct property", async () => {
