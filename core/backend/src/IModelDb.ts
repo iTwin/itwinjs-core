@@ -1366,8 +1366,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this.tryGetModelJson({ id });
     }
 
-    /** Query for the last modified time of the specified Model.
-     * @internal
+    /** Query for the last modified time for a [[Model]].
+     * @param modelId The Id of the model.
+     * @throws IModelError `modelId` does not identify a model in the iModel.
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
@@ -1695,8 +1696,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    /** Query for the last modified time of the specified element.
-     * @internal
+    /** Query for an [[Element]]'s last modified time.
+     * @param elementId The Id of the element.
+     * @throws IModelError if `elementId` does not identify an element in the iModel.
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
