@@ -2,21 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from 'path';
-import { Browser, chromium, LaunchOptions, Page } from '@playwright/test';
-import { ChildProcess } from 'child_process';
-import { spawnChildProcess } from '../../utils/SpawnUtils';
-import { executeRegisteredCallback } from '../../utils/CallbackUtils';
-import { CertaConfig } from '../../CertaConfig';
-import { writeCoverageData } from '../../utils/CoverageUtils';
-import { configureRemoteReporter } from './MochaRemoteReporter';
+import * as path from "path";
+import { Browser, chromium, LaunchOptions, Page } from "@playwright/test";
+import { ChildProcess } from "child_process";
+import { spawnChildProcess } from "../../utils/SpawnUtils";
+import { executeRegisteredCallback } from "../../utils/CallbackUtils";
+import { CertaConfig } from "../../CertaConfig";
+import { writeCoverageData } from "../../utils/CoverageUtils";
+import { configureRemoteReporter } from "./MochaRemoteReporter";
 
 interface ChromeTestResults {
   failures: number;
   coverage: any;
 }
 
-type ConsoleMethodName = 'log' | 'error' | 'dir';
+type ConsoleMethodName = "log" | "error" | "dir";
 
 let browser: Browser;
 let webserverProcess: ChildProcess;
@@ -41,22 +41,22 @@ export class ChromeTestRunner {
 
     const webserverEnv = {
       CERTA_PORT: `${config.ports.frontend}`, // eslint-disable-line @typescript-eslint/naming-convention
-      CERTA_PATH: path.join(__dirname, '../../../public/index.html'), // eslint-disable-line @typescript-eslint/naming-convention
+      CERTA_PATH: path.join(__dirname, "../../../public/index.html"), // eslint-disable-line @typescript-eslint/naming-convention
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs), // eslint-disable-line @typescript-eslint/naming-convention
     };
     webserverProcess = spawnChildProcess(
-      'node',
-      [require.resolve('./webserver')],
+      "node",
+      [require.resolve("./webserver")],
       webserverEnv,
       true
     );
 
     // Don't continue until the webserver is started and listening.
     const webserverExited = new Promise<never>((_resolve, reject) =>
-      webserverProcess.once('exit', () => reject('Webserver exited!'))
+      webserverProcess.once("exit", () => reject("Webserver exited!"))
     );
     const webserverStarted = new Promise<number>((resolve) =>
-      webserverProcess.once('message', resolve)
+      webserverProcess.once("message", resolve)
     );
     const actualPort = await Promise.race([webserverExited, webserverStarted]);
     if (actualPort !== config.ports.frontend)
@@ -78,7 +78,8 @@ export class ChromeTestRunner {
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
-    if (config.cover) writeCoverageData(coverage);
+    if (config.cover)
+      writeCoverageData(coverage);
 
     process.exitCode = failures;
   }
@@ -94,22 +95,22 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       const page = await browser.newPage();
 
       // Don't let dialogs block tests
-      page.on('dialog', async (dialog: any) => dialog.dismiss());
+      page.on("dialog", async (dialog: any) => dialog.dismiss());
 
       // Re-throw any uncaught exceptions from the frontend in the backend
-      page.on('pageerror', reject);
+      page.on("pageerror", reject);
 
       // Expose some functions to the frontend that will execute _in the backend context_
       await page.exposeFunction(
-        '_CertaConsole',
+        "_CertaConsole",
         (type: ConsoleMethodName, args: any[]) => console[type](...args)
       );
       await page.exposeFunction(
-        '_CertaSendToBackend',
+        "_CertaSendToBackend",
         executeRegisteredCallback
       );
       await page.exposeFunction(
-        '_CertaReportResults',
+        "_CertaReportResults",
         (results: ChromeTestResults) => {
           setTimeout(async () => {
             await browser.close();
@@ -125,16 +126,16 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       await page.addScriptTag({
         content: `var _CERTA_CONFIG = ${JSON.stringify(config)};`,
       });
-      await loadScript(page, require.resolve('../../utils/initLogging.js'));
-      await loadScript(page, require.resolve('mocha/mocha.js'));
+      await loadScript(page, require.resolve("../../utils/initLogging.js"));
+      await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(
         page,
-        require.resolve('source-map-support/browser-source-map-support.js')
+        require.resolve("source-map-support/browser-source-map-support.js")
       );
-      await loadScript(page, require.resolve('../../utils/initSourceMaps.js'));
-      await loadScript(page, require.resolve('./MochaSerializer.js'));
+      await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
+      await loadScript(page, require.resolve("./MochaSerializer.js"));
       await configureRemoteReporter(page);
-      await loadScript(page, require.resolve('../../utils/initMocha.js'));
+      await loadScript(page, require.resolve("../../utils/initMocha.js"));
       await loadScript(page, testBundle);
 
       // ...and start the tests

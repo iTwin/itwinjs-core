@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EventEmitter } from 'events';
-import { Page } from '@playwright/test';
-import './MochaSerializer';
+import { EventEmitter } from "events";
+import { Page } from "@playwright/test";
+import "./MochaSerializer";
 declare const window: any;
 
 export async function configureRemoteReporter(page: Page) {
@@ -15,7 +15,7 @@ export async function configureRemoteReporter(page: Page) {
 
   // Expose a function to the frontend for initializing the reporter on the backend.
   await page.exposeFunction(
-    '_CertaCreateReporter',
+    "_CertaCreateReporter",
     (serializedRunner: string, reporterName: string, reporterOptions: any) => {
       const runner = MochaSerializer.deserialize(serializedRunner);
 
@@ -26,7 +26,7 @@ export async function configureRemoteReporter(page: Page) {
 
       // Mocha already knows how to find and construct a reporter object from a reporterName,
       // so we can just leverage that instead of having to re-implement it all.
-      const backendMocha = new (require('mocha'))();
+      const backendMocha = new (require("mocha"))();
       backendMocha.reporter(reporterName);
 
       // Mocha.reporter saves the reporter constructor in this._reporter.
@@ -36,7 +36,7 @@ export async function configureRemoteReporter(page: Page) {
 
   // Expose a function to the frontend for initializing the reporter on the backend.
   await page.exposeFunction(
-    '_CertaEmitReporterEvent',
+    "_CertaEmitReporterEvent",
     (name: string, stats: any, ...args: any[]) => {
       realReporter.stats = stats;
       mockRunner.emit(name, ...args.map((a) => MochaSerializer.deserialize(a)));
@@ -51,17 +51,17 @@ export async function configureRemoteReporter(page: Page) {
         class RemoteReporter {
           constructor(runner: Mocha.Runner, _options: any) {
             const events = [
-              'start',
-              'end',
-              'suite',
-              'suite end',
-              'test',
-              'test end',
-              'hook',
-              'hook end',
-              'pass',
-              'fail',
-              'pending',
+              "start",
+              "end",
+              "suite",
+              "suite end",
+              "test",
+              "test end",
+              "hook",
+              "hook end",
+              "pass",
+              "fail",
+              "pending",
             ];
             for (const event of events) {
               runner.on(event, (...args: any[]) => {
