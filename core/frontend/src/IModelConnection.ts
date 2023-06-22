@@ -253,6 +253,12 @@ export abstract class IModelConnection extends IModel {
   public abstract close(): Promise<void>;
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
@@ -282,8 +288,8 @@ export abstract class IModelConnection extends IModel {
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -303,8 +309,8 @@ export abstract class IModelConnection extends IModel {
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -325,8 +331,8 @@ export abstract class IModelConnection extends IModel {
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
