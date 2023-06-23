@@ -17,7 +17,7 @@ export namespace SchemaSync {
    * A SQLite database for storing schemas.
    */
   export class SchemaSyncDb extends VersionedSqliteDb {
-    public override readonly myVersion = "1.0.0";
+    public override readonly myVersion = "4.0.0";
     protected override createDDL() { }
   }
 
