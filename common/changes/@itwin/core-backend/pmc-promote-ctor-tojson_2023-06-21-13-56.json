@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Promote Entity methods and constructors to @public; mark constructors protected.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
