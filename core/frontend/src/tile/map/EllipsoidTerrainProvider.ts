@@ -36,15 +36,15 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     this._wantSkirts = opts.wantSkirts;
   }
 
-  /** @internal override */
+  /** Implements [[TerrainMeshProvider.maxDepth]] to return a fixed maximum depth of 22. */
   public get maxDepth(): number { return 22; }
 
-  /** @internal override */
+  /** Implements [[TerrainMeshProvider.getChildHeightRange]] to return an empty range, because the ellipsoid is smooth. */
   public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined {
     return scratchZeroRange;
   }
 
-  /** @internal override */
+  /** Implements [[TerrainMeshProvider.tilingScheme]]. */
   public override get tilingScheme(): MapTilingScheme {
     return this._tilingScheme;
   }
@@ -187,7 +187,9 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
-  /** @internal override */
+  /** Implements [[TerrainMeshProvider.requestMeshData]] to return an empty string because the mesh can be generated
+   * purely from information provided by the [[MapTile]].
+   */
   public override async requestMeshData(): Promise<TileRequest.Response> {
     return "";
   }

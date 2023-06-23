@@ -3244,15 +3244,11 @@ export class ElementState extends EntityState implements ElementProps {
 // @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
-    // @internal
     getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // @internal
     get maxDepth(): number;
     // @internal
     readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
-    // @internal
     requestMeshData(): Promise<TileRequest.Response>;
-    // @internal
     get tilingScheme(): MapTilingScheme;
 }
 
@@ -3779,9 +3775,7 @@ export interface GeoConverterOptions {
 // @beta
 export class GeographicTilingScheme extends MapTilingScheme {
     constructor(numberOfLevelZeroTilesX?: number, numberOfLevelZeroTilesY?: number, rowZeroAtNorthPole?: boolean);
-    // @internal
     latitudeToYFraction(latitude: number): number;
-    // @internal
     yFractionToLatitude(yFraction: number): number;
 }
 
@@ -11405,7 +11399,6 @@ export class ScreenViewport extends Viewport {
     set viewCmdTargetCenter(center: Point3d | undefined);
     get viewRect(): ViewRect;
     readonly vpDiv: HTMLDivElement;
-    // @internal
     waitForSceneCompletion(): Promise<void>;
 }
 
@@ -11794,7 +11787,6 @@ export class SheetViewState extends ViewState2d {
     };
     // @internal (undocumented)
     detachFromViewport(): void;
-    // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // @internal (undocumented)
     getAttachmentViewport(id: Id64String): Viewport | undefined;
@@ -14186,9 +14178,7 @@ export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boole
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
-    // @internal
     protected connectViewports(source: Viewport, target: Viewport): void;
-    // @internal
     protected syncViewports(source: Viewport, target: Viewport): void;
 }
 
@@ -15657,16 +15647,11 @@ export class ViewPose2d extends ViewPose {
     constructor(view: ViewState2d);
     readonly angle: Angle;
     readonly delta: Point2d;
-    // @internal
     equal(other: ViewPose): boolean;
-    // @internal
     equalState(view: ViewState): boolean;
-    // @internal
     get extents(): Vector3d;
-    // @internal
     get origin(): Point3d;
     readonly origin2d: Point2d;
-    // @internal
     get rotation(): Matrix3d;
 }
 
@@ -15674,17 +15659,11 @@ export class ViewPose2d extends ViewPose {
 export class ViewPose3d extends ViewPose {
     constructor(view: ViewState3d);
     readonly camera: Camera;
-    // @internal
     equal(other: ViewPose): boolean;
-    // @internal
     equalState(view: ViewState): boolean;
-    // @internal
     readonly extents: Vector3d;
-    // @internal
     readonly origin: Point3d;
-    // @internal
     readonly rotation: Matrix3d;
-    // @internal
     get target(): Point3d;
 }
 
@@ -15900,7 +15879,6 @@ export abstract class ViewState2d extends ViewState {
     allow3dManipulations(): boolean;
     // (undocumented)
     readonly angle: Angle;
-    // @internal
     applyPose(val: ViewPose): this;
     // (undocumented)
     get baseModelId(): Id64String;
@@ -15959,7 +15937,6 @@ export abstract class ViewState3d extends ViewState {
     alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
-    // @internal
     applyPose(val: ViewPose): this;
     // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
@@ -16206,9 +16183,7 @@ export class WebMercatorProjection {
 // @beta
 export class WebMercatorTilingScheme extends MapTilingScheme {
     constructor(numberOfLevelZeroTilesX?: number, numberOfLevelZeroTilesY?: number, rowZeroAtNorthPole?: boolean);
-    // @internal
     latitudeToYFraction(latitude: number): number;
-    // @internal
     yFractionToLatitude(yFraction: number): number;
 }
 
