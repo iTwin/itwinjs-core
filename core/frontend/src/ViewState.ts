@@ -1458,7 +1458,7 @@ export abstract class ViewState3d extends ViewState {
   /** Capture a copy of the viewed volume and camera parameters. */
   public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose): this {
     if (val instanceof ViewPose3d) {
       this._cameraOn = val.cameraOn;
@@ -2344,7 +2344,7 @@ export abstract class ViewState2d extends ViewState {
   /** Capture a copy of the viewed area. */
   public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose) {
     if (val instanceof ViewPose2d) {
       this.setOrigin(val.origin);

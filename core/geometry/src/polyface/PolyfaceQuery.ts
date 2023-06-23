@@ -202,7 +202,7 @@ export class OffsetMeshOptions {
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
- */
+ */git go im
 export interface FacetProjectedVolumeSums {
   /** Summed (signed) volume */
   volume: number;
@@ -593,7 +593,7 @@ export class PolyfaceQuery {
   }
   /** Find segments (within the linestring) which project to facets.
    * * Announce each pair of linestring segment and on-facet segment through a callback.
-   * * Facets are ASSUMED to be convex and planar.
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
   public static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface,
     announce: AnnounceDrapePanel): any {
@@ -633,7 +633,7 @@ export class PolyfaceQuery {
 
   /** Find segments (within the linestring) which project to facets.
    * * Announce each pair of linestring segment and on-facet segment through a callback.
-   * * Facets are ASSUMED to be convex and planar.
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    * * REMARK: Although this is public, the usual use is via slightly higher level public methods, viz:
    *   * asyncSweepLinestringToFacetsXYReturnChains
    * @internal
@@ -1011,9 +1011,9 @@ export class PolyfaceQuery {
   }
   /** Find segments (within the linestring) which project to facets.
    * * Assemble each segment pair as a facet in a new polyface
-   * * Facets are ASSUMED to be convex and planar.
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
-  public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+  public static sweepLinestringToFacetsXYReturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     const builder = PolyfaceBuilder.create();
     this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
       (_linestring: GrowableXYZArray, _segmentIndex: number,
@@ -1026,6 +1026,11 @@ export class PolyfaceQuery {
       });
     return builder.claimPolyface(true);
   }
+  /** @deprecated in 4.x. Use sweepLinestringToFacetsXYReturnSweptFacets instead. */
+  public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+    return this.sweepLinestringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
+  }
+
 
   /**
    * Sweeps the linestring to intersections with a mesh.
@@ -1034,6 +1039,7 @@ export class PolyfaceQuery {
    * * Return collected line segments
    * * See SweepLineStringToFacetsOptions for description of options.
    *
+   * * Facets are ASSUMED to be convex and planar
    */
   public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
     let result: CurvePrimitive[] = [];
@@ -1083,6 +1089,7 @@ export class PolyfaceQuery {
 
   /** Find segments (within the linestring) which project to facets.
    * * Return chains.
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
@@ -1096,8 +1103,9 @@ export class PolyfaceQuery {
   /** Find segments (within the linestring) which project to facets.
    * * This is done as a sequence of "await" steps.
    * * Each "await" step deals with approximately PolyfaceQuery.asyncWorkLimit pairings of (linestring edge) with (facet edge)
-   *  * PolyfaceQuery.setAsyncWorkLimit () to change work blocks from default
+   * * PolyfaceQuery.setAsyncWorkLimit() to change work blocks from default
    * * Return chains.
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
   public static async asyncSweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): Promise<LineString3d[]> {
     const chainContext = ChainMergeContext.create();
