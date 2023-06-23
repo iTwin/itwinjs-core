@@ -466,11 +466,10 @@ describe("Content", () => {
 
   describe("Custom categories", () => {
 
-    it("creates class category under custom", async function () {
-      const guid = Guid.createValue();
+    it("creates child class category", async function () {
       let instanceKey: InstanceKey;
       const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
-        instanceKey = insertDocumentPartition(db, "Test", undefined, guid);
+        instanceKey = insertDocumentPartition(db, "Test");
       });
 
       const ruleset: Ruleset = {

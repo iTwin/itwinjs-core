@@ -30,4 +30,4 @@ Previously, the [calculated properties specification](../presentation/content/Ca
 
 ### Class property categories under custom categories
 
-Now when assigning [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid) a custom category, the `Id` category identifier will have an attribute `createClassCategory`, which specifies whether the class category should be created under the custom category or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-class-categories-under-custom-ones) for more details.
+Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-class-categories-under-custom-ones) for more details.

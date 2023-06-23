@@ -949,7 +949,7 @@
           "type": "string"
         },
         "createClassCategory": {
-          "description": "Controls whether a class category should be included under a custom one",
+          "description": "Controls whether a class category should be included under the category pointed to by this identifier",
           "type": "boolean"
         },
         "type": {

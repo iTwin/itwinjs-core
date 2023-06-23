@@ -62,7 +62,7 @@ export interface IdCategoryIdentifier {
   /** ID of the category pointed to by this identifier */
   categoryId: string;
 
-  /** Controls whether a class category should be included under a custom one */
+  /** Controls whether a class category should be included under the category pointed to by this identifier */
   createClassCategory?: boolean;
 }
 
