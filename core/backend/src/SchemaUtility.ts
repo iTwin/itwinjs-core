@@ -29,4 +29,19 @@ export class SchemaUtility {
 
     return ec3XmlSchemas;
   }
+
+  /** Convert custom attributes of ECSchema(s)
+   * @param xmlSchemas The ECSchema Xml(s).
+   * @returns ECSchema Xml(s) with converted custom attributes.
+   * @throws [[IModelError]] if there is a problem converting the custom attributes of a schema.
+   * @alpha
+   */
+  public convertCustomAttributes(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[] {
+    const maybeNativeContext = schemaContext?.nativeContext;
+    const schemasWithConvertedCA: string[] = IModelJsNative.SchemaUtility.convertCustomAttributes(xmlSchemas, maybeNativeContext);
+    if (schemasWithConvertedCA.length === 0)
+      throw new IModelError(BentleyStatus.ERROR, "Error converting custom attributes of Xml schema(s)");
+
+    return schemasWithConvertedCA;
+  }
 }
