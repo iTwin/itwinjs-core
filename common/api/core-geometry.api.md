@@ -85,6 +85,7 @@ export class Angle implements BeJSONFunctions {
     static createDegreesAdjustSigned180(degrees: number): Angle;
     static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle;
     static createRadians(radians: number): Angle;
+    static createSmallAngle(): Angle;
     get degrees(): number;
     static readonly degreesPerRadian: number;
     static degreesToRadians(degrees: number): number;
@@ -103,6 +104,7 @@ export class Angle implements BeJSONFunctions {
     static isFullCircleRadians(radians: number): boolean;
     get isHalfCircle(): boolean;
     static isHalfCircleRadians(radians: number): boolean;
+    isMagnitudeLessThanOrEqual(other: Angle): boolean;
     static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean;
     static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, upVectorX: number, upVectorY: number, upVectorZ: number, adjustToPositive?: boolean): number;
     static readonly pi2Radians = 6.283185307179586;
@@ -4797,7 +4799,10 @@ export class PolyfaceQuery {
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
     static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums;
+    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[];
+    // @deprecated
     static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
+    // @deprecated
     static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[];
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     static visitorClientFacetCount(visitor: PolyfaceVisitor): number;
@@ -5825,6 +5830,19 @@ export class SweepContour {
     tryTransformInPlace(transform: Transform): boolean;
     // (undocumented)
     get xyStrokes(): AnyCurve | undefined;
+}
+
+// @public
+export class SweepLineStringToFacetsOptions {
+    assembleChains: boolean;
+    get collectAll(): boolean;
+    collectFromThisFacetNormal(facetNormal: Vector3d | undefined): boolean;
+    collectOnForwardFacets: boolean;
+    collectOnRearFacets: boolean;
+    collectOnSideFacets: boolean;
+    static create(vectorToEye?: Vector3d, sideAngle?: Angle, assembleChains?: boolean, collectOnForwardFacets?: boolean, collectOnSideFacets?: boolean, collectOnRearFacets?: boolean): SweepLineStringToFacetsOptions;
+    sideAngle: Angle;
+    vectorToEye: Vector3d;
 }
 
 // @public
