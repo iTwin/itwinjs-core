@@ -55,7 +55,7 @@ export namespace BlobContainer {
    */
   export interface Metadata {
     /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Non-unique.*/
-    name: string;
+    label: string;
     /** The machine-readable string that describes what the container is being used for (e.g. "workspace"). Always lowercase and singular. */
     containerType: string;
     /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
