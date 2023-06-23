@@ -25,7 +25,7 @@ export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
   public static readonly supportsCleanup = true;
   public static async initialize(config: CertaConfig): Promise<void> {
-    // Go ahead and launch puppeteer now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
+    // Go ahead and launch playwright now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
     const options: LaunchOptions = {
       args: config.chromeOptions.args,
       headless: !config.debug,
@@ -71,7 +71,7 @@ export class ChromeTestRunner {
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
 
-    const { failures, coverage } = await runTestsInPuppeteer(
+    const { failures, coverage } = await runTestsInPlaywright(
       config,
       process.env.CERTA_PORT!
     );
@@ -89,7 +89,7 @@ async function loadScript(page: Page, scriptPath: string) {
   return page.addScriptTag({ url: `/@/${scriptPath}` });
 }
 
-async function runTestsInPuppeteer(config: CertaConfig, port: string) {
+async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
       const page = await browser.newPage();
