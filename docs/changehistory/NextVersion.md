@@ -10,7 +10,7 @@ Table of contents:
   - [Smaller edge encoding](#smaller-edge-encoding)
 - [Presentation](#presentation)
  - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
- - [Class property categories under custom custom categories](#class-property-categories-under-custom-categories)
+ - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
