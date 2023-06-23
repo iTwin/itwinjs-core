@@ -99,6 +99,9 @@ steps:
       NODE_ENV: development
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
+  - script: npx playwright install chromium
+    displayName:"install chromium for playwright"
+
   # MacOS and Windows agents work without any virtual display
   - script: node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
