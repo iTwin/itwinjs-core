@@ -229,12 +229,12 @@ export class GeographicTilingScheme extends MapTilingScheme {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
-  /** @internal override */
+  /** Implements [[MapTilingScheme.yFractionToLatitude]]. */
   public yFractionToLatitude(yFraction: number): number {
     return Math.PI * (this.yFractionFlip(yFraction) - .5);
   }
 
-  /** @internal override */
+  /** Implements [[MapTilingScheme.latitudeToYFraction]]. */
   public latitudeToYFraction(latitude: number): number {
     return this.yFractionFlip(.5 + latitude / Math.PI);
   }
@@ -276,13 +276,13 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
-  /** @internal override */
+  /** Implements [[MapTilingScheme.yFractionToLatitude]]. */
   public yFractionToLatitude(yFraction: number): number {
     const mercatorAngle = Angle.pi2Radians * (this.rowZeroAtNorthPole ? (.5 - yFraction) : (yFraction - .5));
     return WebMercatorProjection.mercatorAngleToGeodeticLatitude(mercatorAngle);
   }
 
-  /** @internal override */
+  /** Implements [[MapTilingScheme.latitudeToYFraction. */
   public latitudeToYFraction(latitude: number): number {
     // Clamp the latitude coordinate to the valid Mercator bounds.
     if (latitude > WebMercatorProjection.maximumLatitude) {
