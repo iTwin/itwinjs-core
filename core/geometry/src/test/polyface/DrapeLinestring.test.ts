@@ -18,6 +18,7 @@ import * as fs from "fs";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Angle } from "../../geometry3d/Angle";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 /** Functions useful for modifying test data. */
 export class RFunctions {
   /** Return cos(theta), where theta is 0 at x0, 2Pi at x2Pi.
@@ -216,7 +217,7 @@ it("DrapeLinestringLargeMesh", async () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("sweepLinestringToFacetsXYZingers", () => {
+it("sweepLinestringToFacetsXYZingers", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const out1 = [
@@ -277,7 +278,7 @@ it.only("sweepLinestringToFacetsXYZingers", () => {
       // GeometryCoreTestIO.captureCloneGeometry(allGeometry, out2, x0, y0);
 
       for (const mesh of [meshB, meshC]) {
-        const lines = PolyfaceQuery.sweepLinestringToFacets(linestringA.packedPoints, mesh);
+        const lines = PolyfaceQuery.sweepLineStringToFacets(linestringA.packedPoints, mesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines, x0, y0, z0 + stepZ);
       }
 
@@ -288,7 +289,7 @@ it.only("sweepLinestringToFacetsXYZingers", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("sweepLinestringToFacetsXYZVerticalMesh", () => {
+it("sweepLinestringToFacetsXYZVerticalMesh", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
@@ -313,22 +314,32 @@ it.only("sweepLinestringToFacetsXYZVerticalMesh", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineToDrape, x0, y0, z0);
     const options = SweepLineStringToFacetsOptions.create(direction);
-    const lines = PolyfaceQuery.sweepLinestringToFacets(lineToDrape.packedPoints, mesh, options);
+    const linesA = PolyfaceQuery.sweepLineStringToFacets(lineToDrape.packedPoints, mesh, options);
     for (const p of lineToDrape.points) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry,
         [p, p.plusScaled(direction, -2.5)], x0, y0, z0);
     }
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines, x0, y0, z0);
-    for (const optionsA of [
+    const sumLengths = (curves: CurvePrimitive[]): number => {
+      let s = 0.0;
+      for (const c of curves)
+        s += c.curveLength();
+      return s;
+    }
+    const sumA = sumLengths(linesA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, linesA, x0, y0, z0);
+    let sumB = 0.0;
+    for (const optionsB of [
       SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), true, true, false, false),
       SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), true, false, true, false),
       SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), false, false, false, true),
     ]) {
       x0 += 5.0;
-      const linesA = PolyfaceQuery.sweepLinestringToFacets(lineToDrape.packedPoints, mesh, optionsA);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, linesA, x0, y0, z0);
+      const linesB = PolyfaceQuery.sweepLineStringToFacets(lineToDrape.packedPoints, mesh, optionsB);
+      sumB += sumLengths(linesB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, linesB, x0, y0, z0);
 
     }
+    ck.testCoordinate(sumA, sumB, "Same length returned by various combinations.");
     x0 += 50.0
   }
 

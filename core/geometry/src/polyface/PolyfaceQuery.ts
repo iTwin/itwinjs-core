@@ -50,7 +50,7 @@ import { CurvePrimitive } from "../curve/CurvePrimitive";
 
 /**
  * Options carrier for sweeping linework onto meshes.
- * * All options are well defined after the static create method.
+ * * The create method initializes all options.
  * @public
  */
 export class SweepLineStringToFacetsOptions {
@@ -103,15 +103,12 @@ export class SweepLineStringToFacetsOptions {
 
 
   }
-  /** Return the vectorToEye value, resolved to default if it has not been specified */
-  public get resolvedVectorToEye(): Vector3d { return this.vectorToEye !== undefined ? this.vectorToEye.clone() : Vector3d.unitZ(); }
-  /** Return the angle for facets to be considered side-facing, with default of Geometry.smallAngleRadians */
-  public get resolvedSideAngle(): Angle { return this.sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : this.sideAngle; }
   /** Return true if all outputs are requested */
   public get collectAll() { return this.collectOnForwardFacets === true && this.collectOnRearFacets === true && this.collectOnRearFacets === true; }
 
   /** Decide if direction collect flags accept this facet.
-   * * (Undefined facet normal returns false)
+   * * Facets whose facet normal have positive, zero, or negative dot product with the vectorToEye are forward, side, and rear.
+   * * Undefined facet normal returns false
   */
   public collectFromThisFacetNormal(facetNormal: Vector3d | undefined): boolean {
     if (facetNormal === undefined)
@@ -1030,13 +1027,15 @@ export class PolyfaceQuery {
     return builder.claimPolyface(true);
   }
 
-  /** Find segments (within the linestring) which project to facets.
-   * * Default sweep direction (if no options are given is towards XY plane.)
+  /**
+   * Sweeps the linestring to intersections with a mesh.
+   * * Default sweep direction (if no options are given) is in the Z directions.
    * * Sweep options can indicate other direction and filter out any subset of forward, side and rear facets.
    * * Return collected line segments
+   * * See SweepLineStringToFacetsOptions for description of options.
    *
    */
-  public static sweepLinestringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
+  public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
     let result: CurvePrimitive[] = [];
     // setup default options:
     if (options === undefined)
@@ -1073,30 +1072,24 @@ export class PolyfaceQuery {
   }
   /** Find segments (within the linestring) which project to facets.
     * * Return collected line segments
+   * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
-    const drapeGeometry: LineSegment3d[] = [];
-    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
-      (_linestring: GrowableXYZArray, _segmentIndex: number,
-        _polyface: Polyface, _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
-        drapeGeometry.push(LineSegment3d.create(points[indexA], points[indexB]));
-      });
-    return drapeGeometry;
+    const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
+      false, true, true, true);
+    const result = PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options);
+    return result as LineSegment3d[];
   }
 
   /** Find segments (within the linestring) which project to facets.
    * * Return chains.
+   * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
-    const chainContext = ChainMergeContext.create();
-
-    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
-      (_linestring: GrowableXYZArray, _segmentIndex: number,
-        _polyface: Polyface, _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
-        chainContext.addSegment(points[indexA], points[indexB]);
-      });
-    chainContext.clusterAndMergeVerticesXYZ();
-    return chainContext.collectMaximalChains();
+    const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
+      true, true, true, true);
+    const result = PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options);
+    return result as LineString3d[];
   }
 
 

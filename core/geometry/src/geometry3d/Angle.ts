@@ -62,6 +62,12 @@ export class Angle implements BeJSONFunctions {
     return new Angle(radians);
   }
   /**
+   * Return a (new) Angle object with the default "small" angle measurement (Geometry.smallAngleRadians)
+   */
+  public static createSmallAngle(): Angle {
+    return new Angle(Geometry.smallAngleRadians);
+  }
+  /**
    * Return a (new) Angle object that is interpolated between two inputs (based on a fraction)
    * @param angle0 first angle in radians
    * @param fraction the interpolation fraction
