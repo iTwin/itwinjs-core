@@ -279,6 +279,7 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
+public;SweepLineStringToFacetsOptions
 public;TaggedNumericConstants
 public;TaggedNumericData
 internal;TorusImplicit
