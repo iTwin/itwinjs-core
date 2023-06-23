@@ -13,9 +13,11 @@ Table of contents:
   - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
 - [Electron 25 support](#electron-25-support)
 - [Geometry](#geometry)
-  - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
+  - [Sweeping a section to a sequence of planes]
+  - [Sweeping a linestring to facets]
   - [New constructors](#new-constructors)
   - [Swept surface constructions](#swept-surface-constructions)
+- [API deprecations](#api-deprecations)
 
 ## Snapping within view attachments
 
@@ -69,3 +71,39 @@ Here are those result sections assembled into `RuledSweep` solids and then facet
 ### Swept surface constructions
 
 The constructors for swept surfaces ([LinearSweep]($core-geometry), [RotationalSweep]($core-geometry), [RuledSweep]($core-geometry)) now allow [CurvePrimitive]($core-geometry) input. Internally, the curve is promoted to a `CurveChain` with one member.
+
+### Draping (sweeping) a linestring onto a mesh
+
+New method [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) provides new options to get (a) sweep direction other than vertical, (b) flags to chose to limit output to forward facing, side facing, and rear facing facets, and (c) a flag to activate joining output segments into chains.
+
+In the first example, a mesh with an upward facing main surface has smaller vertical sides and a small downward facing flange at the bottom of the side right face.  The red linestring is above the mesh.  The red linestring is swept downward (along dashed lines), intersecting the mesh.   On the left all cut lines are gathered as a single output (orange).  On the right the forward, side, and rear facing parts are separated as green, blue, and magenta.
+
+![sweepLineStringToFacetsExampleIso](./assets/SweepLineStringToFacetsVerticalSweep.png)
+
+In the second example, the same red linestring is swept to the same facets but along
+a non-vertical direction
+
+![sweepLineStringToFacetsExampleIso](./assets/SweepLinStringToFacetsNonVertical.png)
+
+## API deprecations
+
+### Geometry
+
+The two methods
+[PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) and[PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]$core-geometry) are deprecated.  Equivalent (and improved) services are provided by new function
+[PolyfaceQuery.sweepLineStringToFacets]($core-geometry).
+
+The improved set of input options in a parameter
+[SweepLineStringToFacetsOptions]($core-geometry) provides for
+
+- sweep along any direction (i.e. not just vertical)
+- choice of chained or "just line segments" output.
+- flags to selectively accept/reject output from facets that are forward, side, and rear facing.
+
+The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) is now obtained by
+[SweepLineStringToFacetsOptions]($core-geometry) options
+`const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),false, true, true, true);`
+
+The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) is now obtained by
+[SweepLineStringToFacetsOptions]($core-geometry) options
+`const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`

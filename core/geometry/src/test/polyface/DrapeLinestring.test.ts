@@ -308,7 +308,12 @@ it("sweepLinestringToFacetsXYZVerticalMesh", () => {
   const builder = PolyfaceBuilder.create();
   builder.addGreedyTriangulationBetweenLineStrings(contour0, contour1);
   const mesh = builder.claimPolyface();
-  const lineToDrape = LineString3d.create([[-1, 1, 2], [1, 1, 2], [3, 0, 2]]);
+  const zz = 1.5;
+  const lineToDrape = LineString3d.create([
+    [-2, 1, zz],
+    [0, 1, zz],
+    [1, 2, zz],
+    [3, 0, 2]]);
 
   for (const direction of [Vector3d.create(0, 0, 1), Vector3d.create(1, -3, 1)]) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);

@@ -202,7 +202,7 @@ export class OffsetMeshOptions {
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
- */git go im
+ */
 export interface FacetProjectedVolumeSums {
   /** Summed (signed) volume */
   volume: number;
@@ -1039,7 +1039,7 @@ export class PolyfaceQuery {
    * * Return collected line segments
    * * See SweepLineStringToFacetsOptions for description of options.
    *
-   * * Facets are ASSUMED to be convex and planar
+   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
   public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
     let result: CurvePrimitive[] = [];
@@ -1078,6 +1078,8 @@ export class PolyfaceQuery {
   }
   /** Find segments (within the linestring) which project to facets.
     * * Return collected line segments
+    * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
+    *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),false, true, true, true);`
    * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
@@ -1089,7 +1091,8 @@ export class PolyfaceQuery {
 
   /** Find segments (within the linestring) which project to facets.
    * * Return chains.
-   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
+   * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
+   *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`
    * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
