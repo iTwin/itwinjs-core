@@ -16,8 +16,7 @@ import { Geometry } from "../../Geometry";
 import { Polyface } from "../Polyface";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3dArrayPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
+import { Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
 
 export class SweepLineStringToFacetContext {
   private _spacePoints: GrowableXYZArray;
@@ -144,8 +143,7 @@ class EdgeClipData {
           announceEdge(this._crossingPoints[0].interpolate(f0, this._crossingPoints[1]),
             this._crossingPoints[0].interpolate(f1, this._crossingPoints[1]));
         }
-
-      )
+      );
     }
   }
 }
@@ -156,11 +154,11 @@ class EdgeClipData {
 export class ClipSweptLineStringContext {
   private _spacePoints: Point3d[];
   private _numSpacePoints: number;
-  private edgeClippers: EdgeClipData[];
+  private _edgeClippers: EdgeClipData[];
   private constructor(spacePoints: Point3d[], edgeData: EdgeClipData[]) {
     this._spacePoints = spacePoints;
     this._numSpacePoints = this._spacePoints.length;
-    this.edgeClippers = edgeData;
+    this._edgeClippers = edgeData;
   }
   public static create(xyz: GrowableXYZArray, sweepVector: Vector3d | undefined): ClipSweptLineStringContext | undefined {
     if (sweepVector === undefined)
@@ -182,7 +180,7 @@ export class ClipSweptLineStringContext {
     return undefined;
   }
   public processPolygon(polygon: Point3d[], announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
-    for (const clipper of this.edgeClippers) {
+    for (const clipper of this._edgeClippers) {
       clipper.processPolygon(polygon, announceEdge);
     }
   }

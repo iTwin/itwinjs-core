@@ -100,8 +100,6 @@ export class SweepLineStringToFacetsOptions {
       Geometry.resolveValue(collectOnSideFacets, true),
       Geometry.resolveValue(collectOnRearFacets, true)
     );
-
-
   }
   /** Return true if all outputs are requested */
   public get collectAll() { return this.collectOnForwardFacets === true && this.collectOnRearFacets === true && this.collectOnRearFacets === true; }
@@ -1031,7 +1029,6 @@ export class PolyfaceQuery {
     return this.sweepLinestringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
 
-
   /**
    * Sweeps the linestring to intersections with a mesh.
    * * Default sweep direction (if no options are given) is in the Z directions.
@@ -1053,8 +1050,6 @@ export class PolyfaceQuery {
     let chainContext: ChainMergeContext | undefined;
     if (options.assembleChains)
       chainContext = ChainMergeContext.create();
-    const drapeGeometry: LineSegment3d[] = [];
-    const collectAll = options.collectAll;
     const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
     if (context) {
       const visitor = polyface.createVisitor(0);
@@ -1080,7 +1075,7 @@ export class PolyfaceQuery {
     * * Return collected line segments
     * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),false, true, true, true);`
-   * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
+    * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
@@ -1093,7 +1088,7 @@ export class PolyfaceQuery {
    * * Return chains.
    * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
    *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`
-   * @deprecated Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
+   * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
@@ -1101,7 +1096,6 @@ export class PolyfaceQuery {
     const result = PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options);
     return result as LineString3d[];
   }
-
 
   /** Find segments (within the linestring) which project to facets.
    * * This is done as a sequence of "await" steps.
