@@ -152,7 +152,7 @@ export interface CategorySelectorProps extends DefinitionElementProps {
  * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
-  readonly wantPrivate?: boolean;
+  wantPrivate?: boolean;
 }
 
 /** Parameters used to construct a ViewDefinition

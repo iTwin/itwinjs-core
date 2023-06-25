@@ -10242,7 +10242,7 @@ export type ViewIdString = Id64String;
 // @public
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
-    readonly wantPrivate?: boolean;
+    wantPrivate?: boolean;
 }
 
 // @public
