@@ -1,6 +1,16 @@
 # Change Log - @itwin/linear-referencing-backend
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 22:04:43 GMT and should not be manually modified.
+
+## 4.0.2
+Wed, 21 Jun 2023 22:04:43 GMT
+
+_Version update only_
+
+## 4.0.1
+Wed, 21 Jun 2023 20:29:14 GMT
+
+_Version update only_
 
 ## 4.0.0
 Mon, 22 May 2023 15:34:14 GMT
@@ -10,6 +20,21 @@ Mon, 22 May 2023 15:34:14 GMT
 - Update to eslint@8
 - Drop Node 12 and Node 14.
 - Drop Node 16 support.
+
+## 3.7.9
+Tue, 20 Jun 2023 12:51:02 GMT
+
+_Version update only_
+
+## 3.7.8
+Thu, 01 Jun 2023 17:00:39 GMT
+
+_Version update only_
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:41 GMT

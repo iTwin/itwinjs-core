@@ -15,6 +15,9 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));
@@ -55,6 +58,23 @@ describe("BilinearPatch", () => {
     verifyPatch(ck, BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1));
     verifyPatch(ck, BilinearPatch.createXYZ(1, 2, 3, 5, 2, -1, 6, 7, 10, -4, 2, 1));
     ck.checkpoint("BilinearPatch.Create");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Nonconvex", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    for (const z11 of [0.0, 0.5]) {
+      const patch = BilinearPatch.createXYZ(0,0,0, 1,0,0, 0,1,0, 0.25,0.25,z11);
+      const options = StrokeOptions.createForFacets();
+      const builder = PolyfaceBuilder.create(options);
+      builder.addUVGridBody(patch, 10, 10);
+      const mesh = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+      x0 += 2;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BilinearPatch", "Nonconvex");
     expect(ck.getNumErrors()).equals(0);
   });
 

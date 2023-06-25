@@ -734,7 +734,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       || other.low.y > this.high.y
       || other.low.z > this.high.z);
   }
-  /** Test if there is any intersection with other range */
+  /** Test if there is any intersection with other range, ignoring z. */
   public intersectsRangeXY(other: Range3d): boolean {
     return !(
       this.low.x > other.high.x

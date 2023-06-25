@@ -53,12 +53,12 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "fs-extra": "^8.1.0",
-    "electron": "^24.0.0"
+    "electron": "^25.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "@itwin/eslint-plugin": "4.0.0-dev.36",
     "@itwin/object-storage-core": "^2.0.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/projects-client": "^0.6.0",
@@ -66,7 +66,7 @@
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^18.11.5",
+    "@types/node": "18.16.1",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "assert": "^2.0.0",

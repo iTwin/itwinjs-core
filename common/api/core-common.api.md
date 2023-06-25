@@ -2061,7 +2061,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }, options?: DisplayStyleSettingsOptions);
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
-    // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
     get environment(): Environment;
@@ -8725,7 +8724,6 @@ export class SkyCube extends SkyBox {
     readonly images: SkyCubeProps;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 
@@ -8788,7 +8786,6 @@ export class SkySphere extends SkyBox {
     readonly image: TextureImageSpec;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 

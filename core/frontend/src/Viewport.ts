@@ -3576,7 +3576,7 @@ export class ScreenViewport extends Viewport {
     this.invalidateRenderPlan();
   }
 
-  /** @internal override */
+  /** Overrides [[Viewport.waitForSceneCompletion]] to allow the render loop to load graphics until the scene is complete. */
   public override async waitForSceneCompletion(): Promise<void> {
     if (!IModelApp.viewManager.hasViewport(this))
       return super.waitForSceneCompletion();
