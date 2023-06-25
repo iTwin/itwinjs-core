@@ -380,6 +380,14 @@ export class BriefcaseManager {
     return IModelHost.hubAccess.getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
+  /** Query the Id of an iModel by name.
+   * @param arg Identifies the iModel of interest
+   * @returns the Id of the corresponding iModel, or `undefined` if no such iModel exists.
+   */
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName(arg);
+  }
+
   /** Deletes a folder and all it's contents.
    *  - Does not throw any errors, but logs them.
    *  - returns true if the delete was successful.
