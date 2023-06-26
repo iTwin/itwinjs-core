@@ -26,7 +26,7 @@ parameters:
 
 steps:
   - task: NodeTool@0
-    displayName: 'Use Node ${{ parameters.nodeVersion }}'
+    displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
@@ -48,14 +48,14 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
-    displayName: 'Set Rush Write Cache Variables'
+    displayName: "Set Rush Write Cache Variables"
 
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
   - task: PythonScript@0
-    displayName: 'rush change -v'
+    displayName: "rush change -v"
     inputs:
       workingDirectory: ${{ parameters.workingDir }}
       scriptSource: filepath
@@ -89,7 +89,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   - script: node ./common/scripts/install-run-rush webpack:test -v
-    displayName: 'rush webpack:test (for rush cover)'
+    displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Browser, chromium, LaunchOptions, Page } from "@playwright/test";
+import { Browser, chromium, LaunchOptions, Page } from "playwright";
 import { ChildProcess } from "child_process";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";

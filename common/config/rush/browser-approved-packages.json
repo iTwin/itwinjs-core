@@ -371,10 +371,6 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
-      "name": "@playwright/test",
-      "allowedCategories": [ "integration-testing", "tools" ]
-    },
-    {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
     },
@@ -749,6 +745,10 @@
     {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "playwright",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "puppeteer",

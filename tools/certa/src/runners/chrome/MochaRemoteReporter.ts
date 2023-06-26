@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EventEmitter } from "events";
-import { Page } from "@playwright/test";
+import { Page } from "playwright";
 import "./MochaSerializer";
 declare const window: any;
 
