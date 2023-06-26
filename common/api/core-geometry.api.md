@@ -727,7 +727,7 @@ export class BSpline1dNd {
     basisBuffer2: Float64Array;
     static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined;
     get degree(): number;
-    evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): void;
+    evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean;
     evaluateBuffersAtKnot(u: number, numDerivative?: number): void;
     evaluateBuffersInSpan(spanIndex: number, spanFraction: number): void;
     evaluateBuffersInSpan1(spanIndex: number, spanFraction: number): void;
@@ -783,7 +783,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     poleStepUV(select: UVSelect): number;
     reverseInPlace(select: UVSelect): void;
     setWrappable(select: UVSelect, value: BSplineWrapMode): void;
-    spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): void;
+    spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): boolean;
     spanFractionToKnot(select: UVSelect, span: number, localFraction: number): number;
     sumPoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
     // @deprecated (undocumented)
@@ -3252,8 +3252,8 @@ export class KnotVector {
     static createUniformClamped(numPoles: number, degree: number, a0: number, a1: number): KnotVector;
     static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector;
     degree: number;
-    evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): void;
-    evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): void;
+    evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean;
+    evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): boolean;
     fractionToKnot(fraction: number): number;
     getKnotMultiplicity(knot: number): number;
     getKnotMultiplicityAtIndex(knotIndex: number): number;

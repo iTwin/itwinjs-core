@@ -388,17 +388,22 @@ export class Vector3dArray {
  * @public
  */
 export class Point4dArray {
-  /** pack each weighted point and its corresponding weight into a buffer of xyzw xyzw ... */
+  /**
+   * Copy each weighted point and its corresponding weight into a packed buffer.
+   * @param data array of weighted xyz
+   * @param weights scalar weight array
+   * @param result optional destination array. If insufficiently sized, a new array is returned.
+   * @return packed weighted point array
+   */
   public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined {
     let points: Point3d[] | Float64Array | number[];
     if (Array.isArray(data) && data[0] instanceof Point3d) {
       points = data as Point3d[];
       if (points.length !== weights.length)
         return undefined;
-      // START HERE: if given Float array not large enough, ignore it!
-      //  Do this anywhere there's an optional FloatArray arg:
-      //  e.g., in Bezier1dNd, BezierCurveBase, BSpline1dNd, BSplineSurface, KnotVector, Matrix3d, Transform, BezierPolynomials, PascalCoefficients
-      result = result ? result : new Float64Array(4 * points.length);
+      const numValues = 4 * points.length;
+      if (!result || result.length < numValues)
+        result = new Float64Array(numValues);
       for (let i = 0, k = 0; k < points.length; k++) {
         result[i++] = points[k].x;
         result[i++] = points[k].y;
@@ -411,7 +416,9 @@ export class Point4dArray {
     const numPoints = weights.length;
     if (points.length !== 3 * numPoints)
       return undefined;
-    result = result ? result : new Float64Array(4 * numPoints);
+    const numValues1 = 4 * numPoints;
+    if (!result || result.length < numValues1)
+      result = new Float64Array(numValues1);
     for (let i = 0, k = 0; k < numPoints; k++) {
       const k0 = 3 * k;
       result[i++] = points[k0];
@@ -422,9 +429,16 @@ export class Point4dArray {
     return result;
   }
 
-  /** pack x,y,z,w in Float64Array. */
+  /**
+   * Copy 4d points into a packed buffer.
+   * @param data array of xyzw
+   * @param result optional destination array. If insufficiently sized, a new array is returned.
+   * @return packed point array
+   */
   public static packToFloat64Array(data: Point4d[], result?: Float64Array): Float64Array {
-    result = result ? result : new Float64Array(4 * data.length);
+    const numValues = 4 * data.length;
+    if (!result || result.length < numValues)
+      result = new Float64Array(numValues);
     let i = 0;
     for (const p of data) {
       result[i++] = p.x;
@@ -991,7 +1005,7 @@ export class Point3dArray {
     const vectorV = Vector3d.createStartEnd(points[indexA], points[indexB]);
     const uDotU = vectorU.dotProduct(vectorU);
     const uDotV = vectorU.dotProduct(vectorV);
-    let fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
+    const fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
     if (fraction === undefined)
       return vectorV.magnitude(); // AC is degenerate; return ||B-A||
     if (!extrapolate) {
@@ -1001,7 +1015,7 @@ export class Point3dArray {
         return vectorV.magnitude(); // return ||B-A||
     }
     // return distance to projection on (extended) segment
-    let h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
+    const h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
     // h2 should never be negative except for quirky tolerance...
     return h2 <= 0.0 ? 0.0 : Math.sqrt(h2);
   }

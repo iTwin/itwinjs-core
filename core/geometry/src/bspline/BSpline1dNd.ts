@@ -84,8 +84,11 @@ export class BSpline1dNd {
     return this.knots.spanFractionToKnot(span, localFraction);
   }
 
-  /** Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span. */
-  public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array) {
+  /**
+   * Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span.
+   * @returns true if and only if output arrays are sufficiently sized
+  */
+  public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean {
     if (spanIndex < 0) spanIndex = 0;
     if (spanIndex >= this.numSpan) spanIndex = this.numSpan - 1;
     const knotIndex0 = spanIndex + this.degree - 1;

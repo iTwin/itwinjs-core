@@ -19,7 +19,6 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point4dArray } from "../../geometry3d/PointHelpers";
 
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;

@@ -33,7 +33,10 @@ export class Bezier1dNd {
     this._packedData = polygon;
     this._basis = new UnivariateBezier(this._order);
   }
-  /** return a clone of the data array */
+  /**
+   * Return a clone of the data array.
+   * @param result optional destination array. If not the _same_ size as the data array, a new array is returned.
+   */
   public clonePolygon(result?: Float64Array): Float64Array {
     const n = this._packedData.length;
     if (!result || result.length !== n)
@@ -81,21 +84,32 @@ export class Bezier1dNd {
     }
     return undefined;
   }
-  /** Return the curve value at bezier fraction `s`
+  /**
+   * Return the curve value at bezier fraction `s`.
+   * @param s bezier parameter for evaluation
+   * @param buffer optional destination of length `blockSize`. If insufficient length, a new array is returned.
    * @return buffer of length `blockSize`.
    */
   public evaluate(s: number, buffer?: Float64Array): Float64Array {
     return this._basis.sumBasisFunctions(s, this._packedData, this._blockSize, buffer);
   }
-  /** Return the curve derivative value at bezier fraction `s`
+  /**
+   * Return the curve derivative value at bezier fraction `s`.
+   * @param s bezier parameter for evaluation
+   * @param buffer optional destination of length `blockSize`. If insufficient length, a new array is returned.
    * @return buffer of length `blockSize`.
    */
   public evaluateDerivative(s: number, buffer?: Float64Array): Float64Array {
     return this._basis.sumBasisFunctionDerivatives(s, this._packedData, this._blockSize, buffer);
   }
-  /** get a single point of the polygon as a simple array.  */
+  /**
+   * Return a point of the polygon as a simple array.
+   * @param i index of desired point
+   * @param buffer optional destination of length `blockSize`. If insufficient length, a new array is returned.
+   * @return point as simple array of length `blockSize`, or undefined if index out of range.
+   */
   public getPolygonPoint(i: number, buffer?: Float64Array): Float64Array | undefined {
-    if (!buffer)
+    if (!buffer || buffer.length < this._blockSize)
       buffer = new Float64Array(this._blockSize);
     if (i >= 0 && i < this._order) {
       const k0 = this._blockSize * i;

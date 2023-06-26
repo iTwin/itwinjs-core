@@ -333,8 +333,9 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * * choice of u or v
    * * span index
    * * local fraction within the span.
+   * @returns true if and only if output arrays are sufficiently sized
    */
-  public spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array) {
+  public spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): boolean {
     spanIndex = Geometry.clampToStartEnd(spanIndex, 0, this.numSpanUV(select));
     const knotIndex0 = spanIndex + this.degreeUV(select) - 1;
     const globalKnot = this.knots[select].baseKnotFractionToKnot(knotIndex0, spanFraction);

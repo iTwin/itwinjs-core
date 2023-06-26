@@ -305,18 +305,22 @@ export class KnotVector {
    * Evaluate basis functions f[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of order basis function values
+   * @param f preallocated output array of order basis function values
+   * @returns true if and only if output array is sufficiently sized
    */
-  public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array) {
+  public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean {
+    if (f.length < this.degree + 1)
+      return false;
     f[0] = 1.0;
-    if (this.degree < 1) return;
+    if (this.degree < 1)
+      return true;
     // direct compute for linear part ...
     const u0 = this.knots[knotIndex0];
     const u1 = this.knots[knotIndex0 + 1];
     f[1] = (u - u0) / (u1 - u0);
     f[0] = 1.0 - f[1];
-    if (this.degree < 2) return;
-
+    if (this.degree < 2)
+      return true;
     for (let depth = 1; depth < this.degree; depth++) {
       let kLeft = knotIndex0 - depth;
       let kRight = kLeft + depth + 1;
@@ -332,19 +336,28 @@ export class KnotVector {
       }
       f[depth + 1] = gCarry;
     }
+    return true;
   }
 
   /**
    * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of order basis function values
-   * @param df array of order basis derivative values
-   * @param ddf array of order basis second derivative values
+   * @param f preallocated output array of order basis function values
+   * @param df preallocated output array of order basis derivative values
+   * @param ddf optional preallocated output array of order basis second derivative values
+   * @returns true if and only if output arrays are sufficiently sized
    */
-  public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array) {
+  public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): boolean {
+    if (f.length < this.degree + 1)
+      return false;
+    if (df.length < this.degree + 1)
+      return false;
+    if (ddf && ddf.length < this.degree + 1)
+      return false;
     f[0] = 1.0; df[0] = 0.0;
-    if (this.degree < 1) return;
+    if (this.degree < 1)
+      return true;
     // direct compute for linear part ...
     const u0 = this.knots[knotIndex0];
     const u1 = this.knots[knotIndex0 + 1];
@@ -357,7 +370,8 @@ export class KnotVector {
     if (ddf) {  // first derivative started constant, second derivative started zero.
       ddf[0] = 0.0; ddf[1] = 0.0;
     }
-    if (this.degree < 2) return;
+    if (this.degree < 2)
+      return true;
     for (let depth = 1; depth < this.degree; depth++) {
       let kLeft = knotIndex0 - depth;
       let kRight = kLeft + depth + 1;
@@ -399,6 +413,7 @@ export class KnotVector {
       if (ddf)
         ddf[depth + 1] = ddgCarry;
     }
+    return true;
   }
   /** Find the knot span bracketing knots[i] <= u < knots[i+1] and return i.
    * * If u has no such bracket, return the smaller index of the closest nontrivial bracket.

@@ -1188,8 +1188,8 @@ describe("PointHelperCoverage", () => {
       ck.testNumberArray(bNumberArray, data.slice(0, bNumberArray.length), "cloneXYZPropsAsFloat64Array returns expected numbers");
     };
 
-    for (const data of dataArray)
-      testXYZPropsArray(data);
+    for (const data1 of dataArray)
+      testXYZPropsArray(data1);
 
     let dist = 0;
     const xyz = [Point3d.create(0,0,0), Point3d.create(-5,5,0), Point3d.create(5,5,0), Point3d.create(15,5,0), Point3d.create(10,0,0)];
@@ -1214,15 +1214,15 @@ describe("PointHelperCoverage", () => {
     xyz.push(Point3d.create(1,1,1));  // add a (second) point inside the hull
     Point3dArray.computeConvexHullXY(xyz, hull, interior, true);
     if (ck.testExactNumber(2, interior.length, "computeConvexHullXY returned expected number of interior points")) {
-      ck.testTrue(interior.find(p => p.isExactEqual(xyz[2])) !== undefined, "computeConvexHullXY returned expected interior point");
-      ck.testTrue(interior.find(p => p.isExactEqual(xyz[xyz.length - 1])) !== undefined, "computeConvexHullXY returned expected interior point");
+      ck.testTrue(interior.find((p) => p.isExactEqual(xyz[2])) !== undefined, "computeConvexHullXY returned expected interior point");
+      ck.testTrue(interior.find((p) => p.isExactEqual(xyz[xyz.length - 1])) !== undefined, "computeConvexHullXY returned expected interior point");
     }
     ck.testPoint3d(hull[0], hull[hull.length - 1], "computeConvexHullXY wrapped hull output as expected");
     ck.testExactNumber(5, hull.length, "computeConvexHullXY returned expected hull length");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("Point4dArray", () => {
+  it("Point4dArray", () => {
     const ck = new Checker();
     const data = [0,1,2,3,4,5];
     const points = [];  // arrays of 2 points
@@ -1237,12 +1237,18 @@ describe("PointHelperCoverage", () => {
       weights.push(w);
       weights.push(new Float64Array(w));
     }
-    const data1 = [0,1,2,1,3,4,5,1];
-    const result = new Float64Array();
+    const data1 = [0,1,2,1,3,4,5,1];  // with "weights"
+    const result = new Float64Array(data1.length);
+    const shortResult = new Float64Array(data1.length - 1);
     for (const pointArray of points) {
       let packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], result);
-      ck.testTrue(packed === result, "packPointsAndWeightsToFloat64Array returns result argument as expected");
+      ck.testTrue(packed === result, "packPointsAndWeightsToFloat64Array returns sufficiently allocated result argument");
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
+
+      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], shortResult);
+      ck.testTrue(packed !== undefined && packed !== shortResult, "packPointsAndWeightsToFloat64Array with insufficiently allocated result returns new array");
+      ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
+
       for (const weightArray of weights) {
         packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, weightArray);
         ck.testUndefined(packed, "packPointsAndWeightsToFloat64Array returns undefined on mismatched input");
