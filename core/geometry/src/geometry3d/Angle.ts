@@ -336,7 +336,7 @@ export class Angle implements BeJSONFunctions {
     return Math.abs(delta1) <= radianTol;
   }
   /**
- * Test if this angle has magnitude less than other.
+ * Test if this angle has magnitude no greater than that of `other`.
  * @param other the other angle
  */
   public isMagnitudeLessThanOrEqual(other: Angle): boolean {
