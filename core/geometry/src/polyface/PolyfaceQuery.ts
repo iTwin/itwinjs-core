@@ -1075,7 +1075,7 @@ export class PolyfaceQuery {
     * * Return collected line segments
     * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),false, true, true, true);`
-    * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
+    * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
