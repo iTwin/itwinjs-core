@@ -1240,13 +1240,14 @@ describe("PointHelperCoverage", () => {
     const data1 = [0,1,2,1,3,4,5,1];  // with "weights"
     const result = new Float64Array(data1.length);
     const shortResult = new Float64Array(data1.length - 1);
+    let packed: Float64Array | undefined;
     for (const pointArray of points) {
-      let packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], result);
+      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], result);
       ck.testTrue(packed === result, "packPointsAndWeightsToFloat64Array returns sufficiently allocated result argument");
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 
       packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], shortResult);
-      ck.testTrue(packed !== undefined && packed !== shortResult, "packPointsAndWeightsToFloat64Array with insufficiently allocated result returns new array");
+      ck.testTrue(packed !== undefined && packed !== shortResult, "packPointsAndWeightsToFloat64Array with insufficiently allocated result argument returns new array");
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 
       for (const weightArray of weights) {
@@ -1254,6 +1255,14 @@ describe("PointHelperCoverage", () => {
         ck.testUndefined(packed, "packPointsAndWeightsToFloat64Array returns undefined on mismatched input");
       }
     }
+    const points4d = [Point4d.create(data1[0], data1[1], data1[2], data1[3]), Point4d.create(data1[4], data1[5], data1[6], data1[7])];
+    packed = Point4dArray.packToFloat64Array(points4d, result);
+    ck.testTrue(packed === result, "packToFloat64Array returns sufficiently allocated result argument");
+    ck.testTrue(NumberArray.isExactEqual(packed, data1), "packToFloat64Array returns expected array");
+
+    packed = Point4dArray.packToFloat64Array(points4d, shortResult);
+    ck.testTrue(packed !== undefined && packed !== shortResult, "packToFloat64Array with insufficiently allocated result argument returns new array");
+    ck.testTrue(NumberArray.isExactEqual(packed, data1), "packToFloat64Array returns expected array");
 
     expect(ck.getNumErrors()).equals(0);
   });
