@@ -1086,7 +1086,7 @@ export class PolyfaceQuery {
 
   /** Find segments (within the linestring) which project to facets.
    * * Return chains.
-   * * this calls  [PolyfaceQuery.sweepLineStringToFacets] with options created by
+   * * this calls  [[PolyfaceQuery.sweepLineStringToFacets]] with options created by
    *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`
    * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets] to get further options.
    */
