@@ -72,7 +72,7 @@ Here are those result sections assembled into `RuledSweep` solids and then facet
 
 The constructors for swept surfaces ([LinearSweep]($core-geometry), [RotationalSweep]($core-geometry), [RuledSweep]($core-geometry)) now allow [CurvePrimitive]($core-geometry) input. Internally, the curve is promoted to a `CurveChain` with one member.
 
-### Draping (sweeping) a linestring onto a mesh
+### Sweeping a linestring to facets
 
 New method [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) provides new options to get (a) sweep direction other than vertical, (b) flags to chose to limit output to forward facing, side facing, and rear facing facets, and (c) a flag to activate joining output segments into chains.
 
