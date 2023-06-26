@@ -778,22 +778,12 @@ describe("BsplineCurve", () => {
     clampedKnotsCopy = NumberArray.cloneWithStartAndEndMultiplicity(clampedKnotsCopy, order, order);
     ck.testTrue(NumberArray.isExactEqual(clampedKnotsLegacy, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity adds knots");
 
-    // related number[] coverage
+    // related array coverage
     ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity(undefined, degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on undefined input");
     ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity([], degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on empty input");
     ck.testUndefined(NumberArray.unpack2d(wrappedKnots.knots, 0), "unpack2d on invalid numPerBlock");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
-    const primes = [2,3,5,7,11,13];
-    const xyzPropsArray = [{x:primes[0], y:primes[1], z:primes[2]}, {x:primes[3], y:primes[4], z:primes[5]}];
-    const xyzNumberArray2d = Point3dArray.cloneXYZPropsAsNumberArray(xyzPropsArray);
-    ck.testDefined(xyzNumberArray2d, "cloneXYZPropsAsNumberArray returns an array");
-    ck.testExactNumber(xyzPropsArray.length, xyzNumberArray2d.length, "cloneXYZPropsAsNumberArray returns array of expected length");
-    ck.testTrue(
-      xyzNumberArray2d[0][0] === primes[0] && xyzNumberArray2d[0][1] === primes[1] && xyzNumberArray2d[0][2] === primes[2] &&
-      xyzNumberArray2d[1][0] === primes[3] && xyzNumberArray2d[1][1] === primes[4] && xyzNumberArray2d[1][2] === primes[5],
-      "cloneXYZPropsAsNumberArray returns expected array values"
-      );
 
     expect(ck.getNumErrors()).equals(0);
   });

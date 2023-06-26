@@ -27,7 +27,7 @@ import { prettyPrint } from "./testFunctions";
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   /** For debugging: set to true to enable output to console via wrapped methods. */
-  public static enableConsole: boolean = false;
+  public static enableConsole: boolean = true;
   /** For debugging: set to true to enable saveGeometry output. */
   public static enableSave: boolean = false;
   /** For debugging: set to true to also run longer tests */

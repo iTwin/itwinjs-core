@@ -395,6 +395,9 @@ export class Point4dArray {
       points = data as Point3d[];
       if (points.length !== weights.length)
         return undefined;
+      // START HERE: if given Float array not large enough, ignore it!
+      //  Do this anywhere there's an optional FloatArray arg:
+      //  e.g., in Bezier1dNd, BezierCurveBase, BSpline1dNd, BSplineSurface, KnotVector, Matrix3d, Transform, BezierPolynomials, PascalCoefficients
       result = result ? result : new Float64Array(4 * points.length);
       for (let i = 0, k = 0; k < points.length; k++) {
         result[i++] = points[k].x;
@@ -954,9 +957,13 @@ export class Point3dArray {
         result[i++] = p.y;
         result[i++] = p.z;
       } else if (Array.isArray(p)) {
-        result[i++] = p[0];
-        result[i++] = p[1];
-        result[i++] = p.length > 2 ? p[2] : 0.0;    // allow missing z
+        result[i++] = p.length > 0 ? p[0] : 0.0;
+        result[i++] = p.length > 1 ? p[1] : 0.0;
+        result[i++] = p.length > 2 ? p[2] : 0.0;
+      } else {
+        result[i++] = p.x !== undefined ? p.x : 0.0;
+        result[i++] = p.y !== undefined ? p.y : 0.0;
+        result[i++] = p.z !== undefined ? p.z : 0.0;
       }
     }
     return result;
@@ -973,11 +980,11 @@ export class Point3dArray {
   }
 
   /**
-   * return perpendicular distance from points[indexB] to the segment points[indexA] to points[indexC].
-   * * extrapolation option when projection is outside of fraction range 0..1 are:
-   *   * false ==> measure distance to closest endpoint
-   *   * true ==> measure distance to extended line segment.
-   * (no index checking!)
+   * Return perpendicular distance from points[indexB] to the segment from points[indexA] to points[indexC].
+   * * Extrapolation options when the projection is outside of the fraction range [0,1] are:
+   *   * false ==> return distance to closest endpoint
+   *   * true ==> return distance to extended line segment
+   * * There is no index checking!
    */
   public static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number {
     const vectorU = Vector3d.createStartEnd(points[indexA], points[indexC]);
@@ -986,25 +993,24 @@ export class Point3dArray {
     const uDotV = vectorU.dotProduct(vectorV);
     let fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
     if (fraction === undefined)
-      fraction = 0.0;
+      return vectorV.magnitude(); // AC is degenerate; return ||B-A||
     if (!extrapolate) {
       if (fraction > 1.0)
-        fraction = 1.0;
+        return points[indexB].distance(points[indexC]);  // return ||B-C||
       if (fraction < 0.0)
-        fraction = 0.0;
+        return vectorV.magnitude(); // return ||B-A||
     }
+    // return distance to projection on (extended) segment
     let h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
-    // h2 should never be negative except for quirky tolerance ..
-    if (h2 < 0.0)
-      h2 = 0.0;
-    return Math.sqrt(h2);
+    // h2 should never be negative except for quirky tolerance...
+    return h2 <= 0.0 ? 0.0 : Math.sqrt(h2);
   }
 
   /** Computes the hull of the XY projection of points.
-   * * Returns the hull as an array of Point3d
-   * * Optionally returns non-hull points in `insidePoints[]`
-   * * If both arrays empty if less than 3 points.
-   * *
+   * @param points input points, z-coordinates ignored
+   * @param hullPoints (output) points on the convex hull (cloned from input points)
+   * @param insidePoints (output) points not on the convex hull (cloned from input points)
+   * @param addClosurePoint whether to append the first hull point to `hullPoints`
    */
   public static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint: boolean = false) {
     hullPoints.length = 0;
