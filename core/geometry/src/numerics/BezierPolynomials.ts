@@ -56,28 +56,31 @@ export abstract class BezierCoffs {
       this.coffs.fill(0);
     }
   }
-  /** evaluate the basis functions at specified u.
+  /**
+   * Evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @param buffer optional destination for values.   ASSUMED large enough for order.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `order`. If insufficient length, a new array is returned.
+   * @returns array of `order` basis function values.
    */
   public abstract basisFunctions(u: number, result?: Float64Array): Float64Array;
 
-  /** evaluate the basis functions at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function values.
    */
   public abstract sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array;
 
-  /** evaluate the basis functions derivatives at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function derivative values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function derivative values.
    */
   public abstract sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array;
 
@@ -451,23 +454,29 @@ export class UnivariateBezier extends BezierCoffs {
     }
   }
   private _basisValues?: Float64Array;
-  /** evaluate the basis functions at specified u.
+  /**
+   * Evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `order`. If insufficient length, a new array is returned.
+   * @returns array of `order` basis function values.
    */
   public basisFunctions(u: number, result?: Float64Array): Float64Array {
     this._basisValues = PascalCoefficients.getBezierBasisValues(this.order, u, this._basisValues);
-    if (!result || result.length !== this.order) result = new Float64Array(this.order);
+    if (!result || result.length < this.order)
+      result = new Float64Array(this.order);
     let i = 0;
-    for (const a of this._basisValues) result[i++] = a;
+    for (const a of this._basisValues)
+      result[i++] = a;
     return result;
   }
   /**
    * Sum weights[i] * data[...] in blocks of numPerBlock.
    * This is for low level use -- counts are not checked.
-   * @param weights
-   * @param data
-   * @param numPerBlock
+   * @param weights input array of length `numWeights`
+   * @param numWeights number of weights
+   * @param data input array of length `numWeights * numPerBlock`
+   * @param numPerBlock control point dimension
+   * @param result output array of length `numPerBlock`
    */
   private static sumWeightedBlocks(weights: Float64Array, numWeights: number, data: Float64Array, numPerBlock: number, result: Float64Array) {
     for (let k0 = 0; k0 < numPerBlock; k0++) {
@@ -483,32 +492,34 @@ export class UnivariateBezier extends BezierCoffs {
     }
   }
   /**
-   * Given (multidimensional) control points, sum the control points weighted by the basis function values at parameter u.
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter
-   * @param polygon Array with coefficients in blocks.
-   * @param blockSize size of blocks
-   * @param result `blockSize` summed values.
+   * @param polygon packed multidimensional control points. ASSUMED contains `blockSize*order` values.
+   * @param blockSize dimension of control points
+   * @param result optional preallocated array of length `blockSize` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `blockSize` summed basis function values.
    */
   public sumBasisFunctions(u: number, polygon: Float64Array, blockSize: number, result?: Float64Array): Float64Array {
-    const order = this._order;
-    if (!result) result = new Float64Array(order);
+    if (!result || result.length < blockSize)
+      result = new Float64Array(blockSize);
     this._basisValues = PascalCoefficients.getBezierBasisValues(this.order, u, this._basisValues);
-    UnivariateBezier.sumWeightedBlocks(this._basisValues, order, polygon, blockSize, result);
+    UnivariateBezier.sumWeightedBlocks(this._basisValues, this.order, polygon, blockSize, result);
     return result;
   }
 
   /**
-   * Given (multidimensional) control points, sum the control points weighted by the basis function derivative values at parameter u.
+   * Sum the control points weighted by the basis function derivative values at parameter u.
    * @param u bezier parameter
-   * @param polygon Array with coefficients in blocks.
-   * @param blockSize size of blocks
-   * @param result `blockSize` summed values.
+   * @param polygon packed multidimensional control points. ASSUMED contains `blockSize*order` values.
+   * @param blockSize dimension of control points
+   * @param result optional preallocated array of length `blockSize` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `blockSize` summed basis function derivative values.
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, blockSize: number, result?: Float64Array): Float64Array {
-    const order = this._order;
-    if (!result) result = new Float64Array(blockSize);
+    if (!result || result.length < blockSize)
+      result = new Float64Array(blockSize);
     this._basisValues = PascalCoefficients.getBezierBasisDerivatives(this.order, u, this._basisValues);
-    UnivariateBezier.sumWeightedBlocks(this._basisValues, order, polygon, blockSize, result);
+    UnivariateBezier.sumWeightedBlocks(this._basisValues, this.order, polygon, blockSize, result);
     return result;
   }
 
@@ -741,25 +752,30 @@ export class Order2Bezier extends BezierCoffs {
   public static solveCoffs(a0: number, a1: number): number | undefined {
     return Geometry.conditionalDivideFraction(-a0, (a1 - a0));
   }
-  /** evaluate the basis functions at specified u.
+  /**
+   * Evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length 2. If insufficient length, a new array is returned.
+   * @returns array of 2 basis function values.
    */
   public basisFunctions(u: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(2);
+    if (!result || result.length < 2)
+      result = new Float64Array(2);
     result[0] = 1.0 - u;
     result[1] = u;
     return result;
   }
-  /** evaluate the basis functions at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional preallocated array of length `n` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `n` summed basis function values.
    */
   public sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1.0 - u;
     for (let i = 0; i < n; i++) {
       result[i] = v * polygon[i] + u * polygon[i + n];
@@ -767,15 +783,17 @@ export class Order2Bezier extends BezierCoffs {
     return result;
   }
 
-  /** evaluate the blocked derivative at u.
-   * @param u bezier parameter for evaluation.
+  /**
+   * Sum the control points weighted by the basis function derivative values at parameter u.
+   * @param _u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function derivative values.
    */
   public sumBasisFunctionDerivatives(_u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       result[i] = polygon[i + n] - polygon[i];
     }
@@ -824,27 +842,32 @@ export class Order3Bezier extends BezierCoffs {
     return new Order3Bezier(this.coffs[0], this.coffs[1], this.coffs[2]);
   }
 
-  /** evaluate the basis functions at specified u.
+  /**
+   * Evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length 3. If insufficient length, a new array is returned.
+   * @returns array of 3 basis function values.
    */
   public basisFunctions(u: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(3);
+    if (!result || result.length < 3)
+      result = new Float64Array(3);
     const v = 1.0 - u;
     result[0] = v * v;
     result[1] = 2.0 * u * v;
     result[2] = u * u;
     return result;
   }
-  /** evaluate the basis functions at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional preallocated array of length `n` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `n` summed basis function values.
    */
   public sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1 - u;
     const b0 = v * v;
     const b1 = 2 * u * v;
@@ -855,15 +878,17 @@ export class Order3Bezier extends BezierCoffs {
     return result;
   }
 
-  /** evaluate the blocked derivative at u.
+  /**
+   * Sum the control points weighted by the basis function derivative values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function derivative values.
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const f0 = 2 * (1 - u);
     const f1 = 2 * u;
     const n2 = 2 * n;
@@ -934,12 +959,15 @@ export class Order4Bezier extends BezierCoffs {
       (2.0 * factorA.coffs[1] * factorB.coffs[1] + factorA.coffs[2] * factorB.coffs[0]) / 3.0,
       factorA.coffs[2] * factorB.coffs[1]);
   }
-  /** evaluate the basis functions at specified u.
+  /**
+   * Evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length 4. If insufficient length, a new array is returned.
+   * @returns array of 4 basis function values.
    */
   public basisFunctions(u: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(4);
+    if (!result || result.length < 4)
+      result = new Float64Array(4);
     const v = 1.0 - u;
     const uu = u * u;
     const vv = v * v;
@@ -949,15 +977,17 @@ export class Order4Bezier extends BezierCoffs {
     result[3] = u * uu;
     return result;
   }
-  /** evaluate the basis functions at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional preallocated array of length `n` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `n` summed basis function values.
    */
   public sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1 - u;
     const uu = u * u;
     const vv = v * v;
@@ -970,21 +1000,22 @@ export class Order4Bezier extends BezierCoffs {
     }
     return result;
   }
-  /** evaluate the blocked derivative at u.
+  /**
+   * Sum the control points weighted by the basis function derivative values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function derivative values.
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1 - u;
     // QUADRATIC basis functions applied to differences ... (with factor 3 for derivative)
     const f0 = 3 * (v * v);
     const f1 = 6 * u * v;
     const f2 = 3 * u * u;
-
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];
       const q1 = polygon[i + n];
@@ -1088,10 +1119,12 @@ export class Order5Bezier extends BezierCoffs {
 
   /** evaluate the basis functions at specified u.
    * @param u bezier parameter for evaluation.
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length 5. If insufficient length, a new array is returned.
+   * @returns array of 5 basis function values.
    */
   public basisFunctions(u: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(5);
+    if (!result || result.length < 5)
+      result = new Float64Array(5);
     const v = 1.0 - u;
     const uu = u * u;
     const uuu = uu * u;
@@ -1104,15 +1137,17 @@ export class Order5Bezier extends BezierCoffs {
     result[4] = uu * uu;
     return result;
   }
-  /** evaluate the basis functions at specified u.   Sum multidimensional control points with basis weights.
+  /**
+   * Sum the control points weighted by the basis function values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional preallocated array of length `n` to fill and return. If insufficient length, a newly created array is returned.
+   * @returns array of `n` summed basis function values.
    */
   public sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1.0 - u;
     const uu = u * u;
     const uuu = uu * u;
@@ -1128,15 +1163,17 @@ export class Order5Bezier extends BezierCoffs {
     }
     return result;
   }
-  /** evaluate the blocked derivative at u.
+  /**
+   * Sum the control points weighted by the basis function derivative values at parameter u.
    * @param u bezier parameter for evaluation.
+   * @param polygon packed multidimensional control points. ASSUMED contains `n*order` values.
    * @param n dimension of control points.
-   * @param polygon packed multidimensional control points.   ASSUMED contains `n*order` values.
-   * @param result optional destination for values.   ASSUMED size `order`
-   * @returns Return a (newly allocated) array of basis function values.
+   * @param result optional destination of length `n`. If insufficient length, a new array is returned.
+   * @returns array of `n` summed basis function derivative values.
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(n);
+    if (!result || result.length < n)
+      result = new Float64Array(n);
     const v = 1 - u;
     // CUBIC basis functions applied to differences ...
     const uu = u * u;
@@ -1145,7 +1182,6 @@ export class Order5Bezier extends BezierCoffs {
     const f1 = 12 * u * vv;
     const f2 = 12 * uu * v;
     const f3 = 4 * u * uu;
-
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];
       const q1 = polygon[i + n];
