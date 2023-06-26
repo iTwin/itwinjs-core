@@ -75,7 +75,7 @@ async function loadScript(page: Page, scriptPath: string) {
 async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
-      const page = await browser.newPage();
+      const page = browser.contexts().pop()?.pages()?.pop() || await browser.newPage();
 
       // Don't let dialogs block tests
       page.on("dialog", async (dialog: any) => dialog.dismiss());
