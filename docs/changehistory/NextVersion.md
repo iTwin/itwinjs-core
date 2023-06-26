@@ -13,8 +13,8 @@ Table of contents:
   - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
 - [Electron 25 support](#electron-25-support)
 - [Geometry](#geometry)
-  - [Sweeping a section to a sequence of planes]
-  - [Sweeping a linestring to facets]
+  - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
+  - [Sweeping a linestring to facets](#sweeping-a-linestring-to-facets)
   - [New constructors](#new-constructors)
   - [Swept surface constructions](#swept-surface-constructions)
 - [API deprecations](#api-deprecations)
