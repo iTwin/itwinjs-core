@@ -4614,7 +4614,7 @@ export namespace SchemaSync {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        readonly myVersion = "1.0.0";
+        readonly myVersion = "4.0.0";
     }
 }
 
