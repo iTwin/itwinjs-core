@@ -562,8 +562,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       return undefined;
 
     const numKnots = knotArray.length;
-    // shift knots-of-interest limits for overclamped case ...
-    const skipFirstAndLast = (numPoles + order === numKnots);
+    const skipFirstAndLast = (numPoles + order === numKnots);   // classic over-clamped input knots
+    if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern knots
+      return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
 
     const curve = new BSplineCurve3d(numPoles, order, knots);

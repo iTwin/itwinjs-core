@@ -950,11 +950,15 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
       return undefined;
 
-    // shift knots-of-interest limits for overclamped case ...
+    // validate knot counts
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
-    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
-    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
+    const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);   // classic over-clamped input knots
+    if (!skipFirstAndLastU && numPolesU + orderU !== numKnotsU + 2) // modern knots
+      return undefined;
+    const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);   // classic
+    if (!skipFirstAndLastV && numPolesV + orderV !== numKnotsV + 2) // modern
+      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :

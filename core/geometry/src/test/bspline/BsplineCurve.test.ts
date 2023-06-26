@@ -471,9 +471,9 @@ describe("BsplineCurve", () => {
     const bcurve = BSplineCurve3d.create(poleBuffer, myKnots, 4)!;
     const bcurveB = BSplineCurve3d.createUniformKnots(poleBuffer, 4);
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
-    ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10));
-    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10));
-    ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4));
+    ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10), "createUniformKnots with invalid order returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10), "create with invalid order returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4), "create with empty knots returns undefined");
     ck.testDefined(BSplineCurve3d.create(poleBuffer, myKnotsClassic, 4));
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
@@ -489,8 +489,8 @@ describe("BsplineCurve", () => {
     let n = 0;
     const myPole = Point3d.create();
     const myPoleH = Point4d.create();
-    ck.testUndefined(bcurve.getPolePoint4d(100));
-    ck.testUndefined(bcurve.getPolePoint3d(100));
+    ck.testUndefined(bcurve.getPolePoint4d(100), "getPolePoint4d with invalid index returns undefined");
+    ck.testUndefined(bcurve.getPolePoint3d(100), "getPolePoint3d with invalid index returns undefined");
     for (; bcurve.getPolePoint3d(n, myPole) !== undefined; n++) {
       const q = bcurve.getPolePoint4d(n, myPoleH);
       if (ck.testPointer(q)) {

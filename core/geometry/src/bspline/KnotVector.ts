@@ -93,9 +93,10 @@ export class KnotVector {
   /** copy degree and knots to a new KnotVector. */
   public clone(): KnotVector { return new KnotVector(this.knots, this.degree, this.wrappable); }
   private setupFixedValues() {
-    // These should be read-only . ..
-    this._knot0 = this.knots[this.degree - 1];
-    this._knot1 = this.knots[this.knots.length - this.degree];
+    if (this.degree > 0 && this.knots.length > this.degree) {
+      this._knot0 = this.knots[this.degree - 1];
+      this._knot1 = this.knots[this.knots.length - this.degree];
+    }
   }
   /** Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
@@ -212,7 +213,7 @@ export class KnotVector {
     this.setupFixedValues();
   }
 
-  /** install knot values from an array, optionally ignoring first and last. */
+  /** Set knots to input array (CAPTURED)  */
   public setKnotsCapture(knots: Float64Array) {
     this.knots = knots;
     this.setupFixedValues();

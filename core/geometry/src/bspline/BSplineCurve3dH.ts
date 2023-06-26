@@ -210,8 +210,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    *    * {xyz: Float64Array(3 * numPoles), weights: Float64Array (numPoles)}
    *
    * * Two count conditions are recognized:
-   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
-   *      extraneous knots of classic clamping.
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
    *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
    */
   public static create(controlPointData: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined {
@@ -227,8 +226,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       return undefined;
 
     const numKnots = knotArray.length;
-    // shift knots-of-interest limits for overclamped case ...
-    const skipFirstAndLast = (numPoles + order === numKnots);
+    const skipFirstAndLast = (numPoles + order === numKnots);   // classic over-clamped input knots
+    if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern knots
+      return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
 
     const curve = new BSplineCurve3dH(numPoles, order, knots);
