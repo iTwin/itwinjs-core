@@ -23,9 +23,7 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": [
-          "CVE-2023-26132" // https://github.com/advisories/GHSA-4gxf-g5gf-22h4 full-stack-tests__backend>azurite>sequelize>dottie
-        ]
+        "ignoreCves": []
       }
     }
   }

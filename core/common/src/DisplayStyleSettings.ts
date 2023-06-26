@@ -1166,21 +1166,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     return props;
   }
 
-  /** Selectively override some of these settings. Any field that is explicitly defined by the input will be overridden in these settings; any fields left undefined in the input
-   * will retain their current values in these settings. The input's [[ViewFlags]] are applied individually - only those flags that are explicitly defined will be overridden.
-   * For example, the following overrides will set the render mode to "smooth", change the background color to white, turn shadows off, and leave all other settings intact:
-   * ```ts
-   *  {
-   *    viewflags: {
-   *      renderMode: RenderMode.SmoothShade,
-   *      shadows: false,
-   *    },
-   *    backgroundColor: ColorByName.white,
-   *  }
-   * ```
-   * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
-   * @internal override
-   */
+  /** See [[DisplayStyleSettings.applyOverrides]]. */
   public override applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
     super._applyOverrides(overrides);
 
