@@ -32,7 +32,7 @@ export class ChromeTestRunner {
     };
 
     if (config.debug)
-    options.args?.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
+      options.args?.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
     browser = await chromium.launch(options);
 
@@ -48,7 +48,7 @@ export class ChromeTestRunner {
     const webserverStarted = new Promise<number>((resolve) => webserverProcess.once("message", resolve));
     const actualPort = await Promise.race([webserverExited, webserverStarted]);
     if (actualPort !== config.ports.frontend)
-    console.warn(`CERTA: Port ${config.ports.frontend} was already in use, so serving test resources on port ${actualPort}`);
+      console.warn(`CERTA: Port ${config.ports.frontend} was already in use, so serving test resources on port ${actualPort}`);
     process.env.CERTA_PORT = String(actualPort);
   }
 
