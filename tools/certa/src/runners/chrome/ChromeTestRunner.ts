@@ -32,10 +32,7 @@ export class ChromeTestRunner {
     };
 
     if (config.debug)
-      options.args?.push(
-        `--disable-gpu`,
-        `--remote-debugging-port=${config.ports.frontendDebugging}`
-      );
+    options.args?.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
     browser = await chromium.launch(options);
 
@@ -44,25 +41,14 @@ export class ChromeTestRunner {
       CERTA_PATH: path.join(__dirname, "../../../public/index.html"), // eslint-disable-line @typescript-eslint/naming-convention
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs), // eslint-disable-line @typescript-eslint/naming-convention
     };
-    webserverProcess = spawnChildProcess(
-      "node",
-      [require.resolve("./webserver")],
-      webserverEnv,
-      true
-    );
+    webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
     // Don't continue until the webserver is started and listening.
-    const webserverExited = new Promise<never>((_resolve, reject) =>
-      webserverProcess.once("exit", () => reject("Webserver exited!"))
-    );
-    const webserverStarted = new Promise<number>((resolve) =>
-      webserverProcess.once("message", resolve)
-    );
+    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
+    const webserverStarted = new Promise<number>((resolve) => webserverProcess.once("message", resolve));
     const actualPort = await Promise.race([webserverExited, webserverStarted]);
     if (actualPort !== config.ports.frontend)
-      console.warn(
-        `CERTA: Port ${config.ports.frontend} was already in use, so serving test resources on port ${actualPort}`
-      );
+    console.warn(`CERTA: Port ${config.ports.frontend} was already in use, so serving test resources on port ${actualPort}`);
     process.env.CERTA_PORT = String(actualPort);
   }
 
@@ -71,10 +57,7 @@ export class ChromeTestRunner {
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
 
-    const { failures, coverage } = await runTestsInPlaywright(
-      config,
-      process.env.CERTA_PORT!
-    );
+    const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
@@ -101,37 +84,22 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
       page.on("pageerror", reject);
 
       // Expose some functions to the frontend that will execute _in the backend context_
-      await page.exposeFunction(
-        "_CertaConsole",
-        (type: ConsoleMethodName, args: any[]) => console[type](...args)
-      );
-      await page.exposeFunction(
-        "_CertaSendToBackend",
-        executeRegisteredCallback
-      );
-      await page.exposeFunction(
-        "_CertaReportResults",
-        (results: ChromeTestResults) => {
-          setTimeout(async () => {
-            await browser.close();
-            resolve(results);
-          });
-        }
-      );
+      await page.exposeFunction("_CertaConsole", (type: ConsoleMethodName, args: any[]) => console[type](...args));
+      await page.exposeFunction("_CertaSendToBackend", executeRegisteredCallback);
+      await page.exposeFunction("_CertaReportResults", (results: ChromeTestResults) => {
+        setTimeout(async () => {
+          await browser.close();
+          resolve(results);
+        });
+      });
 
       // Now load the page (and requisite scripts)...
-      const testBundle =
-        (config.cover && config.instrumentedTestBundle) || config.testBundle;
+      const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
-      await page.addScriptTag({
-        content: `var _CERTA_CONFIG = ${JSON.stringify(config)};`,
-      });
+      await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
       await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
-      await loadScript(
-        page,
-        require.resolve("source-map-support/browser-source-map-support.js")
-      );
+      await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
       await loadScript(page, require.resolve("./MochaSerializer.js"));
       await configureRemoteReporter(page);
