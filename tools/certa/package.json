@@ -18,7 +18,8 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "docs": "",
-    "cover": ""
+    "cover": "",
+    "postinstall": "npx playwright install chromium"
   },
   "keywords": [
     "Bentley",
