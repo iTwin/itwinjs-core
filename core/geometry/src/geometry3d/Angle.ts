@@ -62,7 +62,7 @@ export class Angle implements BeJSONFunctions {
     return new Angle(radians);
   }
   /**
-   * Return a (new) Angle object with the default "small" angle measurement (Geometry.smallAngleRadians)
+   * Return a new `Angle` object with the default "small" angle measurement specified by [[Geometry.smallAngleRadians]].
    */
   public static createSmallAngle(): Angle {
     return new Angle(Geometry.smallAngleRadians);
