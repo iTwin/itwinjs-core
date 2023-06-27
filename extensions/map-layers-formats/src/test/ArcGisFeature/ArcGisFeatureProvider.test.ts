@@ -15,14 +15,14 @@ import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
-import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
-const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
+const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer", formatId: ArcGisFeatureMapLayerFormat.formatId};
 const pngTransparent1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 function makeHitDetail(noGcsDefined: boolean) {
@@ -131,7 +131,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.restore();
   });
 
-  it("should initialize with valid data", async () => {
+  it("should initialize with valid service metadata", async () => {
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: NewYorkDataset.serviceCapabilities };
@@ -147,6 +147,172 @@ describe("ArcGisFeatureProvider", () => {
 
     expect((provider as any)._minDepthFromLod).to.equals(11);
     expect((provider as any)._maxDepthFromLod).to.equals(22);
+  });
+
+  it("should initialize and set cartoRange without making extra extent request", async () => {
+
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities};
+    });
+
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
+      return NewYorkDataset.streetsLayerCapabilities;
+    });
+
+    const setCartoSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "setCartoRangeFromExtentJson" as any);
+    const fetchLayerExtentSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "fetchLayerExtent" as any);
+
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+
+    expect(setCartoSpy.called).to.be.true;
+
+    expect(setCartoSpy.args[0][0]).to.be.equals(NewYorkDataset.streetsLayerCapabilities.extent);
+    expect(fetchLayerExtentSpy.called).to.be.false;
+  });
+
+  it("should make an extra extent request when none available in layer metadata", async () => {
+
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities};
+    });
+
+    const setCartoSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "setCartoRangeFromExtentJson" as any);
+
+    const layerExtent = {...NewYorkDataset.streetsLayerCapabilities.extent};
+    const fetchLayerExtentStub = sandbox.stub(ArcGisFeatureProvider.prototype, "fetchLayerExtent" as any).callsFake(async function _(_layerId: unknown) {
+      return layerExtent;
+    });
+
+    const layerCapabilitiesNoExtent = {...NewYorkDataset.streetsLayerCapabilities, extent:null};
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
+      return layerCapabilitiesNoExtent;
+    });
+
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+
+    expect(fetchLayerExtentStub.called).to.be.true;
+    expect(setCartoSpy.called).to.be.true;
+    expect(setCartoSpy.args[0][0]).to.be.equals(layerExtent);
+  });
+
+  it("should make an extra extent request when none available in layer metadata", async () => {
+
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities};
+    });
+
+    const setCartoSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "setCartoRangeFromExtentJson" as any);
+
+    const layerExtent = {...NewYorkDataset.streetsLayerCapabilities.extent};
+    const fetchLayerExtentStub = sandbox.stub(ArcGisFeatureProvider.prototype, "fetchLayerExtent" as any).callsFake(async function _(_layerId: unknown) {
+      return layerExtent;
+    });
+
+    const layerExtentBadSrs = {...NewYorkDataset.streetsLayerCapabilities};
+    layerExtentBadSrs.extent.spatialReference.wkid = 1234;
+    layerExtentBadSrs.extent.spatialReference.latestWkid = 1234;
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
+      return layerExtentBadSrs;
+    });
+
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+
+    expect(fetchLayerExtentStub.called).to.be.true;
+    expect(setCartoSpy.called).to.be.true;
+    expect(setCartoSpy.args[0][0]).to.be.equals(layerExtent);
+  });
+
+  it("should set cartoRange from Extent json", async () => {
+
+    const newYorkLayerExtent = NewYorkDataset.streetsLayerCapabilities.extent;
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const provider = new ArcGisFeatureProvider(settings);
+
+    const west = provider.getEPSG4326Lon(newYorkLayerExtent.xmin);
+    const south = provider.getEPSG4326Lat(newYorkLayerExtent.ymin);
+    const east = provider.getEPSG4326Lon(newYorkLayerExtent.xmax);
+    const north = provider.getEPSG4326Lat(newYorkLayerExtent.ymax);
+
+    (provider as any).setCartoRangeFromExtentJson(newYorkLayerExtent);
+
+    expect(provider.cartoRange).to.be.not.undefined;
+    const delta = 0.0000001;
+    expect(provider.cartoRange!.west * Angle.degreesPerRadian).to.approximately(west, delta);
+    expect(provider.cartoRange!.south * Angle.degreesPerRadian).to.approximately(south, delta);
+    expect(provider.cartoRange!.east * Angle.degreesPerRadian).to.approximately(east, delta);
+    expect(provider.cartoRange!.north * Angle.degreesPerRadian).to.approximately(north, delta);
+
+  });
+
+  it("should compose proper request to get extent", async () => {
+
+    fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities};
+    });
+
+    const layerCapabilitiesNoExtent = {...NewYorkDataset.streetsLayerCapabilities};
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
+      return layerCapabilitiesNoExtent;
+    });
+
+    const referenceExtent = {extent: NewYorkDataset.streetsLayerCapabilities.extent};
+    const stub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async  function _(_url: unknown, _options?: unknown) {
+      const test = {
+        headers: { "content-type" : "json"},
+        json: async () => {
+          return referenceExtent;
+        },
+        status: 200,
+      } as unknown;   // By using unknown type, I can define parts of Response I really need
+      return (test as Response );
+    });
+
+    let layerId = 0;
+    let expectedUrl = `https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/${layerId}/query?where=1%3D1&outSR=3857&returnExtentOnly=true&f=json`;
+    let cachedExtent = (ArcGisFeatureProvider as any)._extentCache.get(expectedUrl);
+    expect(cachedExtent).to.be.undefined;
+
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+
+    let fetchExtent = await (provider as any).fetchLayerExtent();
+    expect(fetchExtent).to.equals(referenceExtent.extent);
+    expect(stub.getCalls().length).to.equals(1);
+    expect(stub.args[0][0].toString()).to.be.equals(expectedUrl);
+
+    // Check if entry has been created in cache
+    cachedExtent = (ArcGisFeatureProvider as any)._extentCache.get(expectedUrl);
+    expect(cachedExtent).to.be.not.undefined;
+    expect(cachedExtent).to.equals(referenceExtent);
+
+    // Make sure cache is used
+    await (provider as any).fetchLayerExtent();
+    expect(stub.getCalls().length).to.equals(1);
+
+    // Force a different layerId, and check a new request has been made
+    layerId = 2;
+    expectedUrl = `https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/${layerId}/query?where=1%3D1&outSR=3857&returnExtentOnly=true&f=json`;
+    cachedExtent = (ArcGisFeatureProvider as any)._extentCache.get(expectedUrl);
+    expect(cachedExtent).to.be.undefined;
+    (provider as any)._layerId = layerId;
+    fetchExtent = await (provider as any).fetchLayerExtent();
+    expect(fetchExtent).to.equals(referenceExtent.extent);
+    expect(stub.getCalls().length).to.equals(2);
+    expect(stub.args[1][0].toString()).to.be.equals(expectedUrl);
+
+    // check cache has been updated with a new entry
+    cachedExtent = (ArcGisFeatureProvider as any)._extentCache.get(expectedUrl);
+    expect(cachedExtent).to.be.not.undefined;
+    expect(cachedExtent).to.equals(referenceExtent);
+
   });
 
   it("should not initialize with no service metadata", async () => {
@@ -404,7 +570,7 @@ describe("ArcGisFeatureProvider", () => {
         latestWkid: 3857,
       },
     };
-    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100`);
+    expect(url?.url).to.equals("https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100");
     expect(url?.envelope?.xmin).to.be.closeTo(extent.xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo(extent.ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo(extent.xmax, 0.01);
@@ -425,7 +591,7 @@ describe("ArcGisFeatureProvider", () => {
     const provider2 = new ArcGisFeatureProvider(settings);
     await provider2.initialize();
     url = provider2.constructFeatureUrl(0, 0, 0, "PBF", "tile");
-    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D`);
+    expect(url?.url).to.equals("https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D");
     expect(url?.envelope?.xmin).to.be.closeTo(extent.xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo(extent.ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo(extent.xmax, 0.01);
@@ -450,7 +616,7 @@ describe("ArcGisFeatureProvider", () => {
     const provider3 = new ArcGisFeatureProvider(settings);
     await provider3.initialize();
     url = provider3.constructFeatureUrl(0, 0, 0, "PBF", "tile", overrideGeom);
-    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D`);
+    expect(url?.url).to.equals("https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D");
     expect(url?.envelope?.xmin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmax, 0.01);
@@ -460,7 +626,7 @@ describe("ArcGisFeatureProvider", () => {
 
     // Now test with a different tolerance value
     url = provider3.constructFeatureUrl(0, 0, 0, "PBF", "tile", overrideGeom, undefined, 10);
-    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D&distance=782715.16953125`);
+    expect(url?.url).to.equals("https://dummy.com/SomeGuid/ArcGIS/rest/services/SomeService/FeatureServer/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D&distance=782715.16953125");
     expect(url?.envelope?.xmin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmax, 0.01);
