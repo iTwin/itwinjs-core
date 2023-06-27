@@ -64,6 +64,22 @@ export enum ToolAssistanceInputMethod {
   Touch,
 }
 
+/** Identifies one of a set of commonly-used [[ToolAssistance]] messages prompting the user to specify
+ * an element or location for a tool operation.
+ * @see [[ToolAssistance.translatePrompt]] to obtain a corresponding localized message appropriate for displaying to the user.
+ * @public
+ * @extensions
+ */
+export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint";
+
+/** Identifies one of a set of commonly-used [[ToolAssistance]] messages notifying the user of the result of
+ * the next input.
+ * @see [[ToolAssistance.translateInput]] to obtain a corresponding localizaed message appropriate for displaying to the user.
+ * @public
+ * @extensions
+ */
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
+
 /** Tool Assistance image keyboard keys
  * @public
  * @extensions
@@ -139,6 +155,16 @@ export class ToolAssistance {
 
   private static translateKey(key: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`); }
   private static translateTouch(cursor: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`); }
+
+  /** Return the translated string for the specified main instruction key */
+  public static translatePrompt(key: ToolAssistancePromptKey): string {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.tools}ElementSet.Prompts.${key}`);
+  }
+
+  /** Return the translated string for the specified input instruction key */
+  public static translateInput(key: ToolAssistanceInputKey): string {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.tools}ElementSet.Inputs.${key}`);
+  }
 
   /** Alt key text. */
   public static get altKey(): string {

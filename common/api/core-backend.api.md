@@ -528,7 +528,6 @@ export class BriefcaseManager {
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
-    // @internal (undocumented)
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -558,6 +557,7 @@ export class BriefcaseManager {
         iModelId: GuidString;
         range: ChangesetRange;
     }): Promise<ChangesetProps[]>;
+    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
 }
 
@@ -702,6 +702,7 @@ export class ChannelAdmin implements ChannelControl {
     }): void;
     // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
+    // (undocumented)
     static readonly sharedChannel = "shared";
     // (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -725,6 +726,11 @@ export interface ChannelControl {
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
+}
+
+// @beta (undocumented)
+export namespace ChannelControl {
+    const sharedChannelName = "shared";
 }
 
 // @beta
@@ -3027,7 +3033,6 @@ export namespace IModelDb {
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Required<CodeProps>): Id64String | undefined;
-        // @internal
         queryLastModifiedTime(elementId: Id64String): string;
         queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
@@ -3047,7 +3052,6 @@ export namespace IModelDb {
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         insertModel(props: ModelProps): Id64String;
         queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
-        // @internal
         queryLastModifiedTime(modelId: Id64String): string;
         queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d>;
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
@@ -4540,7 +4544,6 @@ export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 export class Schemas {
     static getRegisteredSchema(schemaName: string): typeof Schema | undefined;
     static registerSchema(schema: typeof Schema): void;
-    // @internal
     static unregisterSchema(schemaName: string): boolean;
 }
 
@@ -5063,6 +5066,8 @@ export enum SqliteValueType {
 
 // @public
 export class StandaloneDb extends BriefcaseDb {
+    // @beta
+    createClassViews(): void;
     static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
