@@ -1033,7 +1033,7 @@ export class PolyfaceQuery {
    * Sweeps the linestring to intersections with a mesh.
    * * Return collected line segments.
    * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
-   * * See [[SweepLineStringToFacetsOptions]] for input and output options.
+   * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
    */
   public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
@@ -1051,8 +1051,9 @@ export class PolyfaceQuery {
     const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
     if (context) {
       const visitor = polyface.createVisitor(0);
+      const workNormal = Vector3d.createZero();
       for (visitor.reset(); visitor.moveToNextFacet();) {
-        if (options?.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point))) {
+        if (options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))) {
           context.processPolygon(visitor.point.getArray(),
             (pointA: Point3d, pointB: Point3d) => {
               if (chainContext !== undefined)
