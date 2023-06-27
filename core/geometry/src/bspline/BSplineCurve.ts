@@ -481,8 +481,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         startPoint.set(poles[0], poles[1], poles[2]);
         endPoint.set(poles[3 * numPoles - 3], poles[3 * numPoles - 2], poles[3 * numPoles - 1]);
       } else if (poles instanceof GrowableXYZArray) {
-        startPoint.set(poles.float64Data()[0], poles.float64Data()[1], poles.float64Data()[2]);
-        endPoint.set(poles.float64Data()[3 * numPoles - 3], poles.float64Data()[3 * numPoles - 2], poles.float64Data()[3 * numPoles - 1]);
+        poles.getPoint3dAtUncheckedPointIndex(0, startPoint);
+        poles.getPoint3dAtUncheckedPointIndex(numPoles - 1, endPoint);
       } else {
         startPoint.setFromPoint3d(poles[0]);
         endPoint.setFromPoint3d(poles[numPoles - 1]);
@@ -501,14 +501,17 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     // append degree wraparound poles
     const curve = new BSplineCurve3d(numPoles + degree, order, knots);
     if (poles instanceof Float64Array) {
-      for (let i = 0; i < 3 * numPoles; i++)
-        curve._bcurve.packedData[i] = poles[i];
-      for (let i = 0; i < 3 * degree; i++)
-        curve._bcurve.packedData[3 * numPoles + i] = poles[i];
+      let i = 0;
+      for (let j = 0; j < 3 * numPoles; j++)
+        curve._bcurve.packedData[i++] = poles[j];
+      for (let j = 0; j < 3 * degree; j++)
+        curve._bcurve.packedData[i++] = poles[j];
     } else if (poles instanceof GrowableXYZArray) {
-      curve._bcurve.packedData = poles.float64Data().slice(0, 3 * numPoles);
-      for (let i = 0; i < 3 * degree; i++)
-        curve._bcurve.packedData[3 * numPoles + i] = poles.float64Data()[i];
+      let i = 0;
+      for (let j = 0; j < 3 * numPoles; j++)
+        curve._bcurve.packedData[i++] = poles.float64Data()[j];
+      for (let j = 0; j < 3 * degree; j++)
+        curve._bcurve.packedData[i++] = poles.float64Data()[j];
     } else {
       let i = 0;
       for (let j = 0; j < numPoles; j++) {

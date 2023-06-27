@@ -430,8 +430,10 @@ describe("BsplineCurve", () => {
 
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
 
-    ck.testUndefined(BSplineCurve3dH.createUniformKnots(poleBuffer, 10));
-    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 10));
+    ck.testUndefined(BSplineCurve3dH.createUniformKnots(poleBuffer, 10), "createUniformKnots with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 10), "create with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 1), "create with order too small returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create([] as Point3d[], myKnots, 4), "create with empty array returns undefined");
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
     const poleArray = bcurve.copyPoints();
@@ -472,8 +474,10 @@ describe("BsplineCurve", () => {
     const bcurveB = BSplineCurve3d.createUniformKnots(poleBuffer, 4);
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
     ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10), "createUniformKnots with invalid order returns undefined");
-    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10), "create with invalid order returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10), "create with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 1), "create with order too small returns undefined");
     ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4), "create with empty knots returns undefined");
+    ck.testUndefined(BSplineCurve3d.create([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]], myKnots, 4), "create with pole input as 2D number array of invalid dimension returns undefined");
     ck.testDefined(BSplineCurve3d.create(poleBuffer, myKnotsClassic, 4));
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
@@ -485,6 +489,17 @@ describe("BsplineCurve", () => {
         ck.testExactNumber(poleArray[i][2], poleBufferA[k++]);
       }
     }
+    const bcurveC = BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 4);
+    const poleGrowableArray = GrowableXYZArray.create(poleBuffer);
+    const bcurveD = BSplineCurve3d.createPeriodicUniformKnots(poleGrowableArray, 4);
+    if (
+      ck.testType(bcurveC, BSplineCurve3d, "createPeriodicUniformKnots with Float64Array input returns valid curve") &&
+      ck.testType(bcurveD, BSplineCurve3d, "createPeriodicUniformKnots with GrowableXYZArray input returns valid curve")
+      ) {
+      ck.testTrue(bcurveC.isAlmostEqual(bcurveD), "createPeriodicUniformKnots returns same output on different input type");
+    }
+    ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 10), "createPeriodicUniformKnots with invalid numPoles returns undefined");
+    ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 1), "createPeriodicUniformKnots with invalid order returns undefined");
 
     let n = 0;
     const myPole = Point3d.create();
@@ -713,7 +728,7 @@ describe("BsplineCurve", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     for (const filename of ["./src/test/testInputs/curve/openAndClosedCurves.imjs",
-                            "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
+      "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {
