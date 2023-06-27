@@ -16,7 +16,7 @@ import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhys
 
 /// cspell:ignore accum
 
-describe.only("TxnManager", () => {
+describe("TxnManager", () => {
   let imodel: StandaloneDb;
   let roImodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
@@ -126,6 +126,10 @@ describe.only("TxnManager", () => {
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
+
+    expect(imodel.nativeDb.getCurrentTxnId()).not.equal(roImodel.nativeDb.getCurrentTxnId());
+    roImodel.nativeDb.restartDefaultTxn();
+    expect(imodel.nativeDb.getCurrentTxnId()).equal(roImodel.nativeDb.getCurrentTxnId());
 
     const classId = imodel.nativeDb.classNameToId(props.classFullName);
     assert.isTrue(Id64.isValid(classId));
@@ -535,6 +539,12 @@ describe.only("TxnManager", () => {
       accum.expectNumValidations(1);
       accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
+
+    EventAccumulator.testModels(roImodel, (accum) => {
+      roImodel.nativeDb.restartDefaultTxn();
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
+    });
+
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
     // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
@@ -564,6 +574,11 @@ describe.only("TxnManager", () => {
       accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
 
       accum.expectNumApplyChanges(0);
+    });
+
+    EventAccumulator.testModels(roImodel, (accum) => {
+      roImodel.nativeDb.restartDefaultTxn();
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
     });
 
     // Undo
@@ -690,6 +705,22 @@ describe.only("TxnManager", () => {
       imodel.elements.deleteElement(newElemId);
       return true;
     });
+
+    imodel.saveChanges();
+
+    // now test that all the changes we just made are seen by the readonly connection when we call `restartDefaultTxn`
+    let numRoEvents = 0;
+    const newGuid = imodel.models.getModel<PhysicalModel>(modelId).geometryGuid;
+
+    const dropListener = roImodel.txns.onModelGeometryChanged.addListener((changes) => {
+      ++numRoEvents;
+      expect(changes.length).to.equal(1);
+      expect(changes[0].id).to.equal(modelId);
+      expect(changes[0].guid).to.equal(newGuid);
+    });
+    roImodel.nativeDb.restartDefaultTxn();
+    expect(numRoEvents).equal(4);
+    dropListener();
   });
 
   it("dispatches events in batches", async () => {
