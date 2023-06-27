@@ -836,7 +836,7 @@ public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
-internal;ToolSettingsState
+public;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
 public;ToolTipProvider

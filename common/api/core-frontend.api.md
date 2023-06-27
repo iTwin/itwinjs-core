@@ -524,7 +524,6 @@ export class AccuDraw {
     readonly savedStateViewTool: SavedState;
     // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // @internal (undocumented)
     sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
     setCompassMode(mode: CompassMode): void;
     // @internal (undocumented)
@@ -13874,7 +13873,6 @@ export class ToolAdmin {
     testDecorationHit(id: string): boolean;
     get toolSettingsChangeHandler(): ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined;
     set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined);
-    // @internal (undocumented)
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
     readonly toolState: ToolState;
@@ -14043,7 +14041,7 @@ export class ToolSettings {
     static zoomSpeed: number;
 }
 
-// @internal
+// @public
 export class ToolSettingsState {
     getInitialToolSettingValue(toolId: string, propertyName: string): DialogItemValue | undefined;
     getInitialToolSettingValues(toolId: string, propertyNames: string[]): DialogPropertyItem[] | undefined;
