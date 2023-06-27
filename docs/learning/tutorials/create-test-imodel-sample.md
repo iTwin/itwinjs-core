@@ -1,13 +1,15 @@
-# Create a test iModel from a Bentley provided sample via the Free Trial service
+# Create a test iModel from a Bentley provided sample
 
 The quickest way to get access to an iTwin Platform hosted iModel is by creating an iModel seeded with Bentley provided sample data.
 
-- Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
-- Give your test iModel a name
+- Go to "[My iTwins - Create iTwin](https://developer.bentley.com/my-itwins/new/)"
+- Give your Test iTwin a name
+- The Test iTwin will be created and will contain no iModels
+- Select the "New" button to create a new iModel
+- Give your iModel a name
+- Select "Bentley Sample" in the "Create iModel from" section
 - Select a template from the dropdown
-  - Add the email addresses of anyone else you would like to grant access to the iModel
-  - Any other users will also have to have a Bentley account
-- Click Submit
+- Click Save
 
 ### Metrostation Sample
 
