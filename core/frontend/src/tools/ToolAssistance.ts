@@ -78,8 +78,7 @@ export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "Sta
  * @public
  * @extensions
  */
-export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" |
-  "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
 
 /** Tool Assistance image keyboard keys
  * @public
