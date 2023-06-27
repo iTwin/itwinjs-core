@@ -524,7 +524,6 @@ export class AccuDraw {
     readonly savedStateViewTool: SavedState;
     // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // @internal (undocumented)
     sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
     setCompassMode(mode: CompassMode): void;
     // @internal (undocumented)
@@ -13992,7 +13991,6 @@ export class ToolAdmin {
     testDecorationHit(id: string): boolean;
     get toolSettingsChangeHandler(): ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined;
     set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined);
-    // @internal (undocumented)
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
     readonly toolState: ToolState;
@@ -14031,6 +14029,8 @@ export class ToolAssistance {
     static get shiftKeyboardInfoNoSymbol(): ToolAssistanceKeyboardInfo;
     static readonly shiftSymbol: string;
     static get shiftSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo;
+    static translateInput(key: ToolAssistanceInputKey): string;
+    static translatePrompt(key: ToolAssistancePromptKey): string;
     static readonly upSymbol: string;
 }
 
@@ -14054,6 +14054,9 @@ export enum ToolAssistanceImage {
     TwoTouchPinch = 14,
     TwoTouchTap = 12
 }
+
+// @public
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
 
 // @public
 export enum ToolAssistanceInputMethod {
@@ -14082,6 +14085,9 @@ export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
 }
+
+// @public
+export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint";
 
 // @public
 export interface ToolAssistanceSection {
@@ -14153,7 +14159,7 @@ export class ToolSettings {
     static zoomSpeed: number;
 }
 
-// @internal
+// @public
 export class ToolSettingsState {
     getInitialToolSettingValue(toolId: string, propertyName: string): DialogItemValue | undefined;
     getInitialToolSettingValues(toolId: string, propertyNames: string[]): DialogPropertyItem[] | undefined;

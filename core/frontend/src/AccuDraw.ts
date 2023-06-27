@@ -879,7 +879,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
-  /** @internal */
+  /** Emulate a mouse click at the specified location in the supplied view by sending button down/up events. */
   public async sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void> {
     const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, inputSource: InputSource.Mouse, isDown: true });
 
