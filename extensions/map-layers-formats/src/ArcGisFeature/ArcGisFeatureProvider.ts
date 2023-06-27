@@ -324,7 +324,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     const epsg3857X = this.getEPSG3857X(carto.longitudeDegrees);
     const epsg3857Y = this.getEPSG3857Y(carto.latitudeDegrees);
 
-
     const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
     const tilePixelSize = (tileExtent.top - tileExtent.bottom) / this.tileSize;
     const tolerancePixel = 3;
@@ -338,7 +337,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         xmin: epsg3857X - toleranceWorld, ymin: epsg3857Y - toleranceWorld,
         xmax: epsg3857X + toleranceWorld, ymax: epsg3857Y + toleranceWorld,
         spatialReference: { wkid: 102100, latestWkid: 3857 },
-    }};
+      }};
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", queryEnvelope,
