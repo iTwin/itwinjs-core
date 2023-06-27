@@ -17,7 +17,7 @@ import {
   LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
 import { TelemetryEvent } from "@itwin/core-telemetry";
-import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
