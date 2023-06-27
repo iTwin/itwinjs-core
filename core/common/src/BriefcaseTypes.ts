@@ -91,6 +91,8 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { /
   readonly fileName: LocalFileName;
   /** If true, open the briefcase readonly */
   readonly readonly?: boolean;
+
+  readonly watchChanges?: boolean;
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)

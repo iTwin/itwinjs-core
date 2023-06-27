@@ -113,12 +113,6 @@ describe("IModelWriteTest", () => {
     expect(prePushChangeset !== postPushChangeset);
 
     rwIModel.close();
-    // The iModel should have code1 marked as used and not code2
-    // timer = new Timer("querying codes");
-    // const codes = await IModelHubAccess.iModelClient.codes.get(adminRequestContext, rwIModelId);
-    // timer.end();
-    // assert.isTrue(codes.find((code) => (code.value === "newPhysicalModel2" && code.state === CodeState.Used)) !== undefined);
-    // assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
   });
 
   it("Run plain SQL against fixed version connection", async () => {

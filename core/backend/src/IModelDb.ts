@@ -7,6 +7,7 @@
  */
 
 import { join } from "path";
+import { watch as watchForChanges } from "fs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -2422,6 +2423,17 @@ export class BriefcaseDb extends IModelDb {
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    if (openMode === OpenMode.Readonly && args.watchChanges && undefined === args.container) {
+      const watcher = watchForChanges(file.path, { persistent: false }, () => {
+        console.log(`file ${file.path} changed`);
+        nativeDb.restartDefaultTxn();
+      });
+      briefcaseDb.onBeforeClose.addOnce(() => {
+        console.log("on close");
+        watcher.close();
+      });
+    }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
