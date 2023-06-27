@@ -16,8 +16,9 @@ import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhys
 
 /// cspell:ignore accum
 
-describe("TxnManager", () => {
+describe.only("TxnManager", () => {
   let imodel: StandaloneDb;
+  let roImodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
   let testFileName: string;
 
@@ -61,9 +62,11 @@ describe("TxnManager", () => {
 
     imodel.saveChanges("schema change");
     imodel.nativeDb.deleteAllTxns();
+    roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
   after(() => {
+    roImodel.close();
     imodel.close();
     IModelJsFs.removeSync(testFileName);
   });
