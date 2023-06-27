@@ -702,6 +702,7 @@ export class ChannelAdmin implements ChannelControl {
     }): void;
     // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
+    // (undocumented)
     static readonly sharedChannel = "shared";
     // (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -725,6 +726,11 @@ export interface ChannelControl {
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
+}
+
+// @beta (undocumented)
+export namespace ChannelControl {
+    const sharedChannelName = "shared";
 }
 
 // @beta
