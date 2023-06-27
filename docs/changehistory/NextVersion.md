@@ -74,7 +74,7 @@ The constructors for swept surfaces ([LinearSweep]($core-geometry), [RotationalS
 
 ### Sweeping a linestring to facets
 
-New method [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) provides new options to specify (a) sweep direction other than vertical, (b) flags to limit output to forward facing, side facing, and/or rear facing facets, and (c) a flag to assemble of output segments into chains.
+New method [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) provides new options to specify (a) sweep direction other than vertical, (b) limiting output to forward facing, side facing, and/or rear facing facets, and (c) assembly of output segments into chains.
 
 In the first example, a mesh with an upward facing main surface has smaller vertical sides and a small downward facing flange at the bottom of the side right face.  The red linestring is above the mesh.  The red linestring is swept downward (along dashed lines), intersecting the mesh.   On the left all cut lines are gathered as a single output (orange).  On the right the forward, side, and rear facing parts are separated as green, blue, and magenta.
 
@@ -98,7 +98,7 @@ The improved set of input options in a parameter
 
 - sweep along any direction (i.e. not just vertical)
 - choice of chained or "just line segments" output
-- flags to selectively accept/reject output from facets that are forward, side, and rear facing.
+- flags to selectively accept/reject output from facets that are forward, side, and/or rear facing.
 
 The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) is now obtained with
 [SweepLineStringToFacetsOptions]($core-geometry) options:

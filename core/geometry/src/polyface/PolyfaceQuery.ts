@@ -62,9 +62,9 @@ export class SweepLineStringToFacetsOptions {
   public vectorToEye: Vector3d;
   /** true to collect edges from facets that face towards the eye */
   public collectOnForwardFacets: boolean;
-  /** true to collect facets that face away from the eye */
-  public collectOnSideFacets: boolean;
   /** true to collect facets that are "on the side", i.e. their outward vector is perpendicular to vectorToEye. */
+  public collectOnSideFacets: boolean;
+  /** true to collect facets that face away from the eye */
   public collectOnRearFacets: boolean;
   /** (small) angle to use as tolerance for deciding if a facet is "on the side".  Default (if given in degrees) is Geometry.smallAngleDegrees */
   public sideAngle: Angle;
@@ -94,7 +94,7 @@ export class SweepLineStringToFacetsOptions {
     collectOnRearFacets?: boolean) {
     return new SweepLineStringToFacetsOptions(
       vectorToEye === undefined ? Vector3d.unitZ() : vectorToEye.clone(),
-      sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : sideAngle,
+      sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : sideAngle.clone(),
       Geometry.resolveValue(assembleChains, true),
       Geometry.resolveValue(collectOnForwardFacets, true),
       Geometry.resolveValue(collectOnSideFacets, true),
