@@ -305,10 +305,12 @@ describe("Ray3d.isAlmostEqualPointSet", () => {
     ray2 = Ray3d.create(origin2, direction2);
     ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is equal to ray2");
 
-    origin2 = Point3d.create(0, 0, 1);
+    origin2 = Point3d.create(-1, -2, -3); // a different point on ray1
     direction2 = Vector3d.create(1, 2, 3);
     ray2 = Ray3d.create(origin2, direction2);
     ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is parallel to ray2");
+
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 

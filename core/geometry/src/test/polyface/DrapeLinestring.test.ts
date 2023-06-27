@@ -52,7 +52,7 @@ it("DrapeLinestringAsPanels", async () => {
         return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
       });
 
-    const _panels = PolyfaceQuery.sweepLinestringToFacetsXYreturnSweptFacets(linestring.packedPoints, mesh);
+    const _panels = PolyfaceQuery.sweepLinestringToFacetsXYReturnSweptFacets(linestring.packedPoints, mesh);
     // GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring, panels], 0, dy, 0);
     _dy += 20.0;
   }

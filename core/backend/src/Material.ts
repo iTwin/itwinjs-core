@@ -66,7 +66,7 @@ export class RenderMaterialElement extends DefinitionElement {
     this.paletteName = props.paletteName;
     this.description = props.description;
   }
-  /** @internal */
+
   public override toJSON(): RenderMaterialProps {
     const val = super.toJSON() as RenderMaterialProps;
     val.paletteName = this.paletteName;

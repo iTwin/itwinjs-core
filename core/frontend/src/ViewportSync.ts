@@ -191,14 +191,14 @@ export class TwoWayViewportSync {
  * @extensions
  */
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
-  /** @internal override */
+  /** Synchronizes the two viewports by applying `source`'s frustum to `target`. */
   protected override syncViewports(source: Viewport, target: Viewport): void {
     const pose = source.view.savePose();
     const view = target.view.applyPose(pose);
     target.applyViewState(view);
   }
 
-  /** @internal override */
+  /** Sets up the initial connection between two viewports by applying `source`'s frustum to `target`. */
   protected override connectViewports(source: Viewport, target: Viewport): void {
     this.syncViewports(source, target);
   }

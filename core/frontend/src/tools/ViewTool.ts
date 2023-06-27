@@ -3559,7 +3559,8 @@ export class WindowAreaTool extends ViewTool {
     if (currentDelta.x === 0 || delta.x === 0)
       return undefined;
 
-    const viewAspect = currentDelta.y / currentDelta.x;
+    const skew = vp.view.getAspectRatioSkew();
+    const viewAspect = skew * currentDelta.y / currentDelta.x;
     const aspectRatio = Math.abs(delta.y / delta.x);
 
     let halfDeltaX;

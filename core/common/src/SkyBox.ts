@@ -314,7 +314,7 @@ export class SkySphere extends SkyBox {
     this.image = image;
   }
 
-  /** @internal override */
+  /** See [[SkyBox.toJSON]]. */
   public override toJSON(display?: boolean): SkyBoxProps {
     const props = super.toJSON(display);
     props.image = {
@@ -341,14 +341,14 @@ export class SkyCube extends SkyBox {
 
   /** Create a new sky cube using the specified images.
    * @param images The images to map to each face of the cube.
-   * @param Optionally overrides  the default gradient settings used if the images cannot be obtained.
+   * @param gradient Optionally overrides  the default gradient settings used if the images cannot be obtained.
    */
   public constructor(images: SkyCubeProps, gradient?: SkyGradient) {
     super(gradient ?? SkyGradient.defaults);
     this.images = { ...images };
   }
 
-  /** @internal override */
+  /** See [[SkyBox.toJSON]]. */
   public override toJSON(display?: boolean): SkyBoxProps {
     const props = super.toJSON(display);
     props.image = {
