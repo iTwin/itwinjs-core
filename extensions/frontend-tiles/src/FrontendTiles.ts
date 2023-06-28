@@ -40,12 +40,13 @@ export interface MeshExport {
     exportType: string;
     geometryOptions: any;
     viewDefinitionFilter: any;
-  },
+  };
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
   _links: {
     mesh: {
-      href: string,
-    },
-  },
+      href: string;
+    };
+  };
 }
 
 /** Arguments supplied to [[queryCompletedMeshExports]].
@@ -73,8 +74,11 @@ export async function queryCompletedMeshExports(args: QueryCompletedMeshExportsA
 
   const url = new URL(createMeshExportServiceQueryUrl(args));
   const headers = {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken ?? await IModelApp.getAccessToken(),
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Accept: "application/vnd.bentley.itwin-platform.v1+json",
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Prefer: "return=representation",
   };
 
@@ -115,7 +119,7 @@ export async function obtainTilesetUrlFromMeshExportService(args: ObtainTilesetU
   }
 
   const url = new URL(selectedExport._links.mesh.href);
-  url.pathname = url.pathname + "/tileset.json";
+  url.pathname = `${url.pathname}/tileset.json`;
   return url;
 }
 
