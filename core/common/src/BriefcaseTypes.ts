@@ -97,10 +97,10 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { /
    */
   readonly readonly?: boolean;
   /**
-   * If true, watch the briefcase for changes from another connection and restart the defaultTxn whenever they happen.
+   * If true, open the briefcase readonly and watch the briefcase for changes from another connection and restart the defaultTxn whenever they happen.
    * The restart happens only after the next to the (backend) event loop, and will generate events that reflect the changes
    * from the other connection.
-   * @note This applies only for readonly connections, and cannot be used with cloud-based briefcases.
+   * @note This cannot be used with cloud-based briefcases.
    */
   readonly watchForChanges?: boolean;
 }

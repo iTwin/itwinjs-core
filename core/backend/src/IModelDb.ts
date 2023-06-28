@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { watch as watchForChanges } from "fs";
+import * as fs from "fs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -2338,6 +2338,7 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  /** Event raised after a BriefcaseDb has been closed. */
   public readonly onClosed = new BeEvent<() => void>();
 
   /** @alpha */
@@ -2422,13 +2423,16 @@ export class BriefcaseDb extends IModelDb {
     this.onOpen.raiseEvent(args);
 
     const file = { path: args.fileName, key: args.key };
-    const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.Readonly && args.watchForChanges && undefined === args.container) {
-      const watcher = watchForChanges(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
-      briefcaseDb.onClosed.addOnce(() => watcher.close());
+    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
+    // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
+    if (args.watchForChanges && undefined === args.container) {
+      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
     }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {

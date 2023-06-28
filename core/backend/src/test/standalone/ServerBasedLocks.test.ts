@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, BeDuration, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -43,11 +43,11 @@ describe("Server-based locks", () => {
 
     const iModelProps = {
       iModelName: "server locks test",
-      iTwinId: Guid.createValue(),
+      iTwinId: HubMock.iTwinId,
       version0: await createVersion0(),
     };
 
-    iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
+    iModelId = await HubMock.createNewIModel(iModelProps);
     const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
     briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", ...args });
     briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token2", ...args });
@@ -70,7 +70,7 @@ describe("Server-based locks", () => {
     assert.equal(locks.getLockCount(LockState.Exclusive), exclusive);
   };
 
-  it.only("Acquiring locks", async () => {
+  it("Acquiring locks", async () => {
     const lockSpy = sinonSpy(IModelHost.hubAccess, "acquireLocks");
     let bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
     assert.isTrue(bc1.locks.isServerBased);
@@ -149,7 +149,6 @@ describe("Server-based locks", () => {
 
     bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
     bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
-    const roBC = await BriefcaseDb.open({ fileName: briefcase1Props.fileName, readonly: true, watchForChanges: true });
 
     bc1Locks = bc1.locks as ServerBasedLocks;
     bc2Locks = bc2.locks as ServerBasedLocks;
@@ -193,9 +192,6 @@ describe("Server-based locks", () => {
     await bc1Locks.acquireLocks({ exclusive: child1 });
     bc1.elements.updateElement(childEl.toJSON());
     bc1.saveChanges();
-    console.log(`txn = ${bc1.nativeDb.getCurrentTxnId()}`);
-    await BeDuration.fromMilliseconds(100).wait();
-    console.log(`txnRo = ${roBC.nativeDb.getCurrentTxnId()}`);
 
     bc1.elements.deleteElement(child1); // make sure delete now works
     bc1.abandonChanges();
@@ -213,13 +209,7 @@ describe("Server-based locks", () => {
     await bc2Locks.acquireLocks({ exclusive: child1, shared: child1 });
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
     assert.equal(child2El.userLabel, childEl.userLabel);
-    await BeDuration.fromMilliseconds(100).wait();
-    console.log(`txn = ${bc1.nativeDb.getCurrentTxnId()}`);
     bc1.close();
     bc2.close();
-    await BeDuration.fromMilliseconds(100).wait();
-    console.log(`txnRo = ${roBC.nativeDb.getCurrentTxnId()}`);
-    roBC.close();
-
   });
 });
