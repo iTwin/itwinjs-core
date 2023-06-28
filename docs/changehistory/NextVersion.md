@@ -16,6 +16,8 @@ Table of contents:
   - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
   - [New constructors](#new-constructors)
   - [Swept surface constructions](#swept-surface-constructions)
+- [Map-Layers](#map-layers)
+  - [Map Feature Info](#map-feature-info)
 
 ## Snapping within view attachments
 
@@ -69,3 +71,10 @@ Here are those result sections assembled into `RuledSweep` solids and then facet
 ### Swept surface constructions
 
 The constructors for swept surfaces ([LinearSweep]($core-geometry), [RotationalSweep]($core-geometry), [RuledSweep]($core-geometry)) now allow [CurvePrimitive]($core-geometry) input. Internally, the curve is promoted to a `CurveChain` with one member.
+
+
+## Map Layers
+
+### Map Feature Info
+The [Viewport.getMapFeatureInfo]($core-common) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feautre.  Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decoration macthing the identified feature geometry. This tool also fire [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
+![mapLayerInfoWidget](./assets/map-layer-info.png)
