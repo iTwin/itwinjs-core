@@ -4,16 +4,20 @@
 
 ```ts
 
+import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { SpatialTileTreeReferences } from '@itwin/core-frontend';
 
-// @alpha
+// @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
 // @internal (undocumented)
 export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
-// @alpha
+// @internal
+export function createMeshExportServiceQueryUrl(args: ObtainTilesetUrlFromMeshExportServiceArgs): string;
+
+// @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
     maxLevelsToSkip?: number;
@@ -22,8 +26,49 @@ export interface FrontendTilesOptions {
 // @internal (undocumented)
 export function getMaxLevelsToSkip(): number;
 
-// @alpha
+// @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
+
+// @beta
+export interface MeshExport {
+    // (undocumented)
+    displayName: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    _links: {
+        mesh: {
+            href: string;
+        };
+    };
+    // (undocumented)
+    request: {
+        iModelId: string;
+        changesetId: string;
+        exportType: string;
+        geometryOptions: any;
+        viewDefinitionFilter: any;
+    };
+    // (undocumented)
+    status: string;
+}
+
+// @beta
+export function obtainTilesetUrlFromMeshExportService(args: ObtainTilesetUrlFromMeshExportServiceArgs): Promise<URL | undefined>;
+
+// @beta
+export type ObtainTilesetUrlFromMeshExportServiceArgs = QueryCompletedMeshExportsArgs;
+
+// @beta
+export function queryCompletedMeshExports(args: QueryCompletedMeshExportsArgs): Promise<MeshExport[]>;
+
+// @beta
+export interface QueryCompletedMeshExportsArgs {
+    accessToken?: AccessToken;
+    iModel: IModelConnection;
+    noSort?: boolean;
+    urlPrefix?: string;
+}
 
 // (No @packageDocumentation comment for this package)
 
