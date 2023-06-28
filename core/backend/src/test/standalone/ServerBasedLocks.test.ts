@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, BeDuration, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";

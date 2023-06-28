@@ -710,17 +710,17 @@ describe("TxnManager", () => {
 
     // now test that all the changes we just made are seen by the readonly connection when we call `restartDefaultTxn`
     let numRoEvents = 0;
-    const newGuid = imodel.models.getModel<PhysicalModel>(modelId).geometryGuid;
+    const guid1 = imodel.models.getModel<PhysicalModel>(modelId).geometryGuid;
 
-    const dropListener = roImodel.txns.onModelGeometryChanged.addListener((changes) => {
+    const dropper = roImodel.txns.onModelGeometryChanged.addListener((changes) => {
       ++numRoEvents;
       expect(changes.length).to.equal(1);
       expect(changes[0].id).to.equal(modelId);
-      expect(changes[0].guid).to.equal(newGuid);
+      expect(changes[0].guid).to.equal(guid1);
     });
     roImodel.nativeDb.restartDefaultTxn();
     expect(numRoEvents).equal(4);
-    dropListener();
+    dropper();
   });
 
   it("dispatches events in batches", async () => {
