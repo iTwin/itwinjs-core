@@ -7354,9 +7354,7 @@ export class MapCartoRectangle extends Range2d {
 
 // @beta
 export interface MapFeatureInfo {
-    // (undocumented)
     hitPoint?: Cartographic;
-    // (undocumented)
     layerInfos?: MapLayerFeatureInfo[];
 }
 
@@ -7404,37 +7402,29 @@ export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 // @beta
 export interface MapLayerFeature {
-    // (undocumented)
     attributes: MapLayerFeatureAttribute[];
-    // (undocumented)
     geometries?: MapLayerFeatureGeometry[];
 }
 
 // @beta
 export interface MapLayerFeatureAttribute {
-    // (undocumented)
     property: PropertyDescription;
-    // (undocumented)
     value: PropertyValue;
 }
 
 // @beta
 export interface MapLayerFeatureGeometry {
-    // (undocumented)
     graphic: GraphicPrimitive;
 }
 
 // @beta
 export interface MapLayerFeatureInfo {
-    // (undocumented)
     layerName: string;
-    // (undocumented)
     subLayerInfos?: MapSubLayerFeatureInfo[];
 }
 
 // @beta
 export class MapLayerFeatureRecord {
-    // (undocumented)
     static createRecordFromAttribute(attribute: MapLayerFeatureAttribute): PropertyRecord;
 }
 
@@ -7738,11 +7728,8 @@ export interface MapLayerTokenEndpoint {
 
 // @beta
 export interface MapSubLayerFeatureInfo {
-    // (undocumented)
     displayFieldName?: string;
-    // (undocumented)
     features: MapLayerFeature[];
-    // (undocumented)
     subLayerName: string;
 }
 
