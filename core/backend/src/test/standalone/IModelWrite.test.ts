@@ -13,7 +13,7 @@ import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import {
-  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, Subject,
+  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
 } from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
@@ -37,25 +37,22 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 describe("IModelWriteTest", () => {
   let managerAccessToken: AccessToken;
   let superAccessToken: AccessToken;
+  let iTwinId: GuidString;
 
-  before(async () => {
+  before(() => {
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
-
+    iTwinId = HubMock.iTwinId;
   });
+  after(() => HubMock.shutdown());
 
-  after(async () => {
-    HubMock.shutdown();
-  });
-
-  it.only("WatchForChanges", async () => {
+  it("WatchForChanges", async () => {
     const iModelProps = {
       iModelName: "ReadWriteTest",
-      iTwinId: HubMock.iTwinId,
+      iTwinId,
     };
 
     const iModelId = await HubMock.createNewIModel(iModelProps);
-    const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", ...args });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", iTwinId, iModelId });
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
@@ -64,10 +61,9 @@ describe("IModelWriteTest", () => {
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc, code1, true);
     bc.saveChanges();
 
-    console.log(`txn = ${bc.nativeDb.getCurrentTxnId()}`);
-    console.log(`txnRo = ${roBC.nativeDb.getCurrentTxnId()}`);
+    expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
     await BeDuration.fromMilliseconds(100).wait();
-    console.log(`txnRo = ${roBC.nativeDb.getCurrentTxnId()}`);
+    expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
 
     roBC.close();
     bc.close();
@@ -79,9 +75,9 @@ describe("IModelWriteTest", () => {
     const iModelName = "CodesUndoRedoPushTest";
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await HubMock.createNewIModel({ accessToken: adminAccessToken, iTwinId: HubMock.iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await HubMock.createNewIModel({ accessToken: adminAccessToken, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId: HubMock.iTwinId, iModelId: rwIModelId });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId, iModelId: rwIModelId });
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -122,13 +118,11 @@ describe("IModelWriteTest", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
-    const iTwinId = HubMock.iTwinId;
-
     /**
-   * Test validates that -
-   * - User "manager" upgrades the BisCore schema in the briefcase from version 1.0.0 to 1.0.10+
-   * - User "super" can get the upgrade "manager" made
-   */
+     * Test validates that -
+     * - User "manager" upgrades the BisCore schema in the briefcase from version 1.0.0 to 1.0.10+
+     * - User "super" can get the upgrade "manager" made
+     */
 
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -191,7 +185,6 @@ describe("IModelWriteTest", () => {
 
   it("changeset size and ec schema version change", async () => {
     const adminToken = "super manager token";
-    const iTwinId = HubMock.iTwinId;
     const iModelName = "changeset_size";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
@@ -267,7 +260,6 @@ describe("IModelWriteTest", () => {
   it("clear cache on schema changes", async () => {
     const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
-    const iTwinId = HubMock.iTwinId;
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = "SchemaChanges";
 
@@ -582,8 +574,8 @@ describe("IModelWriteTest", () => {
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
-    const iModelId = await HubMock.createNewIModel({ iTwinId: HubMock.iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: HubMock.iTwinId, iModelId });
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
 
     /*
     Job Subject
