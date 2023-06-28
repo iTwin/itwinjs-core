@@ -6482,6 +6482,8 @@ export abstract class IModelConnection extends IModel {
     // @internal
     protected beforeClose(): void;
     cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
+    // @internal (undocumented)
+    cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]>;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     readonly categories: IModelConnection.Categories;
@@ -6554,16 +6556,15 @@ export abstract class IModelConnection extends IModel {
     spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
-    // @beta
-    spatialToWGS84Cartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
-    // @beta
-    spatialToWGS84CartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
     get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
-    toSpatialFromGcs(geoCoords: XYZProps[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]>;
+    // @beta
+    toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]>;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
+    // @beta
+    wgs84CartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
 }
 
 // @public (undocumented)
