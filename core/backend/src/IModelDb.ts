@@ -2338,6 +2338,8 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  public readonly onClosed = new BeEvent<() => void>();
+
   /** @alpha */
   public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
@@ -2424,15 +2426,9 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.Readonly && args.watchChanges && undefined === args.container) {
-      const watcher = watchForChanges(file.path, { persistent: false }, () => {
-        console.log(`file ${file.path} changed`);
-        nativeDb.restartDefaultTxn();
-      });
-      briefcaseDb.onBeforeClose.addOnce(() => {
-        console.log("on close");
-        watcher.close();
-      });
+    if (openMode === OpenMode.Readonly && args.watchForChanges && undefined === args.container) {
+      const watcher = watchForChanges(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      briefcaseDb.onClosed.addOnce(() => watcher.close());
     }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
@@ -2486,6 +2482,11 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+  }
+
+  public override close() {
+    super.close();
+    this.onClosed.raiseEvent();
   }
 }
 
