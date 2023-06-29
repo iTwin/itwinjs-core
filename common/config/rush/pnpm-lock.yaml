@@ -1373,6 +1373,7 @@ importers:
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       eslint: ^8.36.0
+      glob: ^7.1.2
       mocha: ^10.0.0
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
@@ -1393,6 +1394,7 @@ importers:
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
       eslint: 8.43.0
+      glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.1_webpack@5.88.0
