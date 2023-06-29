@@ -19,9 +19,7 @@ export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 /** @internal exported for tests. */
 export function createMeshExportServiceQueryUrl(args: ObtainTilesetUrlFromMeshExportServiceArgs): string {
   const prefix = args.urlPrefix ?? "";
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModel.iModelId}`;
-  if (!args.noSort)
-    url = `${url}&$orderBy=date:desc`;
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModel.iModelId}&$orderBy=date:desc`;
 
   return url;
 }
@@ -59,8 +57,6 @@ export interface QueryCompletedMeshExportsArgs {
    * If omitted, [IModelApp.getAccessToken]($frontend) is used.
    */
   accessToken?: AccessToken;
-  /** Disables sorting the results from most to least recent. */
-  noSort?: boolean;
   /** Optional URL prefix, chiefly useful in testing environments. */
   urlPrefix?: string;
 }
