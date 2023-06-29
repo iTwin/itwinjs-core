@@ -1369,6 +1369,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
+      '@types/sinon': ^9.0.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -1376,6 +1377,7 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       rimraf: ^3.0.2
+      sinon: ^9.0.2
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
@@ -1390,6 +1392,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
+      '@types/sinon': 9.0.11
       babel-loader: 8.2.5_webpack@5.88.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -1397,6 +1400,7 @@ importers:
       glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
+      sinon: 9.2.4
       source-map-loader: 4.0.1_webpack@5.88.0
       typescript: 5.0.4
       webpack: 5.88.0

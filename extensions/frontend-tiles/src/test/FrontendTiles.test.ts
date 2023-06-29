@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection } from "@itwin/core-frontend";
@@ -30,18 +31,20 @@ class TestConnection extends BlankConnection {
 
 describe("test", () => {
   async function withFetch(mockFetch: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
-    const windowFetch = window.fetch;
-    window.fetch = mockFetch;
+    sinon.stub(window, "fetch").callsFake(mockFetch);
     try {
-      fn();
+      await fn();
     } finally {
-      window.fetch = windowFetch;
+      sinon.restore();
     }
   }
 
   it("tests", async () => {
     let fetched = false;
-    await withFetch(async () => { fetched = true; return { } as any; }, async () => { await fetch("sldfkjs"); });
-    expect(fetched).to.be.true;
+    await withFetch(async () => { fetched = true; return { } as any; }, async () => {
+      await fetch("sldfkjs");
+      expect(fetched).to.be.true;
+      expect("laksjle").to.equal("qowieqoweq");
+    });
   });
 });
