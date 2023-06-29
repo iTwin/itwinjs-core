@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import * as fs from "fs";
-import { AccessToken, BeDuration, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
