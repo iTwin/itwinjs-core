@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection } from "@itwin/core-frontend";
-import { MeshExport, MeshExports, queryMeshExports, obtainMeshExportTilesetUrl } from "../FrontendTiles";
+import { MeshExport, MeshExports, queryMeshExports, QueryMeshExportsArgs } from "../FrontendTiles";
 
 use(chaiAsPromised);
 
@@ -48,28 +48,77 @@ function makeResponse(jsonMethod: () => Promise<MeshExports | never>): Response 
   } as Response;
 }
 
-describe("queryMeshExports", () => {
-  it("returns no results upon error", async () => {
+async function expectExports(expectedIds: string[], args: QueryMeshExportsArgs): Promise<void> {
+  let idIndex = 0;
+  for await (const exp of queryMeshExports(args))
+    expect(exp.id).to.equal(expectedIds[idIndex++]);
 
+  expect(idIndex).to.equal(expectedIds.length);
+}
+
+interface ExportProps {
+  id: string;
+  status?: string; // defaults to "Complete"
+  href?: string;
+}
+
+function makeExport(props: ExportProps): MeshExport {
+  return {
+    id: props.id,
+    displayName: props.id,
+    status: props.status ?? "Complete",
+    request: {
+      iModelId: "",
+      changesetId: "",
+      exportType: "IMODEL",
+      geometryOptions: { },
+      viewDefinitionFilter: { },
+    },
+    _links: {
+      mesh: {
+        href: props.href ?? "mesh.edu",
+      },
+    },
+  };
+}
+
+interface ExportsProps {
+  exports: ExportProps[];
+  next?: string;
+}
+
+function makeExports(props: ExportsProps): MeshExports {
+  return {
+    exports: props.exports.map((x) => makeExport(x)),
+    _links: {
+      next: props.next ? { href: props.next } : undefined,
+    },
+  };
+}
+
+function makeExportsResponse(props: ExportsProps): Response {
+  return makeResponse(() => Promise.resolve(makeExports(props)));
+}
+
+describe("queryMeshExports", () => {
+  const accessToken = "acctkn";
+  const iModelId = "imdl";
+
+  it("returns no results upon error", async () => {
+    await mockFetch(() => { throw new Error("fetch threw"); }, () => expectExports([], { accessToken, iModelId }));
+    await mockFetch(() => Promise.resolve(makeResponse(() => { throw new Error("json threw"); })), () => expectExports([], { accessToken, iModelId }));
   });
 
   it("produces one set of results", async () => {
+    await mockFetch(
+      () => Promise.resolve(makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] })),
+      () => expectExports(["a", "b", "c"], { accessToken, iModelId })
+    );
   });
 
   it("iterates over multiple sets of results", async () => {
   });
 
   it("includes only completed exports unless otherwise specified", async () => {
-  });
-});
-
-describe("test", () => {
-  it("tests", async () => {
-    let fetched = false;
-    await mockFetch(async () => { fetched = true; return { } as any; }, async () => {
-      await fetch("sldfkjs");
-      expect(fetched).to.be.true;
-      expect("laksjle").to.equal("qowieqoweq");
-    });
   });
 });
