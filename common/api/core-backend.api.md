@@ -444,10 +444,9 @@ export namespace BlobContainer {
         userToken: UserToken;
     }
     export interface Metadata {
-        [propertyName: string]: string;
-        application: string;
-        description: string;
-        format: string;
+        containerType: string;
+        description?: string;
+        label: string;
     }
     export type Provider = "azure" | "google";
     export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
@@ -460,7 +459,6 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
-        owner?: string;
     }
     export interface TokenProps {
         expiration: Date;
