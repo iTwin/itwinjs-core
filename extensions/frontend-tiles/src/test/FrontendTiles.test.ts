@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, use } from "chai";
+import { chaiAsPromised } from "chai-as-promised";
 import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection } from "@itwin/core-frontend";
 import { MeshExport, MeshExports, queryMeshExports, obtainMeshExportTilesetUrl } from "../FrontendTiles";
+
+use(chaiAsPromised);
 
 class TestConnection extends BlankConnection {
   private readonly _id: string | undefined;

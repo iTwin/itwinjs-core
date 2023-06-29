@@ -1367,12 +1367,14 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.36
       '@types/chai': 4.3.1
+      '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
       '@types/sinon': ^9.0.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
+      chai-as-promised: ^7
       eslint: ^8.36.0
       glob: ^7.1.2
       mocha: ^10.0.0
@@ -1390,12 +1392,14 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': 4.0.0-dev.36_fsssjpk4ezl7mpaxdgpssv73ie
       '@types/chai': 4.3.1
+      '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
       '@types/sinon': 9.0.11
       babel-loader: 8.2.5_webpack@5.88.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
+      chai-as-promised: 7.1.1_chai@4.3.7
       eslint: 8.43.0
       glob: 7.2.3
       mocha: 10.2.0
