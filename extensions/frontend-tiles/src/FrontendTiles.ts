@@ -61,14 +61,27 @@ interface MeshExports {
   };
 }
 
+/** Arguments supplied to [[queryMeshExports]].
+ * @beta
+ */
 export interface QueryMeshExportsArgs {
+  /** The token used to access the mesh export service. */
   accessToken: AccessToken;
+  /** The Id of the iModel for which to query exports. */
   iModelId: string;
+  /** If defined, constrains the query to exports produced from the specified changeset. */
   changesetId?: string;
+  /** Chiefly used in testing environments. */
   urlPrefix?: string;
+  /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results. */
   includeIncomplete?: boolean;
 }
 
+/** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
+ * the specified criteria.
+ * The exports are sorted from most-recently- to least-recently-produced.
+ * @beta
+ */
 export async function * queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -99,13 +112,19 @@ export async function * queryMeshExports(args: QueryMeshExportsArgs): AsyncItera
   }
 }
 
-/** Arguments supplied  to [[obtainTilesetUrlFromMeshExportService]].
+/** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
  */
 export interface ObtainMeshExportTilesetUrlArgs {
+  /** The iModel for which to obtain a tileset URl. */
   iModel: IModelConnection;
+  /** The token used to access the mesh export service. */
   accessToken: AccessToken;
+  /** Chiefly used in testing environments. */
   urlPrefix?: string;
+  /** If true, only exports produced for `iModel`'s specific changeset will be considered; otherwise, if no exports are found for the changeset,
+   * the most recent export for any changeset will be used.
+   */
   requireExactChangeset?: boolean;
 }
 
@@ -157,7 +176,7 @@ export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUr
  */
 export interface FrontendTilesOptions {
   /** Provide the base URL for the pre-published tileset for a given iModel.
-   * If omitted, [[queryCompletedMeshExports]] will be invoked with default arguments.
+   * If omitted, [[obtainMeshExportTilesetUrl]] will be invoked with default arguments, using the access token provided by [[IModelApp]].
    */
   computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
   /** The maximum number of levels in the tile tree to skip loading if they do not provide the desired level of detail for the current view.

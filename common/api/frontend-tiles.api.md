@@ -15,7 +15,11 @@ export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
 // @internal
-export function createMeshExportServiceQueryUrl(args: ObtainTilesetUrlFromMeshExportServiceArgs): string;
+export function createMeshExportServiceQueryUrl(args: {
+    iModelId: string;
+    urlPrefix?: string;
+    changesetId?: string;
+}): string;
 
 // @beta
 export interface FrontendTilesOptions {
@@ -54,19 +58,25 @@ export interface MeshExport {
 }
 
 // @beta
-export function obtainTilesetUrlFromMeshExportService(args: ObtainTilesetUrlFromMeshExportServiceArgs): Promise<URL | undefined>;
+export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
 
 // @beta
-export type ObtainTilesetUrlFromMeshExportServiceArgs = QueryCompletedMeshExportsArgs;
-
-// @beta
-export function queryCompletedMeshExports(args: QueryCompletedMeshExportsArgs): Promise<MeshExport[]>;
-
-// @beta
-export interface QueryCompletedMeshExportsArgs {
-    accessToken?: AccessToken;
+export interface ObtainMeshExportTilesetUrlArgs {
+    accessToken: AccessToken;
     iModel: IModelConnection;
-    noSort?: boolean;
+    requireExactChangeset?: boolean;
+    urlPrefix?: string;
+}
+
+// @beta
+export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport>;
+
+// @beta
+export interface QueryMeshExportsArgs {
+    accessToken: AccessToken;
+    changesetId?: string;
+    iModelId: string;
+    includeIncomplete?: boolean;
     urlPrefix?: string;
 }
 
