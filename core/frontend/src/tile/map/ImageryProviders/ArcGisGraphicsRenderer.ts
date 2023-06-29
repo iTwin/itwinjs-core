@@ -21,8 +21,8 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   private _graphics: GraphicPrimitive[] = [];
   private _iModel: IModelConnection;
 
-  // No symbology is applied in this renderer
-  public override get symbologyRenderer() {return undefined;}
+  public override get attributeSymbology() {return undefined;}   // No symbology is applied in this renderer
+
   constructor(iModel: IModelConnection) {
     super();
     this._iModel = iModel;

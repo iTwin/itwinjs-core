@@ -42,12 +42,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
-
-
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisFeatureGraphicsRenderer) {
-    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, info: [] };
-  private getNumericValue (attrValue: esriPBuffer.FeatureCollectionPBuffer.Value)  {
+  private getNumericValue(attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) {
     const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
     let typename = StandardTypeNames.Number;
     if (attrValue.has_double_value) {
@@ -78,9 +73,9 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     }
 
     return { propertyValue,  typename };
-  };
+  }
 
-    const getRecordInfo = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
+  public getFeatureAttribute(fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value): MapLayerFeatureAttribute|undefined  {
     let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
     let typename = StandardTypeNames.String;
@@ -136,10 +131,10 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
     propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
+    return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
       Logger.logError(loggerCategory, msg);
@@ -150,7 +145,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-      const symbologyRenderer = renderer.symbologyRenderer;
+    const attrSymbology = renderer.attributeSymbology;
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
@@ -172,9 +167,9 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
         }
       }
 
-      // Read attributes if needed (dynamic symbology)
-      if (symbologyRenderer) {
-        const symbolFields = symbologyRenderer.rendererFields;
+      // Read attributes if needed (attribute driven symbology)
+      if (attrSymbology) {
+        const symbolFields = attrSymbology.rendererFields;
         if (symbolFields && symbolFields.length > 0 && feature.attributes) {
           let fieldIdx = 0;
           const featureAttr: {[key: string]: any} = {};
@@ -185,21 +180,21 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
             }
             const fieldInfo = fields[fieldIdx++];
             if (symbolFields.includes(fieldInfo.name)) {
-              const recordInfo = this.getRecordInfo(fieldInfo, attrValue);
-              if (recordInfo) {
-                const primitiveValue = recordInfo.value as PrimitiveValue;
+              const attr = this.getFeatureAttribute(fieldInfo, attrValue);
+              if (attr) {
+                const primitiveValue = attr.value as PrimitiveValue;
                 featureAttr[fieldInfo.name] = primitiveValue.value;
               }
             }
 
           }
-          symbologyRenderer.setActiveFeatureAttributes(featureAttr);
+          attrSymbology.setActiveFeatureAttributes(featureAttr);
         }
       }
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisFeatureGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");
@@ -209,7 +204,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, info: [] };
+    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
@@ -249,14 +244,13 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
           break;
         }
         // Convert everything to string for now
-        const info = getRecordInfo(fields[fieldIdx], attrValue);
+        const attr = this.getFeatureAttribute(fields[fieldIdx], attrValue);
         if (attr) {
           feature.attributes?.push(attr);
         }
 
         fieldIdx++;
       }
-
       subLayerInfo.features.push(feature);
     }
 

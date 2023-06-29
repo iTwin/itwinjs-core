@@ -6,24 +6,25 @@
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
-import { EsriSymbol, EsriPMSProps, EsriSFS, EsriSLS, EsriPMS, EsriSLSProps, EsriSFSProps, EsriRenderer, EsriSimpleRenderer, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSimpleRenderer, EsriSLS, EsriSLSProps, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
 /** @internal */
-export class ArcGisSymbologyRenderer {
+export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
   private _activeFeatureAttributes:  {[key: string]: any} | undefined;
   private _symbol: EsriSymbol | undefined;
   private _renderer: EsriRenderer | undefined;
 
   public get rendererFields() {
-    if (this._renderer && this._renderer?.type == "uniqueValue") {
+    if (this._renderer && this._renderer?.type === "uniqueValue") {
       return [(this._renderer as EsriUniqueValueRenderer).field1];
     }
     return undefined;
   }
 
-  setActiveFeatureAttributes(attributes?: { [key: string]: any }) {
+  public setActiveFeatureAttributes(attributes?: { [key: string]: any }) {
     this._activeFeatureAttributes = attributes;
   }
 
@@ -65,7 +66,6 @@ export class ArcGisSymbologyRenderer {
     } catch {
       Logger.logWarning(loggerCategory, "Could not read symbology from metadata");
     }
-
 
     // If '_symbol' is still undefined at this point, that means we could not find
     // any symbology definition from the metadata, let's use some default symbology

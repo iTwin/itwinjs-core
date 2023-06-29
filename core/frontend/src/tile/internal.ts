@@ -63,6 +63,7 @@ export * from "./map/WmsCapabilities";
 export * from "./map/WmtsCapabilities";
 export * from "./map/MapLayerImageryProvider";
 export * from "./map/ImageryProviders/WebMercator";
+export * from "./map/ImageryProviders/ArcGisAttributeDrivenSymbology";
 export * from "./map/ImageryProviders/ArcGISImageryProvider";
 export * from "./map/ImageryProviders/ArcGisGeometryRenderer";
 export * from "./map/ImageryProviders/ArcGisGraphicsRenderer";

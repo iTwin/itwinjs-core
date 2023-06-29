@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { SymbologyDataset } from "./SymbologyDataset";
-import { EsriPMS, EsriSLS, EsriSFS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { EsriPMS, EsriSFS, EsriSLS , EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 
 describe("ArcGisSymbologyRenderer", () => {
 
@@ -78,9 +78,9 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should construct unique value renderer", async () => {
 
-    const info = SymbologyDataset.uniqueValueDrawingInfo;
+    const info = NeptuneCoastlineDataset.uniqueValueDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(info.drawingInfo.renderer as any);
-    expect(renderer.field1).equals(info.drawingInfo.renderer.field1)
+    expect(renderer.field1).equals(info.drawingInfo.renderer.field1);
     expect(renderer.field2).to.be.undefined;
     expect(renderer.field3).to.be.undefined;
     expect(renderer.type).equals(info.drawingInfo.renderer.type);

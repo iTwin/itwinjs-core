@@ -170,7 +170,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Read range using full extent from service metadata
     if (this._layerMetadata?.extent) {
 
-      const readExtent = (extent:any) => {
+      const readExtent = (extent: any) => {
         const range3857 = Range2d.createFrom({
           low: { x: extent.xmin, y: extent.ymin },
           high: { x: extent.xmax, y: extent.ymax },
@@ -181,7 +181,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         const east = this.getEPSG4326Lon(range3857.xHigh);
         const north = this.getEPSG4326Lat(range3857.yHigh);
         this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
-      }
+      };
 
       const layerExtent = this._layerMetadata?.extent;
       if (layerExtent.spatialReference.latestWkid === 3857 || layerExtent.spatialReference.wkid === 102100) {
@@ -189,8 +189,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       } else {
         // Extent is not advertised in a coordinate system we support, make a new request to get proper extent
         try {
-          let tmpUrl = new URL(this._settings.url);
-          tmpUrl.pathname = tmpUrl.pathname + `/${this._layerId}/query`;
+          const tmpUrl = new URL(this._settings.url);
+          tmpUrl.pathname = `${tmpUrl.pathname  }/${this._layerId}/query`;
           tmpUrl.searchParams.append("where", "1=1");
           tmpUrl.searchParams.append("outSR", "3857");
           tmpUrl.searchParams.append("returnExtentOnly", "true");
@@ -332,14 +332,16 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       try {
         let responseData = await doFeatureInfoQuery("PBF", "", true);
         if (responseData) {
-          Logger.logInfo(loggerCategory, JSON.stringify(responseData.data.toObject()));
+          const json = JSON.stringify(responseData.data.toObject());
+          Logger.logInfo(loggerCategory, json);
         }
         responseData = await doFeatureInfoQuery("JSON", "", true);
         if (responseData) {
-          Logger.logInfo(loggerCategory, JSON.stringify(responseData.data));
+          const json = JSON.stringify(responseData.data);
+          Logger.logInfo(loggerCategory, json);
         }
       } catch (e) {
-        Logger.logInfo(loggerCategory, `Error occured with debug FeatureInfo: ${e}`);
+        Logger.logInfo(loggerCategory, `Error occurred with debug FeatureInfo: ${e}`);
       }
     }
 

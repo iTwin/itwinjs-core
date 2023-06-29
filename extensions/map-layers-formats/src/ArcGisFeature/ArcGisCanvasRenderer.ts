@@ -10,8 +10,8 @@ import { ArcGisGeometryBaseRenderer } from "@itwin/core-frontend";
 export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyRenderer;
-  // public override get rendererFields() {return this._symbol.rendererFields;}
-  public override get symbologyRenderer() {
+
+  public override get attributeSymbology() {
     return this._symbol;
   }
 
