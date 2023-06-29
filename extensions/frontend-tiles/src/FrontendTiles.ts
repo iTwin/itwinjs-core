@@ -130,7 +130,7 @@ export interface FrontendTilesOptions {
   /** Provide the base URL for the pre-published tileset for a given iModel.
    * If omitted, [[queryCompletedMeshExports]] will be invoked with default arguments.
    */
-  computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
+  computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
   /** The maximum number of levels in the tile tree to skip loading if they do not provide the desired level of detail for the current view.
    * Default: 4.
    * Reducing this value will load more intermediate tiles, which causes more gradual refinement: low-resolution tiles will display quickly, followed more gradually by
@@ -159,5 +159,6 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
     maxLevelsToSkip = options.maxLevelsToSkip;
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, options.computeSpatialTilesetBaseUrl);
+  const computeUrl = options.computeSpatialTilesetBaseUrl ?? (async (iModel) => obtainTilesetUrlFromMeshExportService({ iModel }));
+  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
 }

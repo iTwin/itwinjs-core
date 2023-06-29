@@ -19,7 +19,7 @@ export function createMeshExportServiceQueryUrl(args: ObtainTilesetUrlFromMeshEx
 
 // @beta
 export interface FrontendTilesOptions {
-    computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
+    computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
     maxLevelsToSkip?: number;
 }
 
