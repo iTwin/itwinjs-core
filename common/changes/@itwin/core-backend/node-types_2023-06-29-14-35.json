@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Upgrade @types/node version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Upgrade @types/node version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

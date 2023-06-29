@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-backend",
+      "comment": "Upgrade @types/node version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend"
+}
