@@ -133,5 +133,13 @@ describe("queryMeshExports", () => {
   });
 
   it("includes only completed exports unless otherwise specified", async () => {
+    await mockFetch(
+      () => makeExportsResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
+      async () => {
+        await expectExports(["a"], { iModelId, accessToken });
+        await expectExports(["a", "b"], { iModelId, accessToken, includeIncomplete: true }),
+        await expectExports(["a"], { iModelId, accessToken, includeIncomplete: false });
+      }
+    );
   });
 });
