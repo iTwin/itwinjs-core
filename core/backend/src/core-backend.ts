@@ -62,6 +62,7 @@ export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";
 export * from "./ViewDefinition";
+export * from "./ViewStore";
 export * from "./workspace/Settings";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";

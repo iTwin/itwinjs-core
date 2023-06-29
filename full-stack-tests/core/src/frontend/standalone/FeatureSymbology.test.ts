@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps,
+  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
   ViewFlags,
 } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
@@ -36,7 +36,7 @@ describe("FeatureSymbology.Overrides", () => {
   before(async () => {
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
+    const viewRows = await imodel.views.getViewList({ from: SpatialViewState.classFullName, limit: 1 });
     assert.exists(viewRows, "Should find some views");
     viewId = viewRows[0].id!;
   });
