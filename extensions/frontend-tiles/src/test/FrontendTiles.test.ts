@@ -96,7 +96,7 @@ function makeExports(props: ExportsProps): MeshExports {
   };
 }
 
-function makeExportsResponse(props: ExportsProps): Response {
+async function makeExportsResponse(props: ExportsProps): Promise<Response> {
   return makeResponse(() => Promise.resolve(makeExports(props)));
 }
 
@@ -111,12 +111,25 @@ describe("queryMeshExports", () => {
 
   it("produces one set of results", async () => {
     await mockFetch(
-      () => Promise.resolve(makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] })),
+      () => makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
       () => expectExports(["a", "b", "c"], { accessToken, iModelId })
     );
   });
 
   it("iterates over multiple sets of results", async () => {
+    let fetchedFirst = false;
+    await mockFetch(
+      () => {
+        if (!fetchedFirst) {
+          fetchedFirst = true;
+          return makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
+        } else {
+          return makeExportsResponse({ exports: [{ id: "c" }, { id: "d" }] });
+        }
+      },
+      () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId })
+    );
+
   });
 
   it("includes only completed exports unless otherwise specified", async () => {
