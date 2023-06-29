@@ -5,6 +5,8 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
+import * as sinon from "sinon";
+import * as fs from "fs";
 import { AccessToken, BeDuration, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
@@ -54,6 +56,17 @@ describe("IModelWriteTest", () => {
     const iModelId = await HubMock.createNewIModel(iModelProps);
     const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", iTwinId, iModelId });
 
+    let nClosed = 0;
+    const fsWatcher = {
+      callback: () => { },
+      close: () => ++nClosed,
+    };
+    const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
+      fsWatcher.callback = fn;
+      return fsWatcher;
+    };
+    sinon.stub(fs, "watch").callsFake(watchStub);
+
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     const roBC = await BriefcaseDb.open({ fileName: briefcaseProps.fileName, watchForChanges: true });
 
@@ -65,13 +78,15 @@ describe("IModelWriteTest", () => {
     // in the readonly briefcase until the file watcher fires.
     expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
 
-    // wait for the watcher to trigger
-    await BeDuration.fromMilliseconds(1000).wait();
+    // trigger watcher via stub
+    fsWatcher.callback();
 
     // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
     expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
 
     roBC.close();
+    expect(nClosed).equal(1);
+
     bc.close();
   });
 
