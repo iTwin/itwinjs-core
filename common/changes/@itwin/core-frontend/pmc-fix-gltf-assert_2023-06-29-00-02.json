@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix assertion when reading glTF containing a normal map.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

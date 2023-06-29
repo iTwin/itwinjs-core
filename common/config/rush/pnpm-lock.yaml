@@ -63,7 +63,7 @@ importers:
       json5: 2.2.3
       multiparty: 4.2.3
       reflect-metadata: 0.1.13
-      semver: 7.5.2
+      semver: 7.5.3
       ws: 7.5.9
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1062,7 +1062,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      semver: 7.5.2
+      semver: 7.5.3
       typescript: 5.0.4
 
   ../../domains/linear-referencing/backend:
@@ -1646,6 +1646,7 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
+      '@azure/storage-blob': ^12.7.0
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1682,6 +1683,7 @@ importers:
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
+      azurite: ^3.24.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1696,7 +1698,9 @@ importers:
       glob: ^7.1.2
       https-browserify: ^1.0.0
       internal-tools: workspace:*
+      mkdirp: ^1.0.4
       nock: ^12.0.3
+      npm-run-all: ^4.1.5
       null-loader: ^4.0.1
       nyc: ^15.1.0
       path-browserify: ^1.0.1
@@ -1710,6 +1714,7 @@ importers:
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
+      '@azure/storage-blob': 12.14.0
       '@itwin/browser-authorization': 0.5.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1732,6 +1737,7 @@ importers:
       '@itwin/imodels-client-authoring': 3.1.0
       '@itwin/imodels-client-management': 3.1.0
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
+      azurite: 3.24.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 25.2.0
@@ -1763,7 +1769,9 @@ importers:
       glob: 7.2.3
       https-browserify: 1.0.0
       internal-tools: link:../../tools/internal
+      mkdirp: 1.0.4
       nock: 12.0.3
+      npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.88.0
       nyc: 15.1.0
       path-browserify: 1.0.1
@@ -2022,7 +2030,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       electron: 25.2.0
       express: 4.18.2
-      semver: 7.5.2
+      semver: 7.5.3
       spdy: 4.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2189,7 +2197,7 @@ importers:
       typescript: ~5.0.2
     dependencies:
       object-hash: 1.3.1
-      semver: 7.5.2
+      semver: 7.5.3
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../../core/backend
@@ -5341,7 +5349,7 @@ packages:
       resolve-url-loader: 4.0.0
       sass: 1.63.6
       sass-loader: 12.6.0_sass@1.63.6+webpack@5.88.0
-      semver: 7.5.2
+      semver: 7.5.3
       source-map-loader: 3.0.2_webpack@5.88.0
       style-loader: 3.3.3_webpack@5.88.0
       svg-sprite-loader: 6.0.11
@@ -5442,7 +5450,7 @@ packages:
       resolve-url-loader: 4.0.0
       sass: 1.63.6
       sass-loader: 12.6.0_sass@1.63.6+webpack@5.88.0
-      semver: 7.5.2
+      semver: 7.5.3
       source-map-loader: 3.0.2_webpack@5.88.0
       style-loader: 3.3.3_webpack@5.88.0
       svg-sprite-loader: 6.0.11
@@ -5946,7 +5954,7 @@ packages:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      semver: 7.5.2
+      semver: 7.5.3
     dev: false
 
   /@itwin/imodels-access-backend/3.1.0_wj555zckjupkhkzyssqqpl4sei:
@@ -6640,7 +6648,7 @@ packages:
       core-js-pure: 3.31.0
       error-stack-parser: 2.1.4
       find-up: 5.0.0
-      html-entities: 2.3.6
+      html-entities: 2.4.0
       loader-utils: 2.0.4
       react-refresh: 0.11.0
       schema-utils: 3.3.0
@@ -7195,7 +7203,7 @@ packages:
       '@types/body-parser': 1.19.2
       '@types/express-serve-static-core': 4.17.35
       '@types/qs': 6.9.7
-      '@types/serve-static': 1.15.1
+      '@types/serve-static': 1.15.2
 
   /@types/faker/4.1.12:
     resolution: {integrity: sha512-0MEyzJrLLs1WaOCx9ULK6FzdCSj2EuxdSP9kvuxxdBEGujZYUOZ4vkPXdgu3dhyg/pOdn7VCatelYX7k0YShlA==}
@@ -7240,6 +7248,9 @@ packages:
 
   /@types/http-cache-semantics/4.0.1:
     resolution: {integrity: sha512-SZs7ekbP8CN0txVG2xVRH6EgKmEm31BOxA07vkFaETzZz1xh+cbt8BcI0slpymvwhx5dlFnQG2rTlPVQn+iRPQ==}
+
+  /@types/http-errors/2.0.1:
+    resolution: {integrity: sha512-/K3ds8TRAfBvi5vfjuz8y6+GiAYBZ0x4tXv1Av6CWBWn0IlADc+ZX9pMq7oU0fNQPnBwIZl3rmeLp6SBApbxSQ==}
 
   /@types/http-proxy/1.17.11:
     resolution: {integrity: sha512-HC8G7c1WmaF2ekqpnFq626xd3Zz0uvaqFmBJNRZCGEZCXkvSdJoNFn/8Ygbd9fKNQj8UzLdCETaI0UWPAjK7IA==}
@@ -7397,9 +7408,10 @@ packages:
       '@types/express': 4.17.17
     dev: true
 
-  /@types/serve-static/1.15.1:
-    resolution: {integrity: sha512-NUo5XNiAdULrJENtJXZZ3fHtfMolzZwczzBbnAeBbqBwG+LaG6YaJtuwzwGSQZ2wsCrxjEhNNjAkKigy3n8teQ==}
+  /@types/serve-static/1.15.2:
+    resolution: {integrity: sha512-J2LqtvFYCzaj8pVYKw8klQXrLLk7TBZmQ4ShlcdkELFKGwGMfevMLneMMRkMgZxotOD9wg497LpC7O8PcvAmfw==}
     dependencies:
+      '@types/http-errors': 2.0.1
       '@types/mime': 3.0.1
       '@types/node': 18.16.1
 
@@ -7532,7 +7544,7 @@ packages:
       grapheme-splitter: 1.0.4
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0_typescript@5.0.4
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -7561,7 +7573,7 @@ packages:
       grapheme-splitter: 1.0.4
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0_typescript@5.0.4
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -7695,7 +7707,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0_typescript@5.0.4
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -7715,7 +7727,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0_typescript@5.0.4
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -7735,7 +7747,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.55.0_typescript@5.0.4
       eslint: 8.43.0
       eslint-scope: 5.1.1
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -7754,7 +7766,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.60.0_typescript@5.0.4
       eslint: 8.43.0
       eslint-scope: 5.1.1
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -8165,8 +8177,8 @@ packages:
       mri: 1.1.4
     dev: false
 
-  /aria-query/5.2.1:
-    resolution: {integrity: sha512-7uFg4b+lETFgdaJyETnILsXgnnzVnkHcgRbwbPwevm5x/LmUlt3MjczMRe1zg824iBgXZNRPTBftNYyRSKLp2g==}
+  /aria-query/5.3.0:
+    resolution: {integrity: sha512-b0P0sZPKtyu8HkeRAfCq0IfURZK+SuwMjY1UXGBU27wpAiTwQAIlq56IbIO+ytk/JjS1fMR14ee5WBBfKi5J6A==}
     dependencies:
       dequal: 2.0.3
 
@@ -8323,7 +8335,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.9
-      caniuse-lite: 1.0.30001506
+      caniuse-lite: 1.0.30001507
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -8383,9 +8395,9 @@ packages:
       lokijs: 1.5.12
       morgan: 1.10.0
       multistream: 2.1.1
-      mysql2: 3.4.0
+      mysql2: 3.4.1
       rimraf: 3.0.2
-      sequelize: 6.32.1_7t54x3vxlt5nsc7lp3kvysyb5e
+      sequelize: 6.32.1_btqv2tndml655ksjdrhktfdpea
       stoppable: 1.1.0
       tedious: 16.1.0
       to-readable-stream: 2.1.0
@@ -8856,8 +8868,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001506
-      electron-to-chromium: 1.4.437
+      caniuse-lite: 1.0.30001507
+      electron-to-chromium: 1.4.440
       node-releases: 2.0.12
       update-browserslist-db: 1.0.11_browserslist@4.21.9
 
@@ -9005,13 +9017,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.21.9
-      caniuse-lite: 1.0.30001506
+      caniuse-lite: 1.0.30001507
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001506:
-    resolution: {integrity: sha512-6XNEcpygZMCKaufIcgpQNZNf00GEqc7VQON+9Rd0K1bMYo8xhMZRAo5zpbnbMNizi4YNgIDAFrdykWsvY3H4Hw==}
+  /caniuse-lite/1.0.30001507:
+    resolution: {integrity: sha512-SFpUDoSLCaE5XYL2jfqe9ova/pbQHEmbheDf5r4diNwbAgR3qxM9NQtfsiSscjqoya5K7kFcHPUQ+VsUkIJR4A==}
 
   /canonical-path/1.0.0:
     resolution: {integrity: sha512-feylzsbDxi1gPZ1IjystzIQZagYYLvfKrSuygUCgf7z6x790VEzze5QEkdSV1U58RA7Hi0+v6fv4K54atOzATg==}
@@ -9686,7 +9698,7 @@ packages:
       postcss-modules-scope: 3.0.0_postcss@8.4.24
       postcss-modules-values: 4.0.0_postcss@8.4.24
       postcss-value-parser: 4.2.0
-      semver: 7.5.2
+      semver: 7.5.3
       webpack: 5.88.0
     dev: true
 
@@ -10285,8 +10297,8 @@ packages:
       jake: 10.8.7
     dev: true
 
-  /electron-to-chromium/1.4.437:
-    resolution: {integrity: sha512-ZFekRuBOHUXp21wrR5lshT6pZa/KmjkhKBAtmZz4NN5sCWlHOk3kdhiwFINrDBsRLX6FjyBAb1TRN+KBeNlyzQ==}
+  /electron-to-chromium/1.4.440:
+    resolution: {integrity: sha512-r6dCgNpRhPwiWlxbHzZQ/d9swfPaEJGi8ekqRBwQYaR3WmA5VkqQfBWSDDjuJU1ntO+W9tHx8OHV/96Q8e0dVw==}
 
   /electron/25.2.0:
     resolution: {integrity: sha512-I/rhcW2sV2fyiveVSBr2N7v5ZiCtdGY0UiNCDZgk2fpSC+irQjbeh7JT2b4vWmJ2ogOXBjqesrN9XszTIG6DHg==}
@@ -10828,7 +10840,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.60.0_i6u37blvulxlszyhkflwwnyave
       '@typescript-eslint/experimental-utils': 5.60.0_fsssjpk4ezl7mpaxdgpssv73ie
       eslint: 8.43.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -10848,7 +10860,7 @@ packages:
       jsdoc-type-pratt-parser: 1.2.0
       lodash: 4.17.21
       regextras: 0.8.0
-      semver: 7.5.2
+      semver: 7.5.3
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
@@ -10860,7 +10872,7 @@ packages:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
     dependencies:
       '@babel/runtime': 7.22.5
-      aria-query: 5.2.1
+      aria-query: 5.3.0
       array-includes: 3.1.6
       array.prototype.flatmap: 1.3.1
       ast-types-flow: 0.0.7
@@ -11506,7 +11518,7 @@ packages:
       memfs: 3.5.3
       minimatch: 3.1.2
       schema-utils: 2.7.0
-      semver: 7.5.2
+      semver: 7.5.3
       tapable: 1.1.3
       typescript: 5.0.4
       webpack: 5.88.0
@@ -11768,7 +11780,7 @@ packages:
     dependencies:
       foreground-child: 3.1.1
       jackspeak: 2.2.1
-      minimatch: 9.0.1
+      minimatch: 9.0.2
       minipass: 6.0.2
       path-scurry: 1.9.2
     dev: true
@@ -11819,7 +11831,7 @@ packages:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.5.2
+      semver: 7.5.3
       serialize-error: 7.0.1
     optional: true
 
@@ -12087,8 +12099,8 @@ packages:
       whatwg-encoding: 2.0.0
     dev: true
 
-  /html-entities/2.3.6:
-    resolution: {integrity: sha512-9o0+dcpIw2/HxkNuYKxSJUF/MMRZQECK4GnF+oQOmJ83yCVHTWgCH5aOXxK5bozNRmM8wtgryjHD3uloPBDEGw==}
+  /html-entities/2.4.0:
+    resolution: {integrity: sha512-igBTJcNNNhvZFRtm8uA6xMY6xYleeDwn3PeBCkDz7tHttv4F2hsDI2aPgNERWzvRcNYHNT3ymRaQzllmXj4YsQ==}
     dev: true
 
   /html-escaper/2.0.2:
@@ -13335,7 +13347,7 @@ packages:
       jest-util: 27.5.1
       natural-compare: 1.4.0
       pretty-format: 27.5.1
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -13384,7 +13396,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -13743,7 +13755,7 @@ packages:
       jws: 3.2.2
       lodash: 4.17.21
       ms: 2.1.3
-      semver: 7.5.2
+      semver: 7.5.3
     dev: false
 
   /jsx-ast-utils/3.3.3:
@@ -14332,8 +14344,8 @@ packages:
       brace-expansion: 2.0.1
     dev: false
 
-  /minimatch/9.0.1:
-    resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
+  /minimatch/9.0.2:
+    resolution: {integrity: sha512-PZOT9g5v2ojiTL7r1xF6plNHLtOeTpSlDI007As2NlA2aYBMfVom17yqa6QzhmDP8QOhn7LjHTg7DFCVSSa6yg==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       brace-expansion: 2.0.1
@@ -14474,8 +14486,8 @@ packages:
       readable-stream: 2.3.8
     dev: false
 
-  /mysql2/3.4.0:
-    resolution: {integrity: sha512-l952dVcdWVfEIIxMQ1PNSPHYY2htylG7H9ahrQe9lIgDpEMg3hB0S88OhC/loNSZpV8OcywSjgOzjSjEUiuwiQ==}
+  /mysql2/3.4.1:
+    resolution: {integrity: sha512-1VBrTIjDacTgcQ3/jUnMlix7twU3VfQtlAcBFPn5524AnBZcENRnpmdFt6oZaiYu4yGkAWXu0InNMg/LQs4daQ==}
     engines: {node: '>= 8.0'}
     dependencies:
       denque: 2.1.0
@@ -14587,7 +14599,7 @@ packages:
     resolution: {integrity: sha512-iwXuFrMAcFVi/ZoZiqq8BzAdsLw9kxDfTC0HMyjXfSL/6CSDAGD5UmR7azrAgWV1zKYq7dUUMj4owusBWKLsiQ==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.5.2
+      semver: 7.5.3
     dev: false
 
   /node-abort-controller/3.1.1:
@@ -14649,7 +14661,7 @@ packages:
       lodash: 4.17.21
       npmlog: 7.0.1
       rimraf: 5.0.1
-      semver: 7.5.2
+      semver: 7.5.3
       source-map-support: 0.5.21
       teen_process: 2.0.4
       uuid: 9.0.0
@@ -15632,7 +15644,7 @@ packages:
       cosmiconfig: 7.1.0
       klona: 2.0.6
       postcss: 8.4.24
-      semver: 7.5.2
+      semver: 7.5.3
       webpack: 5.88.0
     dev: true
 
@@ -17016,8 +17028,8 @@ packages:
       lru-cache: 6.0.0
     dev: false
 
-  /semver/7.5.2:
-    resolution: {integrity: sha512-SoftuTROv/cRjCze/scjGyiDtcUyxw1rgYQSZY7XTmtR5hX+dm76iDbTH8TkLPHCQmlbQVSSbNZCPM2hb0knnQ==}
+  /semver/7.5.3:
+    resolution: {integrity: sha512-QBlUtyVk/5EeHbi7X0fw6liDZc7BBmEaSYn01fMU1OUYbf6GPsbTtd8WmnqbI20SeycoHSeiybkE/q1Q+qlThQ==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -17050,7 +17062,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.32.1_7t54x3vxlt5nsc7lp3kvysyb5e:
+  /sequelize/6.32.1_btqv2tndml655ksjdrhktfdpea:
     resolution: {integrity: sha512-3Iv0jruv57Y0YvcxQW7BE56O7DC1BojcfIrqh6my+IQwde+9u/YnuYHzK+8kmZLhLvaziRT1eWu38nh9yVwn/g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -17091,10 +17103,10 @@ packages:
       lodash: 4.17.21
       moment: 2.29.4
       moment-timezone: 0.5.43
-      mysql2: 3.4.0
+      mysql2: 3.4.1
       pg-connection-string: 2.6.0
       retry-as-promised: 7.0.4
-      semver: 7.5.2
+      semver: 7.5.3
       sequelize-pool: 7.1.0
       tedious: 16.1.0
       toposort-class: 1.0.1
@@ -17781,7 +17793,7 @@ packages:
       mime: 2.6.0
       qs: 6.11.2
       readable-stream: 3.6.2
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -18265,12 +18277,12 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.22.5
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2
       make-error: 1.3.6
-      semver: 7.5.2
+      semver: 7.5.3
       typescript: 5.0.4
       yargs-parser: 20.2.9
     dev: true
@@ -18865,7 +18877,7 @@ packages:
       '@types/connect-history-api-fallback': 1.5.0
       '@types/express': 4.17.17
       '@types/serve-index': 1.9.1
-      '@types/serve-static': 1.15.1
+      '@types/serve-static': 1.15.2
       '@types/sockjs': 0.3.33
       '@types/ws': 8.5.5
       ansi-html-community: 0.0.8
@@ -18877,7 +18889,7 @@ packages:
       default-gateway: 6.0.3
       express: 4.18.2
       graceful-fs: 4.2.11
-      html-entities: 2.3.6
+      html-entities: 2.4.0
       http-proxy-middleware: 2.0.6_@types+express@4.17.17
       ipaddr.js: 2.1.0
       launch-editor: 2.6.0

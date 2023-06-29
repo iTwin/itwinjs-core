@@ -7,7 +7,6 @@
  * @module SQLiteDb
  */
 
-import { BentleyError, DbResult } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
@@ -159,7 +158,7 @@ export namespace PropertyStore {
     public async deleteProperty(propName: PropertyName) {
       this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, propName);
-        stmt.step();
+        stmt.stepForWrite();
       });
     }
     /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored.
@@ -207,9 +206,7 @@ export namespace PropertyStore {
             throw new Error("illegal property value type");
         }
 
-        const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new BentleyError(rc, "error saving property");
+        stmt.stepForWrite();
       });
     }
 
@@ -243,7 +240,7 @@ export namespace PropertyStore {
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
      * @note this deletes any existing content in the container.
      */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, initContainer?: { blockSize?: number } }) {
+    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
     }
   }

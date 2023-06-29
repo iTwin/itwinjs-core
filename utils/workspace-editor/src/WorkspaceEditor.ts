@@ -400,7 +400,7 @@ async function importWorkspaceDb(args: UploadOptions) {
   if (!IModelJsFs.existsSync(args.localFileName))
     args.localFileName = join(args.directory ?? IModelHost.appWorkspace.containerDir, args.localFileName);
 
-  await CloudSqlite.withWriteLock(args.user, container, async () => {
+  await CloudSqlite.withWriteLock({ ...args, container }, async () => {
     await performTransfer(container, "upload", args);
   });
   container.checkForChanges(); // so we can see newly imported WorkspaceDb
@@ -421,7 +421,7 @@ async function exportWorkspaceDb(args: TransferOptions) {
 /** Delete a WorkspaceDb from a cloud WorkspaceContainer. */
 async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
   const container = getCloudContainer(args);
-  await CloudSqlite.withWriteLock(args.user, container, async () => {
+  await CloudSqlite.withWriteLock({ ...args, container }, async () => {
     return container.deleteDatabase(args.dbName);
   });
 
@@ -450,7 +450,7 @@ async function initializeWorkspace(args: InitializeOpts) {
 async function purgeWorkspace(args: EditorOpts) {
   const container = getCloudContainer(args);
   const nGarbage = container.garbageBlocks;
-  await CloudSqlite.withWriteLock(args.user, container, async () => container.cleanDeletedBlocks());
+  await CloudSqlite.withWriteLock({ ...args, container }, async () => container.cleanDeletedBlocks());
   container.checkForChanges(); // re-read manifest to get current garbage count
   showMessage(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
 }
@@ -470,7 +470,7 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   ITwinWorkspaceContainer.validateDbName(newVersion.dbName);
   const newName = ITwinWorkspaceContainer.makeDbFileName(newVersion.dbName, ITwinWorkspaceContainer.validateVersion(newVersion.version));
 
-  await CloudSqlite.withWriteLock(args.user, container, async () => container.copyDatabase(oldName, newName));
+  await CloudSqlite.withWriteLock({ ...args, container }, async () => container.copyDatabase(oldName, newName));
   showMessage(`copied WorkspaceDb [${oldName}] to [${newName}] in ${sayContainer(args)}`);
 }
 

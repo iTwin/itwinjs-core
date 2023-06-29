@@ -8,12 +8,15 @@
 
 import { Transform } from "../../geometry3d/Transform";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { AnnounceDrapePanel } from "../PolyfaceQuery";
 import { Range3d } from "../../geometry3d/Range";
 import { Geometry } from "../../Geometry";
 import { Polyface } from "../Polyface";
+import { ClipPlane } from "../../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
 
 export class SweepLineStringToFacetContext {
   private _spacePoints: GrowableXYZArray;
@@ -95,5 +98,92 @@ export class SweepLineStringToFacetContext {
       }
     }
     return workCounter;
+  }
+}
+
+/**
+ * Context for sweeping a line segment onto a convex polygon.
+ * @internal
+ */
+class EdgeClipData {
+  /** Plane containing the edge and sweep vector */
+  public edgePlane: ClipPlane;
+  /** Two clip planes facing each other at each end of the edge */
+  public clip: ConvexClipPlaneSet;
+  /** work array for clipper method */
+  private _crossingPoints: Point3d[];
+
+  /** CAPTURE the planes */
+  public constructor(edgePlane: ClipPlane, clip: ConvexClipPlaneSet) {
+    this.edgePlane = edgePlane;
+    this.clip = clip;
+    this._crossingPoints = [];
+  }
+  /** create object from segment and sweep. Inputs are not captured. */
+  public static createPointPointSweep(pointA: Point3d, pointB: Point3d, sweep: Vector3d): EdgeClipData | undefined {
+    const edgeVector = Vector3d.createStartEnd(pointA, pointB);
+    const fraction = edgeVector.fractionOfProjectionToVector(sweep);
+    // The unbounded plane of the swept edge will intersect facets in lines that may extend beyond the swept bounded line.
+    // That linework will be clipped between two facing planes with normal along the perpendicular dropped from the edge vector to the sweep vector.
+    const clipNormal = edgeVector.plusScaled(sweep, -fraction);
+    const planeA = ClipPlane.createNormalAndPoint(clipNormal, pointA);
+    const planeB = ClipPlane.createNormalAndPoint(clipNormal, pointB);
+    const edgePlane = ClipPlane.createOriginAndVectors(pointA, edgeVector, sweep);
+    if (planeA !== undefined && planeB !== undefined && edgePlane !== undefined) {
+      planeB.negateInPlace();
+      const clipper = ConvexClipPlaneSet.createPlanes([planeA, planeB]);
+      return new EdgeClipData(edgePlane, clipper);
+    }
+    return undefined;
+  }
+
+  public processPolygon(polygon: Point3d[], announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
+    this._crossingPoints.length = 0;
+    Point3dArrayPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
+    // process a convex polygon (or non-convex if lucky)
+    if (this._crossingPoints.length === 2) {
+      // use the end planes to clip the [0,1] swept edge to [f0,f1]
+      this.clip.announceClippedSegmentIntervals(0, 1, this._crossingPoints[0], this._crossingPoints[1],
+        (f0: number, f1: number) => {
+          announceEdge(this._crossingPoints[0].interpolate(f0, this._crossingPoints[1]),
+            this._crossingPoints[0].interpolate(f1, this._crossingPoints[1]));
+        }
+      );
+    }
+  }
+}
+/**
+ * Context for sweeping a line string onto a convex polygon.
+ * @internal
+ */
+export class ClipSweptLineStringContext {
+  private _edgeClippers: EdgeClipData[];
+  private constructor(edgeData: EdgeClipData[]) {
+    this._edgeClippers = edgeData;
+  }
+  public static create(xyz: GrowableXYZArray, sweepVector: Vector3d | undefined): ClipSweptLineStringContext | undefined {
+    if (sweepVector === undefined)
+      sweepVector = Vector3d.create(0, 0, 1);
+    if (xyz.length > 1) {
+      const point = Point3d.createZero();
+      const newPoint = Point3d.createZero();
+      const edgeData: EdgeClipData[] = [];
+      xyz.getPoint3dAtUncheckedPointIndex(0, point);
+      for (let i = 1; i < xyz.length; i++) {
+        xyz.getPoint3dAtUncheckedPointIndex(i, newPoint);
+        const clipper = EdgeClipData.createPointPointSweep(point, newPoint, sweepVector);
+        if (clipper !== undefined) {
+          point.setFrom(newPoint);
+          edgeData.push(clipper);
+        }
+      }
+      return new ClipSweptLineStringContext(edgeData);
+    }
+    return undefined;
+  }
+  public processPolygon(polygon: Point3d[], announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
+    for (const clipper of this._edgeClippers) {
+      clipper.processPolygon(polygon, announceEdge);
+    }
   }
 }
