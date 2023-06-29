@@ -14,13 +14,6 @@ export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 // @internal (undocumented)
 export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
-// @internal
-export function createMeshExportServiceQueryUrl(args: {
-    iModelId: string;
-    urlPrefix?: string;
-    changesetId?: string;
-}): string;
-
 // @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
@@ -55,6 +48,18 @@ export interface MeshExport {
     };
     // (undocumented)
     status: string;
+}
+
+// @internal
+export interface MeshExports {
+    // (undocumented)
+    exports: MeshExport[];
+    // (undocumented)
+    _links: {
+        next?: {
+            href: string;
+        };
+    };
 }
 
 // @beta
