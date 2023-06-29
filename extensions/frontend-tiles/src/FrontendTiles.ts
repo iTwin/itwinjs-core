@@ -16,8 +16,7 @@ import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTree
  */
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-/** @internal exported for tests. */
-export function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string }): string {
+function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
   if (args.changesetId)
@@ -50,7 +49,10 @@ export interface MeshExport {
   };
 }
 
-interface MeshExports {
+/** Exposed strictly for tests.
+ * @internal
+ */
+export interface MeshExports {
   exports: MeshExport[];
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */

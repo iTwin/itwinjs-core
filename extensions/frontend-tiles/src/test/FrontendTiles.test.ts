@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection } from "@itwin/core-frontend";
+import { MeshExport, MeshExports, queryMeshExports, obtainMeshExportTilesetUrl } from "../FrontendTiles";
 
 class TestConnection extends BlankConnection {
   private readonly _id: string | undefined;
@@ -29,19 +30,40 @@ class TestConnection extends BlankConnection {
   public override get iModelId(): any { return this._id; }
 }
 
-describe("test", () => {
-  async function withFetch(mockFetch: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
-    sinon.stub(window, "fetch").callsFake(mockFetch);
-    try {
-      await fn();
-    } finally {
-      sinon.restore();
-    }
+async function mockFetch(mock: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
+  sinon.stub(window, "fetch").callsFake(mock);
+  try {
+    await fn();
+  } finally {
+    sinon.restore();
   }
+}
 
+function makeResponse(jsonMethod: () => Promise<MeshExports | never>): Response {
+  return {
+    json: () => jsonMethod(),
+  } as Response;
+}
+
+describe("queryMeshExports", () => {
+  it("returns no results upon error", async () => {
+
+  });
+
+  it("produces one set of results", async () => {
+  });
+
+  it("iterates over multiple sets of results", async () => {
+  });
+
+  it("includes only completed exports unless otherwise specified", async () => {
+  });
+});
+
+describe("test", () => {
   it("tests", async () => {
     let fetched = false;
-    await withFetch(async () => { fetched = true; return { } as any; }, async () => {
+    await mockFetch(async () => { fetched = true; return { } as any; }, async () => {
       await fetch("sldfkjs");
       expect(fetched).to.be.true;
       expect("laksjle").to.equal("qowieqoweq");
