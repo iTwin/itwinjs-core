@@ -88,6 +88,7 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
+    sinon.restore();
   });
 
   it("should handle undo/redo", async () => {
