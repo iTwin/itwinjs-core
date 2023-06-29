@@ -40,10 +40,9 @@ export namespace AzuriteTest {
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
       const createProps: BlobContainer.CreateNewContainerProps = {
         metadata: {
-          application: IModelHost.applicationId,
           description: "CloudSqlite container for tests",
-          format: "CloudSqlite",
-          blockSize: "64K",
+          label: "test for CloudSqlite",
+          containerType: "CloudSqlite",
         },
         containerId: container.containerId ?? Guid.createValue(),
         scope: {
