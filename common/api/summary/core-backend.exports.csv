@@ -30,6 +30,7 @@ beta;ChangeSummary
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl
+beta;ChannelControl
 beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest

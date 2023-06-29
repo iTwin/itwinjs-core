@@ -1366,8 +1366,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this.tryGetModelJson({ id });
     }
 
-    /** Query for the last modified time of the specified Model.
-     * @internal
+    /** Query for the last modified time for a [[Model]].
+     * @param modelId The Id of the model.
+     * @throws IModelError if `modelId` does not identify a model in the iModel.
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
@@ -1695,8 +1696,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    /** Query for the last modified time of the specified element.
-     * @internal
+    /** Query for an [[Element]]'s last modified time.
+     * @param elementId The Id of the element.
+     * @throws IModelError if `elementId` does not identify an element in the iModel.
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
@@ -2750,6 +2752,20 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.closeIModel();
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
+  }
+
+  /** Creates or updates views in the iModel to permit visualizing the EC content as ECClasses and ECProperties rather than raw database tables and columns.
+   * This can be helpful when debugging the EC data, especially when the raw tables make use of shared columns or spread data across multiple tables.
+   * @throws IModelError if view creation failed.
+   * @note The views are strictly intended for developers and debugging purposes only - they should not be used in application code.
+   * @beta
+   */
+  public createClassViews(): void {
+    const result = this.nativeDb.createClassViewsInDb();
+    if (BentleyStatus.SUCCESS !== result)
+      throw new IModelError(result, "Error creating class views");
+    else
+      this.saveChanges();
   }
 
   /** Open a standalone iModel file.
