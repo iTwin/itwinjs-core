@@ -7,8 +7,8 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
-import { BlankConnection } from "@itwin/core-frontend";
-import { MeshExport, MeshExports, queryMeshExports, QueryMeshExportsArgs } from "../FrontendTiles";
+import { BlankConnection, IModelApp } from "@itwin/core-frontend";
+import { MeshExport, MeshExports, obtainMeshExportTilesetUrl, queryMeshExports, QueryMeshExportsArgs } from "../FrontendTiles";
 
 use(chaiAsPromised);
 
@@ -141,5 +141,44 @@ describe("queryMeshExports", () => {
         await expectExports(["a"], { iModelId, accessToken, includeIncomplete: false });
       }
     );
+  });
+});
+
+describe("obtainMeshExportTilesetUrl", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
+  interface ObtainUrlArgs {
+    id?: string;
+    changesetId?: string;
+    exact?: boolean;
+  };
+
+  async function expectUrl(expected: string | undefined, args: ObtainUrlArgs): Promise<void> {
+    const iModel = new TestConnection(args);
+    const url = await obtainMeshExportTilesetUrl({
+      iModel,
+      accessToken: "iorjoqieh",
+      requireExactChangeset: args.exact,
+    });
+
+    expect(url?.pathname).to.equal(expected);
+  }
+
+  it("selects the first export matching the changeset Id", async () => {
+  });
+
+  it("selects the first export if no export matches the changeset Id", async () => {
+  });
+
+  it("returns undefined if no export matches the changeset Id and caller requires an exact changeset match", async () => {
+  });
+
+  it("returns undefined if no matching export could be found", async () => {
+    await expectUrl(undefined, { });
+    await expectUrl(undefined, { id: "" });
+  });
+
+  it("returns undefined if the iModel has no iModelId", async () => {
   });
 });
