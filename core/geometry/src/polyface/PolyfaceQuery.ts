@@ -1072,9 +1072,9 @@ export class PolyfaceQuery {
   }
   /** Find segments (within the linestring) which project to facets.
     * * Return collected line segments.
-    * * This calls [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) with options created by
+    * * This calls [[sweepLineStringToFacets]] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),false, true, true, true);`
-    * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) to get further options.
+    * @deprecated in 4.x. Use [[sweepLineStringToFacets]] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
@@ -1085,9 +1085,9 @@ export class PolyfaceQuery {
 
   /** Find segments (within the linestring) which project to facets.
    * * Return chains.
-   * * This calls [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) with options created by
+   * * This calls [[sweepLineStringToFacets]] with options created by
    *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`
-   * @deprecated in 4.x. Use [PolyfaceQuery.sweepLineStringToFacets]($core.geometry) to get further options.
+   * @deprecated in 4.x. Use [[sweepLineStringToFacets]] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),
