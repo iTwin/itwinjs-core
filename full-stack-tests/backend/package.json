@@ -55,7 +55,7 @@
     "@itwin/perf-tools": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "sinon": "^15.0.4",
-    "azurite": "^3.22.0",
+    "azurite": "^3.24.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
@@ -68,7 +68,7 @@
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "@itwin/eslint-plugin": "4.0.0-dev.36",
     "@itwin/build-tools": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

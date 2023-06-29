@@ -14,13 +14,13 @@ See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
 
 The following key-ins are available for this package.
 
-###### Enabled by `EditorOptions.registerUndoRedoTools`
+###### Undo and Redo tools
 
 * `editor undo all` - Undo all changes to elements.
 * `editor undo single` - Undo last change to elements.
 * `editor redo` - Redo last undone change to elements.
 
-###### Enabled by `EditorOptions.registerBasicManipulationTools`
+###### Basic manipulation tools
 
 * `editor delete elements` - Delete selected elements.
 * `editor move elements` - Move selected elements.
@@ -29,15 +29,27 @@ The following key-ins are available for this package.
   * `about=0|1|2` Location to rotate about. 0 for point, 1 for placement origin, and 2 for center of range.
   * `angle=number` Rotation angle in degrees when not defining angle by points.
 
-###### Enabled by `EditorOptions.registerSketchTools`
+###### Sketching tools
 
 * `editor create arc` - Create a new arc element or add an arc to an existing open path. Accepts 0-3 arguments:
   * `method=0|1|2|3` How arc will be defined. 0 for center/start, 1 for start/center, 2 for start/mid/end, and 3 for start/end/mid.
   * `radius=number` Arc radius for start/center or center/start, 0 to define by points.
   * `sweep=number` Arc sweep angle in degrees for start/center or center/start, 0 to define by points.
+* `editor create circle` - Create a new circle element.
+* `editor create ellipse` - Create a new ellipse element.
 * `editor create linestring` - Create a new linestring element or add a linestring to an existing path.
+* `editor create rectangle` - Create a new rectangle element.
+* `editor create bcurve` - Create a new bspline curve element or add a bspline curve to an existing path.
 
-###### Enabled by `EditorOptions.registerProjectLocationTools`
+###### Solid primitive tools
+
+* `editor create sphere` - Create a new sphere element.
+* `editor create cylinder` - Create a new cylinder element.
+* `editor create cone` - Create a new cone element.
+* `editor create box` - Create a new box element.
+* `editor create torus` - Create a new torus element.
+
+###### Project extents and geolocation tools
 
 * `editor project location show` - Show the decoration for editing the iModel's project extents and geolocation.
 * `editor project location hide` - Hide the decoration preserving unsaved changes (call show to redisplay).

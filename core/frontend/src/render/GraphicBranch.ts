@@ -140,6 +140,10 @@ export interface GraphicBranchOptions {
   appearanceProvider?: FeatureAppearanceProvider;
   /** @internal Secondary planar classifiers (map layers) */
   secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+  /** The Id of the [ViewAttachment]($backend) from which this branch's graphics originated.
+   * @internal
+   */
+  viewAttachmentId?: Id64String;
 }
 
 /** Clip/Transform for a branch that are varied over time.

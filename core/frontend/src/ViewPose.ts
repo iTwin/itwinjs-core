@@ -66,11 +66,11 @@ export abstract class ViewPose {
  * @extensions
  */
 export class ViewPose3d extends ViewPose {
-  /** @internal override */
+  /** See [[ViewPose.origin]]. */
   public readonly origin: Point3d;
-  /** @internal override */
+  /** See [[ViewPose.extents]]. */
   public readonly extents: Vector3d;
-  /** @internal override */
+  /** See [[ViewPose.rotation]]. */
   public readonly rotation: Matrix3d;
   /** The camera parameters of the view.
    * @note This object is meaningful only if [[ViewPose.cameraOn]] is `true`.
@@ -87,12 +87,12 @@ export class ViewPose3d extends ViewPose {
     this.camera = view.camera.clone();
   }
 
-  /** @internal override */
+  /** See [[ViewPose.target]]. */
   public override get target() {
     return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
   }
 
-  /** @internal override */
+  /** See [[ViewPose.equal]]. */
   public override equal(other: ViewPose): boolean {
     if (!(other instanceof ViewPose3d))
       return false;
@@ -104,7 +104,7 @@ export class ViewPose3d extends ViewPose {
       (!this.cameraOn || this.camera.equals(other.camera));
   }
 
-  /** @internal override */
+  /** See [[ViewPose.equalState]]. */
   public override equalState(view: ViewState): boolean {
     if (!(view instanceof ViewState3d))
       return false;
@@ -143,7 +143,7 @@ export class ViewPose2d extends ViewPose {
     this.angle = view.angle.clone();
   }
 
-  /** @internal override */
+  /** See [[ViewPose.equal]]. */
   public equal(other: ViewPose): boolean {
     if (!(other instanceof ViewPose2d))
       return false;
@@ -153,7 +153,7 @@ export class ViewPose2d extends ViewPose {
       this.angle.isAlmostEqualNoPeriodShift(other.angle);
   }
 
-  /** @internal override */
+  /** See [[ViewPose.equalState]]. */
   public equalState(view: ViewState): boolean {
     if (!(view instanceof ViewState2d))
       return false;
@@ -163,10 +163,16 @@ export class ViewPose2d extends ViewPose {
       this.angle.isAlmostEqualNoPeriodShift(view.angle);
   }
 
-  /** @internal override */
-  public get origin() { return new Point3d(this.origin2d.x, this.origin2d.y); }
-  /** @internal override */
-  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
-  /** @internal override */
-  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  /** See [[ViewPose.origin]]. */
+  public get origin() {
+    return new Point3d(this.origin2d.x, this.origin2d.y);
+  }
+  /** See [[ViewPose.extents]]. */
+  public get extents() {
+    return new Vector3d(this.delta.x, this.delta.y);
+  }
+  /** See [[ViewPose.rotation]]. */
+  public get rotation() {
+    return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
+  }
 }

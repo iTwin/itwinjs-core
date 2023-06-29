@@ -219,6 +219,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the @itwin/frontend-tiles package will be used to obtain tile trees for spatial views, served over localhost.
 * IMJS_GPU_MEMORY_LIMIT
   * If defined, specifies the GpuMemoryLimit with which to initialize TileAdmin (none, relaxed, default, aggressive; or a specific number of bytes).
+* IMJS_NO_IMDL_WORKER
+  * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
 
 ## Key-ins
 
@@ -287,6 +289,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 * `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
+* `dta record tilesize [on|off|toggle]` - When turned on, begins recording the encoded size of every subsequently requested iMdl tile's content. When turned off, copies the tile sizes in CSV format to the clipboard. See TileSizeRecorder.ts for details. If no argument is supplied, it defaults to `toggle`.
 
 ## Editing
 

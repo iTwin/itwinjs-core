@@ -30,6 +30,7 @@ beta;ChangeSummary
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl
+beta;ChannelControl
 beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
@@ -370,7 +371,7 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
-internal;TextureCreateProps 
+beta;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 beta;TileStorage
 public;TitleText 

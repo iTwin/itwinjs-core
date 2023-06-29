@@ -12,9 +12,11 @@ import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { AnyCurve } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
 import { RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -40,7 +42,14 @@ export class SweepContour {
   /** Axis used only in rotational case. */
   public axis: Ray3d | undefined;
 
-  private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
+  private constructor(contour: AnyCurve, map: Transform, axis: Ray3d | undefined) {
+    if (contour instanceof CurvePrimitive) {
+      // this.curves is a CurveCollection (not AnyCurve) so that contour type determines closure.
+      // This is the only time we detect CurvePrimitive closure and wrap as a relevant CurveChain.
+      const primitive = contour;
+      contour = contour.startPoint().isAlmostEqual(contour.endPoint()) ? new Loop() : new Path();
+      contour.tryAddChild(primitive);
+    }
     this.curves = contour;
     this.localToWorld = map;
     this.axis = axis;
@@ -49,10 +58,10 @@ export class SweepContour {
    * * The optional default normal may be useful for guiding coordinate frame setup.
    * * the contour is CAPTURED.
    */
-  public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
+  public static createForLinearSweep(contour: AnyCurve, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
-    return new SweepContour(contour, localToWorld, undefined);
+      return new SweepContour(contour, localToWorld, undefined);
     }
     return undefined;
   }
@@ -87,7 +96,7 @@ export class SweepContour {
    * * The axis ray is retained.
    * * the contour is CAPTURED.
    */
-  public static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined {
+  public static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, contour, axis);
     if (localToWorld) {
@@ -136,7 +145,7 @@ export class SweepContour {
 
   private _xyStrokes?: AnyCurve;
   private _facets?: IndexedPolyface;
-  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes;}
+  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes; }
   /**
    * build the (cached) internal facets.
    * @param options options for stroking the curves.

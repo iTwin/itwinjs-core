@@ -87,10 +87,10 @@ class RealityTextureParam implements IDisposable {
       const points = [];
       const meshParams = projectedTexture.meshParams;
       // Calculate range in the tiles local coordinates.
-      const low =  meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.low, scratchRange2d.low)!;
+      const low = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.low, scratchRange2d.low)!;
       const high = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.high, scratchRange2d.high)!;
       points.push(meshParams.projection.getGlobalPoint(low.x, low.y, 0));
-      points.push( meshParams.projection.getGlobalPoint(high.x, low.y, 0));
+      points.push(meshParams.projection.getGlobalPoint(high.x, low.y, 0));
       points.push(meshParams.projection.getGlobalPoint(high.x, high.y, 0));
       points.push(meshParams.projection.getGlobalPoint(low.x, high.y, 0));
       for (let i = 0, j = 8; i < 4; i++) {
@@ -296,7 +296,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       return undefined;
     const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
-    return new RealityMeshGeometry({realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal});
+    return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
   }
 
   public getRange(): Range3d {
@@ -324,7 +324,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
     if (layers.length < 2 && !layerClassifiers?.size && textures.length < texturesPerMesh) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
-      meshes.push(new RealityMeshGeometry({realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(textures), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal}));
+      meshes.push(new RealityMeshGeometry({ realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(textures), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal }));
     } else {
       let primaryLayer;
       while (primaryLayer === undefined)
@@ -332,7 +332,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       if (!primaryLayer)
         return undefined;
       for (const primaryTexture of primaryLayer) {
-        const targetRectangle =  primaryTexture.targetRectangle;
+        const targetRectangle = primaryTexture.targetRectangle;
         const overlapMinimum = 1.0E-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
         let layerTextures = [primaryTexture];
         for (const secondaryLayer of layers) {
@@ -360,10 +360,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
           }
         }
         while (layerTextures.length > texturesPerMesh) {
-          meshes.push(new RealityMeshGeometry({realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal}));
+          meshes.push(new RealityMeshGeometry({ realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal }));
           layerTextures = layerTextures.slice(texturesPerMesh);
         }
-        meshes.push(new RealityMeshGeometry({realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(layerTextures), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal}));
+        meshes.push(new RealityMeshGeometry({ realityMeshParams: realityMesh._realityMeshParams, textureParams: RealityTextureParams.create(layerTextures), transform: realityMesh._transform, baseColor, baseIsTransparent: baseTransparent, isTerrain: realityMesh._isTerrain, disableTextureDisposal }));
       }
     }
 

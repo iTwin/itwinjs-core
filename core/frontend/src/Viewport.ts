@@ -1059,7 +1059,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const worldPoint = hit.hitPoint.clone();
     const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      featureInfo.hitPoint = (await backgroundMapGeometry.dbToCartographicFromGcs([worldPoint]))[0];
     }
 
     const results = await Promise.all(promises);
@@ -2704,7 +2704,11 @@ export abstract class Viewport implements IDisposable, TileUser {
         const pixel = pixels.getPixel(x, y);
         const modelId = pixel.modelId;
         if (undefined !== modelId) {
-          const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
+          const transform = this.view.computeDisplayTransform({
+            modelId,
+            elementId: pixel.feature?.elementId,
+            viewAttachmentId: pixel.viewAttachmentId,
+          });
           transform?.multiplyInversePoint3d(npc, npc);
         }
       }
@@ -3572,7 +3576,7 @@ export class ScreenViewport extends Viewport {
     this.invalidateRenderPlan();
   }
 
-  /** @internal override */
+  /** Overrides [[Viewport.waitForSceneCompletion]] to allow the render loop to load graphics until the scene is complete. */
   public override async waitForSceneCompletion(): Promise<void> {
     if (!IModelApp.viewManager.hasViewport(this))
       return super.waitForSceneCompletion();

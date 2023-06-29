@@ -341,7 +341,7 @@ export class RealityTileTree extends TileTree {
     const reprojectChildren = new Array<ChildReprojection>();
     for (const child of children) {
       const realityChild = child as RealityTile;
-      const childRange = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
+      const childRange = rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
       const dbCenter = childRange.center;
       const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
       const dbPoints = [dbCenter, dbCenter.plusXYZ(1), dbCenter.plusXYZ(0, 1), dbCenter.plusXYZ(0, 0, 1)];
