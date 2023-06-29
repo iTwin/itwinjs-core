@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "4.0.0-dev.36",
-    "@types/node": "18.16.1",
+    "@types/node": "20.3.2",
     "eslint": "^8.36.0"
   },
   "eslintConfig": {

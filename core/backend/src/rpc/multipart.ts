@@ -9,6 +9,7 @@
 import { BentleyStatus, FormDataCommon, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
+import type * as http from "http";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -64,7 +65,7 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
       resolve(value);
     });
 
-    form.parse(req);
+    form.parse(req as unknown as http.IncomingMessage); // this code path is only used internally by the RPC system, where req is definitely a complete http.IncomingMessage
   });
 }
 

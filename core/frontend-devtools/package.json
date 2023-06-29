@@ -45,7 +45,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.36",
     "@types/file-saver": "^2.0.1",
-    "@types/node": "18.16.1",
+    "@types/node": "20.3.2",
     "cpx2": "^3.0.0",
     "eslint": "^8.36.0",
     "rimraf": "^3.0.2",
