@@ -168,14 +168,7 @@ export class CategorySelector extends DefinitionElement {
 /**
  * The definition element for a view. ViewDefinitions specify the area/volume that is viewed, the Ids of a DisplayStyle and a CategorySelector,
  * plus additional view-specific parameters in their [[Element.jsonProperties]].
- *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
- *
- * **Example: Obtaining the background color for a view**
- * ``` ts
- * [[include:ViewDefinition.getBackgroundColor]]
- * ```
- *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  * @public
  */
