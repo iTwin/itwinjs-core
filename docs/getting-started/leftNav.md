@@ -9,7 +9,7 @@
 
 ##### [1. Get the tools](./online-quickstart.md#1-get-the-tools)
 
-##### [2. Get a sample iModel](./online-quickstart.md#2-get-a-sample-imodel)
+##### [2. Get a Test iTwin and iModel](./online-quickstart.md#2-get-a-test-itwin-and-imodel)
 
 ##### [3. Get, build, and develop code](./online-quickstart.md#3-get-build-and-develop-code)
 
