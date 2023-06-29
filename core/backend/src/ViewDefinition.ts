@@ -32,13 +32,12 @@ export class ModelSelector extends DefinitionElement {
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
-  /** @internal */
-  constructor(props: ModelSelectorProps, iModel: IModelDb) {
+
+  protected constructor(props: ModelSelectorProps, iModel: IModelDb) {
     super(props, iModel);
     this.models = props.models;
   }
 
-  /** @internal */
   public override toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
@@ -104,13 +103,12 @@ export class CategorySelector extends DefinitionElement {
   public static override get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
-  /** @internal */
-  constructor(props: CategorySelectorProps, iModel: IModelDb) {
+
+  protected constructor(props: CategorySelectorProps, iModel: IModelDb) {
     super(props, iModel);
     this.categories = props.categories;
   }
 
-  /** @internal */
   public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
@@ -170,14 +168,7 @@ export class CategorySelector extends DefinitionElement {
 /**
  * The definition element for a view. ViewDefinitions specify the area/volume that is viewed, the Ids of a DisplayStyle and a CategorySelector,
  * plus additional view-specific parameters in their [[Element.jsonProperties]].
- *
  * Subclasses of ViewDefinition determine which model(s) are viewed.
- *
- * **Example: Obtaining the background color for a view**
- * ``` ts
- * [[include:ViewDefinition.getBackgroundColor]]
- * ```
- *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  * @public
  */
@@ -189,7 +180,6 @@ export abstract class ViewDefinition extends DefinitionElement {
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64String;
 
-  /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
 
@@ -202,7 +192,6 @@ export abstract class ViewDefinition extends DefinitionElement {
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -299,8 +288,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
-  /** @internal */
-  public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
+  protected constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
     this.origin = Point3d.fromJSON(props.origin);
@@ -310,7 +298,6 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this._details = new ViewDetails3d(this.jsonProperties);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
@@ -346,8 +333,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
 
-  /** @internal */
-  public constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
+  protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
     if (!Id64.isValid(this.modelSelectorId))
@@ -359,7 +345,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     return new SpatialViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
   }
 
-  /** Convert this view to its JSON representation. */
   public override toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
@@ -441,7 +426,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   /** @internal */
   public static override get className(): string { return "OrthographicViewDefinition"; }
+
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
+
   /**
    * Create an OrthographicViewDefinition
    * @param iModelDb The iModel
@@ -521,8 +508,7 @@ export class ViewDefinition2d extends ViewDefinition {
   /** The rotation of this view. */
   public angle: Angle;
 
-  /** @internal */
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
     this.origin = Point2d.fromJSON(props.origin);
@@ -531,7 +517,6 @@ export class ViewDefinition2d extends ViewDefinition {
     this._details = new ViewDetails(this.jsonProperties);
   }
 
-  /** @internal */
   public override toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;
@@ -559,8 +544,8 @@ export class ViewDefinition2d extends ViewDefinition {
 export class DrawingViewDefinition extends ViewDefinition2d {
   /** @internal */
   public static override get className(): string { return "DrawingViewDefinition"; }
-  /** @internal */
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
 
@@ -733,6 +718,6 @@ export class LightLocation extends SpatialLocationElement {
   public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
-  /** @internal */
-  constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
+
+  protected constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }

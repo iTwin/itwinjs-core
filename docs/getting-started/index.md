@@ -8,9 +8,11 @@ Writing an iTwin.js application requires the following software:
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 
-## 2. Get a sample iModel
+## 2. Get a Test iTwin and iModel
 
-[Click here to create a sample iModel](https://developer.bentley.com/create-imodel/)
+[Click here to create a Test iTwin](https://developer.bentley.com/my-itwins/new/)
+
+Once the Test iTwin is created, create an iModel in the iTwin by clicking the "New" button
 
 ## 3. Get, build, and develop code
 

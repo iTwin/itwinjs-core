@@ -604,7 +604,7 @@
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "js-base64",
@@ -747,6 +747,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "playwright",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },
@@ -760,7 +764,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "resolve",

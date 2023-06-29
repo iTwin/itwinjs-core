@@ -36,10 +36,10 @@ export class RobotWorldApp {
   /** Load the list of spatial views from our iModel, let the user pick one, and return a Promise for the ViewState of the selected view. */
   public static async loadOneView(): Promise<ViewState> {
     // first get the list of spatial views
-    const views: IModelConnection.ViewSpec[] = await this.getSpatialViews();
+    const views = await this.getSpatialViews();
 
     // ask the user to pick one from the list, returning its Id
-    const viewId: string = await this.pickView(views);
+    const viewId = await this.pickView(views);
 
     // return a promise for the ViewState of the selected view. Note that caller will have to await this method
     return this._iModel.views.load(viewId);

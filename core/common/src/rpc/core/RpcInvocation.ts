@@ -35,6 +35,8 @@ export interface RpcActivity extends SessionProps {
 
   /** the name of the current rpc method */
   readonly rpcMethod?: string;
+
+  readonly user?: string;
 }
 
 /** Serialized format for sending the request across the RPC layer
@@ -46,6 +48,7 @@ export interface SerializedRpcActivity {
   applicationVersion: string;
   sessionId: string;
   authorization: string;
+  user?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }
 
@@ -152,6 +155,7 @@ export class RpcInvocation {
       applicationId: request.applicationId,
       applicationVersion: request.applicationVersion,
       sessionId: request.sessionId,
+      user: request.user,
       accessToken: request.authorization,
       rpcMethod: request.operation.operationName,
     };

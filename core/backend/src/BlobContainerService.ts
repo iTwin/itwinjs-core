@@ -20,7 +20,7 @@ export namespace BlobContainer {
   export let service: BlobContainer.ContainerService | undefined;
 
   /** name of cloud provider for a container. */
-  export type Provider = "azure" | "google" | "aws";
+  export type Provider = "azure" | "google";
 
   /** the name of the container within its `Scope` */
   export type ContainerId = string;
@@ -45,8 +45,6 @@ export namespace BlobContainer {
     iTwinId: Id64String;
     /** optionally, an iModelId within the iTwin. If present, container is deleted when the iModel is deleted. */
     iModelId?: Id64String;
-    /** optionally, an owner of the container. Owners always have administrator rights for the container. */
-    owner?: string;
   }
 
   /**
@@ -54,17 +52,14 @@ export namespace BlobContainer {
    *  - administrators can understand why a container exists for assigning RBAC permissions appropriately
    *  - usage reports can aggregate types of containers
    *  - applications can identify their containers
-   *  - applications can store important (to them) properties "on" their containers
    */
   export interface Metadata {
-    /** Human readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
-    description: string;
-    /** a machine-readable string that describes the "format" of the data in this container (e.g. "CloudSqlite") */
-    format: string;
-    /** an identifier of the application that uses this this container */
-    application: string;
-    /** Additional properties stored on the container */
-    [propertyName: string]: string;
+    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Non-unique.*/
+    label: string;
+    /** The machine-readable string that describes what the container is being used for (e.g. "workspace"). Always lowercase and singular. */
+    containerType: string;
+    /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
+    description?: string;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -87,21 +82,29 @@ export namespace BlobContainer {
   /** The URI and Id of the container. */
   export interface UriAndId {
     baseUri: string;
-    id: ContainerId;
+    containerId: ContainerId;
   }
 
   /** Information required to access an existing container. */
-  export interface AccessContainerProps {
-    address: UriAndId;
+  export interface AccessContainerProps extends UriAndId {
     userToken: UserToken;
   }
 
+  /**
+   * Access level to request for token.
+   * - `"write"`: request a writeable AccessToken.
+   * - `"read"`:  request a read-only AccessToken.
+   * - `"admin"`:  request a admin AccessToken.
+   * - `"writeIfPossible"`: first request a writeable AccessToken. If the user is not authorized for write, request a read-only AccessToken.
+   * If the user is not authorized for the level requested, an exception is thrown.
+   */
+  export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
+
   /** Information required to request an access token for a container. */
   export interface RequestTokenProps extends AccessContainerProps {
-    /** If true, token should provide write access.
-     * @note if write access is requested and the user is authorized for read but not write, an exception will be thrown (i.e. a read token is *not* returned).
-     */
-    forWriteAccess?: boolean;
+    storageType: Provider;
+    /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
+    accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.
      * @note A maximum duration is determined by the service. If no value is supplied, or the value is larger than the maximum, the maximum duration is used.
      */
@@ -120,7 +123,7 @@ export namespace BlobContainer {
      * the id for the container. Useful for tests.
      * @internal
      */
-    id?: ContainerId;
+    containerId?: ContainerId;
   }
 
   /** Methods to create, delete, and access blob containers. */

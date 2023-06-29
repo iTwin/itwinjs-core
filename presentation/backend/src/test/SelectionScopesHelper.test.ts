@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
+import { ElementProps, EntityMetaData, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -328,12 +328,18 @@ describe("SelectionScopesHelper", () => {
 
     });
 
+    class TestDrawingGraphic extends DrawingGraphic {
+      public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
+        super(props, iModel);
+      }
+    }
+
     describe("scope: 'category'", () => {
 
       it("returns category key", async () => {
         const category = createRandomElementProps();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: createRandomId(),
@@ -358,7 +364,7 @@ describe("SelectionScopesHelper", () => {
       it("skips removed categories", async () => {
         const categoryId = createRandomId();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: createRandomId(),
@@ -384,7 +390,7 @@ describe("SelectionScopesHelper", () => {
       it("skips transient element ids", async () => {
         const category = createRandomElementProps();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: createRandomId(),
@@ -407,7 +413,7 @@ describe("SelectionScopesHelper", () => {
       it("returns model key", async () => {
         const model = createRandomModelProps();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: model.id!,
@@ -432,7 +438,7 @@ describe("SelectionScopesHelper", () => {
       it("skips removed models", async () => {
         const modelId = createRandomId();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: modelId,
@@ -449,7 +455,7 @@ describe("SelectionScopesHelper", () => {
       it("skips transient element ids", async () => {
         const model = createRandomModelProps();
         const elementId = createRandomId();
-        const element = new DrawingGraphic({
+        const element = new TestDrawingGraphic({
           id: elementId,
           classFullName: faker.random.word(),
           model: model.id!,

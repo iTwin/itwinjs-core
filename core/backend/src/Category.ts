@@ -25,8 +25,7 @@ export class SubCategory extends DefinitionElement {
   /** Optional description of this SubCategory. */
   public description?: string;
 
-  /** @internal */
-  public constructor(props: SubCategoryProps, iModel: IModelDb) {
+  protected constructor(props: SubCategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
@@ -106,8 +105,7 @@ export class Category extends DefinitionElement {
   public rank: Rank = Rank.User;
   public description?: string;
 
-  /** @internal */
-  public constructor(props: CategoryProps, iModel: IModelDb) {
+  protected constructor(props: CategoryProps, iModel: IModelDb) {
     super(props, iModel);
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
@@ -143,12 +141,7 @@ export class DrawingCategory extends Category {
   /** @internal */
   public static override get className(): string { return "DrawingCategory"; }
 
-  /** Construct a DrawingCategory
-   * @param opts  The properties of the new DrawingCategory
-   * @param iModel The IModelDb where the DrawingCategory may be inserted.
-   * @internal
-   */
-  public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+  protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
@@ -210,12 +203,7 @@ export class DrawingCategory extends Category {
 export class SpatialCategory extends Category {
   /** @internal */
   public static override get className(): string { return "SpatialCategory"; }
-  /** Construct a SpatialCategory
-   * @param opts  The properties of the new SpatialCategory
-   * @param iModel The IModelDb where the SpatialCategory may be inserted.
-   * @internal
-   */
-  public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+  protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
