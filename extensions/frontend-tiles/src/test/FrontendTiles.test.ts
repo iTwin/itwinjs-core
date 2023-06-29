@@ -103,8 +103,9 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeExports(props)));
 }
 
+const accessToken = "this-is-a-fake-access-token";
+
 describe("queryMeshExports", () => {
-  const accessToken = "acctkn";
   const iModelId = "imdl";
 
   it("returns no results upon error", async () => {
@@ -192,7 +193,7 @@ describe("obtainMeshExportTilesetUrl", () => {
       async () => {
         const url = await obtainMeshExportTilesetUrl({
           iModel,
-          accessToken: "iorjoqieh",
+          accessToken,
           requireExactChangeset: args.exact,
         });
 
