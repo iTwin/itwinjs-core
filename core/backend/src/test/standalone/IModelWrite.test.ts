@@ -61,8 +61,14 @@ describe("IModelWriteTest", () => {
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(bc, code1, true);
     bc.saveChanges();
 
+    // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
+    // in the readonly briefcase until the file watcher fires.
     expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
-    await BeDuration.fromMilliseconds(100).wait();
+
+    // wait for the watcher to trigger
+    await BeDuration.fromMilliseconds(1000).wait();
+
+    // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
     expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
 
     roBC.close();
