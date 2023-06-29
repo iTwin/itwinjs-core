@@ -17,9 +17,11 @@ import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTree
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
 /** @internal exported for tests. */
-export function createMeshExportServiceQueryUrl(args: ObtainTilesetUrlFromMeshExportServiceArgs): string {
+export function createMeshExportServiceQueryUrl(args: { iModelId: string, urlPrefix?: string, changesetId?: string }): string {
   const prefix = args.urlPrefix ?? "";
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModel.iModelId}&$orderBy=date:desc`;
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.iModelId}&$orderBy=date:desc`;
+  if (args.changesetId)
+    url = `${url}&changesetId=${args.changesetId}`;
 
   return url;
 }
@@ -39,6 +41,7 @@ export interface MeshExport {
     geometryOptions: any;
     viewDefinitionFilter: any;
   };
+
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
   _links: {
     mesh: {
@@ -47,28 +50,26 @@ export interface MeshExport {
   };
 }
 
-/** Arguments supplied to [[queryCompletedMeshExports]].
- * @beta
- */
-export interface QueryCompletedMeshExportsArgs {
-  /** The iModel whose exports to query. */
-  iModel: IModelConnection;
-  /** Token used to access the mesh export service.
-   * If omitted, [IModelApp.getAccessToken]($frontend) is used.
-   */
-  accessToken?: AccessToken;
-  /** Optional URL prefix, chiefly useful in testing environments. */
-  urlPrefix?: string;
+interface MeshExports {
+  exports: MeshExport[];
+
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
+  _links: {
+    next?: {
+      href: string;
+    };
+  };
 }
 
-/** Queries the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for completed exports associated with
- * a specific iModel.
- * @beta
- */
-export async function queryCompletedMeshExports(args: QueryCompletedMeshExportsArgs): Promise<MeshExport[]> {
-  let foundExports: MeshExport[] = [];
+export interface QueryMeshExportsArgs {
+  accessToken: AccessToken;
+  iModelId: string;
+  changesetId?: string;
+  urlPrefix?: string;
+  includeIncomplete?: boolean;
+}
 
-  const url = new URL(createMeshExportServiceQueryUrl(args));
+export async function * queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken ?? await IModelApp.getAccessToken(),
@@ -78,22 +79,35 @@ export async function queryCompletedMeshExports(args: QueryCompletedMeshExportsA
     Prefer: "return=representation",
   };
 
-  try {
-    const response = await fetch(url, { headers });
-    const result = await response.json() as { exports: MeshExport[] };
-    foundExports = result.exports.filter((x) => x.request.exportType === "IMODEL" && x.status === "Complete");
-  } catch (error) {
-    Logger.logException(loggerCategory, error);
-    Logger.logError(loggerCategory, `Failed loading exports for iModel ${args.iModel.iModelId}`);
-  }
+  let url: string | undefined = createMeshExportServiceQueryUrl(args);
+  while (url) {
+    let result;
+    try {
+      const response = await fetch(url, { headers });
+      result = await response.json() as MeshExports;
+    } catch (err) {
+      Logger.logException(loggerCategory, err);
+      Logger.logError(loggerCategory, `Failed loading exports for iModel ${args.iModelId}`);
+      break;
+    }
 
-  return foundExports;
+    const foundExports = result.exports.filter((x) => x.request.exportType === "IMODEL" && (args.includeIncomplete || x.status === "Complete"));
+    for (const foundExport of foundExports)
+      yield foundExport;
+
+    url = result._links.next?.href;
+  }
 }
 
 /** Arguments supplied  to [[obtainTilesetUrlFromMeshExportService]].
  * @beta
  */
-export type ObtainTilesetUrlFromMeshExportServiceArgs = QueryCompletedMeshExportsArgs;
+export interface ObtainMeshExportTilesetUrlArgs {
+  iModel: IModelConnection;
+  accessToken: AccessToken;
+  urlPrefix?: string;
+  requireExactChangeset?: boolean;
+}
 
 /** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
  * [[queryCompletedMeshExports]] is used to obtain a list of available exports. By default, the list is sorted from most to least recently-exported.
@@ -101,17 +115,36 @@ export type ObtainTilesetUrlFromMeshExportServiceArgs = QueryCompletedMeshExport
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainTilesetUrlFromMeshExportService(args: ObtainTilesetUrlFromMeshExportServiceArgs): Promise<URL | undefined> {
-  const foundExports = await queryCompletedMeshExports(args);
-  if (!foundExports.length) {
-    Logger.logInfo(loggerCategory, `No exports available for iModel ${args.iModel.iModelId}`);
+export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
+  if (!args.iModel.iModelId) {
+    Logger.logInfo(loggerCategory, "Cannot obtain exports for an iModel with no iModelId");
     return undefined;
   }
 
-  let selectedExport = foundExports.find((x) => x.request.changesetId === args.iModel.changeset.id);
+  const queryArgs: QueryMeshExportsArgs = {
+    accessToken: args.accessToken,
+    iModelId: args.iModel.iModelId,
+    changesetId: args.iModel.changeset.id,
+    urlPrefix: args.urlPrefix,
+  };
+
+  let selectedExport;
+  for await (const exp of queryMeshExports(queryArgs)) {
+    selectedExport = exp;
+    break;
+  }
+
+  if (!selectedExport && !args.requireExactChangeset) {
+    queryArgs.changesetId = undefined;
+    for await (const exp of queryMeshExports(queryArgs)) {
+      selectedExport = exp;
+      Logger.logInfo(loggerCategory, `No exports for iModel ${args.iModel.iModelId} for changeset ${args.iModel.changeset.id}; falling back to most recent`);
+    }
+  }
+
   if (!selectedExport) {
-    Logger.logInfo(loggerCategory, `No exports for iModel ${args.iModel.iModelId} for changeset ${args.iModel.changeset.id}; falling back to most recent`);
-    selectedExport = foundExports[0];
+    Logger.logInfo(loggerCategory, `No exports available for iModel ${args.iModel.iModelId}`);
+    return undefined;
   }
 
   const url = new URL(selectedExport._links.mesh.href);
@@ -155,6 +188,9 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
     maxLevelsToSkip = options.maxLevelsToSkip;
 
-  const computeUrl = options.computeSpatialTilesetBaseUrl ?? (async (iModel) => obtainTilesetUrlFromMeshExportService({ iModel }));
+  const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken() })
+  );
+
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
 }
