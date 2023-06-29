@@ -5,7 +5,19 @@
 import { expect } from "chai";
 
 describe("test", () => {
-  it("tests", () => {
-    expect(true).to.be.false;
+  async function withFetch(mockFetch: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
+    const windowFetch = window.fetch;
+    window.fetch = mockFetch;
+    try {
+      fn();
+    } finally {
+      window.fetch = windowFetch;
+    }
+  }
+
+  it("tests", async () => {
+    let fetched = false;
+    await withFetch(async () => { fetched = true; return { } as any; }, async () => { await fetch("sldfkjs"); });
+    expect(fetched).to.be.true;
   });
 });
