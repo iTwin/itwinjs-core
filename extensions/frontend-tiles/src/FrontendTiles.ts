@@ -160,6 +160,7 @@ export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUr
     for await (const exp of queryMeshExports(queryArgs)) {
       selectedExport = exp;
       Logger.logInfo(loggerCategory, `No exports for iModel ${args.iModel.iModelId} for changeset ${args.iModel.changeset.id}; falling back to most recent`);
+      break;
     }
   }
 

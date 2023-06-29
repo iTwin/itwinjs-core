@@ -60,6 +60,7 @@ interface ExportProps {
   id: string;
   status?: string; // defaults to "Complete"
   href?: string;
+  changesetId?: string;
 }
 
 function makeExport(props: ExportProps): MeshExport {
@@ -69,7 +70,7 @@ function makeExport(props: ExportProps): MeshExport {
     status: props.status ?? "Complete",
     request: {
       iModelId: "",
-      changesetId: "",
+      changesetId: props.changesetId ?? "",
       exportType: "IMODEL",
       geometryOptions: { },
       viewDefinitionFilter: { },
@@ -148,6 +149,27 @@ describe("obtainMeshExportTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
+
+  async function fetchExports(resource: Request | string | URL): Promise<Response> {
+    expect(typeof resource).to.equal("string");
+    const url = resource as string;
+
+    let exports: ExportProps[] = [
+      { id: "a", href: "http://tiles.com/a", changesetId: "aaa" },
+      { id: "b", href: "http://tiles.com/b", changesetId: "bbb" },
+      { id: "c", href: "http://tiles.com/c", changesetId: "ccc" },
+    ];
+
+    const changesetPrefix = "changesetId=";
+    const changesetPrefixIndex = url.indexOf(changesetPrefix);
+    if (-1 !== changesetPrefixIndex) {
+      const changesetId = url.substring(changesetPrefixIndex + changesetPrefix.length);
+      exports = exports.filter((x) => x.changesetId === changesetId);
+    }
+
+    return makeExportsResponse({ exports });
+  }
+
   interface ObtainUrlArgs {
     id?: string;
     changesetId?: string;
@@ -156,29 +178,37 @@ describe("obtainMeshExportTilesetUrl", () => {
 
   async function expectUrl(expected: string | undefined, args: ObtainUrlArgs): Promise<void> {
     const iModel = new TestConnection(args);
-    const url = await obtainMeshExportTilesetUrl({
-      iModel,
-      accessToken: "iorjoqieh",
-      requireExactChangeset: args.exact,
-    });
+    await mockFetch(
+      (resource) => fetchExports(resource),
+      async () => {
+        const url = await obtainMeshExportTilesetUrl({
+          iModel,
+          accessToken: "iorjoqieh",
+          requireExactChangeset: args.exact,
+        });
 
-    expect(url?.pathname).to.equal(expected);
+        expect(url?.toString()).to.equal(expected);
+      }
+    );
   }
 
-  it("selects the first export matching the changeset Id", async () => {
-  });
-
-  it("selects the first export if no export matches the changeset Id", async () => {
-  });
-
-  it("returns undefined if no export matches the changeset Id and caller requires an exact changeset match", async () => {
-  });
-
-  it("returns undefined if no matching export could be found", async () => {
+  it("returns undefined if the iModel has no iModelId", async () => {
     await expectUrl(undefined, { });
     await expectUrl(undefined, { id: "" });
   });
 
-  it("returns undefined if the iModel has no iModelId", async () => {
+  it("selects the first export matching the changeset Id", async () => {
+    await expectUrl("http://tiles.com/a/tileset.json", { id: "imdl", changesetId: "aaa" });
+    await expectUrl("http://tiles.com/b/tileset.json", { id: "imdl", changesetId: "bbb" });
+    await expectUrl("http://tiles.com/c/tileset.json", { id: "imdl", changesetId: "ccc" });
+  });
+
+  it("selects the first export if no export matches the changeset Id", async () => {
+    await expectUrl("http://tiles.com/a/tileset.json", { id: "imdl", changesetId: "bbbbbb" });
+    await expectUrl("http://tiles.com/a/tileset.json", { id: "imdl", changesetId: "bbbbbb", exact: false });
+  });
+
+  it("returns undefined if no export matches the changeset Id and caller requires an exact changeset match", async () => {
+    await expectUrl(undefined, { id: "imdl", changesetId: "bbbbbb", exact: true });
   });
 });
