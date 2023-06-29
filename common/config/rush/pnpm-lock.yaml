@@ -1618,6 +1618,7 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
+      '@azure/storage-blob': ^12.7.0
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1654,6 +1655,7 @@ importers:
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
+      azurite: ^3.24.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1668,7 +1670,9 @@ importers:
       glob: ^7.1.2
       https-browserify: ^1.0.0
       internal-tools: workspace:*
+      mkdirp: ^1.0.4
       nock: ^12.0.3
+      npm-run-all: ^4.1.5
       null-loader: ^4.0.1
       nyc: ^15.1.0
       path-browserify: ^1.0.1
@@ -1682,6 +1686,7 @@ importers:
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
+      '@azure/storage-blob': 12.14.0
       '@itwin/browser-authorization': 0.5.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1704,6 +1709,7 @@ importers:
       '@itwin/imodels-client-authoring': 3.1.0
       '@itwin/imodels-client-management': 3.1.0
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
+      azurite: 3.24.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 25.2.0
@@ -1735,7 +1741,9 @@ importers:
       glob: 7.2.3
       https-browserify: 1.0.0
       internal-tools: link:../../tools/internal
+      mkdirp: 1.0.4
       nock: 12.0.3
+      npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.88.1
       nyc: 15.1.0
       path-browserify: 1.0.1
