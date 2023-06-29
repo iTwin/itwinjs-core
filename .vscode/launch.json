@@ -626,8 +626,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/export-gltf/lib/ExportGltf.js",
       "args": [   // customize your input/output below
-        "--input=d:\\triangleWithUVParams.bim",
-        "--output=d:\\triangleWithUVParams.gltf"
+        "--input=d:\\foo.bim",
+        "--output=d:\\foo.gltf"
       ],
       "outputCapture": "std"
     },
