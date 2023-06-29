@@ -44,7 +44,7 @@ async function mockFetch(mock: typeof window.fetch, fn: () => Promise<void>): Pr
 
 function makeResponse(jsonMethod: () => Promise<MeshExports | never>): Response {
   return {
-    json: () => jsonMethod(),
+    json: async () => jsonMethod(),
   } as Response;
 }
 
@@ -75,6 +75,7 @@ function makeExport(props: ExportProps): MeshExport {
       geometryOptions: { },
       viewDefinitionFilter: { },
     },
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     _links: {
       mesh: {
         href: props.href ?? "mesh.edu",
@@ -91,6 +92,7 @@ interface ExportsProps {
 function makeExports(props: ExportsProps): MeshExports {
   return {
     exports: props.exports.map((x) => makeExport(x)),
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     _links: {
       next: props.next ? { href: props.next } : undefined,
     },
@@ -98,7 +100,7 @@ function makeExports(props: ExportsProps): MeshExports {
 }
 
 async function makeExportsResponse(props: ExportsProps): Promise<Response> {
-  return makeResponse(() => Promise.resolve(makeExports(props)));
+  return makeResponse(async () => Promise.resolve(makeExports(props)));
 }
 
 describe("queryMeshExports", () => {
@@ -106,21 +108,29 @@ describe("queryMeshExports", () => {
   const iModelId = "imdl";
 
   it("returns no results upon error", async () => {
-    await mockFetch(() => { throw new Error("fetch threw"); }, () => expectExports([], { accessToken, iModelId }));
-    await mockFetch(() => Promise.resolve(makeResponse(() => { throw new Error("json threw"); })), () => expectExports([], { accessToken, iModelId }));
+    await mockFetch(
+      () => { throw new Error("fetch threw"); },
+      async () => expectExports([], { accessToken, iModelId })
+    );
+    await mockFetch(
+      async () => Promise.resolve(makeResponse(
+        () => { throw new Error("json threw"); })
+      ),
+      async () => expectExports([], { accessToken, iModelId })
+    );
   });
 
   it("produces one set of results", async () => {
     await mockFetch(
-      () => makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
-      () => expectExports(["a", "b", "c"], { accessToken, iModelId })
+      async () => makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
+      async () => expectExports(["a", "b", "c"], { accessToken, iModelId })
     );
   });
 
   it("iterates over multiple sets of results", async () => {
     let fetchedFirst = false;
     await mockFetch(
-      () => {
+      async () => {
         if (!fetchedFirst) {
           fetchedFirst = true;
           return makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
@@ -128,14 +138,14 @@ describe("queryMeshExports", () => {
           return makeExportsResponse({ exports: [{ id: "c" }, { id: "d" }] });
         }
       },
-      () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId })
+      async () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId })
     );
 
   });
 
   it("includes only completed exports unless otherwise specified", async () => {
     await mockFetch(
-      () => makeExportsResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
+      async () => makeExportsResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
       async () => {
         await expectExports(["a"], { iModelId, accessToken });
         await expectExports(["a", "b"], { iModelId, accessToken, includeIncomplete: true }),
@@ -148,7 +158,6 @@ describe("queryMeshExports", () => {
 describe("obtainMeshExportTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
-
 
   async function fetchExports(resource: Request | string | URL): Promise<Response> {
     expect(typeof resource).to.equal("string");
@@ -174,12 +183,12 @@ describe("obtainMeshExportTilesetUrl", () => {
     id?: string;
     changesetId?: string;
     exact?: boolean;
-  };
+  }
 
   async function expectUrl(expected: string | undefined, args: ObtainUrlArgs): Promise<void> {
     const iModel = new TestConnection(args);
     await mockFetch(
-      (resource) => fetchExports(resource),
+      async (resource) => fetchExports(resource),
       async () => {
         const url = await obtainMeshExportTilesetUrl({
           iModel,
