@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add ContainerType",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

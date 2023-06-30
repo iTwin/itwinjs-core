@@ -346,18 +346,6 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  private async loadAcs(): Promise<void> {
-    this._auxCoordSystem = undefined;
-    const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (Id64.isValid(acsId)) {
-      try {
-        const props = await this.iModel.elements.getProps(acsId);
-        if (0 !== props.length)
-          this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-      } catch { }
-    }
-  }
-
   /**
    * Populates the hydrateRequest object stored on the ViewState with:
    *  not loaded categoryIds based off of the ViewStates categorySelector.
@@ -382,7 +370,7 @@ export abstract class ViewState extends ElementState {
 
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
-    const promises: Promise<any>[] = [
+    const promises: Promise<void>[] = [
       IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
         then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
