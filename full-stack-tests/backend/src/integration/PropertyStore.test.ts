@@ -8,16 +8,14 @@ import { Suite } from "mocha";
 import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 
-// spell:ignore mkdirs
-
-const blockSize = 64 * 1024;
 const propContainer = "properties-itwin1";
+const storageType = "azure" as const;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
+  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken } });
 }
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
@@ -28,12 +26,12 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   return count;
 }
 
-async function makePropertyStore(moniker: string) {
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, writeable: true };
+async function makePropertyStore(user: string) {
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: propContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
   const propStore = new PropertyStore.CloudAccess({ ...props, accessToken });
-  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  propStore.lockParams.moniker = moniker;
+  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
+  propStore.lockParams.user = user;
   return propStore;
 }
 

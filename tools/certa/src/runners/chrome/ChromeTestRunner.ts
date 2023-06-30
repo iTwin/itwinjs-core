@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as puppeteer from "puppeteer";
+import { Browser, chromium, LaunchOptions, Page } from "playwright";
 import { ChildProcess } from "child_process";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
@@ -18,24 +18,23 @@ interface ChromeTestResults {
 
 type ConsoleMethodName = "log" | "error" | "dir";
 
-let browser: puppeteer.Browser;
+let browser: Browser;
 let webserverProcess: ChildProcess;
 
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
   public static readonly supportsCleanup = true;
   public static async initialize(config: CertaConfig): Promise<void> {
-    // Go ahead and launch puppeteer now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
-    const options = {
-      ignoreHTTPSErrors: true,
+    // Go ahead and launch playwright now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
+    const options: LaunchOptions = {
       args: config.chromeOptions.args,
       headless: !config.debug,
     };
 
     if (config.debug)
-      options.args.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
+      options.args?.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
-    browser = await puppeteer.launch(options);
+    browser = await chromium.launch(options);
 
     const webserverEnv = {
       CERTA_PORT: `${config.ports.frontend}`, // eslint-disable-line @typescript-eslint/naming-convention
@@ -58,7 +57,7 @@ export class ChromeTestRunner {
     if (process.env.CI || process.env.TF_BUILD)
       (config.mochaOptions as any).forbidOnly = true;
 
-    const { failures, coverage } = await runTestsInPuppeteer(config, process.env.CERTA_PORT!);
+    const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
 
     // Save nyc/istanbul coverage file.
@@ -69,17 +68,17 @@ export class ChromeTestRunner {
   }
 }
 
-async function loadScript(page: puppeteer.Page, scriptPath: string) {
+async function loadScript(page: Page, scriptPath: string) {
   return page.addScriptTag({ url: `/@/${scriptPath}` });
 }
 
-async function runTestsInPuppeteer(config: CertaConfig, port: string) {
+async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
-      const page = (await browser.pages()).pop() || await browser.newPage();
+      const page = browser.contexts().pop()?.pages()?.pop() || await browser.newPage();
 
       // Don't let dialogs block tests
-      page.on("dialog", async (dialog) => dialog.dismiss());
+      page.on("dialog", async (dialog: any) => dialog.dismiss());
 
       // Re-throw any uncaught exceptions from the frontend in the backend
       page.on("pageerror", reject);
