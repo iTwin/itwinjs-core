@@ -39,7 +39,7 @@ public;BezierCurve3d
 public;BezierCurve3dH 
 public;class BezierCurveBase 
 internal;BezierPolynomialAlgebra
-internal;BilinearPatch 
+public;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
 public;BooleanClipFactory
@@ -179,6 +179,8 @@ public;Matrix3d
 public;Matrix3dProps = number[][] | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
+public;MiteredSweepOptions
+public;MiteredSweepOutputSelect
 public;MomentData
 internal;MultiChainCollector
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
@@ -260,6 +262,7 @@ public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample
+public;SectionSequenceWithPlanes
 public;Segment1d
 public;SignedLoops
 internal;SimpleNewton
@@ -279,6 +282,7 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
+public;SweepLineStringToFacetsOptions
 public;TaggedNumericConstants
 public;TaggedNumericData
 internal;TorusImplicit

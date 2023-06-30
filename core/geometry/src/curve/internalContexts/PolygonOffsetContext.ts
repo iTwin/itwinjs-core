@@ -22,6 +22,7 @@ import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
 import { StrokeOptions } from "../StrokeOptions";
+// cspell:word CCWXY
 
 /**
  * Classification of how the joint is constructed.

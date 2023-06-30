@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "4.1.0-dev.40",
+  "version": "4.1.0-dev.50",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
@@ -37,10 +37,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.40",
-    "@itwin/core-common": "workspace:^4.1.0-dev.40",
-    "@itwin/core-frontend": "workspace:^4.1.0-dev.40",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.40"
+    "@itwin/core-bentley": "workspace:^4.1.0-dev.50",
+    "@itwin/core-common": "workspace:^4.1.0-dev.50",
+    "@itwin/core-frontend": "workspace:^4.1.0-dev.50",
+    "@itwin/core-geometry": "workspace:^4.1.0-dev.50"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -49,10 +49,10 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "@itwin/eslint-plugin": "4.0.0-dev.36",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^18.11.5",
+    "@types/node": "18.16.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",

@@ -9,7 +9,7 @@ import {
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
-export abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
   public static interfaceVersion = "1.1.1";
 
@@ -34,9 +34,15 @@ export abstract class TestRpcInterface extends RpcInterface { // eslint-disable-
   public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
+  public async startViewStore(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async stopViewStore(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
-export abstract class EventsTestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class EventsTestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "EventsTestRpcInterface";
   public static interfaceVersion = "0.1.0";
 

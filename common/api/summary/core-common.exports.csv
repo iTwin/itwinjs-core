@@ -844,9 +844,12 @@ public;ViewFlagOverrides = Partial
 public;ViewFlagProps
 public;ViewFlags
 public;ViewFlagsProperties = Mutable
+public;ViewIdString = Id64String
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
+beta;ViewStoreRpc
+public;IdString = string
 internal;WEB_RPC_CONSTANTS:
 internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 

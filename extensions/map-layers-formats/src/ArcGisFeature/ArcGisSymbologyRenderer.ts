@@ -152,13 +152,13 @@ export class ArcGisSymbologyRenderer {
 
   constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
     let symbol;
-    if (rendererDefinition?.symbol !== undefined) {
+    if (rendererDefinition?.symbol) {
       symbol = rendererDefinition.symbol;
-    } else if (rendererDefinition?.defaultSymbol !== undefined) {
+    } else if (rendererDefinition?.defaultSymbol) {
       symbol = rendererDefinition?.defaultSymbol;
     }
 
-    if (symbol !== undefined) {
+    if (symbol) {
       if (symbol.type === "esriSFS") {
         this._symbol = EsriSFS.fromJSON(symbol);
       } else if (symbol.type === "esriSLS") {
