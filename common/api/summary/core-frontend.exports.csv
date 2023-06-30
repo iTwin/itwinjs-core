@@ -201,6 +201,7 @@ internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeigh
 public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
+internal;FetchCloudStorage 
 public;FitViewTool 
 internal;Flags
 public;FlashMode

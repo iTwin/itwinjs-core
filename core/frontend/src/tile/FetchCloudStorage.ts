@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { FrontendConfigDownloadInput, FrontendConfigUploadInput, FrontendStorage, FrontendUploadInMultiplePartsInput, FrontendUrlDownloadInput, FrontendUrlUploadInput, ObjectReference } from "@itwin/object-storage-core/lib/frontend";
 
+/** @internal */
 export class FetchCloudStorage implements FrontendStorage {
   public download(input: (FrontendUrlDownloadInput | FrontendConfigDownloadInput) & { transferType: "buffer" }): Promise<ArrayBuffer>;
   public download(input: (FrontendUrlDownloadInput | FrontendConfigDownloadInput) & { transferType: "stream" }): Promise<ReadableStream<any>>;

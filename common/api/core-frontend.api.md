@@ -106,7 +106,12 @@ import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
+import type { FrontendConfigDownloadInput } from '@itwin/object-storage-core/lib/frontend';
+import type { FrontendConfigUploadInput } from '@itwin/object-storage-core/lib/frontend';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
+import type { FrontendUploadInMultiplePartsInput } from '@itwin/object-storage-core/lib/frontend';
+import type { FrontendUrlDownloadInput } from '@itwin/object-storage-core/lib/frontend';
+import type { FrontendUrlUploadInput } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
@@ -3439,6 +3444,22 @@ export namespace FeatureSymbology {
     export interface Source {
         readonly onSourceDisposed: BeEvent<() => void>;
     }
+}
+
+// @internal (undocumented)
+export class FetchCloudStorage implements FrontendStorage {
+    // (undocumented)
+    download(input: (FrontendUrlDownloadInput | FrontendConfigDownloadInput) & {
+        transferType: "buffer";
+    }): Promise<ArrayBuffer>;
+    // (undocumented)
+    download(input: (FrontendUrlDownloadInput | FrontendConfigDownloadInput) & {
+        transferType: "stream";
+    }): Promise<ReadableStream<any>>;
+    // (undocumented)
+    upload(_input: FrontendUrlUploadInput | FrontendConfigUploadInput): Promise<void>;
+    // (undocumented)
+    uploadInMultipleParts(_input: FrontendUploadInMultiplePartsInput): Promise<void>;
 }
 
 // @public
