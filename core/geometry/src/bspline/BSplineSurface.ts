@@ -610,10 +610,10 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    *     * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
    * @param controlPointArray Array of points, ordered along the U direction.
-   * @param numPoleU number of poles in each row in the U direction.
+   * @param numPoleU number of poles in each row
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayU knots for the V direction.  See note above about knot counts.
-   * @param numPoleV number of poles in each row in the U direction.
+   * @param numPoleV number of rows of poles
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayV knots for the V direction.  See note above about knot counts.
    */

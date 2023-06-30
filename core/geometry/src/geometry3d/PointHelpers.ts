@@ -678,9 +678,10 @@ export class Point3dArray {
   }
 
   /**
-   * return an 3-dimensional array containing all the values of `data` in arrays numPerRow blocks of numPerBlock
+   * Return a 3-dimensional array containing all the values of `data` in rows of numPerRow blocks of size numPerBlock.
    * @param data simple array of numbers
-   * @param numPerBlock number of values in each block at first level down
+   * @param numPerBlock number of values in each block
+   * @param numPerRow number of blocks per row
    */
   public static unpackNumbersToNestedArraysIJK(data: Float64Array, numPerBlock: number, numPerRow: number): any[] {
     const result = [];
