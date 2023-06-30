@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Modify BlobContainerStorage Interfaces",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -99,7 +99,7 @@ The following diagram shows a simplified process tree for each test runner:
                          🞑 = Frontend    ⧈ = Backend    □ = Other
 ```
 
-> *Chrome technically spawns many child processes of its own, but since we're using Puppeteer to automate chrome,
+> *Chrome technically spawns many child processes of its own, but since we're using Playwright to automate chrome,
 > this can be considered an implementation detail.
 
 Note that each test runner designates a single __frontend__ and __backend__ process (for the node test runner,

@@ -335,8 +335,10 @@ import { ViewDetails3d } from '@itwin/core-common';
 import { ViewFlagOverrides } from '@itwin/core-common';
 import { ViewFlags } from '@itwin/core-common';
 import { ViewFlagsProperties } from '@itwin/core-common';
+import { ViewIdString } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
+import { ViewStoreRpc } from '@itwin/core-common';
 import { WebGLContext } from '@itwin/webgl-compatibility';
 import { WebGLExtensionName } from '@itwin/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@itwin/webgl-compatibility';
@@ -6562,9 +6564,13 @@ export namespace IModelConnection {
         // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
-        load(viewDefinitionId: Id64String): Promise<ViewState>;
+        load(viewDefinitionId: ViewIdString): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
+        // (undocumented)
+        get viewsStoreReader(): PickAsyncMethods<ViewStoreRpc.Reader>;
+        // (undocumented)
+        get viewStoreWriter(): PickAsyncMethods<ViewStoreRpc.Writer>;
     }
     export interface ViewSpec {
         class: string;
