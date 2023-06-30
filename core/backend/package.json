@@ -90,13 +90,8 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.0.8",
-    "@itwin/cloud-agnostic-core": "^1.5.0",
-=======
-    "@bentley/imodeljs-native": "4.1.0",
     "@itwin/cloud-agnostic-core": "^2.0.0",
->>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.0.0",
     "@itwin/object-storage-core": "^2.0.0",
