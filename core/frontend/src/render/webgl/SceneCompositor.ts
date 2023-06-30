@@ -803,6 +803,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
   public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
+  public abstract forceBufferChange(): void;
 
   /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
   public abstract get screenSpaceEffectFbo(): FrameBuffer;
@@ -812,8 +813,6 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract get antialiasSamples(): number;
 
   public get needHiddenEdges(): boolean { return this._needHiddenEdges; }
-
-  public abstract set forceBufferChange(force: boolean);
 
   protected constructor(target: Target) {
     this.target = target;
@@ -870,7 +869,7 @@ class Compositor extends SceneCompositor {
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
   protected _forceBufferChange: boolean = false;
 
-  public set forceBufferChange(force: boolean) { this._forceBufferChange = force; }
+  public forceBufferChange(): void { this._forceBufferChange = true; }
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }

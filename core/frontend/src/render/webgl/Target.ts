@@ -1311,7 +1311,7 @@ export class OnScreenTarget extends Target {
       this._blitGeom.collectStatistics(stats);
   }
 
-  public override set forceBufferChange(force: boolean) { this.compositor.forceBufferChange = force; }
+  public override forceBufferChange() { this.compositor.forceBufferChange(); }
   public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
   public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
   public override get devicePixelRatio(): number {
