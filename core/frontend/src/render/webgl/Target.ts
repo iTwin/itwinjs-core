@@ -803,7 +803,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return { texture, fbo };
   }
 
-  private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
+  private disposeOrReuseReadPixelResources({ texture, fbo }: ReadPixelResources) {
     const maxReusableTextureSize = 256;
     const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
 
@@ -822,7 +822,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
 
     if (reuseResources) {
-      this._readPixelReusableResources = {texture, fbo};
+      this._readPixelReusableResources = { texture, fbo };
     } else {
       dispose(fbo);
       dispose(texture);
@@ -1235,8 +1235,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
 class CanvasState {
   public readonly canvas: HTMLCanvasElement;
-  private _width = 0;
-  private _height = 0;
   public needsClear = false;
   private _isWebGLCanvas: boolean;
 
@@ -1253,12 +1251,12 @@ class CanvasState {
     // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
     // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
     // to the view manager. See ViewManager.test.ts for more details.
-    if (w === this._width && h === this._height || (0 === w || 0 === h))
+    if (w === this.canvas.width && h === this.canvas.height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
-    this.canvas.width = this._width = w;
-    this.canvas.height = this._height = h;
+    this.canvas.width = w;
+    this.canvas.height = h;
 
     if (!this._isWebGLCanvas) {
       const ctx = this.canvas.getContext("2d")!;
@@ -1269,8 +1267,8 @@ class CanvasState {
     return true;
   }
 
-  public get width() { return this._width; }
-  public get height() { return this._height; }
+  public get width() { return this.canvas.width; }
+  public get height() { return this.canvas.height; }
 }
 
 /** A Target that renders to a canvas on the screen
@@ -1313,6 +1311,7 @@ export class OnScreenTarget extends Target {
       this._blitGeom.collectStatistics(stats);
   }
 
+  public override set forceBufferChange(force: boolean) { this.compositor.forceBufferChange = force; }
   public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
   public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
   public override get devicePixelRatio(): number {

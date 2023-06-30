@@ -3545,7 +3545,6 @@ export class ScreenViewport extends Viewport {
     if (toScreen === this.rendersToScreen)
       return;
 
-    let resized2 = false;
     // Returns a webgl canvas if we're rendering webgl directly to the screen.
     const webglCanvas = this.target.setRenderToScreen(toScreen);
     if (undefined === webglCanvas) {
@@ -3557,15 +3556,6 @@ export class ScreenViewport extends Viewport {
       this._webglCanvas = webglCanvas;
 
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
-      // if (this._webglCanvas.width !== this.canvas.width)
-      //   this._webglCanvas.width = this.canvas.width;
-      // if (this._webglCanvas.height !== this.canvas.height)
-      //   this._webglCanvas.height = this.canvas.height;
-      if (this._webglCanvas.width !== this.canvas.width || this._webglCanvas.height !== this.canvas.height) {
-        this._webglCanvas.width = this.canvas.width;
-        this._webglCanvas.height = this.canvas.height;
-        resized2 = true;
-      }
 
       /** We really want this WebGL canvas' zIndex to be lower than this.canvas, but if we do that, browsers can decide to
        * not update the WebGL canvas contents once it is re-added to the parent div after dropping other viewports.
@@ -3579,10 +3569,10 @@ export class ScreenViewport extends Viewport {
     }
 
     const resized = this.target.updateViewRect();
-    if (resized && !resized2) {
-      // commenting this out makes #760 work completely, but amkes test for previous PR fix (#3406) fail
-      // this.target.onResized();
+    if (resized) {
+      this.target.onResized();
       this.invalidateController();
+      this.target.forceBufferChange = true;
     }
     this.invalidateRenderPlan();
   }
