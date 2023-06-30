@@ -432,8 +432,11 @@ export namespace BlobContainer {
     export type ContainerId = string;
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<UriAndId>;
-        delete(props: AccessContainerProps): Promise<void>;
+        delete(container: AccessContainerProps): Promise<void>;
+        queryMetadata(container: AccessContainerProps): Promise<Metadata>;
+        queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
+        updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
     export interface CreateNewContainerProps {
@@ -446,7 +449,7 @@ export namespace BlobContainer {
     export interface Metadata {
         containerType: string;
         description?: string;
-        json?: string;
+        json?: SettingObject;
         label: string;
     }
     export type Provider = "azure" | "google";
