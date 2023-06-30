@@ -8,7 +8,7 @@
 
 // spell:ignore datacenter
 
-import { AccessToken, Id64String } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
 
 /**
  * Types and functions for creating, deleting and authorizing access to cloud-based blob containers for an iTwin.
@@ -45,6 +45,8 @@ export namespace BlobContainer {
     iTwinId: Id64String;
     /** optionally, an iModelId within the iTwin. If present, container is deleted when the iModel is deleted. */
     iModelId?: Id64String;
+    /** the user GUID an individual, if this container is private. */
+    ownerGuid?: GuidString;
   }
 
   /**
@@ -54,12 +56,14 @@ export namespace BlobContainer {
    *  - applications can identify their containers
    */
   export interface Metadata {
-    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Non-unique.*/
-    label: string;
     /** The machine-readable string that describes what the container is being used for (e.g. "workspace"). Always lowercase and singular. */
     containerType: string;
+    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Not required to be unique.*/
+    label: string;
     /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
     description?: string;
+    /** optional properties for the container */
+    json?: string;
   }
 
   /** Properties returned by `Service.requestToken` */

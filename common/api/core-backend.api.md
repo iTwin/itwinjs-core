@@ -446,6 +446,7 @@ export namespace BlobContainer {
     export interface Metadata {
         containerType: string;
         description?: string;
+        json?: string;
         label: string;
     }
     export type Provider = "azure" | "google";
@@ -459,6 +460,7 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
+        ownerGuid?: GuidString;
     }
     export interface TokenProps {
         expiration: Date;
