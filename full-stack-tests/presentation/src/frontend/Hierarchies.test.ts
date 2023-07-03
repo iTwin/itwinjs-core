@@ -1055,7 +1055,7 @@ describe("Hierarchies", () => {
 
   });
 
-  describe.only("Counting instances of selected nodes", () => {
+  describe("Counting instances of selected nodes", () => {
 
     let imodel: IModelConnection;
 
@@ -1127,7 +1127,7 @@ describe("Hierarchies", () => {
 
   });
 
-  describe.only("Multiple backends for one frontend", () => {
+  describe("Multiple backends for one frontend", () => {
 
     let imodel: IModelConnection;
     let frontend: PresentationManager;
