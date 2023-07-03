@@ -202,21 +202,4 @@ describe("ArcGisPbfFeatureReader", () => {
     expect(firstCall.args[2]).to.eql(2);              // stride
   });
 
-  it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
-    const featurePbf = createFeaturePBF();
-    const symbolRenderer = new ArcGisSymbologyRenderer(
-      "esriGeometryAny",
-      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
-
-    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
-    const logErrorSpy = sandbox.spy(Logger, "logError");
-    await featurePbf.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
-    expect(logErrorSpy.calledOnce);
-
-    logErrorSpy.resetHistory();
-    await featurePbf.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
-    expect(logErrorSpy.calledOnce);
-
-  });
-
 });

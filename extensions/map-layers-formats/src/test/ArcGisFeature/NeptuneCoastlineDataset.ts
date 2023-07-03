@@ -255,7 +255,7 @@ export class NeptuneCoastlineDataset {
     },
   };
 
-  public static uniqueValueDrawingInfo = {
+  public static uniqueValueSFSDrawingInfo = {
     drawingInfo: {
       renderer: {
         type: "uniqueValue",
@@ -610,4 +610,56 @@ export class NeptuneCoastlineDataset {
       labelingInfo: null,
     },
   };
+
+  public static uniqueValueSLSDrawingInfo = {
+    drawingInfo: {
+      renderer: {
+        type: "uniqueValue",
+        field1: "LU_2014",
+        field2: null,
+        field3: null,
+        fieldDelimiter: ", ",
+        defaultSymbol: null,
+        defaultLabel: null,
+        uniqueValueInfos: [
+          {
+            symbol: {
+              type: "esriSLS",
+              style: "esriSLSSolid",
+              color: [
+                0,
+                255,
+                0,
+                255,
+              ],
+              width: 0.4,
+            },
+            value: "Lost To Sea Since 1965",
+            label: "Lost To Sea Since 1965",
+            description: "",
+          },
+          {
+            symbol: {
+              type: "esriSLS",
+              style: "esriSLSSolid",
+              color: [
+                0,
+                150,
+                150,
+                255,
+              ],
+              width: 0.4,
+            },
+            value: "Urban/Built-up",
+            label: "Urban/Built-up",
+            description: "",
+          },
+
+        ],
+      },
+      transparency: 30,
+      labelingInfo: null,
+    },
+  };
+
 }

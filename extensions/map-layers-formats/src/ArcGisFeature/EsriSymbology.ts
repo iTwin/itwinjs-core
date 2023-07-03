@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-
 import { ColorDef } from "@itwin/core-common";
 
 // Convert a channel array [r, g, b, a] to ColorDef
@@ -14,7 +13,6 @@ function colorFromArray(channels?: number[]) {
   }
   return undefined;
 }
-
 
 /** @internal */
 export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
@@ -35,11 +33,11 @@ export abstract class EsriSymbol implements EsriSymbolCommonProps {
     if (props.type === "esriSFS") {
       return EsriSFS.fromJSON(props as EsriSFSProps);
     } else if (props.type === "esriSLS") {
-        return EsriSLS.fromJSON(props as EsriSLSProps);
+      return EsriSLS.fromJSON(props as EsriSLSProps);
     } else if (props.type === "esriPMS") {
       return EsriPMS.fromJSON(props as EsriPMSProps);
     }
-    throw new Error("Unknown ESRI symbology type")
+    throw new Error("Unknown ESRI symbology type");
   }
 }
 
@@ -148,8 +146,8 @@ export class EsriSFS implements EsriSymbolCommonProps {
 /** @internal */
 export interface EsriUniqueValueInfoProps {
   value: string;
-  label?: string
-  description?: string
+  label?: string;
+  description?: string;
   symbol: EsriSymbolProps;
 
 }
@@ -187,13 +185,13 @@ export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRender
 /** @internal */
 export abstract class EsriRenderer {
   public readonly abstract type: EsriRendererType;
-  public static fromJSON(json: EsriRendererProps) : EsriRenderer {
+  public static fromJSON(json: EsriRendererProps): EsriRenderer {
     if (json.type === "simple")
       return EsriSimpleRenderer.fromJSON(json as EsriSimpleRendererProps);
     else if (json.type === "uniqueValue")
       return EsriUniqueValueRenderer.fromJSON(json as EsriUniqueValueRendererProps);
     else
-      throw Error("Unknown renderer type")
+      throw Error("Unknown renderer type");
   }
 }
 
@@ -205,7 +203,7 @@ export class EsriSimpleRenderer extends EsriRenderer {
   protected constructor(json: EsriSimpleRendererProps) {
     super();
     this.type = json.type;
-    this.symbol = EsriSymbol.fromJSON(json.symbol)
+    this.symbol = EsriSymbol.fromJSON(json.symbol);
   }
 
   public static override fromJSON(json: EsriSimpleRendererProps) {
@@ -223,7 +221,6 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
   public get field1() { return this._props.field1 ?? undefined; }
   public get field2() { return this._props.field2 ?? undefined; }
   public get field3() { return this._props.field3 ?? undefined; }
-
 
   protected constructor(json: EsriUniqueValueRendererProps) {
     super();

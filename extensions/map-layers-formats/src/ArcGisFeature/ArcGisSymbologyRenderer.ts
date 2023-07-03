@@ -15,6 +15,7 @@ const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
   private _activeFeatureAttributes:  {[key: string]: any} | undefined;
   private _symbol: EsriSymbol | undefined;
+  private _defaultSymbol: EsriSymbol;
   private _renderer: EsriRenderer | undefined;
 
   public get rendererFields() {
@@ -24,8 +25,34 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
     return undefined;
   }
 
-  public setActiveFeatureAttributes(attributes?: { [key: string]: any }) {
+  public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
     this._activeFeatureAttributes = attributes;
+
+    if (this._renderer?.type === "uniqueValue") {
+      let newSymbolApplied = false;
+      if (this._activeFeatureAttributes) {
+        const renderer = this._renderer as EsriUniqueValueRenderer;
+        if (Object.keys(this._activeFeatureAttributes).includes(renderer.field1)) {
+
+          const queryValue = this._activeFeatureAttributes[renderer.field1];
+
+          for (const uvi of renderer.uniqueValueInfos) {
+            // Strangely, ArcGIS documentation says 'value' is a string,
+            // not too sure if a comparaison on other types is possible, or its always forced to string properties?
+            if (uvi.value  === queryValue.toString()) {
+              this._symbol = EsriSymbol.fromJSON(uvi.symbol);
+              newSymbolApplied = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Fallback to default symbology to make sure we render something
+      if (!newSymbolApplied) {
+        this._symbol = this._defaultSymbol;
+      }
+    }
   }
 
   private static readonly defaultPMS: EsriPMSProps = {
@@ -48,11 +75,25 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
 
   private static readonly defaultSFS: EsriSFSProps = {
     type: "esriSFS",
-    color:  [0, 0, 0, 255],
+    color:  [0, 0, 255, 255],   // blue fill
     style: "esriSFSSolid",
+    outline: ArcGisSymbologyRenderer.defaultSLS,
   };
 
   constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
+
+    // Always setup default symbology to we have a fallback in case of error
+    if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
+      this._defaultSymbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
+    } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
+      this._defaultSymbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
+    } else if (geometryType === "esriGeometryPolygon") {
+      this._defaultSymbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
+    } else {
+      Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
+      throw new Error("Could not determine default symbology: geometry type not supported");
+    }
+
     try {
       this._renderer = EsriRenderer.fromJSON(rendererDefinition);
       if (this._renderer.type === "simple") {
@@ -60,7 +101,7 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
       } else if (this._renderer.type === "uniqueValue") {
         const uv = (this._renderer as EsriUniqueValueRenderer);
         if (uv.defaultSymbol) {
-          this._symbol = uv.defaultSymbol;
+          this._defaultSymbol = uv.defaultSymbol;
         }
       }
     } catch {
@@ -71,15 +112,7 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
     // any symbology definition from the metadata, let's use some default symbology
     // so that we display at least something.
     if (!this._symbol) {
-      if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
-        this._symbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
-      } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
-        this._symbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
-      } else if (geometryType === "esriGeometryPolygon") {
-        this._symbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
-      } else {
-        Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
-      }
+      this._symbol = this._defaultSymbol;
     }
   }
 
@@ -87,28 +120,45 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
     if (!context)
       return;
 
-    if (this._symbol?.type === "esriSFS") {
-      const sfs = this._symbol as EsriSFS;
-      if (sfs.style === "esriSFSSolid" && sfs.color) {
-        context.fillStyle = sfs.color.toRgbaString();
-      } else {
-        context.fillStyle = ColorDef.from(200, 0, 0, 100).toRgbaString();  // default color is red?
-      }
+    const fillColor = this.getFillColor();
+    if (fillColor) {
+      context.fillStyle = fillColor.toRgbaString();
     }
+  }
+
+  private getFillColor() {
+    let fillColor: ColorDef | undefined;
+    const symbol = this._symbol ? this._symbol : this._defaultSymbol;
+    if (symbol.type === "esriSFS") {
+      const sfs = this._symbol as EsriSFS;
+      if (sfs.color) {
+        fillColor = sfs.color;
+      } else if (this._defaultSymbol.type === "esriSFS") {
+        fillColor = (this._defaultSymbol as EsriSFS).color;
+      }
+
+    } else {
+      Logger.logTrace(loggerCategory, `Could not read fill symbology`);
+    }
+
+    return fillColor;
   }
 
   public applyStrokeStyle(context: CanvasRenderingContext2D) {
     if (!context)
       return;
 
+    const symbol = this._symbol ? this._defaultSymbol : this._defaultSymbol;
     let sls: EsriSLS | undefined;
-    if (this._symbol?.type === "esriSFS") {
+    if (symbol?.type === "esriSFS") {
       const sfs = this._symbol as EsriSFS;
       if (sfs.outline && sfs.outline.style === "esriSLSSolid") {
         sls = sfs.outline;
+      } else if (this._defaultSymbol.type === "esriSFS") {
+        sls = (this._defaultSymbol as EsriSFS).outline;
       }
     } else if (this._symbol?.type === "esriSLS") {
-      sls = EsriSLS.fromJSON(this._symbol as EsriSLSProps);
+      sls = this._symbol as EsriSLS;
     }
 
     if (sls) {
@@ -122,8 +172,10 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
     if (!context)
       return;
 
-    if (this._symbol?.type === "esriPMS") {
-      const pms = EsriPMS.fromJSON(this._symbol as EsriPMSProps);
+    const symbol = this._symbol ? this._symbol : this._defaultSymbol;
+
+    if (symbol?.type === "esriPMS") {
+      const pms = EsriPMS.fromJSON(symbol as EsriPMSProps);
       let xOffset = 0, yOffset = 0;
       if (pms.xoffset)
         xOffset = pms.xoffset;
