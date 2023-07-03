@@ -6065,6 +6065,7 @@ export interface OpenBriefcaseOptions {
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
+    readonly watchForChanges?: boolean;
 }
 
 // @public

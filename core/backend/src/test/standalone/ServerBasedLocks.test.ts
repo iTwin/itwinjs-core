@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
@@ -43,14 +43,17 @@ describe("Server-based locks", () => {
 
     const iModelProps = {
       iModelName: "server locks test",
-      iTwinId: Guid.createValue(),
+      iTwinId: HubMock.iTwinId,
       version0: await createVersion0(),
     };
 
-    iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
+    iModelId = await HubMock.createNewIModel(iModelProps);
     const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
     briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", ...args });
     briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token2", ...args });
+  });
+  after(() => {
+    HubMock.shutdown();
   });
 
   const assertSharedLocks = (locks: ServerBasedLocks, ids: Id64Arg) => {
@@ -147,6 +150,7 @@ describe("Server-based locks", () => {
 
     bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
     bc2 = await BriefcaseDb.open({ fileName: briefcase2Props.fileName });
+
     bc1Locks = bc1.locks as ServerBasedLocks;
     bc2Locks = bc2.locks as ServerBasedLocks;
 
@@ -205,7 +209,9 @@ describe("Server-based locks", () => {
     await bc2.pullChanges({ accessToken: accessToken2 });
     await bc2Locks.acquireLocks({ exclusive: child1, shared: child1 });
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
-    assert.equal(child2El.userLabel, childElJson.userLabel);
 
+    assert.equal(child2El.userLabel, childElJson.userLabel);
+    bc1.close();
+    bc2.close();
   });
 });
