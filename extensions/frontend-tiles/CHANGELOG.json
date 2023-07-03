@@ -2,6 +2,21 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "4.0.3",
+      "tag": "@itwin/frontend-tiles_v4.0.3",
+      "date": "Mon, 03 Jul 2023 15:28:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote APIs to beta."
+          },
+          {
+            "comment": "Provide functions for obtaining URLs from mesh export service."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.2",
       "tag": "@itwin/frontend-tiles_v4.0.2",
       "date": "Wed, 21 Jun 2023 22:04:43 GMT",
