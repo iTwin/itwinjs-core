@@ -10,7 +10,7 @@ type MochaObj = Mocha.Runnable | Mocha.Suite;
 /**
  * Helper for marshalling certain mocha objects between frontend and backend processes.
  *
- * Normally, puppeteer automatically uses JSON to serialize and deserialize arguments to backend functions exposed via `page.exposeFunction()`.
+ * Normally, playwright automatically uses JSON to serialize and deserialize arguments to backend functions exposed via `page.exposeFunction()`.
  * However, we face two problems when trying to pass `Mocha.Runnable` and `Mocha.Suite` instances to the backend:
  *   - These objects have circular references
  *   - JSON round-tripping won't preserve these objects' prototypes, and thus will be missing methods that reporters rely on.

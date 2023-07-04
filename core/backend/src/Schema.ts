@@ -70,7 +70,6 @@ export class Schemas {
    * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
    * @param schemaName Name of the schema to unregister
    * @return true if the schema was unregistered
-   * @internal
    */
   public static unregisterSchema(schemaName: string): boolean {
     const schema = this.getRegisteredSchema(schemaName);

@@ -6,16 +6,17 @@ You should have a basic understanding of [iModels](../imodels.md), [iModelHub](.
 
 ## Create iModel
 
-Before you create an iModel, you must first have an iTwin project that will contain the iModel. The "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page provides a way for users to create an iModel for development testing purposes.
+Before you create an iModel, you must first have an iTwin project that will contain the iModel. The "[My iTwins](https://developer.bentley.com/my-itwins/)" page provides a way for users to create an iTwin and iModel for development testing purposes.
 
-- Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
-- Give your test iModel a name
-- Select the iTwin Synchronizer option
-  - Add the email addresses of anyone else you would like to grant access to the iModel
-  - Any other users will also have to have a Bentley account
-- Click Submit
+- Go to "[My iTwins - Create iTwin](https://developer.bentley.com/my-itwins/new/)"
+- Give your Test iTwin a name
+- The Test iTwin will be created and will contain no iModels
+- Select the "New" button to create a new iModel
+- Give your iModel a name
+- Select the Empty iModel option
+- Click Save
 
-An iTwin project containing an empty iModel will be created for you.
+An empty iModel will be created for you.
 
 ## Download iTwin synchronizer
 

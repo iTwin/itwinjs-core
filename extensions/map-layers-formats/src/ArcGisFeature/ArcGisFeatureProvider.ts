@@ -48,6 +48,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   public override get minimumZoomLevel(): number { return this._minDepthFromLod; }
   public override get maximumZoomLevel(): number { return this._maxDepthFromLod; }
 
+  private static _extentCache = new Map<string, any>();
+
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
@@ -100,6 +102,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
           for (const layer of this.serviceJson.layers) {
             if (layer.defaultVisibility) {
               this._layerId = layer.id;
+              break;
             }
           }
         } else {
@@ -169,41 +172,23 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     // Read range using full extent from service metadata
     if (this._layerMetadata?.extent) {
-
-      const readExtent = (extent: any) => {
-        const range3857 = Range2d.createFrom({
-          low: { x: extent.xmin, y: extent.ymin },
-          high: { x: extent.xmax, y: extent.ymax },
-        });
-
-        const west = this.getEPSG4326Lon(range3857.xLow);
-        const south = this.getEPSG4326Lat(range3857.yLow);
-        const east = this.getEPSG4326Lon(range3857.xHigh);
-        const north = this.getEPSG4326Lat(range3857.yHigh);
-        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
-      };
-
-      const layerExtent = this._layerMetadata?.extent;
+      const layerExtent = this._layerMetadata.extent;
       if (layerExtent.spatialReference.latestWkid === 3857 || layerExtent.spatialReference.wkid === 102100) {
-        readExtent(layerExtent);
-      } else {
-        // Extent is not advertised in a coordinate system we support, make a new request to get proper extent
-        try {
-          const tmpUrl = new URL(this._settings.url);
-          tmpUrl.pathname = `${tmpUrl.pathname  }/${this._layerId}/query`;
-          tmpUrl.searchParams.append("where", "1=1");
-          tmpUrl.searchParams.append("outSR", "3857");
-          tmpUrl.searchParams.append("returnExtentOnly", "true");
-          tmpUrl.searchParams.append("f", "json");
-          const response = await fetch(tmpUrl.toString(), { method: "GET" });
-          const extentJson = await response.json();
-          if (extentJson?.extent)
-            readExtent(extentJson?.extent);
-          else
-            Logger.logError(loggerCategory, `Could not get feature extent`);
-        } catch {
-          Logger.logError(loggerCategory, `Could not get feature extent`);
-        }
+        this.setCartoRangeFromExtentJson(layerExtent);
+      }
+    }
+
+    if (!this.cartoRange) {
+      // Range could not be found (or is not in a coordinate system we support), make a request to compute the extent
+      try {
+        const extentJson = await this.fetchLayerExtent();
+
+        if (extentJson)
+          this.setCartoRangeFromExtentJson(extentJson);
+        else
+          Logger.logWarning(loggerCategory, `Could not get features extent, disabling extent filtering`);
+      } catch {
+        Logger.logError(loggerCategory, `Could not get feature extent`);
       }
     }
 
@@ -218,6 +203,38 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     this._maxDepthFromLod = (scales.maxLod ? scales.maxLod : this.defaultMaximumZoomLevel);
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
+  }
+
+  private async fetchLayerExtent() {
+    let extentJson: any;
+    const tmpUrl = new URL(this._settings.url);
+    tmpUrl.pathname = `${tmpUrl.pathname}/${this._layerId}/query`;
+    tmpUrl.searchParams.append("where", "1=1");
+    tmpUrl.searchParams.append("outSR", "3857");
+    tmpUrl.searchParams.append("returnExtentOnly", "true");
+    tmpUrl.searchParams.append("f", "json");
+    const cached = ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
+    if (cached) {
+      extentJson = cached;
+    } else {
+      const response = await this.fetch(tmpUrl, { method: "GET" });
+      extentJson = await response.json();
+      ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
+    }
+    return (extentJson ? extentJson.extent : undefined);
+  }
+
+  private setCartoRangeFromExtentJson(extent: any) {
+    const range3857 = Range2d.createFrom({
+      low: { x: extent.xmin, y: extent.ymin },
+      high: { x: extent.xmax, y: extent.ymax },
+    });
+
+    const west = this.getEPSG4326Lon(range3857.xLow);
+    const south = this.getEPSG4326Lat(range3857.yLow);
+    const east = this.getEPSG4326Lon(range3857.xHigh);
+    const north = this.getEPSG4326Lat(range3857.yHigh);
+    this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
   }
 
   protected async getLayerMetadata(layerId: number) {
@@ -304,18 +321,27 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     if (!this._querySupported || this.format === undefined)
       return;
 
-    const cartoPoint = {
-      x: this.getEPSG3857X(carto.longitudeDegrees),
-      y: this.getEPSG3857Y(carto.latitudeDegrees),
-      spatialReference: { wkid: 102100, latestWkid: 3857 },
-    };
+    const epsg3857X = this.getEPSG3857X(carto.longitudeDegrees);
+    const epsg3857Y = this.getEPSG3857Y(carto.latitudeDegrees);
 
     const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
-    const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+    const tilePixelSize = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+    const tolerancePixel = 3;
+    const toleranceWorld = tilePixelSize * tolerancePixel;
+
+    // Note: We used to pass a single point as the query 'geometry' and leverage the 'distance' parameter, turns
+    // out that approach was a lot slower on some server compared to using a single envelope.
+    const queryEnvelope: ArcGisGeometry = {
+      type: "esriGeometryEnvelope",
+      geom: {
+        xmin: epsg3857X - toleranceWorld, ymin: epsg3857Y - toleranceWorld,
+        xmax: epsg3857X + toleranceWorld, ymax: epsg3857Y + toleranceWorld,
+        spatialReference: { wkid: 102100, latestWkid: 3857 },
+      }};
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
-      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", { geom: cartoPoint, type: "esriGeometryPoint" },
-        outFields, 3 /* tolerance in pixel*/, returnGeometry, 2*toleranceWorld);
+      const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", queryEnvelope,
+        outFields, undefined, returnGeometry, toleranceWorld);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);

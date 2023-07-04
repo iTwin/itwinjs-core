@@ -7,22 +7,24 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
-  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  ElementMeshRequestProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
+  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
-import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -430,26 +432,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[cartographicFromSpatial]] if you have more than one point to convert, or you don't know whether the iModel has a GCS.
    */
   public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return this.toCartographicFromGcs(spatial, undefined, result);
-  }
-
-  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
- * @param spatial A point in the iModel's spatial coordinates
- * @param result If defined, use this for output
- * @returns A Cartographic location (WGS84 horizontal datum)
- * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
- * @see [[spatialToCartographicFromEcef]]
- * @beta
- */
-  public async spatialToWGS84CartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return this.toCartographicFromGcs(spatial, "WGS84", result);
-  }
-
-  private async toCartographicFromGcs(spatial: XYAndZ, datumOrGCRS?: string | GeographicCRSProps, result?: Cartographic): Promise<Cartographic> {
     if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter(datumOrGCRS)!;
+    const geoConverter = this.geoServices.getConverter()!;
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s)
@@ -476,27 +462,30 @@ export abstract class IModelConnection extends IModel {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
-  /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
- * @param spatial A point in the iModel's spatial coordinates
- * @param result If defined, use this for output
- * @returns A Cartographic location (WGS84 horizontal datum)
- * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
- * @see [[spatialToCartographicFromGcs]]
- * @see [[spatialToCartographicFromEcef]]
- * @beta
- */
-  public async spatialToWGS84Cartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToWGS84CartographicFromGcs(spatial, result));
-  }
-
   /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
-   * @param spatial Coordiantes to be converted from the iModel's spatial coordinate system
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
    * @returns The `spatial` coordinates converted to cartographic coordinates, of the same length and order as the `spatial`.
    * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
    * @see [[spatialFromCartographic]] to perform the inverse conversion.
    * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial);
+  }
+
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates (WGS84 horizontal datum), of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform conversion using iModel's GCS horizontal datum
+   * @beta
+   */
+  public async wgs84CartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial, "WGS84");
+  }
+
+  /** @internal */
+  public async cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]> {
     if (this.noGcsDefined)
       return spatial.map((p) => this.spatialToCartographicFromEcef(p));
 
@@ -509,7 +498,7 @@ export abstract class IModelConnection extends IModel {
     if (spatial.length === 0)
       return [];
 
-    const geoConverter = this.geoServices.getConverter();
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS);
     assert(undefined !== geoConverter);
 
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates(spatial);
@@ -588,9 +577,9 @@ export abstract class IModelConnection extends IModel {
    * @param datumOrGCRS Datum name or Geographic CRS object definition to use for the conversion.
    * @returns The `geographics` coordinates converted to spatial coordinates, of the same length and order as `geographics`.
    * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
-   * @see [[cartographicFromSpatial]] to perform the inverse conversion.
+   * @beta
    */
-  public async toSpatialFromGcs(geoCoords: XYZProps[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]> {
+  public async toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]> {
 
     if (!this.isGeoLocated)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
@@ -1177,6 +1166,25 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
+    private _writeViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Writer>;
+    private _readViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Reader>;
+
+    public get viewStoreWriter() {
+      return this._writeViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, true, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Writer>;
+    }
+    public get viewsStoreReader() {
+      return this._readViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, false, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Reader>;
+    }
 
     /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
@@ -1224,7 +1232,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Query the Id of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
-     * @returns the ID of the default view, or an invalid ID if no default view is defined.
+     * @returns the Id of the default view, or an invalid ID if no default view is defined.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
@@ -1232,10 +1240,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-    public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
-
+    public async load(viewDefinitionId: ViewIdString): Promise<ViewState> {
       const options: ViewStateLoadProps = {
         displayStyle: {
           omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
@@ -1265,7 +1270,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
+     * @deprecated in 3.x use ViewStore apis
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation

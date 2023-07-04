@@ -262,7 +262,7 @@ describe("FrameBuilder", () => {
       x0 += 2.0 * a;
 
     }
-    ck.testUndefined(curvesToPlane(LineSegment3d.createXYZXYZ(1, 2, 4, 5, 2, 3)));
+    ck.testDefined(curvesToPlane(LineSegment3d.createXYZXYZ(1, 2, 4, 5, 2, 3)), "test CurvePrimitive input");
     GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "NonPlanarCurves");
     expect(ck.getNumErrors()).equals(0);
   });

@@ -343,18 +343,18 @@ export interface IStrokeHandler {
  */
 export interface UVSurface {
   /**
-   * Convert fractional u and v coordinates to surface point
+   * Convert fractional u and v coordinates to surface point.
    * @param uFraction fractional coordinate in u direction
-   * @param vFraction fractional coordinate in the v direction
+   * @param vFraction fractional coordinate in v direction
    * @param result optional pre-allocated point
    */
   uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
   /**
    * Convert fractional u and v coordinates to surface point and in-surface tangent directions.
-   * * Remark: the vectors are expected to be non-zero tangents which can be crossed to get a normal.
-   * * Hence the are NOT precisely either (a) partial derivatives or (b) frenet vectors
+   * * The vectors are expected to be non-zero tangents which can be crossed to get a normal.
+   * * Hence they are not necessarily (a) partial derivatives or (b) Frenet vectors.
    * @param uFraction fractional coordinate in u direction
-   * @param vFraction fractional coordinate in the v direction
+   * @param vFraction fractional coordinate in v direction
    * @param result optional pre-allocated carrier for point and vectors
    */
   uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;

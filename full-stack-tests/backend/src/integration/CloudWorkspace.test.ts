@@ -52,12 +52,13 @@ describe("Cloud workspace containers", () => {
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
     await initializeContainer(containerId);
-    const props: CloudSqlite.ContainerTokenProps = { containerId, writeable: true, baseUri: AzuriteTest.baseUri, storageType: "azure" };
-    const wsCont1 = workspace1.getContainer({ ...props, accessToken: await CloudSqlite.requestToken(props) });
+    const props = { containerId, writeable: true, baseUri: AzuriteTest.baseUri, storageType: "azure" as const };
+    const accessToken = await CloudSqlite.requestToken(props);
+    const wsCont1 = workspace1.getContainer({ ...props, accessToken });
 
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
-      await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer!, async () => {
+      await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer! }, async () => {
         const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
@@ -82,8 +83,9 @@ describe("Cloud workspace containers", () => {
 
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
-    const props2: CloudSqlite.ContainerTokenProps = { containerId, writeable: false, baseUri: AzuriteTest.baseUri, storageType: "azure" };
-    const wsCont2 = workspace2.getContainer({ ...props2, accessToken: await CloudSqlite.requestToken(props2) });
+    const props2 = { containerId, writeable: false, baseUri: AzuriteTest.baseUri, storageType: "azure" as const };
+    const accessToken2 = await CloudSqlite.requestToken(props2);
+    const wsCont2 = workspace2.getContainer({ ...props2, accessToken: accessToken2 });
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 
@@ -99,7 +101,7 @@ describe("Cloud workspace containers", () => {
     // change the workspace in one cache and see that it is updated in the other
     const newVal = "new value for string 1";
     assert(undefined !== wsCont1.cloudContainer);
-    await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer, async () => {
+    await CloudSqlite.withWriteLock({ user: "Cloud workspace test", container: wsCont1.cloudContainer }, async () => {
       const ws3 = new EditableWorkspaceDb({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);

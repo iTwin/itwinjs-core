@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EventEmitter } from "events";
-import * as puppeteer from "puppeteer";
+import { Page } from "playwright";
 import "./MochaSerializer";
 declare const window: any;
 
-export async function configureRemoteReporter(page: puppeteer.Page) {
+export async function configureRemoteReporter(page: Page) {
   // This will stand in for mocha's "runner" on the backend.
   // Basically, we'll just be using this to echo events from the frontend runner.
   const mockRunner = new EventEmitter();

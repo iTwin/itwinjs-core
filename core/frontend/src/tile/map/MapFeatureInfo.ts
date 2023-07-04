@@ -14,6 +14,7 @@ import { GraphicPrimitive } from "../../render/GraphicPrimitive";
  * @beta
  */
 export class MapFeatureInfoRecord extends PropertyRecord {
+  /** Construct a record from [PropertyValue]($appui-react) and [PropertyDescription]($appui-react) objects. */
   public constructor(value: PropertyValue, property: PropertyDescription) {
     super(value, property);
   }
@@ -25,7 +26,9 @@ export class MapFeatureInfoRecord extends PropertyRecord {
  * @beta
  */
 export interface MapFeatureInfo {
+  /** Feature info for each layer. */
   layerInfos?: MapLayerFeatureInfo[];
+  /** The approximate location in world coordinates on the identified feature. */
   hitPoint?: Cartographic;
 }
 
@@ -35,7 +38,9 @@ export interface MapFeatureInfo {
  * @beta
  */
 export interface MapLayerFeatureInfo {
+  /** Name of the layer associated with the identified feature. */
   layerName: string;
+  /** Feature info for each sub-layer. */
   subLayerInfos?: MapSubLayerFeatureInfo[];
 }
 
@@ -44,8 +49,11 @@ export interface MapLayerFeatureInfo {
  * @beta
  */
 export interface MapSubLayerFeatureInfo {
+  /** Name of the layer associated with the identified feature. */
   subLayerName: string;
+  /** Name of the field representing the feature label (suggestion only). */
   displayFieldName?: string;
+  /** List of features identified for this sub-layer. */
   features: MapLayerFeature[];
 }
 
@@ -56,7 +64,9 @@ export interface MapSubLayerFeatureInfo {
  * @beta
  */
 export interface MapLayerFeature {
+  /** List of geometries identified for this feature. */
   geometries?: MapLayerFeatureGeometry[];
+  /** List of attributes identified for this feature. */
   attributes: MapLayerFeatureAttribute[];
 }
 
@@ -65,6 +75,7 @@ export interface MapLayerFeature {
  * @beta
  */
 export interface MapLayerFeatureGeometry {
+  /** graphic primitive representing a feature. */
   graphic: GraphicPrimitive;
 }
 
@@ -73,15 +84,18 @@ export interface MapLayerFeatureGeometry {
  * @beta
  */
 export interface MapLayerFeatureAttribute {
+  /** Value of a feature attribute. */
   value: PropertyValue;
+  /** Property (or field) description of a feature attribute. */
   property: PropertyDescription;
 }
 
-/** Utility class that creates a [[PropertyRecord]] out of [[MapLayerFeatureAttribute]]
+/** Utility class that creates a [PropertyRecord]($appui-react) out of [[MapLayerFeatureAttribute]]
  * @see [[MapLayerFeature]]
  * @beta
  */
 export class MapLayerFeatureRecord {
+  /** Convert a [[MapLayerFeatureAttribute]] object into [PropertyRecord]($appui-react) object. */
   public static createRecordFromAttribute(attribute: MapLayerFeatureAttribute) {
     return new PropertyRecord(attribute.value, attribute.property);
   }

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";
@@ -55,7 +55,4 @@ export async function commonSetup(): Promise<void> {
   });
 
   Logger.initializeToConsole();
-  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
 }

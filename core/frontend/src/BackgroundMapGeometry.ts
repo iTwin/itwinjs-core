@@ -125,12 +125,35 @@ export class BackgroundMapGeometry {
   }
 
   public async dbToWGS84CartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]> {
-    const scratch = new Point3d();
-    const promises = db.map(async (p) => {
-      return this.cartesianRange.containsPoint(Point3d.createFrom(p, scratch)) ? this._iModel.spatialToWGS84Cartographic(p) : this.dbToCartographic(p);
-    });
+    if (db.length === 0)
+      return [];
 
-    return Promise.all(promises);
+    const result: Cartographic[] = Array(db.length);
+    const reproject: XYAndZ[] = [];
+    const reprojectIdx: number[] = [];
+    const scratch = new Point3d();
+    for (let i = 0; i < db.length; i++) {
+      Point3d.createFrom(db[i], scratch);
+      if (this.cartesianRange.containsPoint(scratch) ) {
+        reprojectIdx.push(i);
+        reproject.push(db[i]);
+      } else {
+        result[i] = this.dbToCartographic(db[i]);
+      }
+    }
+
+    if (reproject.length === 0)
+      return result;
+
+    const reprojectPromise = this._iModel.wgs84CartographicFromSpatial(reproject);
+    return reprojectPromise.then((reprojected) =>  {
+      if (reprojected.length === reprojectIdx.length) {   // reprojected array size must match our index array, otherwise something is OFF
+        for (let i = 0; i < reprojected.length; i++) {
+          result[reprojectIdx[i]] = reprojected[i]; // Insert the reprojected values at their original index
+        }
+      }
+      return result;
+    });
   }
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {

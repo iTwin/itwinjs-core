@@ -89,7 +89,7 @@ export class IpcApp {
    * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
    * with the `errorNumber` and `message` from the backend.
    * @note Ipc is only supported if [[isValid]] is true.
-   * @internal
+   * @internal Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;

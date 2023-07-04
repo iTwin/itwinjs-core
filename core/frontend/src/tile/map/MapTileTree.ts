@@ -207,8 +207,8 @@ export class MapTileTree extends RealityTileTree {
   /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
    * @internal
    */
-  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean ) {
-    this.layerImageryTrees.push({tree, settings, baseImageryLayer});
+  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean) {
+    this.layerImageryTrees.push({ tree, settings, baseImageryLayer });
     this._layerSettings.set(tree.modelId, settings);
     if (!this._imageryTreeState.has(tree.modelId))
       this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
@@ -255,7 +255,7 @@ export class MapTileTree extends RealityTileTree {
   }
 
   /** @internal */
-  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined{
+  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined {
     const childAvailable = this.mapLoader.isTileAvailable(quadId);
     if (!childAvailable && this.produceGeometry)
       return undefined;
@@ -489,9 +489,9 @@ export class MapTileTree extends RealityTileTree {
 
     const debugControl = args.context.target.debugControl;
 
-    const layersVisibilityBefore =  this.cloneImageryTreeState();
+    const layersVisibilityBefore = this.cloneImageryTreeState();
 
-    const changes =  new Array<MapLayerScaleRangeVisibility> ();
+    const changes = new Array<MapLayerScaleRangeVisibility>();
 
     if (!layersVisibilityBefore)
       return;
@@ -540,7 +540,7 @@ export class MapTileTree extends RealityTileTree {
 
         const prevVisibility = prevState.getScaleRangeVisibility();
         const visibility = newState.getScaleRangeVisibility();
-        if ( prevVisibility !== visibility) {
+        if (prevVisibility !== visibility) {
 
           if (debugControl && debugControl.logRealityTiles) {
             // eslint-disable-next-line no-console
@@ -548,8 +548,8 @@ export class MapTileTree extends RealityTileTree {
           }
 
           const mapLayersIndexes = args.context.viewport.getMapLayerIndexesFromIds(this.id, treeId);
-          for (const index of mapLayersIndexes ) {
-            changes.push({index:index.index, isOverlay: index.isOverlay, visibility});
+          for (const index of mapLayersIndexes) {
+            changes.push({ index: index.index, isOverlay: index.isOverlay, visibility });
           }
 
         }
@@ -819,7 +819,7 @@ export class MapTileTreeReference extends TileTreeReference {
   public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
-    if (! this._settings.applyTerrain || this._isDrape)
+    if (!this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
     const ref = new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => {
@@ -1089,7 +1089,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    let cartoGraphic: Cartographic|undefined;
+    let cartoGraphic: Cartographic | undefined;
     try {
       cartoGraphic = (await backgroundMapGeometry.dbToWGS84CartographicFromGcs([worldPoint]))[0];
     } catch {
@@ -1173,7 +1173,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {
 
-      const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+      const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
         try {
           await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree, hit);
         } catch {

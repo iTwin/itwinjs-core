@@ -25,7 +25,6 @@ export abstract class DisplayStyle extends DefinitionElement {
   public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
-  /** @internal */
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -136,8 +135,7 @@ export class DisplayStyle2d extends DisplayStyle {
 
   public get settings(): DisplayStyleSettings { return this._settings; }
 
-  /** @internal */
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+  protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
@@ -204,8 +202,7 @@ export class DisplayStyle3d extends DisplayStyle {
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
-  /** @internal */
-  public constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
+  protected constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
