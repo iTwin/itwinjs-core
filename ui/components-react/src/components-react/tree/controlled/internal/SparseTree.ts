@@ -21,11 +21,15 @@ export interface Node {
  * @internal
  */
 export class SparseTree<T extends Node> {
-  public [immerable] = true;
+  public [immerable]: boolean;
 
   private _rootNodes = new SparseArray<string>();
   private _parentToChildren: Record<string, SparseArray<string>> = {};
   private _idToNode: Record<string, T> = {};
+
+  constructor() {
+    this[immerable] = true;
+  }
 
   public getNode(nodeId: string): T | undefined {
     return this._idToNode[nodeId];
@@ -178,10 +182,14 @@ export class SparseTree<T extends Node> {
  * @public
  */
 export class SparseArray<T> implements Iterable<T | undefined> {
-  public [immerable] = true;
+  public [immerable]: boolean;
 
   private _length = 0;
   private _array: Array<[T, number]> = [];
+
+  constructor() {
+    this[immerable] = true;
+  }
 
   /** Returns length of array including intermediate 'undefined' values */
   public getLength(): number {
