@@ -8,7 +8,7 @@ import {
   BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
   GeometryTileTreeReference, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
-import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string.
@@ -63,7 +63,7 @@ class TerrainDraper implements TileUser {
     trees.disclose(this.treeRef);
   }
 
-  public drapeLineString(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapeLineString(outStrings: CurvePrimitive[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
@@ -78,9 +78,9 @@ class TerrainDraper implements TileUser {
     collector.requestMissingTiles();
 
     if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
-      console.log("AllGeometryLoaded");
       for (const polyface of collector.polyfaces)
-        outStrings.push(...PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface));
+        outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(inPoints, polyface,
+          SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), undefined, true, true, false, false)));
       return "complete";
     }
 
