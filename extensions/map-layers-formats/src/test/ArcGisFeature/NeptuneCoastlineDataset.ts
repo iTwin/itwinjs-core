@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export class NeptuneCoastlineDataset {
 
-  public singlePolyJson = {
+  public static singlePolyJson = {
     objectIdFieldName: "OBJECTID",
     uniqueIdField: {
       name: "OBJECTID",
@@ -132,6 +132,8 @@ export class NeptuneCoastlineDataset {
     ],
   };
 
+  // Note: I updated manually the attributes, to all 'values' to undefined (except for string_value),
+  // otherwise the PBF reader would be confused.  I assume this a bug when the response get serialized as JSON.
   public static singlePolyPbf  = {
     version: "",
     queryResult: {
@@ -190,14 +192,14 @@ export class NeptuneCoastlineDataset {
             attributes: [
               {
                 string_value: "Open Countryside",
-                float_value: 0,
-                double_value: 0,
-                sint_value: 0,
-                uint_value: 0,
-                int64_value: 0,
-                uint64_value: 0,
-                sint64_value: 0,
-                bool_value: false,
+                float_value: undefined,
+                double_value: undefined,
+                sint_value: undefined,
+                uint_value: undefined,
+                int64_value: undefined,
+                uint64_value: undefined,
+                sint64_value: undefined,
+                bool_value: undefined,
               },
             ],
             geometry: {

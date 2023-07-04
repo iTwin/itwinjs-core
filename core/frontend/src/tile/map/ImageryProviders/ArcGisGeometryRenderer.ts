@@ -27,8 +27,6 @@ export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRender
   }
   public abstract get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
 
-  // public get rendererFields(): string[] | undefined {return undefined;}
-
   public get transform() { return this._transform; }
 
   protected abstract beginPath(): void;

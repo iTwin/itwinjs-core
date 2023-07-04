@@ -65,6 +65,7 @@ function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
       supportsCoordinatesQuantization: true,
       minScale: 600000,
       maxScale: 5000,
+      geometryType : "esriGeometryPolygon",
     };
   });
 }
@@ -73,6 +74,17 @@ function stubGetServiceJson(sandbox: sinon.SinonSandbox) {
   sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
     return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } };
   });
+}
+
+function getDefaultLayerMetadata() {
+  return {
+    defaultVisibility: true,
+    supportedQueryFormats: "PBF, JSON",
+    supportsCoordinatesQuantization: true,
+    minScale: 600000,
+    maxScale: 5000,
+    geometryType : "esriGeometryPolygon",
+  };
 }
 
 async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: any, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
@@ -194,6 +206,10 @@ describe("ArcGisFeatureProvider", () => {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
     });
 
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return getDefaultLayerMetadata();
+    });
+
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
@@ -226,7 +242,7 @@ describe("ArcGisFeatureProvider", () => {
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (id: unknown) {
       if (id === 1) {
-        return { defaultVisibility: true };
+        return getDefaultLayerMetadata();
       }
       return undefined;
     });
@@ -236,7 +252,7 @@ describe("ArcGisFeatureProvider", () => {
     (provider as any)._format = "JSON";
     await provider.initialize();
     expect((provider as any)._layerId).to.equals(1);
-    expect((provider as any)._layerMetadata).to.eql({ defaultVisibility: true });
+    expect((provider as any)._layerMetadata).to.eql(getDefaultLayerMetadata());
   });
 
   it("should throw error if no layers in capabilities", async () => {
@@ -278,7 +294,7 @@ describe("ArcGisFeatureProvider", () => {
     );
 
     let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "PBF, JSON" };
+      return getDefaultLayerMetadata();
     });
 
     const getServiceJsonStub = sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -296,7 +312,7 @@ describe("ArcGisFeatureProvider", () => {
     });
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportsCoordinatesQuantization: true, supportedQueryFormats: "PBF, JSON" };
+      return getDefaultLayerMetadata();
     });
 
     provider = new ArcGisFeatureProvider(settings);
@@ -305,7 +321,8 @@ describe("ArcGisFeatureProvider", () => {
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "JSON" };
+      return { defaultVisibility: true, supportedQueryFormats: "JSON", geometryType : "esriGeometryPolygon"};
+
     });
 
     getServiceJsonStub.restore();
@@ -319,7 +336,7 @@ describe("ArcGisFeatureProvider", () => {
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "JSON" };
+      return { defaultVisibility: true, supportedQueryFormats: "JSON", geometryType : "esriGeometryPolygon" };
     });
 
     provider = new ArcGisFeatureProvider(settings);
@@ -344,12 +361,7 @@ describe("ArcGisFeatureProvider", () => {
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        minScale: 600000,
-        maxScale: 5000,
-      };
+      return getDefaultLayerMetadata();
     });
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -383,6 +395,7 @@ describe("ArcGisFeatureProvider", () => {
       return {
         defaultVisibility: true,
         supportedQueryFormats: "PBF, JSON",
+        geometryType : "esriGeometryPolygon",
       };
     });
 
@@ -415,11 +428,7 @@ describe("ArcGisFeatureProvider", () => {
     // Now turn ON 'supportsCoordinatesQuantization' to ON
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        supportsCoordinatesQuantization: true,
-      };
+      return getDefaultLayerMetadata();
     });
 
     const provider2 = new ArcGisFeatureProvider(settings);
@@ -479,12 +488,7 @@ describe("ArcGisFeatureProvider", () => {
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        minScale: 600000,
-        maxScale: 5000,
-      };
+      return getDefaultLayerMetadata();
     });
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -520,6 +524,7 @@ describe("ArcGisFeatureProvider", () => {
         supportsCoordinatesQuantization: true,
         minScale: 600000,
         maxScale: 5000,
+        geometryType : "esriGeometryPolygon",
       };
     });
 
@@ -590,12 +595,7 @@ describe("ArcGisFeatureProvider", () => {
     }
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        minScale: 600000,
-        maxScale: 5000,
-      };
+      return getDefaultLayerMetadata();
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
@@ -625,12 +625,7 @@ describe("ArcGisFeatureProvider", () => {
     }
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        minScale: 600000,
-        maxScale: 5000,
-      };
+      return getDefaultLayerMetadata();
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
@@ -659,12 +654,7 @@ describe("ArcGisFeatureProvider", () => {
     }
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "PBF, JSON",
-        minScale: 600000,
-        maxScale: 5000,
-      };
+      return getDefaultLayerMetadata();
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
@@ -750,6 +740,7 @@ describe("ArcGisFeatureProvider", () => {
         defaultVisibility: true,
         supportedQueryFormats: "PBF",
         supportsCoordinatesQuantization: true,
+        geometryType : "esriGeometryPolygon",
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -797,10 +788,7 @@ describe("ArcGisFeatureProvider", () => {
     }
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return {
-        defaultVisibility: true,
-        supportedQueryFormats: "JSON",
-      };
+      return getDefaultLayerMetadata();
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return { accessTokenRequired: false, content: { capabilities: "Query" } };
@@ -848,6 +836,7 @@ describe("ArcGisFeatureProvider", () => {
       return {
         defaultVisibility: true,
         supportedQueryFormats: "JSON",
+        geometryType : "esriGeometryPolygon",
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -889,6 +878,7 @@ describe("ArcGisFeatureProvider", () => {
 
     const readAndRenderSpy = sandbox.spy(ArcGisJsonFeatureReader.prototype, "readAndRender");
     const provider = new ArcGisFeatureProvider(settings);
+
     await provider.initialize();
     await provider.loadTile(0, 0, 0);
 
@@ -949,6 +939,7 @@ describe("ArcGisFeatureProvider", () => {
       return {
         defaultVisibility: true,
         supportedQueryFormats: "JSON",
+        geometryType : "esriGeometryPolygon",
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {

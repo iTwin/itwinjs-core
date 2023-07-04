@@ -18,6 +18,54 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
   private _defaultSymbol: EsriSymbol;
   private _renderer: EsriRenderer | undefined;
 
+  public readonly rendererDefinition: any;
+  public readonly geometryType: ArcGisFeatureGeometryType;
+
+  public constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
+
+    this.rendererDefinition = rendererDefinition;
+    this.geometryType = geometryType;
+
+    // Always setup default symbology to we have a fallback in case of error
+    if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
+      this._defaultSymbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
+    } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
+      this._defaultSymbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
+    } else if (geometryType === "esriGeometryPolygon") {
+      this._defaultSymbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
+    } else {
+      Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
+      throw new Error("Could not determine default symbology: geometry type not supported");
+    }
+
+    try {
+      this._renderer = EsriRenderer.fromJSON(rendererDefinition);
+      if (this._renderer.type === "simple") {
+        this._symbol = (this._renderer as EsriSimpleRenderer).symbol;
+      } else if (this._renderer.type === "uniqueValue") {
+        const uv = (this._renderer as EsriUniqueValueRenderer);
+        if (uv.defaultSymbol) {
+          this._defaultSymbol = uv.defaultSymbol;
+        }
+      }
+    } catch {
+      Logger.logWarning(loggerCategory, "Could not read symbology from metadata");
+    }
+
+    // If '_symbol' is still undefined at this point, that means we could not find
+    // any symbology definition from the metadata, let's use some default symbology
+    // so that we display at least something.
+    if (!this._symbol) {
+      this._symbol = this._defaultSymbol;
+    }
+  }
+
+  public clone() {
+    const cloned = new ArcGisSymbologyRenderer(this.geometryType, this.rendererDefinition);
+    cloned._activeFeatureAttributes = {...this._activeFeatureAttributes};
+    return cloned;
+  }
+
   public get rendererFields() {
     if (this._renderer && this._renderer?.type === "uniqueValue") {
       return [(this._renderer as EsriUniqueValueRenderer).field1];
@@ -79,42 +127,6 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
     style: "esriSFSSolid",
     outline: ArcGisSymbologyRenderer.defaultSLS,
   };
-
-  constructor(geometryType: ArcGisFeatureGeometryType, rendererDefinition: any) {
-
-    // Always setup default symbology to we have a fallback in case of error
-    if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
-      this._defaultSymbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
-    } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
-      this._defaultSymbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
-    } else if (geometryType === "esriGeometryPolygon") {
-      this._defaultSymbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
-    } else {
-      Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
-      throw new Error("Could not determine default symbology: geometry type not supported");
-    }
-
-    try {
-      this._renderer = EsriRenderer.fromJSON(rendererDefinition);
-      if (this._renderer.type === "simple") {
-        this._symbol = (this._renderer as EsriSimpleRenderer).symbol;
-      } else if (this._renderer.type === "uniqueValue") {
-        const uv = (this._renderer as EsriUniqueValueRenderer);
-        if (uv.defaultSymbol) {
-          this._defaultSymbol = uv.defaultSymbol;
-        }
-      }
-    } catch {
-      Logger.logWarning(loggerCategory, "Could not read symbology from metadata");
-    }
-
-    // If '_symbol' is still undefined at this point, that means we could not find
-    // any symbology definition from the metadata, let's use some default symbology
-    // so that we display at least something.
-    if (!this._symbol) {
-      this._symbol = this._defaultSymbol;
-    }
-  }
 
   public applyFillStyle(context: CanvasRenderingContext2D) {
     if (!context)

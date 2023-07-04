@@ -376,7 +376,11 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const geomOverride: ArcGisGeometry | undefined = (refineEnvelope ? { geom: refineEnvelope, type: "esriGeometryEnvelope" } : undefined);
-    const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride);
+    let outFields: string|undefined;
+    if (this._symbologyRenderer?.rendererFields && this._symbologyRenderer.rendererFields.length > 0) {
+      outFields = this._symbologyRenderer.rendererFields.join(",");
+    }
+    const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride, outFields);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
       return undefined;
@@ -448,7 +452,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         }
       }
 
-      const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer, transfo);
+      // Create the renderer
+      // Note:  '_symbologyRenderer' is cloned because it carries state data (i.e active feature attributes);
+      // we really don't want to share state across multiple tile loading processes.
+      const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer.clone(), transfo);
       const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {

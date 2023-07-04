@@ -14,6 +14,8 @@ import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRend
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { esriFeatureSampleSource, fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
 
 const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
@@ -200,6 +202,41 @@ describe("ArcGisPbfFeatureReader", () => {
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
     expect(firstCall.args[2]).to.eql(2);              // stride
+  });
+
+  it("should call setActiveFeatureAttributes when attribute driven symbology", async () => {
+    const featurePbf = createFeaturePBF();
+    const dataset = NeptuneCoastlineDataset.singlePolyPbf;
+    const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
+    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer);
+
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
+    const spy = sinon.spy(symbolRenderer, "setActiveFeatureAttributes");
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
+
+    // Make sure 'setActiveFeatureAttributes' was called with the proper argument
+    expect(spy.calledOnce);
+    const firstCall = spy.getCalls()[0];
+    const featureAttr: {[key: string]: any} = {};
+    featureAttr.LU_2014 = "Open Countryside";
+    expect(firstCall.args[0]).to.eql(featureAttr);
+  });
+
+  it("should apply attribute driven symbology before rendering", async () => {
+    const featurePbf = createFeaturePBF();
+    const dataset = NeptuneCoastlineDataset.singlePolyPbf;
+    const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
+    const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
+    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, rendererDef);
+
+    const context = fakeContext;
+    const featureRenderer = new ArcGisCanvasRenderer(context, symbolRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
+
+    const refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[8].symbol as any);
+    expect(context.fillStyle).to.eql(refSymbol.color?.toRgbaString());
   });
 
 });

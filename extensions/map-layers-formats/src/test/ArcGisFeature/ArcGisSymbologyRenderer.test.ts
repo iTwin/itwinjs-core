@@ -185,7 +185,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.strokeStyle).to.eq(refSymbol.color!.toRgbaString());
   });
 
-  it.only("should apply proper marker using unique value PMS renderer definition", async () => {
+  it("should apply proper marker using unique value PMS renderer definition", async () => {
     const rendererDef = NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer;
     const provider = new ArcGisSymbologyRenderer("esriGeometryPoint", rendererDef);
 

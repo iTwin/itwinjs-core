@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisAttributeDrivenSymbology, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
@@ -159,6 +159,12 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
       // Render geometries
       if (renderer && feature?.has_geometry) {
+
+        if (attrSymbology) {
+          // Read attributes if needed (attribute driven symbology)
+          this.applySymbologyAttributes(attrSymbology, feature, fields);
+        }
+
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
           await renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, relativeCoords);
         } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
@@ -167,29 +173,31 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
         }
       }
 
-      // Read attributes if needed (attribute driven symbology)
-      if (attrSymbology) {
-        const symbolFields = attrSymbology.rendererFields;
-        if (symbolFields && symbolFields.length > 0 && feature.attributes) {
-          let fieldIdx = 0;
-          const featureAttr: {[key: string]: any} = {};
-          for (const attrValue of feature.attributes) {
-            if (fieldIdx > fields.length) {
-              Logger.logError(loggerCategory, "Error while read feature info data: fields metadata missing");
-              break;
-            }
-            const fieldInfo = fields[fieldIdx++];
-            if (symbolFields.includes(fieldInfo.name)) {
-              const attr = this.getFeatureAttribute(fieldInfo, attrValue);
-              if (attr) {
-                const primitiveValue = attr.value as PrimitiveValue;
-                featureAttr[fieldInfo.name] = primitiveValue.value;
-              }
-            }
+    }
+  }
 
+  private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
+    if (attrSymbology) {
+      const symbolFields = attrSymbology.rendererFields;
+      if (symbolFields && symbolFields.length > 0 && feature.attributes) {
+        let fieldIdx = 0;
+        const featureAttr: {[key: string]: any} = {};
+        for (const attrValue of feature.attributes) {
+          if (fieldIdx > fields.length) {
+            Logger.logError(loggerCategory, "Error while read feature info data: fields metadata missing");
+            break;
           }
-          attrSymbology.setActiveFeatureAttributes(featureAttr);
+          const fieldInfo = fields[fieldIdx++];
+          if (symbolFields.includes(fieldInfo.name)) {
+            const attr = this.getFeatureAttribute(fieldInfo, attrValue);
+            if (attr) {
+              const primitiveValue = attr.value as PrimitiveValue;
+              featureAttr[fieldInfo.name] = primitiveValue.value;
+            }
+          }
+
         }
+        attrSymbology.setActiveFeatureAttributes(featureAttr);
       }
     }
   }
