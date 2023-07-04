@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
