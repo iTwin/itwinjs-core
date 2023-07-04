@@ -747,6 +747,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "playwright",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },

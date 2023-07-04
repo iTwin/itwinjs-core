@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, Transform } from "@itwin/core-geometry";
+import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import {
   BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GeometryTileTreeReference, GraphicType, HitDetail, IModelApp,
@@ -26,12 +26,12 @@ class DrapeLineStringCollector extends TileGeometryCollector {
 
   private rangeOverlapsLineString(range: Range3d) {
     let inside = false;
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range, true, true, true, true, false, false);
     if (this._options.transform)
       clipper.transformInPlace(this._options.transform);
 
     for (let i = 0; i < this._points.length - 1 && !inside; i++)
-      inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
+      inside = clipper.announceClippedSegmentIntervals(0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i + 1));
 
     return inside;
   }
@@ -59,7 +59,7 @@ class TerrainDraper implements TileUser {
     trees.disclose(this.treeRef);
   }
 
-  public drapeLineString(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapeLineString(outStrings: CurvePrimitive[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
@@ -74,7 +74,8 @@ class TerrainDraper implements TileUser {
     collector.requestMissingTiles();
 
     for (const polyface of collector.polyfaces)
-      outStrings.push(...PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface));
+      outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(inPoints, polyface,
+        SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), undefined, true, true, true, true)));
 
     return collector.isAllGeometryLoaded ? "complete" : "loading";
   }
@@ -139,7 +140,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     }
 
     if (this._motionPoint) {
-      const builder =  context.createGraphicBuilder(GraphicType.WorldOverlay);
+      const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
       builder.addLineString([this._drapePoints.getPoint3dAtUncheckedPointIndex(this._drapePoints.length - 1), this._motionPoint]);
       context.addDecorationFromBuilder(builder);

@@ -352,6 +352,7 @@ public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
+public;SqliteStatement
 public;SqliteValue
 public;SqliteValueType
 public;StandaloneDb 
@@ -393,6 +394,7 @@ public;ViewAttachmentLabel
 public;class ViewDefinition 
 public;ViewDefinition2d 
 public;class ViewDefinition3d 
+beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
