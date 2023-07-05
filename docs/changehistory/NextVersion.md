@@ -14,10 +14,13 @@ Table of contents:
 - [Electron 25 support](#electron-25-support)
 - [Geometry](#geometry)
   - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
-  - [Sweeping a linestring to facets](#sweeping-a-linestring-to-facets)
   - [New constructors](#new-constructors)
   - [Swept surface constructions](#swept-surface-constructions)
+  - [Sweeping a linestring to facets](#sweeping-a-linestring-to-facets)
+- [Map Layers](#map-layers)
+  - [Map Feature Info](#map-feature-info)
 - [API deprecations](#api-deprecations)
+  - [Geometry](#geometry-1)
 
 ## Snapping within view attachments
 
@@ -85,6 +88,13 @@ a non-vertical direction.
 
 ![sweepLineStringToFacetsExampleIso](./assets/SweepLinStringToFacetsNonVertical.png)
 
+## Map Layers
+
+### Map Feature Info
+
+The [Viewport.getMapFeatureInfo]($core-frontend) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feature. Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decorations matching the identified feature geometry. This tool also dispatches [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
+![mapLayerInfoWidget](./assets/map-layer-info.png)
+
 ## API deprecations
 
 ### Geometry
@@ -102,12 +112,14 @@ The improved set of input options in a parameter
 
 The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) is now obtained with
 [SweepLineStringToFacetsOptions]($core-geometry) options:
+
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
 ```
 
 The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) is now obtained with
 [SweepLineStringToFacetsOptions]($core-geometry) options:
+
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true);
 ```

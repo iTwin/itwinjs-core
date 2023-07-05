@@ -2,19 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
-const loggerCategory =  "MapLayersFormats.ArcGISFeature";
+const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 interface PbfFieldInfo {
   name: string;
@@ -22,12 +20,12 @@ interface PbfFieldInfo {
 }
 
 /** @internal */
-export class ArcGisFeaturePBF extends ArcGisFeatureReader {
+export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
   }
 
-  public static getArcGisFeatureGeometryType(geomType: esriPBuffer.FeatureCollectionPBuffer.GeometryType): ArcGisFeatureGeometryType  {
+  public static getArcGisFeatureGeometryType(geomType: esriPBuffer.FeatureCollectionPBuffer.GeometryType): ArcGisFeatureGeometryType {
     switch (geomType) {
       case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch:
         return "esriGeometryMultiPatch";
@@ -44,7 +42,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
   }
 
-  public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
       Logger.logError(loggerCategory, msg);
@@ -62,16 +60,16 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     if (geomType === esriGeometryType.esriGeometryTypePoint ||
       geomType === esriGeometryType.esriGeometryTypeMultipoint) {
       for (const feature of collection.queryResult.featureResult.features)
-        renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, renderer.transform === undefined);
+        await renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, renderer.transform === undefined);
     } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
       const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
       for (const feature of collection.queryResult.featureResult.features)
         if (feature?.has_geometry)
-          renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, renderer.transform === undefined);
+          await renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, renderer.transform === undefined);
     }
   }
 
-  public readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");
@@ -81,7 +79,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, info: [] };
+    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
@@ -121,7 +119,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       return { propertyValue,  typename };
     };
 
-    const getRecordInfo = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
+    const getFeatureAttribute = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value): MapLayerFeatureAttribute|undefined => {
       let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
       let typename = StandardTypeNames.String;
@@ -177,39 +175,56 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
       propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return new MapFeatureInfoRecord(propertyValue, { name: fieldInfo.name, displayLabel: fieldInfo.name, typename });
+      return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
+    };
+
+    const geomType = collection.queryResult.featureResult.geometryType;
+    const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
+
+    const subLayerInfo: MapSubLayerFeatureInfo = {
+      subLayerName: this._layerMetadata.name,
+      displayFieldName: this._layerMetadata.name,
+      features: [],
     };
 
     // Read feature values
-    for (const feature of collection.queryResult.featureResult.features) {
-      const subLayerInfo: MapSubLayerFeatureInfo = {
-        subLayerName: this._layerMetadata.name,
-        displayFieldName: this._layerMetadata.name,
-        records: [],
-      };
-      let i = 0;
+    for (const featureResponse of collection.queryResult.featureResult.features) {
+      const feature: MapLayerFeature = { attributes: []};
 
-      for (const attrValue of feature.attributes) {
-        if (i > fields.length) {
+      if (renderer && featureResponse?.has_geometry) {
+        if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
+          await renderer.renderPoint(featureResponse.geometry.lengths, featureResponse.geometry.coords, stride, true);
+        } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
+          const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
+          await renderer.renderPath(featureResponse.geometry.lengths, featureResponse.geometry.coords, fill, stride, true);
+        }
+        const graphics = renderer.moveGraphics();
+        feature.geometries = graphics.map((graphic) => {
+          return {graphic};
+        });
+      }
+
+      let fieldIdx = 0;
+      for (const attrValue of featureResponse.attributes) {
+        if (fieldIdx > fields.length) {
           Logger.logError(loggerCategory, "Error while read feature info data: fields metadata missing");
           break;
         }
         // Convert everything to string for now
-        const info = getRecordInfo(fields[i], attrValue);
-        if (info) {
-          subLayerInfo.records?.push(info);
+        const attr = getFeatureAttribute(fields[fieldIdx], attrValue);
+        if (attr) {
+          feature.attributes?.push(attr);
         }
 
-        i++;
+        fieldIdx++;
       }
-      if (layerInfo.info === undefined) {
-        layerInfo.info = [];
-      }
-      if (!(layerInfo.info instanceof HTMLElement)) {
-        layerInfo.info.push(subLayerInfo);
-      }
+      subLayerInfo.features.push(feature);
     }
 
+    if (layerInfo.subLayerInfos === undefined) {
+      layerInfo.subLayerInfos = [];
+    }
+    layerInfo.subLayerInfos.push(subLayerInfo);
     featureInfos.push(layerInfo);
   }
 }
