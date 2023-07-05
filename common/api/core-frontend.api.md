@@ -1263,7 +1263,7 @@ export interface ArcGISIdentifyImageDisplayProps {
 // @internal (undocumented)
 export interface ArcGISIdentifyLayersProps {
     // (undocumented)
-    layerIds?: number[];
+    layerIds?: string[];
     // (undocumented)
     prefix: "top" | "visible" | "all";
 }
