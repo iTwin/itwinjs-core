@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.0
+      '@bentley/imodeljs-native': 4.1.4
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.0.0
       '@itwin/core-bentley': workspace:*
@@ -52,7 +52,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.0
+      '@bentley/imodeljs-native': 4.1.4
       '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -5267,8 +5267,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.0:
-    resolution: {integrity: sha512-GvBKTXdejUDAF/gUefIRW+C0GvCvpcIm6lh6uVDXneoPXqdugGhNf/24lX7qjlkwCxFxkp4nARiljWst6UyjfQ==}
+  /@bentley/imodeljs-native/4.1.4:
+    resolution: {integrity: sha512-C6eNrFUkqHPjo+1A5HMKvRJGHAe/ZPkvv+cviCT0HmGdQfigWE9vBa1kLPduTQ9/m5P9bnN2kyxBKcMT+cDZDA==}
     requiresBuild: true
     dev: false
 
@@ -10840,7 +10840,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.60.0_i6u37blvulxlszyhkflwwnyave
       '@typescript-eslint/experimental-utils': 5.60.0_fsssjpk4ezl7mpaxdgpssv73ie
       eslint: 8.43.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13396,7 +13396,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -18277,7 +18277,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.22.5
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2
