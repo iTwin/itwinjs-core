@@ -53,7 +53,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
-// @alpha
+// @beta
 export class MapFeatureInfoTool extends PrimitiveTool {
     // (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
@@ -79,7 +79,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export interface MapFeatureInfoToolData {
     // (undocumented)
     hit: HitDetail;
