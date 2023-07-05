@@ -11,13 +11,18 @@ import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, 
 import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
-/** @alpha */
+/** Command ids for built in EditCommandIpc classes.
+ * @beta
+ */
 export const editorBuiltInCmdIds = {
   cmdBasicManipulation: "basicManipulation",
+  /** @alpha */
   cmdSolidModeling: "solidModeling",
 };
 
-/** @alpha */
+/** Optional criteria for requesting a GeometryStream from the backend.
+ * @beta
+ */
 export interface FlatBufferGeometryFilter {
   /** Optional limit on number of displayable entries to accept */
   maxDisplayable?: number;
@@ -33,7 +38,9 @@ export interface FlatBufferGeometryFilter {
   geometry?: { curves: boolean, surfaces: boolean, solids: boolean };
 }
 
-/** @alpha */
+/** Interface for a backend EditCommand command that provides basic creation and modification operations.
+ * @beta
+ */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
   transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;

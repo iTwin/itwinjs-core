@@ -8,7 +8,9 @@ import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider
 import { Point3d } from "@itwin/core-geometry";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
 
-/** @alpha Edit tool base class for updating existing elements. */
+/** Edit tool base class for updating existing elements.
+ * @beta
+ */
 export abstract class ModifyElementTool extends ElementSetTool {
   protected readonly _checkedIds = new Map<Id64String, boolean>();
 
@@ -101,7 +103,9 @@ export abstract class ModifyElementTool extends ElementSetTool {
   }
 }
 
-/** @alpha Edit tool base class for updating existing elements that use dynamics to show intermediate results. */
+/** Edit tool base class for updating existing elements that use dynamics to show intermediate results.
+ * @beta
+ */
 export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool implements FeatureOverrideProvider {
   protected _graphicsProvider?: DynamicGraphicsProvider;
   protected _firstResult = true;

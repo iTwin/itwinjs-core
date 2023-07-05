@@ -21,14 +21,18 @@ import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
 import { basicManipulationIpc } from "./EditToolIpc";
 
-/** @alpha */
+/** Geometric element id, placement, and RenderGraphic managed by [[TransformGraphicsProvider]].
+ * @beta
+ */
 export interface TransformGraphicsData {
   id: Id64String;
   placement: Placement;
   graphic: RenderGraphicOwner;
 }
 
-/** @alpha */
+/** A class for creating and managing RenderGraphics representing geometric elements for the purpose of interactive tool dynamics.
+ * @beta
+ */
 export class TransformGraphicsProvider {
   public readonly iModel: IModelConnection;
   public readonly data: TransformGraphicsData[];
@@ -173,7 +177,9 @@ export class TransformGraphicsProvider {
   }
 }
 
-/** @alpha Base class for applying a transform to element placements. */
+/** Edit tool base class for applying a transform to element placements.
+ * @beta
+ */
 export abstract class TransformElementsTool extends ElementSetTool {
   protected override get allowSelectionSet(): boolean { return true; }
   protected override get allowGroups(): boolean { return true; }

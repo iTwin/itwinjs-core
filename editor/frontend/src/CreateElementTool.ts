@@ -36,17 +36,23 @@ function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, 
   return (0.0 !== pixelSize ? vp.target.adjustPixelSizeForLOD(pixelSize) : 0.001);
 }
 
-/** @alpha */
+/** Calculate a view based chord tolerance for facetting curved geometry given a world coordinate and optional radius.
+ * @beta
+ */
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number {
   return computeChordToleranceFromPointAndRadius(vp, pt, radius ? radius : Constant.oneCentimeter);
 }
 
-/** @alpha */
+/** Calculate a view based chord tolerance for facetting curved geometry given a world coordinate range box.
+ * @beta
+ */
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number {
   return computeChordToleranceFromPointAndRadius(vp, range.center, 0.5 * range.low.distance(range.high));
 }
 
-/** @alpha */
+/** A class for creating and managing a RenderGraphic for the purpose of interactive tool dynamics.
+ * @beta
+ */
 export class DynamicGraphicsProvider {
   public readonly iModel: IModelConnection;
   public readonly prefix: string;
@@ -164,7 +170,9 @@ export class DynamicGraphicsProvider {
   }
 }
 
-/** @alpha Placement tool base class for creating new elements. */
+/** Placement tool base class for creating new elements.
+ * @beta
+ */
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
     const category = this.briefcase?.editorToolSettings.category;
@@ -289,7 +297,9 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 }
 
-/** @alpha Placement tool base class for creating new elements that use dynamics to show intermediate results. */
+/** Placement tool base class for creating new elements that use dynamics to show intermediate results.
+ * @beta
+ */
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected _graphicsProvider?: DynamicGraphicsProvider;
 

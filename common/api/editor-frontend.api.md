@@ -239,10 +239,10 @@ export enum CircleMethod {
     Edge = 1
 }
 
-// @alpha (undocumented)
+// @beta
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
 
-// @alpha (undocumented)
+// @beta
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
 
 // @alpha
@@ -673,7 +673,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     get useRadiusProperty(): DialogProperty<boolean>;
 }
 
-// @alpha
+// @beta
 export abstract class CreateElementTool extends PrimitiveTool {
     protected abstract createElement(): Promise<void>;
     // (undocumented)
@@ -696,7 +696,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
     protected get wantDynamics(): boolean;
 }
 
-// @alpha
+// @beta
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     // (undocumented)
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
@@ -1177,7 +1177,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
     protected wantSubEntityType(type: SubEntityType): boolean;
 }
 
-// @alpha (undocumented)
+// @beta
 export class DynamicGraphicsProvider {
     constructor(iModel: IModelConnection, prefix: string);
     // (undocumented)
@@ -1738,7 +1738,7 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     protected get wantModifyOriginal(): boolean;
 }
 
-// @alpha
+// @beta
 export abstract class ModifyElementTool extends ElementSetTool {
     // (undocumented)
     protected acceptElementForOperation(id: Id64String): Promise<boolean>;
@@ -1778,7 +1778,7 @@ export abstract class ModifyElementTool extends ElementSetTool {
     protected setupAndPromptForNextAction(): void;
 }
 
-// @alpha
+// @beta
 export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool implements FeatureOverrideProvider {
     // (undocumented)
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
@@ -2273,7 +2273,7 @@ export class ProjectLocationShowTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class RedoTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2706,7 +2706,7 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -2760,7 +2760,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantRepeatOperation(): boolean;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface TransformGraphicsData {
     // (undocumented)
     graphic: RenderGraphicOwner;
@@ -2770,7 +2770,7 @@ export interface TransformGraphicsData {
     placement: Placement;
 }
 
-// @alpha (undocumented)
+// @beta
 export class TransformGraphicsProvider {
     constructor(iModel: IModelConnection, prefix: string);
     // (undocumented)
@@ -2791,7 +2791,7 @@ export class TransformGraphicsProvider {
     readonly prefix: string;
 }
 
-// @alpha
+// @beta
 export class UndoAllTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2799,7 +2799,7 @@ export class UndoAllTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class UndoTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;

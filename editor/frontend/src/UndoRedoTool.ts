@@ -5,7 +5,9 @@
 
 import { IModelApp, IpcApp, Tool } from "@itwin/core-frontend";
 
-/** @alpha Undo all element changes */
+/** Undo all element changes
+ * @beta
+ */
 export class UndoAllTool extends Tool {
   public static override toolId = "UndoAll";
   public override async run(): Promise<boolean> {
@@ -22,7 +24,9 @@ export class UndoAllTool extends Tool {
   }
 }
 
-/** @alpha Undo active tool steps, or element changes */
+/** Undo active tool steps, or element changes
+ * @beta
+ */
 export class UndoTool extends Tool {
   public static override toolId = "Undo";
   public override async run(): Promise<boolean> {
@@ -31,7 +35,9 @@ export class UndoTool extends Tool {
   }
 }
 
-/** @alpha Redo active tool steps, or element changes */
+/** Redo active tool steps, or element changes
+ * @beta
+ */
 export class RedoTool extends Tool {
   public static override toolId = "Redo";
   public override async run(): Promise<boolean> {
