@@ -1772,7 +1772,7 @@ export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
-    // @alpha
+    // @beta
     readonly editorToolSettings: BriefcaseEditorToolSettings;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
@@ -1794,7 +1794,7 @@ export class BriefcaseConnection extends IModelConnection {
     readonly txns: BriefcaseTxns;
 }
 
-// @alpha
+// @beta
 export class BriefcaseEditorToolSettings {
     get category(): Id64String | undefined;
     set category(category: Id64String | undefined);
