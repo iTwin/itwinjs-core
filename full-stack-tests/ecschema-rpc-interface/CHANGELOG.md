@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema-rpcinterface-tests
 
-This log was last generated on Tue, 20 Jun 2023 12:51:02 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Jul 2023 13:41:21 GMT and should not be manually modified.
+
+## 3.7.10
+Wed, 05 Jul 2023 13:41:21 GMT
+
+_Version update only_
 
 ## 3.7.9
 Tue, 20 Jun 2023 12:51:02 GMT

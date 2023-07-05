@@ -2,6 +2,12 @@
   "name": "@itwin/map-layers",
   "entries": [
     {
+      "version": "3.7.10",
+      "tag": "@itwin/map-layers_v3.7.10",
+      "date": "Wed, 05 Jul 2023 13:41:21 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.9",
       "tag": "@itwin/map-layers_v3.7.9",
       "date": "Tue, 20 Jun 2023 12:51:02 GMT",
