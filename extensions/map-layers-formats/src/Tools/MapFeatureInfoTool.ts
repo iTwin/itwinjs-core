@@ -20,7 +20,7 @@ import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 /** Data provided every time [[MapFeatureInfoTool]] retrieve feature information.
  * @see [[MapFeatureInfoToolData]]
- * @alpha
+ * @beta
  */
 export interface MapFeatureInfoToolData {
   hit: HitDetail;
@@ -31,7 +31,7 @@ export interface MapFeatureInfoToolData {
  * Simulate feature highlight by drawing overlay decorations.  It also
  * fire an event that provide further feature information meant to be displayed in a UI / Widget.
  * @see [[MapFeatureInfoToolData]]
- * @alpha
+ * @beta
  */
 export class MapFeatureInfoTool extends PrimitiveTool {
   public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
