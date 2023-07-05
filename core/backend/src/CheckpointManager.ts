@@ -209,16 +209,6 @@ export class V2CheckpointManager {
       container.checkForChanges();
       const dbStats = container.queryDatabase(dbName);
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-<<<<<<< HEAD
-        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
-          const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
-          const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
-        };
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
-=======
         const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
         const minRequests = getPrefetchConfig("minRequests", 3);
         const maxRequests = getPrefetchConfig("maxRequests", 6);
@@ -236,7 +226,6 @@ export class V2CheckpointManager {
         } else {
           Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits.`, { maxBlocks, totalBlocksInDb: dbStats?.totalBlocks, v2props });
         }
->>>>>>> 6c9ab740a4 (Check for a 'maxBlocks' config when prefetching a checkpoint (#5632))
       }
       return { dbName, container };
     } catch (e: any) {
