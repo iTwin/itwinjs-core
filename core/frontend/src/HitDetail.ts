@@ -281,7 +281,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return 0 !== this.viewport.mapLayerFromHit(this).length; }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
