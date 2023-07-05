@@ -1250,7 +1250,8 @@ class CanvasState {
 
     // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
     // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
-    // to the view manager. See ViewManager.test.ts for more details.
+    // to the view manager. See ViewManager.test.ts for more details.  0 is also the case when vpDiv.removeChild
+    // is done on webGLCanvas, due to client sizes being 0 afterward.
     if (w === this.canvas.width && h === this.canvas.height || (0 === w || 0 === h))
       return false;
 
@@ -1311,7 +1312,6 @@ export class OnScreenTarget extends Target {
       this._blitGeom.collectStatistics(stats);
   }
 
-  public override forceBufferChange() { this.compositor.forceBufferChange(); }
   public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
   public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
   public override get devicePixelRatio(): number {
@@ -1471,6 +1471,10 @@ export class OnScreenTarget extends Target {
   public override setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
     if (toScreen === this._usingWebGLCanvas)
       return;
+
+    // NB: need to force a buffer change in this case because nothing is changing sizes except the webglCanvas
+    if (toScreen)
+      this.compositor.forceBufferChange();
 
     this._usingWebGLCanvas = toScreen;
     return toScreen ? this._webglCanvas.canvas : undefined;

@@ -3572,7 +3572,6 @@ export class ScreenViewport extends Viewport {
     if (resized) {
       this.target.onResized();
       this.invalidateController();
-      this.target.forceBufferChange();
     }
     this.invalidateRenderPlan();
   }

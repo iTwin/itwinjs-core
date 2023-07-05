@@ -867,9 +867,8 @@ class Compositor extends SceneCompositor {
   protected _antialiasSamples: number = 1;
   protected readonly _viewProjectionMatrix = new Matrix4();
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
-  protected _forceBufferChange: boolean = false;
 
-  public forceBufferChange(): void { this._forceBufferChange = true; }
+  public forceBufferChange(): void { this._width = this._height = -1; }
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
@@ -1272,9 +1271,8 @@ class Compositor extends SceneCompositor {
 
     const changeAntialiasSamples = (this._antialiasSamples > 1 && wantAntialiasSamples > 1 && this._antialiasSamples !== wantAntialiasSamples);
 
-    // If not yet initialized, or dimensions changed, or antialiasing changed the number of samples, or forceBufferChange, initialize.
-    if (undefined === this._textures.accumulation || width !== this._width || height !== this._height || changeAntialiasSamples || this._forceBufferChange) {
-      this._forceBufferChange = false;
+    // If not yet initialized, or dimensions changed, or antialiasing changed the number of samples, initialize.
+    if (undefined === this._textures.accumulation || width !== this._width || height !== this._height || changeAntialiasSamples) {
       this._width = width;
       this._height = height;
       this._antialiasSamples = wantAntialiasSamples;
