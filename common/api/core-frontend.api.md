@@ -248,6 +248,7 @@ import { QueryOptions } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
@@ -1247,6 +1248,48 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     protected moveTo(x: number, y: number): Promise<void>;
     // (undocumented)
     protected stroke(): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyImageDisplayProps {
+    // (undocumented)
+    dpi: number;
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyLayersProps {
+    // (undocumented)
+    layerIds?: number[];
+    // (undocumented)
+    prefix: "top" | "visible" | "all";
+}
+
+// @internal (undocumented)
+export class ArcGISIdentifyRequestUrl {
+    // (undocumented)
+    static fromJSON(baseUrl: URL | string, json: ArcGISIdentifyRequestUrlProps, srFractionDigits?: number): URL;
+    // (undocumented)
+    static getExtentString(range: Range2dProps, srFractionDigits?: number): string;
+    // (undocumented)
+    static toFixed(value: number, srFractionDigits?: number): string;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyRequestUrlProps {
+    f?: "json" | "html";
+    geometry: XYProps;
+    geometryType: "esriGeometryPoint";
+    imageDisplay: ArcGISIdentifyImageDisplayProps;
+    layers?: ArcGISIdentifyLayersProps;
+    mapExtent: Range2dProps;
+    maxAllowableOffset?: number;
+    returnGeometry?: boolean;
+    sr?: number;
+    tolerance: number;
 }
 
 // @internal

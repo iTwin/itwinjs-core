@@ -46,6 +46,10 @@ internal;class ArcGisGeometryBaseRenderer
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
 internal;ArcGisGraphicsRenderer 
+internal;ArcGISIdentifyImageDisplayProps
+internal;ArcGISIdentifyLayersProps
+internal;ArcGISIdentifyRequestUrl
+internal;ArcGISIdentifyRequestUrlProps
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISServiceMetadata
