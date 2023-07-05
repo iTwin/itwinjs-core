@@ -92,7 +92,7 @@ a non-vertical direction.
 
 ### Map Feature Info
 
-The [Viewport.getMapFeatureInfo]($core-common) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feautre.  Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decoration macthing the identified feature geometry. This tool also fire [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
+The [Viewport.getMapFeatureInfo]($core-common) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feature. Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decorations matching the identified feature geometry. This tool also dispatches [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
 ![mapLayerInfoWidget](./assets/map-layer-info.png)
 
 ## API deprecations
