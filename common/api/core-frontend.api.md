@@ -9110,8 +9110,6 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     protected _endPaint(): void;
     // (undocumented)
-    forceBufferChange(): void;
-    // (undocumented)
     get isDisposed(): boolean;
     // (undocumented)
     onResized(): void;
@@ -11058,8 +11056,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     dispose(): void;
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
-    // (undocumented)
-    forceBufferChange(): void;
     // (undocumented)
     getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined;
     // (undocumented)
