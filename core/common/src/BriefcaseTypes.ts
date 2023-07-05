@@ -89,8 +89,20 @@ export interface BriefcaseProps {
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
   /** the full path to the briefcase file  */
   readonly fileName: LocalFileName;
-  /** If true, open the briefcase readonly */
+  /**
+   * If true, open the briefcase readonly.
+   * @note Readonly connections always hold a read transaction against the briefcase. That can cause the WAL file size to grow
+   * unbounded if changes happen while they're open (see [Checkpoint starvation](https://www.sqlite.org/wal.html#avoiding_excessively_large_wal_files))
+   * It is a good idea to close the readonly connection *before* closing the writeable connection so the WAL file will be deleted.
+   */
   readonly readonly?: boolean;
+  /**
+   * If true, open the briefcase readonly and watch the briefcase for changes from another connection and restart the defaultTxn whenever they happen.
+   * The restart happens only after the next to the (backend) event loop, and will generate events that reflect the changes
+   * from the other connection.
+   * @note This cannot be used with cloud-based briefcases.
+   */
+  readonly watchForChanges?: boolean;
 }
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
