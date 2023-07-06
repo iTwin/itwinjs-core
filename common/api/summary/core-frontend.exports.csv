@@ -70,7 +70,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
-alpha;BriefcaseEditorToolSettings
+beta;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 internal;CachedDecoration =

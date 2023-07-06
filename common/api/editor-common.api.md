@@ -23,7 +23,7 @@ import { Range3dProps } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @alpha (undocumented)
+// @beta
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
@@ -141,7 +141,7 @@ export interface EditCommandIpc {
     }>;
 }
 
-// @alpha (undocumented)
+// @beta
 export const editorBuiltInCmdIds: {
     cmdBasicManipulation: string;
     cmdSolidModeling: string;
@@ -231,7 +231,7 @@ export interface FaceParameterRangeProps {
     vRange: Range1dProps;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface FlatBufferGeometryFilter {
     accept?: ElementGeometryOpcode[];
     geometry?: {
