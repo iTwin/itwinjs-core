@@ -456,7 +456,13 @@ export class Point4dArray {
     }
     return result;
   }
-  /** unpack from xyzw xyzw... array to array of Point3d and array of weight.
+  /**
+   * Unpack packed 4D data to a Point3d array and an array of weights.
+   * * `WeightStyle` of `data` is not assumed. If input data is of form [a,b,c,d], default output arrays will have form [a,b,c] and [d].
+   * @param data input 4D points (packed)
+   * @param points output 3D data
+   * @param weights output weights (w portion of input)
+   * @param pointFormatter optional xyz formatter. By default, returns a Point3d created from the xyz portion of the input.
    */
   public static unpackFloat64ArrayToPointsAndWeights(data: Float64Array, points: Point3d[], weights: number[],
     pointFormatter: (x: number, y: number, z: number) => any = Point3d.create) {

@@ -820,16 +820,22 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   private constructor(numPolesU: number, numPolesV: number, knotsU: KnotVector, knotsV: KnotVector, coffs: Float64Array) {
     super(numPolesU, numPolesV, 4, knotsU, knotsV, coffs);
   }
-  /** Return a simple array of the control points. */
+  /** Unpack the control points to a Point4d array of form [wx,wy,wz,w]. */
   public copyPoints4d(): Point4d[] { return Point4dArray.unpackToPoint4dArray(this.coffs); }
 
-  /** Return a simple array of the control points. */
+  /**
+   * Unpack the control points to a Point3d array and an array of weights.
+   * @param points output xyz, weighted by default formatter
+   * @param weights output weights
+   * @param formatter optional xyz formatter. By default, returns a Point3d of form [wx,wy,wz].
+   */
   public copyPointsAndWeights(points: Point3d[], weights: number[],
     formatter: (x: number, y: number, z: number) => any = Point3d.create) {
-    Point4dArray.unpackFloat64ArrayToPointsAndWeights(this.coffs, points, weights,
-      formatter);
+    Point4dArray.unpackFloat64ArrayToPointsAndWeights(this.coffs, points, weights, formatter);
   }
-  /** unpack from xyzw xyzw ... to packed xyz, optionally unweighted
+  /**
+   * Copy the control points to a packed 3D array.
+   * @param unweight if true, output array has form x,y,z; if false, output array has form wx,wy,wz.
    */
   public copyXYZToFloat64Array(unweight: boolean): Float64Array {
     const numPoints = Math.floor(this.coffs.length / 4);
@@ -1055,8 +1061,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return this.knotToPoint4d(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV));
   }
   /**
-   * * evaluate the surface and return the cartesian (weight = 1) point.
-   * * if the surface XYZW point has weight0, returns point3d at 000.
+   * Evaluate the surface and return the Cartesian point (weight = 1).
+   * * If the surface XYZW point has weight 0, returns 000.
    * @param fractionU u direction fraction
    * @param fractionV v direction fraction
    * @param result optional result
