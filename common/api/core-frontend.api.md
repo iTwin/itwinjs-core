@@ -1956,51 +1956,34 @@ export class CesiumIonAssetProvider {
     } | undefined;
 }
 
-// @internal
+// @public
 export enum ChangeFlag {
-    // (undocumented)
     All = 268435455,
-    // (undocumented)
     AlwaysDrawn = 1,
-    // (undocumented)
     DisplayStyle = 16,
-    // (undocumented)
     FeatureOverrideProvider = 32,
-    // (undocumented)
     Initial = 28,
-    // (undocumented)
     NeverDrawn = 2,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     Overrides = 268435319,
-    // (undocumented)
     ViewedCategories = 4,
-    // (undocumented)
     ViewedCategoriesPerModel = 64,
-    // (undocumented)
     ViewedModels = 8,
-    // (undocumented)
     ViewState = 128
 }
 
 // @public
 export class ChangeFlags {
-    // @internal
     constructor(flags?: ChangeFlag);
     get alwaysDrawn(): boolean;
-    // @internal
     areAllSet(flags: ChangeFlag): boolean;
     get areFeatureOverridesDirty(): boolean;
     get displayStyle(): boolean;
     get featureOverrideProvider(): boolean;
-    // @internal (undocumented)
     protected _flags: ChangeFlag;
     get hasChanges(): boolean;
-    // @internal
     isSet(flags: ChangeFlag): boolean;
     get neverDrawn(): boolean;
-    // @internal (undocumented)
     get value(): ChangeFlag;
     get viewedCategories(): boolean;
     // @beta
@@ -8820,7 +8803,7 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @internal
+// @public
 export class MutableChangeFlags extends ChangeFlags {
     constructor(flags?: ChangeFlag);
     clear(flags?: ChangeFlag): void;

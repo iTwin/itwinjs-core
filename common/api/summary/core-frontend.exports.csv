@@ -94,7 +94,7 @@ public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
 internal;CesiumIonAssetProvider
-internal;ChangeFlag
+public;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
 public;CheckboxFormatPropEditorSpec 
@@ -527,7 +527,7 @@ public;ModelSelectorState
 public;ModelState 
 public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
-internal;MutableChangeFlags 
+public;MutableChangeFlags 
 public;NativeApp
 internal;NativeAppLogger
 public;NativeAppOpts 
