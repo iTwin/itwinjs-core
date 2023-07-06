@@ -77,6 +77,8 @@ class BentleyMochaReporter extends Spec {
           console.error((process as any)._getActiveHandles());
           console.error("\n\n\n\n");
           console.error((process as any)._getActiveRequests());
+          console.error("\n\n\n\n");
+          console.error((process as any).getActiveResourcesInfo());
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
           wtf.dump();
