@@ -116,7 +116,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
       if (geomReader) {
         await geomReader.readGeometry(responseFeature.geometry);
-        const graphics = renderer!.moveGraphics();
+        const graphics = renderer.moveGraphics();
         feature.geometries = graphics.map((graphic) => {
           return {graphic};
         });

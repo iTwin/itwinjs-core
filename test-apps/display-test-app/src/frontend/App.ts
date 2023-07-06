@@ -361,7 +361,7 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    await MapLayersFormats.initialize();
+    MapLayersFormats.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {
