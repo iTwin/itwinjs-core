@@ -2,6 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/** @packageDocumentation
+ * @module Editing
+ */
+
 import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream } from "@itwin/core-common";
 import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";

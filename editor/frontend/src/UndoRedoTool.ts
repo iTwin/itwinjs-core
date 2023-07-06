@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module Editing
+ */
+
 import { IModelApp, IpcApp, Tool } from "@itwin/core-frontend";
 
 /** Undo all element changes

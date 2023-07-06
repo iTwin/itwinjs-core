@@ -2,6 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/** @packageDocumentation
+ * @module Editing
+ */
+
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
