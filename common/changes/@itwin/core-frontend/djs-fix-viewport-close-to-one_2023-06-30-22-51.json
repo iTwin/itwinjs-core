@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed black view caused by certain cases of going back down to one viewport.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
