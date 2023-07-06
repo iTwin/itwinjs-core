@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "Revisited Viewport.getMapFeatureInfo, it now return graphics along with records.",
       "type": "none"
     }
   ],
