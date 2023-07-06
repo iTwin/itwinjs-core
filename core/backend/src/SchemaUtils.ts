@@ -8,7 +8,7 @@ import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 
-/** Convert EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
+/** Converts EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
  * @public
  * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.
  * @returns EC3.2 Xml ECSchema(s).
@@ -19,12 +19,12 @@ export function convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaCon
   const maybeNativeContext = schemaContext?.nativeContext;
   const ec3XmlSchemas: string[] = IModelJsNative.SchemaUtility.convertEC2XmlSchemas(ec2XmlSchemas, maybeNativeContext);
   if (ec2XmlSchemas.length === 0)
-    throw new IModelError(BentleyStatus.ERROR, "Error converting EC2 Xml schema(s)");
+    throw new IModelError(BentleyStatus.ERROR, "Error converting EC2 Xml schemas");
 
   return ec3XmlSchemas;
 }
 
-/** Convert custom attributes of ECSchema(s)
+/** Converts schema metadata to EC3 concepts by traversing custom attributes of the supplied schema and calling converters based on custom attribute name
  * @public
  * @param xmlSchemas The ECSchema Xml string(s).
  * @returns ECSchema Xml string(s) with converted custom attributes.
@@ -35,7 +35,7 @@ export function convertCustomAttributes(xmlSchemas: string[], schemaContext?: EC
   const maybeNativeContext = schemaContext?.nativeContext;
   const schemasWithConvertedCA: string[] = IModelJsNative.SchemaUtility.convertCustomAttributes(xmlSchemas, maybeNativeContext);
   if (schemasWithConvertedCA.length === 0)
-    throw new IModelError(BentleyStatus.ERROR, "Error converting custom attributes of Xml schema(s)");
+    throw new IModelError(BentleyStatus.ERROR, "Error converting custom attributes of Xml schemas");
 
   return schemasWithConvertedCA;
 }
