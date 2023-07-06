@@ -8,7 +8,8 @@
 
 // spell:ignore datacenter
 
-import { AccessToken, Id64String } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { SettingObject } from "./workspace/Settings";
 
 /**
  * Types and functions for creating, deleting and authorizing access to cloud-based blob containers for an iTwin.
@@ -45,6 +46,8 @@ export namespace BlobContainer {
     iTwinId: Id64String;
     /** optionally, an iModelId within the iTwin. If present, container is deleted when the iModel is deleted. */
     iModelId?: Id64String;
+    /** the user GUID an individual, if this container is private. */
+    ownerGuid?: GuidString;
   }
 
   /**
@@ -52,14 +55,17 @@ export namespace BlobContainer {
    *  - administrators can understand why a container exists for assigning RBAC permissions appropriately
    *  - usage reports can aggregate types of containers
    *  - applications can identify their containers
+   *  - applications can store properties about their containers
    */
   export interface Metadata {
-    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Non-unique.*/
-    label: string;
     /** The machine-readable string that describes what the container is being used for (e.g. "workspace"). Always lowercase and singular. */
     containerType: string;
+    /** Human-readable name for the container. This will be displayed in the administrator RBAC panel, and on usage reports. Not required to be unique.*/
+    label: string;
     /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
     description?: string;
+    /** optional properties for the container */
+    json?: SettingObject;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -128,20 +134,25 @@ export namespace BlobContainer {
 
   /** Methods to create, delete, and access blob containers. */
   export interface ContainerService {
-    /**
-     * Create a new blob container. Throws on failure (e.g. access denied or container already exists.)
-     */
+    /**  Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
     create(props: CreateNewContainerProps): Promise<UriAndId>;
 
     /**
      * Delete an existing blob container.
      * @note This method requires that the user be authorized with "delete container" RBAC role for the iTwin.
      */
-    delete(props: AccessContainerProps): Promise<void>;
+    delete(container: AccessContainerProps): Promise<void>;
 
-    /**
-     * Request a `ContainerToken` for a container. Throws on failure.
-     */
+    /** query the Scope for a container */
+    queryScope(container: AccessContainerProps): Promise<Scope>;
+
+    /** query the Metadata for a container */
+    queryMetadata(container: AccessContainerProps): Promise<Metadata>;
+
+    /** update the json properties of this container */
+    updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
+
+    /** Request a `ContainerToken` for a container. Throws on failure. */
     requestToken(props: RequestTokenProps): Promise<TokenProps>;
   }
 }
