@@ -74,9 +74,9 @@ class BentleyMochaReporter extends Spec {
         logBuildError(`Handle leak detected. Node was still running 5 seconds after tests completed.`);
         if (debugLeaks) {
           const wtf = require("wtfnode");
-          logBuildError((process as any)._getActiveHandles());
-          logBuildError("\n\n\n\n");
-          logBuildError((process as any)._getActiveRequests());
+          console.error((process as any)._getActiveHandles());
+          console.error("\n\n\n\n");
+          console.error((process as any)._getActiveRequests());
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
           wtf.dump();
