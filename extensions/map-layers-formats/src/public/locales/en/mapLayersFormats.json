@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "MapFeatureInfoTool": {
+      "keyin": "mlt map feature info"
+    }
+  },
+  "Messages": {
+    "MapFeatureInfoDecorator": {
+      "clusterZoomIn": "{{nbInstances}} instances found. Zoom in for more granularity."
+    }
+  }
+}
