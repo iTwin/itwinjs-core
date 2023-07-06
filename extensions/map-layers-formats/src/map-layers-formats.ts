@@ -5,6 +5,7 @@
 
 export * from "./mapLayersFormats";
 export * from "./ArcGisFeature/ArcGisFeatureProvider";
+export * from "./Tools/MapFeatureInfoTool";
 
 /** @docs-package-description
  * This package provides support for additional map layer formats that are not included in the @itwin/core-frontend package.
