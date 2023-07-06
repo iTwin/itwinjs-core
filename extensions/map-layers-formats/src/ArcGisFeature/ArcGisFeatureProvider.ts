@@ -31,7 +31,7 @@ interface ArcGisFeatureUrl {
 export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   // Debug flags, should always be commited to FALSE !
   private _drawDebugInfo = false;
-  private _debugFeatureGeom = true;
+  private _debugFeatureGeom = false;
 
   private _supportsCoordinatesQuantization = false;
 
