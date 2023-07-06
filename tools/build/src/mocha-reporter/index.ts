@@ -74,7 +74,10 @@ class BentleyMochaReporter extends Spec {
         logBuildError(`Handle leak detected. Node was still running 5 seconds after tests completed.`);
         if (debugLeaks) {
           const wtf = require("wtfnode");
+          console.log(process._getActiveHandles());
+          console.log(process._getActiveRequests());
           wtf.setLogger("info", console.error);
+          wtf.setLogger("error", console.error);
           wtf.dump();
         } else {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
@@ -82,7 +85,7 @@ class BentleyMochaReporter extends Spec {
 
         // Not sure why, but process.exit(1) wasn't working here...
         process.kill(process.pid);
-      }, 10000).unref();
+      }, 5000).unref();
     }
 
     if (!this.stats.pending)

@@ -102,6 +102,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     env:
       NODE_ENV: development
+      DEBUG_LEAKS: 1
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: node common/scripts/install-run-rush.js docs
