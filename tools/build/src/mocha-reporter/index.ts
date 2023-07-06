@@ -75,6 +75,7 @@ class BentleyMochaReporter extends Spec {
         if (debugLeaks) {
           const wtf = require("wtfnode");
           logBuildError((process as any)._getActiveHandles());
+          logBuildError("\n\n\n\n");
           logBuildError((process as any)._getActiveRequests());
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
