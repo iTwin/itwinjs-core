@@ -49,7 +49,7 @@ internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-internal;AttachToViewportArgs
+public;AttachToViewportArgs = Viewport
 alpha;AuxChannel 
 alpha;AuxChannelProps
 alpha;AuxChannelTable

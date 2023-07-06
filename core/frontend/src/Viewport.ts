@@ -1503,7 +1503,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.maybeInvalidateScene();
   }
 
-  /** @internal */
+  /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
+   * @note The viewport monitors various events to automatically detect when the overrides should be recomputed. This method
+   * is only needed for changes that are not observable by the viewport itself.
+   */
   public invalidateSymbologyOverrides(): void {
     this.setFeatureOverrideProviderChanged();
   }
@@ -2877,6 +2880,10 @@ export abstract class Viewport implements IDisposable, TileUser {
   public onRequestStateChanged(): void {
     this.invalidateScene();
   }
+
+  /** @internal See [[OffScreenViewport.drawingToSheetTransform */
+  public get drawingToSheetTransform(): Transform | undefined { return undefined; }
+  public set drawingToSheetTransform(_: Transform | undefined) { assert(false, "drawingToSheetTransform is only relevant for OffScreenViewport"); }
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
@@ -3693,12 +3700,18 @@ export class OffScreenViewport extends Viewport {
     super(target);
   }
 
-  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
-  public get drawingToSheetTransform(): Transform | undefined {
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   * @internal
+   */
+  public override get drawingToSheetTransform(): Transform | undefined {
     return this._drawingToSheetTransform;
   }
 
-  public set drawingToSheetTransform(transform: Transform | undefined) {
+  public override set drawingToSheetTransform(transform: Transform | undefined) {
     this.detachFromView();
     this._drawingToSheetTransform = transform;
     this.attachToView();

@@ -1289,12 +1289,8 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
-// @internal
-export interface AttachToViewportArgs {
-    drawingToSheetTransform?: Transform;
-    invalidateDecorations: () => void;
-    invalidateSymbologyOverrides: () => void;
-}
+// @public
+export type AttachToViewportArgs = Viewport;
 
 // @alpha (undocumented)
 export class AuxChannel implements AuxChannelProps {
@@ -2899,7 +2895,6 @@ export class DrawingViewState extends ViewState2d {
     get attachment(): Object | undefined;
     // @internal
     get attachmentInfo(): Object;
-    // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
@@ -2911,7 +2906,6 @@ export class DrawingViewState extends ViewState2d {
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
-    // @internal (undocumented)
     detachFromViewport(): void;
     // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -11753,7 +11747,6 @@ export class SheetViewState extends ViewState2d {
     get attachmentIds(): Id64Array;
     // @internal
     get attachments(): Object[] | undefined;
-    // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
@@ -11776,7 +11769,6 @@ export class SheetViewState extends ViewState2d {
         min: number;
         max: number;
     };
-    // @internal (undocumented)
     detachFromViewport(): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // @internal (undocumented)
@@ -11963,7 +11955,6 @@ export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
     // (undocumented)
     addViewedModel(id: Id64String): void;
-    // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
     // (undocumented)
     static get className(): string;
@@ -11982,7 +11973,6 @@ export class SpatialViewState extends ViewState3d {
         min: number;
         max: number;
     };
-    // @internal (undocumented)
     detachFromViewport(): void;
     // (undocumented)
     equals(other: this): boolean;
@@ -15344,6 +15334,9 @@ export abstract class Viewport implements IDisposable, TileUser {
     set displayStyle(style: DisplayStyleState);
     // (undocumented)
     dispose(): void;
+    // @internal
+    get drawingToSheetTransform(): Transform | undefined;
+    set drawingToSheetTransform(_: Transform | undefined);
     dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
@@ -15411,7 +15404,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     invalidateDecorations(): void;
     invalidateRenderPlan(): void;
     invalidateScene(): void;
-    // @internal (undocumented)
     invalidateSymbologyOverrides(): void;
     // @internal (undocumented)
     protected _inViewChangedEvent: boolean;
@@ -15714,7 +15706,6 @@ export abstract class ViewState extends ElementState {
     get analysisStyle(): AnalysisStyle | undefined;
     abstract applyPose(props: ViewPose): this;
     get areAllTileTreesLoaded(): boolean;
-    // @internal
     attachToViewport(_args: AttachToViewportArgs): void;
     get auxiliaryCoordinateSystem(): AuxCoordSystemState;
     get backgroundColor(): ColorDef;
@@ -15747,7 +15738,6 @@ export abstract class ViewState extends ElementState {
     abstract get defaultExtentLimits(): ExtentLimits;
     // (undocumented)
     description?: string;
-    // @internal
     detachFromViewport(): void;
     abstract get details(): ViewDetails;
     // @internal
@@ -15927,7 +15917,6 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     allow3dManipulations(): boolean;
     applyPose(val: ViewPose): this;
-    // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
     calcLensAngle(): Angle;
     // (undocumented)
@@ -15949,7 +15938,6 @@ export abstract class ViewState3d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
     detachFromViewport(): void;
     get details(): ViewDetails3d;
     get displayStyle(): DisplayStyle3dState;

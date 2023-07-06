@@ -181,21 +181,11 @@ const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
 
 /** Arguments to [[ViewState.attachToViewport]].
- * @internal
+ * @note The [[Viewport]] has a dependency upon and control over the [[ViewState]]. Do not use [[attachToViewState]] to introduce a dependency in
+ * the opposite direction.
+ * @public
  */
-export interface AttachToViewportArgs {
-  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
-  invalidateDecorations: () => void;
-  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
-   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
-   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
-   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
-   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
-   */
-  drawingToSheetTransform?: Transform;
-  /** A function that can be invoked to notify the viewport that its feature symbology overrides should be recreated. */
-  invalidateSymbologyOverrides: () => void;
-}
+export type AttachToViewportArgs = Viewport;
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -1309,11 +1299,11 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
-   * A ViewState can be attached to at most **one** Viewport.
+   * A ViewState can be attached to at most **one** Viewport at any given time.
+   * This method is invoked automatically by the viewport - there is generally no reason for applications to invoke it directly.
    * @note If you override this method you **must** call `super.attachToViewport`.
    * @throws Error if the view is already attached to any Viewport.
    * @see [[detachFromViewport]] from the inverse operation.
-   * @internal
    */
   public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
@@ -1331,9 +1321,9 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * This method is invoked automatically by the viewport - there is generally no reason for applications to invoke it directly.
    * @note If you override this method you **must** call `super.detachFromViewport`.
    * @throws Error if the view is not attached to any Viewport.
-   * @internal
    */
   public detachFromViewport(): void {
     if (!this.isAttachedToViewport)
@@ -2262,7 +2252,7 @@ export abstract class ViewState3d extends ViewState {
     return this.setupFromFrustum(frustum);
   }
 
-  /** @internal */
+  /** See [[ViewState.attachToViewport]]. */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
 
@@ -2272,7 +2262,7 @@ export abstract class ViewState3d extends ViewState {
 
     this._environmentDecorations = new EnvironmentDecorations(this, () => args.invalidateDecorations(), () => removeListener());
   }
-
+  /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._environmentDecorations = dispose(this._environmentDecorations);
