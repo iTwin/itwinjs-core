@@ -25,6 +25,11 @@ packageClassification:
         ],
     },
     {
+      "order": "2",
+      "header": "Editor Packages",
+      "packages": ["editor-backend", "editor-common", "editor-frontend"],
+    },
+    {
       "order": "3",
       "header": "UI Packages",
       "packages":
