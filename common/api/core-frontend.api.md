@@ -1170,6 +1170,16 @@ export interface Animator {
 export type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
 // @internal (undocumented)
+export interface ArcGisAttributeDrivenSymbology {
+    // (undocumented)
+    rendererFields?: string[];
+    // (undocumented)
+    setActiveFeatureAttributes: (attributes: {
+        [key: string]: any;
+    }) => void;
+}
+
+// @internal (undocumented)
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1186,6 +1196,8 @@ export enum ArcGisErrorCode {
 // @internal
 export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
     constructor(world2PixelTransform?: Transform);
+    // (undocumented)
+    abstract get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
     // (undocumented)
     protected abstract beginPath(): void;
     // (undocumented)
@@ -1220,6 +1232,8 @@ export class ArcGisGeometryReaderJSON {
 // @internal
 export interface ArcGisGeometryRenderer {
     // (undocumented)
+    attributeSymbology?: ArcGisAttributeDrivenSymbology;
+    // (undocumented)
     renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
     // (undocumented)
     renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
@@ -1230,6 +1244,8 @@ export interface ArcGisGeometryRenderer {
 // @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     constructor(iModel: IModelConnection);
+    // (undocumented)
+    get attributeSymbology(): undefined;
     // (undocumented)
     protected beginPath(): void;
     // (undocumented)
