@@ -2819,4 +2819,6 @@ export class UniteSolidElementsTool extends BooleanOperationTool {
     static toolId: string;
 }
 
+// (No @packageDocumentation comment for this package)
+
 ```
