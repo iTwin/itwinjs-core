@@ -15084,9 +15084,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // @beta
     invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void;
     invalidateDecorationsAllViews(): void;
-    // @internal (undocumented)
     invalidateScenes(): void;
-    // @alpha
     invalidateSymbologyOverridesAllViews(): void;
     // @internal (undocumented)
     invalidateViewportScenes(): void;
@@ -15350,7 +15348,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     set flashedId(id: Id64String | undefined);
     get flashSettings(): FlashSettings;
     set flashSettings(settings: FlashSettings);
-    // @internal (undocumented)
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
     forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
@@ -15388,7 +15385,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     getTerrainHeightRange(): Range1d;
-    // @internal (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
     // @internal
@@ -15955,7 +15951,6 @@ export abstract class ViewState3d extends ViewState {
     getExtents(): Vector3d;
     // (undocumented)
     getEyeCartographicHeight(): number | undefined;
-    // @internal (undocumented)
     getEyeOrOrthographicViewPoint(): Point3d;
     getEyePoint(): Point3d;
     getFocusDistance(): number;

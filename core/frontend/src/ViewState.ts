@@ -2095,7 +2095,9 @@ export abstract class ViewState3d extends ViewState {
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
 
-  /** @internal */
+  /** Obtain an "eye" point for this view. If the camera is on, this simply returns [[Camera.getEyePoint]].
+   * Otherwise, a pseudo-eye-point is computed from the view direction and a lens angle of PI/2.
+   */
   public getEyeOrOrthographicViewPoint(): Point3d {
     if (this.isCameraOn)
       return this.camera.getEyePoint();

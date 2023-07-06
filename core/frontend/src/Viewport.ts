@@ -1034,7 +1034,8 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.invalidateRenderPlan();
     }
   }
-  /** @internal */
+
+  /** Obtain a tooltip from the map layer or reality model, if any, identified by the specified [[HitDetail]]. */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
@@ -1530,7 +1531,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** @internal */
+  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport. */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
