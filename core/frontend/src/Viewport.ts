@@ -333,7 +333,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _doContinuousRendering = false;
   /** @internal */
   protected _inViewChangedEvent = false;
-  /** @internal */
+  /** If false, indicates that [[Decorations]] should be recreated when rendering the next frame.
+   * @note prefer to invoke [[invalidateDecorations]] rather than directly assigning to this property.
+   */
   protected _decorationsValid = false;
   /** @internal */
   protected _sceneValid = false;
@@ -2552,7 +2554,9 @@ export abstract class Viewport implements IDisposable, TileUser {
       IModelApp.requestNextAnimation();
   }
 
-  /** @internal */
+  /** Populate a set of decoration graphics to be displayed in this viewport.
+   * This base implementation produces no graphics.
+   */
   protected addDecorations(_decorations: Decorations): void { }
 
   /** Read selected data about each pixel within a rectangular region of this Viewport.
@@ -3308,7 +3312,7 @@ export class ScreenViewport extends Viewport {
     return this._viewRange;
   }
 
-  /** @internal */
+  /** Populate a set of decoration graphics to be displayed in this viewport. */
   protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation

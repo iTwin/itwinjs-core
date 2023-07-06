@@ -146,6 +146,7 @@ public;CustomQuantityTypeDefinition
 internal;DebugShaderFile
 internal;decodeImdlGraphics(options: ImdlDecodeOptions): Promise
 public;DecorateContext 
+public;DecorateContextCreateArgs
 public;Decorations 
 internal;DecorationsCache
 public;Decorator 

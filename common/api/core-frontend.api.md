@@ -2467,6 +2467,7 @@ export class DecorateContext extends RenderContext {
     // @internal (undocumented)
     addFromDecorator(decorator: ViewportDecorator): void;
     addHtmlDecoration(decoration: HTMLElement): void;
+    static create(args: DecorateContextCreateArgs): DecorateContext;
     createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
@@ -2474,6 +2475,14 @@ export class DecorateContext extends RenderContext {
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;
     get viewport(): ScreenViewport;
+}
+
+// @public
+export interface DecorateContextCreateArgs {
+    // @internal
+    cache?: DecorationsCache;
+    output: Decorations;
+    viewport: ScreenViewport;
 }
 
 // @public
@@ -11312,7 +11321,6 @@ export interface ScreenSpaceEffectSource {
 export class ScreenViewport extends Viewport {
     // @internal
     protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
-    // @internal (undocumented)
     protected addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
     protected addLogo(): void;
@@ -15287,7 +15295,6 @@ export abstract class ViewManip extends ViewTool {
 export abstract class Viewport implements IDisposable, TileUser {
     // @internal
     protected constructor(target: RenderTarget);
-    // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
     addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     // @internal (undocumented)
@@ -15348,7 +15355,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     cssPixelsToDevicePixels(cssPixels: number): number;
     get debugBoundingBoxes(): TileBoundingBoxes;
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
-    // @internal (undocumented)
     protected _decorationsValid: boolean;
     // @internal
     protected detachFromView(): void;
