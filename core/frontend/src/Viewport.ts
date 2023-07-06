@@ -1047,7 +1047,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return "";
   }
 
-  /** @alpha */
+  /** @beta */
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
     const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 

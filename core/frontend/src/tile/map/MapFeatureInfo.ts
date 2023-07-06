@@ -14,7 +14,7 @@ import { GraphicPrimitive } from "../../render/GraphicPrimitive";
  * @beta
  */
 export class MapFeatureInfoRecord extends PropertyRecord {
-  /** Construct a record from [PropertyValue]($appui-react) and [PropertyDescription]($appui-react) objects. */
+  /** Construct a record from [PropertyValue]($appui-abstract) and [PropertyDescription]($appui-abstract) objects. */
   public constructor(value: PropertyValue, property: PropertyDescription) {
     super(value, property);
   }
@@ -90,12 +90,12 @@ export interface MapLayerFeatureAttribute {
   property: PropertyDescription;
 }
 
-/** Utility class that creates a [PropertyRecord]($appui-react) out of [[MapLayerFeatureAttribute]]
+/** Utility class that creates a [PropertyRecord]($appui-abstract) out of [[MapLayerFeatureAttribute]]
  * @see [[MapLayerFeature]]
  * @beta
  */
 export class MapLayerFeatureRecord {
-  /** Convert a [[MapLayerFeatureAttribute]] object into [PropertyRecord]($appui-react) object. */
+  /** Convert a [[MapLayerFeatureAttribute]] object into [PropertyRecord]($appui-abstract) object. */
   public static createRecordFromAttribute(attribute: MapLayerFeatureAttribute) {
     return new PropertyRecord(attribute.value, attribute.property);
   }

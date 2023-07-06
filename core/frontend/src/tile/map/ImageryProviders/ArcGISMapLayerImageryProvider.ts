@@ -14,11 +14,122 @@ import {
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
-import { Range2d } from "@itwin/core-geometry";
+import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
 import { Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
+
+/** @internal */
+export interface ArcGISIdentifyImageDisplayProps {
+  width: number;
+  height: number;
+  dpi: number;
+}
+
+/** @internal */
+export interface ArcGISIdentifyLayersProps {
+  prefix: "top"|"visible"|"all";
+  layerIds?: string[];
+}
+
+/** @internal */
+export interface ArcGISIdentifyRequestUrlProps {
+  /** The geometry to identify on.  Point only support */
+  geometry: XYProps;
+
+  /** The type of geometry specified by the geometry parameter. Point only support */
+  geometryType: "esriGeometryPoint";
+
+  /** The well-known ID of the spatial reference of the input and output geometries as well as the mapExtent. */
+  sr?: number;
+
+  /** The layers to perform the identify operation on. The default value is top.
+   * Format: [top | visible | all]:layerId1,layerId2
+  */
+  layers?: ArcGISIdentifyLayersProps;
+
+  /** The distance in screen pixels from the specified geometry within which the identify operation should be performed.
+   * The value for the tolerance is an integer.
+   */
+  tolerance: number;
+
+  /** The extent or bounding box of the map currently being viewed.
+  * Format: <xmin>, <ymin>, <xmax>, <ymax>
+   */
+  mapExtent: Range2dProps;
+
+  /** The screen image display parameters (width, height, and DPI) of the map being currently viewed. T
+   * Format: <width>,<height>,<dpi>
+   */
+  imageDisplay: ArcGISIdentifyImageDisplayProps;
+
+  /** If true, the result set will include the geometries associated with each result. The default is true.
+   */
+  returnGeometry?: boolean;
+
+  /** This option can be used to specify the maximum allowable offset to be used for generalizing geometries returned by the identify operation.
+   * The maxAllowableOffset is in the units of the sr.
+   */
+  maxAllowableOffset?: number;
+
+  /** The response format. The default response format is html.
+   */
+  f?: "json"|"html";
+
+}
+
+/** @internal */
+export class ArcGISIdentifyRequestUrl {
+  public static fromJSON(baseUrl: URL|string, json: ArcGISIdentifyRequestUrlProps, srFractionDigits?: number): URL {
+
+    const newUrl = new URL(baseUrl);
+    newUrl.pathname = `${newUrl.pathname}/identify`;
+
+    if (json.f) {
+      newUrl.searchParams.append("f", json.f);
+    }
+
+    const geomPt = Point2d.fromJSON(json.geometry);
+    newUrl.searchParams.append("geometry", `${this.toFixed(geomPt.x, srFractionDigits)},${this.toFixed(geomPt.y, srFractionDigits)}`);
+    newUrl.searchParams.append("geometryType", json.geometryType);
+
+    if (json.sr) {
+      newUrl.searchParams.append("sr", `${json.geometryType}`);
+    }
+
+    if (json.layers) {
+      newUrl.searchParams.append("layers", `${json.layers.prefix}${json.layers.layerIds?.length ? `: ${json.layers.layerIds.join(",")}` : ""}`);
+    }
+
+    newUrl.searchParams.append("tolerance", `${json.tolerance}`);
+
+    newUrl.searchParams.append("mapExtent", ArcGISIdentifyRequestUrl.getExtentString(json.mapExtent, srFractionDigits));
+
+    newUrl.searchParams.append("imageDisplay", `${json.imageDisplay.width},${json.imageDisplay.height},${json.imageDisplay.dpi}`);
+
+    if (json.returnGeometry !== undefined) {
+      newUrl.searchParams.append("returnGeometry", json.returnGeometry ? "true" : "false");
+    }
+
+    if (json.maxAllowableOffset !== undefined) {
+      newUrl.searchParams.append("maxAllowableOffset", `${this.toFixed(json.maxAllowableOffset, srFractionDigits)}`);
+    }
+
+    return newUrl;
+  }
+
+  public static toFixed(value: number, srFractionDigits?: number) {
+    return srFractionDigits === undefined ? value.toString() : value.toFixed(srFractionDigits);
+  }
+
+  public static getExtentString(range: Range2dProps, srFractionDigits?: number) {
+    const extent = Range2d.fromJSON(range);
+    const extentStringArray: string[] = [];
+    extent.toFloat64Array().forEach((value) => extentStringArray.push(this.toFixed(value, srFractionDigits)));
+    return extentStringArray.join(",");
+  }
+}
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
@@ -209,14 +320,24 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, maxAllowableOffset?: number): Promise<any>   {
-    const returnGeometry = "true;";
-    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
-    const x = this.getEPSG3857X(carto.longitudeDegrees);
-    const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const maxAllowableOffsetStr = maxAllowableOffset ? `&maxAllowableOffset=${maxAllowableOffset}` : "";
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}${maxAllowableOffsetStr}`;
-    const urlObj = new URL(tmpUrl);
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, returnGeometry?: boolean, maxAllowableOffset?: number): Promise<any>   {
+
+    const bbox = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
+    const layerIds = new Array<string>();
+    this._settings.subLayers.forEach((subLayer) => {
+      if (this._settings.isSubLayerVisible(subLayer))
+        layerIds.push(subLayer.idString);
+    });
+    const urlObj = ArcGISIdentifyRequestUrl.fromJSON(this._settings.url, {
+      f: "json",
+      geometry: {x: this.getEPSG3857X(carto.longitudeDegrees), y: this.getEPSG3857Y(carto.latitudeDegrees)},
+      geometryType: "esriGeometryPoint",
+      tolerance,
+      mapExtent: {low: {x: bbox.left, y: bbox.bottom}, high: {x: bbox.right, y: bbox.top}},
+      imageDisplay: {width: this.tileSize, height: this.tileSize, dpi: 96},
+      layers: {prefix: "visible", layerIds},
+      returnGeometry,
+      maxAllowableOffset}, 3 /* 1mm accuracy*/);
 
     const response = await this.fetch(urlObj, { method: "GET" } );
     return response.json();
@@ -255,7 +376,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const maxAllowableOffsetFactor = 2;
     const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
 
-    const json = await this.getIdentifyData(quadId, carto, 5, maxAllowableOffset);
+    const json = await this.getIdentifyData(quadId, carto, 5, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
       const renderer = new ArcGisGraphicsRenderer(hit.iModel);
 
