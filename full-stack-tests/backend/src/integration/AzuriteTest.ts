@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, SettingObject } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
@@ -42,7 +42,8 @@ export namespace AzuriteTest {
         metadata: {
           label: "Test Container",
           description: "CloudSqlite container for tests",
-          containerType: "workspace",
+          containerType: "cloud-sqlite",
+          json: { blockSize: "64K" },
         },
         containerId: container.containerId ?? Guid.createValue(),
         scope: {
@@ -132,11 +133,19 @@ export namespace AzuriteTest {
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
           itwinid: arg.scope.iTwinId,
-          ...arg.metadata,
+          containertype: arg.metadata.containerType,
+          label: arg.metadata.label,
         },
       };
       if (arg.scope.iModelId)
         opts.metadata!.imodelid = arg.scope.iModelId;
+      if (arg.scope.ownerGuid)
+        opts.metadata!.ownerguid = arg.scope.ownerGuid;
+      if (arg.metadata.description)
+        opts.metadata!.description = arg.metadata.description;
+      if (arg.metadata.json)
+        opts.metadata!.json = JSON.stringify(arg.metadata.json);
+
       if (arg.isPublic)
         opts.access = "blob";
 
@@ -150,7 +159,29 @@ export namespace AzuriteTest {
 
       await createAzClient(arg.containerId).delete();
     },
-
+    queryScope: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Scope> => {
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      return {
+        iTwinId: metadata.itwinid,
+        iModelId: metadata.imodelid,
+        ownerGuid: metadata.ownerguid,
+      };
+    },
+    queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
+      const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
+      return {
+        containerType: metadata.containertype,
+        label: metadata.label,
+        description: metadata.description,
+        json: metadata.json ? JSON.parse(metadata.json) : undefined,
+      };
+    },
+    updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingObject): Promise<void> => {
+      const client = createAzClient(container.containerId);
+      const metadata = (await client.getProperties()).metadata!;
+      metadata.json = JSON.stringify(props);
+      await client.setMetadata(metadata);
+    },
     requestToken: async (arg: BlobContainer.RequestTokenProps): Promise<BlobContainer.TokenProps> => {
       let accessLevel = arg.accessLevel;
       switch (arg.userToken) {

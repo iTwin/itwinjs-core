@@ -12,8 +12,8 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
-  ElementMeshRequestProps, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  ElementMeshRequestProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
@@ -427,7 +427,7 @@ export abstract class IModelConnection extends IModel {
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
-   * @returns A Cartographic location
+   * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
    * @see [[cartographicFromSpatial]] if you have more than one point to convert, or you don't know whether the iModel has a GCS.
    */
@@ -453,7 +453,7 @@ export abstract class IModelConnection extends IModel {
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
-   * @returns A Cartographic location
+   * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
    * @see [[cartographicFromSpatial]] to convert multiple points at once.
    * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
@@ -463,13 +463,29 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
-   * @param spatial Coordiantes to be converted from the iModel's spatial coordinate system
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
    * @returns The `spatial` coordinates converted to cartographic coordinates, of the same length and order as the `spatial`.
    * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
    * @see [[spatialFromCartographic]] to perform the inverse conversion.
    * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial);
+  }
+
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates (WGS84 horizontal datum), of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform conversion using iModel's GCS horizontal datum
+   * @beta
+   */
+  public async wgs84CartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial, "WGS84");
+  }
+
+  /** @internal */
+  public async cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]> {
     if (this.noGcsDefined)
       return spatial.map((p) => this.spatialToCartographicFromEcef(p));
 
@@ -482,7 +498,7 @@ export abstract class IModelConnection extends IModel {
     if (spatial.length === 0)
       return [];
 
-    const geoConverter = this.geoServices.getConverter();
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS);
     assert(undefined !== geoConverter);
 
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates(spatial);
@@ -552,21 +568,33 @@ export abstract class IModelConnection extends IModel {
     if (this.noGcsDefined)
       return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
 
+    const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
+    return this.toSpatialFromGcs(geoCoords);
+  }
+
+  /** Convert geographic coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param geoCoords Coordinates to be converted are in the coordinate system described by the `datumOrGCRS` parameter.  Defaults iModel's spatial coordinate system otherwise.
+   * @param datumOrGCRS Datum name or Geographic CRS object definition to use for the conversion.
+   * @returns The `geographics` coordinates converted to spatial coordinates, of the same length and order as `geographics`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @beta
+   */
+  public async toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]> {
+
     if (!this.isGeoLocated)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (!this.isOpen)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
 
-    if (cartographic.length === 0)
+    if (geoCoords.length === 0)
       return [];
 
-    const geoConverter = this.geoServices.getConverter();
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS);
     assert(undefined !== geoConverter);
 
-    const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
-    if (coordResponse.iModelCoords.length !== cartographic.length)
+    if (coordResponse.iModelCoords.length !== geoCoords.length)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     return coordResponse.iModelCoords.map((coord) => {
