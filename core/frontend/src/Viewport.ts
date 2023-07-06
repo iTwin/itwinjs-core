@@ -546,7 +546,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   protected readonly _viewRange: ViewRect = new ViewRect();
 
-  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates. */
+  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates.
+   * @note Do not modify the ViewRect's properties.
+   */
   public abstract get viewRect(): ViewRect;
   /** @internal */
   public get isAspectRatioLocked(): boolean { return false; }
@@ -3057,7 +3059,12 @@ export class ScreenViewport extends Viewport {
     parent.appendChild(element);
   }
 
-  /** @internal */
+  /** Add a new `HTMLDivElement` as a child of this viewport's div.
+   * @param className The CSS class name to apply to the div.
+   * @param overflowHidden Whether to set `div.style.overflow` to "hidden" instead of "visible".
+   * @param z The Z index of the div relative to its sibling `HTMLElement`s.
+   * @returns the new div.
+   */
   public addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement {
     const div = document.createElement("div");
     div.className = className;
@@ -3317,7 +3324,9 @@ export class ScreenViewport extends Viewport {
   /** Get the DOMRect of the canvas for this Viewport. */
   public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
-  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
+  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height.
+   * @note Do not modify the ViewRect's properties.
+   */
   public get viewRect(): ViewRect {
     this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     return this._viewRange;
@@ -3397,7 +3406,9 @@ export class ScreenViewport extends Viewport {
       this.animateFrustumChange(opts);
   }
 
-  /** @internal */
+  /** A point in world coordinates describing an appropriate default point for a [[ViewTool]] when no more specific point is provided by the user.
+   * This point is generally managed and used by [[ViewManip]].
+   */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
@@ -3713,7 +3724,9 @@ export class OffScreenViewport extends Viewport {
     return this._isAspectRatioLocked;
   }
 
-  /** @internal */
+  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates.
+   * @note Do not modify the ViewRect's properties.
+   */
   public override get viewRect(): ViewRect {
     return this.target.viewRect;
   }

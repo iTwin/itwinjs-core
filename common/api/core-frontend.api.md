@@ -9043,7 +9043,6 @@ export class OffScreenViewport extends Viewport {
     // (undocumented)
     protected _isAspectRatioLocked: boolean;
     setRect(rect: ViewRect): void;
-    // @internal (undocumented)
     get viewRect(): ViewRect;
 }
 
@@ -11305,7 +11304,6 @@ export class ScreenViewport extends Viewport {
     protected addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
     protected addLogo(): void;
-    // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
     animateFrustumChange(options?: ViewAnimationOptions): void;
@@ -11388,7 +11386,6 @@ export class ScreenViewport extends Viewport {
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
     protected validateRenderPlan(): void;
-    // @internal (undocumented)
     get viewCmdTargetCenter(): Point3d | undefined;
     set viewCmdTargetCenter(center: Point3d | undefined);
     get viewRect(): ViewRect;
