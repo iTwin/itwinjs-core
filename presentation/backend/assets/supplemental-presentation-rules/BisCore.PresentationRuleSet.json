@@ -233,40 +233,6 @@
     },
     {
       "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "Element"
-      },
-      "relatedProperties": [
-        {
-          "propertiesSource": {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ElementOwnsUniqueAspect"
-            },
-            "direction": "Forward"
-          },
-          "handleTargetClassPolymorphically": true,
-          "relationshipMeaning": "SameInstance",
-          "skipIfDuplicate": true
-        },
-        {
-          "propertiesSource": {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ElementOwnsMultiAspects"
-            },
-            "direction": "Forward"
-          },
-          "handleTargetClassPolymorphically": true,
-          "relationshipMeaning": "SameInstance",
-          "skipIfDuplicate": true
-        }
-      ],
-      "applyOnNestedContent": true
-    },
-    {
-      "ruleType": "ContentModifier",
       "propertyCategories": [
         {
           "id": "source_information",
