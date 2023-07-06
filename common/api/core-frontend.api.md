@@ -6288,7 +6288,6 @@ export class IModelApp {
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     static getAccessToken(): Promise<AccessToken>;
-    // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
@@ -6297,7 +6296,6 @@ export class IModelApp {
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
-    // @internal
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
         parent?: HTMLElement;
         className?: string;
@@ -6314,7 +6312,6 @@ export class IModelApp {
         iconWidth?: number;
         notice?: string | HTMLElement;
     }): HTMLTableRowElement;
-    // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
@@ -6334,7 +6331,6 @@ export class IModelApp {
     // @internal
     static registerModuleEntities(moduleObj: any): void;
     static get renderSystem(): RenderSystem;
-    // @internal (undocumented)
     static requestNextAnimation(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
@@ -8713,7 +8709,7 @@ export namespace MockRender {
     }
 }
 
-// @internal
+// @public
 export interface ModalOptions {
     autoClose?: boolean;
     closeBox?: boolean;
@@ -8721,7 +8717,7 @@ export interface ModalOptions {
     width?: number;
 }
 
-// @internal
+// @public
 export interface ModalReturn {
     modal: HTMLDivElement;
     stop: (_ev: Event) => void;

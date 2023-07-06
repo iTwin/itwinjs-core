@@ -519,8 +519,8 @@ public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
 internal;MockRender
-internal;ModalOptions
-internal;ModalReturn
+public;ModalOptions
+public;ModalReturn
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
