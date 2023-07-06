@@ -124,6 +124,38 @@ export class BackgroundMapGeometry {
     return Promise.all(promises);
   }
 
+  public async dbToWGS84CartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]> {
+    if (db.length === 0)
+      return [];
+
+    const result: Cartographic[] = Array(db.length);
+    const reproject: XYAndZ[] = [];
+    const reprojectIdx: number[] = [];
+    const scratch = new Point3d();
+    for (let i = 0; i < db.length; i++) {
+      Point3d.createFrom(db[i], scratch);
+      if (this.cartesianRange.containsPoint(scratch) ) {
+        reprojectIdx.push(i);
+        reproject.push(db[i]);
+      } else {
+        result[i] = this.dbToCartographic(db[i]);
+      }
+    }
+
+    if (reproject.length === 0)
+      return result;
+
+    const reprojectPromise = this._iModel.wgs84CartographicFromSpatial(reproject);
+    return reprojectPromise.then((reprojected) =>  {
+      if (reprojected.length === reprojectIdx.length) {   // reprojected array size must match our index array, otherwise something is OFF
+        for (let i = 0; i < reprojected.length; i++) {
+          result[reprojectIdx[i]] = reprojected[i]; // Insert the reprojected values at their original index
+        }
+      }
+      return result;
+    });
+  }
+
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
     if (undefined === result)
       result = Cartographic.createZero();
@@ -158,7 +190,6 @@ export class BackgroundMapGeometry {
 
     return Promise.all(promises);
   }
-
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
