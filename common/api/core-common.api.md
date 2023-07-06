@@ -4663,7 +4663,6 @@ export abstract class IModel implements IModelProps {
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
-    // @internal (undocumented)
     toJSON(): IModelConnectionProps;
 }
 

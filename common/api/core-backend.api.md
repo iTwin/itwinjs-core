@@ -2952,7 +2952,6 @@ export abstract class IModelDb extends IModel {
     isSnapshotDb(): this is SnapshotDb;
     // @internal
     get isStandalone(): boolean;
-    // @internal
     isStandaloneDb(): this is StandaloneDb;
     // @beta
     get locks(): LockControl;

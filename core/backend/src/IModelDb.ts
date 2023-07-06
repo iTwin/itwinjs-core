@@ -420,9 +420,7 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get isStandalone(): boolean { return false; }
-  /** Type guard for instanceof [[StandaloneDb]]
-   * @internal
-   */
+  /** Type guard for instanceof [[StandaloneDb]]. */
   public isStandaloneDb(): this is StandaloneDb { return this.isStandalone; }
 
   /** Return `true` if the underlying nativeDb is open and valid.
