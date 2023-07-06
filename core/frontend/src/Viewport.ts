@@ -261,7 +261,8 @@ export interface MapLayerScaleRangeVisibility {
  *
  * The [[Viewport.onDisplayStyleChanged]] event will be invoked exactly once, when the second frame is rendered.
  *
- * @see [[ViewManager]]
+ * @see [[ScreenViewport]] for a viewport that can render onto the screen.
+ * @see [[OffScreenViewport]] for a viewport that can render into an off-screen buffer.
  * @public
  * @extensions
  */
@@ -1086,6 +1087,12 @@ export abstract class Viewport implements IDisposable, TileUser {
   public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
 
   private _frameStatsCollector = new FrameStatsCollector(this.onFrameStats);
+
+  /** A function invoked once, after the constructor, to initialize the viewport's state.
+   * Subclasses can use this perform additional initialization, as the viewport's constructor is not directly invokable.
+   */
+  protected initialize(): void {
+  }
 
   /** @internal */
   protected constructor(target: RenderTarget) {
@@ -2895,6 +2902,8 @@ export abstract class Viewport implements IDisposable, TileUser {
  *    5a. If it is currently registered with the ViewManager, it is dropped and disposed of via ViewManager.dropViewport()
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
+ *
+ * @see [[ScreenViewport.create]] to create a ScreenViewport.
  * @public
  * @extensions
  */
@@ -2979,6 +2988,8 @@ export class ScreenViewport extends Viewport {
 
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
+    vp.initialize();
+
     vp.changeView(view);
     return vp;
   }
@@ -3658,17 +3669,24 @@ export interface OffScreenViewportOptions {
  * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
+ * @see [[OffScreenViewport.create]] to create an off-screen viewport.
  * @public
  * @extensions
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
-  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
   private _drawingToSheetTransform?: Transform;
+
+  /** @internal */
+  protected constructor(target: RenderTarget) {
+    super(target);
+  }
+
   /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
   public get drawingToSheetTransform(): Transform | undefined {
     return this._drawingToSheetTransform;
   }
+
   public set drawingToSheetTransform(transform: Transform | undefined) {
     this.detachFromView();
     this._drawingToSheetTransform = transform;
@@ -3685,6 +3703,8 @@ export class OffScreenViewport extends Viewport {
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;
+
+    vp.initialize();
     return vp;
   }
 

@@ -9033,6 +9033,8 @@ export class OffScreenTarget extends Target {
 
 // @public
 export class OffScreenViewport extends Viewport {
+    // @internal
+    protected constructor(target: RenderTarget);
     // (undocumented)
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
@@ -15411,6 +15413,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
+    protected initialize(): void;
     invalidateController(): void;
     invalidateDecorations(): void;
     invalidateRenderPlan(): void;
