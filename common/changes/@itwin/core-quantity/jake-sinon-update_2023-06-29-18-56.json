@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Upgrade sinon to 15.0.4",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

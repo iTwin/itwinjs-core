@@ -1264,7 +1264,7 @@ export abstract class IModelDb extends IModel {
 
   /** Request geometry stream information from an element in binary format instead of json.
    * @returns IModelStatus.Success if successful
-   * @alpha
+   * @beta
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
