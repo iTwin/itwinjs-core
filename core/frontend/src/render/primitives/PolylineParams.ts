@@ -27,6 +27,7 @@ const enum PolylineParam { // eslint-disable-line no-restricted-syntax
   kNoneAdjustWeight = 32 * 3,
 }
 
+/** @internal */
 export function tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined {
   const tesselator = PolylineTesselator.fromMesh(args);
   return tesselator?.tesselate();
@@ -212,6 +213,7 @@ export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dLis
   return tesselator.tesselate();
 }
 
+/** @internal */
 export function createPolylineParams(args: PolylineArgs): PolylineParams | undefined {
   assert(!args.flags.isDisjoint);
   const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
@@ -232,6 +234,7 @@ export function createPolylineParams(args: PolylineArgs): PolylineParams | undef
   };
 }
 
+/** @internal */
 export function wantJointTriangles(weight: number, is2d: boolean): boolean {
   // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
   const jointWidthThreshold = 3;

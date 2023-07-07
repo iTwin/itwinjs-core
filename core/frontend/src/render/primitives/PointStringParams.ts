@@ -13,6 +13,7 @@ import { PointStringParams } from "../../common/render/primitives/PointStringPar
 import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { IModelApp } from "../../IModelApp";
 
+/** @internal */
 export function createPointStringParams(args: PolylineArgs): PointStringParams | undefined {
   if (!args.flags.isDisjoint)
     return undefined;

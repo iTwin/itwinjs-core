@@ -21,7 +21,7 @@ import { MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common/r
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
-/* Information needed to draw a set of indexed polylines using a shared vertex buffer.
+/** Information needed to draw a set of indexed polylines using a shared vertex buffer.
  * @internal
  */
 export interface PolylineArgs {
@@ -98,7 +98,7 @@ export class MeshArgsEdges {
   public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
 }
 
-/* A carrier of information needed to describe a triangle mesh and its edges.
+/** A carrier of information needed to describe a triangle mesh and its edges.
  * @internal
  */
 export interface MeshArgs {

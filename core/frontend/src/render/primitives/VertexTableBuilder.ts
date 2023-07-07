@@ -20,6 +20,7 @@ import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
 
+/** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
   const builder = createMeshBuilder(args);
   const vertices = builder.build(args.colors, args.features, maxDimension);
@@ -46,7 +47,9 @@ export function createMeshParams(args: MeshArgs, maxDimension: number): MeshPara
   };
 }
 
-/** Builds a VertexTable from some data type supplying the vertex data. */
+/** Builds a VertexTable from some data type supplying the vertex data.
+ * @internal
+ */
 export abstract class VertexTableBuilder {
   public data?: Uint8Array;
   private _curIndex: number = 0;
