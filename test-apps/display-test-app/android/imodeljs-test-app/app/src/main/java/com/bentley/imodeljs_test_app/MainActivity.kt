@@ -190,6 +190,9 @@ class MainActivity : AppCompatActivity() {
                     args += "&iModelName=${Uri.encode(fullPath.toString())}"
             }
         }
+        args = addConfigArg("IMJS_BING_MAPS_KEY", "bingMapsKey", args)
+        args = addConfigArg("IMJS_MAPBOX_ACCESS_TOKEN", "mapBoxKey", args)
+        args = addConfigArg("IMJS_CESIUM_ION_KEY", "cesiumIonKey", args)
 
         if (env.has("IMJS_IGNORE_CACHE"))
             args += "&ignoreCache=true"
@@ -203,6 +206,11 @@ class MainActivity : AppCompatActivity() {
         } catch (ex: Exception) {
             JSONObject()
         }
+    }
+
+    private fun addConfigArg(envName: String, configName: String, args: String): String {
+        val value = env.optStringNotEmpty(envName) ?: return args
+        return args + "&${configName}=${value}"
     }
 
     override fun onResume() {
