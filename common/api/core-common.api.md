@@ -1502,24 +1502,16 @@ export class ColorDef {
 // @public
 export type ColorDefProps = number;
 
-// @internal (undocumented)
+// @public
 export class ColorIndex {
     constructor();
-    // (undocumented)
     get hasAlpha(): boolean;
-    // (undocumented)
     initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
-    // (undocumented)
     initUniform(color: ColorDef | number): void;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     get nonUniform(): NonUniformColor | undefined;
-    // (undocumented)
     get numColors(): number;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     get uniform(): ColorDef | undefined;
 }
 
@@ -3088,29 +3080,20 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal (undocumented)
+// @public
 export class FeatureIndex {
-    // (undocumented)
     featureID: number;
-    // (undocumented)
     featureIDs?: Uint32Array;
-    // (undocumented)
     get isEmpty(): boolean;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     type: FeatureIndexType;
 }
 
-// @internal (undocumented)
+// @public
 export enum FeatureIndexType {
-    // (undocumented)
     Empty = 0,
-    // (undocumented)
     NonUniform = 2,
-    // (undocumented)
     Uniform = 1
 }
 
@@ -5812,14 +5795,11 @@ export class NoContentError extends IModelError {
     constructor();
 }
 
-// @internal (undocumented)
+// @public
 export class NonUniformColor {
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
-    // (undocumented)
     readonly colors: Uint32Array;
-    // (undocumented)
     readonly indices: Uint16Array;
-    // (undocumented)
     readonly isOpaque: boolean;
 }
 
