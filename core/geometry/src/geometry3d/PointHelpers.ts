@@ -490,7 +490,7 @@ export class Point4dArray {
       xyzw[i + 3] = xyzw1.w;
     }
   }
-  /** test for near equality of all corresponding numeric values, treated as coordinates. */
+  /** Test arrays of the same type for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -504,7 +504,6 @@ export class Point4dArray {
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
       }
-      return true;
     }
     // if both are null it is equal, otherwise unequal
     return (dataA === undefined && dataB === undefined);
@@ -723,7 +722,7 @@ export class Point3dArray {
       xyz[i + 2] = xyz1.z;
     }
   }
-  /** Apply Geometry.isAlmostEqual to corresponding coordinates */
+  /** Test arrays of the same type for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -737,7 +736,6 @@ export class Point3dArray {
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
       }
-      return true;
     }
     // if both are null it is equal, otherwise unequal
     return (dataA === undefined && dataB === undefined);

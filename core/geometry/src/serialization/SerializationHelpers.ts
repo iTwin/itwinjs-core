@@ -6,7 +6,6 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { assert } from "@itwin/core-bentley";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -46,6 +45,22 @@ export namespace SerializationHelpers {
     return { poles, dim, params: { numPoles, order, knots } };
   }
 
+  /** Clone data */
+  export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData {
+    return {
+      poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy2d(source.poles),
+      dim: source.dim,
+      weights: source.weights ? source.weights.slice() : undefined,
+      params: {
+        numPoles: source.params.numPoles,
+        order: source.params.order,
+        closed: source.params.closed,
+        knots: source.params.knots.slice(),
+        wrapMode: source.params.wrapMode,
+      }
+     }
+  }
+
   /** Constructor with required data. Inputs are captured, not copied. */
   export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
     return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
@@ -68,10 +83,8 @@ export namespace SerializationHelpers {
         nCoordPerPole = source.poles[0].length;
       nPoleCoords = poleDimProduct = nPole * nCoordPerPole;
     }
-    if (0 === poleDimProduct || poleDimProduct > nPoleCoords || nCoordPerPole !== source.dim) {
-      assert(!"copyBSplineCurveDataPoles: invalid pole input");
+    if (0 === poleDimProduct || poleDimProduct > nPoleCoords || nCoordPerPole !== source.dim)
       return {};
-    }
 
     let nWeight = 0;
     let nWeightCoords = 0;
@@ -85,10 +98,8 @@ export namespace SerializationHelpers {
         nWeight = source.weights.length;
         nWeightCoords = weightDimProduct = nWeight;
       }
-      if (0 === weightDimProduct || weightDimProduct > nWeightCoords || nWeight !== nPole) {
-        assert(!"copyBSplineCurveDataPoles: invalid weight input");
+      if (0 === weightDimProduct || weightDimProduct > nWeightCoords || nWeight !== nPole)
         return {};
-      }
     }
 
     // convert variant source to structured number array
@@ -124,10 +135,8 @@ export namespace SerializationHelpers {
         nCoordPerPole = source.poles[0][0].length;
       nCoords = poleDimProduct = nPoleRow * nPolePerRow * nCoordPerPole;
     }
-    if (0 === poleDimProduct || poleDimProduct > nCoords || nCoordPerPole !== source.dim) {
-      assert(!"copyBSplineSurfaceDataPoles: invalid pole input");
+    if (0 === poleDimProduct || poleDimProduct > nCoords || nCoordPerPole !== source.dim)
       return {};
-    }
 
     let nWeightRow = 0;
     let nWeightPerRow = 0;
@@ -145,10 +154,8 @@ export namespace SerializationHelpers {
           nWeightPerRow = source.weights[0].length;
         nWeightCoords = weightDimProduct = nWeightRow * nWeightPerRow;
       }
-      if (0 === weightDimProduct || weightDimProduct > nWeightCoords || nWeightRow !== nPoleRow || nWeightPerRow !== nPolePerRow) {
-        assert(!"copyBSplineSurfaceDataPoles: invalid weight input");
+      if (0 === weightDimProduct || weightDimProduct > nWeightCoords || nWeightRow !== nPoleRow || nWeightPerRow !== nPolePerRow)
         return {};
-      }
     }
 
     // convert variant source to structured number array

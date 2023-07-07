@@ -101,13 +101,13 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return result;
   }
 
-  /** Create a bspline with uniform knots.
+  /** Create a homogeneous B-spline curve with uniform knots.
    * * Control points may be supplied as:
    *   * array of Point4d, with weight already multiplied into the `[wx,wy,wz,w]`
    *   * array of Point3d, with implied weight 1.
-   *   * Float64Array, blocked as xyzw, i.e. 4 doubles per control point.
+   *   * Float64Array, blocked as [wx,wy,wz,w], i.e. 4 numbers per control point.
    * @param controlPoints pole data in array form as noted above.
-   * @param order  curve order (1 more than degree)
+   * @param order curve order (1 more than degree)
    */
   public static createUniformKnots(controlPoints: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined {
     const numPoles = (controlPoints instanceof Float64Array) ? controlPoints.length / 4 : controlPoints.length;
@@ -136,6 +136,72 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       const numQ = controlPoints.length;
       for (let k = 0; k < numQ; k++)
         curve._bcurve.packedData[k] = controlPoints[k];
+    }
+    return curve;
+  }
+
+  /** Create a smoothly closed homogeneous B-spline curve with uniform knots.
+   * * Note that the curve does not start at the first pole!
+   * * Control points (poles) may be supplied as:
+   *   * array of Point4d, with weight already multiplied into the `[wx,wy,wz,w]`
+   *   * array of Point3d, with implied weight 1.
+   *   * Float64Array, blocked as [wx,wy,wz,w], i.e. 4 numbers per control point.
+   * @param poles control point data in array form as noted above.
+   * @param order curve order (1 more than degree)
+   */
+  public static createPeriodicUniformKnots(poles: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined {
+    if (order < 2)
+      return undefined;
+
+    let numPoles = poles instanceof Float64Array ? poles.length / 4 : poles.length;
+    if (numPoles < 2)
+      return undefined;
+
+    const is4d = poles[0] instanceof Point4d;
+    const startPoint = Point4d.createZero();
+    const endPoint = Point4d.createZero();
+    let hasClosurePoint = false;
+    do {
+      if (poles instanceof Float64Array) {
+        startPoint.set(poles[0], poles[1], poles[2], poles[3]);
+        endPoint.set(poles[4 * numPoles - 4], poles[4 * numPoles - 3], poles[4 * numPoles - 2], poles[4 * numPoles - 1]);
+      } else {
+        startPoint.set(poles[0].x, poles[0].y, poles[0].z, is4d ? (poles[0] as Point4d).w : 1.0);
+        endPoint.set(poles[numPoles - 1].x, poles[numPoles - 1].y, poles[numPoles - 1].z, is4d ? (poles[numPoles - 1] as Point4d).w : 1.0);
+      }
+      if (hasClosurePoint = startPoint.isAlmostEqual(endPoint))
+        --numPoles;   // remove wraparound pole if found
+    } while (hasClosurePoint && numPoles > 1);
+
+    if (numPoles < order)
+      return undefined;
+
+    const degree = order - 1;
+    const numIntervals = numPoles;
+    const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
+    knots.wrappable = BSplineWrapMode.OpenByAddingControlPoints;
+    // append degree wraparound poles
+    const curve = new BSplineCurve3dH(numPoles + degree, order, knots);
+    if (poles instanceof Float64Array) {
+      let i = 0;
+      for (let j = 0; j < 4 * numPoles; j++)
+        curve._bcurve.packedData[i++] = poles[j];
+      for (let j = 0; j < 4 * degree; j++)
+        curve._bcurve.packedData[i++] = poles[j];
+    } else {
+      let i = 0;
+      for (let j = 0; j < numPoles; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+        curve._bcurve.packedData[i++] = is4d ? (poles[j] as Point4d).w : 1.0;
+      }
+      for (let j = 0; j < degree; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+        curve._bcurve.packedData[i++] = is4d ? (poles[j] as Point4d).w : 1.0;
+      }
     }
     return curve;
   }

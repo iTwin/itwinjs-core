@@ -893,6 +893,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
         xyz: Float64Array;
         weights: Float64Array;
     } | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined;
+    static createPeriodicUniformKnots(poles: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined;
     static createUniformKnots(controlPoints: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;

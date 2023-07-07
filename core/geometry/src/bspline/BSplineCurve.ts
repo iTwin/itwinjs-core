@@ -473,6 +473,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       return undefined;
 
     let numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
+    if (numPoles < 2)
+      return undefined;
+      
     const startPoint = Point3d.createZero();
     const endPoint = Point3d.createZero();
     let hasClosurePoint = false;
