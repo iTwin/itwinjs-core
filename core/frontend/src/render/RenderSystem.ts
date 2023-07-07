@@ -369,6 +369,10 @@ export abstract class RenderSystem implements IDisposable {
     return this.createMesh(params, instances);
   }
 
+  /** Create a graphic from a low-level representation of a set of line strings.
+   * @param args A description of the line strings.
+   * @param instances Repetitions of the line strings to be drawn.
+   */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;

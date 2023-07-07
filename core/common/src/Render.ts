@@ -76,7 +76,16 @@ export class PolylineFlags {
   }
 }
 
-/** @internal */
+/** Describes the vertex indices of a single line within a [PolylineArgs]($frontend).
+ * The indices represent either a line string as a connected series of points, or a point string as a set of disconnected points, depending
+ * on the [[PolylineFlags.isDisjoint]] value of [PolylinArgs.flags]($frontend).
+ * @public
+ */
+export type PolylineIndices = number[];
+
+/** This is dumb (ported from C++ where it was a pointer and a length) - all you need in JS is number[].
+ * @internal
+ */
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;

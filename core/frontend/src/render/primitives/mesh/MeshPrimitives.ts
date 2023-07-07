@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
+  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, PolylineIndices, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -21,21 +21,34 @@ import { MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common/r
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
-/** Information needed to draw a set of indexed polylines using a shared vertex buffer.
- * @internal
+/** Arguments supplied to [[RenderSystem.createIndexedPolylines]] describing a set of "polylines" (i.e., line strings or point strings).
+ * Line strings consist of two or more points, connected by segments between them with a width specified in pixels.
+ * Point strings consist of one or more disconnected points, drawn as dots with a radius specified in pixels.
+ * @public
  */
 export interface PolylineArgs {
+  /** The color(s) of the vertices. */
   colors: ColorIndex;
+  /** The [Feature]($common)(s) contained in the [[polylines]]. */
   features: FeatureIndex;
+  /** The width of the lines or radius of the points, in pixels. */
   width: number;
+  /** The pixel pattern to apply to the line strings. */
   linePixels: LinePixels;
+  /** Flags describing how to draw the [[polylines]]. */
   flags: PolylineFlags;
-  points: QPoint3dList | Omit<Point3dList, "add">;
+  /** The positions of the [[polylines]]' vertices. If the positions are not quantized, they must include
+   * a precomputed [Range3d]($core-geometry) encompassing all of the points.
+   */
+  points: QPoint3dList | (Array<Point3d> & { range: Range3d });
+  /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
+  // ###TODO polylines: PolylineIndices[];
   polylines: PolylineData[];
 }
 
-/** @internal */
+/** @public */
 export namespace PolylineArgs {
+  /** @internal */
   export function fromMesh(mesh: Mesh): PolylineArgs | undefined {
     if (!mesh.polylines || mesh.polylines.length === 0)
       return undefined;
@@ -117,9 +130,9 @@ export interface MeshArgs {
    * Normal vectors are required if the mesh is to be lit or have [ThematicDisplay]($common) applied to it.
    */
   normals?: OctEncodedNormal[];
-  /** The color(s) associated with each mesh vertex. */
+  /** The color(s) of the mesh. */
   colors: ColorIndex;
-  /** The feature(s) associated with each mesh vertex. */
+  /** The [Feature]($common)(s) contained in the mesh. */
   features: FeatureIndex;
   /** If [[isPlanar]] is `true`, describes how fill is applied to planar region interiors in wireframe mode.
    * Default: [FillFlags.ByView]($common).
