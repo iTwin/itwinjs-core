@@ -11,13 +11,18 @@ import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, 
 import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
-/** @alpha */
+/** Command ids for built in EditCommandIpc classes.
+ * @beta
+ */
 export const editorBuiltInCmdIds = {
   cmdBasicManipulation: "basicManipulation",
+  /** @alpha */
   cmdSolidModeling: "solidModeling",
 };
 
-/** @alpha */
+/** Optional criteria for requesting a GeometryStream from the backend.
+ * @beta
+ */
 export interface FlatBufferGeometryFilter {
   /** Optional limit on number of displayable entries to accept */
   maxDisplayable?: number;
@@ -33,7 +38,9 @@ export interface FlatBufferGeometryFilter {
   geometry?: { curves: boolean, surfaces: boolean, solids: boolean };
 }
 
-/** @alpha */
+/** Interface for a backend EditCommand command that provides basic creation and modification operations.
+ * @beta
+ */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
   transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
@@ -42,7 +49,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
    * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
-   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to insert the element
    */
   insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
@@ -50,7 +57,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
    * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]] or [[GeometryPartProps.elementGeometryBuilderParams]].
-   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to insert the element
    */
   insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
@@ -58,7 +65,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
    * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
-   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to update the element
    */
   updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
@@ -68,7 +75,7 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * For example, a tool may only be interested in a GeometryStream that stores a single CurveCollection.
    * @param id Element id of an existing [GeometricElement]($backend) or [GeometryPart]($backend).
    * @param filter Optional criteria for accepting a GeometryStream.
-   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
+   * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($common)
    * @throws [[IModelError]] if unable to query the element
    */
   requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;

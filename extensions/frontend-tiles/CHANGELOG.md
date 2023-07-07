@@ -1,6 +1,14 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Wed, 21 Jun 2023 22:04:43 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jul 2023 15:28:41 GMT and should not be manually modified.
+
+## 4.0.3
+Mon, 03 Jul 2023 15:28:41 GMT
+
+### Updates
+
+- Promote APIs to beta.
+- Provide functions for obtaining URLs from mesh export service.
 
 ## 4.0.2
 Wed, 21 Jun 2023 22:04:43 GMT
