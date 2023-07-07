@@ -355,6 +355,11 @@ export abstract class RenderSystem implements IDisposable {
     return undefined;
   }
 
+  /** Create a graphic from a low-level representation of a triangle mesh.
+   * @param args A description of the mesh.
+   * @param instances Repetitions of the mesh to be drawn.
+   * @see [[createGraphic]] to obtain a [[GraphicBuilder]] that can assemble a mesh from higher-level primitives.
+   */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;

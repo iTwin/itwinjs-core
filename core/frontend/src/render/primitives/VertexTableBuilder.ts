@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../../common/render/primitives/AuxChannelTable";
 import { computeDimensions, VertexTable } from "../../common/render/primitives/VertexTable";
@@ -30,7 +30,7 @@ export function createMeshParams(args: MeshArgs, maxDimension: number): MeshPara
   const surface: SurfaceParams = {
     type: builder.type,
     indices: surfaceIndices,
-    fillFlags: args.fillFlags,
+    fillFlags: args.fillFlags ?? FillFlags.ByView,
     hasBakedLighting: true === args.hasBakedLighting,
     textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
     material: createSurfaceMaterial(args.material),
