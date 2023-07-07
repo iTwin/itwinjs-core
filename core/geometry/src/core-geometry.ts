@@ -255,3 +255,6 @@ export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";
 export { BentleyGeometryFlatBuffer } from "./serialization/BentleyGeometryFlatBuffer";
+
+// temporary export for internal access pending exposure of this functionality via public API
+export { MultiChainCollector } from "./curve/internalContexts/MultiChainCollector";

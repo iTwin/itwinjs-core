@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken } from "@itwin/core-bentley";
-import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ExternalSourceProps, IModel, PhysicalElementProps, RepositoryLinkProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelTransformer } from "@itwin/imodel-transformer";
@@ -47,7 +47,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
   const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
 
   // create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
-  const masterLinkRepoId = new RepositoryLink({
+  const masterLinkRepoId = branchDb.constructEntity<RepositoryLink, RepositoryLinkProps>({
     classFullName: RepositoryLink.classFullName,
     code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, "example-code-value"),
     model: IModelDb.repositoryModelId,
@@ -55,16 +55,16 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     format: "iModel",
     repositoryGuid: masterDb.iModelId,
     description: "master iModel repository",
-  }, branchDb).insert();
+  }).insert();
 
-  const masterExternalSourceId = new ExternalSource({
+  const masterExternalSourceId = branchDb.constructEntity<ExternalSource, ExternalSourceProps>({
     classFullName: ExternalSource.classFullName,
     model: IModelDb.rootSubjectId,
     code: Code.createEmpty(),
     repository: new ExternalSourceIsInRepository(masterLinkRepoId),
     connectorName: "iModel Transformer",
     connectorVersion: require("@itwin/imodel-transformer/package.json").version,
-  }, branchDb).insert();
+  }).insert();
 
   // initialize the branch provenance
   const branchInitializer = new IModelTransformer(masterDb, branchDb, {

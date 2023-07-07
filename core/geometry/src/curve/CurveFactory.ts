@@ -10,16 +10,28 @@
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolylineOps } from "../geometry3d/PolylineOps";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY } from "../geometry3d/XYZProps";
+import { SmallSystem } from "../numerics/Polynomials";
+import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { Cone } from "../solid/Cone";
+import { RuledSweep } from "../solid/RuledSweep";
 import { TorusPipe } from "../solid/TorusPipe";
 import { Arc3d, ArcBlendData } from "./Arc3d";
+import { AnyCurve } from "./CurveChain";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
@@ -27,15 +39,57 @@ import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
-import { Angle } from "../geometry3d/Angle";
-import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
-import { Transform } from "../geometry3d/Transform";
 import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { SmallSystem } from "../numerics/Polynomials";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Ray3d } from "../geometry3d/Ray3d";
+import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
+import { StrokeOptions } from "./StrokeOptions";
+
+// cspell:word CCWXY
+
+/**
+ * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them, as returned by [CurveFactory.createMiteredSweepSections].
+ * @public
+ */
+export interface SectionSequenceWithPlanes {
+  /** the plane of each section */
+  planes: Plane3dByOriginAndUnitNormal[];
+  /** section curve projected onto the corresponding plane */
+  sections: AnyCurve[];
+  /**
+   * Optional `RuledSweep` generated from the sections.
+   * * The `RuledSweep` and sections array refer to the same section objects.
+   */
+  ruledSweep?: RuledSweep;
+  /** Optional mesh generated from the `RuledSweep` generated from the sections. */
+  mesh?: IndexedPolyface;
+}
+
+/**
+ * Enumeration of geometric output for [CurveFactory.createMiteredSweepSections].
+ * @public
+ */
+export enum MiteredSweepOutputSelect {
+  /** Output only the parallel arrays of planes and sections. */
+  Sections = 0,
+  /** Output planes and sections, as well as the assembled ruled sweep. */
+  AlsoRuledSweep = 1,
+  /** Output planes and sections, as well as the assembled ruled sweep and its stroked mesh. */
+  AlsoMesh = 2,
+}
+
+/**
+ * Interface bundling options for [CurveFactory.createMiteredSweepSections].
+ * @public
+ */
+export interface MiteredSweepOptions {
+  /** Whether first and last planes are averaged and equated when the centerline is physically closed. Default value is `false`. */
+  wrapIfPhysicallyClosed?: boolean;
+  /** Whether to output sections only, or sections plus optional geometry constructed from them. Default value is `MiteredSweepOutputSelect.Sections`. */
+  outputSelect?: MiteredSweepOutputSelect;
+  /** How to stroke the ruled sweep if outputting a mesh. If undefined, default stroke options are used. */
+  strokeOptions?: StrokeOptions;
+  /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
+  capped?: boolean;
+}
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -351,6 +405,64 @@ export class CurveFactory {
       }
     }
     return arcs;
+  }
+
+  /**
+   * Sweep the initialSection along each segment of the centerLine until it hits the bisector plane at the next vertex.
+   * * The caller should place the initialSection on a plane perpendicular to the first edge.
+   *   * This plane is commonly (but not necessarily) through the start point itself.
+   *   * If the geometry is not "on a perpendicular plane", the output geometry will still be flattened onto the various planes.
+   * * In the "open path" case (i.e when wrapIfPhysicallyClosed is false or the path does not have matched first and last points)
+   *       the first/last output plane will be at the start/end of the first/last edge and on a perpendicular plane.
+   * * In the "closed path" case, the output plane for the first and last point is the bisector of the start and end planes from the "open path" case,
+   *    and the first/last section geometry may be different from `initialSection`.
+   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector planes.
+   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve
+   * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the first segment of the centerline.
+   * @param options options for computation and output
+   * @return array of sections, starting with `initialSection` projected along the first edge to the first plane.
+   */
+  public static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined {
+    const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
+    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
+    if (planes !== undefined && planes.length > 1) {
+      // Projection to target plane, constructing sweep direction from two given planes.
+      // If successful, push the target plane and swept section to the output arrays and return the swept section.
+      // If unsuccessful, leave the output arrays alone and return the input section.
+      const doSweepToPlane = function (edgePlane0: Plane3dByOriginAndUnitNormal, edgePlane1: Plane3dByOriginAndUnitNormal,
+        targetPlane: Plane3dByOriginAndUnitNormal,
+        section: AnyCurve) {
+        const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
+        const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
+        if (transform === undefined)
+          return section;
+        const section1 = section.cloneTransformed(transform);
+        if (section1 === undefined)
+          return section;
+        sectionData.planes.push(targetPlane);
+        sectionData.sections.push(section1);
+        return section1;
+      };
+
+      let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], initialSection);
+      for (let i = 1; i < planes.length; i++) {
+        currentSection = doSweepToPlane(planes[i - 1], planes[i], planes[i], currentSection);
+      }
+
+      if (options.outputSelect) {
+        const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
+        if (ruledSweep) {
+          sectionData.ruledSweep = ruledSweep;
+          if (MiteredSweepOutputSelect.AlsoMesh === options.outputSelect) {
+            const builder = PolyfaceBuilder.create(options.strokeOptions);
+            builder.addRuledSweep(ruledSweep);
+            sectionData.mesh = builder.claimPolyface();
+          }
+        }
+      }
+      return sectionData;
+    }
+    return undefined;
   }
 
   /**

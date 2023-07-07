@@ -38,10 +38,14 @@ export class GeometryCoreTestIO {
 
   /** wrapper for console.log */
   public static consoleLog(message?: any, ...optionalParams: any[]): void {
-    if (!this.enableConsole)
-      return;
+    if (this.enableConsole)
+      console.log(message, ...optionalParams); // eslint-disable-line no-console
+  }
+  /** wrapper for console.log -- bypasses enableConsole */
+  public static consoleLogGo(message?: any, ...optionalParams: any[]): void {
     console.log(message, ...optionalParams); // eslint-disable-line no-console
   }
+
   /** wrapper for console.time */
   public static consoleTime(label?: string): void {
     if (!this.enableConsole)

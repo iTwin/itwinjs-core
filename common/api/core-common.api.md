@@ -2061,7 +2061,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }, options?: DisplayStyleSettingsOptions);
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
-    // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
     get environment(): Environment;
@@ -2580,7 +2579,7 @@ export interface ElementAspectProps extends EntityProps {
     element: RelatedElementProps;
 }
 
-// @alpha
+// @beta
 export namespace ElementGeometry {
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
@@ -2666,13 +2665,13 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryBuilderParams {
     entryArray: ElementGeometryDataEntry[];
     viewIndependent?: boolean;
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryBuilderParamsForPart {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
@@ -2693,10 +2692,10 @@ export interface ElementGeometryDataEntry {
     opcode: ElementGeometryOpcode;
 }
 
-// @alpha
+// @beta
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
-// @alpha
+// @beta
 export interface ElementGeometryInfo {
     bbox?: Float64Array;
     brepsPresent?: boolean;
@@ -2728,7 +2727,7 @@ export enum ElementGeometryOpcode {
     TextString = 22
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryRequest {
     angleTol?: number;
     chordTol?: number;
@@ -3600,7 +3599,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
@@ -3709,7 +3708,7 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -4720,6 +4719,8 @@ export interface IModelProps {
 
 // @internal
 export abstract class IModelReadRpcInterface extends RpcInterface {
+    // (undocumented)
+    callViewStore(_iModelToken: IModelRpcProps, _version: string, _forWrite: boolean, _methodName: string, ..._args: any[]): Promise<any>;
     // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
@@ -7810,6 +7811,8 @@ export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
     readonly activityId: GuidString;
     readonly rpcMethod?: string;
+    // (undocumented)
+    readonly user?: string;
 }
 
 // @internal (undocumented)
@@ -8580,6 +8583,8 @@ export interface SerializedRpcActivity {
     id: string;
     // (undocumented)
     sessionId: string;
+    // (undocumented)
+    user?: string;
 }
 
 // @internal
@@ -8720,7 +8725,6 @@ export class SkyCube extends SkyBox {
     readonly images: SkyCubeProps;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 
@@ -8783,7 +8787,6 @@ export class SkySphere extends SkyBox {
     readonly image: TextureImageSpec;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 
@@ -9009,7 +9012,7 @@ export interface SpatialClassifiersContainer {
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
-    modelSelectorId: Id64String;
+    modelSelectorId: ViewIdString;
 }
 
 // @public
@@ -10081,11 +10084,11 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
     // (undocumented)
-    categorySelectorId: Id64String;
+    categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
     // (undocumented)
-    displayStyleId: Id64String;
+    displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {
         viewDetails?: ViewDetailsProps;
@@ -10232,6 +10235,9 @@ export class ViewFlags {
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 // @public
+export type ViewIdString = Id64String;
+
+// @public
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
@@ -10240,6 +10246,11 @@ export interface ViewQueryParams extends EntityQueryParams {
 // @public
 export interface ViewStateLoadProps {
     displayStyle?: DisplayStyleLoadProps;
+    // @beta
+    queryBindings?: {
+        modelSelector?: ViewStoreRpc.QueryBindings;
+        categorySelector?: ViewStoreRpc.QueryBindings;
+    };
 }
 
 // @public
@@ -10256,6 +10267,245 @@ export interface ViewStateProps {
     sheetProps?: SheetProps;
     // (undocumented)
     viewDefinitionProps: ViewDefinitionProps;
+}
+
+// @beta
+export namespace ViewStoreRpc {
+    const // @internal
+    version: "4.0.0";
+    export interface AddViewArgs {
+        readonly categorySelectorProps?: CategorySelectorProps;
+        readonly displayStyleProps?: DisplayStyleProps;
+        // (undocumented)
+        readonly group?: IdString;
+        // (undocumented)
+        readonly isPrivate?: boolean;
+        readonly modelSelectorProps?: ModelSelectorProps;
+        // (undocumented)
+        readonly owner?: OwnerName;
+        // (undocumented)
+        readonly tags?: TagName[];
+        readonly thumbnail?: ThumbnailProps;
+        readonly viewDefinition: ViewDefinitionProps;
+    }
+    export type ClassFullName = string;
+    // @public
+    export type IdString = string;
+    export type NameOrId = {
+        name: string;
+        id?: never;
+    } | {
+        id: IdString;
+        name?: never;
+    };
+    export type OwnerName = string;
+    export interface QueryBindings {
+        // (undocumented)
+        bindings?: any[] | object;
+    }
+    export interface QueryParams {
+        readonly classNames?: ClassFullName[];
+        // (undocumented)
+        readonly group?: IdString;
+        readonly limit?: number;
+        readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+        readonly nameSearch?: string;
+        readonly offset?: number;
+        // (undocumented)
+        readonly owner?: OwnerName;
+        readonly tags?: TagName[];
+    }
+    export interface Reader {
+        findViewsByOwner(args: {
+            owner: OwnerName;
+        }): Promise<ViewInfo[]>;
+        getCategorySelector(args: NameOrId & QueryBindings): Promise<CategorySelectorProps>;
+        getDisplayStyle(args: NameOrId & {
+            opts?: DisplayStyleLoadProps;
+        }): Promise<DisplayStyleProps>;
+        getModelSelector(args: NameOrId & QueryBindings): Promise<ModelSelectorProps>;
+        getThumbnail(args: {
+            viewId: IdString;
+        }): Promise<ThumbnailProps | undefined>;
+        getTimeline(args: NameOrId): Promise<RenderTimelineProps>;
+        getViewByName(arg: {
+            name: ViewName;
+            groupId?: IdString;
+        }): Promise<ViewInfo | undefined>;
+        getViewDefinition(args: {
+            viewId: IdString;
+        }): Promise<ViewDefinitionProps>;
+        getViewGroupInfo(args: {
+            groupId?: IdString;
+        }): Promise<ViewGroupInfo | undefined>;
+        getViewGroups(args: {
+            parent?: ViewGroupSpec;
+        }): Promise<{
+            id: IdString;
+            name: string;
+        }[]>;
+        getViewInfo(args: {
+            viewId: IdString;
+        }): Promise<ViewInfo | undefined>;
+        queryViews(queryParams: QueryParams): Promise<ViewInfo[]>;
+    }
+    const isViewStoreId: (id?: ViewIdString) => boolean;
+    export type SelectorProps = {
+        query: SelectorQuery;
+        ids?: never;
+    } | {
+        query?: never;
+        ids: Id64Array | CompressedId64Set;
+    };
+    export interface SelectorQuery {
+        adds?: Id64Array | CompressedId64Set;
+        from: ClassFullName;
+        only?: boolean;
+        removes?: Id64Array | CompressedId64Set;
+        where?: string;
+    }
+    export type TagName = string;
+    export interface ViewGroupInfo {
+        defaultView?: IdString;
+        id: IdString;
+        name: ViewGroupName;
+        parent?: IdString;
+    }
+    export type ViewGroupName = string;
+    export type ViewGroupPath = string;
+    export type ViewGroupSpec = IdString | ViewGroupPath;
+    export interface ViewInfo {
+        categorySelectorId: IdString;
+        className: ClassFullName;
+        displayStyleId: IdString;
+        groupId: IdString;
+        id: IdString;
+        isPrivate: boolean;
+        modelSelectorId?: IdString;
+        name?: ViewName;
+        owner?: OwnerName;
+        tags?: TagName[];
+    }
+    export type ViewName = string;
+    export interface Writer {
+        addCategorySelector(args: {
+            name?: string;
+            selector: SelectorProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addDisplayStyle(args: {
+            name?: string;
+            className: string;
+            settings: DisplayStyleSettingsProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addModelSelector(args: {
+            name?: string;
+            selector: SelectorProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addOrReplaceThumbnail(args: {
+            viewId: IdString;
+            thumbnail: ThumbnailProps;
+        }): Promise<void>;
+        addTagsToView(args: {
+            viewId: IdString;
+            tags: TagName[];
+        }): Promise<void>;
+        addTimeline(args: {
+            name?: string;
+            timeline: RenderSchedule.ScriptProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addView(args: AddViewArgs): Promise<IdString>;
+        addViewGroup(args: {
+            name: string;
+            parentId?: IdString;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        changeDefaultViewId(args: {
+            defaultView: IdString;
+            group?: ViewGroupSpec;
+        }): Promise<void>;
+        deleteCategorySelector(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteDisplayStyle(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteModelSelector(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteTag(args: {
+            name: TagName;
+        }): Promise<void>;
+        deleteThumbnail(args: {
+            viewId: IdString;
+        }): Promise<void>;
+        deleteTimeline(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteView(args: {
+            viewId: IdString;
+        }): Promise<void>;
+        deleteViewGroup(args: {
+            name: ViewGroupSpec;
+        }): Promise<void>;
+        removeTagFromView(args: {
+            viewId: IdString;
+            tag: TagName;
+        }): Promise<void>;
+        renameCategorySelector(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameDisplayStyle(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameModelSelector(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameTag(args: {
+            oldName: TagName;
+            newName: TagName;
+        }): Promise<void>;
+        renameTimeline(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameView(args: {
+            viewId: IdString;
+            name: string;
+        }): Promise<void>;
+        renameViewGroup(args: {
+            groupId: IdString;
+            name: string;
+        }): Promise<void>;
+        updateCategorySelector(args: NameOrId & {
+            selector: SelectorProps;
+        }): Promise<void>;
+        updateDisplayStyle(args: NameOrId & {
+            className: string;
+            settings: DisplayStyleSettingsProps;
+        }): Promise<void>;
+        updateModelSelector(args: NameOrId & {
+            selector: SelectorProps;
+        }): Promise<void>;
+        updateTimeline(args: NameOrId & {
+            timeline: RenderSchedule.ScriptProps;
+        }): Promise<void>;
+        updateViewDefinition(args: {
+            viewId: IdString;
+            viewDefinition: ViewDefinitionProps;
+        }): Promise<void>;
+        updateViewShared(arg: {
+            viewId: IdString;
+            isShared: boolean;
+            owner?: string;
+        }): Promise<void>;
+    }
 }
 
 // @internal (undocumented)

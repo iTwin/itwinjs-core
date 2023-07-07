@@ -48,7 +48,7 @@ jobs:
           if [ $(git status --porcelain | wc -l) -ne "0" ]; then
             echo "The following file(s) contain uncommitted changes:"
             git status --porcelain -u
-            echo "Please do the following:\n1. run extract-api in the core/extension dir \n2. commit the modified generated extension api files (found in the core/frontend and core/extension dirs) \n3. run rush change and commit the change files for core-frontend and core-extension"
+            echo -e 'Please do the following:\n1. run `rush extract-api` in the monorepo \n2. commit the modified generated extension api files (found in the core/frontend and core/extension dirs) \n3. run rush change and commit the change files for core-frontend and core-extension'
             exit 1
           fi
 

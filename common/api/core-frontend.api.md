@@ -110,6 +110,7 @@ import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
+import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -143,6 +144,7 @@ import { ImageSource } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelConnectionProps } from '@itwin/core-common';
+import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-common';
@@ -246,6 +248,7 @@ import { QueryOptions } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
@@ -333,8 +336,10 @@ import { ViewDetails3d } from '@itwin/core-common';
 import { ViewFlagOverrides } from '@itwin/core-common';
 import { ViewFlags } from '@itwin/core-common';
 import { ViewFlagsProperties } from '@itwin/core-common';
+import { ViewIdString } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
+import { ViewStoreRpc } from '@itwin/core-common';
 import { WebGLContext } from '@itwin/webgl-compatibility';
 import { WebGLExtensionName } from '@itwin/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@itwin/webgl-compatibility';
@@ -522,7 +527,6 @@ export class AccuDraw {
     readonly savedStateViewTool: SavedState;
     // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // @internal (undocumented)
     sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
     setCompassMode(mode: CompassMode): void;
     // @internal (undocumented)
@@ -1180,6 +1184,115 @@ export enum ArcGisErrorCode {
 }
 
 // @internal
+export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
+    constructor(world2PixelTransform?: Transform);
+    // (undocumented)
+    protected abstract beginPath(): void;
+    // (undocumented)
+    protected abstract closePath(): void;
+    // (undocumented)
+    protected abstract drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected abstract fill(): Promise<void>;
+    // (undocumented)
+    protected abstract finishPoints(): Promise<void>;
+    // (undocumented)
+    protected abstract lineTo(x: number, y: number): void;
+    // (undocumented)
+    protected abstract moveTo(x: number, y: number): void;
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    protected abstract stroke(): Promise<void>;
+    // (undocumented)
+    get transform(): Transform | undefined;
+}
+
+// @internal (undocumented)
+export class ArcGisGeometryReaderJSON {
+    constructor(geometryType: string, renderer: ArcGisGeometryRenderer, relativeCoords?: boolean);
+    // (undocumented)
+    protected static deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
+    // (undocumented)
+    readGeometry(geometry: any): Promise<void>;
+}
+
+// @internal
+export interface ArcGisGeometryRenderer {
+    // (undocumented)
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    transform: Transform | undefined;
+}
+
+// @internal
+export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
+    constructor(iModel: IModelConnection);
+    // (undocumented)
+    protected beginPath(): void;
+    // (undocumented)
+    protected closePath(): void;
+    // (undocumented)
+    protected drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected fill(): Promise<void>;
+    // (undocumented)
+    protected finishPoints(): Promise<void>;
+    // (undocumented)
+    protected lineTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
+    // (undocumented)
+    protected moveTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    protected stroke(): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyImageDisplayProps {
+    // (undocumented)
+    dpi: number;
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyLayersProps {
+    // (undocumented)
+    layerIds?: string[];
+    // (undocumented)
+    prefix: "top" | "visible" | "all";
+}
+
+// @internal (undocumented)
+export class ArcGISIdentifyRequestUrl {
+    // (undocumented)
+    static fromJSON(baseUrl: URL | string, json: ArcGISIdentifyRequestUrlProps, srFractionDigits?: number): URL;
+    // (undocumented)
+    static getExtentString(range: Range2dProps, srFractionDigits?: number): string;
+    // (undocumented)
+    static toFixed(value: number, srFractionDigits?: number): string;
+}
+
+// @internal (undocumented)
+export interface ArcGISIdentifyRequestUrlProps {
+    f?: "json" | "html";
+    geometry: XYProps;
+    geometryType: "esriGeometryPoint";
+    imageDisplay: ArcGISIdentifyImageDisplayProps;
+    layers?: ArcGISIdentifyLayersProps;
+    mapExtent: Range2dProps;
+    maxAllowableOffset?: number;
+    returnGeometry?: boolean;
+    sr?: number;
+    tolerance: number;
+}
+
+// @internal
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
@@ -1190,6 +1303,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
     protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
+    // (undocumented)
+    protected _querySupported: boolean;
+    // (undocumented)
+    get supportsMapFeatureInfo(): boolean;
 }
 
 // @internal (undocumented)
@@ -1204,7 +1321,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
@@ -1489,11 +1606,13 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    cartographicToDbFromGcs(cartographic: Cartographic[]): Promise<Point3d[]>;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)
-    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
+    // (undocumented)
+    dbToWGS84CartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -1769,7 +1888,7 @@ export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
-    // @alpha
+    // @beta
     readonly editorToolSettings: BriefcaseEditorToolSettings;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
@@ -1791,7 +1910,7 @@ export class BriefcaseConnection extends IModelConnection {
     readonly txns: BriefcaseTxns;
 }
 
-// @alpha
+// @beta
 export class BriefcaseEditorToolSettings {
     get category(): Id64String | undefined;
     set category(category: Id64String | undefined);
@@ -2087,6 +2206,12 @@ export interface ComputeDisplayTransformArgs {
     modelId: Id64String;
     output?: Transform;
     timePoint?: number;
+    viewAttachmentId?: Id64String;
+}
+
+// @public
+export interface ComputeSpatialViewFitRangeOptions {
+    baseExtents?: Range3d;
 }
 
 // @public
@@ -2184,15 +2309,19 @@ export class CoordinateConverter {
     // (undocumented)
     protected getFromCache(inputs: XYZProps[]): PointWithStatus[];
     // (undocumented)
-    protected readonly _iModel: IModelConnection;
-    // (undocumented)
     protected _inflight: SortedArray<XYAndZ>;
+    // (undocumented)
+    get isIdle(): boolean;
+    // (undocumented)
+    protected readonly _isIModelClosed: () => boolean;
     // (undocumented)
     protected readonly _maxPointsPerRequest: number;
     // (undocumented)
     protected _onCompleted: BeEvent<() => void>;
     // (undocumented)
     protected _pending: SortedArray<XYAndZ>;
+    // (undocumented)
+    protected _redispatchOnCompletion: boolean;
     // (undocumented)
     protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
     // (undocumented)
@@ -2211,7 +2340,8 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
-    iModel: IModelConnection;
+    // (undocumented)
+    isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
     requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 }
@@ -3231,15 +3361,11 @@ export class ElementState extends EntityState implements ElementProps {
 // @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
-    // @internal
     getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // @internal
     get maxDepth(): number;
     // @internal
     readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
-    // @internal
     requestMeshData(): Promise<TileRequest.Response>;
-    // @internal
     get tilingScheme(): MapTilingScheme;
 }
 
@@ -3738,7 +3864,7 @@ export interface GenericAbortSignal {
 // @public
 export class GeoConverter {
     // @internal
-    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
+    constructor(opts: GeoConverterOptions);
     convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
     convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
     // @internal (undocumented)
@@ -3747,14 +3873,26 @@ export class GeoConverter {
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
     // @internal (undocumented)
     getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps>;
+    // @internal
+    readonly onAllRequestsCompleted: BeEvent<() => void>;
+}
+
+// @internal
+export interface GeoConverterOptions {
+    // (undocumented)
+    readonly datum: string;
+    // (undocumented)
+    fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    isIModelClosed: () => boolean;
+    // (undocumented)
+    toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
 }
 
 // @beta
 export class GeographicTilingScheme extends MapTilingScheme {
     constructor(numberOfLevelZeroTilesX?: number, numberOfLevelZeroTilesY?: number, rowZeroAtNorthPole?: boolean);
-    // @internal
     latitudeToYFraction(latitude: number): number;
-    // @internal
     yFractionToLatitude(yFraction: number): number;
 }
 
@@ -3817,9 +3955,14 @@ export interface GeometryTileTreeReference extends TileTreeReference {
 // @public
 export class GeoServices {
     // @internal
-    constructor(iModel: IModelConnection);
+    constructor(options: GeoServicesOptions);
+    // @internal (undocumented)
+    static createForIModel(iModel: IModelConnection): GeoServices;
     getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
 }
+
+// @internal (undocumented)
+export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 
 // @public
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
@@ -4964,6 +5107,8 @@ export interface GraphicBranchOptions {
     iModel?: IModelConnection;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    // @internal
+    viewAttachmentId?: Id64String;
 }
 
 // @public
@@ -5199,25 +5344,22 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
+    constructor(props: HitDetailProps);
+    // @deprecated
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
-    // (undocumented)
-    readonly distFraction: number;
-    // (undocumented)
-    readonly distXY: number;
+    get distFraction(): number;
+    get distXY(): number;
     draw(_context: DecorateContext): void;
-    // (undocumented)
-    readonly geometryClass?: GeometryClass | undefined;
+    get geometryClass(): GeometryClass | undefined;
     getHitType(): HitDetailType;
     getPoint(): Point3d;
     getToolTip(): Promise<HTMLElement | string>;
-    // (undocumented)
-    readonly hitPoint: Point3d;
-    // (undocumented)
-    readonly hitSource: HitSource;
+    get hitPoint(): Point3d;
+    get hitSource(): HitSource;
     get iModel(): IModelConnection;
-    // @alpha (undocumented)
-    readonly isClassifier: boolean;
+    // @alpha
+    get isClassifier(): boolean | undefined;
     get isElementHit(): boolean;
     get isExternalIModelHit(): boolean;
     // (undocumented)
@@ -5225,19 +5367,40 @@ export class HitDetail {
     // (undocumented)
     get isModelHit(): boolean;
     isSameHit(otherHit?: HitDetail): boolean;
-    // (undocumented)
-    readonly modelId?: string | undefined;
-    // (undocumented)
+    get modelId(): string | undefined;
+    get priority(): HitPriority;
+    get sourceId(): Id64String;
+    // @internal
+    get sourceIModel(): IModelConnection | undefined;
+    get subCategoryId(): Id64String | undefined;
+    get testPoint(): Point3d;
+    // @internal
+    get tileId(): string | undefined;
+    // @beta
+    get viewAttachment(): ViewAttachmentHitInfo | undefined;
+    get viewport(): ScreenViewport;
+}
+
+// @public
+export interface HitDetailProps {
+    readonly distFraction: number;
+    readonly distXY: number;
+    readonly geometryClass?: GeometryClass;
+    readonly hitPoint: Point3d;
+    readonly hitSource: HitSource;
+    // @alpha
+    readonly isClassifier?: boolean;
+    readonly modelId?: string;
     readonly priority: HitPriority;
-    // (undocumented)
-    readonly sourceId: string;
-    // (undocumented)
-    readonly subCategoryId?: string | undefined;
-    // (undocumented)
+    readonly sourceId: Id64String;
+    // @internal
+    readonly sourceIModel?: IModelConnection;
+    readonly subCategoryId?: Id64String;
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
-    // (undocumented)
+    // @beta
+    readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
 }
 
@@ -6363,6 +6526,9 @@ export abstract class IModelConnection extends IModel {
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
     protected beforeClose(): void;
+    cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
+    // @internal (undocumented)
+    cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]>;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     readonly categories: IModelConnection.Categories;
@@ -6432,13 +6598,18 @@ export abstract class IModelConnection extends IModel {
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
+    spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
     get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
+    // @beta
+    toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]>;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
+    // @beta
+    wgs84CartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
 }
 
 // @public (undocumented)
@@ -6515,9 +6686,13 @@ export namespace IModelConnection {
         // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
-        load(viewDefinitionId: Id64String): Promise<ViewState>;
+        load(viewDefinitionId: ViewIdString): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
+        // (undocumented)
+        get viewsStoreReader(): PickAsyncMethods<ViewStoreRpc.Reader>;
+        // (undocumented)
+        get viewStoreWriter(): PickAsyncMethods<ViewStoreRpc.Writer>;
     }
     export interface ViewSpec {
         class: string;
@@ -7226,15 +7401,13 @@ export class MapCartoRectangle extends Range2d {
     set west(x: number);
 }
 
-// @alpha (undocumented)
+// @beta
 export interface MapFeatureInfo {
-    // (undocumented)
     hitPoint?: Cartographic;
-    // (undocumented)
-    layerInfo?: MapLayerFeatureInfo[];
+    layerInfos?: MapLayerFeatureInfo[];
 }
 
-// @alpha (undocumented)
+// @beta
 export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
@@ -7276,12 +7449,32 @@ export interface MapLayerAuthenticationInfo {
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
-// @alpha (undocumented)
+// @beta
+export interface MapLayerFeature {
+    attributes: MapLayerFeatureAttribute[];
+    geometries?: MapLayerFeatureGeometry[];
+}
+
+// @beta
+export interface MapLayerFeatureAttribute {
+    property: PropertyDescription;
+    value: PropertyValue;
+}
+
+// @beta
+export interface MapLayerFeatureGeometry {
+    graphic: GraphicPrimitive;
+}
+
+// @beta
 export interface MapLayerFeatureInfo {
-    // (undocumented)
-    info?: MapSubLayerFeatureInfo[] | HTMLElement;
-    // (undocumented)
     layerName: string;
+    subLayerInfos?: MapSubLayerFeatureInfo[];
+}
+
+// @beta
+export class MapLayerFeatureRecord {
+    static createRecordFromAttribute(attribute: MapLayerFeatureAttribute): PropertyRecord;
 }
 
 // @public
@@ -7376,7 +7569,7 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void>;
     // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -7416,6 +7609,8 @@ export abstract class MapLayerImageryProvider {
     protected readonly _settings: ImageMapLayerSettings;
     // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
+    // @alpha (undocumented)
+    get supportsMapFeatureInfo(): boolean;
     // @internal (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -7444,6 +7639,14 @@ export enum MapLayerImageryProviderStatus {
 export interface MapLayerIndex {
     index: number;
     isOverlay: boolean;
+}
+
+// @internal
+export interface MapLayerInfoFromTileTree {
+    // (undocumented)
+    provider?: MapLayerImageryProvider;
+    // (undocumented)
+    settings: MapLayerSettings;
 }
 
 // @public
@@ -7572,13 +7775,10 @@ export interface MapLayerTokenEndpoint {
     getUrl(): string;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface MapSubLayerFeatureInfo {
-    // (undocumented)
     displayFieldName?: string;
-    // (undocumented)
-    records?: MapFeatureInfoRecord[];
-    // (undocumented)
+    features: MapLayerFeature[];
     subLayerName: string;
 }
 
@@ -7700,7 +7900,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
@@ -7889,6 +8089,8 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
+    forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void;
+    // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
@@ -7900,7 +8102,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     protected getViewFlagOverrides(_tree: TileTree): Partial<Mutable<NonFunctionPropertiesOf<ViewFlags>>>;
     // (undocumented)
-    imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined;
+    imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[];
     // (undocumented)
     initializeLayers(context: SceneContext): boolean;
     // (undocumented)
@@ -7910,7 +8112,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     isOverlay: boolean;
     // (undocumented)
-    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
+    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[];
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
@@ -9437,6 +9639,7 @@ export namespace Pixel {
             batchType?: BatchType;
             iModel?: IModelConnection;
             tileId?: string;
+            viewAttachmentId?: string;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
@@ -9454,6 +9657,8 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         readonly type: GeometryType;
+        // @beta
+        readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
         Edge = 4,
@@ -11348,7 +11553,6 @@ export class ScreenViewport extends Viewport {
     set viewCmdTargetCenter(center: Point3d | undefined);
     get viewRect(): ViewRect;
     readonly vpDiv: HTMLDivElement;
-    // @internal
     waitForSceneCompletion(): Promise<void>;
 }
 
@@ -11721,6 +11925,8 @@ export class SheetViewState extends ViewState2d {
     // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
+    computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
+    // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
@@ -11735,8 +11941,9 @@ export class SheetViewState extends ViewState2d {
     };
     // @internal (undocumented)
     detachFromViewport(): void;
-    // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // @internal (undocumented)
+    getAttachmentViewport(id: Id64String): Viewport | undefined;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
@@ -11925,7 +12132,7 @@ export class SpatialViewState extends ViewState3d {
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
-    computeFitRange(): AxisAlignedBox3d;
+    computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
@@ -13821,7 +14028,6 @@ export class ToolAdmin {
     testDecorationHit(id: string): boolean;
     get toolSettingsChangeHandler(): ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined;
     set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined);
-    // @internal (undocumented)
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
     readonly toolState: ToolState;
@@ -13860,6 +14066,8 @@ export class ToolAssistance {
     static get shiftKeyboardInfoNoSymbol(): ToolAssistanceKeyboardInfo;
     static readonly shiftSymbol: string;
     static get shiftSymbolKeyboardInfo(): ToolAssistanceKeyboardInfo;
+    static translateInput(key: ToolAssistanceInputKey): string;
+    static translatePrompt(key: ToolAssistancePromptKey): string;
     static readonly upSymbol: string;
 }
 
@@ -13883,6 +14091,9 @@ export enum ToolAssistanceImage {
     TwoTouchPinch = 14,
     TwoTouchTap = 12
 }
+
+// @public
+export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
 
 // @public
 export enum ToolAssistanceInputMethod {
@@ -13911,6 +14122,9 @@ export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
 }
+
+// @public
+export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint";
 
 // @public
 export interface ToolAssistanceSection {
@@ -13982,7 +14196,7 @@ export class ToolSettings {
     static zoomSpeed: number;
 }
 
-// @internal
+// @public
 export class ToolSettingsState {
     getInitialToolSettingValue(toolId: string, propertyName: string): DialogItemValue | undefined;
     getInitialToolSettingValues(toolId: string, propertyNames: string[]): DialogPropertyItem[] | undefined;
@@ -14117,9 +14331,7 @@ export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boole
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
-    // @internal
     protected connectViewports(source: Viewport, target: Viewport): void;
-    // @internal
     protected syncViewports(source: Viewport, target: Viewport): void;
 }
 
@@ -14290,6 +14502,13 @@ export interface ViewAnimationOptions {
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;
+}
+
+// @beta
+export interface ViewAttachmentHitInfo {
+    readonly id: Id64String;
+    // @alpha
+    readonly viewport: Viewport;
 }
 
 // @public
@@ -15323,7 +15542,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
     // @beta
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
@@ -15381,9 +15600,9 @@ export abstract class Viewport implements IDisposable, TileUser {
     get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
-    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
+    mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
@@ -15581,16 +15800,11 @@ export class ViewPose2d extends ViewPose {
     constructor(view: ViewState2d);
     readonly angle: Angle;
     readonly delta: Point2d;
-    // @internal
     equal(other: ViewPose): boolean;
-    // @internal
     equalState(view: ViewState): boolean;
-    // @internal
     get extents(): Vector3d;
-    // @internal
     get origin(): Point3d;
     readonly origin2d: Point2d;
-    // @internal
     get rotation(): Matrix3d;
 }
 
@@ -15598,17 +15812,11 @@ export class ViewPose2d extends ViewPose {
 export class ViewPose3d extends ViewPose {
     constructor(view: ViewState3d);
     readonly camera: Camera;
-    // @internal
     equal(other: ViewPose): boolean;
-    // @internal
     equalState(view: ViewState): boolean;
-    // @internal
     readonly extents: Vector3d;
-    // @internal
     readonly origin: Point3d;
-    // @internal
     readonly rotation: Matrix3d;
-    // @internal
     get target(): Point3d;
 }
 
@@ -15723,6 +15931,8 @@ export abstract class ViewState extends ElementState {
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
+    // @internal
+    getAttachmentViewport(_id: Id64String): Viewport | undefined;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
@@ -15822,7 +16032,6 @@ export abstract class ViewState2d extends ViewState {
     allow3dManipulations(): boolean;
     // (undocumented)
     readonly angle: Angle;
-    // @internal
     applyPose(val: ViewPose): this;
     // (undocumented)
     get baseModelId(): Id64String;
@@ -15881,7 +16090,6 @@ export abstract class ViewState3d extends ViewState {
     alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
-    // @internal
     applyPose(val: ViewPose): this;
     // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
@@ -15892,6 +16100,7 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
     cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
+    cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -15964,6 +16173,7 @@ export abstract class ViewState3d extends ViewState {
     readonly origin: Point3d;
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
+    rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
@@ -16114,6 +16324,14 @@ export class WalkViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal (undocumented)
+export class WebMercator {
+    // (undocumented)
+    static getEPSG4326Lat(y3857: number): number;
+    // (undocumented)
+    static getEPSG4326Lon(x3857: number): number;
+}
+
 // @alpha (undocumented)
 export class WebMercatorProjection {
     // (undocumented)
@@ -16126,9 +16344,7 @@ export class WebMercatorProjection {
 // @beta
 export class WebMercatorTilingScheme extends MapTilingScheme {
     constructor(numberOfLevelZeroTilesX?: number, numberOfLevelZeroTilesY?: number, rowZeroAtNorthPole?: boolean);
-    // @internal
     latitudeToYFraction(latitude: number): number;
-    // @internal
     yFractionToLatitude(yFraction: number): number;
 }
 

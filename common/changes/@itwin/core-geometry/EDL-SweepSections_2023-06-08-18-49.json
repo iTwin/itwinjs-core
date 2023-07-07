@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "\"CurveFactory.createMiteredSweepSections method for sweeping arbitrary section curves to a sequence of planes.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
