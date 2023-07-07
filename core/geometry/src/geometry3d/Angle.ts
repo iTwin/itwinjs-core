@@ -62,6 +62,12 @@ export class Angle implements BeJSONFunctions {
     return new Angle(radians);
   }
   /**
+   * Return a new `Angle` object with the default "small" angle measurement specified by [[Geometry.smallAngleRadians]].
+   */
+  public static createSmallAngle(): Angle {
+    return new Angle(Geometry.smallAngleRadians);
+  }
+  /**
    * Return a (new) Angle object that is interpolated between two inputs (based on a fraction)
    * @param angle0 first angle in radians
    * @param fraction the interpolation fraction
@@ -329,6 +335,14 @@ export class Angle implements BeJSONFunctions {
     const delta1 = delta - numPeriod * period;
     return Math.abs(delta1) <= radianTol;
   }
+  /**
+ * Test if this angle has magnitude no greater than that of `other`.
+ * @param other the other angle
+ */
+  public isMagnitudeLessThanOrEqual(other: Angle): boolean {
+    return Math.abs(this.radians) <= Math.abs(other.radians);
+  }
+
   /**
    * Test if this angle and other are equivalent, allowing shift by full circle (i.e., multiples of `2 * PI`).
    * @param other the other angle

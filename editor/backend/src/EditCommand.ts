@@ -98,7 +98,11 @@ export class EditCommandAdmin {
   private static _isInitialized = false;
   public static get activeCommand() { return this._activeCommand; }
 
-  /** @internal */
+  /** If any command is currently active, wait for it to finish.
+   * Afterward, no command will be active.
+   * This method is invoked by [[runCommand]] before starting a new command.
+   * @throws BackendError if the command fails to finish.
+   */
   public static async finishCommand() {
     if (this._activeCommand) {
       const finished = await this._activeCommand.requestFinish();
@@ -108,8 +112,10 @@ export class EditCommandAdmin {
     this._activeCommand = undefined;
   }
 
-  /** Called from frontend via `EditorIpc.startCommand`
-   * @internal
+  /** Start running the specified command.
+   * The new command will not begin running until the currently-active command (if any) finishes.
+   * Afterward, the new command becomes the active command.
+   * @throws BackendError if the currently-active command fails to finish.
    */
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();

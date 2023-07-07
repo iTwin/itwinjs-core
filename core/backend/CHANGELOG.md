@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jul 2023 15:28:41 GMT and should not be manually modified.
+
+## 4.0.3
+Mon, 03 Jul 2023 15:28:41 GMT
+
+_Version update only_
+
+## 4.0.2
+Wed, 21 Jun 2023 22:04:43 GMT
+
+_Version update only_
+
+## 4.0.1
+Wed, 21 Jun 2023 20:29:13 GMT
+
+_Version update only_
 
 ## 4.0.0
 Mon, 22 May 2023 15:34:14 GMT
@@ -29,6 +44,23 @@ Mon, 22 May 2023 15:34:14 GMT
 - Fix for timing issue in core tests
 - allow passing a custom schema read context to IModelDb.importSchemas
 - Added test to verify Id serialization to hex for system properties.
+
+## 3.7.9
+Tue, 20 Jun 2023 12:51:02 GMT
+
+_Version update only_
+
+## 3.7.8
+Thu, 01 Jun 2023 17:00:39 GMT
+
+### Updates
+
+- Prefetches triggered by attach now have configurable minRequests/maxRequests through ApplicationSettings
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT

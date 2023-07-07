@@ -981,6 +981,20 @@ export class Vector3d extends XYZ {
     return undefined;
   }
   /**
+   * Create a normalized vector from startPoint to endPoint
+   * @param startPoint start point of vector
+   * @param endPoint end point of vector
+   * @param result optional result
+   * @returns undefined if and only if normalization fails.
+  */
+  public static createNormalizedStartEnd(startPoint: XYAndZ, endPoint: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    result = Vector3d.createStartEnd(startPoint, endPoint, result);
+    if (result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
+
+  /**
    * Return fractional projection of this vector on the target vector.
    * * It's returning the signed projection magnitude divided by the target magnitude.
    * * To find the projection vector, scale the target vector by the value that this function is returning.

@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1047,7 +1047,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return "";
   }
 
-  /** @alpha */
+  /** @beta */
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
     const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 
@@ -1066,11 +1066,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     for (const result of results)
       if (result !== undefined) {
 
-        if (featureInfo.layerInfo === undefined) {
-          featureInfo.layerInfo = [];
+        if (featureInfo.layerInfos === undefined) {
+          featureInfo.layerInfos = [];
         }
 
-        featureInfo.layerInfo.push(...result);
+        featureInfo.layerInfos.push(...result);
       }
     return featureInfo;
   }
@@ -1577,13 +1577,13 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @internal */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  public mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
+    return undefined === hit.modelId ? [] : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
+    return this._mapTiledGraphicsProvider === undefined ? [] : this._mapTiledGraphicsProvider.mapLayerFromIds(mapTreeId, layerTreeId);
   }
 
   /** @internal */
@@ -3576,7 +3576,7 @@ export class ScreenViewport extends Viewport {
     this.invalidateRenderPlan();
   }
 
-  /** @internal override */
+  /** Overrides [[Viewport.waitForSceneCompletion]] to allow the render loop to load graphics until the scene is complete. */
   public override async waitForSceneCompletion(): Promise<void> {
     if (!IModelApp.viewManager.hasViewport(this))
       return super.waitForSceneCompletion();

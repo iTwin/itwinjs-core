@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "4.1.0-dev.41",
+  "version": "4.1.0-dev.57",
   "description": "Set of Webpack Plugins and Loaders used for building iTwin.js applications",
   "license": "MIT",
   "repository": {
@@ -39,10 +39,10 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "@itwin/eslint-plugin": "4.0.0-dev.36",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
-    "@types/node": "^18.11.5",
+    "@types/node": "18.16.1",
     "@types/mocha": "^8.2.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

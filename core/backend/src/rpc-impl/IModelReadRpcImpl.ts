@@ -10,25 +10,28 @@ import {
   AccessToken, assert, BeDuration, BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger,
 } from "@itwin/core-bentley";
 import {
-  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
-  ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
-  IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps,
-  ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps,
-  ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse,
+  ElementLoadOptions, ElementLoadProps, ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
+  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
+  MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
-import { generateGeometrySummaries } from "../GeometrySummary";
-import { DictionaryModel } from "../Model";
-import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { RpcTrace } from "../rpc/tracing";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
-import { ViewStateHydrator } from "../ViewStateHydrator";
+import { generateGeometrySummaries } from "../GeometrySummary";
+import { IModelDb } from "../IModelDb";
+import { DictionaryModel } from "../Model";
 import { PromiseMemoizer } from "../PromiseMemoizer";
+import { RpcTrace } from "../rpc/tracing";
+import { ViewStateHydrator } from "../ViewStateHydrator";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -86,7 +89,11 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
 }
 
 function currentActivity() {
-  return RpcTrace.expectCurrentActivity; // eslint-disable-line deprecation/deprecation
+  return RpcTrace.expectCurrentActivity;
+}
+
+async function getIModelForRpc(tokenProps: IModelRpcProps): Promise<IModelDb> {
+  return RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
 }
 
 /** The backend implementation of IModelReadRpcInterface.
@@ -106,19 +113,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const viewHydrater = new ViewStateHydrator(iModelDb);
     return viewHydrater.getHydrateResponseProps(options);
   }
 
   public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
     return iModelDb.querySubCategories(decompressedIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     if (iModelDb.isReadonly && request.usePrimaryConn === true) {
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
@@ -127,7 +134,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     if (iModelDb.isReadonly && request.usePrimaryConn === true) {
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
@@ -144,13 +151,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryModelExtents(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModel = await getIModelForRpc(tokenProps);
     return iModel.models.queryExtents(modelIds);
   }
 
   public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
     const modelIds = new Set(modelIdsList);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
@@ -171,7 +178,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getElementProps(tokenProps: IModelRpcProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
     const elementIds = new Set(elementIdsList);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
@@ -195,12 +202,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       props.code = Code.fromJSON(identifier);
     }
 
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.elements.tryGetElementProps(props);
   }
 
   public async getGeometrySummary(tokenProps: IModelRpcProps, request: GeometrySummaryRequestProps): Promise<string> {
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModel = await getIModelForRpc(tokenProps);
     return generateGeometrySummaries(request, iModel);
   }
 
@@ -211,13 +218,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryEntityIds(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<Id64String[]> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const res = iModelDb.queryEntityIds(params);
     return [...res];
   }
 
   public async getClassHierarchy(tokenProps: IModelRpcProps, classFullName: string): Promise<string[]> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const classArray: string[] = [];
     while (true) {
       const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
@@ -232,7 +239,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
@@ -241,37 +248,37 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.nativeDb.readFontMap();
   }
 
   public async requestSnap(tokenProps: IModelRpcProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.requestSnap(sessionId, props);
   }
 
   public async cancelSnap(tokenProps: IModelRpcProps, sessionId: string): Promise<void> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.cancelSnap(sessionId);
   }
 
   public async getGeometryContainment(tokenProps: IModelRpcProps, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.getGeometryContainment(props);
   }
 
   public async getMassProperties(tokenProps: IModelRpcProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.getMassProperties(props);
   }
 
   public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
       try {
@@ -307,17 +314,18 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const el = iModelDb.elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
-   * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
+   * @deprecated in 3.x - Use queryViewThumbnail instead
    */
-  public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, _tokenProps);
-    const thumbnail = iModelDb.views.getThumbnail(_viewId);
+  public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    // eslint-disable-next-line deprecation/deprecation
+    const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
 
@@ -328,7 +336,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const spec = { namespace: "dgn_View", name: "DefaultView" };
     const blob = iModelDb.queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
@@ -338,28 +346,45 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Id64.fromUint32Pair(view[0], view[1]);
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     const dictionary: DictionaryModel = iModelDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 
   public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelRpcProps, props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelRpcProps, props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   public async queryTextureData(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const db = await getIModelForRpc(tokenProps);
     return db.queryTextureData(textureLoadProps);
   }
 
-  public async generateElementMeshes(iModelToken: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
+  public async generateElementMeshes(tokenProps: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
+    const db = await getIModelForRpc(tokenProps);
     return db.nativeDb.generateElementMeshes(props);
+  }
+
+  /** @internal */
+  public async callViewStore(tokenProps: IModelRpcProps, version: string, forWrite: boolean, methodName: string, ...args: any[]): Promise<any> {
+    if (!RpcInterface.isVersionCompatible(ViewStoreRpc.version, version))
+      throw new Error("ViewStoreRpc version mismatch");
+
+    const db = await getIModelForRpc(tokenProps);
+    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read", userToken: RpcTrace.currentActivity?.accessToken });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const access = viewStore[forWrite ? "writeLocker" : "reader"] as any;
+
+    const func = access[methodName];
+    if (typeof func !== "function")
+      throw new IModelError(IModelStatus.FunctionNotFound, `Illegal ViewStore RPC call "${methodName}"`);
+
+    return func.call(access, ...args);
   }
 }

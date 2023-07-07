@@ -5,12 +5,22 @@
 
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
-/** @internal */
-export abstract class ArcGisFeatureReader  {
+/** Interface defining minimal implementation needed to create an ArcGIS geometry reader,
+ * needed by the [[ArcGisFeatureProvider]].
+ * @internal
+ */
+export interface ArcGisFeatureReader {
+  readAndRender: (response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) => Promise<void>;
+  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer) => Promise<void>;
+}
+
+/** Internal implementation of [[ArcGisFeatureReader]]
+ * @internal
+ */
+export abstract class ArcGisBaseFeatureReader implements ArcGisFeatureReader {
   // Optionally you can set the floating precision
   public floatPrecision: number|undefined;
 
@@ -26,9 +36,8 @@ export abstract class ArcGisFeatureReader  {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): void;
-
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]): void;
+  public abstract readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer): Promise<void>;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));

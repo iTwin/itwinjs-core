@@ -85,6 +85,7 @@ export class Angle implements BeJSONFunctions {
     static createDegreesAdjustSigned180(degrees: number): Angle;
     static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle;
     static createRadians(radians: number): Angle;
+    static createSmallAngle(): Angle;
     get degrees(): number;
     static readonly degreesPerRadian: number;
     static degreesToRadians(degrees: number): number;
@@ -103,6 +104,7 @@ export class Angle implements BeJSONFunctions {
     static isFullCircleRadians(radians: number): boolean;
     get isHalfCircle(): boolean;
     static isHalfCircleRadians(radians: number): boolean;
+    isMagnitudeLessThanOrEqual(other: Angle): boolean;
     static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean;
     static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, upVectorX: number, upVectorY: number, upVectorZ: number, adjustToPositive?: boolean): number;
     static readonly pi2Radians = 6.283185307179586;
@@ -1660,6 +1662,7 @@ export class CurveFactory {
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[];
+    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
@@ -3270,7 +3273,7 @@ export class LinearSweep extends SolidPrimitive {
     cloneSweepVector(): Vector3d;
     cloneTransformed(transform: Transform): LinearSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contour: CurveCollection, direction: Vector3d, capped: boolean): LinearSweep | undefined;
+    static create(contour: AnyCurve, direction: Vector3d, capped: boolean): LinearSweep | undefined;
     static createZSweep(xyPoints: XAndY[], z: number, zSweep: number, capped: boolean): LinearSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -3543,6 +3546,7 @@ export class Matrix3d implements BeJSONFunctions {
     static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d | undefined, columnB: Vector3d | undefined, columnC: Vector3d | undefined, result?: Matrix3d): Matrix3d;
     static createColumnsXYW(vectorU: XAndY, u: number, vectorV: XAndY, v: number, vectorW: XAndY, w: number, result?: Matrix3d): Matrix3d;
     static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d;
+    static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined;
     static createFromQuaternion(quat: Point4d): Matrix3d;
     static createIdentity(result?: Matrix3d): Matrix3d;
     static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined;
@@ -3760,6 +3764,21 @@ export class Matrix4d implements BeJSONFunctions {
 
 // @public
 export type Matrix4dProps = Point4dProps[];
+
+// @public
+export interface MiteredSweepOptions {
+    capped?: boolean;
+    outputSelect?: MiteredSweepOutputSelect;
+    strokeOptions?: StrokeOptions;
+    wrapIfPhysicallyClosed?: boolean;
+}
+
+// @public
+export enum MiteredSweepOutputSelect {
+    AlsoMesh = 2,
+    AlsoRuledSweep = 1,
+    Sections = 0
+}
 
 // @public
 export class MomentData {
@@ -4797,8 +4816,13 @@ export class PolyfaceQuery {
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
     static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums;
+    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[];
+    // @deprecated
     static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
+    // @deprecated
     static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[];
+    static sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
+    // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     static visitorClientFacetCount(visitor: PolyfaceVisitor): number;
     static visitorClientPointCount(visitor: PolyfaceVisitor): number;
@@ -4897,8 +4921,9 @@ export class PolylineOps {
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
     static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
-    static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
+    static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[];
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
+    static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed?: boolean): Plane3dByOriginAndUnitNormal[] | undefined;
     static edgeLengthRange(points: Point3d[]): Range1d;
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
@@ -5409,7 +5434,7 @@ export class RotationalSweep extends SolidPrimitive {
     cloneAxisRay(): Ray3d;
     cloneTransformed(transform: Transform): RotationalSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contour: CurveCollection, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
+    static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
     getConstructiveFrame(): Transform | undefined;
@@ -5431,7 +5456,7 @@ export class RuledSweep extends SolidPrimitive {
     cloneSweepContours(): SweepContour[];
     cloneTransformed(transform: Transform): RuledSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined;
+    static create(contours: AnyCurve[], capped: boolean): RuledSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getConstructiveFrame(): Transform | undefined;
@@ -5545,6 +5570,7 @@ export class Sample {
     static createWeightedXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number, weight00?: number, weight10?: number, weight01?: number, weight11?: number): BSplineSurface3dH | undefined;
     static createXYGrid(numU: number, numV: number, dX?: number, dY?: number): Point3d[];
     static createXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
+    static createZigZag(start: Point3d | Point3d[], steps: Vector3d[], numStroke: number): Point3d[];
     // @deprecated (undocumented)
     static creatVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
     static readonly lineSegment3d: LineSegment3d[];
@@ -5560,6 +5586,14 @@ export class Sample {
     static readonly ray3d: Ray3d[];
     static sweepXZLineStringToMeshWithHoles(xzPoints: number[][], ySweep: number, acceptFunction: (x0: number, y0: number) => boolean): IndexedPolyface;
     static readonly vector2d: Vector2d[];
+}
+
+// @public
+export interface SectionSequenceWithPlanes {
+    mesh?: IndexedPolyface;
+    planes: Plane3dByOriginAndUnitNormal[];
+    ruledSweep?: RuledSweep;
+    sections: AnyCurve[];
 }
 
 // @public
@@ -5812,9 +5846,9 @@ export class SweepContour {
     buildFacets(options: StrokeOptions | undefined): void;
     clone(): SweepContour;
     cloneTransformed(transform: Transform): SweepContour | undefined;
-    static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined;
+    static createForLinearSweep(contour: AnyCurve, defaultNormal?: Vector3d): SweepContour | undefined;
     static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined;
-    static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined;
+    static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined;
     curves: CurveCollection;
     emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform): void;
     getCurves(): CurveCollection;
@@ -5825,6 +5859,19 @@ export class SweepContour {
     tryTransformInPlace(transform: Transform): boolean;
     // (undocumented)
     get xyStrokes(): AnyCurve | undefined;
+}
+
+// @public
+export class SweepLineStringToFacetsOptions {
+    assembleChains: boolean;
+    get collectAll(): boolean;
+    collectFromThisFacetNormal(facetNormal: Vector3d | undefined): boolean;
+    collectOnForwardFacets: boolean;
+    collectOnRearFacets: boolean;
+    collectOnSideFacets: boolean;
+    static create(vectorToEye?: Vector3d, sideAngle?: Angle, assembleChains?: boolean, collectOnForwardFacets?: boolean, collectOnSideFacets?: boolean, collectOnRearFacets?: boolean): SweepLineStringToFacetsOptions;
+    sideAngle: Angle;
+    vectorToEye: Vector3d;
 }
 
 // @public
@@ -5929,6 +5976,7 @@ export class Transform implements BeJSONFunctions {
     cloneRigid(axisOrder?: AxisOrder): Transform | undefined;
     computeCachedInverse(useCached?: boolean): boolean;
     static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
+    static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planePoint: XYAndZ, planeNormal: Vector3d): Transform | undefined;
     static createIdentity(result?: Transform): Transform;
     static createMatrixPickupPutdown(matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
@@ -6291,6 +6339,7 @@ export class Vector3d extends XYZ {
     static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d;
     static createFrom(data: XYAndZ | XAndY | Float64Array | number[], result?: Vector3d): Vector3d;
     static createNormalized(x?: number, y?: number, z?: number, result?: Vector3d): Vector3d | undefined;
+    static createNormalizedStartEnd(startPoint: XYAndZ, endPoint: XYAndZ, result?: Vector3d): Vector3d | undefined;
     static createPolar(r: number, theta: Angle, z?: number): Vector3d;
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
