@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineFlags,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
@@ -83,7 +83,7 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     linePixels: LinePixels.Solid,
     flags: new PolylineFlags(false, true, true),
     points: qpoints,
-    polylines: [ new PolylineData([...new Array<number>(points.length).keys()], points.length) ],
+    polylines: [[...new Array<number>(points.length).keys()] ],
   };
 
   const params = createPointStringParams(args)!;

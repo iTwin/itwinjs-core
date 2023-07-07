@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { PolylineData, QPoint3dList } from "@itwin/core-common";
+import { PolylineIndices, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexTableBuilder } from "./VertexTableBuilder";
 import { PolylineParams, TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
@@ -73,7 +73,7 @@ class PolylineVertex {
 }
 
 class PolylineTesselator {
-  private _polylines: PolylineData[];
+  private _polylines: PolylineIndices[];
   private _doJoints: boolean;
   private _numIndices = 0;
   private _vertIndex: number[] = [];
@@ -82,7 +82,7 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
 
-  public constructor(polylines: PolylineData[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
+  public constructor(polylines: PolylineIndices[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
     this._polylines = polylines;
     if (points instanceof QPoint3dList) {
       for (const p of points.list)
@@ -131,19 +131,19 @@ class PolylineTesselator {
     const maxJointDot = -0.7;
 
     for (const line of this._polylines) {
-      if (line.numIndices < 2)
+      if (line.length < 2)
         continue;
 
-      const last = line.numIndices - 1;
-      const isClosed: boolean = line.vertIndices[0] === line.vertIndices[last];
+      const last = line.length - 1;
+      const isClosed: boolean = line[0] === line[last];
 
       for (let i = 0; i < last; ++i) {
-        const idx0 = line.vertIndices[i];
-        const idx1 = line.vertIndices[i + 1];
+        const idx0 = line[i];
+        const idx1 = line[i + 1];
         const isStart: boolean = (0 === i);
         const isEnd: boolean = (last - 1 === i);
-        const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
-        const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
+        const prevIdx0 = isStart ? (isClosed ? line[last - 1] : idx0) : line[i - 1];
+        const nextIdx1 = isEnd ? (isClosed ? line[1] : idx1) : line[i + 2];
 
         v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1);
         v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0);
@@ -208,7 +208,7 @@ class PolylineTesselator {
 }
 
 /** Strictly for tests. @internal */
-export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline {
+export function tesselatePolyline(polylines: PolylineIndices[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline {
   const tesselator = new PolylineTesselator(polylines, points, doJointTriangles);
   return tesselator.tesselate();
 }

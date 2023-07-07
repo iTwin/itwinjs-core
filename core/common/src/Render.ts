@@ -83,40 +83,20 @@ export class PolylineFlags {
  */
 export type PolylineIndices = number[];
 
-/** This is dumb (ported from C++ where it was a pointer and a length) - all you need in JS is number[].
- * @internal
- */
-export class PolylineData {
-  public vertIndices: number[];
-  public numIndices: number;
-  public constructor(vertIndices: number[] = [], numIndices = 0) {
-    this.vertIndices = vertIndices;
-    this.numIndices = numIndices;
-  }
-  public get isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void {
-    this.numIndices = 0;
-    this.vertIndices = [];
-  }
-
-  public init(polyline: MeshPolyline) {
-    this.numIndices = polyline.indices.length;
-    this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
-    return this.isValid;
-  }
-}
-
 /** @internal */
 export class MeshPolyline {
-  public readonly indices: number[];
-  public constructor(indices: number[] = []) {
+  public readonly indices: PolylineIndices;
+
+  public constructor(indices: PolylineIndices = []) {
     this.indices = indices.slice();
   }
+
   public addIndex(index: number) {
     const { indices } = this;
     if (indices.length === 0 || indices[indices.length - 1] !== index)
       indices.push(index);
   }
+
   public clear() { this.indices.length = 0; }
 }
 
@@ -200,11 +180,11 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 
 /** @internal */
 export class PolylineEdgeArgs {
-  public lines?: PolylineData[];
+  public lines?: PolylineIndices[];
 
-  public constructor(lines?: PolylineData[]) { this.init(lines); }
+  public constructor(lines?: PolylineIndices[]) { this.init(lines); }
 
-  public init(lines?: PolylineData[]): boolean {
+  public init(lines?: PolylineIndices[]): boolean {
     this.lines = undefined !== lines && 0 < lines.length ? lines : undefined;
     return this.isValid;
   }

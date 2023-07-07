@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, PolylineIndices, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
+  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineIndices, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -43,7 +43,7 @@ export interface PolylineArgs {
   points: QPoint3dList | (Array<Point3d> & { range: Range3d });
   /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
   // ###TODO polylines: PolylineIndices[];
-  polylines: PolylineData[];
+  polylines: PolylineIndices[];
 }
 
 /** @public */
@@ -54,11 +54,9 @@ export namespace PolylineArgs {
       return undefined;
 
     const polylines = [];
-    for (const polyline of mesh.polylines) {
-      const polylineData = new PolylineData();
-      if (polylineData.init(polyline))
-        polylines.push(polylineData);
-    }
+    for (const polyline of mesh.polylines)
+      if (polyline.indices.length > 0)
+        polylines.push(polyline.indices);
 
     if (polylines.length === 0)
       return undefined;
@@ -184,11 +182,9 @@ export namespace MeshArgs {
       edges.silhouettes.init(mesh.edges);
 
       const polylines = [];
-      for (const meshPolyline of mesh.edges.polylines) {
-        const polyline = new PolylineData();
-        if (polyline.init(meshPolyline))
-          polylines.push(polyline);
-      }
+      for (const meshPolyline of mesh.edges.polylines)
+        if (meshPolyline.indices.length > 0)
+          polylines.push(meshPolyline.indices);
 
       edges.polylines.init(polylines);
     }

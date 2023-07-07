@@ -23,12 +23,12 @@ export function createPointStringParams(args: PolylineArgs): PointStringParams |
     return undefined;
 
   const polylines = args.polylines;
-  let vertIndices = polylines[0].vertIndices;
+  let vertIndices = polylines[0];
   if (1 < polylines.length) {
     // We used to assert this wouldn't happen - apparently it does...
     vertIndices = [];
     for (const polyline of polylines)
-      for (const vertIndex of polyline.vertIndices)
+      for (const vertIndex of polyline)
         vertIndices.push(vertIndex);
   }
 
