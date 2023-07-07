@@ -43,7 +43,6 @@ export interface PolylineArgs {
    */
   points: QPoint3dList | (Array<Point3d> & { range: Range3d });
   /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
-  // ###TODO polylines: PolylineIndices[];
   polylines: PolylineIndices[];
 }
 

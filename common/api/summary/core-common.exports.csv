@@ -553,10 +553,10 @@ beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
 public;PointWithStatus
 internal;POLICY: unique symbol
-internal;PolylineData
 internal;PolylineEdgeArgs
-internal;PolylineFlags
-internal;PolylineTypeFlags
+public;PolylineFlags
+public;PolylineIndices = number[]
+alpha;PolylineTypeFlags
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId

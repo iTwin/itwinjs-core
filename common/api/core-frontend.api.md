@@ -224,9 +224,9 @@ import { PointCloudReader } from '@itwin/core-orbitgt';
 import { PointWithStatus } from '@itwin/core-common';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
-import { PolylineData } from '@itwin/core-common';
 import { PolylineEdgeArgs } from '@itwin/core-common';
 import { PolylineFlags } from '@itwin/core-common';
+import { PolylineIndices } from '@itwin/core-common';
 import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
 import { PromiseReturnType } from '@itwin/core-bentley';
@@ -7024,7 +7024,7 @@ export enum InputSource {
     Unknown = 0
 }
 
-// @internal
+// @public
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
@@ -8755,44 +8755,34 @@ export namespace Mesh {
     }
 }
 
-// @internal
+// @public
 export interface MeshArgs {
-    // (undocumented)
     auxChannels?: ReadonlyArray<AuxChannel_2>;
-    // (undocumented)
     colors: ColorIndex;
-    // (undocumented)
+    // @internal (undocumented)
     edges?: MeshArgsEdges;
-    // (undocumented)
     features: FeatureIndex;
-    // (undocumented)
-    fillFlags: FillFlags;
-    // (undocumented)
+    fillFlags?: FillFlags;
     hasBakedLighting?: boolean;
-    // (undocumented)
     is2d?: boolean;
-    // (undocumented)
     isPlanar?: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isVolumeClassifier?: boolean;
-    // (undocumented)
     material?: RenderMaterial;
-    // (undocumented)
     normals?: OctEncodedNormal[];
-    // (undocumented)
-    points: QPoint3dList | Omit<Point3dList, "add">;
-    // (undocumented)
+    points: QPoint3dList | (Array<Point3d> & {
+        range: Range3d;
+    });
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
     };
-    // (undocumented)
     vertIndices: number[];
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace MeshArgs {
-    // (undocumented)
+    // @internal (undocumented)
     export function fromMesh(mesh: Mesh): MeshArgs | undefined;
 }
 
@@ -10213,27 +10203,22 @@ export class PolyfacePrimitiveList extends Array<PolyfacePrimitive> {
     constructor(...args: PolyfacePrimitive[]);
 }
 
-// @internal
+// @public
 export interface PolylineArgs {
-    // (undocumented)
     colors: ColorIndex;
-    // (undocumented)
     features: FeatureIndex;
-    // (undocumented)
     flags: PolylineFlags;
-    // (undocumented)
     linePixels: LinePixels;
-    // (undocumented)
-    points: QPoint3dList | Omit<Point3dList, "add">;
-    // (undocumented)
-    polylines: PolylineData[];
-    // (undocumented)
+    points: QPoint3dList | (Array<Point3d> & {
+        range: Range3d;
+    });
+    polylines: PolylineIndices[];
     width: number;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace PolylineArgs {
-    // (undocumented)
+    // @internal (undocumented)
     export function fromMesh(mesh: Mesh): PolylineArgs | undefined;
 }
 
@@ -11595,6 +11580,7 @@ export abstract class RenderSystem implements IDisposable {
     createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
+    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @deprecated
@@ -11645,6 +11631,7 @@ export abstract class RenderSystem implements IDisposable {
     createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
+    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @beta
@@ -13452,7 +13439,7 @@ export interface TesselatedPolyline {
 }
 
 // @internal
-export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline;
+export function tesselatePolyline(polylines: PolylineIndices[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline;
 
 // @internal (undocumented)
 export function tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined;

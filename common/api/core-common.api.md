@@ -5508,13 +5508,13 @@ export class MeshEdges {
 
 // @internal (undocumented)
 export class MeshPolyline {
-    constructor(indices?: number[]);
+    constructor(indices?: PolylineIndices);
     // (undocumented)
     addIndex(index: number): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
-    readonly indices: number[];
+    readonly indices: PolylineIndices;
 }
 
 // @internal (undocumented)
@@ -6458,67 +6458,33 @@ export interface PointWithStatus {
 export const POLICY: unique symbol;
 
 // @internal (undocumented)
-export class PolylineData {
-    constructor(vertIndices?: number[], numIndices?: number);
-    // (undocumented)
-    init(polyline: MeshPolyline): boolean;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    numIndices: number;
-    // (undocumented)
-    reset(): void;
-    // (undocumented)
-    vertIndices: number[];
-}
-
-// @internal (undocumented)
 export class PolylineEdgeArgs {
-    constructor(lines?: PolylineData[]);
+    constructor(lines?: PolylineIndices[]);
     // (undocumented)
     clear(): void;
     // (undocumented)
-    init(lines?: PolylineData[]): boolean;
+    init(lines?: PolylineIndices[]): boolean;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    lines?: PolylineData[];
+    lines?: PolylineIndices[];
     // (undocumented)
     get numLines(): number;
 }
 
-// @internal
-export class PolylineFlags {
-    constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolylineTypeFlags);
-    // (undocumented)
-    clone(): PolylineFlags;
-    // (undocumented)
-    equals(other: PolylineFlags): boolean;
-    // (undocumented)
-    initDefaults(): void;
-    // (undocumented)
-    is2d: boolean;
-    // (undocumented)
-    get isAnyEdge(): boolean;
-    // (undocumented)
-    isDisjoint: boolean;
-    // (undocumented)
-    get isNormalEdge(): boolean;
-    // (undocumented)
-    get isOutlineEdge(): boolean;
-    // (undocumented)
-    isPlanar: boolean;
-    pack(): number;
-    // (undocumented)
-    setIsNormalEdge(): void;
-    // (undocumented)
-    setIsOutlineEdge(): void;
-    // (undocumented)
-    type: PolylineTypeFlags;
-    static unpack(value: number): PolylineFlags;
+// @public
+export interface PolylineFlags {
+    is2d?: boolean;
+    isDisjoint?: boolean;
+    isPlanar?: boolean;
+    // @alpha
+    type?: PolylineTypeFlags;
 }
 
-// @internal (undocumented)
+// @public
+export type PolylineIndices = number[];
+
+// @alpha
 export enum PolylineTypeFlags {
     // (undocumented)
     Edge = 1,

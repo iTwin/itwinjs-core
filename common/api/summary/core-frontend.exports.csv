@@ -429,7 +429,7 @@ internal;IndexBuffer
 internal;IndexedEdgeParams
 public;class InputCollector 
 public;InputSource
-internal;InstancedGraphicParams
+public;InstancedGraphicParams
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
@@ -522,8 +522,9 @@ public;MeasureLocationTool
 public;MeasureVolumeTool 
 internal;Mesh
 internal;Mesh
-internal;MeshArgs
-internal;MeshArgs
+public;MeshArgs
+public;MeshArgs
+internal;fromMesh(mesh: Mesh): MeshArgs | undefined
 internal;MeshArgsEdges
 internal;MeshBuilder
 internal;MeshBuilder
@@ -617,8 +618,9 @@ internal;PointCloudArgs
 internal;PointStringParams
 internal;PolyfacePrimitive
 internal;PolyfacePrimitiveList 
-internal;PolylineArgs
-internal;PolylineArgs
+public;PolylineArgs
+public;PolylineArgs
+internal;fromMesh(mesh: Mesh): PolylineArgs | undefined
 internal;PolylineParams
 beta;PreferenceArg 
 beta;PreferenceKeyArg
@@ -813,7 +815,7 @@ public;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
 internal;TesselatedPolyline
-internal;tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline
+internal;tesselatePolyline(polylines: PolylineIndices[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline
 internal;tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined
 public;TextInputFormatPropEditorSpec 
 public;TextSelectFormatPropEditorSpec 
