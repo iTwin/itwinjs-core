@@ -22,9 +22,9 @@ import { SurfaceType } from "../../../common/render/primitives/SurfaceParams";
 import {
   ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams,
 } from "../../../common/render/primitives/VertexTableSplitter";
-import {
-  createMeshParams, createPointStringParams, MeshArgs, PolylineArgs,
-} from "../../../render-primitives";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createPointStringParams } from "../../../render/primitives/PointStringParams";
+import { MeshArgs, PolylineArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 
 interface Point {
   x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
