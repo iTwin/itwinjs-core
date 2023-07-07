@@ -51,7 +51,7 @@ class OverriddenFunctions {
   }
 }
 
-// NB: These tests run in chromium via puppeteer. On non-Windows platforms, it uses software rendering. On Windows, it uses hardware rendering if available.
+// NB: These tests run in chromium via playwright. On non-Windows platforms, it uses software rendering. On Windows, it uses hardware rendering if available.
 describe("Render Compatibility", () => {
   let overriddenFunctions: OverriddenFunctions;
 

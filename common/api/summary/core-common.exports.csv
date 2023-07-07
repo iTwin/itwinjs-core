@@ -212,16 +212,16 @@ internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
-alpha;ElementGeometry
-alpha;ElementGeometryBuilderParams
-alpha;ElementGeometryBuilderParamsForPart
+beta;ElementGeometry
+beta;ElementGeometryBuilderParams
+beta;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
-alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
-alpha;ElementGeometryInfo
+beta;ElementGeometryFunction = (info: ElementGeometryInfo) => void
+beta;ElementGeometryInfo
 public;ElementGeometryOpcode
-alpha;ElementGeometryRequest
+beta;ElementGeometryRequest
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
@@ -844,9 +844,12 @@ public;ViewFlagOverrides = Partial
 public;ViewFlagProps
 public;ViewFlags
 public;ViewFlagsProperties = Mutable
+public;ViewIdString = Id64String
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
+beta;ViewStoreRpc
+public;IdString = string
 internal;WEB_RPC_CONSTANTS:
 internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 

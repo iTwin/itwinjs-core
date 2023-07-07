@@ -1662,13 +1662,11 @@ export class SchemaContext implements ISchemaItemLocater {
     // @internal
     getCachedSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): T | undefined;
     getKnownSchemas(): Schema[];
-    // (undocumented)
     getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined>;
     getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
     getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
-    // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
     schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
 }
