@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { PolylineIndices, QPoint3dList } from "@itwin/core-common";
+import { PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexTableBuilder } from "./VertexTableBuilder";
 import { PolylineParams, TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
@@ -95,7 +95,7 @@ class PolylineTesselator {
   }
 
   public static fromPolyline(args: PolylineArgs): PolylineTesselator {
-    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, args.flags.is2d));
+    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, !!args.flags.is2d));
   }
 
   public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
@@ -227,8 +227,8 @@ export function createPolylineParams(args: PolylineArgs): PolylineParams | undef
   return {
     vertices,
     polyline: tesselator.tesselate(),
-    isPlanar: args.flags.isPlanar,
-    type: args.flags.type,
+    isPlanar: !!args.flags.isPlanar,
+    type: args.flags.type ?? PolylineTypeFlags.Normal,
     weight: args.width,
     linePixels: args.linePixels,
   };

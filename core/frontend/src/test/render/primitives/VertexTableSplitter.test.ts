@@ -81,7 +81,7 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     features: featureIndex,
     width: 1,
     linePixels: LinePixels.Solid,
-    flags: new PolylineFlags(false, true, true),
+    flags: { isPlanar: true, isDisjoint: true },
     points: qpoints,
     polylines: [[...new Array<number>(points.length).keys()] ],
   };

@@ -10,7 +10,8 @@ import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineIndices, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
+  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineIndices, PolylineTypeFlags, QParams3d, QPoint3dList, RenderMaterial,
+  RenderTexture, SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -61,14 +62,18 @@ export namespace PolylineArgs {
     if (polylines.length === 0)
       return undefined;
 
-    const flags = new PolylineFlags(mesh.is2d, mesh.isPlanar);
-    flags.isDisjoint = mesh.type === MeshPrimitiveType.Point;
+    const flags: PolylineFlags = {
+      is2d: mesh.is2d,
+      isPlanar: mesh.isPlanar,
+      isDisjoint: mesh.type === MeshPrimitiveType.Point,
+    };
+
     if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
       // This polyline is behaving as the edges of a region surface.
       if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
-        flags.setIsNormalEdge();
+        flags.type = PolylineTypeFlags.Edge;
       else
-        flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed
+        flags.type = PolylineTypeFlags.Outline; // edges only displayed if fill undisplayed
     }
 
     const colors = new ColorIndex();
