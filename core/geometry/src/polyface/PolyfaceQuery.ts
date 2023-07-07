@@ -1036,7 +1036,7 @@ export class PolyfaceQuery {
    * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
    */
-  public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
+  public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyfaceOrVisitor: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
     let result: CurvePrimitive[] = [];
     // setup default options:
     if (options === undefined)
@@ -1050,7 +1050,11 @@ export class PolyfaceQuery {
       chainContext = ChainMergeContext.create();
     const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
     if (context) {
-      const visitor = polyface.createVisitor(0);
+      let visitor : PolyfaceVisitor;
+      if (polyfaceOrVisitor instanceof Polyface)
+          visitor = polyfaceOrVisitor.createVisitor(0);
+        else
+          visitor = polyfaceOrVisitor;
       const workNormal = Vector3d.createZero();
       for (visitor.reset(); visitor.moveToNextFacet();) {
         if (options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))) {
