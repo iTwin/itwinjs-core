@@ -11,7 +11,7 @@ import { IpcApp } from "@itwin/core-frontend";
 import { BasicManipulationCommandIpc, EditCommandIpc, editorIpcStrings, SolidModelingCommandIpc } from "@itwin/editor-common";
 
 /**
- * Create a type safe Proxy object to make IPC calls from an [[EditTool]] to methods of an `EditCommandIpc` interface of the current `EditCommand`.
+ * Create a type safe Proxy object to make IPC calls from [[EditTools]] to methods of an `EditCommandIpc` interface of the current `EditCommand`.
  * @beta
  */
 export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K> {
