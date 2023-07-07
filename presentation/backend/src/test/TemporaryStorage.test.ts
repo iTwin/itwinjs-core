@@ -7,7 +7,7 @@ import * as lolex from "lolex";
 import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
-import { FactoryBasedTemporaryStorage, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
 
@@ -325,7 +325,7 @@ describe("FactoryBasedTemporaryStorage", () => {
     });
 
     it("provides a function to update last used timestamp when calling factory", () => {
-      const factory = sinon.fake((id: string) => id);
+      const factory = sinon.fake<Parameters<FactoryBasedTemporaryStorageProps<string>["factory"]>, string>((id: string) => id);
       const storage = new FactoryBasedTemporaryStorage<string>({
         factory,
       });
