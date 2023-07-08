@@ -527,8 +527,11 @@ export abstract class RenderSystem implements IDisposable {
     return graphic;
   }
 
-  /** Create a RenderGraphic consisting of batched [[Feature]]s.
-   * @internal
+  /** Create a "batch" of graphics containing individual [Feature]($common)s.
+   * @param graphic The graphic representing the contents of the batch.
+   * @param features The features contained within the batch.
+   * @param range A volume fully encompassing the batch's geometry.
+   * @param options Options customizing the behavior of the batch.
    */
   public abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 

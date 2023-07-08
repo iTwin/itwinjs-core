@@ -11567,7 +11567,6 @@ export abstract class RenderSystem implements IDisposable {
     createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined;
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
-    // @internal
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
@@ -11653,13 +11652,11 @@ export abstract class RenderSystem implements IDisposable {
     get isMobile(): boolean;
     // @internal (undocumented)
     abstract get isValid(): boolean;
-    // @internal
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
     // @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined>;
     // @internal (undocumented)
     get maxRealityImageryLayers(): number;
-    // @internal (undocumented)
     get maxTextureSize(): number;
     // @internal (undocumented)
     onInitialized(): void;
