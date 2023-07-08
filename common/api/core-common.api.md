@@ -1559,7 +1559,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     isEmpty: boolean;
 }>;
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
@@ -3207,6 +3207,7 @@ export class FeatureTable extends IndexMap<Feature> {
     get maxFeatures(): number;
     // (undocumented)
     readonly modelId: Id64String;
+    pack(): RenderFeatureTable;
     // (undocumented)
     readonly type: BatchType;
     get uniform(): Feature | undefined;
@@ -5558,7 +5559,7 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
-// @internal
+// @public
 export interface ModelFeature {
     // (undocumented)
     elementId: Id64String;
@@ -5570,13 +5571,11 @@ export interface ModelFeature {
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace ModelFeature {
-    // (undocumented)
     export function create(): ModelFeature;
-    // (undocumented)
     export function isDefined(feature: ModelFeature): boolean;
-    // (undocumented)
+    // @alpha (undocumented)
     export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
 }
 
@@ -6114,9 +6113,9 @@ export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureApp
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeature {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeId: number;
     // (undocumented)
     elementId: Id64.Uint32Pair;
@@ -6128,11 +6127,9 @@ export interface PackedFeature {
     subCategoryId: Id64.Uint32Pair;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace PackedFeature {
-    // (undocumented)
     export function create(): PackedFeature;
-    // (undocumented)
     export function createWithIndex(): PackedFeatureWithIndex;
 }
 
@@ -6193,7 +6190,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     unpack(): FeatureTable;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeatureWithIndex extends PackedFeature {
     // (undocumented)
     index: number;
@@ -7175,23 +7172,23 @@ export interface RelTypeInfo {
 // @public
 export type RemoveFunction = () => void;
 
-// @internal
+// @public
 export interface RenderFeatureTable {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeIds?: UintArray;
     readonly batchModelId: Id64String;
     readonly batchModelIdPair: Id64.Uint32Pair;
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
-    // (undocumented)
+    // @alpha (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
-    // (undocumented)
+    // @alpha (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;

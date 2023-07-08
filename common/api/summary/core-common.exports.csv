@@ -127,7 +127,7 @@ public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-internal;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
+alpha;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
@@ -463,8 +463,9 @@ public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
 public;ModelExtentsProps
-internal;ModelFeature
-internal;ModelFeature
+public;ModelFeature
+public;ModelFeature
+alpha;unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -520,11 +521,11 @@ public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | Overri
 public;OverrideFeatureAppearanceOptions
 public;OverrideModelAppearanceOptions 
 public;OverrideSubCategoryAppearanceOptions 
-internal;PackedFeature
-internal;PackedFeature
+public;PackedFeature
+public;PackedFeature
 internal;PackedFeatureModelTable
 internal;PackedFeatureTable 
-internal;PackedFeatureWithIndex 
+public;PackedFeatureWithIndex 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -620,7 +621,7 @@ public;RelatedElementProps
 public;RelationshipProps 
 internal;RelTypeInfo
 public;RemoveFunction = () => void
-internal;RenderFeatureTable
+public;RenderFeatureTable
 public;class RenderMaterial
 public;RenderMaterial
 public;RenderMaterialAssetMapsProps
