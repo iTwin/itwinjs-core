@@ -8218,7 +8218,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -10046,6 +10046,7 @@ export namespace Pixel {
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
+        computeHitPriority(): HitPriority;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
@@ -10059,6 +10060,7 @@ export namespace Pixel {
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
         readonly tileId?: string;
+        toHitProps(viewport: Viewport): HitProps;
         readonly type: GeometryType;
         // @beta
         readonly viewAttachmentId?: Id64String;
@@ -10070,6 +10072,22 @@ export namespace Pixel {
         Silhouette = 5,
         Surface = 2,
         Unknown = 0
+    }
+    export interface HitProps {
+        distFraction: number;
+        geometryClass?: GeometryClass;
+        // @alpha
+        isClassifier?: boolean;
+        modelId?: Id64String;
+        priority: HitPriority;
+        sourceId: Id64String;
+        // @internal
+        sourceIModel?: IModelConnection;
+        subCategoryId?: Id64String;
+        // @internal
+        tileId?: string;
+        // @beta
+        viewAttachment?: ViewAttachmentHitInfo;
     }
     export enum Planarity {
         None = 1,
