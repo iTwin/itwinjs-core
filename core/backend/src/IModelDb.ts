@@ -950,8 +950,8 @@ export abstract class IModelDb extends IModel {
     return schemaState;
   }
 
-  /** Get the ClassMetaDataRegistry for this iModel.
-   * @internal
+  /** The registry of entity metadata for this iModel.
+   * @beta
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)

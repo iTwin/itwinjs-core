@@ -1688,20 +1688,17 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
 
-// @internal
+// @public
 export class YieldManager {
     constructor(options?: YieldManagerOptions);
-    // (undocumented)
+    // @internal (undocumented)
     protected actualYield(): Promise<void>;
-    // (undocumented)
     allowYield(): Promise<void>;
-    // (undocumented)
-    options: Readonly<Required<YieldManagerOptions>>;
+    readonly options: Readonly<Required<YieldManagerOptions>>;
 }
 
-// @internal
+// @public
 export interface YieldManagerOptions {
-    // (undocumented)
     iterationsBeforeYield?: number;
 }
 

@@ -10160,7 +10160,6 @@ export class ViewFlags {
     readonly styles: boolean;
     readonly textures: boolean;
     readonly thematicDisplay: boolean;
-    // @internal
     toFullyDefinedJSON(): Required<ViewFlagProps>;
     toJSON(): ViewFlagProps;
     readonly transparency: boolean;

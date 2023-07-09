@@ -252,7 +252,7 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
-internal;MetaDataRegistry
+beta;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 

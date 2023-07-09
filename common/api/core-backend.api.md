@@ -2890,7 +2890,7 @@ export abstract class IModelDb extends IModel {
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @beta
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
@@ -3970,7 +3970,7 @@ export interface LockStatusShared {
     state: LockState.Shared;
 }
 
-// @internal
+// @beta
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
