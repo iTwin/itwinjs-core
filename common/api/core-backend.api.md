@@ -432,8 +432,11 @@ export namespace BlobContainer {
     export type ContainerId = string;
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<UriAndId>;
-        delete(props: AccessContainerProps): Promise<void>;
+        delete(container: AccessContainerProps): Promise<void>;
+        queryMetadata(container: AccessContainerProps): Promise<Metadata>;
+        queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
+        updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
     export interface CreateNewContainerProps {
@@ -446,6 +449,7 @@ export namespace BlobContainer {
     export interface Metadata {
         containerType: string;
         description?: string;
+        json?: SettingObject;
         label: string;
     }
     export type Provider = "azure" | "google";
@@ -459,6 +463,7 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
+        ownerGuid?: GuidString;
     }
     export interface TokenProps {
         expiration: Date;
@@ -487,9 +492,12 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
+    close(): void;
+    // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
@@ -2602,7 +2610,7 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
@@ -2702,7 +2710,7 @@ export class GeometryPart extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -2913,7 +2921,7 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta
     deleteSettingDictionary(name: string): void;
-    // @alpha
+    // @beta
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;

@@ -1241,6 +1241,7 @@ export interface IdBinding extends BasePresentationQueryBinding {
 // @public
 export interface IdCategoryIdentifier {
     categoryId: string;
+    createClassCategory?: boolean;
     type: "Id";
 }
 

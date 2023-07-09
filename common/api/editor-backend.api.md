@@ -56,7 +56,7 @@ import { TransformProps } from '@itwin/core-geometry';
 import { TransformSubEntityProps } from '@itwin/editor-common';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @alpha (undocumented)
+// @beta
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
     constructor(iModel: IModelDb, _str: string);
     // (undocumented)

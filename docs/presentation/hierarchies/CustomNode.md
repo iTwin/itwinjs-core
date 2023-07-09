@@ -6,22 +6,23 @@ Returns a static custom-defined node that's not based on an ECInstance.
 
 ## Attributes
 
-| Name                                                      | Required? | Type                                             | Default     |
-| --------------------------------------------------------- | --------- | ------------------------------------------------ | ----------- |
-| *Node values*                                             |
-| [`type`](#attribute-type)                                 | Yes       | `string`                                         |             |
-| [`label`](#attribute-label)                               | Yes       | `string`                                         |             |
-| [`description`](#attribute-description)                   | No        | `string`                                         | `""`        |
-| [`imageId`](#attribute-imageid)                           | No        | `string`                                         | `""`        |
-| *Filtering*                                               |
-| [`hideExpression`](#attribute-hideexpression)             | No        | [ECExpression](./ECExpressions.md#specification) | `""`        |
-| [`hideIfNoChildren`](#attribute-hideifnochildren)         | No        | `boolean`                                        | `false`     |
-| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy) | No        | `boolean`                                        | `false`     |
-| *Ordering*                                                |
-| [`priority`](#attribute-priority)                         | No        | `number`                                         | `1000`      |
-| *Misc.*                                                   |
-| [`hasChildren`](#attribute-haschildren)                   | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` |
-| [`nestedRules`](#attribute-nestedrules)                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        |
+| Name                                                                        | Required? | Type                                             | Default     |
+| --------------------------------------------------------------------------- | --------- | ------------------------------------------------ | ----------- |
+| *Node values*                                                               |
+| [`type`](#attribute-type)                                                   | Yes       | `string`                                         |             |
+| [`label`](#attribute-label)                                                 | Yes       | `string`                                         |             |
+| [`description`](#attribute-description)                                     | No        | `string`                                         | `""`        |
+| [`imageId`](#attribute-imageid)                                             | No        | `string`                                         | `""`        |
+| *Filtering*                                                                 |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification) | `""`        |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                        | `false`     |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                        | `false`     |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                        | `false`     |
+| *Ordering*                                                                  |
+| [`priority`](#attribute-priority)                                           | No        | `number`                                         | `1000`      |
+| *Misc.*                                                                     |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        |
 
 ### Attribute: `type`
 
@@ -146,6 +147,22 @@ When specified [ECExpression](./ECExpressions.md#specification) evaluates to `tr
 | `hideExpression` evaluates to `false`                                                                                                          | `hideExpression` evaluates to `true`                                                                                                         |
 | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | ![Example of using "hide expression" attribute evaluating to "false"](./media/hierarchy-with-specification-hideexpression-attribute-false.png) | ![Example of using "hide expression" attribute evaluating to "true"](./media/hierarchy-with-specification-hideexpression-attribute-true.png) |
+
+### Attribute: `suppressSimilarAncestorsCheck`
+
+Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
+
+```ts
+[[include:Presentation.Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
+```
+
+![Example of using "suppress similar ancestors check" attribute](./media/hierarchy-with-specification-suppresssimilarancestorscheck-attribute.png)
 
 ### Attribute: `priority`
 
