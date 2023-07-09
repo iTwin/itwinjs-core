@@ -697,7 +697,7 @@ internal;RealityModelTileUtils
 public;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
-alpha;RealityTileGeometry
+beta;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion

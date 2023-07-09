@@ -11036,7 +11036,7 @@ export class RealityTile extends Tile {
     disposeContents(): void;
     // @internal (undocumented)
     protected forceSelectRealityTile(): boolean;
-    // @internal (undocumented)
+    // @beta
     get geometry(): RealityTileGeometry | undefined;
     // @internal (undocumented)
     protected _geometry?: RealityTileGeometry;
@@ -11133,9 +11133,8 @@ export class RealityTileDrawArgs extends TileDrawArgs {
     get worldToViewMap(): Map4d;
 }
 
-// @alpha
+// @beta
 export interface RealityTileGeometry {
-    // (undocumented)
     polyfaces?: Polyface[];
 }
 
