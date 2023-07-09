@@ -2508,7 +2508,6 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
