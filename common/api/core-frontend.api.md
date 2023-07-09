@@ -10209,7 +10209,7 @@ export namespace Pixel {
         get subCategoryId(): Id64String | undefined;
         // @internal (undocumented)
         readonly tileId?: string;
-        toHitProps(viewport: Viewport): HitProps;
+        toHitProps(viewport: Viewport): Pixel.HitProps;
         readonly type: GeometryType;
         // @beta
         readonly viewAttachmentId?: Id64String;
