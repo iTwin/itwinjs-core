@@ -984,11 +984,8 @@ public;ViewUndoEvent
 public;ViewUndoTool 
 public;VisibleFeature
 public;WalkViewTool 
-<<<<<<< HEAD
 internal;wantJointTriangles(weight: number, is2d: boolean): boolean
-=======
 internal;WebMercator
->>>>>>> master
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor
