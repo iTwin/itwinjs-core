@@ -4413,7 +4413,7 @@ export class Point3dArray {
         maxYPoint: Point3d;
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
-    static packToFloat64Array(data: Point3d[]): Float64Array;
+    static packToFloat64Array(data: Point3d[], result?: Float64Array): Float64Array;
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;

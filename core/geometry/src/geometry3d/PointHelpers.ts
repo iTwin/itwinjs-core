@@ -490,20 +490,35 @@ export class Point4dArray {
       xyzw[i + 3] = xyzw1.w;
     }
   }
-  /** Test arrays of the same type for near equality of all corresponding numeric values, treated as coordinates. */
+  /** Test arrays for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
-      if (dataA.length !== dataB.length)
-        return false;
       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+        if (dataA.length !== dataB.length)
+          return false;
         for (let i = 0; i < dataA.length; i++)
           if (!Geometry.isSameCoordinate(dataA[i], dataB[i]))
             return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
+        if (dataA.length !== dataB.length)
+          return false;
         for (let i = 0; i < dataA.length; i++)
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
+      } else {  // different types
+        const points = dataA instanceof Float64Array ? dataB as Point4d[] : dataA;
+        const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
+        if (numbers.length !== points.length * 4)
+          return false;
+        for (let iPoint = 0; iPoint < points.length; ++iPoint) {
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint]) ||
+              !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1]) ||
+              !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2]) ||
+              !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3]))
+            return false;
+        }
       }
+      return true;
     }
     // if both are null it is equal, otherwise unequal
     return (dataA === undefined && dataB === undefined);
@@ -532,9 +547,16 @@ export class Point4dArray {
  */
 
 export class Point3dArray {
-  /** pack x,y,z to `Float64Array` */
-  public static packToFloat64Array(data: Point3d[]): Float64Array {
-    const result = new Float64Array(3 * data.length);
+  /**
+   * Copy 3d points into a packed buffer.
+   * @param data array of xyz
+   * @param result optional destination array. If insufficiently sized, a new array is returned.
+   * @return packed point array
+   */
+  public static packToFloat64Array(data: Point3d[], result?: Float64Array): Float64Array {
+    const numValues = 3 * data.length;
+    if (!result || result.length < numValues)
+      result = new Float64Array(numValues);
     let i = 0;
     for (const p of data) {
       result[i++] = p.x;
@@ -722,20 +744,34 @@ export class Point3dArray {
       xyz[i + 2] = xyz1.z;
     }
   }
-  /** Test arrays of the same type for near equality of all corresponding numeric values, treated as coordinates. */
+  /** Test arrays for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
-      if (dataA.length !== dataB.length)
-        return false;
-      if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+        if (dataA.length !== dataB.length)
+          return false;
         for (let i = 0; i < dataA.length; i++)
           if (!Geometry.isSameCoordinate(dataA[i], dataB[i]))
             return false;
       } else if (Array.isArray(dataA) && Array.isArray(dataB)) {
+        if (dataA.length !== dataB.length)
+          return false;
         for (let i = 0; i < dataA.length; i++)
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
+      } else {  // different types
+        const points = dataA instanceof Float64Array ? dataB as Point3d[] : dataA;
+        const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
+        if (numbers.length !== points.length * 3)
+          return false;
+        for (let iPoint = 0; iPoint < points.length; ++iPoint) {
+          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint]) ||
+              !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1]) ||
+              !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2]))
+            return false;
+        }
       }
+      return true;
     }
     // if both are null it is equal, otherwise unequal
     return (dataA === undefined && dataB === undefined);

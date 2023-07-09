@@ -77,9 +77,11 @@ function almostEqualCurveData(data0: SerializationHelpers.BSplineCurveData, data
   return true;
 }
 
+
+
 describe("SerializationHelpers", () => {
   // coverage for branches not hit during other serialization tests
-  it.only("CurveCoverage", () => {
+  it("CurveCoverage", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const unweightedPoles3d = [Point3d.create(1,-1,-1), Point3d.create(1,1,1), Point3d.create(-1,1,-1), Point3d.create(-1,-1,1)];
@@ -90,6 +92,15 @@ describe("SerializationHelpers", () => {
     const poles4d: Point4d[] = [];
     for (let i = 0; i < unweightedPoles3d.length; ++i)
       poles4d.push(Point4d.create(unweightedPoles3d[i].x, unweightedPoles3d[i].y, unweightedPoles3d[i].z, 1.0).scale(weights[i]));
+    // cover Point3d/4dArray.isAlmostEqual/packToFloat64Array
+    let working = new Float64Array(); // wrong size
+    ck.testTrue(Point3dArray.isAlmostEqual(unweightedPoles3d, Point3dArray.packToFloat64Array(unweightedPoles3d, working)), "cover Point3dArray.isAlmostEqual(points, numbers)");
+    working = new Float64Array(3 * unweightedPoles3d.length); // right size
+    ck.testTrue(Point3dArray.isAlmostEqual(Point3dArray.packToFloat64Array(unweightedPoles3d, working), unweightedPoles3d), "cover Point3dArray.isAlmostEqual(numbers, points)");
+    working = new Float64Array(); // wrong size
+    ck.testTrue(Point4dArray.isAlmostEqual(poles4d, Point4dArray.packToFloat64Array(poles4d, working)), "cover Point4dArray.isAlmostEqual(points, numbers)");
+    working = new Float64Array(4 * poles4d.length); // right size
+    ck.testTrue(Point4dArray.isAlmostEqual(Point4dArray.packToFloat64Array(poles4d, working), poles4d), "cover Point4dArray.isAlmostEqual(numbers, points)");
     // test open and (maximally continuous) periodic curves
     const openCurve = BSplineCurve3dH.createUniformKnots(poles4d, 4);
     const closedCurve = BSplineCurve3dH.createPeriodicUniformKnots(poles4d, 3);
@@ -134,7 +145,6 @@ describe("SerializationHelpers", () => {
         }
       }
     }
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "CurveCoverage");
     expect(ck.getNumErrors()).equals(0);
   });
