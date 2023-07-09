@@ -8,7 +8,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitList, HitPriority, HitSource, ViewAttachmentHitInfo } from "./HitDetail";
+import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";

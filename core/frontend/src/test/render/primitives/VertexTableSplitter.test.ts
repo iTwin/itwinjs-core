@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineFlags,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
