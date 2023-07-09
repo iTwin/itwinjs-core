@@ -101,7 +101,7 @@ export namespace Pixel {
     /** Convert this pixel to a [[HitProps]] suitable for constructing a [[HitDetail]].
      * @param viewport The viewport in which the hit originated.
      */
-    public toHitProps(viewport: Viewport): HitProps {
+    public toHitProps(viewport: Viewport): Pixel.HitProps {
       let viewAttachment: ViewAttachmentHitInfo | undefined;
       if (this.viewAttachmentId) {
         const attachmentViewport = viewport.view.getAttachmentViewport(this.viewAttachmentId);

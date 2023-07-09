@@ -181,7 +181,7 @@ const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
 
 /** Arguments to [[ViewState.attachToViewport]].
- * @note The [[Viewport]] has a dependency upon and control over the [[ViewState]]. Do not use [[attachToViewState]] to introduce a dependency in
+ * @note The [[Viewport]] has a dependency upon and control over the [[ViewState]]. Do not use `attachToViewport` to introduce a dependency in
  * the opposite direction.
  * @public
  */

@@ -479,7 +479,7 @@ export class IModelApp {
     }
   }
 
-  /** Request that the [[eventLoop]] execute on the next [animation frame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
+  /** Request that the event loop execute on the next [animation frame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
    * There is generally no reason for applications to invoke this method directly.
    */
   public static requestNextAnimation() {

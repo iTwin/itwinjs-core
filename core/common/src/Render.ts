@@ -37,7 +37,7 @@ export interface PolylineFlags {
 
 /** Describes the vertex indices of a single line within a [PolylineArgs]($frontend).
  * The indices represent either a line string as a connected series of points, or a point string as a set of disconnected points, depending
- * on the [[PolylineFlags.isDisjoint]] value of [PolylinArgs.flags]($frontend).
+ * on the [[PolylineFlags.isDisjoint]] value of [PolylineArgs.flags]($frontend).
  * @public
  */
 export type PolylineIndices = number[];

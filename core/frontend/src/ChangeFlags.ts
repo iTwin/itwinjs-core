@@ -101,7 +101,7 @@ export class ChangeFlags {
   public get value(): ChangeFlag { return this._flags; }
 }
 
-/** A [[ChangelFlags]] that permits modifying the states of individual [[ChangeFlag]]s.
+/** A [[ChangeFlags]] that permits modifying the states of individual [[ChangeFlag]]s.
  * @public
  */
 export class MutableChangeFlags extends ChangeFlags {
