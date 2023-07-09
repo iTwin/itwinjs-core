@@ -98,7 +98,7 @@ export namespace Pixel {
       }
     }
 
-    /** Convert this pixel to a [[HitProps]] suitable for constructing a [[HitDetail]].
+    /** Convert this pixel to a [[Pixel.HitProps]] suitable for constructing a [[HitDetail]].
      * @param viewport The viewport in which the hit originated.
      */
     public toHitProps(viewport: Viewport): Pixel.HitProps {
