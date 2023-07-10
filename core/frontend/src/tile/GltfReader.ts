@@ -725,6 +725,9 @@ export abstract class GltfReader {
       }
       let componentCount = 1;
       switch (accessor.type) {
+        case "VEC4":
+          componentCount = 4;
+          break;
         case "VEC3":
           componentCount = 3;
           break;
