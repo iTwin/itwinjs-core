@@ -49,7 +49,7 @@ jobs:
       - bash: |
           prevAuthor=$(git log -1 --pretty=format:'%an')
           echo $prevAuthor
-          if [ $prevAuthor -eq "imodeljs-admin" ]; then
+          if [ "$prevAuthor" = "Daniel Rodriguez" ]; then
             echo "Previous commit appears to be a nightly version bump. Skipping current nightly bump."
             exit 1
           fi
