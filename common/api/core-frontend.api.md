@@ -914,7 +914,6 @@ export class AccuSnap implements Decorator {
     errorKey?: string;
     explanation?: string;
     getActiveSnapModes(): SnapMode[];
-    // @internal (undocumented)
     getCurrSnapDetail(): SnapDetail | undefined;
     // @internal (undocumented)
     getHitAndList(holder: HitListHolder): HitDetail | undefined;
@@ -14706,9 +14705,7 @@ export class ToolAdmin {
     exitInputCollector(): Promise<void>;
     // @internal (undocumented)
     exitViewTool(): Promise<void>;
-    // @internal (undocumented)
-    fillEventFromCursorLocation(ev: BeButtonEvent): void;
-    // @internal (undocumented)
+    fillEventFromCursorLocation(ev: BeButtonEvent, useSnap?: boolean): void;
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: ScreenViewport): boolean;
     // @internal

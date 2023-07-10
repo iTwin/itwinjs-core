@@ -233,7 +233,7 @@ export class AccuSnap implements Decorator {
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
-  /** @internal */
+  /** Currently active snap */
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   /** Determine whether there is a current hit that is *hot*. */
   public get isHot(): boolean {
