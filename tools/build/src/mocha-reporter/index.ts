@@ -40,10 +40,10 @@ function setupAsyncHooks() {
     if (asyncResourceStats.get(asyncId)) {
       throw new Error("Why does init have the asyncId already?");
     }
-    if (type === "MESSAGEPORT") {
-      require("inspector").listen(9230);
-      require("inspector").waitForDebugger();
-    }
+    // if (type === "MESSAGEPORT") {
+    //   require("inspector").listen(9230);
+    //   require("inspector").waitForDebugger();
+    // }
     asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId, resource: _resource});
     // fs.outputFileSync(outputFile, `Init callback:\n\tasyncId: ${asyncId}\n\ttype:${type}\n\ttriggerAsyncId:${triggerAsyncId}\n\texecution: ${eid}\n`, {flag: "a"});
   };
