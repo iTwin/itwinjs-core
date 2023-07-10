@@ -42,7 +42,7 @@ pool:
 jobs:
   - job: CheckPrevCommit
     displayName: Check Previous Commit
-    condition: eq('${{ parameters.BumpType }}', 'nightly')
+    condition: and(eq('${{ parameters.BumpType }}', 'nightly'), eq(variables['Build.Reason'], 'Schedule'))
     steps:
       - checkout: self
 
