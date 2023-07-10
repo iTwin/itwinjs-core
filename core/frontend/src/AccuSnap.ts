@@ -850,6 +850,21 @@ export class AccuSnap implements Decorator {
     return thisSnap;
   }
 
+  /** Request a snap from the backend for the supplied HitDetail.
+   * @param hit The HitDetail to snap to.
+   * @param snapMode Optional SnapMode, uses active snap modes if not specified.
+   * @return A Promise for the SnapDetail or undefined if no snap could be created.
+   */
+  public async doSnapRequest(hit: HitDetail, snapMode?: SnapMode): Promise<SnapDetail | undefined> {
+    let snapModes: SnapMode[];
+    if (undefined === snapMode)
+      snapModes = this.getActiveSnapModes();
+    else
+      snapModes = [snapMode];
+
+    return AccuSnap.requestSnap(hit, snapModes, this._hotDistanceInches, this.keypointDivisor);
+  }
+
   private findHits(ev: BeButtonEvent, force: boolean = false): SnapStatus {
     // When using AccuSnap to locate elements, we have to start with the datapoint adjusted
     // for locks and not the raw point. Otherwise, when grid/unit lock are on, we locate elements by

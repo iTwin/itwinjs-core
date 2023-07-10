@@ -906,6 +906,7 @@ export class AccuSnap implements Decorator {
     destroy(): void;
     // @internal (undocumented)
     displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void;
+    doSnapRequest(hit: HitDetail, snapMode?: SnapMode): Promise<SnapDetail | undefined>;
     enableLocate(yesNo: boolean): void;
     enableSnap(yesNo: boolean): void;
     // @internal (undocumented)
