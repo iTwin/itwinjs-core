@@ -15,7 +15,6 @@ import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -264,9 +263,6 @@ export class IModelHost {
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
-
-  /** @alpha */
-  public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
   private static _profileName: string;

@@ -206,7 +206,6 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
-import { TelemetryManager } from '@itwin/core-telemetry';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -555,8 +554,6 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps>;
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
-    // @internal (undocumented)
-    static logUsage(imodel: IModelDb, activity?: RpcActivity): void;
     // @internal (undocumented)
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
@@ -3234,8 +3231,6 @@ export class IModelHost {
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
-    // @alpha (undocumented)
-    static readonly telemetry: TelemetryManager;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal (undocumented)

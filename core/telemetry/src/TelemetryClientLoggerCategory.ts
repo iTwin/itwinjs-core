@@ -9,7 +9,7 @@
 /** Logger categories used by this package
  * @note All logger categories in this package start with the `telemetry-client` prefix.
  * @see [Logger]($bentley)
- * @alpha
+ * @internal
  */
 export enum TelemetryClientLoggerCategory {
   /** The logger category used for Telemetry */
