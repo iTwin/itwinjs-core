@@ -9,6 +9,7 @@ const debugLeaks = process.env.DEBUG_LEAKS;
 const fs = require("fs-extra");
 import * as path from "path";
 import * as async_hooks from "node:async_hooks";
+import { inspect } from "util";
 if (debugLeaks) {
   require("wtfnode");
   setupAsyncHooks();
@@ -39,7 +40,11 @@ function setupAsyncHooks() {
     if (asyncResourceStats.get(asyncId)) {
       throw new Error("Why does init have the asyncId already?");
     }
-    asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId});
+    if (type === "MESSAGEPORT") {
+      require("inspector").listen(9230);
+      require("inspector").waitForDebugger();
+    }
+    asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId, resource: _resource});
     // fs.outputFileSync(outputFile, `Init callback:\n\tasyncId: ${asyncId}\n\ttype:${type}\n\ttriggerAsyncId:${triggerAsyncId}\n\texecution: ${eid}\n`, {flag: "a"});
   };
   const before = (asyncId: number) => {
@@ -153,10 +158,9 @@ class BentleyMochaReporter extends Spec {
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
           wtf.dump();
-          console.error("\n\n\n\n");
           // asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, resource, triggerAsyncId});
           asyncResourceStats.forEach((value, key) => {
-            console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}`);
+            console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId} resource: ${inspect(value.resource)}`);
           });
         } else {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
