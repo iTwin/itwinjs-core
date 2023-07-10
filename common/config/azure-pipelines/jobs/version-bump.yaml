@@ -20,7 +20,7 @@ parameters:
   - name: BumpType
     displayName: Version Bump Type
     type: string
-    default: "nightly"
+    default: 'nightly'
     values:
     - nightly
     - minor
