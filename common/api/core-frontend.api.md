@@ -6652,7 +6652,6 @@ export class IModelApp {
     static makeModalDiv(options: ModalOptions): ModalReturn;
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
-    // @internal
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta

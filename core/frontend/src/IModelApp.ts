@@ -215,12 +215,10 @@ export class IModelApp {
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
 
-  /** Event raised just before the frontend IModelApp is to be shut down */
+  /** Event raised just before the frontend IModelApp is to be [[shutdown]]. */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** Event raised after IModelApp is finished starting up.
-   * @internal
-   */
+  /** Event raised after IModelApp [[startup]] completes. */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
