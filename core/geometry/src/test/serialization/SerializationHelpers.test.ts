@@ -29,7 +29,7 @@ function unpackPoles(poles: Float64Array | number[][], dim: number, weights?: Fl
   } else if (dim === 4) {
     const myPoles: Point3d[] = [];
     const myWeights: number[] = [];
-    let poles4d = (poles instanceof Float64Array) ? poles : NumberArray.pack(poles);
+    const poles4d = (poles instanceof Float64Array) ? poles : NumberArray.pack(poles);
     Point4dArray.unpackFloat64ArrayToPointsAndWeights(poles4d, myPoles, myWeights);
     xyz = Point3dArray.packToFloat64Array(myPoles);
     w = NumberArray.pack(myWeights);
@@ -77,11 +77,9 @@ function almostEqualCurveData(data0: SerializationHelpers.BSplineCurveData, data
   return true;
 }
 
-
-
 describe("SerializationHelpers", () => {
   // coverage for branches not hit during other serialization tests
-  it("CurveCoverage", () => {
+  it("BSplineCurveCoverage", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const unweightedPoles3d = [Point3d.create(1,-1,-1), Point3d.create(1,1,1), Point3d.create(-1,1,-1), Point3d.create(-1,-1,1)];
@@ -139,13 +137,22 @@ describe("SerializationHelpers", () => {
         if (ck.testTrue(SerializationHelpers.Import.prepareBSplineCurveData(importData), "Import.prepareBSplineCurveData on valid input succeeds"))
           ck.testTrue(almostEqualCurveData(importData, origData), "Import.prepareBSplineCurveData on valid input yields equivalent data");
         if (true) {
-          let data = SerializationHelpers.cloneBSplineCurveData(exportData);
+          const data = SerializationHelpers.cloneBSplineCurveData(exportData);
           if (ck.testTrue(SerializationHelpers.Import.prepareBSplineCurveData(data, { removeExtraKnots: true }), "Import.prepareBSplineCurveData with removeExtraKnots succeeds"))
             ck.testTrue(almostEqualCurveData(data, exportData), "Import.prepareBSplineCurveData with removeExtraKnots yields equivalent data");
         }
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "CurveCoverage");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "BSplineCurveCoverage");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("BSplineSurfaceCoverage", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // START HERE:
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "BSplineSurfaceCoverage");
     expect(ck.getNumErrors()).equals(0);
   });
 });

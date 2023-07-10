@@ -57,8 +57,8 @@ export namespace SerializationHelpers {
         closed: source.params.closed,
         knots: source.params.knots.slice(),
         wrapMode: source.params.wrapMode,
-      }
-     }
+      },
+    };
   }
 
   /** Constructor with required data. Inputs are captured, not copied. */
