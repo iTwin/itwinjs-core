@@ -89,7 +89,7 @@ steps:
     displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose -t @itwin/map-layers-formats
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     env:
@@ -97,7 +97,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - script: node common/scripts/install-run-rush.js cover --verbose
+  - script: node common/scripts/install-run-rush.js cover --verbose -t @itwin/map-layers-formats
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     env:
