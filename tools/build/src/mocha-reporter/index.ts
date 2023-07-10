@@ -18,14 +18,14 @@ const asyncResourceStats = new Map<number, any>();
 function setupAsyncHooks() {
   // Can't console.log in async hooks, so maybe write to file..
 
-  const currentPkgJson = path.join(process.cwd(), "package.json");
-  let outputFile: string;
-  if (fs.existsSync(currentPkgJson)) {
-    const currentPackage = require(currentPkgJson).name;
-    outputFile = `D:\\itwinjs-core\\asyncHookOutput\\${currentPackage}.log`;
-  } else {
-    outputFile = `D:\\itwinjs-core\\asyncHookOutput\\hopeIdontseethis.log`;
-  }
+  // const currentPkgJson = path.join(process.cwd(), "package.json");
+  // let outputFile: string;
+  // if (fs.existsSync(currentPkgJson)) {
+  //   const currentPackage = require(currentPkgJson).name;
+  //   outputFile = `D:\\itwinjs-core\\asyncHookOutput\\${currentPackage}.log`;
+  // } else {
+  //   outputFile = `D:\\itwinjs-core\\asyncHookOutput\\hopeIdontseethis.log`;
+  // }
 
   let first = true;
   // asyncResourceStats = new Map<number, any>();
@@ -34,7 +34,7 @@ function setupAsyncHooks() {
     const eid = async_hooks.executionAsyncId(); // (An executionAsyncId() of 0 means that it is being executed from C++ with no JavaScript stack above it.)
     if (first) {
       first = false;
-      fs.outputFileSync(outputFile, "initial\n");
+      // fs.outputFileSync(outputFile, "initial\n");
     }
     if (asyncResourceStats.get(asyncId)) {
       throw new Error("Why does init have the asyncId already?");
@@ -64,7 +64,7 @@ function setupAsyncHooks() {
     if (asyncResourceStats.get(asyncId) === undefined) {
       return;
     }
-    fs.outputFileSync(outputFile, `Destroy callback: ${asyncId}\n`, {flag: "a"});
+    // fs.outputFileSync(outputFile, `Destroy callback: ${asyncId}\n`, {flag: "a"});
     asyncResourceStats.delete(asyncId);
     // fs.outputFileSync(outputFile, `Destroy callback: ${asyncId}\n`, {flag: "a"});
   };
@@ -153,6 +153,7 @@ class BentleyMochaReporter extends Spec {
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
           wtf.dump();
+          console.error("\n\n\n\n");
           // asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, resource, triggerAsyncId});
           asyncResourceStats.forEach((value, key) => {
             console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid}, \nresource: ${JSON.stringify(value.resource)}\ntriggerAsyncId: ${value.triggerAsyncId}`);
