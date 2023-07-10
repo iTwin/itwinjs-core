@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.0
+      '@bentley/imodeljs-native': 4.1.4
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.0.0
       '@itwin/core-bentley': workspace:*
@@ -26,7 +26,7 @@ importers:
       '@types/multiparty': ^0.0.31
       '@types/node': 18.16.1
       '@types/semver': 7.3.10
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/ws': ^7.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -46,13 +46,13 @@ importers:
       reflect-metadata: ^0.1.13
       rimraf: ^3.0.2
       semver: ^7.3.5
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.0
+      '@bentley/imodeljs-native': 4.1.4
       '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -80,7 +80,7 @@ importers:
       '@types/multiparty': 0.0.31
       '@types/node': 18.16.1
       '@types/semver': 7.3.10
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/ws': 7.4.7
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -93,7 +93,7 @@ importers:
       null-loader: 4.0.1_webpack@5.88.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       source-map-loader: 4.0.1_webpack@5.88.0
       typescript: 5.0.4
       webpack: 5.88.0
@@ -184,7 +184,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -194,7 +194,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     devDependencies:
       '@bentley/units-schema': 1.0.7
@@ -210,7 +210,7 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@xmldom/xmldom': 0.8.8
       benchmark: 2.1.4
       chai: 4.3.7
@@ -220,7 +220,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       typescript: 5.0.4
 
   ../../core/ecschema-locaters:
@@ -250,7 +250,7 @@ importers:
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -261,7 +261,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       '@xmldom/xmldom': 0.8.8
@@ -293,7 +293,7 @@ importers:
       '@types/glob': 5.0.38
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       cpx2: 3.0.2
@@ -301,7 +301,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       typescript: 5.0.4
 
   ../../core/ecschema-metadata:
@@ -317,7 +317,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@xmldom/xmldom': ~0.8.5
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
@@ -328,7 +328,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       almost-equal: 1.1.0
@@ -344,7 +344,7 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@xmldom/xmldom': 0.8.8
       benchmark: 2.1.4
       chai: 4.3.7
@@ -354,7 +354,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       typescript: 5.0.4
 
   ../../core/ecschema-rpc/common:
@@ -468,7 +468,7 @@ importers:
       '@types/express-ws': ^3.0.1
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/supertest': ^2.0.4
       chai: ^4.1.2
       eslint: ^8.36.0
@@ -477,7 +477,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       supertest: ^3.0.0
       typescript: ~5.0.2
     dependencies:
@@ -494,14 +494,14 @@ importers:
       '@types/express-ws': 3.0.1
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/supertest': 2.0.12
       chai: 4.3.7
       eslint: 8.43.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       supertest: 3.4.2
       typescript: 5.0.4
 
@@ -546,7 +546,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -558,7 +558,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
@@ -587,7 +587,7 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       babel-loader: 8.2.5_webpack@5.88.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -598,7 +598,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       source-map-loader: 4.0.1_webpack@5.88.0
       typescript: 5.0.4
       webpack: 5.88.0
@@ -917,14 +917,14 @@ importers:
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^8.36.0
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -935,14 +935,14 @@ importers:
       '@types/glob': 5.0.38
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       eslint: 8.43.0
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       typescript: 5.0.4
 
   ../../core/telemetry:
@@ -1364,7 +1364,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -1373,7 +1373,7 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
@@ -1389,7 +1389,7 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       babel-loader: 8.2.5_webpack@5.88.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -1398,7 +1398,7 @@ importers:
       glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
       source-map-loader: 4.0.1_webpack@5.88.0
       typescript: 5.0.4
       webpack: 5.88.0
@@ -1412,7 +1412,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.36
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       eslint: ^8.36.0
@@ -1422,7 +1422,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typescript: ~5.0.2
@@ -1434,7 +1434,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.36_fsssjpk4ezl7mpaxdgpssv73ie
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
       eslint: 8.43.0
@@ -1444,8 +1444,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-support: 0.5.21
       typescript: 5.0.4
 
@@ -1462,10 +1462,11 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/google-protobuf': ~3.15.6
       '@types/mocha': ^8.2.2
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       chai-as-promised: ^7
+      cpx2: ^3.0.0
       eslint: ^8.36.0
       google-protobuf: ~3.20.1
       ignore-styles: ^5.0.1
@@ -1474,7 +1475,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typescript: ~5.0.2
@@ -1492,10 +1493,11 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/google-protobuf': 3.15.6
       '@types/mocha': 8.2.3
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
+      cpx2: 3.0.2
       eslint: 8.43.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
@@ -1503,8 +1505,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-support: 0.5.21
       typescript: 5.0.4
 
@@ -1567,7 +1569,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       azurite: ^3.24.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -1582,7 +1584,7 @@ importers:
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       '@azure/storage-blob': 12.14.0
@@ -1624,7 +1626,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.2.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.36_fsssjpk4ezl7mpaxdgpssv73ie
@@ -1632,7 +1634,7 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       internal-tools: link:../../tools/internal
       mkdirp: 1.0.4
       npm-run-all: 4.1.5
@@ -1674,7 +1676,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
       azurite: ^3.24.0
@@ -1699,7 +1701,7 @@ importers:
       nyc: ^15.1.0
       path-browserify: ^1.0.1
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
@@ -1736,8 +1738,8 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 25.2.0
       fs-extra: 8.1.0
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -1750,7 +1752,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       assert: 2.0.0
       babel-loader: 8.2.5_webpack@5.88.0
@@ -1899,7 +1901,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
       '@types/rimraf': ^2.0.2
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       cache-require-paths: ^0.3.0
       chai: ^4.1.2
@@ -1921,7 +1923,7 @@ importers:
       mocha: ^10.0.0
       rimraf: ^3.0.2
       sanitize-filename: ^1.6.3
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
@@ -1948,7 +1950,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
       '@types/rimraf': 2.0.5
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -1960,8 +1962,8 @@ importers:
       fast-sort: 3.4.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-support: 0.5.21
       typemoq: 2.1.0
     devDependencies:
@@ -2168,7 +2170,7 @@ importers:
       '@types/node': 18.16.1
       '@types/object-hash': ^1.3.0
       '@types/semver': 7.3.10
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2185,7 +2187,7 @@ importers:
       object-hash: ^1.3.1
       rimraf: ^3.0.2
       semver: ^7.3.5
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~5.0.2
@@ -2212,7 +2214,7 @@ importers:
       '@types/node': 18.16.1
       '@types/object-hash': 1.3.4
       '@types/semver': 7.3.10
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -2227,8 +2229,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       typemoq: 2.1.0
       typescript: 5.0.4
 
@@ -2247,7 +2249,7 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       '@types/source-map-support': ^0.4.0
       chai: ^4.1.2
@@ -2263,7 +2265,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~5.0.2
@@ -2283,7 +2285,7 @@ importers:
       '@types/deep-equal': 1.0.1
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       '@types/source-map-support': 0.4.2
       chai: 4.3.7
@@ -2299,8 +2301,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       typemoq: 2.1.0
       typescript: 5.0.4
       typescript-json-schema: 0.55.0
@@ -2324,7 +2326,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2339,7 +2341,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
@@ -2361,7 +2363,7 @@ importers:
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -2376,8 +2378,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-support: 0.5.21
       typemoq: 2.1.0
       typescript: 5.0.4
@@ -3037,7 +3039,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 18.16.1
-      '@types/sinon': ^9.0.0
+      '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -3049,7 +3051,7 @@ importers:
       mocha: ^10.0.0
       raf: ^3.4.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -3062,7 +3064,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       babel-loader: 8.2.5_webpack@5.88.0
       babel-plugin-istanbul: 6.1.1
@@ -3074,8 +3076,8 @@ importers:
       mocha: 10.2.0
       raf: 3.4.1
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.2.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-loader: 4.0.1_webpack@5.88.0
       typescript: 5.0.4
       webpack: 5.88.0
@@ -5261,8 +5263,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.0:
-    resolution: {integrity: sha512-GvBKTXdejUDAF/gUefIRW+C0GvCvpcIm6lh6uVDXneoPXqdugGhNf/24lX7qjlkwCxFxkp4nARiljWst6UyjfQ==}
+  /@bentley/imodeljs-native/4.1.4:
+    resolution: {integrity: sha512-C6eNrFUkqHPjo+1A5HMKvRJGHAe/ZPkvv+cviCT0HmGdQfigWE9vBa1kLPduTQ9/m5P9bnN2kyxBKcMT+cDZDA==}
     requiresBuild: true
     dev: false
 
@@ -6774,11 +6776,22 @@ packages:
     resolution: {integrity: sha512-Ky+XkAkqPZSm3NLBeUng77EBQl3cmeJhITaGHdYH8kjVB+aun3S4XBRti2zt17mtt0mIUDiNxYeoJm6drVvBJQ==}
     dependencies:
       type-detect: 4.0.8
+    dev: true
 
-  /@sinonjs/fake-timers/6.0.1:
-    resolution: {integrity: sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==}
+  /@sinonjs/commons/2.0.0:
+    resolution: {integrity: sha512-uLa0j859mMrg2slwQYdO/AkrOfmH+X6LTVmNTS9CqexuE2IvVORIkSpJLqePAbEnKJ77aMmCwr1NUZ57120Xcg==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
+      type-detect: 4.0.8
+
+  /@sinonjs/commons/3.0.0:
+    resolution: {integrity: sha512-jXBtWAF4vmdNmZgD5FoKsVLv3rPgDnLgPbU84LIJ3otV44vJlDRokVng5v8NFJdCf/da9legHcKaRuZs4L7faA==}
+    dependencies:
+      type-detect: 4.0.8
+
+  /@sinonjs/fake-timers/10.3.0:
+    resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
+    dependencies:
+      '@sinonjs/commons': 3.0.0
 
   /@sinonjs/fake-timers/8.1.0:
     resolution: {integrity: sha512-OAPJUAtgeINhh/TAlUID4QTs53Njm7xzddaVlEs/SXwgtiD1tW22zAB/W1wdqfrpmikgaWQ9Fw6Ws+hsiRm5Vg==}
@@ -6786,10 +6799,10 @@ packages:
       '@sinonjs/commons': 1.8.6
     dev: true
 
-  /@sinonjs/samsam/5.3.1:
-    resolution: {integrity: sha512-1Hc0b1TtyfBu8ixF/tpfSHTVWKwCBLY4QJbkgnE7HcwyvT2xArDxb4K7dMgqRm3szI+LJbzmW/s4xxEhv6hwDg==}
+  /@sinonjs/samsam/8.0.0:
+    resolution: {integrity: sha512-Bp8KUVlLp8ibJZrnvq2foVhP0IVX2CIprMJPK0vqGqgrDa0OHVKeZyBykqskkrdxV6yKBPmGasO8LVjAKR3Gew==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
+      '@sinonjs/commons': 2.0.0
       lodash.get: 4.4.2
       type-detect: 4.0.8
 
@@ -7411,10 +7424,10 @@ packages:
     resolution: {integrity: sha512-/19t63pFYU0ikrdbXKBWj9PCdnKyTd0Qkz0X91Ta081cYsq90OxYdcWwK/dwEoDa6dtXgj2HJfmzgq+QZTHdmQ==}
     dependencies:
       '@types/chai': 4.3.1
-      '@types/sinon': 9.0.11
+      '@types/sinon': 10.0.15
 
-  /@types/sinon/9.0.11:
-    resolution: {integrity: sha512-PwP4UY33SeeVKodNE37ZlOsR9cReypbMJOhZ7BVE0lB+Hix3efCOxiJWiE5Ia+yL9Cn2Ch72EjFTRze8RZsNtg==}
+  /@types/sinon/10.0.15:
+    resolution: {integrity: sha512-3lrFNQG0Kr2LDzvjyjB6AMJk4ge+8iYhQfdnSwIwlG88FUOV43kPcQqDZkDa/h3WSZy6i8Fr0BSjfQtB1B3xuQ==}
     dependencies:
       '@types/sinonjs__fake-timers': 8.1.2
 
@@ -10117,9 +10130,14 @@ packages:
   /diff/4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
+    dev: true
 
   /diff/5.0.0:
     resolution: {integrity: sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==}
+    engines: {node: '>=0.3.1'}
+
+  /diff/5.1.0:
+    resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
     engines: {node: '>=0.3.1'}
 
   /diffie-hellman/5.0.3:
@@ -10832,7 +10850,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.60.0_i6u37blvulxlszyhkflwwnyave
       '@typescript-eslint/experimental-utils': 5.60.0_fsssjpk4ezl7mpaxdgpssv73ie
       eslint: 8.43.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13388,7 +13406,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -14559,11 +14577,11 @@ packages:
   /nice-try/1.0.5:
     resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
 
-  /nise/4.1.0:
-    resolution: {integrity: sha512-eQMEmGN/8arp0xsvGoQ+B1qvSkR73B1nWSCh7nOt5neMCtwcQVYQGdzQMhcNscktTsWB54xnlSQFzOAPJD8nXA==}
+  /nise/5.1.4:
+    resolution: {integrity: sha512-8+Ib8rRJ4L0o3kfmyVCL7gzrohyDe0cMFTBa2d364yIrEGMEoetznKJx899YxjybU6bL9SQkYPSBBs1gyYs8Xg==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
-      '@sinonjs/fake-timers': 6.0.1
+      '@sinonjs/commons': 2.0.0
+      '@sinonjs/fake-timers': 10.3.0
       '@sinonjs/text-encoding': 0.7.2
       just-extend: 4.2.1
       path-to-regexp: 1.8.0
@@ -17260,23 +17278,23 @@ packages:
       semver: 7.0.0
     dev: false
 
-  /sinon-chai/3.7.0_chai@4.3.7+sinon@9.2.4:
+  /sinon-chai/3.7.0_chai@4.3.7+sinon@15.2.0:
     resolution: {integrity: sha512-mf5NURdUaSdnatJx3uhoBOrY9dtL19fiOtAdT1Azxg3+lNJFiuN0uzaU3xX1LeAfL17kHQhTAJgpsfhbMJMY2g==}
     peerDependencies:
       chai: ^4.0.0
       sinon: '>=4.0.0'
     dependencies:
       chai: 4.3.7
-      sinon: 9.2.4
+      sinon: 15.2.0
 
-  /sinon/9.2.4:
-    resolution: {integrity: sha512-zljcULZQsJxVra28qIAL6ow1Z9tpattkCTEJR4RBP3TGc00FcttsP5pK284Nas5WjMZU5Yzy3kAIp3B3KRf5Yg==}
+  /sinon/15.2.0:
+    resolution: {integrity: sha512-nPS85arNqwBXaIsFCkolHjGIkFo+Oxu9vbgmBJizLAhqe6P2o3Qmj3KCUoRkfhHtvgDhZdWD3risLHAUJ8npjw==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
-      '@sinonjs/fake-timers': 6.0.1
-      '@sinonjs/samsam': 5.3.1
-      diff: 4.0.2
-      nise: 4.1.0
+      '@sinonjs/commons': 3.0.0
+      '@sinonjs/fake-timers': 10.3.0
+      '@sinonjs/samsam': 8.0.0
+      diff: 5.1.0
+      nise: 5.1.4
       supports-color: 7.2.0
 
   /sisteransi/1.0.5:
@@ -18269,7 +18287,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.22.5
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2

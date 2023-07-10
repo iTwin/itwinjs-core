@@ -42,6 +42,14 @@ internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
 internal;ArcGisErrorCode
+internal;class ArcGisGeometryBaseRenderer 
+internal;ArcGisGeometryReaderJSON
+internal;ArcGisGeometryRenderer
+internal;ArcGisGraphicsRenderer 
+internal;ArcGISIdentifyImageDisplayProps
+internal;ArcGISIdentifyLayersProps
+internal;ArcGISIdentifyRequestUrl
+internal;ArcGISIdentifyRequestUrlProps
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISServiceMetadata
@@ -81,7 +89,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
-alpha;BriefcaseEditorToolSettings
+beta;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 internal;CachedDecoration =
@@ -458,14 +466,18 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
-alpha;MapFeatureInfo
-alpha;MapFeatureInfoRecord 
+beta;MapFeatureInfo
+beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
 beta;MapLayerAccessTokenParams
 beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
-alpha;MapLayerFeatureInfo
+beta;MapLayerFeature
+beta;MapLayerFeatureAttribute
+beta;MapLayerFeatureGeometry
+beta;MapLayerFeatureInfo
+beta;MapLayerFeatureRecord
 public;MapLayerFormat
 internal;MapLayerFormatEntry
 public;MapLayerFormatRegistry
@@ -473,6 +485,7 @@ public;MapLayerFormatType = typeof MapLayerFormat
 beta;class MapLayerImageryProvider
 public;MapLayerImageryProviderStatus
 public;MapLayerIndex
+internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
@@ -481,7 +494,7 @@ public;MapLayerSourceStatus
 public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
-alpha;MapSubLayerFeatureInfo
+beta;MapSubLayerFeatureInfo
 public;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
@@ -915,6 +928,7 @@ public;ViewUndoEvent
 public;ViewUndoTool 
 public;VisibleFeature
 public;WalkViewTool 
+internal;WebMercator
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "4.1.0-dev.53",
+  "version": "4.1.0-dev.60",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -46,10 +46,10 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.53",
-    "@itwin/core-common": "workspace:^4.1.0-dev.53",
-    "@itwin/core-quantity": "workspace:^4.1.0-dev.53",
-    "@itwin/ecschema-metadata": "workspace:^4.1.0-dev.53"
+    "@itwin/core-bentley": "workspace:^4.1.0-dev.60",
+    "@itwin/core-common": "workspace:^4.1.0-dev.60",
+    "@itwin/core-quantity": "workspace:^4.1.0-dev.60",
+    "@itwin/ecschema-metadata": "workspace:^4.1.0-dev.60"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -65,7 +65,7 @@
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/sinon": "^9.0.0",
+    "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
     "@types/source-map-support": "^0.4.0",
     "chai": "^4.1.2",
@@ -81,7 +81,7 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^9.0.2",
+    "sinon": "^15.0.4",
     "sinon-chai": "^3.2.0",
     "typemoq": "^2.1.0",
     "typescript": "~5.0.2",

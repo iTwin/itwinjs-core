@@ -28,6 +28,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   */
   protected _accessTokenRequired = false;
 
+  protected _querySupported = false;
+
+  public override get supportsMapFeatureInfo() { return this._querySupported;}
+
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
     this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);

@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module Editing
+ */
+
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
