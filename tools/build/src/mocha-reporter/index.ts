@@ -6,12 +6,83 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-console */
 const debugLeaks = process.env.DEBUG_LEAKS;
-if (debugLeaks)
-  require("wtfnode");
-
-import * as path from "path";
-
 const fs = require("fs-extra");
+import * as path from "path";
+import * as async_hooks from "node:async_hooks";
+if (debugLeaks) {
+  require("wtfnode");
+  setupAsyncHooks();
+}
+// const asyncLocalStorage = new async_hooks.AsyncLocalStorage();
+const asyncResourceStats = new Map<number, any>();
+function setupAsyncHooks() {
+  // Can't console.log in async hooks, so maybe write to file..
+
+  const currentPkgJson = path.join(process.cwd(), "package.json");
+  let outputFile: string;
+  if (fs.existsSync(currentPkgJson)) {
+    const currentPackage = require(currentPkgJson).name;
+    outputFile = `D:\\itwinjs-core\\asyncHookOutput\\${currentPackage}.log`;
+  } else {
+    outputFile = `D:\\itwinjs-core\\asyncHookOutput\\hopeIdontseethis.log`;
+  }
+
+  let first = true;
+  // asyncResourceStats = new Map<number, any>();
+
+  const init = (asyncId: number, type: string, triggerAsyncId: number, _resource: any) => {
+    const eid = async_hooks.executionAsyncId(); // (An executionAsyncId() of 0 means that it is being executed from C++ with no JavaScript stack above it.)
+    if (first) {
+      first = false;
+      fs.outputFileSync(outputFile, "initial\n");
+    }
+    if (asyncResourceStats.get(asyncId)) {
+      throw new Error("Why does init have the asyncId already?");
+    }
+    asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId, resource: _resource});
+    // fs.outputFileSync(outputFile, `Init callback:\n\tasyncId: ${asyncId}\n\ttype:${type}\n\ttriggerAsyncId:${triggerAsyncId}\n\texecution: ${eid}\n`, {flag: "a"});
+  };
+  const before = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    const entry = asyncResourceStats.get(asyncId);
+    entry.before = entry.before + 1;
+    asyncResourceStats.set(asyncId, entry);
+    // fs.outputFileSync(outputFile, `Before callback: ${asyncId}\n`, {flag: "a"});
+  };
+  const after = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    const entry = asyncResourceStats.get(asyncId);
+    entry.after = entry.after + 1;
+    asyncResourceStats.set(asyncId, entry);
+    // fs.outputFileSync(outputFile, `After callback: ${asyncId}\n`, {flag: "a"});
+  };
+  const destroy = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    fs.outputFileSync(outputFile, `Destroy callback: ${asyncId}\n`, {flag: "a"});
+    asyncResourceStats.delete(asyncId);
+    // fs.outputFileSync(outputFile, `Destroy callback: ${asyncId}\n`, {flag: "a"});
+  };
+  const promiseResolve = (_asyncId: number) => {
+    return;
+    // if (!asyncResourceStats.get(asyncId)) {
+    //   throw new Error("Why doesn't an entry exist?");
+    // }
+    // const entry = asyncResourceStats.get(asyncId);
+    // entry.promiseResolve = entry.promiseResolve + 1;
+    // asyncResourceStats.set(asyncId, entry);
+    // fs.outputFileSync(outputFile, `Promise resolve: ${asyncId}\n`, {flag: "a"});
+  };
+
+  const asyncHook = async_hooks.createHook({init, before, after, destroy, promiseResolve});
+  asyncHook.enable();
+}
+
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/utils/utils");
 
 const Base = require("mocha/lib/reporters/base");
@@ -82,6 +153,10 @@ class BentleyMochaReporter extends Spec {
           wtf.setLogger("info", console.error);
           wtf.setLogger("error", console.error);
           wtf.dump();
+          // asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, resource, triggerAsyncId});
+          asyncResourceStats.forEach((value, key) => {
+            console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid}, \nresource: ${JSON.stringify(value.resource)}\ntriggerAsyncId: ${value.triggerAsyncId}`);
+          });
         } else {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
         }
