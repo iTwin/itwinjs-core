@@ -39,7 +39,7 @@ function setupAsyncHooks() {
     if (asyncResourceStats.get(asyncId)) {
       throw new Error("Why does init have the asyncId already?");
     }
-    asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId, resource: _resource});
+    asyncResourceStats.set(asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, triggerAsyncId});
     // fs.outputFileSync(outputFile, `Init callback:\n\tasyncId: ${asyncId}\n\ttype:${type}\n\ttriggerAsyncId:${triggerAsyncId}\n\texecution: ${eid}\n`, {flag: "a"});
   };
   const before = (asyncId: number) => {
@@ -156,7 +156,7 @@ class BentleyMochaReporter extends Spec {
           console.error("\n\n\n\n");
           // asyncId, {before: 0, after: 0, promiseResolve: 0, type, eid, resource, triggerAsyncId});
           asyncResourceStats.forEach((value, key) => {
-            console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid}, \nresource: ${JSON.stringify(value.resource)}\ntriggerAsyncId: ${value.triggerAsyncId}`);
+            console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, promiseResolve: ${value.promiseResolve}, type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}`);
           });
         } else {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
