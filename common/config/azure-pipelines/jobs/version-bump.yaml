@@ -57,7 +57,7 @@ jobs:
   - job: Bump
     displayName: Bump Version
     dependsOn: CheckPrevCommit
-    condition: or(succeeded(), skipped())
+    condition: in(dependencies.a.result, 'Succeeded', 'Skipped'),
     steps:
       - bash: echo TEST
   #     - checkout: self
