@@ -229,14 +229,14 @@ export class SpatialViewState extends ViewState3d {
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }
 
-  /** @internal */
+  /** See [[ViewState.attachToViewport]]. */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     this.registerModelSelectorListeners();
     this._treeRefs.attachToViewport(args);
   }
 
-  /** @internal */
+  /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._treeRefs.detachFromViewport();

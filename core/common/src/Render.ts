@@ -6,108 +6,56 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 
 // cSpell:ignore vals
 
-/** @internal */
+/** Describes the semantics of a [PolylineArgs]($frontend).
+ * @alpha
+ */
 export enum PolylineTypeFlags {
   Normal = 0,      // Just an ordinary polyline
   Edge = 1 << 0, // A polyline used to define the edges of a planar region.
   Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
 }
 
-/** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points.
- * @internal
+/** Flags describing a [PolylineArgs]($frontend).
+ * @public
  */
-export class PolylineFlags {
-  public isDisjoint: boolean;
-  public isPlanar: boolean;
-  public is2d: boolean;
-  public type: PolylineTypeFlags;
-
-  public constructor(is2d = false, isPlanar = false, isDisjoint = false, type = PolylineTypeFlags.Normal) {
-    this.isDisjoint = isDisjoint;
-    this.isPlanar = isPlanar;
-    this.is2d = is2d;
-    this.type = type;
-  }
-
-  public clone(): PolylineFlags { return new PolylineFlags(this.is2d, this.isPlanar, this.isDisjoint, this.type); }
-
-  /** Create a PolylineFlags from a serialized numeric representation. */
-  public static unpack(value: number): PolylineFlags {
-    const isDisjoint = 0 !== (value & 1);
-    const isPlanar = 0 !== (value & 2);
-    const is2d = 0 !== (value & 4);
-    const type: PolylineTypeFlags = (value >> 3);
-    assert(type === PolylineTypeFlags.Normal || type === PolylineTypeFlags.Edge || type === PolylineTypeFlags.Outline);
-
-    return new PolylineFlags(is2d, isPlanar, isDisjoint, type);
-  }
-
-  public initDefaults() {
-    this.isDisjoint = this.isPlanar = this.is2d = false;
-    this.type = PolylineTypeFlags.Normal;
-  }
-
-  public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
-  public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
-  public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
-  public setIsNormalEdge(): void { this.type = PolylineTypeFlags.Edge; }
-  public setIsOutlineEdge(): void { this.type = PolylineTypeFlags.Outline; }
-
-  /** Convert these flags to a numeric representation for serialization. */
-  public pack(): number {
-    let val: number = 0;
-    if (this.isDisjoint)
-      val += 1;
-    if (this.isPlanar)
-      val += 1 << 1;
-    if (this.is2d)
-      val += 1 << 2;
-    val += (this.type as number) << 3;
-    return val;
-  }
-
-  public equals(other: PolylineFlags) {
-    return this.type === other.type && this.is2d === other.is2d && this.isPlanar === other.isPlanar && this.isDisjoint === other.isDisjoint;
-  }
+export interface PolylineFlags {
+  /** If `true`, the polylines are to be drawn as individual disconnected point strings instead of as connected line strings. */
+  isDisjoint?: boolean;
+  /** If `true`, the polylines' positions are all coplanar. */
+  isPlanar?: boolean;
+  /** If `true`, the polylines' positions all have the same z coordinate. */
+  is2d?: boolean;
+  /** Default: Normal.
+   * @alpha
+   */
+  type?: PolylineTypeFlags;
 }
 
-/** @internal */
-export class PolylineData {
-  public vertIndices: number[];
-  public numIndices: number;
-  public constructor(vertIndices: number[] = [], numIndices = 0) {
-    this.vertIndices = vertIndices;
-    this.numIndices = numIndices;
-  }
-  public get isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void {
-    this.numIndices = 0;
-    this.vertIndices = [];
-  }
-
-  public init(polyline: MeshPolyline) {
-    this.numIndices = polyline.indices.length;
-    this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
-    return this.isValid;
-  }
-}
+/** Describes the vertex indices of a single line within a [PolylineArgs]($frontend).
+ * The indices represent either a line string as a connected series of points, or a point string as a set of disconnected points, depending
+ * on the [[PolylineFlags.isDisjoint]] value of [PolylineArgs.flags]($frontend).
+ * @public
+ */
+export type PolylineIndices = number[];
 
 /** @internal */
 export class MeshPolyline {
-  public readonly indices: number[];
-  public constructor(indices: number[] = []) {
+  public readonly indices: PolylineIndices;
+
+  public constructor(indices: PolylineIndices = []) {
     this.indices = indices.slice();
   }
+
   public addIndex(index: number) {
     const { indices } = this;
     if (indices.length === 0 || indices[indices.length - 1] !== index)
       indices.push(index);
   }
+
   public clear() { this.indices.length = 0; }
 }
 
@@ -191,11 +139,11 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 
 /** @internal */
 export class PolylineEdgeArgs {
-  public lines?: PolylineData[];
+  public lines?: PolylineIndices[];
 
-  public constructor(lines?: PolylineData[]) { this.init(lines); }
+  public constructor(lines?: PolylineIndices[]) { this.init(lines); }
 
-  public init(lines?: PolylineData[]): boolean {
+  public init(lines?: PolylineIndices[]): boolean {
     this.lines = undefined !== lines && 0 < lines.length ? lines : undefined;
     return this.isValid;
   }
