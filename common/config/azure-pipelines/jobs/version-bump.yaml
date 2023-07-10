@@ -47,10 +47,9 @@ jobs:
       - checkout: self
 
       - bash: |
-          git log -1 --oneline
-          git log -1 --pretty=format:'%an'
-          git log -1 --oneline | grep "[0-9]\+\.[0-9]\+\.[0-9]\+-dev\.[0-9]\+"
-          if [ $? -eq 1 ]; then
+          prevAuthor=$(git log -1 --pretty=format:'%an')
+          echo $prevAuthor
+          if [ $prevAuthor -eq "imodeljs-admin" ]; then
             echo "Previous commit appears to be a nightly version bump. Skipping current nightly bump."
             exit 1
           fi
