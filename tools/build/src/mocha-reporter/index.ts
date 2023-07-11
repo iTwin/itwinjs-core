@@ -19,23 +19,7 @@ function setupAsyncHooks() {
   const init = (asyncId: number, type: string, triggerAsyncId: number, _resource: any) => {
     const eid = async_hooks.executionAsyncId(); // (An executionAsyncId() of 0 means that it is being executed from C++ with no JavaScript stack above it.)
     const stack = new Error().stack;
-    asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
-  };
-  const before = (asyncId: number) => {
-    if (asyncResourceStats.get(asyncId) === undefined) {
-      return;
-    }
-    const entry = asyncResourceStats.get(asyncId);
-    entry.before = entry.before + 1;
-    asyncResourceStats.set(asyncId, entry);
-  };
-  const after = (asyncId: number) => {
-    if (asyncResourceStats.get(asyncId) === undefined) {
-      return;
-    }
-    const entry = asyncResourceStats.get(asyncId);
-    entry.after = entry.after + 1;
-    asyncResourceStats.set(asyncId, entry);
+    asyncResourceStats.set(asyncId, {type, eid, triggerAsyncId, initStack: stack});
   };
   const destroy = (asyncId: number) => {
     if (asyncResourceStats.get(asyncId) === undefined) {
@@ -44,7 +28,7 @@ function setupAsyncHooks() {
     asyncResourceStats.delete(asyncId);
   };
 
-  const asyncHook = async_hooks.createHook({init, before, after, destroy});
+  const asyncHook = async_hooks.createHook({init, destroy});
   asyncHook.enable();
 }
 const fs = require("fs-extra");
@@ -121,7 +105,7 @@ class BentleyMochaReporter extends Spec {
           // asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
           asyncResourceStats.forEach((value, key) => {
             if (activeResourcesInfo.includes(value.type.toLowerCase())) {
-              console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
+              console.error(`asyncId: ${key}: type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
             }
           });
         } else {
