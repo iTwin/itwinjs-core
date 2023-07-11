@@ -24,14 +24,14 @@ export function convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaCon
   return ec3XmlSchemas;
 }
 
-/** Converts schema metadata to EC3 concepts by traversing custom attributes of the supplied schema and calling converters based on custom attribute name
+/** Converts schema metadata to EC3 concepts by traversing custom attributes of the supplied schema and calling converters based on schemaName:customAttributeName
  * @public
  * @param xmlSchemas The ECSchema Xml string(s).
- * @returns ECSchema Xml string(s) with converted custom attributes.
+ * @returns EC3.2 Xml ECSchema(s) with converted custom attributes.
  * @throws [[IModelError]] if there is a problem converting the custom attributes of a schema.
  * @beta
  */
-export function convertCustomAttributes(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[] {
+export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[] {
   const maybeNativeContext = schemaContext?.nativeContext;
   const schemasWithConvertedCA: string[] = IModelJsNative.SchemaUtility.convertCustomAttributes(xmlSchemas, maybeNativeContext);
   if (schemasWithConvertedCA.length === 0)
