@@ -414,7 +414,6 @@ export class AccuDraw {
     doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
     // @internal (undocumented)
     doLockAngle(isSnapped: boolean): void;
-    // (undocumented)
     dontMoveFocus: boolean;
     // @internal (undocumented)
     downgradeInactiveState(): boolean;
@@ -474,7 +473,6 @@ export class AccuDraw {
     readonly lastAxes: ThreeAxes;
     // @internal (undocumented)
     locked: LockedStates;
-    // @internal (undocumented)
     newFocus: ItemField;
     // @internal (undocumented)
     onBeginDynamics(): boolean;
@@ -544,8 +542,6 @@ export class AccuDraw {
     setKeyinStatus(index: ItemField, status: KeyinStatus): void;
     // @internal (undocumented)
     setLastPoint(pt: Point3d): void;
-    // @internal (undocumented)
-    protected setNewFocus(index: ItemField): void;
     setRotationMode(mode: RotationMode): void;
     setValueByIndex(index: ItemField, value: number): void;
     // (undocumented)
