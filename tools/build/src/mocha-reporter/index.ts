@@ -32,7 +32,7 @@ function setupAsyncHooks() {
   asyncHook.enable();
 }
 const fs = require("fs-extra");
-import * as path from "path";
+const path = require("path");
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/utils/utils");
 
 const Base = require("mocha/lib/reporters/base");
