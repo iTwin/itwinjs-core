@@ -53,7 +53,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.43",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -75,7 +75,7 @@
     "cpx2": "^3.0.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "faker": "^4.1.0",
     "lolex": "^2.7.1",
     "mocha": "^10.0.0",
@@ -92,11 +92,5 @@
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }
