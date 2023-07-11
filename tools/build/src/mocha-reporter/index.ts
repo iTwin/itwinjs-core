@@ -6,12 +6,49 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-console */
 const debugLeaks = process.env.DEBUG_LEAKS;
-if (debugLeaks)
+let asyncResourceStats: Map<number, any>;
+if (debugLeaks) {
   require("wtfnode");
+  asyncResourceStats = new Map<number, any>();
+  setupAsyncHooks();
+}
 
-import * as path from "path";
+function setupAsyncHooks() {
+  const async_hooks = require("node:async_hooks");
 
+  const init = (asyncId: number, type: string, triggerAsyncId: number, _resource: any) => {
+    const eid = async_hooks.executionAsyncId(); // (An executionAsyncId() of 0 means that it is being executed from C++ with no JavaScript stack above it.)
+    const stack = new Error().stack;
+    asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
+  };
+  const before = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    const entry = asyncResourceStats.get(asyncId);
+    entry.before = entry.before + 1;
+    asyncResourceStats.set(asyncId, entry);
+  };
+  const after = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    const entry = asyncResourceStats.get(asyncId);
+    entry.after = entry.after + 1;
+    asyncResourceStats.set(asyncId, entry);
+  };
+  const destroy = (asyncId: number) => {
+    if (asyncResourceStats.get(asyncId) === undefined) {
+      return;
+    }
+    asyncResourceStats.delete(asyncId);
+  };
+
+  const asyncHook = async_hooks.createHook({init, before, after, destroy});
+  asyncHook.enable();
+}
 const fs = require("fs-extra");
+import * as path from "path";
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/utils/utils");
 
 const Base = require("mocha/lib/reporters/base");
@@ -76,6 +113,17 @@ class BentleyMochaReporter extends Spec {
           const wtf = require("wtfnode");
           wtf.setLogger("info", console.error);
           wtf.dump();
+
+          let activeResourcesInfo: string[] = (process as any).getActiveResourcesInfo(); // https://nodejs.dev/en/api/v18/process#processgetactiveresourcesinfo (Not added to @types/node yet I suppose)
+          console.error(activeResourcesInfo);
+
+          activeResourcesInfo = activeResourcesInfo.map((value) => value.toLowerCase());
+          // asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
+          asyncResourceStats.forEach((value, key) => {
+            if (activeResourcesInfo.includes(value.type.toLowerCase())) {
+              console.error(`asyncId: ${key}: before: ${value.before}, after: ${value.after}, type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
+            }
+          });
         } else {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
         }
