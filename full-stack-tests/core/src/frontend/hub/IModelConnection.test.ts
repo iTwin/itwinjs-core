@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
   ModelSelectorState, OrthographicViewState, ViewState,
@@ -73,16 +73,16 @@ describe("IModelConnection (#integration)", () => {
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId);
     assert.equal(iModel.models.repositoryModelId, modelProps[0].id);
 
-    const rows: any[] = await executeQuery(iModel, "SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
+    const rows = await executeQuery(iModel, "SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
 
-    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.spatialCategory);
+    const codeSpecByName = await iModel.codeSpecs.getByName(BisCodeSpec.spatialCategory);
     assert.exists(codeSpecByName);
-    const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(codeSpecByName.id);
+    const codeSpecById = await iModel.codeSpecs.getById(codeSpecByName.id);
     assert.exists(codeSpecById);
-    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(Id64.fromJSON(codeSpecByName.id));
+    const codeSpecByNewId = await iModel.codeSpecs.getById(Id64.fromJSON(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
 
     let viewDefinitions = await iModel.views.getViewList({ from: "BisCore.OrthographicViewDefinition" });
@@ -109,7 +109,6 @@ describe("IModelConnection (#integration)", () => {
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
-
   });
 
   it("should be able to open an IModel with no versions", async () => {

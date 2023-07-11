@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
-import { PolylineFlags } from "../Render";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {
@@ -34,24 +33,5 @@ describe("Feature", () => {
     const c = new Feature(Id64.fromString("0x800"), Id64.fromString("0x800"), GeometryClass.Dimension);
     assert.isFalse(a.equals(b), "a - b");
     assert.isTrue(b.equals(c), "b - c");
-  });
-});
-
-describe("PolylineFlags", () => {
-  it("converts to and from numeric representation", () => {
-    const f = new PolylineFlags();
-    expect(f.pack()).to.equal(0);
-    let f2 = PolylineFlags.unpack(0);
-    expect(f.equals(f2)).to.equal(true);
-
-    f.isPlanar = f.isDisjoint = true;
-    f.setIsOutlineEdge();
-
-    expect(f.pack()).to.equal(19);
-    f2 = PolylineFlags.unpack(19);
-    expect(f.equals(f2)).to.equal(true);
-
-    f2 = PolylineFlags.unpack(21);
-    expect(f.equals(f2)).to.equal(false);
   });
 });

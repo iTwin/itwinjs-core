@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote many rendering-related APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

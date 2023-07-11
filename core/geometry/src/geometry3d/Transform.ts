@@ -367,6 +367,18 @@ export class Transform implements BeJSONFunctions {
     return Transform.createRefs(origin, matrix, result);
   }
   /**
+   * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different from the plane normal.
+   * @param sweepVector vector for the sweep direction
+   * @param planePoint any point on the plane
+   * @param planeNormal vector normal to the plane.
+   */
+  public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planePoint: XYAndZ, planeNormal: Vector3d): Transform | undefined {
+    const matrix = Matrix3d.createFlattenAlongVectorToPlane(sweepVector, planeNormal);
+    if (matrix === undefined)
+      return undefined;
+    return Transform.createFixedPointAndMatrix(planePoint, matrix);
+  }
+  /**
    * Transform the input 2d point (using `Tp = M*p + o`).
    * Return as a new point or in the pre-allocated result (if result is given).
    */

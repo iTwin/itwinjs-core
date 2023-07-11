@@ -10,7 +10,18 @@ Table of contents:
   - [Tile decoding in workers](#tile-decoding-in-workers)
   - [Smaller edge encoding](#smaller-edge-encoding)
 - [Presentation](#presentation)
- - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+  - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+  - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
+- [Electron 25 support](#electron-25-support)
+- [Geometry](#geometry)
+  - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
+  - [New constructors](#new-constructors)
+  - [Swept surface constructions](#swept-surface-constructions)
+  - [Sweeping a linestring to facets](#sweeping-a-linestring-to-facets)
+- [Map Layers](#map-layers)
+  - [Map Feature Info](#map-feature-info)
+- [API deprecations](#api-deprecations)
+  - [Geometry](#geometry-1)
 
 ## Snapping within view attachments
 
@@ -19,6 +30,8 @@ Table of contents:
 When a locate operation identifies an element inside of a view attachment, the attachment's element Id can be obtained via [HitDetail.viewAttachment]($frontend). If you are using [Viewport.readPixels]($frontend), the Id will be included in [Pixel.Data]($frontend). All world coordinates (e.g., [HitDetail.hitPoint]($frontend)) will be in the *sheet* model's coordinate space. You can pass the attachment Id to [ViewState.computeDisplayTransform]($frontend) to obtain the [Transform]($core-geometry) from the view attachment's coordinate space to the sheet.
 
 Note: most view attachments are two-dimensional drawings or orthographic spatial views. Attachments of perspective (camera) views do not support locating elements inside them, nor snapping to them.
+ - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+ - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -36,3 +49,84 @@ When rendering the contents of a view with [edge display](https://www.itwinjs.or
 
 Previously, the [calculated properties specification](../presentation/content/CalculatedPropertiesSpecification.md) only allowed specifying property [label](../presentation/content/CalculatedPropertiesSpecification.md#attribute-label) and [value](../presentation/content/CalculatedPropertiesSpecification.md#attribute-value). Now the specification has an ability to assign [renderer](../presentation/content/CalculatedPropertiesSpecification.md#attribute-renderer), [editor](../presentation/content/CalculatedPropertiesSpecification.md#attribute-editor) and [category](../presentation/content/CalculatedPropertiesSpecification.md#attribute-categoryid) to calculated properties.
 
+### Class property categories under custom categories
+
+Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-nested-class-categories) for more details.
+
+## Electron 25 support
+
+In addition to already supported Electron versions, iTwin.js now supports [Electron 25](https://www.electronjs.org/blog/electron-25-0).
+
+## Geometry
+
+### Sweeping a section to a sequence of planes
+
+A new method [CurveFactory.createMiteredSweepSections]($core-geometry) moves a section "along" a polyline path; at each vertex the section projects to the plane containing the inbound and outbound edges' bisector.
+
+Here are two examples of sections moving along a (red) path. The first section is a stepped polyline with rounded corners. The second section is a "stadium" shape.
+
+![createMiteredSweepSectionsSections](./assets/sweepSequence.png)
+
+Here are those result sections assembled into `RuledSweep` solids and then faceted as meshes, illustrating optional output controlled by [MiteredSweepOptions.outputSelect]($core-geometry).
+
+![createMiteredSweepSectionsAsSurfaceAndMesh](./assets/createMiteredSweepSections.jpg)
+
+### New constructors
+
+- [Vector3d.createNormalizedStartEnd]($core-geometry) returns (if possible) a unit vector from start to end, with start and end given as [XYAndZ]($core-geometry).
+- [Matrix3d.createFlattenAlongVectorToPlane]($core-geometry) returns a matrix which sweeps vectors along the given sweep direction to a plane through the origin with given normal.
+- [Transform.createFlattenAlongVectorToPlane]($core-geometry) returns a transform which sweeps points along the given sweep direction to a plane with given origin and normal.
+- [PolylineOps.createBisectorPlanesForDistinctPoints]($core-geometry) For each point on a polyline, constructs a plane which bisects the angle between inbound and outbound segments.
+
+### Swept surface constructions
+
+The constructors for swept surfaces ([LinearSweep]($core-geometry), [RotationalSweep]($core-geometry), [RuledSweep]($core-geometry)) now allow [CurvePrimitive]($core-geometry) input. Internally, the curve is promoted to a `CurveChain` with one member.
+
+### Sweeping a linestring to facets
+
+New method [PolyfaceQuery.sweepLineStringToFacets]($core-geometry) provides new options to specify (a) sweep direction other than vertical, (b) limiting output to forward facing, side facing, and/or rear facing facets, and (c) assembly of output segments into chains.
+
+In the first example, a mesh with an upward facing main surface has smaller vertical sides and a small downward facing flange at the bottom of the side right face.  The red linestring is above the mesh.  The red linestring is swept downward (along dashed lines), intersecting the mesh.   On the left all cut lines are gathered as a single output (orange).  On the right the forward, side, and rear facing parts are separated as green, blue, and magenta.
+
+![sweepLineStringToFacetsExampleIso](./assets/SweepLineStringToFacetsVerticalSweep.png)
+
+In the second example, the same red linestring is swept to the same facets but along
+a non-vertical direction.
+
+![sweepLineStringToFacetsExampleIso](./assets/SweepLinStringToFacetsNonVertical.png)
+
+## Map Layers
+
+### Map Feature Info
+
+The [Viewport.getMapFeatureInfo]($core-frontend) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feature. Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decorations matching the identified feature geometry. This tool also dispatches [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
+![mapLayerInfoWidget](./assets/map-layer-info.png)
+
+## API deprecations
+
+### Geometry
+
+The two methods
+[PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) and [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) are deprecated.  Equivalent (and improved) services are provided by new function
+[PolyfaceQuery.sweepLineStringToFacets]($core-geometry).
+
+The improved set of input options in a parameter
+[SweepLineStringToFacetsOptions]($core-geometry) provides for
+
+- sweep along any direction (i.e. not just vertical)
+- choice of chained or "just line segments" output
+- flags to selectively accept/reject output from facets that are forward, side, and/or rear facing.
+
+The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) is now obtained with
+[SweepLineStringToFacetsOptions]($core-geometry) options:
+
+```
+const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
+```
+
+The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) is now obtained with
+[SweepLineStringToFacetsOptions]($core-geometry) options:
+
+```
+const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true);
+```

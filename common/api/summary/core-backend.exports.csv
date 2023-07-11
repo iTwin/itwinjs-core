@@ -30,6 +30,7 @@ beta;ChangeSummary
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl
+beta;ChannelControl
 beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
@@ -251,7 +252,7 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
-internal;MetaDataRegistry
+beta;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 
@@ -351,6 +352,7 @@ public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
+public;SqliteStatement
 public;SqliteValue
 public;SqliteValueType
 public;StandaloneDb 
@@ -370,7 +372,7 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
-internal;TextureCreateProps 
+beta;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 beta;TileStorage
 public;TitleText 
@@ -392,6 +394,7 @@ public;ViewAttachmentLabel
 public;class ViewDefinition 
 public;ViewDefinition2d 
 public;class ViewDefinition3d 
+beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace

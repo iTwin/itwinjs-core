@@ -108,5 +108,5 @@
   "terminal.integrated.env.windows": {
     "NODE_ENV": "development"
   },
-  "typescript.tsdk": "common/temp/node_modules/typescript/lib"
+  "typescript.tsdk": "common/temp/node_modules/typescript/lib",
 }

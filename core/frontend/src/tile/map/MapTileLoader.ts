@@ -63,7 +63,6 @@ export class MapTileLoader extends RealityTileLoader {
     assert("data" in data);
     isCanceled = isCanceled ?? (() => !tile.isLoading);
 
-    const quadId = tile.quadId;
     const mesh = await this._terrainProvider.readMesh({ data: data.data, isCanceled, tile });
     if (!mesh || isCanceled())
       return {};
@@ -71,23 +70,9 @@ export class MapTileLoader extends RealityTileLoader {
     const projection = tile.getProjection(tile.heightRange);
     const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
 
-    let unavailableChild = false;
-    if (quadId.level < this.maxDepth) {
-      const childIds = quadId.getChildIds();
-      for (const childId of childIds) {
-        if (!this._terrainProvider.isTileAvailable(childId)) {
-          unavailableChild = true;
-          break;
-        }
-      }
-    }
-
     return {
       contentRange: projection.transformFromLocal.multiplyRange(projection.localRange),
-      terrain: {
-        mesh: unavailableChild ? mesh : undefined, // If a child is unavailable retain mesh for upsampling.,
-        renderGeometry: terrainGeometry,
-      },
+      terrain: {mesh, renderGeometry: terrainGeometry},
     };
   }
 

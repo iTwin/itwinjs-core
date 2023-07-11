@@ -10,10 +10,12 @@ import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { ScreenViewport } from "../Viewport";
+import { OffScreenViewport, ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
+import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
@@ -21,6 +23,44 @@ import { Pixel } from "../render/Pixel";
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
+
+  describe("constructor", () => {
+    it("invokes initialize method", () => {
+      class ScreenVp extends ScreenViewport {
+        public initialized = false;
+        protected override initialize() { this.initialized = true; }
+
+        public static createVp(view: SpatialViewState): ScreenVp {
+          const parentDiv = document.createElement("div");
+          parentDiv.setAttribute("height", "100px");
+          parentDiv.setAttribute("width", "100px");
+          parentDiv.style.height = parentDiv.style.width = "100px";
+          document.body.appendChild(parentDiv);
+          return this.create(parentDiv, view) as ScreenVp;
+        }
+      }
+
+      class OffScreenVp extends OffScreenViewport {
+        public initialized = false;
+        protected override initialize() { this.initialized = true; }
+
+        public static createVp(view: SpatialViewState): OffScreenVp {
+          return this.create({ view, viewRect: new ViewRect(0, 0, 100, 100) }) as OffScreenVp;
+        }
+      }
+
+      function test(ctor: (typeof ScreenVp | typeof OffScreenVp)): void {
+        const iModel = createBlankConnection();
+        const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+        const vp = ctor.createVp(view);
+        expect(vp.initialized).to.be.true;
+        vp.dispose();
+      }
+
+      test(ScreenVp);
+      test(OffScreenVp);
+    });
+  });
 
   describe("flashedId", () => {
     type ChangedEvent = [string | undefined, string | undefined];

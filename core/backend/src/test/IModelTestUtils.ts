@@ -1001,7 +1001,6 @@ export class ExtensiveTestScenario {
     // Insert ViewDefinitions
     const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
-    sourceDb.views.setDefaultViewId(viewId);
     const drawingViewRange = new Range2d(0, 0, 100, 100);
     const drawingViewId = DrawingViewDefinition.insert(sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
     assert.isTrue(Id64.isValidId64(drawingViewId));

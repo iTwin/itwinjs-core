@@ -233,7 +233,7 @@ export class AccuSnap implements Decorator {
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
-  /** @internal */
+  /** Currently active snap */
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   /** Determine whether there is a current hit that is *hot*. */
   public get isHot(): boolean {
@@ -848,6 +848,21 @@ export class AccuSnap implements Decorator {
     IModelApp.accuDraw.onSnap(thisSnap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
     hitList.setCurrentHit(thisHit);
     return thisSnap;
+  }
+
+  /** Request a snap from the backend for the supplied HitDetail.
+   * @param hit The HitDetail to snap to.
+   * @param snapMode Optional SnapMode, uses active snap modes if not specified.
+   * @return A Promise for the SnapDetail or undefined if no snap could be created.
+   */
+  public async doSnapRequest(hit: HitDetail, snapMode?: SnapMode): Promise<SnapDetail | undefined> {
+    let snapModes: SnapMode[];
+    if (undefined === snapMode)
+      snapModes = this.getActiveSnapModes();
+    else
+      snapModes = [snapMode];
+
+    return AccuSnap.requestSnap(hit, snapModes, this._hotDistanceInches, this.keypointDivisor);
   }
 
   private findHits(ev: BeButtonEvent, force: boolean = false): SnapStatus {

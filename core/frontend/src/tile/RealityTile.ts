@@ -31,10 +31,12 @@ export interface RealityTileParams extends TileParams {
   readonly geometricError?: number;
 }
 
-/** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
- * @alpha
+/** The geometry representing the contents of a reality tile. Currently only polyfaces are returned
+ * @beta
+ * @see [[RealityTile.geometry]] to access a particular tile's geometry.
  */
 export interface RealityTileGeometry {
+  /** Polyfaces representing the tile's geometry. */
   polyfaces?: Polyface[];
 }
 
@@ -115,7 +117,10 @@ export class RealityTile extends Tile {
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   /** @internal */
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
-  /** @internal */
+  /** A representation of the tile's geometry.
+   * This property is only available when using [[TileGeometryCollector]].
+   * @beta
+   */
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
 
   /** @internal */

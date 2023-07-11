@@ -69,8 +69,8 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   vec2 classPos;
 
   if (isProjected) {
-    vec4  eye4 = vec4(v_eyeSpace, 1.0);
-    vec4  classPos4 = matrix * eye4;
+    vec4 eye4 = vec4(v_eyeSpace, 1.0);
+    vec4 classPos4 = matrix * eye4;
     classPos = classPos4.xy / classPos4.w;
 
     if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
@@ -82,35 +82,48 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
     layerAlpha = params[0][2];
+
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
       return false;
-    } else {
+
+  } else {
     vec4 texTransform = matrix[0].xyzw;
     vec4 texClip = matrix[1].xyzw;
     layerAlpha = matrix[2].x;
     uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
+
     if (uv.x < texClip[0] || uv.x > texClip[2] || uv.y < texClip[1] || uv.y > texClip[3])
       return false;
-    uv.y = 1.0 - uv.y;
-    }
- vec4 texCol = TEXTURE(sampler, uv);
- float alpha = layerAlpha * texCol.a;
- if (alpha > 0.05) {
-   vec3 texRgb =  isProjected ? (texCol.rgb / texCol.a) : texCol.rgb;    // Texture color is premultiplied by alpha only if projected (from classification).
-   col.rgb = (1.0 - alpha) * col.rgb + alpha * texRgb;
-  if (isProjected) {
-    vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
-    classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
-    } else {
-    featureIncrement = matrix[2].y;
-    classifierId = vec4(0);
-    }
-  if (alpha > col.a)
-    col.a = alpha;
 
-  return true;
+    uv.y = 1.0 - uv.y;
   }
-return false;
+
+  vec4 texCol = TEXTURE(sampler, uv);
+  float alpha = layerAlpha * texCol.a;
+
+  if (alpha > 0.05) {
+    vec3 texRgb = isProjected ? (texCol.rgb / texCol.a) : texCol.rgb; // If projected, undo premultiplication
+    // Texture color is premultiplied earlier by alpha only if projected (from classification).
+
+    col.rgb = (1.0 - alpha) * col.rgb + alpha * texRgb;
+
+    if (isProjected) {
+      vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
+      classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
+    } else {
+      featureIncrement = matrix[2].y;
+      classifierId = vec4(0);
+    }
+
+    if (alpha > col.a)
+      col.a = alpha;
+
+    return true;
+  }
+
+  // If texture color is transparent but base color is not, return true (don't discard)
+  // Else return false (discard) if both the texture and base color are transparent
+  return (col.a > 0.05);
 }
 `;
 
@@ -155,14 +168,14 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         }
       });
     });
-    const paramsLabel = `u_texParams${i}`, matrixLabel =  `u_texMatrix${i}`;
+    const paramsLabel = `u_texParams${i}`, matrixLabel = `u_texMatrix${i}`;
     builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(matrixLabel, (uniform, params) => {
         const realityMesh = params.geometry.asRealityMesh!;
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
         if (undefined !== textureParam) {
-          const  projectionMatrix = textureParam.getProjectionMatrix();
+          const projectionMatrix = textureParam.getProjectionMatrix();
           if (projectionMatrix) {
             const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!, scratchMatrix4d1);
             const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
@@ -201,7 +214,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
   vec4 col = u_baseColor;
   ${applyTextureStrings.join("\n  ")}
   if (doDiscard)
-      discard;
+    discard;
 
   ${applyFeatureColor}
 
