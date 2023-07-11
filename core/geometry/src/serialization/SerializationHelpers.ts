@@ -45,7 +45,12 @@ export namespace SerializationHelpers {
     return { poles, dim, params: { numPoles, order, knots } };
   }
 
-  /** Clone data */
+  /** Constructor with required data. Inputs are captured, not copied. */
+  export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
+    return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
+  }
+
+  /** Clone curve data */
   export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData {
     return {
       poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy2d(source.poles),
@@ -61,10 +66,28 @@ export namespace SerializationHelpers {
     };
   }
 
-  /** Constructor with required data. Inputs are captured, not copied. */
-  export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
-    return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
-  }
+    /** Clone surface data */
+    export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData {
+      return {
+        poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy3d(source.poles),
+        dim: source.dim,
+        weights: source.weights ? ((source.weights instanceof Float64Array) ? source.weights.slice() : NumberArray.copy2d(source.weights)) : undefined,
+        uParams: {
+          numPoles: source.uParams.numPoles,
+          order: source.uParams.order,
+          closed: source.uParams.closed,
+          knots: source.uParams.knots.slice(),
+          wrapMode: source.uParams.wrapMode,
+        },
+        vParams: {
+          numPoles: source.vParams.numPoles,
+          order: source.vParams.order,
+          closed: source.vParams.closed,
+          knots: source.vParams.knots.slice(),
+          wrapMode: source.vParams.wrapMode,
+        },
+      };
+    }
 
   /** Copy from source to dest */
   function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
@@ -416,7 +439,7 @@ export namespace SerializationHelpers {
               const wrapAroundRow = [];
               for (let j = 0; j < data.uParams.numPoles; ++j)   // #cols
                 wrapAroundRow.push(weightsExpanded[i][j]);
-              weightsExpanded.push(wrapAroundRow);  // append degreeV wraparound rows of poles
+              weightsExpanded.push(wrapAroundRow);  // append degreeV wraparound rows of weights
             }
           }
           data.vParams.numPoles += data.vParams.order - 1;
