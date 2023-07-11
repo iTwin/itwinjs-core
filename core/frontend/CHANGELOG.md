@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 05 Jul 2023 13:41:21 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Jul 2023 17:17:21 GMT and should not be manually modified.
+
+## 3.7.11
+Tue, 11 Jul 2023 17:17:21 GMT
+
+### Updates
+
+- Fix gaps in certain reprojected tiles.
 
 ## 3.7.10
 Wed, 05 Jul 2023 13:41:21 GMT

@@ -2,6 +2,12 @@
   "name": "@itwin/core-orbitgt",
   "entries": [
     {
+      "version": "3.7.11",
+      "tag": "@itwin/core-orbitgt_v3.7.11",
+      "date": "Tue, 11 Jul 2023 17:17:21 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.10",
       "tag": "@itwin/core-orbitgt_v3.7.10",
       "date": "Wed, 05 Jul 2023 13:41:21 GMT",
