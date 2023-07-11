@@ -2463,6 +2463,8 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     // (undocumented)
     reset(options?: QueryOptions): void;
     resetBindings(): void;
+    // @internal (undocumented)
+    protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
     // (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;

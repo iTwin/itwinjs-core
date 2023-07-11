@@ -364,7 +364,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   *
+   * @internal
    */
   protected async runWithRetry(request: DbQueryRequest) {
     const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) && (typeof(rs.data) === "undefined" || rs.data.length === 0);
