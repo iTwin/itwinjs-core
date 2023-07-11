@@ -348,14 +348,14 @@ export class DrawingViewState extends ViewState2d {
     }
   }
 
-  /** @internal */
+  /** See [[ViewState.attachToViewport]]. */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     assert(undefined === this._attachment);
     this._attachment = this._attachmentInfo.createAttachment(args.drawingToSheetTransform);
   }
 
-  /** @internal */
+  /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachment = dispose(this._attachment);
