@@ -7,22 +7,24 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
-  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  ElementMeshRequestProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
+  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
-import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -224,7 +226,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.geoServices = new GeoServices(this);
+    this.geoServices = GeoServices.createForIModel(this);
     /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
@@ -253,6 +255,12 @@ export abstract class IModelConnection extends IModel {
   public abstract close(): Promise<void>;
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
@@ -282,8 +290,8 @@ export abstract class IModelConnection extends IModel {
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -303,8 +311,8 @@ export abstract class IModelConnection extends IModel {
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -325,8 +333,8 @@ export abstract class IModelConnection extends IModel {
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
    * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
@@ -425,8 +433,9 @@ export abstract class IModelConnection extends IModel {
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
-   * @returns A Cartographic location
+   * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   * @see [[cartographicFromSpatial]] if you have more than one point to convert, or you don't know whether the iModel has a GCS.
    */
   public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     if (!this.isGeoLocated && this.noGcsDefined)
@@ -450,20 +459,77 @@ export abstract class IModelConnection extends IModel {
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
    * @param result If defined, use this for output
-   * @returns A Cartographic location
+   * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
-   * @see [[spatialToCartographicFromGcs]]
-   * @see [[spatialToCartographicFromEcef]]
+   * @see [[cartographicFromSpatial]] to convert multiple points at once.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates, of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[spatialFromCartographic]] to perform the inverse conversion.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
+   */
+  public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial);
+  }
+
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordinates to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates (WGS84 horizontal datum), of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform conversion using iModel's GCS horizontal datum
+   * @beta
+   */
+  public async wgs84CartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    return this.cartographicFromSpatialWithGcs(spatial, "WGS84");
+  }
+
+  /** @internal */
+  public async cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]> {
+    if (this.noGcsDefined)
+      return spatial.map((p) => this.spatialToCartographicFromEcef(p));
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (spatial.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS);
+    assert(undefined !== geoConverter);
+
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates(spatial);
+    if (coordResponse.geoCoords.length !== spatial.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.geoCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          const llh = Point3d.fromJSON(coord.p);
+          return Cartographic.fromDegrees({ longitude: llh.x, latitude: llh.y, height: llh.z });
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting spatial to cartographic");
+      }
+    });
+  }
+
+  /** Convert a [Cartographic]($common) to a point in this iModel's spatial coordinate system using a [[GeoConverter]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   * @see [[spatialFromCartographic]] to convert multiple points at once, or you don't know whether the iModel has a GCS.
    */
   public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     if (!this.isGeoLocated && this.noGcsDefined)
@@ -486,16 +552,67 @@ export abstract class IModelConnection extends IModel {
     return result;
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+  /** Convert a [Cartographic]($common) to a point in this iModel's Spatial coordinates using a [[GeoConverter]] or[[IModel.ecefLocation]($common).
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
-   * @see [[cartographicToSpatialFromGcs]]
-   * @see [[cartographicToSpatialFromEcef]]
+   * @see [[spatialFromCartographic]] to convert multiple points at once.
+   * @see [[cartographicToSpatialFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
+
+  /** Convert [Cartographic]($common) coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param cartographic Coordinates to be converted to the iModel's spatial coordinate system.
+   * @returns The `cartographic` coordinates converted to spatial coordinates, of the same length and order as `cartographic`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform the inverse conversion.
+   */
+  public async spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]> {
+    if (this.noGcsDefined)
+      return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
+
+    const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
+    return this.toSpatialFromGcs(geoCoords);
+  }
+
+  /** Convert geographic coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param geoCoords Coordinates to be converted are in the coordinate system described by the `datumOrGCRS` parameter.  Defaults iModel's spatial coordinate system otherwise.
+   * @param datumOrGCRS Datum name or Geographic CRS object definition to use for the conversion.
+   * @returns The `geographics` coordinates converted to spatial coordinates, of the same length and order as `geographics`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @beta
+   */
+  public async toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]> {
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (geoCoords.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter(datumOrGCRS);
+    assert(undefined !== geoConverter);
+
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
+    if (coordResponse.iModelCoords.length !== geoCoords.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.iModelCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          return Point3d.fromJSON(coord.p);
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting cartographic to spatial");
+      }
+    });
   }
 
   /** Expand this iModel's [[displayedExtents]] to include the specified range.
@@ -1055,6 +1172,25 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
+    private _writeViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Writer>;
+    private _readViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Reader>;
+
+    public get viewStoreWriter() {
+      return this._writeViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, true, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Writer>;
+    }
+    public get viewsStoreReader() {
+      return this._readViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, false, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Reader>;
+    }
 
     /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
@@ -1102,7 +1238,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Query the Id of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
-     * @returns the ID of the default view, or an invalid ID if no default view is defined.
+     * @returns the Id of the default view, or an invalid ID if no default view is defined.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
@@ -1110,10 +1246,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-    public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
-
+    public async load(viewDefinitionId: ViewIdString): Promise<ViewState> {
       const options: ViewStateLoadProps = {
         displayStyle: {
           omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
@@ -1143,7 +1276,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
+     * @deprecated in 3.x use ViewStore apis
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation

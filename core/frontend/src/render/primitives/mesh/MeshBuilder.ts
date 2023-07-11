@@ -242,8 +242,10 @@ export class MeshBuilder {
   }
 
   public addTriangle(triangle: Triangle): void {
-    // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
-    assert(!triangle.isDegenerate);
+    // Attempt to avoid adding vertices originating from degenerate triangles before we get here.
+    // Removed assert and just return if degenerate at this point because uncommon cases (not worth testing for) can still occur.
+    if (triangle.isDegenerate)
+      return;
 
     const onInsert = (_vk: TriangleKey) => this.mesh.addTriangle(triangle);
     this.triangleSet.insertKey(triangle, onInsert);

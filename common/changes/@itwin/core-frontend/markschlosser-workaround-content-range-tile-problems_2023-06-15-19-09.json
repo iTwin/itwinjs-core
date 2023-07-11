@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix gaps in certain reprojected tiles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

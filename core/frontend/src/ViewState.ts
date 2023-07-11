@@ -80,6 +80,10 @@ export interface ComputeDisplayTransformArgs {
    * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
    */
   timePoint?: number;
+  /** The element Id of the [ViewAttachment]($backend) through which the element or model is drawn.
+   * @beta
+   */
+  viewAttachmentId?: Id64String;
   /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
    * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
    */
@@ -342,18 +346,6 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  private async loadAcs(): Promise<void> {
-    this._auxCoordSystem = undefined;
-    const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (Id64.isValid(acsId)) {
-      try {
-        const props = await this.iModel.elements.getProps(acsId);
-        if (0 !== props.length)
-          this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-      } catch { }
-    }
-  }
-
   /**
    * Populates the hydrateRequest object stored on the ViewState with:
    *  not loaded categoryIds based off of the ViewStates categorySelector.
@@ -378,7 +370,7 @@ export abstract class ViewState extends ElementState {
 
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
-    const promises: Promise<any>[] = [
+    const promises: Promise<void>[] = [
       IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
         then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
@@ -1371,6 +1363,13 @@ export abstract class ViewState extends ElementState {
   public get secondaryViewports(): Iterable<Viewport> {
     return [];
   }
+
+  /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
+   * @internal
+   */
+  public getAttachmentViewport(_id: Id64String): Viewport | undefined {
+    return undefined;
+  }
 }
 
 /** Defines the state of a view of 3d models.
@@ -1447,7 +1446,7 @@ export abstract class ViewState3d extends ViewState {
   /** Capture a copy of the viewed volume and camera parameters. */
   public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose): this {
     if (val instanceof ViewPose3d) {
       this._cameraOn = val.cameraOn;
@@ -1620,28 +1619,62 @@ export abstract class ViewState3d extends ViewState {
     return eyePoint.distance(origEyePoint);
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate. */
   public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space. */
+  /** Convert a cartographic coordinate to a point in spatial coordinates. */
   public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate using the GCS reprojection. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate using the GCS reprojection.
+   * @see [[rootToCartographicUsingGcs]] to convert multiple points at once.
+   * @see [[cartographicToRootFromGcs]] for the inverse conversion.
+   */
   public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const carto = (await backgroundMapGeometry.dbToCartographicFromGcs([root]))[0];
+    return carto.clone(result);
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space using the GCS reprojection. */
+  /** Convert spatial coordinates to cartographic coordinates using the GCS reprojection.
+   * @param root Spatial coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `root`, or `undefined` if the conversion cannot be performed.
+   * @see [[cartographicToRootUsingGcs]] for the inverse conversion.
+   */
+  public async rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.dbToCartographicFromGcs(root);
+  }
+
+  /** Convert a cartographic coordinate to a point in spatial coordinates using the GCS reprojection.
+   * @see [[cartographicToRootUsingGcs]] to convert multiple points at once.
+   * @see [[rootToCartographicFromGcs]] for the inverse conversion.
+   */
   public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const root = (await backgroundMapGeometry.cartographicToDbFromGcs([cartographic]))[0];
+    return root.clone(result);
+  }
+
+  /** Convert cartographic coordinates to spatial coordinates using the GCS reprojection.
+   * @param cartographic Cartographic coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `cartographic`, or `undefined` if the conversion cannot be performed.
+   * @see [[rootToCartographicUsingGcs]] for the inverse conversion.
+   */
+  public async cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.cartographicToDbFromGcs(cartographic);
   }
 
   public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
@@ -2299,7 +2332,7 @@ export abstract class ViewState2d extends ViewState {
   /** Capture a copy of the viewed area. */
   public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose) {
     if (val instanceof ViewPose2d) {
       this.setOrigin(val.origin);

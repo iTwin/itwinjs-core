@@ -983,7 +983,7 @@ export class GeodesicPathPoint {
   private static _vectorCross?: Vector3d;
   /** Evaluate the newton function and derivatives:
    *          `(UAB cross UCB) dot d1cross`
-   * with as the central data, UAB = vector from pointA to pointB, UCB = vector from pointC to pointA.
+   * with as the central data, UAB = vector from pointA to pointB, UCB = vector from pointC to pointB.
    * * Return order is:
    *   * values[0] = the function
    *   * values[1] = derivative wrt pointA.phi

@@ -27,22 +27,21 @@ interface HitDetailProps {
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
   const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
-  return new HitDetail(
-    Point3d.fromJSON(props?.testPoint ?? hitPoint),
-    vp,
-    HitSource.AccuSnap,
-    Point3d.fromJSON(hitPoint),
-    props?.sourceId ?? "0",
-    HitPriority.Unknown,
-    0,
-    0,
-    props?.subCategoryId,
-    props?.geometryClass,
-    props?.modelId,
-    props?.iModel,
-    undefined,
-    props?.isClassifier
-  );
+  return new HitDetail({
+    testPoint: Point3d.fromJSON(props?.testPoint ?? hitPoint),
+    viewport: vp,
+    hitSource: HitSource.AccuSnap,
+    hitPoint: Point3d.fromJSON(hitPoint),
+    sourceId: props?.sourceId ?? "0",
+    priority: HitPriority.Unknown,
+    distXY: 0,
+    distFraction: 0,
+    subCategoryId: props?.subCategoryId,
+    geometryClass: props?.geometryClass,
+    modelId: props?.modelId,
+    sourceIModel: props?.iModel,
+    isClassifier: props?.isClassifier,
+  });
 }
 
 describe("AccuSnap", () => {
@@ -56,7 +55,7 @@ describe("AccuSnap", () => {
         hitPoint: props.testPoint,
         snapPoint: props.testPoint,
         normal: [0, 1, 0],
-        curve: { lineSegment: [ [0, 0, 0], [1, 0, 0] ] },
+        curve: { lineSegment: [[0, 0, 0], [1, 0, 0]] },
       });
     }
 
@@ -125,14 +124,14 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x123" },
         (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
         modes,
-        (vp) => vp.mapLayerFromHit = () => { return {} as any; }
+        (vp) => vp.mapLayerFromHit = () => { return [] as any; }
       );
     });
 
     it("produces expected result with no display transform", async () => {
       await testSnap(
-        { sourceId: "0x123", modelId: "0x456", hitPoint: [ 1, 2, 3 ] },
-        (response) => expectSnapDetail(response, { point: [ 1, 2, 3 ], normal: [ 0, 1, 0 ], curve: [[0, 0, 0], [1, 0, 0]] })
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [1, 2, 3], normal: [0, 1, 0], curve: [[0, 0, 0], [1, 0, 0]] })
       );
     });
 

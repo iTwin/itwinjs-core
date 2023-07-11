@@ -45,20 +45,11 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, an SchemaUnitsProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
 
 ```ts
-    // Reset QuantityFormatter UnitsProvider with new iModelConnection
-    try{
-      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-      const context = new SchemaContext();
-      context.addLocater(schemaLocater);
-      await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
-    } catch (_) {
-      // in case IModel does not have a Units schema reset to use BasicUnitsProvider
-      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
-    }
-
-    // ready to store the IModelConnection in the IModelApps redux store
-    UiFramework.setIModelConnection(iModelConnection, true);
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
 ```
+
+If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to the [BasicUnitsProvider] described above.
 
 ### Measure Tools
 
