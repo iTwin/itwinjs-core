@@ -1,49 +1,16 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 03 Jul 2023 15:28:41 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Jul 2023 17:17:21 GMT and should not be manually modified.
 
-## 4.0.3
-Mon, 03 Jul 2023 15:28:41 GMT
-
-_Version update only_
-
-## 4.0.2
-Wed, 21 Jun 2023 22:04:43 GMT
+## 3.7.11
+Tue, 11 Jul 2023 17:17:21 GMT
 
 _Version update only_
 
-## 4.0.1
-Wed, 21 Jun 2023 20:29:13 GMT
+## 3.7.10
+Wed, 05 Jul 2023 13:41:21 GMT
 
 _Version update only_
-
-## 4.0.0
-Mon, 22 May 2023 15:34:14 GMT
-
-### Updates
-
-- use baseUri rather than accountName for cloud containers
-- added support for index of internal codes
-- added IModelHost.profileDir. No two process may use the same profile directory at the same time.
-- implemented constant lod texture mapping for tiles
-- Deprecate IModelDb's and ECDb's query, queryRowCount, and restartQuery methods.
-- Remove `ChangeSummaryManager.extractChangeSummaries`
-- added ChannelControl
-- Update to eslint@8
-- add flag schemaLockHeld
-- add public methods to BriefcaseManager to query the hub for changesets
-- Drop Node 12 and Node 14.
-- Drop Node 16 support.
-- Prevent IPC requests from blocking the backend.
-- cloudsqlite: add bcvhttplog and pragma bcv_client support
-- change backendhubaccess and related properties to @internal
-- Add SpatialViewState.fromJSON.
-- remove old entity-unaware implementation of getReferenceIds
-- rename members of @alpha CodeService interfaces
-- DrawingViewDefinition.fromJSON
-- Fix for timing issue in core tests
-- allow passing a custom schema read context to IModelDb.importSchemas
-- Added test to verify Id serialization to hex for system properties.
 
 ## 3.7.9
 Tue, 20 Jun 2023 12:51:02 GMT

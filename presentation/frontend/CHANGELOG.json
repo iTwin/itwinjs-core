@@ -2,52 +2,16 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
-      "version": "4.0.3",
-      "tag": "@itwin/presentation-frontend_v4.0.3",
-      "date": "Mon, 03 Jul 2023 15:28:41 GMT",
+      "version": "3.7.11",
+      "tag": "@itwin/presentation-frontend_v3.7.11",
+      "date": "Tue, 11 Jul 2023 17:17:22 GMT",
       "comments": {}
     },
     {
-      "version": "4.0.2",
-      "tag": "@itwin/presentation-frontend_v4.0.2",
-      "date": "Wed, 21 Jun 2023 22:04:43 GMT",
+      "version": "3.7.10",
+      "tag": "@itwin/presentation-frontend_v3.7.10",
+      "date": "Wed, 05 Jul 2023 13:41:21 GMT",
       "comments": {}
-    },
-    {
-      "version": "4.0.1",
-      "tag": "@itwin/presentation-frontend_v4.0.1",
-      "date": "Wed, 21 Jun 2023 20:29:14 GMT",
-      "comments": {}
-    },
-    {
-      "version": "4.0.0",
-      "tag": "@itwin/presentation-frontend_v4.0.0",
-      "date": "Mon, 22 May 2023 15:34:14 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Update to eslint@8"
-          },
-          {
-            "comment": "Stop \"eating\" exceptions that occur when handling `PresentationManager` requests and re-throw them for API consumers to handle."
-          },
-          {
-            "comment": "Promoted some `@internal` APIs to `@public`."
-          },
-          {
-            "comment": "Add a way to specify requests timeout when initializing `PresentationManager`"
-          },
-          {
-            "comment": "Removed UI state tracking on the backend"
-          },
-          {
-            "comment": "Deprecate `PresentationManager.activeUnitSystem` in favor of active unit system in `QuantityFormatter`"
-          },
-          {
-            "comment": "Added content values formatting to `PresentationManager`"
-          }
-        ]
-      }
     },
     {
       "version": "3.7.9",
