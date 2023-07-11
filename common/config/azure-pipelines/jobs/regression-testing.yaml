@@ -48,17 +48,17 @@ jobs:
           OS: windows-latest
           platform: Windows_NT
           name: $(win_pool)
-          node_version: 16.20.0 #TODO Change back to 16.x once segfault on 16.20.1? is resolved.
+          node_version: 16.x
         "Linux_Node_16":
           OS: ubuntu-latest
           platform: Linux
           name: $(linux_pool)
-          node_version: 16.20.0 #TODO Change back to 16.x once segfault on 16.20.1? is resolved.
+          node_version: 16.x
         "MacOS_Node_16":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
-          node_version: 16.20.0 #TODO Change back to 16.x once segfault on 16.20.1? is resolved.
+          node_version: 16.x
 
         "Windows_Node_14_x":
           OS: windows-latest
