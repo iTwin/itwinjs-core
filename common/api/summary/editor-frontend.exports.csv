@@ -8,8 +8,8 @@ alpha;class BooleanOperationTool
 alpha;BreakCurveTool 
 alpha;ChamferEdgesTool 
 alpha;CircleMethod
-alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
-alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+beta;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
+beta;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
 alpha;CopyElementsTool 
 alpha;CreateArcTool 
 alpha;CreateBCurveTool 
@@ -20,8 +20,8 @@ alpha;CreateConeTool
 alpha;CreateCurvePhase
 alpha;CreateCylinderPhase
 alpha;CreateCylinderTool 
-alpha;class CreateElementTool 
-alpha;class CreateElementWithDynamicsTool 
+beta;class CreateElementTool 
+beta;class CreateElementWithDynamicsTool 
 alpha;CreateEllipseTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
@@ -33,7 +33,7 @@ alpha;CurveData
 alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
 alpha;DeleteSubEntitiesTool 
-alpha;DynamicGraphicsProvider
+beta;DynamicGraphicsProvider
 beta;EditTools
 beta;EditTools
 alpha;class ElementGeometryCacheTool 
@@ -52,8 +52,8 @@ alpha;class LocateSubEntityTool
 alpha;LoftProfilesTool 
 beta;makeEditToolIpc
 alpha;class ModifyCurveTool 
-alpha;class ModifyElementTool 
-alpha;class ModifyElementWithDynamicsTool 
+beta;class ModifyElementTool 
+beta;class ModifyElementWithDynamicsTool 
 alpha;MoveElementsTool 
 alpha;OffsetCurveTool 
 alpha;OffsetFacesTool 
@@ -67,7 +67,7 @@ beta;ProjectLocationChanged
 beta;ProjectLocationHideTool 
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
-alpha;RedoTool 
+beta;RedoTool 
 alpha;RegionBooleanMode
 alpha;RegionBooleanTool 
 alpha;RevolveCurveTool 
@@ -84,9 +84,9 @@ alpha;SubtractSolidElementsTool
 alpha;SweepAlongPathTool 
 alpha;SweepFacesTool 
 alpha;ThickenSheetElementsTool 
-alpha;class TransformElementsTool 
-alpha;TransformGraphicsData
-alpha;TransformGraphicsProvider
-alpha;UndoAllTool 
-alpha;UndoTool 
+beta;class TransformElementsTool 
+beta;TransformGraphicsData
+beta;TransformGraphicsProvider
+beta;UndoAllTool 
+beta;UndoTool 
 alpha;UniteSolidElementsTool 
