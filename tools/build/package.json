@@ -15,7 +15,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },

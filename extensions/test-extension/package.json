@@ -12,7 +12,7 @@
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
     "clean": "rimraf lib dist",
     "lint": "",
-    "//lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
+    "//lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "start": "",
     "test": "",
     "cover": "",

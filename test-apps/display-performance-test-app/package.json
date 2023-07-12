@@ -18,7 +18,7 @@
     "build:frontend-webpack": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:webserver": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true BROWSER=none DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts start",
