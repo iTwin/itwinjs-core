@@ -12,7 +12,6 @@ import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
  * @module Schema
  */
 /** Converts EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
- * @public
  * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.
  * @returns EC3.2 Xml ECSchema(s).
  * @throws [[IModelError]] if there is a problem converting the EC2 schemas.
@@ -28,7 +27,6 @@ export function convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaCon
 }
 
 /** Converts schema metadata to EC3 concepts by traversing custom attributes of the supplied schema and calling converters based on schemaName:customAttributeName
- * @public
  * @param xmlSchemas The ECSchema Xml string(s).
  * @returns EC3.2 Xml ECSchema(s) with converted custom attributes.
  * @throws [[IModelError]] if there is a problem converting the custom attributes of a schema.
