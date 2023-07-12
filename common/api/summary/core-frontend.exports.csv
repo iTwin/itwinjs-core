@@ -1,26 +1,26 @@
 sep=;
 Release Tag;API Item
 public;AccuDraw
-internal;AccuDrawChangeModeTool 
+internal;AccuDrawChangeModeTool
 internal;AccudrawData
 internal;AccuDrawFlags
 public;AccuDrawHintBuilder
-internal;AccuDrawRotateAxesTool 
-internal;AccuDrawRotateCycleTool 
-internal;AccuDrawRotateElementTool 
-internal;AccuDrawRotateFrontTool 
-internal;AccuDrawRotateSideTool 
-internal;AccuDrawRotateTopTool 
-internal;AccuDrawRotateViewTool 
-internal;AccuDrawSetLockAngleTool 
-internal;AccuDrawSetLockDistanceTool 
-internal;AccuDrawSetLockSmartTool 
-internal;AccuDrawSetLockXTool 
-internal;AccuDrawSetLockYTool 
-internal;AccuDrawSetLockZTool 
-internal;AccuDrawSetOriginTool 
+internal;AccuDrawRotateAxesTool
+internal;AccuDrawRotateCycleTool
+internal;AccuDrawRotateElementTool
+internal;AccuDrawRotateFrontTool
+internal;AccuDrawRotateSideTool
+internal;AccuDrawRotateTopTool
+internal;AccuDrawRotateViewTool
+internal;AccuDrawSetLockAngleTool
+internal;AccuDrawSetLockDistanceTool
+internal;AccuDrawSetLockSmartTool
+internal;AccuDrawSetLockXTool
+internal;AccuDrawSetLockYTool
+internal;AccuDrawSetLockZTool
+internal;AccuDrawSetOriginTool
 alpha;AccuDrawShortcuts
-public;AccuSnap 
+public;AccuSnap
 public;AccuSnap
 internal;acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder
 internal;AcquireImdlDecoderArgs
@@ -32,9 +32,9 @@ alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
-internal;AlternateUnitLabelsRegistry 
-beta;AngleDescription 
-internal;AnimatedTreeReference 
+internal;AlternateUnitLabelsRegistry
+beta;AngleDescription
+internal;AnimatedTreeReference
 internal;AnimationBranchState
 internal;AnimationBranchStates
 internal;AnimationBranchStates
@@ -42,56 +42,56 @@ internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
 internal;ArcGisErrorCode
-internal;class ArcGisGeometryBaseRenderer 
+internal;class ArcGisGeometryBaseRenderer
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
-internal;ArcGisGraphicsRenderer 
+internal;ArcGisGraphicsRenderer
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
 internal;ArcGISIdentifyRequestUrlProps
-internal;class ArcGISImageryProvider 
-internal;ArcGISMapLayerImageryProvider 
+internal;class ArcGISImageryProvider
+internal;ArcGISMapLayerImageryProvider
 internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AttachToViewportArgs = Viewport
-alpha;AuxChannel 
+alpha;AuxChannel
 alpha;AuxChannelProps
 alpha;AuxChannelTable
 alpha;AuxChannelTableProps
-public;AuxCoordSystem2dState 
-public;AuxCoordSystem3dState 
-public;AuxCoordSystemSpatialState 
-public;class AuxCoordSystemState 
-alpha;AuxDisplacementChannel 
-alpha;AuxParamChannel 
-internal;AzureMapsLayerImageryProvider 
-internal;B3dmReader 
+public;AuxCoordSystem2dState
+public;AuxCoordSystem3dState
+public;AuxCoordSystemSpatialState
+public;class AuxCoordSystemState
+alpha;AuxDisplacementChannel
+alpha;AuxParamChannel
+internal;AzureMapsLayerImageryProvider
+internal;B3dmReader
 internal;BackgroundMapGeometry
-beta;class BaseUnitFormattingSettingsProvider 
+beta;class BaseUnitFormattingSettingsProvider
 internal;BatchedTileIdMap
 public;BatchOptions
 public;BeButton
-public;BeButtonEvent 
+public;BeButtonEvent
 public;BeButtonEventProps
 public;BeButtonState
 public;BeModifierKeys
-public;BeTouchEvent 
-public;BeTouchEventProps 
-public;BeWheelEvent 
-public;BeWheelEventProps 
+public;BeTouchEvent
+public;BeTouchEventProps
+public;BeWheelEvent
+public;BeWheelEventProps
 public;BingElevationProvider
 public;BingLocationProvider
-internal;BingMapsImageryLayerProvider 
-public;BlankConnection 
+internal;BingMapsImageryLayerProvider
+public;BlankConnection
 public;BlankConnectionProps
-public;BriefcaseConnection 
+public;BriefcaseConnection
 beta;BriefcaseEditorToolSettings
-public;class BriefcaseNotificationHandler 
-public;BriefcaseTxns 
+public;class BriefcaseNotificationHandler
+public;BriefcaseTxns
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -100,18 +100,18 @@ public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
-public;CategorySelectorState 
+public;CategorySelectorState
 internal;CesiumIonAssetProvider
 public;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
-public;CheckboxFormatPropEditorSpec 
-public;CheckpointConnection 
+public;CheckboxFormatPropEditorSpec
+public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 internal;collectTransferables(document: ImdlModel.Document): Transferable[]
-internal;ColorMap 
+internal;ColorMap
 public;CompassMode
 internal;ComputeAnimationNodeId = (featureIndex: number) => number
 public;ComputeChordToleranceArgs
@@ -122,7 +122,7 @@ public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
 public;connectViewportViews(viewports: Iterable
 internal;ContextMode
-public;ContextRealityModelState 
+public;ContextRealityModelState
 public;ContextRotationId
 internal;ContextShareProvider
 internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchModelId: Id64String): RenderFeatureTable
@@ -145,7 +145,7 @@ internal;createPointStringParams(args: PolylineArgs): PointStringParams | undefi
 internal;createPolylineParams(args: PolylineArgs): PolylineParams | undefined
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-public;CreateRenderMaterialArgs 
+public;CreateRenderMaterialArgs
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined
 public;CreateTextureArgs
@@ -154,39 +154,39 @@ internal;createWorkerProxy
 internal;CurrentInputState
 public;CurrentState
 public;CustomFormatPropEditorSpec
-public;CustomGraphicBuilderOptions 
-public;CustomQuantityTypeDefinition 
+public;CustomGraphicBuilderOptions
+public;CustomQuantityTypeDefinition
 internal;DebugShaderFile
 internal;decodeImdlGraphics(options: ImdlDecodeOptions): Promise
-public;DecorateContext 
+public;DecorateContext
 public;DecorateContextCreateArgs
-public;Decorations 
+public;Decorations
 internal;DecorationsCache
-public;Decorator 
-internal;DefaultViewTouchTool 
-internal;DefineACSByElementTool 
-internal;DefineACSByPointsTool 
+public;Decorator
+internal;DefaultViewTouchTool
+internal;DefineACSByElementTool
+internal;DefineACSByPointsTool
 public;DepthPointOptions
 public;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
 internal;Dimensions
-public;DisclosedTileTreeSet 
+public;DisclosedTileTreeSet
 internal;DisplayParams
 internal;DisplayParams
-public;DisplayStyle2dState 
-public;DisplayStyle3dState 
-public;class DisplayStyleState 
+public;DisplayStyle2dState
+public;DisplayStyle3dState
+public;class DisplayStyleState
 internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 public;DownloadProgressInfo
 internal;DracoMeshCompression
 internal;DrawClipOptions
-public;DrawingModelState 
-public;DrawingViewState 
-internal;class DynamicIModelTile 
-public;DynamicsContext 
+public;DrawingModelState
+public;DrawingViewState
+internal;class DynamicIModelTile
+public;DynamicsContext
 internal;EdgeParams
 internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 internal;EdgeTable
@@ -196,12 +196,12 @@ internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
 public;ElementLocateManager
 public;ElementPicker
-alpha;class ElementSetTool 
-public;ElementState 
-public;EllipsoidTerrainProvider 
-public;EmphasizeElements 
-beta;EngineeringLengthDescription 
-public;EntityState 
+alpha;class ElementSetTool
+public;ElementState
+public;EllipsoidTerrainProvider
+public;EmphasizeElements
+beta;EngineeringLengthDescription
+public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
@@ -215,15 +215,15 @@ internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeigh
 public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
-internal;FetchCloudStorage 
-public;FitViewTool 
+internal;FetchCloudStorage
+public;FitViewTool
 internal;Flags
 public;FlashMode
 public;FlashSettings
 public;FlashSettingsOptions = Mutable
-public;FlyViewTool 
+public;FlyViewTool
 internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
-beta;class FormattedQuantityDescription 
+beta;class FormattedQuantityDescription
 public;FormatterParserSpecsProvider
 public;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
@@ -236,7 +236,7 @@ public;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendSecurityOptions
 public;Frustum2d
-public;FrustumAnimator 
+public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -244,16 +244,16 @@ internal;GenerateEdges
 beta;GenericAbortSignal
 public;GeoConverter
 internal;GeoConverterOptions
-beta;GeographicTilingScheme 
-public;GeometricModel2dState 
-public;GeometricModel3dState 
-public;class GeometricModelState 
+beta;GeographicTilingScheme
+public;GeometricModel2dState
+public;GeometricModel3dState
+public;class GeometricModelState
 internal;class Geometry
 internal;GeometryAccumulator
 internal;GeometryList
-internal;class GeometryListBuilder 
+internal;class GeometryListBuilder
 internal;GeometryOptions
-beta;GeometryTileTreeReference 
+beta;GeometryTileTreeReference
 public;GeoServices
 internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
@@ -271,39 +271,39 @@ public;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
-public;GlobeAnimator 
+public;GlobeAnimator
 internal;Gltf
 internal;Gltf1Id = string
-internal;Gltf1Material 
-internal;Gltf1Node 
+internal;Gltf1Material
+internal;Gltf1Node
 internal;Gltf2Id = number
-internal;Gltf2Material 
-internal;Gltf2Node 
-internal;GltfAccessor 
+internal;Gltf2Material
+internal;Gltf2Node
+internal;GltfAccessor
 internal;GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND"
-internal;GltfAsset 
-internal;GltfBuffer 
+internal;GltfAsset
+internal;GltfBuffer
 internal;GltfBufferData
 internal;GltfBufferTarget
-internal;GltfBufferViewProps 
-internal;GltfChildOfRootProperty 
+internal;GltfBufferViewProps
+internal;GltfChildOfRootProperty
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
 internal;GltfDataType
 internal;GltfDictionary
 internal;gltfDictionaryIterator
-internal;GltfDocument 
+internal;GltfDocument
 internal;GltfExtensions = GltfStringMap
 public;GltfGraphic
-internal;GltfGraphicsReader 
+internal;GltfGraphicsReader
 internal;GltfId = Gltf1Id | Gltf2Id
-internal;GltfImage 
+internal;GltfImage
 internal;GltfMagFilter
 internal;GltfMaterial = Gltf1Material | Gltf2Material
-internal;GltfMaterialPbrMetallicRoughness 
-internal;GltfMesh 
+internal;GltfMaterialPbrMetallicRoughness
+internal;GltfMesh
 internal;GltfMeshData
 internal;GltfMeshMode
-internal;GltfMeshPrimitive 
+internal;GltfMeshPrimitive
 internal;GltfMinFilter
 internal;GltfNode = Gltf1Node | Gltf2Node
 internal;GltfNodeBaseProps
@@ -311,42 +311,42 @@ internal;GltfProperty
 internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
-internal;GltfReaderResult 
-internal;GltfSampler 
-internal;GltfScene 
+internal;GltfReaderResult
+internal;GltfSampler
+internal;GltfScene
 internal;GltfStringMap
 internal;GltfStructuralMetadata
-internal;GltfTechnique 
+internal;GltfTechnique
 internal;GltfTechniqueState
-internal;GltfTexture 
-internal;GltfTextureInfo 
+internal;GltfTexture
+internal;GltfTextureInfo
 internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
 public;GpuMemoryLimits
-public;GraphicalEditingScope 
+public;GraphicalEditingScope
 public;GraphicArc
 public;GraphicArc2d
-public;GraphicBranch 
+public;GraphicBranch
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicBuilderOptions
 public;GraphicLineString
-public;GraphicLineString2d 
+public;GraphicLineString2d
 public;GraphicList = RenderGraphic[]
 public;GraphicLoop
 public;GraphicPath
 public;GraphicPointString
-public;GraphicPointString2d 
+public;GraphicPointString2d
 public;GraphicPolyface
 public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive
 public;GraphicPrimitive2d
 internal;GraphicsCollector
-internal;GraphicsCollectorDrawArgs 
+internal;GraphicsCollectorDrawArgs
 public;GraphicShape
-public;GraphicShape2d 
+public;GraphicShape2d
 public;GraphicSolidPrimitive
 public;GraphicType
 internal;GroundPlaneDecorations
@@ -362,20 +362,20 @@ public;HitListHolder
 public;HitParentGeomType
 public;HitPriority
 public;HitSource
-internal;I3dmReader 
+internal;I3dmReader
 public;IconSprites
-public;IdleTool 
+public;IdleTool
 public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-beta;ImageryMapLayerFormat 
-internal;ImageryMapLayerTreeReference 
-internal;ImageryMapTile 
-internal;ImageryMapTileTree 
-internal;ImageryTileContent 
+beta;ImageryMapLayerFormat
+internal;ImageryMapLayerTreeReference
+internal;ImageryMapTile
+internal;ImageryMapTileTree
+internal;ImageryTileContent
 internal;ImageryTileTreeState
 internal;ImdlAnimationNodes
 internal;ImdlAreaPattern
@@ -396,52 +396,52 @@ internal;ImdlInstances
 internal;ImdlMaterialAtlas
 internal;ImdlMesh
 internal;ImdlMeshEdges
-internal;ImdlMeshPrimitive 
+internal;ImdlMeshPrimitive
 internal;ImdlModel
 internal;ImdlNamedTexture
 internal;ImdlParseError = Exclude
 internal;ImdlParser
 internal;ImdlParserOptions
-internal;ImdlPointStringPrimitive 
+internal;ImdlPointStringPrimitive
 internal;ImdlPolyline
-internal;ImdlPolylinePrimitive 
+internal;ImdlPolylinePrimitive
 internal;ImdlPrimitive
 internal;ImdlReader
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
-internal;ImdlReaderResult 
+internal;ImdlReaderResult
 internal;ImdlRenderMaterial
 internal;ImdlScene
 internal;ImdlSegmentEdges
-internal;ImdlSilhouetteEdges 
+internal;ImdlSilhouetteEdges
 internal;ImdlSurface
 internal;ImdlTextureMapping
 internal;ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script
 internal;ImdlVertexTable
 public;IModelApp
 public;IModelAppOptions
-public;class IModelConnection 
+public;class IModelConnection
 public;IModelConnection
 internal;IModelFrameLifecycle
 public;IModelIdArg
 public;IModelRoutingContext
-internal;IModelTile 
-internal;IModelTileContent 
-internal;IModelTileParams 
+internal;IModelTile
+internal;IModelTileContent
+internal;IModelTileParams
 internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams
 internal;IModelTileRequestChannels
-internal;IModelTileTree 
+internal;IModelTileTree
 internal;IModelTileTreeOptions
-internal;IModelTileTreeParams 
+internal;IModelTileTreeParams
 internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
 internal;IndexBuffer
 internal;IndexedEdgeParams
-public;class InputCollector 
+public;class InputCollector
 public;InputSource
 public;InstancedGraphicParams
-public;class InteractiveTool 
+public;class InteractiveTool
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
-public;IntersectDetail 
+public;IntersectDetail
 public;IpcApp
 public;IpcAppOptions
 public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
@@ -455,31 +455,31 @@ beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
-beta;LengthDescription 
+beta;LengthDescription
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-alpha;LocalExtensionProvider 
+alpha;LocalExtensionProvider
 alpha;LocalExtensionProviderProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
-beta;LocalUnitFormatProvider 
+beta;LocalUnitFormatProvider
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
-public;LookAndMoveTool 
+public;LookAndMoveTool
 public;LookAtArgs
-public;LookAtOrthoArgs 
-public;LookAtPerspectiveArgs 
-public;LookAtUsingLensAngle 
-public;LookViewTool 
+public;LookAtOrthoArgs
+public;LookAtPerspectiveArgs
+public;LookAtUsingLensAngle
+public;LookViewTool
 internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
-internal;MapBoxLayerImageryProvider 
-public;MapCartoRectangle 
+internal;MapBoxLayerImageryProvider
+public;MapCartoRectangle
 beta;MapFeatureInfo
-beta;MapFeatureInfoRecord 
+beta;MapFeatureInfoRecord
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
 beta;MapLayerAccessTokenParams
@@ -504,20 +504,20 @@ public;MapLayerSource
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
-internal;class MapLayerTileTreeReference 
+internal;class MapLayerTileTreeReference
 beta;MapLayerTokenEndpoint
 beta;MapSubLayerFeatureInfo
-public;MapTile 
-internal;MapTiledGraphicsProvider 
-internal;MapTileLoader 
+public;MapTile
+internal;MapTiledGraphicsProvider
+internal;MapTileLoader
 public;class MapTileProjection
-public;MapTileTree 
-internal;MapTileTreeReference 
+public;MapTileTree
+internal;MapTileTreeReference
 beta;MapTileTreeScaleRangeVisibility
 public;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
-public;Marker 
+public;Marker
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
 public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap
 public;class MarkerSet
@@ -527,13 +527,13 @@ public;MaterialDiffuseProps
 public;MaterialParams
 public;MaterialSpecularProps
 public;MaterialTextureMappingProps
-public;MeasureAreaByPointsTool 
-public;MeasureAreaTool 
-public;MeasureDistanceTool 
-public;class MeasureElementTool 
-public;MeasureLengthTool 
-public;MeasureLocationTool 
-public;MeasureVolumeTool 
+public;MeasureAreaByPointsTool
+public;MeasureAreaTool
+public;MeasureDistanceTool
+public;class MeasureElementTool
+public;MeasureLengthTool
+public;MeasureLocationTool
+public;MeasureVolumeTool
 internal;Mesh
 internal;Mesh
 public;MeshArgs
@@ -542,14 +542,14 @@ internal;fromMesh(mesh: Mesh): MeshArgs | undefined
 internal;MeshArgsEdges
 internal;MeshBuilder
 internal;MeshBuilder
-internal;MeshBuilderMap 
+internal;MeshBuilderMap
 internal;MeshBuilderMap
 internal;MeshBuilderPolyface
 internal;MeshEdgeCreationOptions
 internal;MeshEdgeCreationOptions
-internal;MeshFeature 
+internal;MeshFeature
 internal;MeshFeatures
-internal;MeshList 
+internal;MeshList
 internal;MeshParams
 internal;MeshPointList = Point3dList | QPoint3dList
 internal;MeshPrimitiveType
@@ -561,37 +561,37 @@ internal;MockRender
 public;ModalOptions
 public;ModalReturn
 beta;ModelDisplayTransformProvider
-internal;ModelMapLayerTileTreeReference 
-public;ModelSelectorState 
-public;ModelState 
+internal;ModelMapLayerTileTreeReference
+public;ModelSelectorState
+public;ModelState
 public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
-public;MutableChangeFlags 
+public;MutableChangeFlags
 public;NativeApp
 internal;NativeAppLogger
-public;NativeAppOpts 
+public;NativeAppOpts
 public;NoRenderApp
 internal;NormalMode
 public;class NotificationHandler
-public;NotificationManager 
+public;NotificationManager
 public;NotifyMessageDetails
-internal;NullRenderSystem 
-internal;NullTarget 
-internal;OffScreenTarget 
-public;OffScreenViewport 
+internal;NullRenderSystem
+internal;NullTarget
+internal;OffScreenTarget
+public;OffScreenViewport
 public;OffScreenViewportOptions
 internal;OldTextureImage
 public;OnDownloadProgress = (progress: DownloadProgressInfo) => void
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
-internal;OnScreenTarget 
+internal;OnScreenTarget
 public;OnViewExtentsError
 internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
-internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
-internal;OrbitGtTreeReference 
-public;OrthographicViewState 
+internal;OrbitGtTileTree
+internal;OrbitGtTreeReference
+public;OrthographicViewState
 public;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
@@ -599,26 +599,26 @@ public;OutputMessageType
 public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PaddingPercent
-public;PanViewTool 
+public;PanViewTool
 public;ParseAndRunResult
 public;ParsedKeyin
 internal;parseGltf(args: ParseGltfArgs): Promise
 internal;ParseGltfArgs
 internal;ParseGltfLogger
 internal;parseImdlDocument(options: ParseImdlDocumentArgs): ImdlModel.Document | ImdlParseError
-internal;ParseImdlDocumentArgs 
+internal;ParseImdlDocumentArgs
 public;ParseKeyinError
 public;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
-public;ParticleProps 
+public;ParticleProps
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
 beta;Props
-public;PhysicalModelState 
-public;PickableGraphicOptions 
+public;PhysicalModelState
+public;PickableGraphicOptions
 internal;PingTestResult
 public;Pixel
 internal;PlanarClassifierMap = Map
@@ -627,38 +627,38 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
-internal;Point3dList 
+internal;Point3dList
 internal;PointCloudArgs
 internal;PointStringParams
 internal;PolyfacePrimitive
-internal;PolyfacePrimitiveList 
+internal;PolyfacePrimitiveList
 public;PolylineArgs
 public;PolylineArgs
 internal;fromMesh(mesh: Mesh): PolylineArgs | undefined
 internal;PolylineParams
-beta;PreferenceArg 
+beta;PreferenceArg
 beta;PreferenceKeyArg
 internal;PreserveOrder
-internal;PrimitiveBuilder 
+internal;PrimitiveBuilder
 internal;PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive
-internal;PrimitiveLineStringGeometry 
-internal;PrimitiveLoopGeometry 
-internal;PrimitivePathGeometry 
-internal;PrimitivePointStringGeometry 
-internal;PrimitivePolyfaceGeometry 
-public;class PrimitiveTool 
+internal;PrimitiveLineStringGeometry
+internal;PrimitiveLoopGeometry
+internal;PrimitivePathGeometry
+internal;PrimitivePointStringGeometry
+internal;PrimitivePolyfaceGeometry
+public;class PrimitiveTool
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
 public;PullChangesOptions
 public;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
-public;QuantityFormatter 
+public;QuantityFormatter
 public;QuantityType
 public;QuantityTypeArg = QuantityType | string
 public;QuantityTypeDefinition
 public;QuantityTypeKey = string
-alpha;QuantizedAuxChannelProps 
+alpha;QuantizedAuxChannelProps
 public;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 public;QueryTileFeaturesOptions
@@ -673,8 +673,8 @@ public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;readImdlContent(args: ImdlReaderCreateArgs &
 public;ReadMeshArgs
-internal;ReadonlyTileUserSet 
-alpha;RealityDataError 
+internal;ReadonlyTileUserSet
+alpha;RealityDataError
 beta;RealityDataSource
 beta;RealityDataSource
 internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
@@ -692,69 +692,69 @@ alpha;toPolyface(params: RealityMeshParams, options?:
 beta;RealityMeshParamsBuilder
 beta;RealityMeshParamsBuilderOptions
 internal;RealityModelSource = ViewState | DisplayStyleState
-internal;RealityModelTileTree 
+internal;RealityModelTileTree
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-public;RealityTile 
-internal;RealityTileContent 
-internal;RealityTileDrawArgs 
+public;RealityTile
+internal;RealityTileContent
+internal;RealityTileDrawArgs
 beta;RealityTileGeometry
 internal;class RealityTileLoader
-internal;RealityTileParams 
+internal;RealityTileParams
 internal;RealityTileRegion
-public;RealityTileTree 
-internal;RealityTileTreeParams 
-internal;RealityTreeReference 
-alpha;RemoteExtensionProvider 
+public;RealityTileTree
+internal;RealityTileTreeParams
+internal;RealityTreeReference
+alpha;RemoteExtensionProvider
 alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
-public;class RenderGraphic 
-public;class RenderGraphicOwner 
+public;class RenderGraphic
+public;class RenderGraphicOwner
 internal;RenderMaterialSource
 public;RenderMemory
-internal;Buffers 
+internal;Buffers
 internal;BufferType
 internal;Consumer
 internal;Consumers
 internal;ConsumerType
 internal;RenderPlan
-internal;class RenderPlanarClassifier 
+internal;class RenderPlanarClassifier
 internal;RenderPlanEllipsoid
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
 internal;RenderSkySphereParams
-public;class RenderSystem 
+public;class RenderSystem
 public;RenderSystem
 beta;RenderSystemDebugControl
-internal;class RenderTarget 
+internal;class RenderTarget
 internal;RenderTargetDebugControl
-internal;class RenderTerrainGeometry 
-internal;class RenderTextureDrape 
+internal;class RenderTerrainGeometry
+internal;class RenderTextureDrape
 public;RequestMeshDataArgs
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
-public;RotateViewTool 
+public;RotateViewTool
 public;RotationMode
 internal;RoundOff
 internal;SavedState
 public;Scene
-public;SceneContext 
+public;SceneContext
 internal;SceneVolumeClassifier
 public;ScreenSpaceEffectBuilder
 public;ScreenSpaceEffectBuilderParams
 public;ScreenSpaceEffectContext
 public;ScreenSpaceEffectSource
-public;ScreenViewport 
-public;ScrollViewTool 
+public;ScreenViewport
+public;ScrollViewTool
 internal;SectionDrawingInfo
-public;SectionDrawingModelState 
+public;SectionDrawingModelState
 internal;SegmentEdgeParams
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
@@ -764,46 +764,46 @@ public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
 public;SelectionSetEventType
-public;SelectionTool 
+public;SelectionTool
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-public;SetupCameraTool 
-public;SetupWalkCameraTool 
-public;SheetModelState 
-public;SheetViewState 
+public;SetupCameraTool
+public;SetupWalkCameraTool
+public;SheetModelState
+public;SheetViewState
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
-internal;SilhouetteParams 
+internal;SilhouetteParams
 internal;SkyBoxDecorations
-public;SnapDetail 
+public;SnapDetail
 public;SnapHeat
 public;SnapMode
-public;SnapshotConnection 
+public;SnapshotConnection
 public;SnapStatus
-internal;class SpatialClassifierTileTreeReference 
+internal;class SpatialClassifierTileTreeReference
 alpha;SpatialLocationAndExtents
-public;SpatialLocationModelState 
-public;SpatialModelState 
-internal;SpatialTileTreeReferences 
+public;SpatialLocationModelState
+public;SpatialModelState
 internal;SpatialTileTreeReferences
-public;SpatialViewState 
-internal;SplitMeshArgs 
+internal;SpatialTileTreeReferences
+public;SpatialViewState
+internal;SplitMeshArgs
 internal;splitMeshParams(args: SplitMeshArgs): Map
-internal;SplitPointStringArgs 
+internal;SplitPointStringArgs
 internal;splitPointStringParams(args: SplitPointStringArgs): Map
-internal;SplitPolylineArgs 
+internal;SplitPolylineArgs
 internal;splitPolylineParams(args: SplitPolylineArgs): Map
 internal;SplitVertexTableArgs
 public;Sprite
-public;SpriteLocation 
+public;SpriteLocation
 public;StandardView
 public;StandardViewId
-public;StandardViewTool 
+public;StandardViewTool
 public;StartOrResume
 internal;StrokesPrimitive
-internal;StrokesPrimitiveList 
+internal;StrokesPrimitiveList
 internal;StrokesPrimitivePointList
-internal;StrokesPrimitivePointLists 
+internal;StrokesPrimitivePointLists
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -813,12 +813,12 @@ internal;SurfaceParams
 internal;SurfaceRenderMaterial
 internal;SurfacesOnly
 internal;SurfaceType
-beta;SurveyLengthDescription 
+beta;SurveyLengthDescription
 internal;SuspendedToolState
 public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
 public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
 public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
-internal;class Target 
+internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
@@ -827,12 +827,12 @@ public;TerrainMeshProviderOptions
 public;TerrainProvider
 public;TerrainProviderRegistry
 internal;TerrainTexture
-internal;TerrainTileContent 
+internal;TerrainTileContent
 internal;TesselatedPolyline
 internal;tesselatePolyline(polylines: PolylineIndices[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline
 internal;tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined
-public;TextInputFormatPropEditorSpec 
-public;TextSelectFormatPropEditorSpec 
+public;TextInputFormatPropEditorSpec
+public;TextSelectFormatPropEditorSpec
 public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
@@ -875,12 +875,12 @@ public;TileTreeOwner
 public;TileTreeParams
 public;class TileTreeReference
 public;TileTreeSupplier
-internal;TileUrlImageryProvider 
+internal;TileUrlImageryProvider
 public;TileUsageMarker
 public;TileUser
 public;TileUser
-internal;TileUserIdSet 
-internal;TileUserIdSets 
+internal;TileUserIdSet
+internal;TileUserIdSets
 public;TileVisibility
 beta;TokenArg
 internal;ToleranceRatio
@@ -904,7 +904,7 @@ internal;ToolState
 public;ToolTipOptions
 public;ToolTipProvider
 public;ToolType = typeof Tool
-internal;TouchCursor 
+internal;TouchCursor
 internal;toVertexTable(imdl: ImdlModel.VertexTable): VertexTable
 internal;TraversalChildrenDetails
 internal;TraversalDetails
@@ -913,93 +913,93 @@ internal;traverseGltfNodes(ids: Iterable
 internal;Triangle
 internal;TriangleKey
 internal;TriangleList
-internal;TriangleSet 
+internal;TriangleSet
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-public;TwoWayViewportFrustumSync 
+public;TwoWayViewportFrustumSync
 public;TwoWayViewportSync
 public;Uniform
-public;UniformArrayParams 
+public;UniformArrayParams
 public;UniformContext
 public;UniformParams
 public;UniformType
 internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
-internal;UpsampledMapTile 
+internal;UpsampledMapTile
 beta;UserPreferencesAccess
 public;VaryingType
-internal;VertexIndices 
+internal;VertexIndices
 internal;VertexKey
 internal;VertexKeyProps
-internal;VertexMap 
+internal;VertexMap
 internal;VertexTable
 internal;class VertexTableBuilder
 internal;VertexTableWithIndices
 public;ViewAnimationOptions
 beta;ViewAttachmentHitInfo
-public;ViewChangeOptions 
-public;ViewClipByElementTool 
-public;ViewClipByPlaneTool 
-public;ViewClipByRangeTool 
-public;ViewClipByShapeTool 
-public;ViewClipClearTool 
+public;ViewChangeOptions
+public;ViewClipByElementTool
+public;ViewClipByPlaneTool
+public;ViewClipByRangeTool
+public;ViewClipByShapeTool
+public;ViewClipClearTool
 internal;ViewClipControlArrow
-public;ViewClipDecoration 
-public;ViewClipDecorationProvider 
+public;ViewClipDecoration
+public;ViewClipDecorationProvider
 public;ViewClipEventHandler
-internal;class ViewClipModifyTool 
-internal;ViewClipPlanesModifyTool 
-internal;ViewClipShapeModifyTool 
-public;ViewClipTool 
+internal;class ViewClipModifyTool
+internal;ViewClipPlanesModifyTool
+internal;ViewClipShapeModifyTool
+public;ViewClipTool
 public;ViewCreator2d
 public;ViewCreator2dOptions
 public;ViewCreator3d
 public;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
-public;ViewGlobeBirdTool 
-public;ViewGlobeIModelTool 
-public;ViewGlobeLocationTool 
-public;ViewGlobeSatelliteTool 
+public;ViewGlobeBirdTool
+public;ViewGlobeIModelTool
+public;ViewGlobeLocationTool
+public;ViewGlobeSatelliteTool
 internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager 
-public;class ViewManip 
-public;class Viewport 
+public;ViewManager
+public;class ViewManip
+public;class Viewport
 public;ViewportDecorator
-public;ViewportGraphicBuilderOptions 
+public;ViewportGraphicBuilderOptions
 public;class ViewPose
-public;ViewPose2d 
-public;ViewPose3d 
+public;ViewPose2d
+public;ViewPose3d
 public;ViewRect
-public;ViewRedoTool 
-public;class ViewState 
-public;class ViewState2d 
-public;class ViewState3d 
+public;ViewRedoTool
+public;class ViewState
+public;class ViewState2d
+public;class ViewState3d
 public;ViewStatus
-public;ViewToggleCameraTool 
-public;class ViewTool 
+public;ViewToggleCameraTool
+public;class ViewTool
 public;ViewUndoEvent
-public;ViewUndoTool 
+public;ViewUndoTool
 public;VisibleFeature
-public;WalkViewTool 
+public;WalkViewTool
 internal;wantJointTriangles(weight: number, is2d: boolean): boolean
 internal;WebMercator
 alpha;WebMercatorProjection
-beta;WebMercatorTilingScheme 
+beta;WebMercatorTilingScheme
 internal;WheelEventProcessor
-public;WindowAreaTool 
+public;WindowAreaTool
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsCrsSupport
-internal;WmsMapLayerImageryProvider 
+internal;WmsMapLayerImageryProvider
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
 internal;WmtsConstants
-internal;WmtsMapLayerImageryProvider 
+internal;WmtsMapLayerImageryProvider
 internal;WorkerError
 internal;WorkerImplementation
 internal;WorkerInterface
@@ -1008,4 +1008,4 @@ internal;WorkerResponse = WorkerResult | WorkerError
 internal;WorkerResult
 internal;WorkerReturnType
 public;ZoomToOptions
-public;ZoomViewTool 
+public;ZoomViewTool
