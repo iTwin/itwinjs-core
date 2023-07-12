@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 
 // Convert a channel array [r, g, b, a] to ColorDef
@@ -87,13 +88,16 @@ export interface EsriPMSProps extends EsriSymbolCommonProps {
 /** @internal */
 export class EsriPMS implements EsriSymbolCommonProps {
   public readonly props: EsriPMSProps;
-  private _image: HTMLImageElement;
+  private _image: HTMLImageElement|undefined;
 
   public get type() { return this.props.type; }
   public get url() { return this.props.url; }
   public get imageData() { return this.props.imageData; }
   public get imageUrl() { return `data:${this.contentType};base64,${this.imageData}`; }
-  public get image() { return this._image; }
+  public get image() {
+    assert(this._image !== undefined);
+    return this._image;
+  }
   public get contentType() { return this.props.contentType; }
   public get width() { return this.props.width; }
   public get height() { return this.props.height; }
@@ -101,10 +105,24 @@ export class EsriPMS implements EsriSymbolCommonProps {
   public get yoffset() { return this.props.yoffset; }
   public get angle() { return this.props.angle; }
 
-  constructor(json: EsriPMSProps) {
+  public async loadImage() {
+    if (this._image === undefined) {
+      this._image = new Image();
+
+      return new Promise<void>((resolve, reject) => {
+        if (this._image) {
+          this._image.addEventListener("load", () => {
+            resolve();
+          });
+          this._image.src = this.imageUrl;
+        } else
+          reject(new Error("Failed to load image"));
+      });
+    }
+  }
+
+  private constructor(json: EsriPMSProps) {
     this.props = json;
-    this._image = new Image();
-    this._image.src = this.imageUrl;
   }
 
   public static fromJSON(json: EsriPMSProps) {
@@ -149,7 +167,26 @@ export interface EsriUniqueValueInfoProps {
   label?: string;
   description?: string;
   symbol: EsriSymbolProps;
+}
 
+/** @internal */
+export class EsriUniqueValueInfo  {
+
+  public readonly value: string;
+  public readonly label: string|undefined;
+  public readonly description: string|undefined;
+  public readonly symbol: EsriSymbol;
+
+  private constructor(json: EsriUniqueValueInfoProps) {
+    this.value = json.value;
+    this.label = json.label;
+    this.description = json.description;
+    this.symbol = EsriSymbol.fromJSON(json.symbol);
+  }
+
+  public static fromJSON(json: EsriUniqueValueInfoProps) {
+    return new EsriUniqueValueInfo(json);
+  }
 }
 
 /** @internal */
@@ -169,7 +206,7 @@ export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
 
 /** @internal */
 export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
-  field1: string;
+  field1?: string;
   field2?: string;
   field3?: string;
   defaultSymbol?: EsriSymbolProps;
@@ -185,6 +222,7 @@ export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRender
 /** @internal */
 export abstract class EsriRenderer {
   public readonly abstract type: EsriRendererType;
+  public abstract initialize(): Promise<void>;
   public static fromJSON(json: EsriRendererProps): EsriRenderer {
     if (json.type === "simple")
       return EsriSimpleRenderer.fromJSON(json as EsriSimpleRendererProps);
@@ -205,6 +243,13 @@ export class EsriSimpleRenderer extends EsriRenderer {
     this.type = json.type;
     this.symbol = EsriSymbol.fromJSON(json.symbol);
   }
+  public async initialize() {
+    const promises: Promise<void>[] = [];
+    if (this.symbol.type === "esriPMS") {
+      promises.push((this.symbol as EsriPMS).loadImage());
+    }
+    await Promise.all(promises);
+  }
 
   public static override fromJSON(json: EsriSimpleRendererProps) {
     return new EsriSimpleRenderer(json);
@@ -216,7 +261,7 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
   private _props: EsriUniqueValueRendererProps;
   public readonly type: EsriRendererType = "uniqueValue";
   public readonly defaultSymbol?: EsriSymbol;
-  public readonly uniqueValueInfos: EsriUniqueValueInfoProps[];
+  public readonly uniqueValueInfos: EsriUniqueValueInfo[] = [];
 
   public get field1() { return this._props.field1 ?? undefined; }
   public get field2() { return this._props.field2 ?? undefined; }
@@ -226,8 +271,24 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
     super();
     if (json.defaultSymbol)
       this.defaultSymbol = EsriSymbol.fromJSON(json.defaultSymbol);
-    this.uniqueValueInfos = json.uniqueValueInfos;
+    for (const uvi of json.uniqueValueInfos) {
+      this.uniqueValueInfos.push(EsriUniqueValueInfo.fromJSON(uvi));
+    }
+
     this._props = json;
+  }
+
+  public override async initialize() {
+    const promises: Promise<void>[] = [];
+    if (this.defaultSymbol?.type === "esriPMS") {
+      promises.push((this.defaultSymbol as EsriPMS).loadImage());
+    }
+    for (const uvi of this.uniqueValueInfos) {
+      if (uvi.symbol.type === "esriPMS") {
+        promises.push((uvi.symbol as EsriPMS).loadImage());
+      }
+    }
+    await Promise.all(promises);
   }
 
   public static override fromJSON(json: EsriUniqueValueRendererProps) {

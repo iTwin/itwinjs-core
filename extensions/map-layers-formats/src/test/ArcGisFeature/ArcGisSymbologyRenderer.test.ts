@@ -7,13 +7,17 @@ import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { EsriPMS, EsriSFS, EsriSLS , EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { TestUtils } from "./TestUtils";
+import { ArcGisFeatureProvider } from "../../map-layers-formats";
 const expect = chai.expect;
 chai.use(chaiAsPromised);
+
+const getRefImageSrc = (markerSymbol: any) => `data:${markerSymbol.contentType};base64,${markerSymbol.imageData}`;
 
 describe("ArcGisSymbologyRenderer", () => {
 
@@ -23,86 +27,58 @@ describe("ArcGisSymbologyRenderer", () => {
     sandbox.restore();
   });
 
-  const comparePointSymbol = (symbol1: EsriPMS, symbol2: EsriPMS ) => {
-    expect(symbol1.type).to.equals(symbol2.type);
-    expect(symbol1.contentType).to.equals(symbol2.contentType);
-    expect(symbol1.height).to.equals(symbol2.height);
-    expect(symbol1.width).to.equals(symbol2.width);
-    expect(symbol1.imageData).to.equals(symbol2.imageData);
-  };
+  it("should construct renderer from simple drawing info", async () => {
+    const dataset = NewYorkDataset.streetsLayerCapabilities.drawingInfo.renderer;
+    const simpleRenderer = EsriRenderer.fromJSON(dataset);
+    const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPolyline");
+    const symbRender = new ArcGisSymbologyRenderer(simpleRenderer, defaultSymb!);
+    const ref = EsriSLS.fromJSON(dataset.symbol);
+    expect(symbRender.symbol).to.deep.equals(ref);
+  });
 
-  const compareLineSymbol = (symbol1: EsriSLS, symbol2: EsriSLS ) => {
-    expect(symbol1.type).to.equals(symbol2.type);
-    expect(symbol1.color).to.equals(symbol2.color);
-    expect(symbol1.width).to.equals(symbol2.width);
-    expect(symbol1.style).to.equals(symbol2.style);
-  };
+  it("should construct unique value renderer without metadata default symbol (", async () => {
 
-  const comparePolySymbol = (symbol1: EsriSLS, symbol2: EsriSFS ) => {
-    expect(symbol1.type).to.equals(symbol2.type);
-    expect(symbol1.color).to.equals(symbol2.color);
-    expect(symbol1.style).to.equals(symbol2.style);
-  };
+    const dataset = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
+    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPolygon");
+    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
 
-  it("should construct renderer from incomplete drawing info", async () => {
-    let provider = new ArcGisSymbologyRenderer("esriGeometryPoint", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
+    expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
+  });
 
-    provider = new ArcGisSymbologyRenderer("esriGeometryMultipoint", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
+  it("should construct unique value renderer with default symbol", async () => {
 
-    provider = new ArcGisSymbologyRenderer("esriGeometryPolyline", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    compareLineSymbol((provider as any)._symbol, EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
+    const dataset = NewYorkDataset.uniqueValueDrawingInfo;
+    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
+    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
 
-    provider = new ArcGisSymbologyRenderer("esriGeometryLine", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    compareLineSymbol((provider as any)._symbol,  EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
+    const test = EsriPMS.fromJSON(dataset.drawingInfo.renderer.defaultSymbol as any);
 
-    provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePolySymbol((provider as any)._symbol, EsriSFS.fromJSON((ArcGisSymbologyRenderer as any).defaultSFS));
+    expect (symbRender.defaultSymbol).to.deep.equals(test);
 
   });
 
-  it("should construct renderer from unique value drawing info", async () => {
-    const provider = new ArcGisSymbologyRenderer("esriGeometryPoint", NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer.defaultSymbol as any);
+  it("should construct with default symbol if invalid renderer type", async () => {
+    const dataset = structuredClone(NewYorkDataset.uniqueValueDrawingInfo);
+    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    (renderer as any).type = "someBadType";
+    const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
+    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
+    expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
 
   });
 
-  it("should construct renderer from point symbology drawing info", async () => {
-
-    let provider = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.pointDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, PhillyLandmarksDataset.pointDrawingInfo.drawingInfo.renderer.symbol as any);
-
-    provider = new ArcGisSymbologyRenderer("esriGeometryPolyline", PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer.symbol as any);
-
-    provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer.symbol as any);
+  it("should construct with default symbol if no renderer object", async () => {
+    const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
+    const symbRender = new ArcGisSymbologyRenderer(undefined, defaultSymb!);
+    expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
 
   });
 
-  it("should construct unique value renderer", async () => {
+  it("should provide fill color using simple renderer definition", async () => {
 
-    const info = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
-    const renderer =  EsriUniqueValueRenderer.fromJSON(info.drawingInfo.renderer as any);
-    expect(renderer.field1).equals(info.drawingInfo.renderer.field1);
-    expect(renderer.field2).to.be.undefined;
-    expect(renderer.field3).to.be.undefined;
-    expect(renderer.type).equals(info.drawingInfo.renderer.type);
-    expect(renderer.uniqueValueInfos.length).equals(info.drawingInfo.renderer.uniqueValueInfos.length);
-    for (let i = 0 ; i < renderer.uniqueValueInfos.length; i++) {
-      const lhs = renderer.uniqueValueInfos[i];
-      const rhs = info.drawingInfo.renderer.uniqueValueInfos[i];
-      expect(lhs.value).equals(rhs.value);
-      expect(lhs.label).equals(rhs.label);
-      expect(lhs.description).equals(rhs.description);
-      expect(lhs.symbol.type).equals(rhs.symbol.type);
-    }
-  });
-
-  it("should provided fill color using simple renderer definition", async () => {
-
-    const provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer);
     const fakeContext = {fillStyle: ""};
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
 
@@ -112,62 +88,62 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should apply proper fill color using unique value SFS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
-    const provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef);
 
     const fakeContext = {fillStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
-    let refSymbol = (provider as any)._defaultSymbol;
-    expect(fakeContext.fillStyle).to.eq(refSymbol.color.toRgbaString());
+    let refSymbol = provider.defaultSymbol as EsriSFS;
+    expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
     provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
-    expect(fakeContext.fillStyle).to.eq(refSymbol.color.toRgbaString());
+    expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
 
     // check that we fallback to default symbology if empty attributes are now set
     provider.setActiveFeatureAttributes({});
     fakeContext.fillStyle = "";
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
-    refSymbol = (provider as any)._defaultSymbol;
-    expect(fakeContext.fillStyle).to.eq(refSymbol.color.toRgbaString());
+    refSymbol = provider.defaultSymbol as EsriSFS;
+    expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
   });
 
   it("should apply proper stroke color using unique value SFS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
-    const provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef);
 
     const fakeContext = {strokeStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
-    let refSymbol = (provider as any)._defaultSymbol;
-    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline.color.toRgbaString());
+    let refSymbol = provider.defaultSymbol as EsriSFS;
+    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline!.color!.toRgbaString());
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
     provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
-    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline.color!.toRgbaString());
+    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline!.color!.toRgbaString());
 
     // check that we fallback to default symbology if empty attributes are now set
     provider.setActiveFeatureAttributes({});
     fakeContext.strokeStyle = "";
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
-    refSymbol = (provider as any)._defaultSymbol;
-    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline.color!.toRgbaString());
+    refSymbol = (provider as any).defaultSymbol;
+    expect(fakeContext.strokeStyle).to.eq(refSymbol.outline!.color!.toRgbaString());
   });
 
   it("should apply proper stroke color using unique value SLS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSLSDrawingInfo.drawingInfo.renderer;
-    const provider = new ArcGisSymbologyRenderer("esriGeometryLine", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryLine", rendererDef);
 
     const fakeContext = {strokeStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
-    let refSymbol = (provider as any)._defaultSymbol;
+    let refSymbol = provider.defaultSymbol as any;
     expect(fakeContext.strokeStyle).to.eq(refSymbol.color.toRgbaString());
 
     // Now set proper attribute
@@ -181,13 +157,19 @@ describe("ArcGisSymbologyRenderer", () => {
     provider.setActiveFeatureAttributes({});
     fakeContext.strokeStyle = "";
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
-    refSymbol = (provider as any)._defaultSymbol;
+    refSymbol = provider.defaultSymbol as any;
     expect(fakeContext.strokeStyle).to.eq(refSymbol.color!.toRgbaString());
   });
 
   it("should apply proper marker using unique value PMS renderer definition", async () => {
     const rendererDef = NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer;
-    const provider = new ArcGisSymbologyRenderer("esriGeometryPoint", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef);
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
 
     class FakeContext {
       public image: any;
@@ -197,10 +179,9 @@ describe("ArcGisSymbologyRenderer", () => {
     }
     const fakeContext = new FakeContext();
 
-    const getRefImageSrc = (markerSymbol: any) => `data:${markerSymbol.contentType};base64,${markerSymbol.imageData}`;
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
-    let refSymbol = (provider as any)._defaultSymbol;
+    let refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
     // Now set proper attribute
@@ -214,15 +195,36 @@ describe("ArcGisSymbologyRenderer", () => {
     provider.setActiveFeatureAttributes({});
     fakeContext.image = undefined;
     provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
-    refSymbol = (provider as any)._defaultSymbol;
+    refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
   });
 
-  it("should throw when creating a symbology renderer with invalid geometry type", async () => {
+  it("should apply proper marker using unique value PMS renderer definition", async () => {
+    const rendererDef = {...NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer, defaultSymbol: null};
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef);
 
-    const renderer = PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer;
-    expect(()=> new ArcGisSymbologyRenderer("esriGeometryAny", renderer)).to.throw( Error, "Could not determine default symbology: geometry type not supported");
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    // When the renderer definition doesn't include its own default symbol we need to loadimage of the default symbol manually
+    if (!rendererDef.defaultSymbol)
+      await (provider.defaultSymbol as EsriPMS).loadImage();  // since default symbology is provided by
+
+    class FakeContext {
+      public image: any;
+      public drawImage(image: CanvasImageSource, _dx: number, _dy: number, _dw: number, _dh: number) {
+        this.image = image;
+      }
+    }
+    const fakeContext = new FakeContext();
+
+    // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
+    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
+    const refSymbol = provider.defaultSymbol;
+    expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
   });
-
 }); // end test suite

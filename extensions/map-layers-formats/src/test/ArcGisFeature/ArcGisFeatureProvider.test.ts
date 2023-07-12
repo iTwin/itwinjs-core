@@ -18,6 +18,7 @@ import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse
 import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
+import { EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/EsriSymbology";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -66,6 +67,7 @@ function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
       minScale: 600000,
       maxScale: 5000,
       geometryType : "esriGeometryPolygon",
+      drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
     };
   });
 }
@@ -84,6 +86,7 @@ function getDefaultLayerMetadata() {
     minScale: 600000,
     maxScale: 5000,
     geometryType : "esriGeometryPolygon",
+    drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
   };
 }
 
@@ -485,10 +488,14 @@ describe("ArcGisFeatureProvider", () => {
     await provider.initialize();
     expect(provider.format).to.equals("PBF");
 
+    const layerMetadata = {
+      defaultVisibility: true,
+      geometryType : "esriGeometryPolygon",
+      drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo};
+
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "JSON", geometryType : "esriGeometryPolygon"};
-
+      return {...layerMetadata, supportedQueryFormats: "JSON"};
     });
 
     getServiceJsonStub.restore();
@@ -502,16 +509,7 @@ describe("ArcGisFeatureProvider", () => {
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "JSON", geometryType : "esriGeometryPolygon" };
-    });
-
-    provider = new ArcGisFeatureProvider(settings);
-    await provider.initialize();
-    expect(provider.format).to.equals("JSON");
-
-    getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
-      return { defaultVisibility: true, supportedQueryFormats: "" };
+      return {...layerMetadata, supportedQueryFormats: ""};
     });
 
     provider = new ArcGisFeatureProvider(settings);
@@ -562,6 +560,7 @@ describe("ArcGisFeatureProvider", () => {
         defaultVisibility: true,
         supportedQueryFormats: "PBF, JSON",
         geometryType : "esriGeometryPolygon",
+        drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
 
@@ -691,6 +690,7 @@ describe("ArcGisFeatureProvider", () => {
         minScale: 600000,
         maxScale: 5000,
         geometryType : "esriGeometryPolygon",
+        drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
 
@@ -907,6 +907,7 @@ describe("ArcGisFeatureProvider", () => {
         supportedQueryFormats: "PBF",
         supportsCoordinatesQuantization: true,
         geometryType : "esriGeometryPolygon",
+        drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -1003,6 +1004,7 @@ describe("ArcGisFeatureProvider", () => {
         defaultVisibility: true,
         supportedQueryFormats: "JSON",
         geometryType : "esriGeometryPolygon",
+        drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -1106,6 +1108,7 @@ describe("ArcGisFeatureProvider", () => {
         defaultVisibility: true,
         supportedQueryFormats: "JSON",
         geometryType : "esriGeometryPolygon",
+        drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -1124,6 +1127,148 @@ describe("ArcGisFeatureProvider", () => {
     const test1 = fetchStub.getCall(0).firstArg;
     expect(test1.toString()).to.equals(new URL(settings.url).toString());
 
+  });
+
+  it("should throw when initializing with invalid geometry type", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({
+      ...esriFeatureSampleSource,
+      subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
+    }
+    );
+
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {
+        defaultVisibility: true,
+        supportedQueryFormats: "JSON",
+        geometryType : "esriGeometryAny",
+        drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
+      };
+    });
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return { accessTokenRequired: false, content: { capabilities: "Query" } };
+    });
+
+    sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
+      return { url: settings.url };
+    });
+
+    const provider = new ArcGisFeatureProvider(settings);
+
+    await expect(provider.initialize()).to.be.rejectedWith( Error, "Could not determine default symbology: geometry type not supported");
+
+  });
+
+  it("should construct renderer from incomplete drawing info", async () => {
+
+    const settings = ImageMapLayerSettings.fromJSON({
+      ...esriFeatureSampleSource,
+      subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
+    }
+    );
+
+    const layerMetadata = {
+      defaultVisibility: true,
+      supportedQueryFormats: "JSON",
+      geometryType : "esriGeometryPoint",
+      drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
+    };
+    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryPoint" };
+    });
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return { accessTokenRequired: false, content: { capabilities: "Query" } };
+    });
+
+    sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
+      return { url: settings.url };
+    });
+
+    // Make sure we dont get stuck on the loadImage call
+    sandbox.stub(EsriPMS.prototype, "loadImage").callsFake(async function  _() {
+      return;
+    });
+
+    let provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    let pms = EsriPMS.fromJSON((ArcGisFeatureProvider as any).defaultPMS);
+    expect((provider as any)._defaultSymbol).to.deep.equals(pms);
+
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryMultipoint" };
+    });
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    pms = EsriPMS.fromJSON((ArcGisFeatureProvider as any).defaultPMS);
+    expect((provider as any)._defaultSymbol).to.deep.equals(pms);
+
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryPolyline" };
+    });
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    let sls = EsriSLS.fromJSON((ArcGisFeatureProvider as any).defaultSLS);
+    expect((provider as any)._defaultSymbol).to.deep.equals(sls);
+
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryLine" };
+    });
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    sls = EsriSLS.fromJSON((ArcGisFeatureProvider as any).defaultSLS);
+    expect((provider as any)._defaultSymbol).to.deep.equals(sls);
+
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryPolygon" };
+    });
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    const sfs = EsriSFS.fromJSON((ArcGisFeatureProvider as any).defaultSFS);
+    expect((provider as any)._defaultSymbol).to.deep.equals(sfs);
+
+  });
+
+  it("should apply our own default symbol when no default symbol in metadata", async () => {
+
+    const settings = ImageMapLayerSettings.fromJSON({
+      ...esriFeatureSampleSource,
+      subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
+    });
+
+    const drawingInfo = structuredClone(NewYorkDataset.uniqueValueDrawingInfo.drawingInfo);
+    const layerMetadata = {
+      defaultVisibility: true,
+      supportedQueryFormats: "JSON",
+      geometryType : "esriGeometryPoint",
+      drawingInfo,
+    };
+
+    (drawingInfo.renderer.defaultSymbol as any) = null;  // Force no default symbology
+
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return {...layerMetadata, geometryType : "esriGeometryPoint" };
+    });
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
+      return { accessTokenRequired: false, content: { capabilities: "Query" } };
+    });
+
+    sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
+      return { url: settings.url };
+    });
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      (listener as any)();
+    });
+
+    const loadImageSpy =  sandbox.spy(EsriPMS.prototype, "loadImage");
+
+    const provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    const nbMarkerToLoad = layerMetadata.drawingInfo.renderer.uniqueValueInfos.length + 1; // +1 for provider's default symbol
+    expect (loadImageSpy.getCalls().length).to.equals(nbMarkerToLoad);
   });
 
 });
