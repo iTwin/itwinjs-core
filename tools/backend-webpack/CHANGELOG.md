@@ -1,6 +1,11 @@
 # Change Log - @itwin/backend-webpack-tools
 
-This log was last generated on Wed, 12 Jul 2023 15:42:30 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jul 2023 15:50:01 GMT and should not be manually modified.
+
+## 4.0.4
+Wed, 12 Jul 2023 15:50:01 GMT
+
+_Version update only_
 
 ## 4.0.3
 Mon, 03 Jul 2023 15:28:41 GMT
