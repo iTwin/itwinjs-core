@@ -22,7 +22,7 @@ const argv = yargs
   .parseSync();
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  await IModelHost.startup();
+  await IModelHost.startup({ profileName: "imodel-from-reality-model" });
   Logger.initializeToConsole();
 
   const creator = new RealityModelContextIModelCreator(argv.output, argv.input, argv.name as string);

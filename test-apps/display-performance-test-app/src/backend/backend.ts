@@ -33,7 +33,7 @@ function loadEnv(envFile: string) {
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
-  const iModelHost: IModelHostOptions = {};
+  const iModelHost: IModelHostOptions = { profileName: "display-performance-test-app" };
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;

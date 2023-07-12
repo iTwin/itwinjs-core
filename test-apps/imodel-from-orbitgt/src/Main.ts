@@ -30,7 +30,7 @@ const argv = yargs
   .parseSync();
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  await IModelHost.startup();
+  await IModelHost.startup({ profileName: "imodel-from-orbitgt" });
   Logger.initializeToConsole();
 
   const pcProps = {
