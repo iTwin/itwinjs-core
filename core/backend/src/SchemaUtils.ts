@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module Schema
- */
-
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 
+/** @packageDocumentation
+ * @module Schema
+ */
 /** Converts EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
  * @public
  * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.
