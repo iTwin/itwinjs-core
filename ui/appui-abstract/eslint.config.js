@@ -2,15 +2,15 @@ const iTwinPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     ...iTwinPlugin.configs.jsdocConfig,
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.ts"],
     rules: {
       "max-statements-per-line": "off"
     }

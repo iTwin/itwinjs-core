@@ -18,7 +18,7 @@ const customLanguageOptions = {
 
 module.exports = [
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
     languageOptions: customLanguageOptions
   }
