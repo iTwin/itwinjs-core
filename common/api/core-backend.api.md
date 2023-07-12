@@ -1279,6 +1279,9 @@ export type ConcreteEntity = Element_2 | Model | ElementAspect | Relationship;
 // @alpha
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
+// @beta
+export function convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
+
 // @internal
 export interface CrashReportingConfig {
     crashDir: string;
@@ -5436,6 +5439,9 @@ export interface UpdateModelOptions extends ModelProps {
     geometryChanged?: boolean;
     updateLastMod?: boolean;
 }
+
+// @beta
+export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
 // @public
 export class UrlLink extends LinkElement {
