@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { DisplayParams, GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@itwin/core-frontend";
-import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import {
-  Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@itwin/core-frontend/lib/cjs/render-primitives";
+  DisplayParams, Geometry, GeometryAccumulator, GraphicType, IModelApp, IModelConnection, PrimitiveBuilder, ScreenViewport, SnapshotConnection,
+  SpatialViewState, StandardViewId, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
+} from "@itwin/core-frontend";
+import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 

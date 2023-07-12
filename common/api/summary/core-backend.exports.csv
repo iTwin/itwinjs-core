@@ -53,6 +53,7 @@ public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
+beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
 internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -252,7 +253,7 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
-internal;MetaDataRegistry
+beta;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 
@@ -383,6 +384,7 @@ public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
+beta;upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
 public;UrlLink 
 internal;V1CheckpointManager
 internal;V2CheckpointAccessProps

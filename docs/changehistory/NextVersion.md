@@ -11,6 +11,7 @@ Table of contents:
   - [Smaller edge encoding](#smaller-edge-encoding)
 - [Presentation](#presentation)
   - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+  - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 - [Electron 25 support](#electron-25-support)
 - [Geometry](#geometry)
   - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
@@ -29,6 +30,8 @@ Table of contents:
 When a locate operation identifies an element inside of a view attachment, the attachment's element Id can be obtained via [HitDetail.viewAttachment]($frontend). If you are using [Viewport.readPixels]($frontend), the Id will be included in [Pixel.Data]($frontend). All world coordinates (e.g., [HitDetail.hitPoint]($frontend)) will be in the *sheet* model's coordinate space. You can pass the attachment Id to [ViewState.computeDisplayTransform]($frontend) to obtain the [Transform]($core-geometry) from the view attachment's coordinate space to the sheet.
 
 Note: most view attachments are two-dimensional drawings or orthographic spatial views. Attachments of perspective (camera) views do not support locating elements inside them, nor snapping to them.
+ - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+ - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -45,6 +48,10 @@ When rendering the contents of a view with [edge display](https://www.itwinjs.or
 ### Renderer, editor and category on calculated properties
 
 Previously, the [calculated properties specification](../presentation/content/CalculatedPropertiesSpecification.md) only allowed specifying property [label](../presentation/content/CalculatedPropertiesSpecification.md#attribute-label) and [value](../presentation/content/CalculatedPropertiesSpecification.md#attribute-value). Now the specification has an ability to assign [renderer](../presentation/content/CalculatedPropertiesSpecification.md#attribute-renderer), [editor](../presentation/content/CalculatedPropertiesSpecification.md#attribute-editor) and [category](../presentation/content/CalculatedPropertiesSpecification.md#attribute-categoryid) to calculated properties.
+
+### Class property categories under custom categories
+
+Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-nested-class-categories) for more details.
 
 ## Electron 25 support
 
@@ -123,3 +130,5 @@ The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geom
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true);
 ```
+
+Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-nested-class-categories) for more details.

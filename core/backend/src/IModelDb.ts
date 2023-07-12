@@ -7,6 +7,7 @@
  */
 
 import { join } from "path";
+import * as fs from "fs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -420,9 +421,7 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get isStandalone(): boolean { return false; }
-  /** Type guard for instanceof [[StandaloneDb]]
-   * @internal
-   */
+  /** Type guard for instanceof [[StandaloneDb]]. */
   public isStandaloneDb(): this is StandaloneDb { return this.isStandalone; }
 
   /** Return `true` if the underlying nativeDb is open and valid.
@@ -491,6 +490,12 @@ export abstract class IModelDb extends IModel {
     }
   }
   /** Allow to execute query and read results along with meta data. The result are streamed.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
@@ -513,7 +518,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -535,7 +540,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -557,7 +562,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
@@ -952,8 +957,8 @@ export abstract class IModelDb extends IModel {
     return schemaState;
   }
 
-  /** Get the ClassMetaDataRegistry for this iModel.
-   * @internal
+  /** The registry of entity metadata for this iModel.
+   * @beta
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
@@ -1263,7 +1268,7 @@ export abstract class IModelDb extends IModel {
 
   /** Request geometry stream information from an element in binary format instead of json.
    * @returns IModelStatus.Success if successful
-   * @alpha
+   * @beta
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
@@ -2394,6 +2399,9 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  /** Event raised after a BriefcaseDb has been closed. */
+  public readonly onClosed = new BeEvent<() => void>();
+
   /** @alpha */
   public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
@@ -2476,9 +2484,17 @@ export class BriefcaseDb extends IModelDb {
     this.onOpen.raiseEvent(args);
 
     const file = { path: args.fileName, key: args.key };
-    const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
+    // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
+    if (args.watchForChanges && undefined === args.container) {
+      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
+    }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -2490,7 +2506,6 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
@@ -2531,6 +2546,11 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+  }
+
+  public override close() {
+    super.close();
+    this.onClosed.raiseEvent();
   }
 }
 
