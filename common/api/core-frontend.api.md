@@ -1246,7 +1246,7 @@ export interface ArcGisGeometryRenderer {
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     constructor(iModel: IModelConnection);
     // (undocumented)
-    get attributeSymbology(): undefined;
+    get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
     // (undocumented)
     protected beginPath(): void;
     // (undocumented)

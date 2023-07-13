@@ -5,7 +5,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { ArcGisGeometryBaseRenderer, WebMercator } from "../../internal";
+import { ArcGisAttributeDrivenSymbology, ArcGisGeometryBaseRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { IModelConnection } from "../../../IModelConnection";
 
@@ -21,7 +21,7 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   private _graphics: GraphicPrimitive[] = [];
   private _iModel: IModelConnection;
 
-  public override get attributeSymbology() {return undefined;}   // No symbology is applied in this renderer
+  public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
   constructor(iModel: IModelConnection) {
     super();
