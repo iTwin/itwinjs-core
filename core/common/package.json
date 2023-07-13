@@ -12,7 +12,8 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=core-common",
+    "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
+    "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"

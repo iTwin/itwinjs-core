@@ -7,10 +7,6 @@ module.exports = [
   },
   {
     files: ["src/**/*.ts"],
-    ...iTwinPlugin.configs.extensionExportsConfig,
-  },
-  {
-    files: ["src/**/*.ts"],
     rules: {
       "@itwin/public-extension-exports": [
         "error",
