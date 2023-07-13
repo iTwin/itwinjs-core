@@ -803,6 +803,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
   public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
+  public abstract forceBufferChange(): void;
 
   /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
   public abstract get screenSpaceEffectFbo(): FrameBuffer;
@@ -867,6 +868,7 @@ class Compositor extends SceneCompositor {
   protected readonly _viewProjectionMatrix = new Matrix4();
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
 
+  public forceBufferChange(): void { this._width = this._height = -1; }
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
   private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
@@ -874,7 +876,7 @@ class Compositor extends SceneCompositor {
 
   public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
     if ((outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
-        (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
+      (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
       primitive.draw(exec);
   }
 
@@ -1023,17 +1025,17 @@ class Compositor extends SceneCompositor {
         ++pushDepth;
         if (pushDepth === 1) {
           pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
-          this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
+          this.target.uniforms.realityModel.pointCloud.updateRange(cmd.branch.branch.realityModelRange,
             this.target, cmd.branch.localToWorldTransform, is3d);
           pointClouds.push(curPC = { pcs, cmds: [cmd] });
         } else {
-          assert (undefined !== curPC);
+          assert(undefined !== curPC);
           curPC.cmds.push(cmd);
         }
       } else {
         if ("popBranch" === cmd.opcode)
           --pushDepth;
-        assert (undefined !== curPC);
+        assert(undefined !== curPC);
         curPC.cmds.push(cmd);
       }
     }
@@ -1062,7 +1064,7 @@ class Compositor extends SceneCompositor {
           if (undefined !== this._fbos.edlDrawCol)
             drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
           if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
-            this._fbos.edlDrawCol = dispose (this._fbos.edlDrawCol);
+            this._fbos.edlDrawCol = dispose(this._fbos.edlDrawCol);
             const filters = [GL.MultiSampling.Filter.Linear];
             if (useMsBuffers)
               this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
@@ -1085,7 +1087,7 @@ class Compositor extends SceneCompositor {
 
             // next process buffers to generate EDL (depth buffer is passed during init)
             this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
-            const sts = this.eyeDomeLighting.draw ({
+            const sts = this.eyeDomeLighting.draw({
               edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
               edlFilter: !!pcs?.edlFilter,
               useMsBuffers,

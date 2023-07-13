@@ -28,6 +28,7 @@ export class MeshBuilder {
   public readonly areaTolerance: number;
   public readonly tileRange: Range3d;
   public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
+  public get displayParams(): DisplayParams { return this.mesh.displayParams; }
   public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
 
   /** create reference for triangleSet on demand */

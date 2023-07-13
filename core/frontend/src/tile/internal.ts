@@ -103,3 +103,4 @@ export * from "./CesiumAssetProvider";
 export * from "./ContextShareProvider";
 export * from "./ThreeDTileFormatInterpreter";
 export * from "./OPCFormatInterpreter";
+export * from "./FetchCloudStorage";

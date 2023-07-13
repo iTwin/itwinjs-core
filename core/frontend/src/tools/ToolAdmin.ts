@@ -1767,9 +1767,9 @@ export class ToolAdmin {
     this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
-  /** @internal */
-  public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
-  /** @internal */
+  /** Fill the supplied button event from the current cursor location. */
+  public fillEventFromCursorLocation(ev: BeButtonEvent, useSnap = true) { this.currentInputState.toEvent(ev, useSnap); }
+  /** Fill the supplied button event from the last data button location. */
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   /** @internal */
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }

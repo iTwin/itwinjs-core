@@ -206,7 +206,6 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
-import { TelemetryManager } from '@itwin/core-telemetry';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -432,8 +431,11 @@ export namespace BlobContainer {
     export type ContainerId = string;
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<UriAndId>;
-        delete(props: AccessContainerProps): Promise<void>;
+        delete(container: AccessContainerProps): Promise<void>;
+        queryMetadata(container: AccessContainerProps): Promise<Metadata>;
+        queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
+        updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
     export interface CreateNewContainerProps {
@@ -446,6 +448,7 @@ export namespace BlobContainer {
     export interface Metadata {
         containerType: string;
         description?: string;
+        json?: SettingObject;
         label: string;
     }
     export type Provider = "azure" | "google";
@@ -459,6 +462,7 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
+        ownerGuid?: GuidString;
     }
     export interface TokenProps {
         expiration: Date;
@@ -487,9 +491,12 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
+    close(): void;
+    // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    readonly onClosed: BeEvent<() => void>;
     // @alpha (undocumented)
     static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
@@ -547,8 +554,6 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps>;
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
-    // @internal (undocumented)
-    static logUsage(imodel: IModelDb, activity?: RpcActivity): void;
     // @internal (undocumented)
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
@@ -1273,6 +1278,9 @@ export type ConcreteEntity = Element_2 | Model | ElementAspect | Relationship;
 
 // @alpha
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
+
+// @beta
+export function convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
 // @internal
 export interface CrashReportingConfig {
@@ -2602,7 +2610,7 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
@@ -2702,7 +2710,7 @@ export class GeometryPart extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -2890,7 +2898,7 @@ export abstract class IModelDb extends IModel {
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @beta
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
@@ -2913,7 +2921,7 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta
     deleteSettingDictionary(name: string): void;
-    // @alpha
+    // @beta
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
@@ -2952,7 +2960,6 @@ export abstract class IModelDb extends IModel {
     isSnapshotDb(): this is SnapshotDb;
     // @internal
     get isStandalone(): boolean;
-    // @internal
     isStandaloneDb(): this is StandaloneDb;
     // @beta
     get locks(): LockControl;
@@ -3226,8 +3233,6 @@ export class IModelHost {
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
-    // @alpha (undocumented)
-    static readonly telemetry: TelemetryManager;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal (undocumented)
@@ -3971,7 +3976,7 @@ export interface LockStatusShared {
     state: LockState.Shared;
 }
 
-// @internal
+// @beta
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
@@ -5434,6 +5439,9 @@ export interface UpdateModelOptions extends ModelProps {
     geometryChanged?: boolean;
     updateLastMod?: boolean;
 }
+
+// @beta
+export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
 // @public
 export class UrlLink extends LinkElement {

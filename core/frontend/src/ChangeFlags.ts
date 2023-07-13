@@ -8,20 +8,32 @@
 
 /** Bit masks describing which aspects of a [[Viewport]] have changed as part of a [[ChangeFlags]].
  * @see [[Viewport.onViewportChanged]].
- * @internal
+ * @public
  */
 export enum ChangeFlag {
+  /** No changes. */
   None = 0,
+  /** See [[ChangeFlags.alwaysDrawn]]. */
   AlwaysDrawn = 1 << 0,
+  /** See [[ChangeFlags.neverDrawn]]. */
   NeverDrawn = 1 << 1,
+  /** See [[ChangeFlags.viewedCategories]]. */
   ViewedCategories = 1 << 2,
+  /** See [[ChangeFlags.viewedModels]]. */
   ViewedModels = 1 << 3,
+  /** See [[ChangeFlags.displayStyle]]. */
   DisplayStyle = 1 << 4,
+  /** See [[ChangeFlags.featureOverrideProvider]]. */
   FeatureOverrideProvider = 1 << 5,
+  /** See [[ChangeFlags.viewedCategoriesPerModel]]. */
   ViewedCategoriesPerModel = 1 << 6,
+  /** See [[ChangeFlags.viewState]]. */
   ViewState = 1 << 7, // eslint-disable-line no-shadow
+  /** A bitmask indicating all aspects of the viewport's state have changed. */
   All = 0x0fffffff,
+  /** A bitmask indicating all aspects of the viewport's state related to symbology overrides have changed. */
   Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
+  /** A bitmask indicating the initial state of a newly-created [[Viewport]]. */
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
 }
 
@@ -31,10 +43,12 @@ export enum ChangeFlag {
  * @extensions
  */
 export class ChangeFlags {
-  /** @internal */
+  /** The bitmask that records the state of each individual flag. */
   protected _flags: ChangeFlag;
 
-  /** @internal */
+  /** Create a new ChangeFlags.
+   * @param flags The initial flags that should be set.
+   */
   public constructor(flags = ChangeFlag.Initial) {
     this._flags = flags;
   }
@@ -71,14 +85,10 @@ export class ChangeFlags {
    */
   public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
 
-  /** Return true if any of the specified flags are set.
-   * @internal
-   */
+  /** Returns true if any of the specified flags are set. */
   public isSet(flags: ChangeFlag): boolean { return 0 !== (this._flags & flags); }
 
-  /** Return true if all of the specified flags are set.
-   * @internal
-   */
+  /** Returns true if all of the specified flags are set. */
   public areAllSet(flags: ChangeFlag): boolean { return flags === (this._flags & flags); }
 
   /** Returns true if any aspects affecting [[FeatureSymbology.Overrides]] have changed. */
@@ -87,14 +97,17 @@ export class ChangeFlags {
   /** Returns true if any aspect at all has changed. */
   public get hasChanges() { return this.isSet(ChangeFlag.All); }
 
-  /** @internal */
+  /** The underlying bitmask indicating the state of each individual flag. */
   public get value(): ChangeFlag { return this._flags; }
 }
 
-/** Mutable [[ChangelFlags]].
- * @internal Used internally by Viewport.
+/** A [[ChangeFlags]] that permits modifying the states of individual [[ChangeFlag]]s.
+ * @public
  */
 export class MutableChangeFlags extends ChangeFlags {
+  /** Create a new MutableChangeFlags.
+   * @param flags The initial flags that should be set.
+   */
   public constructor(flags = ChangeFlag.Initial) {
     super(flags);
   }
