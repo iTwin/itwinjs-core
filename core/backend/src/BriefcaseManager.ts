@@ -14,9 +14,8 @@ import {
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { TelemetryEvent } from "@itwin/core-telemetry";
 import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
@@ -511,24 +510,4 @@ export class BriefcaseManager {
     }
   }
 
-  /** @internal */
-  public static logUsage(imodel: IModelDb, activity?: RpcActivity) { // eslint-disable-line deprecation/deprecation
-
-    const telemetryEvent = new TelemetryEvent(
-      "core-backend - Open iModel",
-      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      imodel.iTwinId,
-      imodel.iModelId,
-      imodel.changeset?.id,
-    );
-    activity = activity ?? {
-      activityId: "",
-      applicationId: IModelHost.applicationId,
-      applicationVersion: IModelHost.applicationVersion,
-      sessionId: IModelHost.sessionId,
-      accessToken: "", // IModelHost.getAccessToken(); ACCESS_TOKEN_NEEDS_WORK
-    };
-
-    IModelHost.telemetry.postTelemetry(activity, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
 }
