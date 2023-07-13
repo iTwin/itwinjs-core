@@ -8,80 +8,51 @@ import { ColorDef } from "@itwin/core-common";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
+/** @internal */
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
 /** @internal */
-// export class ArcGisSymbologyRenderer {
-export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
+export type ArcGisSymbologyRendererType = "simple" | "attributeDriven";
 
+/** @internal */
+export abstract class ArcGisSymbologyRenderer {
+  public abstract get attributeDriven(): boolean;
+  public abstract applyFillStyle(context: CanvasRenderingContext2D): void;
+  public abstract applyStrokeStyle(context: CanvasRenderingContext2D): void;
+  public abstract drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
+
+  public static create(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
+    if (renderer?.type === "uniqueValue") {
+      return new ArcGisUniqueValueSymbologyRenderer(renderer as EsriUniqueValueRenderer, defaultSymbol);
+    } else {
+      return new ArcGisSimpleSymbologyRenderer(renderer, defaultSymbol);
+    }
+  }
+}
+
+/** @internal */
+export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
+  public override get attributeDriven() {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
-  private _activeFeatureAttributes:  {[key: string]: any} | undefined;
-
   public get symbol() {return this._symbol;}
-  public readonly defaultSymbol: EsriSymbol;
-  private _symbol: EsriSymbol;
+  public get defaultSymbol() {return this._defaultSymbol;}
+  protected _symbol: EsriSymbol;
+  protected _defaultSymbol: EsriSymbol;
 
   public readonly renderer?: EsriRenderer;
 
-  public constructor(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
-
-    this.defaultSymbol = defaultSymbol;
+  public  constructor(renderer: EsriRenderer|undefined, defaultSymbol: EsriSymbol) {
+    super();
+    this._defaultSymbol = defaultSymbol;
     this.renderer = renderer;
 
     if (this.renderer?.type === "simple") {
       this._symbol = (this.renderer as EsriSimpleRenderer).symbol;
-    } else if (this.renderer?.type === "uniqueValue") {
-      const uv = (this.renderer as EsriUniqueValueRenderer);
-      if (uv.defaultSymbol) {
-        this.defaultSymbol = uv.defaultSymbol;
-        this._symbol = this.defaultSymbol;
-      } else {
-        this._symbol = defaultSymbol;
-      }
-    } else {
+    }  else {
       this._symbol = defaultSymbol;
     }
 
-  }
-
-  public get rendererFields() {
-    if (this.renderer && this.renderer?.type === "uniqueValue") {
-      const uvRenderer = this.renderer as EsriUniqueValueRenderer;
-      if (uvRenderer.field1)
-        return [uvRenderer.field1];
-    }
-    return undefined;
-  }
-
-  public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
-    this._activeFeatureAttributes = attributes;
-
-    if (this.renderer?.type === "uniqueValue") {
-      let newSymbolApplied = false;
-      if (this._activeFeatureAttributes) {
-        const renderer = this.renderer as EsriUniqueValueRenderer;
-        if (renderer.field1 && Object.keys(this._activeFeatureAttributes).includes(renderer.field1)) {
-
-          const queryValue = this._activeFeatureAttributes[renderer.field1];
-
-          for (const uvi of renderer.uniqueValueInfos) {
-            // Strangely, ArcGIS documentation says 'value' is a string,
-            // not too sure if a comparison on other types is possible, or its always forced to string properties?
-            if (uvi.value  === queryValue.toString()) {
-              this._symbol = uvi.symbol;
-              newSymbolApplied = true;
-              break;
-            }
-          }
-        }
-      }
-
-      // Fallback to default symbology to make sure we render something
-      if (!newSymbolApplied) {
-        this._symbol = this.defaultSymbol;
-      }
-    }
   }
 
   public applyFillStyle(context: CanvasRenderingContext2D) {
@@ -157,6 +128,57 @@ export class ArcGisSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
       }
 
       // TODO: marker rotation angle
+    }
+  }
+}
+
+/** @internal */
+export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
+  public override get attributeDriven() {return true;}
+  protected _activeFeatureAttributes:  {[key: string]: any} | undefined;
+  protected uvRenderer: EsriUniqueValueRenderer;
+
+  public get rendererFields() {
+    if (this.uvRenderer.field1)
+      return [this.uvRenderer.field1];
+    else
+      return undefined;
+  }
+
+  public  constructor(renderer: EsriUniqueValueRenderer, defaultSymbol: EsriSymbol) {
+    super(renderer, defaultSymbol);
+
+    this.uvRenderer = (this.renderer as EsriUniqueValueRenderer);
+    if (this.uvRenderer.defaultSymbol) {
+      this._defaultSymbol = this.uvRenderer.defaultSymbol;
+      this._symbol = this.defaultSymbol;
+    }
+  }
+
+  public setActiveFeatureAttributes(attributes: { [key: string]: any }) {
+    this._activeFeatureAttributes = attributes;
+
+    let newSymbolApplied = false;
+    if (this._activeFeatureAttributes) {
+      if (this.uvRenderer.field1 && Object.keys(this._activeFeatureAttributes).includes(this.uvRenderer.field1)) {
+
+        const queryValue = this._activeFeatureAttributes[this.uvRenderer.field1];
+
+        for (const uvi of this.uvRenderer.uniqueValueInfos) {
+          // Strangely, ArcGIS documentation says 'value' is a string,
+          // not too sure if a comparison on other types is possible, or its always forced to string properties?
+          if (uvi.value  === queryValue.toString()) {
+            this._symbol = uvi.symbol;
+            newSymbolApplied = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // Fallback to default symbology to make sure we render something
+    if (!newSymbolApplied) {
+      this._symbol = this.defaultSymbol;
     }
   }
 }

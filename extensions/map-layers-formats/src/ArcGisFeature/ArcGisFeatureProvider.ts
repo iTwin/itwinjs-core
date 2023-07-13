@@ -535,7 +535,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
 
       // Create the renderer
-      const symbRenderer = new ArcGisSymbologyRenderer(this._renderer, this._defaultSymbol!);
+      const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol!);
       const renderer = new ArcGisCanvasRenderer(ctx, symbRenderer, transfo);
       const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 

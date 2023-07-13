@@ -5,7 +5,7 @@
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
@@ -31,7 +31,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NewYorkDataset.streetsLayerCapabilities.drawingInfo.renderer;
     const simpleRenderer = EsriRenderer.fromJSON(dataset);
     const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPolyline");
-    const symbRender = new ArcGisSymbologyRenderer(simpleRenderer, defaultSymb!);
+    const symbRender = ArcGisSymbologyRenderer.create(simpleRenderer, defaultSymb!);
     const ref = EsriSLS.fromJSON(dataset.symbol);
     expect(symbRender.symbol).to.deep.equals(ref);
   });
@@ -41,7 +41,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPolygon");
-    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
+    const symbRender = ArcGisSymbologyRenderer.create(renderer, defaultSymb!);
 
     expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
   });
@@ -51,7 +51,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const dataset = NewYorkDataset.uniqueValueDrawingInfo;
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
-    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
+    const symbRender = ArcGisSymbologyRenderer.create(renderer, defaultSymb!);
 
     const test = EsriPMS.fromJSON(dataset.drawingInfo.renderer.defaultSymbol as any);
 
@@ -64,21 +64,21 @@ describe("ArcGisSymbologyRenderer", () => {
     const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     (renderer as any).type = "someBadType";
     const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
-    const symbRender = new ArcGisSymbologyRenderer(renderer, defaultSymb!);
+    const symbRender = ArcGisSymbologyRenderer.create(renderer, defaultSymb!);
     expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
 
   });
 
   it("should construct with default symbol if no renderer object", async () => {
     const defaultSymb = ArcGisFeatureProvider.getDefaultSymbology("esriGeometryPoint");
-    const symbRender = new ArcGisSymbologyRenderer(undefined, defaultSymb!);
+    const symbRender = ArcGisSymbologyRenderer.create(undefined, defaultSymb!);
     expect (symbRender.defaultSymbol).to.deep.equals(defaultSymb);
 
   });
 
   it("should provide fill color using simple renderer definition", async () => {
 
-    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
     const fakeContext = {fillStyle: ""};
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
 
@@ -88,7 +88,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should apply proper fill color using unique value SFS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
-    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
     const fakeContext = {fillStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
@@ -113,7 +113,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should apply proper stroke color using unique value SFS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
-    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
     const fakeContext = {strokeStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
@@ -138,7 +138,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should apply proper stroke color using unique value SLS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSLSDrawingInfo.drawingInfo.renderer;
-    const provider = TestUtils.createSymbologyRenderer("esriGeometryLine", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryLine", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
     const fakeContext = {strokeStyle: ""};
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
@@ -163,7 +163,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should apply proper marker using unique value PMS renderer definition", async () => {
     const rendererDef = NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer;
-    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef);
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
     sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
       // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )

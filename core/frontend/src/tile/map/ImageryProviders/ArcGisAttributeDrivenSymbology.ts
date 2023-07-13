@@ -5,7 +5,6 @@
 
 /** @internal */
 export interface ArcGisAttributeDrivenSymbology {
-
   rendererFields?: string[];
   setActiveFeatureAttributes: (attributes: { [key: string]: any }) => void;
 }

@@ -5,14 +5,15 @@
 
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
-import { ArcGisGeometryBaseRenderer } from "@itwin/core-frontend";
+import { ArcGisAttributeDrivenSymbology, ArcGisGeometryBaseRenderer } from "@itwin/core-frontend";
 
+/** @internal */
 export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyRenderer;
 
   public override get attributeSymbology() {
-    return this._symbol;
+    return this._symbol.attributeDriven ? (this._symbol as unknown) as ArcGisAttributeDrivenSymbology : undefined;
   }
 
   constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyRenderer, world2PixelTransform?: Transform) {
@@ -53,5 +54,4 @@ export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   protected async drawPoint(x: number, y: number) {
     this._symbol.drawPoint(this._context, x, y);
   }
-
 }

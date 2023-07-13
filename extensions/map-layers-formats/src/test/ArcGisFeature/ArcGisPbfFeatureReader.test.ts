@@ -15,6 +15,7 @@ import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
 import { TestUtils } from "./TestUtils";
+import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 
 const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
@@ -208,10 +209,10 @@ describe("ArcGisPbfFeatureReader", () => {
     const dataset = NeptuneCoastlineDataset.singlePolyPbf;
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
     const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
-    const spy = sinon.spy(symbolRenderer, "setActiveFeatureAttributes");
+    const spy = sinon.spy(symbolRenderer , "setActiveFeatureAttributes");
     await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
 
     // Make sure 'setActiveFeatureAttributes' was called with the proper argument

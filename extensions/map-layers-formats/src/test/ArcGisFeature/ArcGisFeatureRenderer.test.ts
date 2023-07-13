@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { fakeContext } from "./Mocks";
-import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSimpleSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
 import { Point3d, Transform } from "@itwin/core-geometry";
@@ -192,7 +192,7 @@ describe("ArcGisCanvasRenderer", () => {
 
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     await renderer.renderPoint([], coords, 2, false);
 
@@ -209,7 +209,7 @@ describe("ArcGisCanvasRenderer", () => {
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     await renderer.renderPoint([], coords, 2, false);
 
@@ -225,7 +225,7 @@ describe("ArcGisCanvasRenderer", () => {
 
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, false);
 
@@ -243,7 +243,7 @@ describe("ArcGisCanvasRenderer", () => {
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, false);
 
@@ -261,7 +261,7 @@ describe("ArcGisCanvasRenderer", () => {
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, true);
 

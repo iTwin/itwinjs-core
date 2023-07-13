@@ -17,6 +17,7 @@ import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
 import { TestUtils } from "./TestUtils";
+import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
@@ -204,7 +205,7 @@ describe("ArcGisJsonFeatureReader", () => {
     const data = NeptuneCoastlineDataset.singlePolyJson;
     const symbolRenderer = TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
-    const spy = sinon.spy(symbolRenderer, "setActiveFeatureAttributes");
+    const spy = sinon.spy(symbolRenderer as ArcGisUniqueValueSymbologyRenderer, "setActiveFeatureAttributes");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
 
     // Make sure 'setActiveFeatureAttributes' was called with the proper argument
