@@ -39,9 +39,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   private _layerId = 0;
   private _layerMetadata: any;
   private _format: ArcGisFeatureFormat | undefined;
-  public serviceJson: any;
-  // private _symbologyRenderer: ArcGisSymbologyRenderer | undefined;
-  private static readonly _nbSubTiles = 2;
   private _outSR = 102100;
 
   private _maxDepthFromLod = 0;
@@ -49,6 +46,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private _defaultSymbol: EsriSymbol|undefined;
   private _renderer: EsriRenderer|undefined;
+
+  private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
+  public serviceJson: any;
 
   private static readonly defaultPMS: EsriPMSProps = {
     type: "esriPMS",
