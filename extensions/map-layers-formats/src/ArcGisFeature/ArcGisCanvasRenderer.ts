@@ -12,7 +12,7 @@ export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyRenderer;
 
-  public override get attributeSymbology() {
+  public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {
     return this._symbol.isAttributeDriven() ? this._symbol : undefined;
   }
 
