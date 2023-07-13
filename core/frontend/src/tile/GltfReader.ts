@@ -39,6 +39,7 @@ import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
+import {PointCloudArgs} from "../render-primitives";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -252,11 +253,19 @@ export class GltfMeshData {
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
   public indices?: Uint8Array | Uint16Array | Uint32Array;
+  public readonly type: "mesh" = "mesh";
 
   public constructor(props: Mesh) {
     this.primitive = props;
   }
 }
+
+interface GltfPointCloud extends PointCloudArgs {
+  readonly type: "pointcloud";
+  pointRange: Range3d;
+}
+
+type GltfPrimitiveData = GltfMeshData | GltfPointCloud;
 
 /** A function that returns true if deserialization of the data supplied by the reader should abort.
  * @internal
@@ -530,7 +539,10 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+  private graphicFromMeshData(gltfMesh: GltfPrimitiveData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+    if ("pointcloud" === gltfMesh.type)
+      return this._system.createPointCloud(gltfMesh, this._iModel);
+
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return gltfMesh.primitive.getGraphics(this._system, instances);
 
@@ -633,9 +645,11 @@ export abstract class GltfReader {
     const meshes = this.readMeshPrimitives(node);
 
     for (const mesh of meshes) {
-      const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
-      if (polyface)
-        polyfaces.push(polyface);
+      if (mesh.type === "mesh") {
+        const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
+        if (polyface)
+          polyfaces.push(polyface);
+      }
     }
 
     if (node.children) {
@@ -882,8 +896,8 @@ export abstract class GltfReader {
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
-  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
-    const meshes: GltfMeshData[] = [];
+  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfPrimitiveData[] {
+    const meshes: GltfPrimitiveData[] = [];
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
@@ -904,7 +918,7 @@ export abstract class GltfReader {
     return meshes;
   }
 
-  protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
+  protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
     const material = 0 < materialName.length ? this._materials[materialName] : { };
     if (!material)
