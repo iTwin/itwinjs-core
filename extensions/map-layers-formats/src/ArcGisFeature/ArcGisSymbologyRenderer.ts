@@ -16,7 +16,7 @@ export type ArcGisSymbologyRendererType = "simple" | "attributeDriven";
 
 /** @internal */
 export abstract class ArcGisSymbologyRenderer {
-  public abstract get attributeDriven(): boolean;
+  public abstract isAttributeDriven(): this is ArcGisAttributeDrivenSymbology;
   public abstract applyFillStyle(context: CanvasRenderingContext2D): void;
   public abstract applyStrokeStyle(context: CanvasRenderingContext2D): void;
   public abstract drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number): void;
@@ -32,7 +32,7 @@ export abstract class ArcGisSymbologyRenderer {
 
 /** @internal */
 export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
-  public override get attributeDriven() {return false;}
+  public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
   public get symbol() {return this._symbol;}
@@ -134,7 +134,7 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
 
 /** @internal */
 export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRenderer implements ArcGisAttributeDrivenSymbology {
-  public override get attributeDriven() {return true;}
+  public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return true;}
   protected _activeFeatureAttributes:  {[key: string]: any} | undefined;
   protected uvRenderer: EsriUniqueValueRenderer;
 
