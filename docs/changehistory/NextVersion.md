@@ -20,6 +20,7 @@ Table of contents:
   - [Sweeping a linestring to facets](#sweeping-a-linestring-to-facets)
 - [Map Layers](#map-layers)
   - [Map Feature Info](#map-feature-info)
+  - [ArcGIS Feature uniqueValueRenderer support](#arcgis-feature-uniqueValueRenderer)
 - [API deprecations](#api-deprecations)
   - [Geometry](#geometry-1)
 
@@ -101,6 +102,11 @@ a non-vertical direction.
 
 The [Viewport.getMapFeatureInfo]($core-frontend) method [has been improved](https://github.com/iTwin/itwinjs-core/pull/5327) and now includes a [GraphicPrimitive]($core-frontend) object for each identified feature. Also a new [MapFeatureInfoTool]($map-layers-formats) is provided that will automatically display decorations matching the identified feature geometry. This tool also dispatches [MapFeatureInfoTool.onInfoReady]($map-layers-formats) events that can be handled by some UI, such as widget, to display the feature attributes:
 ![mapLayerInfoWidget](./assets/map-layer-info.png)
+
+### ArcGIS Feature uniqueValueRenderer support
+
+Implemented ArcGIS's [UniqueValue renderer](https://developers.arcgis.com/web-map-specification/objects/uniqueValueRenderer/) to allow features to be symbolized based on attribute values.
+![arcgisFeatureUniqueValueRenderer](./assets/arcgisFeature-UniqueValueRenderer.png)
 
 ## API deprecations
 
