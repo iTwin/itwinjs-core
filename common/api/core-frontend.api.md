@@ -14079,6 +14079,8 @@ export enum TileBoundingBoxes {
 
 // @public
 export interface TileContent {
+    // @internal
+    containsPointCloud?: boolean;
     contentRange?: ElementAlignedBox3d;
     graphic?: RenderGraphic;
     isLeaf?: boolean;
