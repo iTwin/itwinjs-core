@@ -1092,9 +1092,10 @@ export abstract class GltfReader {
       // ###TODO support transparent point clouds
       colors = new Uint8Array(colorData.count * 3);
       for (let i = 0; i < colorData.count; i++) {
-        const index = colorView.stride * i;
+        const srcIdx = colorView.stride * i;
+        const dstIdx = 3 * i;
         for (let j = 0; j < 3; j++)
-          colors[index + j] = colorData.buffer[index + j];
+          colors[dstIdx + j] = colorData.buffer[srcIdx + j];
       }
     }
 
