@@ -4,11 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { gunzip, gzip } from "zlib";
 import { promisify } from "util";
-import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
+
+interface TileId {
+  treeId: string;
+  contentId: string;
+  guid: string;
+}
 
 /**
  * Facilitates interaction with cloud tile cache.
@@ -93,15 +99,33 @@ export class TileStorage {
     }
   }
 
-  /**
-   * Returns a list of all tiles that are found in the cloud cache.
-   */
-  public async getCachedTiles(iModelId: string): Promise<{ treeId: string, contentId: string, guid: string }[]> {
-    return (await this.storage.listObjects({ baseDirectory: iModelId }))
-      .map((objectReference) => ({
-        parts: objectReference.relativeDirectory?.split("/") ?? [""],
-        objectName: objectReference.objectName,
-      }))
+  public async *getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId> {
+    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 1000);
+    for await (const page of iterator) {
+      const tiles = this.convertPage(page);
+      for (const tile of tiles) {
+        yield tile;
+      }
+    }
+  }
+
+  private async *getCachedTilePages(iModelId: string): AsyncGenerator<TileId[]> {
+    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 1000);
+    let prevPage: ObjectReference[] = [];
+    for await (const page of iterator) {
+      // during the first iteration, prevPage will be empty. We want to immediately start loading the second page into memory, but
+      if (prevPage.length > 0)
+        yield this.convertPage(prevPage);
+      prevPage = page;
+    }
+    yield this.convertPage(prevPage);
+  }
+
+  private convertPage(page: ObjectReference[]): TileId[] {
+    return page.map((objectReference) => ({
+      parts: objectReference.relativeDirectory?.split("/") ?? [""],
+      objectName: objectReference.objectName,
+    }))
       .filter(({ parts, objectName }) => {
         if (parts[0] !== "tiles")
           return false;
@@ -119,6 +143,13 @@ export class TileStorage {
           guid: parts[2],
         };
       });
+  }
+
+  /**
+   * Returns a list of all tiles that are found in the cloud cache.
+   */
+  public async getCachedTiles(iModelId: string): Promise<TileId[]> {
+    return this.convertPage(await this.storage.listObjects({ baseDirectory: iModelId }));
   }
 
   /**
