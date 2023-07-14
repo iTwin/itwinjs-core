@@ -1111,7 +1111,9 @@ export abstract class GltfReader {
       colors,
       colorFormat: "rgb",
       features,
-      voxelSize: 0, // ###TODO_POINT_CLOUD
+      // ###TODO: If tile does not use additive refinement, compute voxelSize based on point range.
+      // Additive refinement is typical of the glTF point clouds we receive from Orbit.
+      voxelSize: 0,
     };
   }
 
