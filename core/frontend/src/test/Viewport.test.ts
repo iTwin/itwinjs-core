@@ -589,7 +589,6 @@ describe("Viewport", () => {
     });
   });
 
-
   describe("Pixel selection", () => {
     it("isPixelSelectable should return false when no map-layers ids", () => {
       testBlankViewport((vp) => {
@@ -598,7 +597,7 @@ describe("Viewport", () => {
         });
         const fakePixelData = {modelId: "123", elementId: "456"};
         expect(vp.isPixelSelectable(fakePixelData as any)).to.be.true;
-        stub.restore()
+        stub.restore();
       });
     });
   });
