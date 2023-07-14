@@ -75,7 +75,6 @@ function fixChangeLogs(currentFiles, incomingFiles) {
 
     let jsonString = JSON.stringify(currentJson, null, 2);
     jsonString = jsonString + '\n';
-    // let filePath = path.join('./corrected-changelogs', currentFiles[i]);
     fs.writeFileSync(currentFiles[i], jsonString, (err) => {
       if (err)
         console.error("Error Writing JSON file");
