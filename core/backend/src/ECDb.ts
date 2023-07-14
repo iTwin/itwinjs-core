@@ -13,6 +13,7 @@ import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { NativeECSqlParseNode } from "./ECSqlExpr";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -83,6 +84,11 @@ export class ECDb implements IDisposable {
   /** Returns true if the ECDb is open */
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
+  /** @internal use to test statement caching */
+  public clearStatementCache() {
+    this._statementCache.clear();
+  }
+
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.
    */
@@ -92,9 +98,14 @@ export class ECDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
-  /** @internal use to test statement caching */
-  public clearStatementCache() {
-    this._statementCache.clear();
+  /** @internal return parse tree */
+  public getECSqlParseTree(ecsql: string): NativeECSqlParseNode {
+    return this.nativeDb.getECSqlParseTree(ecsql) as NativeECSqlParseNode;
+  }
+
+  /** @internal return normalize ecsql */
+  public getNormalizeECSQL(ecsql: string): string {
+    return this.nativeDb.getNormalizeECSql(ecsql);
   }
 
   /** @internal use to test statement caching */

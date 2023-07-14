@@ -1,0 +1,369 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import { ECDb, IModelHost } from "../../core-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { StatementExpr } from "../../ECSqlExpr";
+
+
+describe.only("ECSql Exprs", () => {
+  let ecdb: ECDb
+
+  function parseStatement(ecsql: string) {
+    const parseNode = ecdb.getECSqlParseTree(ecsql);
+    return StatementExpr.deserialize(parseNode);
+  }
+
+  function toNormalizeECSql(ecsql: string) {
+    return parseStatement(ecsql).toECSql();
+  }
+
+  before(async () => {
+    await IModelHost.startup();
+    ecdb = new ECDb();
+    ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"));
+    ecdb.withPreparedStatement("PRAGMA experimental_features_enabled=true", (stmt) => stmt.step());
+  });
+
+  after(async () => {
+    ecdb.closeDb();
+  });
+
+  it("parse (|, &, <<, >>, +, -, %, /, *) binary & unary", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT (1 & 2 ) | (3 << 4 ) >> (5/ 6) * (7 + 8) + (4 % 9) + (-10) + (+20) - (~45)",
+        expectedECSql: "SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45))"
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+
+  it("parse (!=, =, >, <, >=, <=, OR, AND)", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF((1 != 2) OR (4 = 5) AND ( 4 > 8 ) OR (4 < 5) OR (4 <= 5) AND ( 4 >= 6 ), 'True', 'False')",
+        expectedECSql: "SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False')",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse CASE-WHEN-THEN", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT CASE WHEN 4>5 THEN NULL WHEN 1 IS NOT NULL THEN 'Hello' ELSE 'Bye' END",
+        expectedECSql: "SELECT CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse [NOT] LIKE", async () => {
+    const tests = [
+      {
+        orignalECSql: "select IIF(('Hello, World' LIKE '\\%World' escape '\\') , 2, 3)",
+        expectedECSql: "SELECT IIF('Hello, World' LIKE '\\%World' ESCAPE '\\', 2, 3)",
+      },
+      {
+        orignalECSql: "select IIF(('Hello, World' LIKE '%World') , 2, 3)",
+        expectedECSql: "SELECT IIF('Hello, World' LIKE '%World', 2, 3)",
+      }
+      ,
+      {
+        orignalECSql: "select IIF(('Hello, World' NOT LIKE '%World') , 2, 3)",
+        expectedECSql: "SELECT IIF('Hello, World' NOT LIKE '%World', 2, 3)",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse [NOT] IN(select|list)", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF( 3 IN (SELECT 1 AS N UNION SELECT 2), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IN (SELECT 1 N UNION SELECT 2), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF( 3 IN (1,2,3), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IN (1, 2, 3), 'True', 'False')",
+      }
+      ,
+      {
+        orignalECSql: "SELECT IIF( 3 NOT IN (1,2,3), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 NOT IN (1, 2, 3), 'True', 'False')",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse IS [NOT] NULL", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF( NULL IS NULL, 'True', 'False')",
+        expectedECSql: "SELECT IIF((NULL IS NULL), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF( NULL IS NOT NULL, 'True', 'False')",
+        expectedECSql: "SELECT IIF((NULL IS NOT NULL), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF( 1 IS NOT NULL, 'True', 'False')",
+        expectedECSql: "SELECT IIF((1 IS NOT NULL), 'True', 'False')",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse IS [NOT] (type[,...])", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF( 3 IS (ALL meta.ECClassDef, ONLY meta.ECPropertyDef), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IS ([ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF( 3 IS NOT (ALL meta.ECClassDef, ONLY meta.ECPropertyDef), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IS NOT ([ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse (NOT expr)", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF(NOT 3, 'True', 'False')",
+        expectedECSql: "SELECT IIF((NOT 3), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF( (NOT (NOT (NOT (NOT 3)))), 'True', 'False')",
+        expectedECSql: "SELECT IIF((NOT (NOT (NOT (NOT 3)))), 'True', 'False')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse [NOT] EXISTS (<subquery>)", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT IIF(EXISTS(SELECT 1), 'True', 'False')",
+        expectedECSql: "SELECT IIF(EXISTS(SELECT 1), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF(NOT EXISTS(SELECT 1), 'True', 'False')",
+        expectedECSql: "SELECT IIF((NOT EXISTS(SELECT 1)), 'True', 'False')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT CAST(1 AS TEXT)",
+        expectedECSql: "SELECT CAST(1 AS TEXT)",
+      },
+      {
+        orignalECSql: "SELECT CAST(1 AS INTEGER)",
+        expectedECSql: "SELECT CAST(1 AS INTEGER)",
+      },
+      {
+        orignalECSql: "SELECT CAST(1 AS REAL)",
+        expectedECSql: "SELECT CAST(1 AS REAL)",
+      },
+      {
+        orignalECSql: "SELECT CAST(1 AS BLOB)",
+        expectedECSql: "SELECT CAST(1 AS BLOB)",
+      },
+      {
+        orignalECSql: "SELECT CAST(1 AS TIMESTAMP)",
+        expectedECSql: "SELECT CAST(1 AS TIMESTAMP)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse SELECT DISTINCT|ALL / SUM(DISTINCT|ALL <expr>) ", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT ECInstanceId FROM meta.ECClassDef",
+        expectedECSql: "SELECT ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT DISTINCT ECInstanceId FROM meta.ECClassDef",
+        expectedECSql: "SELECT DISTINCT ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT ALL ECInstanceId FROM meta.ECClassDef",
+        expectedECSql: "SELECT ALL ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT SUM(DISTINCT ECInstanceId) FROM meta.ECClassDef",
+        expectedECSql: "SELECT SUM(DISTINCT ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT SUM(ALL ECInstanceId) FROM meta.ECClassDef",
+        expectedECSql: "SELECT SUM(ALL ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT SUM(ECInstanceId) FROM meta.ECClassDef",
+        expectedECSql: "SELECT SUM(ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse func(args...)", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT INSTR('First', 'Second')",
+        expectedECSql: "SELECT INSTR('First', 'Second')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse ECSQLOPTIONS", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X=3",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse Subquery", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT d.a FROM (SELECT b.Name a FROM meta.ECClassDef b) d",
+        expectedECSql: "SELECT d.a FROM (SELECT b.Name a FROM [ECDbMeta].[ECClassDef] b) d",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse LIMIT <expr> [OFFSET <expr>]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef LIMIT 10+33",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] LIMIT (10 + 33)",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef LIMIT 10+33 OFFSET 44",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] LIMIT (10 + 33) OFFSET 44",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse GROUP BY [expr...] HAVING [expr...]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef GROUP BY Name",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY Name",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef GROUP BY Name HAVING COUNT(*)>2",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY Name HAVING (COUNT(*) > 2)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse ORDER BY [expr...]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef ORDER BY Name ASC, ECInstanceId DESC",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY Name ASC, ECInstanceId DESC",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef ORDER BY NAME, DISPLAYLABEL",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY NAME, DISPLAYLABEL",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse CTE", async () => {
+    const tests = [
+      {
+        orignalECSql: "WITH RECURSIVE c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1) SELECT i FROM c",
+        expectedECSql: "WITH RECURSIVE c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1) SELECT i FROM c",
+      },
+      {
+        orignalECSql: "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1) SELECT i FROM c",
+        expectedECSql: "WITH c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1) SELECT i FROM c",
+      },
+      {
+        orignalECSql: "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT i+1 FROM d WHERE i < 100 ORDER BY 1) SELECT * FROM c,d",
+        expectedECSql: "WITH c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT (i + 1) FROM d WHERE (i < 100) ORDER BY 1) SELECT c.i, d.i FROM c, d",
+      },
+      {
+        orignalECSql: "WITH c(a,b,c) AS (SELECT ECInstanceId, ECClassId, Name FROM meta.ECClassDef) SELECT * FROM c",
+        expectedECSql: "WITH c(a, b, c) AS (SELECT ECInstanceId, ECClassId, Name FROM [ECDbMeta].[ECClassDef]) SELECT c.a, c.b, c.c FROM c",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse $, $->prop", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT $ FROM Meta.ECClassDef",
+        expectedECSql: "SELECT $ FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef",
+        expectedECSql: "SELECT $->Name, $->DisplayLabel, $->Nothing FROM [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC",
+        expectedECSql: "SELECT $->Name, $->DisplayLabel, $->Nothing FROM [ECDbMeta].[ECClassDef] WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+});
