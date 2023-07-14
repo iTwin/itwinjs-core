@@ -144,6 +144,7 @@ export abstract class RealityTileLoader {
             contentRange: tile.contentRange,
             transform: tile.transformToRoot,
             hasChildren: !tile.isLeaf,
+            pickableOptions: { id: modelId },
           });
         }
 
