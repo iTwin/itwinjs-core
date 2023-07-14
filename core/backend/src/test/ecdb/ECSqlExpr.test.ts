@@ -134,11 +134,11 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT IIF( 3 IS (ALL meta.ECClassDef, ONLY meta.ECPropertyDef), 'True', 'False')",
-        expectedECSql: "SELECT IIF(3 IS ([ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IS (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
       },
       {
         orignalECSql: "SELECT IIF( 3 IS NOT (ALL meta.ECClassDef, ONLY meta.ECPropertyDef), 'True', 'False')",
-        expectedECSql: "SELECT IIF(3 IS NOT ([ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IS NOT (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False')",
       },
     ];
     for (const test of tests) {
@@ -206,7 +206,7 @@ describe.only("ECSql Exprs", () => {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
     }
   });
-  it("parse SELECT DISTINCT|ALL / SUM(DISTINCT|ALL <expr>) ", async () => {
+  it("parse SELECT DISTINCT|ALL/SUM(DISTINCT|ALL <expr>) ", async () => {
     const tests = [
       {
         orignalECSql: "SELECT ECInstanceId FROM meta.ECClassDef",
@@ -230,7 +230,7 @@ describe.only("ECSql Exprs", () => {
       },
       {
         orignalECSql: "SELECT SUM(ECInstanceId) FROM meta.ECClassDef",
-        expectedECSql: "SELECT SUM(ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT SUM([ECInstanceId]) FROM [ECDbMeta].[ECClassDef]",
       },
     ];
     for (const test of tests) {
@@ -502,6 +502,10 @@ describe.only("ECSql Exprs", () => {
   });
   it("parse ALL | ONLY <classname>", async () => {
     const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef]",
+      },
       {
         orignalECSql: "SELECT 1 FROM ONLY [ECDbMeta].[ECClassDef]",
         expectedECSql: "SELECT 1 FROM ONLY [ECDbMeta].[ECClassDef]",
