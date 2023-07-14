@@ -17,8 +17,8 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
-  TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
+  DisclosedTileTreeSet, FetchCloudStorage, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus,
+  TileRequest, TileRequestChannels, TileStorage, TileTree, TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
@@ -308,14 +308,9 @@ export class TileAdmin {
   }
 
   private _tileStorage?: TileStorage;
-  private _tileStoragePromise?: Promise<TileStorage>;
   private async getTileStorage(): Promise<TileStorage> {
     if (this._tileStorage !== undefined)
       return this._tileStorage;
-
-    // if object-storage-azure is already being dynamically loaded, just return the promise.
-    if (this._tileStoragePromise !== undefined)
-      return this._tileStoragePromise;
 
     // if custom implementation is provided, construct a new TileStorage instance and return it.
     if (this._cloudStorage !== undefined) {
@@ -323,17 +318,9 @@ export class TileAdmin {
       return this._tileStorage;
     }
 
-    // start dynamically loading default implementation and save the promise to avoid duplicate instances
-    this._tileStoragePromise = (async () => {
-      await import("reflect-metadata");
-      const objectStorage = await import(/* webpackChunkName: "object-storage-azure" */ "@itwin/object-storage-azure/lib/frontend");
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = objectStorage.default ?? objectStorage;
-      const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
-      this._tileStorage = new TileStorage(azureStorage);
-      return this._tileStorage;
-    })();
-    return this._tileStoragePromise;
+    const fetchStorage = new FetchCloudStorage();
+    this._tileStorage = new TileStorage(fetchStorage);
+    return this._tileStorage;
   }
 
   /** @internal */

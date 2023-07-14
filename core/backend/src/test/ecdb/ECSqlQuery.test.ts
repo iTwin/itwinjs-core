@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -255,6 +255,36 @@ describe("ECSql Query", () => {
     } finally {
       ConcurrentQuery.shutdown(imodel1.nativeDb);
       ConcurrentQuery.resetConfig(imodel1.nativeDb);
+    }
+  });
+  it("concurrent query should retry on timeout", async () => {
+    class MockECSqlReader extends ECSqlReader {
+      public constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string) {
+        super(_executor, query);
+      }
+      public async mockReadRows(queryRequest: DbQueryRequest): Promise<DbQueryResponse> {
+        return super.runWithRetry(queryRequest);
+      }
+    }
+
+    // Set time to 1 sec to simulate a timeout scenario
+    ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+    const executor = {
+      execute: async (req: DbQueryRequest) => {
+        return ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, req);
+      },
+    };
+    const request: DbQueryRequest = {
+      kind: DbRequestKind.ECSql,
+      query: "SELECT * FROM BisCore.element",
+      delay: 5000,  // Set delay to a value > timeout
+    };
+    try {
+      await new MockECSqlReader(executor, request.query).mockReadRows(request);
+      assert(false);  // We expect this scenario to always throw
+    } catch (error: any) {
+      // Query should give up after max retry count has been reached
+      assert(error.message === "query too long to execute or server is too busy");
     }
   });
   it("concurrent query use primary connection", async () => {

@@ -6,10 +6,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { fakeContext } from "./Mocks";
-import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSimpleSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
 import { Point3d, Transform } from "@itwin/core-geometry";
+import { TestUtils } from "./TestUtils";
 
 describe("ArcGisCanvasRenderer", () => {
 
@@ -37,7 +38,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render simple path, stride = 2", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
@@ -65,7 +66,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render simple filled path", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
 
@@ -95,7 +96,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render simple Path, stride = 3", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4, 5, 6];
 
@@ -119,7 +120,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render multiple Paths, stride = 2", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
@@ -147,7 +148,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should not render invalid with stride value", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
 
@@ -164,7 +165,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render Path and apply transform, relativeCoords OFF", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -187,11 +188,11 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render single Point, no transform, relativeCoords OFF", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     await renderer.renderPoint([], coords, 2, false);
 
@@ -203,12 +204,12 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render single Point and apply transform, relativeCoords OFF", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2];
     await renderer.renderPoint([], coords, 2, false);
 
@@ -220,11 +221,11 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render multi Point, transform, relativeCoords OFF", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, false);
 
@@ -237,12 +238,12 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render multi Point and apply transform, relativeCoords OFF", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, false);
 
@@ -255,12 +256,12 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render multi Point and apply transform, relativeCoords ON", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
 
-    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const drawPointStub = sandbox.stub(ArcGisSimpleSymbologyRenderer.prototype, "drawPoint");
     const coords = [1, 2, 3, 4];
     await renderer.renderPoint([2], coords, 2, true);
 
@@ -273,7 +274,7 @@ describe("ArcGisCanvasRenderer", () => {
 
   it("should render and apply transform, relativeCoords ON", async () => {
 
-    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
     const fakeOffset = 10;
     const renderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
