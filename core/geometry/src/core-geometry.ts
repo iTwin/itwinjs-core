@@ -197,17 +197,18 @@ export * from "./curve/CurveCurveIntersectXY";
 export * from "./curve/CurveCurveIntersectXYZ";
 export * from "./curve/CurveLocationDetail";
 export * from "./curve/CurveFactory";
+export * from "./curve/CurveOps";
 export * from "./curve/CurvePrimitive";
 export * from "./curve/CurveProcessor";
 export * from "./curve/GeometryQuery";
 export * from "./curve/LineSegment3d";
 export * from "./curve/LineString3d";
 export * from "./curve/Loop";
+export * from "./curve/OffsetOptions";
 export * from "./curve/ParityRegion";
 export * from "./curve/Path";
 export * from "./curve/RegionMomentsXY";
 export * from "./curve/RegionOps";
-export * from "./curve/internalContexts/PolygonOffsetContext";
 export * from "./curve/PointString3d";
 export * from "./curve/ProxyCurve";
 export * from "./curve/StrokeOptions";
@@ -255,6 +256,3 @@ export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";
 export { BentleyGeometryFlatBuffer } from "./serialization/BentleyGeometryFlatBuffer";
-
-// temporary export for internal access pending exposure of this functionality via public API
-export { MultiChainCollector } from "./curve/internalContexts/MultiChainCollector";

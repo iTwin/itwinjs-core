@@ -11,7 +11,7 @@
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { MultiChainCollector, OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
+import { MultiChainCollector } from "../curve/internalContexts/MultiChainCollector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -47,6 +47,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveOps } from "../curve/CurveOps";
 
 /**
  * Options carrier for sweeping linework onto meshes.
@@ -791,7 +792,7 @@ export class PolyfaceQuery {
           edges.push(LineSegment3d.create(pointA, pointB));
           edgeStrings.push([pointA.clone(), pointB.clone()]);
         });
-      const chains = OffsetHelpers.collectChains(edges, gapTolerance, planarityTolerance);
+      const chains = CurveOps.collectChains(edges, gapTolerance, planarityTolerance);
       if (chains) {
         const frameBuilder = new FrameBuilder();
         frameBuilder.announce(chains);
@@ -817,14 +818,14 @@ export class PolyfaceQuery {
 
   /**
    * Return a mesh with "some" holes filled in with new facets.
-   *  * The candidates to be filled are all loops returned by boundaryChainsAsLineString3d
-   *  * unclosed chains are rejected.
-   *  * optionally also copy the original mesh, so the composite is a clone with holes filled.
+   *  * Candidate chains are computed by [[announceBoundaryChainsAsLineString3d]].
+   *  * Unclosed chains are rejected.
+   *  * Closed chains are triangulated and returned as a mesh.
    *  * The options structure enforces restrictions on how complicated the hole filling can be:
    *     * maxEdgesAroundHole -- holes with more edges are skipped
    *     * maxPerimeter -- holes with larger summed edge lengths are skipped.
    *     * upVector -- holes that do not have positive area along this view are skipped.
-   *     * includeOriginalMesh -- includes the original mesh in the output mesh.
+   *     * includeOriginalMesh -- includes the original mesh in the output mesh, so the composite mesh is a clone with holes filled
    * @param mesh existing mesh
    * @param options options controlling the hole fill.
    * @param unfilledChains optional array to receive the points around holes that were not filled.

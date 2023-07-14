@@ -1503,14 +1503,6 @@ export abstract class CurveChain extends CurveCollection {
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
-// @internal
-export class CurveChainWireOffsetContext {
-    constructor();
-    static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
-    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
-    static createSingleOffsetPrimitiveXY(g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-}
-
 // @public
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
@@ -1736,6 +1728,20 @@ export class CurveLocationDetailPair {
     detailA: CurveLocationDetail;
     detailB: CurveLocationDetail;
     swapDetails(): void;
+}
+
+// @public
+export class CurveOps {
+    static appendXYOffsets(curves: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number | undefined): ChainTypes;
+    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, planeTolerance?: number | undefined): void;
+    static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: AnyCurve[];
+        outsideOffsets: AnyCurve[];
+        chains: ChainTypes;
+    };
+    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
+    static sumLengths(curves: AnyCurve | AnyCurve[]): number;
 }
 
 // @public
@@ -3814,15 +3820,6 @@ export class MomentData {
     toJSON(): any;
 }
 
-// @internal
-export class MultiChainCollector {
-    constructor(endPointShiftTolerance?: number, planeTolerance?: number | undefined);
-    announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void;
-    captureCurve(candidate: GeometryQuery): void;
-    captureCurvePrimitive(candidate: CurvePrimitive): void;
-    grabResult(makeLoopIfClosed?: boolean): ChainTypes;
-}
-
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
@@ -4907,12 +4904,6 @@ export class PolygonOps {
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(points: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
-}
-
-// @internal
-export class PolygonWireOffsetContext {
-    constructor();
-    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
 }
 
 // @public

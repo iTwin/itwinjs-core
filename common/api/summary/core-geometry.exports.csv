@@ -87,7 +87,6 @@ public;ConvexFacetLocationDetail
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
-internal;CurveChainWireOffsetContext
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
@@ -102,6 +101,7 @@ public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
+public;CurveOps
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
@@ -182,7 +182,6 @@ public;Matrix4dProps = Point4dProps[]
 public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
-internal;MultiChainCollector
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
 internal;Newton1dUnboundedApproximateDerivative 
@@ -238,7 +237,6 @@ public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
 public;PolygonOps
-internal;PolygonWireOffsetContext
 public;PolylineOps
 internal;PowerPolynomial
 public;class ProxyCurve 

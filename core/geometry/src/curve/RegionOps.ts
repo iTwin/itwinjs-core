@@ -22,15 +22,15 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
-import { ChainCollectorContext } from "./ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "./CurveChain";
 import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
+import { CurveOps } from "./CurveOps";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
-import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
-import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
+import { CurveChainWireOffsetContext, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
@@ -42,6 +42,8 @@ import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
+
+import type { JointOptions, OffsetOptions } from "./OffsetOptions";
 
 /**
  * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and
@@ -502,26 +504,27 @@ export class RegionOps {
     return chainCollector.grabResult();
   }
   /**
-   * Restructure curve fragments as chains, and construct (left and right) chain offsets in the xy-plane.
-   * * BEWARE that if the input is not a loop, the classification of outputs is suspect.
-   * @param fragments fragments to be chained, z-coordinates ignored
-   * @param offsetDistance offset distance
-   * @param gapTolerance absolute endpoint tolerance for computing chains
+   * Restructure curve fragments as Paths and Loops, and construct xy-offsets of the chains.
+   * * If the inputs do not form Loop(s), the classification of offsets is suspect.
+   * * For best offset results, the inputs should be parallel to the xy-plane.
+   * @param fragments fragments to be chained and offset
+   * @param offsetDistance offset distance, applied to both sides of each fragment to produce inside and outside xy-offset curves.
+   * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
   public static collectInsideAndOutsideOffsets(
     fragments: AnyCurve[], offsetDistance: number, gapTolerance: number
   ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
-    return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
+    return CurveOps.collectInsideAndOutsideXYOffsets(fragments, offsetDistance, gapTolerance);
   }
   /**
-   * Restructure curve fragments as chains.
+   * Restructure curve fragments as Paths and Loops.
    * @param fragments fragments to be chained
-   * @param gapTolerance absolute endpoint tolerance for computing chains
-   * @returns chains, possibly wrapped in BagOfCurves if there multiple chains
+   * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail
+   * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
   public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
-    return OffsetHelpers.collectChains(fragments, gapTolerance);
+    return CurveOps.collectChains(fragments, gapTolerance);
   }
   /**
    * Find all intersections among curves in `curvesToCut` against the boundaries of `region` and return fragments
