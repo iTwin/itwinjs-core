@@ -68,7 +68,7 @@
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "4.0.0-dev.43",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/build-tools": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
