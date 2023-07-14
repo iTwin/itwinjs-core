@@ -93,7 +93,7 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT IIF( 3 IN (SELECT 1 AS N UNION SELECT 2), 'True', 'False')",
-        expectedECSql: "SELECT IIF(3 IN (SELECT 1 N UNION SELECT 2), 'True', 'False')",
+        expectedECSql: "SELECT IIF(3 IN (SELECT 1 [N] UNION SELECT 2), 'True', 'False')",
       },
       {
         orignalECSql: "SELECT IIF( 3 IN (1,2,3), 'True', 'False')",
@@ -210,23 +210,23 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT ECInstanceId FROM meta.ECClassDef",
-        expectedECSql: "SELECT ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT [ECInstanceId] FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT DISTINCT ECInstanceId FROM meta.ECClassDef",
-        expectedECSql: "SELECT DISTINCT ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT DISTINCT [ECInstanceId] FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT ALL ECInstanceId FROM meta.ECClassDef",
-        expectedECSql: "SELECT ALL ECInstanceId FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT ALL [ECInstanceId] FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT SUM(DISTINCT ECInstanceId) FROM meta.ECClassDef",
-        expectedECSql: "SELECT SUM(DISTINCT ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT SUM(DISTINCT [ECInstanceId]) FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT SUM(ALL ECInstanceId) FROM meta.ECClassDef",
-        expectedECSql: "SELECT SUM(ALL ECInstanceId) FROM [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT SUM(ALL [ECInstanceId]) FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT SUM(ECInstanceId) FROM meta.ECClassDef",
@@ -266,7 +266,7 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT d.a FROM (SELECT b.Name a FROM meta.ECClassDef b) d",
-        expectedECSql: "SELECT d.a FROM (SELECT b.Name a FROM [ECDbMeta].[ECClassDef] b) d",
+        expectedECSql: "SELECT [d].[a] FROM (SELECT [b].[Name] [a] FROM [ECDbMeta].[ECClassDef] [b]) [d]",
       },
     ];
     for (const test of tests) {
@@ -294,11 +294,11 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef GROUP BY Name",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY Name",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY [Name]",
       },
       {
-        orignalECSql: "SELECT 1 FROM meta.ECClassDef GROUP BY Name HAVING COUNT(*)>2",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY Name HAVING (COUNT(*) > 2)",
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef GROUP BY [Name] HAVING COUNT(*)>2",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] GROUP BY [Name] HAVING (COUNT(*) > 2)",
       },
     ];
     for (const test of tests) {
@@ -310,11 +310,11 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef ORDER BY Name ASC, ECInstanceId DESC",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY Name ASC, ECInstanceId DESC",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY [Name] ASC, [ECInstanceId] DESC",
       },
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef ORDER BY NAME, DISPLAYLABEL",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY NAME, DISPLAYLABEL",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] ORDER BY [NAME], [DISPLAYLABEL]",
       },
     ];
     for (const test of tests) {
@@ -326,19 +326,19 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "WITH RECURSIVE c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1) SELECT i FROM c",
-        expectedECSql: "WITH RECURSIVE c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1) SELECT i FROM c",
+        expectedECSql: "WITH RECURSIVE [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1) SELECT [i] FROM [c]",
       },
       {
         orignalECSql: "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1) SELECT i FROM c",
-        expectedECSql: "WITH c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1) SELECT i FROM c",
+        expectedECSql: "WITH [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1) SELECT [i] FROM [c]",
       },
       {
         orignalECSql: "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT i+1 FROM d WHERE i < 100 ORDER BY 1) SELECT * FROM c,d",
-        expectedECSql: "WITH c(i) AS (SELECT 1 UNION SELECT (i + 1) FROM c WHERE (i < 10) ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT (i + 1) FROM d WHERE (i < 100) ORDER BY 1) SELECT c.i, d.i FROM c, d",
+        expectedECSql: "WITH [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1), [d]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [d] WHERE ([i] < 100) ORDER BY 1) SELECT [c].[i], [d].[i] FROM [c], [d]",
       },
       {
         orignalECSql: "WITH c(a,b,c) AS (SELECT ECInstanceId, ECClassId, Name FROM meta.ECClassDef) SELECT * FROM c",
-        expectedECSql: "WITH c(a, b, c) AS (SELECT ECInstanceId, ECClassId, Name FROM [ECDbMeta].[ECClassDef]) SELECT c.a, c.b, c.c FROM c",
+        expectedECSql: "WITH [c]([a], [b], [c]) AS (SELECT [ECInstanceId], [ECClassId], [Name] FROM [ECDbMeta].[ECClassDef]) SELECT [c].[a], [c].[b], [c].[c] FROM [c]",
       },
     ];
     for (const test of tests) {
@@ -353,17 +353,194 @@ describe.only("ECSql Exprs", () => {
         expectedECSql: "SELECT $ FROM [ECDbMeta].[ECClassDef]",
       },
       {
-        orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef",
-        expectedECSql: "SELECT $->Name, $->DisplayLabel, $->Nothing FROM [ECDbMeta].[ECClassDef]",
+        orignalECSql: "SELECT $->[Name], $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef",
+        expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef]",
       },
       {
         orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC",
-        expectedECSql: "SELECT $->Name, $->DisplayLabel, $->Nothing FROM [ECDbMeta].[ECClassDef] WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC",
+        expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef] WHERE $->[Name] LIKE '%Hellp' ORDER BY $->[ECInstanceId] DESC",
+      },
+      {
+        orignalECSql: "SELECT e.$->[Name], e.$-> DisplayLabel, e.$ -> Nothing FROM Meta.ECClassDef e",
+        expectedECSql: "SELECT [e].$->[Name], [e].$->[DisplayLabel], [e].$->[Nothing] FROM [ECDbMeta].[ECClassDef] [e]",
       },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
       assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
     }
+  });
+  it("parse ?, :<param-name>", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT ?",
+        expectedECSql: "SELECT ?",
+      },
+      {
+        orignalECSql: "SELECT :param1",
+        expectedECSql: "SELECT :param1",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse <from> JOIN <to> USING rel [FORWARD|BACKWARD]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef JOIN meta.ECPropertyDef USING meta.ClassOwnsLocalProperties",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] JOIN [ECDbMeta].[ECPropertyDef] USING [ECDbMeta].[ClassOwnsLocalProperties]",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM bis.Element a JOIN bis.Element b USING bis.ElementOwnsChildElements FORWARD",
+        expectedECSql: "SELECT 1 FROM [BisCore].[Element] [a] JOIN [BisCore].[Element] [b] USING [BisCore].[ElementOwnsChildElements] FORWARD",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM bis.Element a JOIN bis.Element b USING bis.ElementOwnsChildElements BACKWARD",
+        expectedECSql: "SELECT 1 FROM [BisCore].[Element] [a] JOIN [BisCore].[Element] [b] USING [BisCore].[ElementOwnsChildElements] BACKWARD",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse <from> [INNER] [OUTER] JOIN <to> [ON <exp>]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef INNER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse <from> RIGHT [OUTER] JOIN <to> [ON <exp>]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef RIGHT JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef RIGHT OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse <from> FULL [OUTER] JOIN <to> [ON <exp>]", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef FULL JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM meta.ECClassDef FULL OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse UNION | UNION ALL | INTERSECT | EXCEPT", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a UNION SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
+        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+      },
+      {
+        orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a UNION ALL SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
+        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION ALL SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+      },
+      {
+        orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a INTERSECT SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
+        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] INTERSECT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+      },
+      {
+        orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a EXCEPT SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
+        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] EXCEPT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+      }
+
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse SELECT (<subquery>) FROM", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT (SELECT b.ECInstanceId FROM meta.ECPropertyDef b) AS S  FROM [ECDbMeta].[ECClassDef] a",
+        expectedECSql: "SELECT (SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) [S] FROM [ECDbMeta].[ECClassDef] [a]",
+      },
+      {
+        orignalECSql: "SELECT (SELECT 1 UNION SELECT 2) FROM meta.ECClassDef a",
+        expectedECSql: "SELECT (SELECT 1 UNION SELECT 2) FROM [ECDbMeta].[ECClassDef] [a]",
+      },
+      {
+        orignalECSql: "SELECT  1 FROM [ECDbMeta].[ECClassDef] [a] WHERE (SELECT [b].[ECInstanceId] FROM meta.ECPropertyDef b) = 1",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] [a] WHERE ((SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) = 1)",
+      },
+
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse ALL | ONLY <classname>", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT 1 FROM ONLY [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT 1 FROM ONLY [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM ALL [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT 1 FROM ALL [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM +ALL [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT 1 FROM +ALL [ECDbMeta].[ECClassDef]",
+      },
+      {
+        orignalECSql: "SELECT 1 FROM +ONLY [ECDbMeta].[ECClassDef]",
+        expectedECSql: "SELECT 1 FROM +ONLY [ECDbMeta].[ECClassDef]",
+      },
+
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse tablevalue function FROM json1.json_tree()", async () => {
+    const tests = [
+      {
+        orignalECSql: "select * from  json1.json_tree('{}') where key='gravity'",
+        expectedECSql: "SELECT [key], [value], [type], [atom], [parent], [fullkey], [path] FROM [json1].[json_tree]('{}') WHERE ([key] = 'gravity')",
+      },
+      {
+        orignalECSql: "select s.key, s.[value], s.type from  json1.json_tree('{}') s where s.key='gravity'",
+        expectedECSql: "SELECT [s].[key], [s].[value], [s].[type] FROM [json1].[json_tree]('{}') [s] WHERE ([s].[key] = 'gravity')",
+      }
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse member function", async () => {
   });
 });
