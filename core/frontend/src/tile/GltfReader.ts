@@ -253,7 +253,7 @@ export class GltfMeshData {
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
   public indices?: Uint8Array | Uint16Array | Uint32Array;
-  public readonly type: "mesh" = "mesh";
+  public readonly type = "mesh" as const;
 
   public constructor(props: Mesh) {
     this.primitive = props;
@@ -1080,7 +1080,6 @@ export abstract class GltfReader {
     const colorData = colorView.toBufferData(GltfDataType.UnsignedByte);
     if (!(colorData?.buffer instanceof Uint8Array))
       return undefined;
-
 
     const strideSkip = posView.stride - 3;
     const pointRange = new Range3d();

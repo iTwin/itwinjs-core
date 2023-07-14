@@ -4571,6 +4571,8 @@ export class GltfMeshData {
     // (undocumented)
     primitive: Mesh;
     // (undocumented)
+    readonly type: "mesh";
+    // (undocumented)
     uvQParams?: QParams2d;
     // (undocumented)
     uvRange?: Range2d;
@@ -4736,7 +4738,7 @@ export abstract class GltfReader {
         [k: string]: any;
     }): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined;
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     protected readNormals(mesh: GltfMeshData, json: {
         [k: string]: any;
