@@ -13,7 +13,11 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
+<<<<<<< HEAD
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
+=======
+  AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
+>>>>>>> dd2345dd76 (Support glTF-encoded point clouds (#5737))
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
@@ -32,8 +36,18 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
+<<<<<<< HEAD
 import { TextureImageSource } from "../render/RenderTexture";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
+=======
+import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
+import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
+import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
+import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { TextureImageSource } from "../common/render/TextureParams";
+>>>>>>> dd2345dd76 (Support glTF-encoded point clouds (#5737))
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
@@ -256,11 +270,19 @@ export class GltfMeshData {
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
   public indices?: Uint8Array | Uint16Array | Uint32Array;
+  public readonly type = "mesh" as const;
 
   public constructor(props: Mesh) {
     this.primitive = props;
   }
 }
+
+interface GltfPointCloud extends PointCloudArgs {
+  readonly type: "pointcloud";
+  pointRange: Range3d;
+}
+
+type GltfPrimitiveData = GltfMeshData | GltfPointCloud;
 
 /** A function that returns true if deserialization of the data supplied by the reader should abort.
  * @internal
@@ -555,7 +577,10 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+  private graphicFromMeshData(gltfMesh: GltfPrimitiveData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+    if ("pointcloud" === gltfMesh.type)
+      return this._system.createPointCloud(gltfMesh, this._iModel);
+
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return gltfMesh.primitive.getGraphics(this._system, instances);
 
@@ -658,9 +683,11 @@ export abstract class GltfReader {
     const meshes = this.readMeshPrimitives(node);
 
     for (const mesh of meshes) {
-      const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
-      if (polyface)
-        polyfaces.push(polyface);
+      if (mesh.type === "mesh") {
+        const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
+        if (polyface)
+          polyfaces.push(polyface);
+      }
     }
 
     if (node.children) {
@@ -750,6 +777,9 @@ export abstract class GltfReader {
       }
       let componentCount = 1;
       switch (accessor.type) {
+        case "VEC4":
+          componentCount = 4;
+          break;
         case "VEC3":
           componentCount = 3;
           break;
@@ -900,8 +930,8 @@ export abstract class GltfReader {
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
-  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
-    const meshes: GltfMeshData[] = [];
+  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfPrimitiveData[] {
+    const meshes: GltfPrimitiveData[] = [];
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
@@ -922,7 +952,14 @@ export abstract class GltfReader {
     return meshes;
   }
 
-  protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
+  protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
+    const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
+    if (meshMode === GltfMeshMode.Points /* && !this._vertexTableRequired */) {
+      const pointCloud = this.readPointCloud(primitive, undefined !== featureTable);
+      if (pointCloud)
+        return pointCloud;
+    }
+
     const materialName = JsonUtils.asString(primitive.material);
     const material = 0 < materialName.length ? this._materials[materialName] : undefined;
     if (!material)
@@ -934,7 +971,6 @@ export abstract class GltfReader {
       return undefined;
 
     let primitiveType: number = -1;
-    const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
         primitiveType = Mesh.PrimitiveType.Polyline;
@@ -949,7 +985,6 @@ export abstract class GltfReader {
         break;
 
       default:
-        assert(false);
         return undefined;
     }
 
@@ -1061,6 +1096,58 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private readPointCloud(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {
+    const posView = this.getBufferView(primitive.attributes, "POSITION");
+    if (!posView || GltfDataType.Float !== posView.type)
+      return undefined;
+
+    const posData = posView.toBufferData(GltfDataType.Float);
+    if (!(posData?.buffer instanceof Float32Array))
+      return undefined;
+
+    const colorView = this.getBufferView(primitive.attributes, "COLOR_0");
+    if (!colorView || GltfDataType.UnsignedByte !== colorView.type)
+      return undefined;
+
+    const colorData = colorView.toBufferData(GltfDataType.UnsignedByte);
+    if (!(colorData?.buffer instanceof Uint8Array))
+      return undefined;
+
+    const strideSkip = posView.stride - 3;
+    const pointRange = new Range3d();
+    for (let i = 0; i < posData.buffer.length; i+= strideSkip)
+      pointRange.extendXYZ(posData.buffer[i++], posData.buffer[i++], posData.buffer[i++]);
+
+    let colors = colorData.buffer;
+    if ("VEC4" === colorView.accessor.type) {
+      // ###TODO support transparent point clouds
+      colors = new Uint8Array(colorData.count * 3);
+      for (let i = 0; i < colorData.count; i++) {
+        const srcIdx = colorView.stride * i;
+        const dstIdx = 3 * i;
+        for (let j = 0; j < 3; j++)
+          colors[dstIdx + j] = colorData.buffer[srcIdx + j];
+      }
+    }
+
+    const features = new FeatureIndex();
+    if (hasFeatures)
+      features.type = FeatureIndexType.Uniform;
+
+    return {
+      type: "pointcloud",
+      positions: posData.buffer,
+      qparams: QParams3d.fromOriginAndScale(new Point3d(0, 0, 0), new Point3d(1, 1, 1)),
+      pointRange,
+      colors,
+      colorFormat: "rgb",
+      features,
+      // ###TODO: If tile does not use additive refinement, compute voxelSize based on point range.
+      // Additive refinement is typical of the glTF point clouds we receive from Orbit.
+      voxelSize: 0,
+    };
   }
 
   private readDracoMeshPrimitive(mesh: Mesh, ext: DracoMeshCompression): boolean {
