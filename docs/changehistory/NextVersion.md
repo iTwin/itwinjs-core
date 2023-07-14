@@ -9,6 +9,7 @@ Table of contents:
 - [Display](#display)
   - [Tile decoding in workers](#tile-decoding-in-workers)
   - [Smaller edge encoding](#smaller-edge-encoding)
+  - [glTF point clouds](#gltf-point-clouds)
 - [Presentation](#presentation)
   - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
   - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
@@ -43,6 +44,10 @@ Producing a responsive web app requires [limiting](https://web.dev/off-main-thre
 ### Smaller edge encoding
 
 When rendering the contents of a view with [edge display](https://www.itwinjs.org/learning/display/edgedisplay/) enabled, special [tiles](https://www.itwinjs.org/learning/display/tiles/) are requested that encode the edge geometry in addition to the surfaces. A tile containing edges can be many times bigger than the same tile containing only surfaces. iTwin.js 4.1 introduces a [new encoding scheme](https://github.com/iTwin/itwinjs-core/pull/5581) that reduces that size difference by an order of magnitude. Previously, the average tile containing edges weighed 73% more than the corresponding tile without edges; now, the average difference is only 6.7%. This reduces tile transmission times and memory usage when edge display is enabled.
+
+### glTF point clouds
+
+The newest evolution of the [3D Tiles specification](https://cesium.com/blog/2021/11/10/introducing-3d-tiles-next/#using-gltf-for-point-clouds) introduces a streamlined way to represent point clouds using [glTF](https://en.wikipedia.org/wiki/GlTF), deprecating the previous ["PNTS"](https://github.com/CesiumGS/3d-tiles/tree/main/specification/TileFormats/PointCloud) tile format. As part of our efforts to align the iTwin platform with open web standards, iTwin.js now supports decoding and displaying point clouds encoded this way.
 
 ## Presentation
 
