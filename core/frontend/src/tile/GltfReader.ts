@@ -416,6 +416,7 @@ export abstract class GltfReader {
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
+  private _containsPointCloud = false;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -524,6 +525,7 @@ export abstract class GltfReader {
       contentRange,
       range,
       graphic: renderGraphic,
+      containsPointCloud: this._containsPointCloud,
     };
   }
 
@@ -1102,6 +1104,7 @@ export abstract class GltfReader {
     if (hasFeatures)
       features.type = FeatureIndexType.Uniform;
 
+    this._containsPointCloud = true;
     return {
       type: "pointcloud",
       positions: posData.buffer,

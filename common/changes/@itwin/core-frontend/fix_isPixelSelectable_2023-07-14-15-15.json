@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix Viewport.isPixelSelectable following signature change of Viewport.mapLayerFromIds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
