@@ -7,9 +7,8 @@ import { ECDb, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { StatementExpr } from "../../ECSqlExpr";
 
-
 describe.only("ECSql Exprs", () => {
-  let ecdb: ECDb
+  let ecdb: ECDb;
 
   function parseStatement(ecsql: string) {
     const parseNode = ecdb.getECSqlParseTree(ecsql);
@@ -35,8 +34,8 @@ describe.only("ECSql Exprs", () => {
     const tests = [
       {
         orignalECSql: "SELECT (1 & 2 ) | (3 << 4 ) >> (5/ 6) * (7 + 8) + (4 % 9) + (-10) + (+20) - (~45)",
-        expectedECSql: "SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45))"
-      }
+        expectedECSql: "SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45))",
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -49,7 +48,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT IIF((1 != 2) OR (4 = 5) AND ( 4 > 8 ) OR (4 < 5) OR (4 <= 5) AND ( 4 >= 6 ), 'True', 'False')",
         expectedECSql: "SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False')",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -61,7 +60,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT CASE WHEN 4>5 THEN NULL WHEN 1 IS NOT NULL THEN 'Hello' ELSE 'Bye' END",
         expectedECSql: "SELECT CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -82,7 +81,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "select IIF(('Hello, World' NOT LIKE '%World') , 2, 3)",
         expectedECSql: "SELECT IIF('Hello, World' NOT LIKE '%World', 2, 3)",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -103,7 +102,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT IIF( 3 NOT IN (1,2,3), 'True', 'False')",
         expectedECSql: "SELECT IIF(3 NOT IN (1, 2, 3), 'True', 'False')",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -123,7 +122,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT IIF( 1 IS NOT NULL, 'True', 'False')",
         expectedECSql: "SELECT IIF((1 IS NOT NULL), 'True', 'False')",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -379,7 +378,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT :param1",
         expectedECSql: "SELECT :param1",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -399,7 +398,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT 1 FROM bis.Element a JOIN bis.Element b USING bis.ElementOwnsChildElements BACKWARD",
         expectedECSql: "SELECT 1 FROM [BisCore].[Element] [a] JOIN [BisCore].[Element] [b] USING [BisCore].[ElementOwnsChildElements] BACKWARD",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -415,7 +414,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef INNER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
         expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -431,7 +430,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef RIGHT OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
         expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -447,7 +446,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef FULL OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
         expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
@@ -471,7 +470,7 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a EXCEPT SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
         expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] EXCEPT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
-      }
+      },
 
     ];
     for (const test of tests) {
@@ -538,13 +537,29 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "select s.key, s.[value], s.type from  json1.json_tree('{}') s where s.key='gravity'",
         expectedECSql: "SELECT [s].[key], [s].[value], [s].[type] FROM [json1].[json_tree]('{}') [s] WHERE ([s].[key] = 'gravity')",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
       assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
     }
   });
-  it("parse member function", async () => {
+  it("build SelectStatementExpr", async () => {
+    // const stmt = new SelectStatementExpr(
+    //   new SelectExpr([new DerivedPropertyExpr(new PropertyNameExpr("Name"))],
+    //     AllOrDistinctOp.All,
+    //     [new ClassNameExpr("meta", "ECClassDef")],
+    //     new BinaryBooleanExpr(BinaryBooleanOp.EqualTo, new PropertyNameExpr("ECInstanceId"), LiteralExpr.createNumber(1)),
+    //     {
+    //       groupBy: [new PropertyNameExpr("ECClassId")],
+    //       having: new BinaryBooleanExpr(BinaryBooleanOp.GreaterThan, new FuncCallExpr("COUNT", [LiteralExpr.createRaw("*")]), LiteralExpr.createNumber(0))
+    //     },
+    //     [{ exp: new PropertyNameExpr("DisplayLabel"), direction: SortDirection.Ascending }],
+    //     { limit: LiteralExpr.createNumber(1), offset: LiteralExpr.createNumber(10) }
+    //   ));
+    // const expected = "SELECT ALL [Name] FROM [meta].[ECClassDef] WHERE ([ECInstanceId] = 1) GROUP BY [ECClassId] HAVING (COUNT(*) > 0) ORDER BY [DisplayLabel] ASC LIMIT 1 OFFSET 10";
+    // const normalized = "SELECT ALL [Name] FROM [ECDbMeta].[ECClassDef] WHERE ([ECInstanceId] = 1) GROUP BY [ECClassId] HAVING (COUNT(*) > 0) ORDER BY [DisplayLabel] ASC LIMIT 1 OFFSET 10";
+    // assert.equal(stmt.toECSql(), expected);
+    // assert.equal(toNormalizeECSql(stmt.toECSql()), normalized);
   });
 });

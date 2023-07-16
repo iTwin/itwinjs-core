@@ -1,14 +1,26 @@
+import { asInstanceOf, Constructor, isInstanceOf } from "@itwin/core-bentley";
 
+/**
+ * Unary operator for @ref ValueExpr.
+ */
 export enum UnaryValueOp {
   Minus = "-",
   Plus = "+",
   BitwiseNot = "~",
 }
+
+/**
+ * Unary operator for @ref BooleanExpr
+ */
 export enum UnaryBooleanOp {
   Not = "NOT",
 }
+/**
+ * Id returned by native code
+ * @internal
+ */
 enum NativeExpIds {
-  AllOrAny = "AllOrAnyExp", /**Not supported or working */
+  AllOrAny = "AllOrAnyExp", /** Not supported or working */
   Assignment = "AssignmentExp",
   BetweenRangeValue = "BetweenRangeValueExp",
   PropertyName = "PropertyNameExp",
@@ -46,8 +58,11 @@ enum NativeExpIds {
   Options = "OptionsExp",
   LiteralValue = "LiteralValueExp",
   Subquery = "SubqueryExp",
-};
-export enum BinaryBooleanOP {
+}
+/**
+ * Binary boolean operators used by @ref BinaryBooleanExpr
+ */
+export enum BinaryBooleanOp {
   And = "AND",
   Or = "OR",
   EqualTo = "=",
@@ -58,6 +73,10 @@ export enum BinaryBooleanOP {
   NotEqualTo = "<>",
   NotEqualTo2 = "!=",
 }
+
+/**
+ * Binary value operators used by @ref BinaryValueExpr
+ */
 export enum BinaryValueOp {
   BitwiseAnd = "&",
   BitwiseOr = "|",
@@ -69,23 +88,45 @@ export enum BinaryValueOp {
   Multiply = "*",
   Plus = "+",
   Modulus = "%",
-};
+}
+
+/**
+ * Disqualify term in ECSQL so query planner does not try to find index for it.
+ */
 export type DisqualifyOp = "+";
+
+/**
+ * Optional recursive keyword for common table expressions @ref CteExpr
+ */
 export type RecursiveCte = "RECURSIVE";
+
+/**
+ * Polymorphic constraint for @ref ClassNameExpr
+ */
 export enum OnlyOrAllOp {
   Only = "ONLY",
   All = "ALL",
 }
+
+/**
+ * Filter rows in select clause or aggregate functions
+ */
 export enum AllOrDistinctOp {
   Distinct = "DISTINCT",
   All = "ALL",
-};
+}
 
+/**
+ * Return by native code
+ */
 export interface NativeECSqlParseNode {
   [key: string]: any;
 }
 
-export enum ExpressionType {
+/**
+ * ECSql expr type supported
+ */
+export enum ExprType {
   Literal = "Literal",
   Unary = "Unary",
   Parameter = "Parameter",
@@ -115,7 +156,7 @@ export enum ExpressionType {
   TableValuedFunc = "TableValuedFunc",
 
   DerivedProperty = "DerivedProperty",
-  Assignment = "Assignment",
+  AssignmentClause = "Assignment",
   Select = "SingleSelect",
   ECSqlOptions = "ECSqlOptions",
   CteBlock = "CteBlock",
@@ -126,39 +167,36 @@ export enum ExpressionType {
   InsertStatement = "Insert",
   DeleteStatement = "Delete",
   SelectStatement = "Select",
-}
+  SelectionClause = "SelectionClause",
 
+  WhereClause = "WhereClause",
+  GroupByClause = "GroupByClause",
+  HavingClause = "HavingCluase",
+  FromClause = "FromClause",
+  OrderByClause = "OrderByClause",
+  OrderBySpec = "OrderBySpec",
+  LimitClause = "LimitClause"
+}
+/**
+ * Base class for all ECSql expressions.
+ */
 export abstract class Expr {
-  public constructor(public readonly expType: ExpressionType) { }
+  public constructor(public readonly expType: ExprType) { }
   public abstract writeTo(writer: ECSqlWriter): void;
-  public isStatementExpr() { return this instanceof StatementExpr; }
-  public isClassRefExpr() { return this instanceof ClassNameExpr; }
-  public isComputedExpr() { return this instanceof ComputedExpr; }
-  public asStatementExpr() { return this instanceof StatementExpr ? this as StatementExpr : undefined; }
-  public asClassRefExpr() { return this instanceof ClassRefExpr ? this as ClassRefExpr : undefined; }
-  public asComputedExpr() { return this instanceof ComputedExpr ? this as ComputedExpr : undefined; }
+  public isInstanceOf<T extends Expr>(type: Constructor<T>) { return isInstanceOf<T>(this, type); }
+  public asInstanceOf<T extends Expr>(type: Constructor<T>) { return asInstanceOf<T>(this, type); }
   public toECSql(args?: ECSqlWriterArgs): string {
     if (args) {
-      const writer = new ECSqlWriter(args);
-      this.writeTo(writer);
-      return writer.toString();
+      const customWriter = new ECSqlWriter(args);
+      this.writeTo(customWriter);
+      return customWriter.toString();
     }
-    const writer = new ECSqlWriter();
-    this.writeTo(writer);
-    return writer.toString();
+    const defaultWriter = new ECSqlWriter();
+    this.writeTo(defaultWriter);
+    return defaultWriter.toString();
   }
 }
 export abstract class StatementExpr extends Expr {
-  public isSelectStatementExpr() { return this instanceof SelectStatementExpr; }
-  public isInsertStatementExpr() { return this instanceof InsertStatementExpr; }
-  public isUpdateStatementExpr() { return this instanceof UpdateStatementExpr; }
-  public isDeleteStatementExpr() { return this instanceof DeleteStatementExpr; }
-  public isCteExpr() { return this instanceof CteExpr };
-  public asCteExpr() { return this instanceof CteExpr ? this as CteExpr : undefined; }
-  public asInsertStatementExpr() { return this instanceof InsertStatementExpr ? this as InsertStatementExpr : undefined; }
-  public asUpdateStatementExpr() { return this instanceof UpdateStatementExpr ? this as UpdateStatementExpr : undefined; }
-  public asDeleteStatementExpr() { return this instanceof DeleteStatementExpr ? this as DeleteStatementExpr : undefined; }
-  public asSelectStatementExpr() { return this instanceof SelectStatementExpr ? this as SelectStatementExpr : undefined; }
   public static deserialize(node: NativeECSqlParseNode): StatementExpr | InsertStatementExpr | UpdateStatementExpr | DeleteStatementExpr | CteExpr {
     if (node.id === NativeExpIds.CommonTable)
       return CteExpr.deserialize(node);
@@ -174,10 +212,6 @@ export abstract class StatementExpr extends Expr {
   }
 }
 export abstract class ComputedExpr extends Expr {
-  public isValueExpr() { return this instanceof ValueExpr; }
-  public isBooleanExpr() { return this instanceof BooleanExpr; }
-  public asValueExpr() { return this instanceof ValueExpr ? this as ValueExpr : undefined; }
-  public asBooleanExpr() { return this instanceof BooleanExpr ? this as BooleanExpr : undefined; }
   public static deserialize(node: NativeECSqlParseNode) {
     if (BooleanExpr.deserializableIds.includes(node.id)) {
       return BooleanExpr.deserialize(node);
@@ -191,22 +225,6 @@ export abstract class ComputedExpr extends Expr {
 
 export abstract class BooleanExpr extends ComputedExpr {
   public static readonly deserializableIds = [NativeExpIds.BinaryBoolean, NativeExpIds.BooleanFactor, NativeExpIds.SubqueryTest, NativeExpIds.AllOrAny, NativeExpIds.BooleanFactor];
-  // public isMatchExpr() { return this instanceof MatchExpr; }
-  public isBetweenExpr() { return this instanceof BetweenExpr; }
-  public isLikeExpr() { return this instanceof LikeExpr; }
-  public isInExpr() { return this instanceof InExpr; }
-  public isIsOfTypeExpr() { return this instanceof IsOfTypeExpr; }
-  public isNotExpr() { return this instanceof NotExpr; }
-  public isBinaryExpr() { return this instanceof BinaryBooleanExpr; }
-  public isSubqueryTest() { return this instanceof SubqueryTestExpr; }
-  // public asMatchExpr() { return this instanceof MatchExpr ? this as MatchExpr : undefined; }
-  public asBetweenExpr() { return this instanceof BetweenExpr ? this as BetweenExpr : undefined; }
-  public asLikeExpr() { return this instanceof LikeExpr ? this as LikeExpr : undefined; }
-  public asInExpr() { return this instanceof InExpr ? this as InExpr : undefined; }
-  public asIsOfTypeExpr() { return this instanceof IsOfTypeExpr ? this as IsOfTypeExpr : undefined; }
-  public asNotExpr() { return this instanceof NotExpr ? this as NotExpr : undefined; }
-  public asBinaryExpr() { return this instanceof BinaryBooleanExpr ? this as BinaryBooleanExpr : undefined; }
-  public asSubqueryTest() { return this instanceof SubqueryTestExpr ? this as SubqueryTestExpr : undefined; }
   public static override deserialize(node: NativeECSqlParseNode): BooleanExpr | SubqueryTestExpr | BetweenExpr | LikeExpr | InExpr | IsNullExpr | IsOfTypeExpr | NotExpr | BinaryBooleanExpr {
     if (node.id === NativeExpIds.BinaryBoolean) {
       const op = (node.op as string);
@@ -254,30 +272,8 @@ export abstract class ValueExpr extends ComputedExpr {
     NativeExpIds.IIF,
     NativeExpIds.UnaryValue,
     NativeExpIds.PropertyName,
-    NativeExpIds.Subquery
+    NativeExpIds.Subquery,
   ];
-
-  public isSubqueryExpr() { return this instanceof SubqueryExpr; }
-  public isLiteralExpr() { return this instanceof LiteralExpr; }
-  public isParameterExpr() { return this instanceof ParameterExpr; }
-  public isFuncCallExpr() { return this instanceof FuncCallExpr; }
-  public isCastExpr() { return this instanceof CastExpr; }
-  public isBinaryExpr() { return this instanceof BinaryValueExpr; }
-  public isCaseExpr() { return this instanceof SearchCaseExpr; }
-  public isIIFExpr() { return this instanceof IIFExpr; }
-  public isUnaryExpr() { return this instanceof UnaryValueExpr; }
-  public isPropertyNameExpr() { return this instanceof PropertyNameExpr; }
-
-  public asSubquery() { return this instanceof SubqueryExpr ? this as SubqueryExpr : undefined; }
-  public asLiteralExpr() { return this instanceof LiteralExpr ? this as LiteralExpr : undefined; }
-  public asParameterExpr(): ParameterExpr | undefined { return this instanceof ParameterExpr ? this as ParameterExpr : undefined; }
-  public asFuncCallExpr() { return this instanceof FuncCallExpr ? this as FuncCallExpr : undefined; }
-  public asCastExpr() { return this instanceof CastExpr ? this as CastExpr : undefined; }
-  public asBinaryExpr() { return this instanceof BinaryValueExpr ? this as BinaryValueExpr : undefined; }
-  public asCaseExpr() { return this instanceof SearchCaseExpr ? this as SearchCaseExpr : undefined; }
-  public asIIFExpr() { return this instanceof IIFExpr ? this as IIFExpr : undefined; }
-  public asUnaryExpr() { return this instanceof UnaryValueExpr ? this as UnaryValueExpr : undefined; }
-  public asPropertyName() { return this instanceof PropertyNameExpr ? this as PropertyNameExpr : undefined; }
 
   public static override deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr {
     if (node.id === NativeExpIds.UnaryValue) {
@@ -324,20 +320,8 @@ export abstract class ClassRefExpr extends Expr {
     NativeExpIds.SubqueryRef,
     NativeExpIds.UsingRelationshipJoinExp,
     NativeExpIds.QualifiedJoin,
-    NativeExpIds.CommonTableBlockName
+    NativeExpIds.CommonTableBlockName,
   ];
-  public isClassNameExpr() { return this instanceof ClassNameExpr; }
-  public isSubqueryRefExpr() { return this instanceof SubqueryRefExpr; }
-  public isUsingRelationshipJoinExpr() { return this instanceof UsingRelationshipJoinExpr; }
-  public isQualifiedJoinExpr() { return this instanceof QualifiedJoinExpr; }
-  public isCteBlockRefExpr() { return this instanceof CteBlockRefExpr; }
-
-  public asClassNameExpr() { return this instanceof ClassNameExpr ? this as ClassNameExpr : undefined; }
-  public asSubqueryRefExpr() { return this instanceof SubqueryRefExpr ? this as SubqueryRefExpr : undefined; }
-  public asUsingRelationshipJoinExpr() { return this instanceof UsingRelationshipJoinExpr ? this as UsingRelationshipJoinExpr : undefined; }
-  public asQualifiedJoinExpr() { return this instanceof QualifiedJoinExpr ? this as QualifiedJoinExpr : undefined; }
-  public asCteBlockRefExpr() { return this instanceof CteBlockRefExpr ? this as CteBlockRefExpr : undefined; }
-
 
   public static deserialize(node: NativeECSqlParseNode): ClassRefExpr | ClassNameExpr | SubqueryRefExpr | UsingRelationshipJoinExpr | QualifiedJoinExpr | CteBlockRefExpr | TableValuedFuncExpr {
     if (node.id === NativeExpIds.ClassName) {
@@ -368,72 +352,22 @@ export interface ECSqlWriterArgs {
   readonly eol: "\r\n" | "\n";
   readonly spaceAfterComma: boolean;
   readonly spaceAroundBinOp: boolean;
-  readonly keywordCasing: "lower" | "UPPER"
+  readonly keywordCasing: "lower" | "UPPER";
   readonly indent: {
     readonly size: number;
     readonly char: string;
-  }
+  };
 }
-export type Keywords = "ALL"
-  | "BACKWARD"
-  | "FORWARD"
-  | "AND"
-  | "AS"
-  | "ASC"
-  | "BETWEEN"
-  | "BY"
-  | "CASE"
-  | "CAST"
-  | "CROSS"
-  | "DATE"
-  | "DELETE"
-  | "DESC"
-  | "DISTINCT"
-  | "ECSQLOPTIONS"
-  | "ELSE"
-  | "END"
-  | "ESCAPE"
-  | "EXCEPT"
-  | "EXISTS"
-  | "FROM"
-  | "FULL"
-  | "GROUP"
-  | "HAVING"
-  | "IIF"
-  | "IN"
-  | "INNER"
-  | "INSERT"
-  | "INTERSECT"
-  | "INTO"
-  | "IS"
-  | "JOIN"
-  | "LEFT"
-  | "LIKE"
-  | "LIMIT"
-  | "NATURAL"
-  | "NOT"
-  | "NULL"
-  | "OFFSET"
-  | "ON"
-  | "ONLY"
-  | "ORDER"
-  | "OR"
-  | "OUTER"
-  | "RECURSIVE"
-  | "RIGHT"
-  | "SELECT"
-  | "SET"
-  | "THEN"
-  | "TIME"
-  | "TIMESTAMP"
-  | "UNION"
-  | "UPDATE"
-  | "USING"
-  | "VALUES"
-  | "WHEN"
-  | "WHERE"
-  | "WITH"
-  ;
+export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY"
+  | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS"
+  | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL"
+  | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO"
+  | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON"
+  | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN"
+  | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
+/**
+ * Write expression tree to string
+ */
 export class ECSqlWriter {
   private _tokens: string[] = [];
   private _currentIndent = 0;
@@ -444,7 +378,7 @@ export class ECSqlWriter {
     spaceAroundBinOp: true,
     eol: "\r\n",
     keywordCasing: "UPPER",
-    indent: { size: 3, char: " " }
+    indent: { size: 3, char: " " },
   }) { }
   public indent() {
     this._currentIndent++;
@@ -524,18 +458,6 @@ export enum SortDirection {
   Ascending = "ASC",
   Desending = "DESC"
 }
-export interface OrderBySpec {
-  exp: ValueExpr;
-  direction?: SortDirection
-}
-export interface LimitSpec {
-  limit: ValueExpr;
-  offset?: ValueExpr;
-}
-export interface GroupBySpec {
-  groupBy: ValueExpr[];
-  having?: ComputedExpr;
-}
 
 export enum CompoundSelectOp {
   Union = "UNION",
@@ -543,7 +465,7 @@ export enum CompoundSelectOp {
   Intersect = "INTERSECT",
   Except = "EXCEPT"
 }
-export interface NextSelectStatement {
+export interface NextSelect {
   op: CompoundSelectOp;
   select: SelectStatementExpr;
 }
@@ -563,10 +485,10 @@ export enum JoinType {
   Inner = "INNER JOIN",
   // Cross = "CROSS JOIN", broken on ECDb side
   // Natural = "NATURAL", brokean but will not work with ECSQL
-};
+}
 export class DerivedPropertyExpr extends Expr {
   public constructor(public readonly exp: ComputedExpr, public readonly alias?: string) {
-    super(ExpressionType.DerivedProperty);
+    super(ExprType.DerivedProperty);
   }
   public static deserialize(node: NativeECSqlParseNode): DerivedPropertyExpr {
     if (node.id !== NativeExpIds.DerivedProperty) {
@@ -585,9 +507,9 @@ export class DerivedPropertyExpr extends Expr {
 export class DeleteStatementExpr extends StatementExpr {
   public constructor(
     public readonly className: ClassNameExpr,
-    public readonly where?: ComputedExpr,
-    public readonly options?: ECSqlOptionsExpr) {
-    super(ExpressionType.DeleteStatement);
+    public readonly where?: WhereClauseExp,
+    public readonly options?: ECSqlOptionsClauseExpr) {
+    super(ExprType.DeleteStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode): DeleteStatementExpr {
     if (node.id !== NativeExpIds.DeleteStatement) {
@@ -595,8 +517,8 @@ export class DeleteStatementExpr extends StatementExpr {
     }
 
     const className = ClassNameExpr.deserialize(node.class as NativeECSqlParseNode);
-    const where = node.where ? ComputedExpr.deserialize(node.where as NativeECSqlParseNode) : undefined;
-    const options = node.options ? ECSqlOptionsExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
+    const where = node.where ? WhereClauseExp.deserialize(node.where as NativeECSqlParseNode) : undefined;
+    const options = node.options ? ECSqlOptionsClauseExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
     return new DeleteStatementExpr(className, where, options);
   }
   public override writeTo(writer: ECSqlWriter): void {
@@ -606,8 +528,6 @@ export class DeleteStatementExpr extends StatementExpr {
     writer.appendSpace();
     writer.appendExp(this.className);
     if (this.where) {
-      writer.appendSpace();
-      writer.appendKeyword("WHERE");
       writer.appendSpace();
       writer.appendExp(this.where);
     }
@@ -622,7 +542,7 @@ export class InsertStatementExpr extends StatementExpr {
     public readonly className: ClassNameExpr,
     public readonly values: ValueExpr[],
     public readonly propertyNames?: string[]) {
-    super(ExpressionType.InsertStatement);
+    super(ExprType.InsertStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode): InsertStatementExpr {
     if (node.id !== NativeExpIds.InsertStatement) {
@@ -670,7 +590,7 @@ export class QualifiedJoinExpr extends ClassRefExpr {
     public readonly from: ClassRefExpr,
     public readonly to: ClassRefExpr,
     public readonly spec: JoinSpec) {
-    super(ExpressionType.QualifiedJoin);
+    super(ExprType.QualifiedJoin);
   }
   public static override deserialize(node: NativeECSqlParseNode): QualifiedJoinExpr {
     if (node.id !== NativeExpIds.QualifiedJoin) {
@@ -689,11 +609,11 @@ export class QualifiedJoinExpr extends ClassRefExpr {
   public override writeTo(writer: ECSqlWriter): void {
     writer.appendExp(this.from);
     writer.appendSpace();
-    if (this.joinType == JoinType.LeftOuter) {
+    if (this.joinType === JoinType.LeftOuter) {
       writer.appendKeyword("LEFT").appendSpace();
       writer.appendKeyword("OUTER").appendSpace();
       writer.appendKeyword("JOIN").appendSpace();
-    } else if (this.joinType == JoinType.RightOuter) {
+    } else if (this.joinType === JoinType.RightOuter) {
       writer.appendKeyword("RIGHT").appendSpace();
       writer.appendKeyword("OUTER").appendSpace();
       writer.appendKeyword("JOIN").appendSpace();
@@ -705,7 +625,7 @@ export class QualifiedJoinExpr extends ClassRefExpr {
       writer.appendKeyword("INNER").appendSpace();
       writer.appendKeyword("JOIN").appendSpace();
     } else {
-      throw new Error(`not supported join type ${this.joinType}`)
+      throw new Error(`not supported join type ${this.joinType}`);
     }
     writer.appendExp(this.to);
     if (this.spec) {
@@ -734,7 +654,7 @@ export class UsingRelationshipJoinExpr extends ClassRefExpr {
     public readonly toClassName: ClassNameExpr,
     public readonly toRelClassName: ClassNameExpr,
     public readonly direction?: JoinDirection) {
-    super(ExpressionType.UsingRelationshipJoin);
+    super(ExprType.UsingRelationshipJoin);
   }
   public static override deserialize(node: NativeECSqlParseNode): UsingRelationshipJoinExpr {
     if (node.id !== NativeExpIds.UsingRelationshipJoinExp) {
@@ -764,14 +684,14 @@ export class UsingRelationshipJoinExpr extends ClassRefExpr {
 }
 export class SubqueryTestExpr extends BooleanExpr {
   public constructor(public readonly op: SubqueryTestOp, public readonly query: SubqueryExpr) {
-    super(ExpressionType.SubqueryTest);
+    super(ExprType.SubqueryTest);
   }
   public static override deserialize(node: NativeECSqlParseNode): SubqueryTestExpr {
     if (node.id !== NativeExpIds.SubqueryTest) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.SubqueryTest'. ${JSON.stringify(node)}`);
     }
     const query = SubqueryExpr.deserialize(node.query as NativeECSqlParseNode);
-    const op = node.op as SubqueryTestOp
+    const op = node.op as SubqueryTestOp;
     return new SubqueryTestExpr(op, query);
   }
   public override writeTo(writer: ECSqlWriter): void {
@@ -782,7 +702,7 @@ export class SubqueryTestExpr extends BooleanExpr {
 
 export class SubqueryRefExpr extends ClassRefExpr {
   public constructor(public readonly query: SubqueryExpr, public readonly polymorphicInfo?: PolymorphicInfo, public readonly alias?: string) {
-    super(ExpressionType.SubqueryRef);
+    super(ExprType.SubqueryRef);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.SubqueryRef) {
@@ -798,7 +718,7 @@ export class SubqueryRefExpr extends ClassRefExpr {
       if (this.polymorphicInfo.disqualify) {
         writer.append(this.polymorphicInfo.disqualify);
       }
-      writer.appendKeyword(this.polymorphicInfo.scope)
+      writer.appendKeyword(this.polymorphicInfo.scope);
       writer.appendSpace();
     }
     writer.appendExp(this.query);
@@ -809,120 +729,229 @@ export class SubqueryRefExpr extends ClassRefExpr {
   }
 }
 export class SelectStatementExpr extends StatementExpr {
-  public constructor(public readonly singleSelect: SelectExpr, public readonly nextStmt?: NextSelectStatement) {
-    super(ExpressionType.SelectStatement);
+  public constructor(public readonly singleSelect: SelectExpr, public readonly nextSelect?: NextSelect) {
+    super(ExprType.SelectStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode): SelectStatementExpr {
     if (node.id !== NativeExpIds.SelectStatement) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.SelectStatement'. ${JSON.stringify(node)}`);
     }
     const singleSelect = SelectExpr.deserialize(node.select as NativeECSqlParseNode);
-    let next: NextSelectStatement | undefined;
-    if (node.next) {
-      next = {
-        op: node.combineOp as CompoundSelectOp,
-        select: SelectStatementExpr.deserialize(node.next as NativeECSqlParseNode),
-      };
+    let nextSelect: NextSelect | undefined;
+    if (node.nextBlock) {
+      nextSelect = {
+        op: node.nextBlock.combineOp as CompoundSelectOp,
+        select: SelectStatementExpr.deserialize(node.nextBlock.select as NativeECSqlParseNode),
+      }
     }
-    return new SelectStatementExpr(singleSelect, next);
+    return new SelectStatementExpr(singleSelect, nextSelect);
   }
   public override writeTo(writer: ECSqlWriter): void {
     writer.appendExp(this.singleSelect);
-    if (this.nextStmt) {
+    if (this.nextSelect) {
       writer.appendSpace();
-      if (this.nextStmt.op === CompoundSelectOp.UnionAll) {
+      if (this.nextSelect.op === CompoundSelectOp.UnionAll) {
         writer.appendKeyword("UNION");
         writer.appendSpace();
         writer.appendKeyword("ALL");
       } else {
-        writer.append(this.nextStmt.op);
+        writer.append(this.nextSelect.op);
       }
       writer.appendSpace();
-      writer.appendExp(this.nextStmt.select);
+      writer.appendExp(this.nextSelect.select);
     }
   }
 }
+export class SelectionClauseExpr extends Expr {
+  public constructor(public readonly derivedPropertyList: DerivedPropertyExpr[]) {
+    super(ExprType.SelectionClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (!Array.isArray(node)) {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode[] ${JSON.stringify(node)}`);
+    }
+    return new SelectionClauseExpr(Array.from(node.map((v) => DerivedPropertyExpr.deserialize(v))));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    this.derivedPropertyList.forEach((v, i) => {
+      if (i > 0) {
+        writer.appendComma();
+      }
+      writer.appendExp(v);
+    });
+  }
+}
+export class GroupByClauseExpr extends Expr {
+  public constructor(public readonly exprList: ValueExpr[]) {
+    super(ExprType.GroupByClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (!Array.isArray(node)) {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode[] ${JSON.stringify(node)}`);
+    }
+    return new GroupByClauseExpr(Array.from(node.map((v) => ValueExpr.deserialize(v))));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("GROUP");
+    writer.appendSpace();
+    writer.appendKeyword("BY");
+    writer.appendSpace();
+    this.exprList.forEach((v, i) => {
+      if (i > 0) {
+        writer.appendComma();
+      }
+      writer.appendExp(v);
+    });
+  }
+}
+export class HavingClauseExpr extends Expr {
+  public constructor(public readonly filterExpr: ComputedExpr) {
+    super(ExprType.HavingClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (typeof node !== "object") {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode ${JSON.stringify(node)}`);
+    }
+    return new HavingClauseExpr(BooleanExpr.deserialize(node));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("HAVING");
+    writer.appendSpace();
+    writer.appendExp(this.filterExpr);
+  }
+}
+export class FromClauseExpr extends Expr {
+  public constructor(public readonly classRefs: ClassRefExpr[]) {
+    super(ExprType.FromClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (!Array.isArray(node)) {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode[] ${JSON.stringify(node)}`);
+    }
+    return new FromClauseExpr(Array.from(node.map((v) => ClassRefExpr.deserialize(v))));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("FROM");
+    writer.appendSpace();
+    this.classRefs.forEach((v, i) => {
+      if (i > 0) {
+        writer.appendComma();
+      }
+      writer.appendExp(v);
+    });
+  }
+}
+export class WhereClauseExp extends Expr {
+  public constructor(public readonly filterExpr: ComputedExpr) {
+    super(ExprType.WhereClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (typeof node !== "object") {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode ${JSON.stringify(node)}`);
+    }
+    return new WhereClauseExp(BooleanExpr.deserialize(node));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("WHERE");
+    writer.appendSpace();
+    writer.appendExp(this.filterExpr);
+  }
+}
+export class OrderBySpecExpr extends Expr {
+  public constructor(public readonly term: ValueExpr, public readonly sortDirection?: SortDirection) {
+    super(ExprType.OrderBySpec);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (typeof node !== "object") {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode ${JSON.stringify(node)}`);
+    }
+    return new OrderBySpecExpr(ValueExpr.deserialize(node.exp), node.direction ? node.direction as SortDirection : undefined);
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendExp(this.term);
+    if (this.sortDirection) {
+      writer.appendSpace();
+      writer.appendKeyword(this.sortDirection);
+    }
+  }
+}
+export class OrderByClauseExpr extends Expr {
+  public constructor(public readonly terms: OrderBySpecExpr[]) {
+    super(ExprType.OrderByClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (!Array.isArray(node)) {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode[] ${JSON.stringify(node)}`);
+    }
+    return new OrderByClauseExpr(Array.from(node.map((v) => OrderBySpecExpr.deserialize(v))));
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("ORDER");
+    writer.appendSpace();
+    writer.appendKeyword("BY");
+    writer.appendSpace();
+    this.terms.forEach((v, i) => {
+      if (i > 0) {
+        writer.appendComma();
+      }
+      writer.appendExp(v);
+    });
+  }
+}
 
+export class LimitClauseExpr extends Expr {
+  public constructor(public readonly limit: ValueExpr, public readonly offset?: ValueExpr) {
+    super(ExprType.LimitClause);
+  }
+  public static deserialize(node: NativeECSqlParseNode) {
+    if (typeof node !== "object") {
+      throw new Error(`Expect node to be array of NativeECSqlParseNode ${JSON.stringify(node)}`);
+    }
+    return new LimitClauseExpr(ValueExpr.deserialize(node.exp), node.offset ? ValueExpr.deserialize(node.offset as NativeECSqlParseNode) : undefined);
+  }
+  public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("LIMIT");
+    writer.appendSpace();
+    writer.appendExp(this.limit);
+    if (this.offset) {
+      writer.appendSpace();
+      writer.appendKeyword("OFFSET");
+      writer.appendSpace();
+      writer.appendExp(this.offset);
+    }
+  }
+}
 export class SelectExpr extends Expr {
   public constructor(
-    public readonly selection: DerivedPropertyExpr[],
+    public readonly selection: SelectionClauseExpr,
     public readonly rowQuantifier?: AllOrDistinctOp,
-    public readonly from?: ClassRefExpr[],
-    public readonly where?: ComputedExpr,
-    public readonly groupBySpec?: GroupBySpec,
-    public readonly orderBy?: OrderBySpec[],
-    public readonly limit?: LimitSpec,
-    public readonly options?: ECSqlOptionsExpr) {
-    super(ExpressionType.Select);
-  }
-  private static deserializeLimit(limit?: NativeECSqlParseNode): LimitSpec | undefined {
-    if (!limit) return undefined;
-    return {
-      limit: ValueExpr.deserialize(limit.exp as NativeECSqlParseNode),
-      offset: limit.offset ? ValueExpr.deserialize(limit.offset as NativeECSqlParseNode) : undefined
-    };
-  }
-  private static deserializeSelection(selection: NativeECSqlParseNode[]) {
-    return Array.from(selection.map((v) => DerivedPropertyExpr.deserialize(v)));
-  }
-  private static deserializOptions(options?: NativeECSqlParseNode) {
-    if (!options)
-      return undefined;
-    return ECSqlOptionsExpr.deserialize(options);
-  }
-  private static deserializeWhere(where?: NativeECSqlParseNode) {
-    if (!where)
-      return undefined;
-    return ComputedExpr.deserialize(where);
-  }
-  private static deserializeHaving(having?: NativeECSqlParseNode) {
-    if (!having)
-      return undefined;
-    return ComputedExpr.deserialize(having);
-  }
-  private static deserializeGroupBy(groupBy?: NativeECSqlParseNode[], having?: NativeECSqlParseNode): GroupBySpec | undefined {
-    if (!groupBy)
-      return undefined;
-    return {
-      groupBy: Array.from(groupBy.map((v) => ValueExpr.deserialize(v))),
-      having: having ? this.deserializeHaving(having) : undefined
-    };
-  }
-  private static deserializeRowConstructor(values: NativeECSqlParseNode[]) {
-    return Array.from(values.map((v) => DerivedPropertyExpr.deserialize(v)));
-  }
-  private static deserializeFrom(classRefs?: NativeECSqlParseNode[]) {
-    if (!classRefs)
-      return undefined;
-    return Array.from(classRefs.map((v) => ClassRefExpr.deserialize(v)));
-  }
-  private static deserializeOrderBy(sortBy?: NativeECSqlParseNode[]) {
-    if (!sortBy)
-      return undefined;
-    return Array.from(sortBy.map((v) => {
-      return {
-        exp: ValueExpr.deserialize(v.exp as NativeECSqlParseNode),
-        direction: v.direction ? v.direction as SortDirection : undefined,
-      }
-    }));
+    public readonly from?: FromClauseExpr,
+    public readonly where?: WhereClauseExp,
+    public readonly groupBy?: GroupByClauseExpr,
+    public readonly having?: HavingClauseExpr,
+    public readonly orderBy?: OrderByClauseExpr,
+    public readonly limit?: LimitClauseExpr,
+    public readonly options?: ECSqlOptionsClauseExpr) {
+    super(ExprType.Select);
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.SingleSelectStatement && node.id !== NativeExpIds.RowConstructor) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.SingleSelectStatement/RowConstructor'. ${JSON.stringify(node)}`);
     }
     if (node.id === NativeExpIds.RowConstructor) {
-      const selection = this.deserializeRowConstructor(node.values as NativeECSqlParseNode[]);
-      return new SelectExpr(selection);
+      const values = SelectionClauseExpr.deserialize(node.values);
+      return new SelectExpr(values);
     }
-    const selection = this.deserializeSelection(node.selection as NativeECSqlParseNode[]);
-    const from = this.deserializeFrom(node.from as NativeECSqlParseNode[]);
-    const where = this.deserializeWhere(node.where as NativeECSqlParseNode);
-    const groupBy = this.deserializeGroupBy(node.groupBy as NativeECSqlParseNode[], node.having as NativeECSqlParseNode);
-    const orderBy = this.deserializeOrderBy(node.orderBy as NativeECSqlParseNode[]);
-    const options = this.deserializOptions(node.options as NativeECSqlParseNode);
-    const limitSpec = this.deserializeLimit(node.limit as NativeECSqlParseNode);
+    const selection = SelectionClauseExpr.deserialize(node.selection);
+    const from = node.from ? FromClauseExpr.deserialize(node.from) : undefined;
+    const where = node.where ? WhereClauseExp.deserialize(node.where) : undefined;
+    const groupBy = node.groupBy ? GroupByClauseExpr.deserialize(node.groupBy) : undefined;
+    const having = node.having ? HavingClauseExpr.deserialize(node.having) : undefined;
+    const orderBy = node.orderBy ? OrderByClauseExpr.deserialize(node.orderBy) : undefined;
+    const options = node.options ? ECSqlOptionsClauseExpr.deserialize(node.options) : undefined;
+    const limitSpec = node.limit ? LimitClauseExpr.deserialize(node.limit) : undefined;
     const rowQuantifier = node.selectionType ? node.selectionType as AllOrDistinctOp : undefined;
-    return new SelectExpr(selection, rowQuantifier, from, where, groupBy, orderBy, limitSpec, options);
+    return new SelectExpr(selection, rowQuantifier, from, where, groupBy, having, orderBy, limitSpec, options);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendKeyword("SELECT");
@@ -931,80 +960,31 @@ export class SelectExpr extends Expr {
       writer.appendKeyword(this.rowQuantifier);
       writer.appendSpace();
     }
-    this.selection.forEach((v, i) => {
-      if (i > 0) {
-        writer.appendComma();
-      }
-      writer.appendExp(v);
-    });
+    writer.appendExp(this.selection);
 
     if (this.from) {
       writer.appendSpace();
-      writer.appendKeyword("FROM");
-      writer.appendSpace();
-      this.from.forEach((v, i) => {
-        if (i > 0) {
-          writer.appendComma();
-        }
-        writer.appendLine();
-        writer.appendExp(v);
-      });
+      writer.appendExp(this.from);
     }
-
     if (this.where) {
-      writer.appendSpace();
-      writer.appendKeyword("WHERE");
       writer.appendSpace();
       writer.appendExp(this.where);
     }
-    if (this.groupBySpec) {
+    if (this.groupBy) {
       writer.appendSpace();
-      writer.appendKeyword("GROUP");
+      writer.appendExp(this.groupBy);
+    }
+    if (this.having) {
       writer.appendSpace();
-      writer.appendKeyword("BY");
-      writer.appendSpace();
-      this.groupBySpec.groupBy.forEach((v, i) => {
-        if (i > 0) {
-          writer.appendComma();
-        }
-        writer.appendExp(v);
-      });
-      const having = this.groupBySpec.having;
-      if (having) {
-        writer.appendSpace();
-        writer.appendKeyword("HAVING");
-        writer.appendSpace();
-        writer.appendExp(having);
-      }
+      writer.appendExp(this.having);
     }
     if (this.orderBy) {
       writer.appendSpace();
-      writer.appendKeyword("ORDER");
-      writer.appendSpace();
-      writer.appendKeyword("BY");
-      writer.appendSpace();
-      this.orderBy.forEach((v, i) => {
-        if (i > 0) {
-          writer.appendComma();
-        }
-        writer.appendExp(v.exp);
-        if (v.direction) {
-          writer.appendSpace();
-          writer.appendKeyword(v.direction);
-        }
-      });
+      writer.appendExp(this.orderBy);
     }
     if (this.limit) {
       writer.appendSpace();
-      writer.appendKeyword("LIMIT");
-      writer.appendSpace();
-      writer.appendExp(this.limit.limit);
-      if (this.limit.offset) {
-        writer.appendSpace();
-        writer.appendKeyword("OFFSET");
-        writer.appendSpace();
-        writer.appendExp(this.limit.offset);
-      }
+      writer.appendExp(this.limit);
     }
     if (this.options) {
       writer.appendSpace();
@@ -1014,7 +994,7 @@ export class SelectExpr extends Expr {
 }
 export class SubqueryExpr extends ValueExpr {
   public constructor(public readonly query: SelectStatementExpr) {
-    super(ExpressionType.BinaryBoolean);
+    super(ExprType.BinaryBoolean);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.Subquery) {
@@ -1024,26 +1004,26 @@ export class SubqueryExpr extends ValueExpr {
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.append("(");
-    writer.appendExp(this.query);;;
+    writer.appendExp(this.query);
     writer.append(")");
   }
 }
 export class BinaryBooleanExpr extends BooleanExpr {
-  public constructor(public readonly op: BinaryBooleanOP, public readonly lhs: ComputedExpr, public readonly rhs: ComputedExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.BinaryBoolean);
+  public constructor(public readonly op: BinaryBooleanOp, public readonly lhs: ComputedExpr, public readonly rhs: ComputedExpr, public readonly not?: UnaryBooleanOp) {
+    super(ExprType.BinaryBoolean);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.BinaryBoolean) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.BinaryBoolean'. ${JSON.stringify(node)}`);
     }
-    const op = node.op as BinaryBooleanOP;
+    const op = node.op as BinaryBooleanOp;
     return new BinaryBooleanExpr(op, ComputedExpr.deserialize(node.lhs as NativeECSqlParseNode), ComputedExpr.deserialize(node.rhs as NativeECSqlParseNode));
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.append("(");
-    writer.appendExp(this.lhs);;
+    writer.appendExp(this.lhs);
     writer.appendBinaryOp(this.op);
-    writer.appendExp(this.rhs);;
+    writer.appendExp(this.rhs);
     writer.append(")");
   }
 }
@@ -1058,7 +1038,7 @@ export enum LiteralValueType {
 
 export class IsNullExpr extends BooleanExpr {
   public constructor(public readonly exp: ValueExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.IsNull);
+    super(ExprType.IsNull);
   }
   public static parseOp(node: NativeECSqlParseNode) {
     const op = node.op as string;
@@ -1094,7 +1074,7 @@ export class IsNullExpr extends BooleanExpr {
 }
 export class IsOfTypeExpr extends BooleanExpr {
   public constructor(public readonly exp: ValueExpr, public readonly typeNames: ClassNameExpr[], public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.IsOfType);
+    super(ExprType.IsOfType);
   }
   public static parseOp(node: NativeECSqlParseNode) {
     const op = node.op as string;
@@ -1134,7 +1114,7 @@ export class IsOfTypeExpr extends BooleanExpr {
 
 export class NotExpr extends BooleanExpr {
   public constructor(public readonly exp: ComputedExpr) {
-    super(ExpressionType.Not);
+    super(ExprType.Not);
   }
 
   public static override deserialize(node: NativeECSqlParseNode) {
@@ -1154,7 +1134,7 @@ export class NotExpr extends BooleanExpr {
 }
 export class InExpr extends BooleanExpr {
   public constructor(public readonly lhs: ValueExpr, public readonly rhs: ValueExpr[] | SubqueryExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.In);
+    super(ExprType.In);
   }
   public static parseOp(op: string) {
     return [op.endsWith("IN"), op.startsWith("NOT ")];
@@ -1176,7 +1156,7 @@ export class InExpr extends BooleanExpr {
       throw new Error(`unknown IN rhs ${node.rhs.id}`);
   }
   public writeTo(writer: ECSqlWriter): void {
-    writer.appendExp(this.lhs);;
+    writer.appendExp(this.lhs);
     writer.appendSpace();
     if (this.not) {
       writer.appendKeyword("NOT");
@@ -1197,13 +1177,13 @@ export class InExpr extends BooleanExpr {
       });
       writer.append(")");
     } else {
-      throw new Error("unknown expression on rhs of IN expr.")
+      throw new Error("unknown expression on rhs of IN expr.");
     }
   }
 }
 export class LikeExpr extends BooleanExpr {
   public constructor(public readonly lhs: ValueExpr, public readonly pattern: ValueExpr, public readonly escape?: ValueExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.Like);
+    super(ExprType.Like);
   }
   public static parseOp(op: string) {
     return [op.endsWith("LIKE"), op.startsWith("NOT ")];
@@ -1222,7 +1202,7 @@ export class LikeExpr extends BooleanExpr {
     return new LikeExpr(lhs, pattren, escape, isNull ? UnaryBooleanOp.Not : undefined);
   }
   public writeTo(writer: ECSqlWriter): void {
-    writer.appendExp(this.lhs);;
+    writer.appendExp(this.lhs);
     writer.appendSpace();
     if (this.not) {
       writer.appendKeyword("NOT");
@@ -1263,7 +1243,7 @@ export interface BetweenBounds {
 }
 export class BetweenExpr extends BooleanExpr {
   public constructor(public readonly lhs: ValueExpr, public readonly bounds: BetweenBounds, public readonly not?: UnaryBooleanOp) {
-    super(ExpressionType.Between);
+    super(ExprType.Between);
   }
   public static parseOp(op: string) {
     return [op.endsWith(" BETWEEN"), op.startsWith("NOT ")];
@@ -1279,12 +1259,12 @@ export class BetweenExpr extends BooleanExpr {
     const rhs = node.rhs as NativeECSqlParseNode;
     const bounds: BetweenBounds = {
       lower: ValueExpr.deserialize(rhs.lbound as NativeECSqlParseNode),
-      upper: ValueExpr.deserialize(rhs.ubound as NativeECSqlParseNode)
+      upper: ValueExpr.deserialize(rhs.ubound as NativeECSqlParseNode),
     };
     return new BetweenExpr(ValueExpr.deserialize(node.lhs as NativeECSqlParseNode), bounds, isNull ? UnaryBooleanOp.Not : undefined);
   }
   public writeTo(writer: ECSqlWriter): void {
-    writer.appendExp(this.lhs);;
+    writer.appendExp(this.lhs);
     writer.appendSpace();
     if (this.not) {
       writer.appendKeyword("NOT");
@@ -1301,7 +1281,7 @@ export class BetweenExpr extends BooleanExpr {
 }
 export class CteExpr extends StatementExpr {
   public constructor(public readonly cteBlocks: CteBlockExpr[], public readonly query: SelectStatementExpr, public readonly recursive?: RecursiveCte) {
-    super(ExpressionType.Cte);
+    super(ExprType.Cte);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.CommonTable) {
@@ -1329,7 +1309,7 @@ export class CteExpr extends StatementExpr {
 }
 export class CteBlockExpr extends Expr {
   public constructor(public readonly name: string, public readonly query: SelectStatementExpr, public readonly props: string[]) {
-    super(ExpressionType.CteBlock);
+    super(ExprType.CteBlock);
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.CommonTableBlock) {
@@ -1361,7 +1341,7 @@ export class CteBlockExpr extends Expr {
 }
 export class CteBlockRefExpr extends ClassRefExpr {
   public constructor(public readonly name: string, public readonly alias?: string) {
-    super(ExpressionType.CteBlockRef);
+    super(ExprType.CteBlockRef);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.CommonTableBlockName) {
@@ -1373,13 +1353,13 @@ export class CteBlockRefExpr extends ClassRefExpr {
     writer.appendQuoted(this.name);
     if (this.alias) {
       writer.appendQuoted(this.alias);
-    };
+    }
   }
 }
 
 export class TableValuedFuncExpr extends ClassRefExpr {
   public constructor(public readonly schemaName: string, public readonly memberFunc: MemberFuncCallExpr, public readonly alias?: string) {
-    super(ExpressionType.TableValuedFunc);
+    super(ExprType.TableValuedFunc);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.TableValuedFunction) {
@@ -1399,7 +1379,7 @@ export class TableValuedFuncExpr extends ClassRefExpr {
 }
 export class ClassNameExpr extends ClassRefExpr {
   public constructor(public readonly schemaNameOrAlias: string, public readonly className: string, public readonly tablespace?: string, public readonly alias?: string, public readonly polymorphicInfo?: PolymorphicInfo, public readonly memberFunc?: MemberFuncCallExpr) {
-    super(ExpressionType.ClassName);
+    super(ExprType.ClassName);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.ClassName) {
@@ -1442,17 +1422,17 @@ export class ClassNameExpr extends ClassRefExpr {
 }
 
 export class UpdateStatementExpr extends StatementExpr {
-  public constructor(public readonly className: string, public readonly assignement: AssignmentExpr, public readonly where?: BooleanExpr, public readonly options?: ECSqlOptionsExpr) {
-    super(ExpressionType.UpdateStatement);
+  public constructor(public readonly className: string, public readonly assignement: AssignmentClauseExpr, public readonly where?: WhereClauseExp, public readonly options?: ECSqlOptionsClauseExpr) {
+    super(ExprType.UpdateStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.UpdateStatement) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.UpdateStatement'. ${JSON.stringify(node)}`);
     }
     const className = node.className as string;
-    const assignment = AssignmentExpr.deserialize(node.assignment as NativeECSqlParseNode);
-    const where = node.where ? BooleanExpr.deserialize(node.where as NativeECSqlParseNode) : undefined;
-    const options = node.options ? ECSqlOptionsExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
+    const assignment = AssignmentClauseExpr.deserialize(node.assignment as NativeECSqlParseNode);
+    const where = node.where ? WhereClauseExp.deserialize(node.where as NativeECSqlParseNode) : undefined;
+    const options = node.options ? ECSqlOptionsClauseExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
     return new UpdateStatementExpr(className, assignment, where, options);
   }
   public writeTo(writer: ECSqlWriter): void {
@@ -1460,12 +1440,8 @@ export class UpdateStatementExpr extends StatementExpr {
     writer.appendSpace();
     writer.append(this.className);
     writer.appendSpace();
-    writer.appendKeyword("SET");
-    writer.appendSpace();
     writer.appendExp(this.assignement);
     if (this.where) {
-      writer.appendSpace();
-      writer.appendKeyword("WHERE");
       writer.appendSpace();
       writer.appendExp(this.where);
     }
@@ -1480,15 +1456,15 @@ export interface ECSqlOption {
   name: ECSqlSupportedOptions;
   value?: string;
 }
-export class ECSqlOptionsExpr extends Expr {
+export class ECSqlOptionsClauseExpr extends Expr {
   public constructor(public readonly options: ECSqlOption[]) {
-    super(ExpressionType.ECSqlOptions);
+    super(ExprType.ECSqlOptions);
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.Options) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.Options'. ${JSON.stringify(node)}`);
     }
-    return new ECSqlOptionsExpr(node.options as ECSqlOption[]);
+    return new ECSqlOptionsClauseExpr(node.options as ECSqlOption[]);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendKeyword("ECSQLOPTIONS");
@@ -1505,13 +1481,13 @@ export class ECSqlOptionsExpr extends Expr {
     });
   }
 }
-export interface SetPropertyValue {
-  property: string;
-  value: ValueExpr;
+export interface PropertyValueAssignment {
+  propertyName: string;
+  valueExpr: ValueExpr;
 }
-export class AssignmentExpr extends Expr {
-  public constructor(public readonly propertyValuesList: SetPropertyValue[]) {
-    super(ExpressionType.Assignment);
+export class AssignmentClauseExpr extends Expr {
+  public constructor(public readonly propertyValuesList: PropertyValueAssignment[]) {
+    super(ExprType.AssignmentClause);
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.Assignment) {
@@ -1519,30 +1495,32 @@ export class AssignmentExpr extends Expr {
     }
     const properties = node.properties as string[];
     const values = node.properties as NativeECSqlParseNode[];
-    const propertyValuesList: SetPropertyValue[] = [];
+    const propertyValuesList: PropertyValueAssignment[] = [];
     for (let i = 0; i < properties.length; ++i) {
       propertyValuesList.push({
-        property: properties[i],
-        value: ValueExpr.deserialize(values[i])
+        propertyName: properties[i],
+        valueExpr: ValueExpr.deserialize(values[i]),
       });
     }
-    return new AssignmentExpr(propertyValuesList);
+    return new AssignmentClauseExpr(propertyValuesList);
   }
   public writeTo(writer: ECSqlWriter): void {
+    writer.appendKeyword("SET");
+    writer.appendSpace();
     this.propertyValuesList.forEach((v, i) => {
       if (i > 0) {
         writer.appendComma();
       }
-      writer.append(v.property);
+      writer.append(v.propertyName);
       writer.appendBinaryOp("=");
-      writer.appendExp(v.value);
+      writer.appendExp(v.valueExpr);
     });
   }
 }
 
 export class IIFExpr extends ValueExpr {
   public constructor(public readonly whenExp: BooleanExpr, public readonly thenExp: ValueExpr, public readonly elseExp: ValueExpr) {
-    super(ExpressionType.IIF);
+    super(ExprType.IIF);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.IIF) {
@@ -1568,7 +1546,7 @@ export interface WhenThenBlock {
 
 export class SearchCaseExpr extends ValueExpr {
   public constructor(public readonly whenThenList: WhenThenBlock[], public readonly elseExp?: ValueExpr) {
-    super(ExpressionType.SearchCase);
+    super(ExprType.SearchCase);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.SearchCaseValue) {
@@ -1595,7 +1573,7 @@ export class SearchCaseExpr extends ValueExpr {
       writer.appendKeyword("THEN");
       writer.appendSpace();
       writer.appendExp(v.then);
-    })
+    });
     if (this.elseExp) {
       writer.appendSpace();
       writer.appendKeyword("ELSE");
@@ -1609,7 +1587,7 @@ export class SearchCaseExpr extends ValueExpr {
 
 export class BinaryValueExpr extends ValueExpr {
   public constructor(public readonly op: BinaryValueOp, public readonly lhs: ValueExpr, public readonly rhs: ValueExpr) {
-    super(ExpressionType.BinaryValue);
+    super(ExprType.BinaryValue);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.BinaryValue && node.id !== NativeExpIds.BinaryBoolean) {
@@ -1619,16 +1597,19 @@ export class BinaryValueExpr extends ValueExpr {
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.append("(");
-    writer.appendExp(this.lhs);;
+    writer.appendExp(this.lhs);
     writer.appendBinaryOp(this.op);
-    writer.appendExp(this.rhs);;
+    writer.appendExp(this.rhs);
     writer.append(")");
   }
 }
 
+/**
+ * Cast a expression into a target time e.g. CAST(<expr> AS STRING)
+ */
 export class CastExpr extends ValueExpr {
   public constructor(public readonly value: ValueExpr, public readonly targetType: string) {
-    super(ExpressionType.Cast);
+    super(ExprType.Cast);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.Cast) {
@@ -1647,9 +1628,12 @@ export class CastExpr extends ValueExpr {
     writer.append(")");
   }
 }
+/**
+ * Represent a member function called w.r.t a @ref ClassNameExpr
+ */
 export class MemberFuncCallExpr extends Expr {
   public constructor(public readonly functionName: string, public readonly args: ValueExpr[]) {
-    super(ExpressionType.MemberFuncCall);
+    super(ExprType.MemberFuncCall);
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.MemberFunctionCall) {
@@ -1671,9 +1655,13 @@ export class MemberFuncCallExpr extends Expr {
     writer.append(")");
   }
 }
+
+/**
+ * Represent a function call in ecsql
+ */
 export class FuncCallExpr extends ValueExpr {
   public constructor(public readonly functionName: string, public readonly args: ValueExpr[], public readonly rowQuantifier?: AllOrDistinctOp) {
-    super(ExpressionType.FuncCall);
+    super(ExprType.FuncCall);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.FunctionCall) {
@@ -1700,9 +1688,12 @@ export class FuncCallExpr extends ValueExpr {
     writer.append(")");
   }
 }
+/**
+ * Represent positional or named parameter
+ */
 export class ParameterExpr extends ValueExpr {
   public constructor(public readonly name?: string) {
-    super(ExpressionType.Parameter);
+    super(ExprType.Parameter);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.Parameter) {
@@ -1717,9 +1708,13 @@ export class ParameterExpr extends ValueExpr {
       writer.append(`?`);
   }
 }
+
+/**
+ * Unary value with operator e.g. [+|-|~]<number>
+ */
 export class UnaryValueExpr extends ValueExpr {
   public constructor(public readonly op: UnaryValueOp, public readonly value: ValueExpr) {
-    super(ExpressionType.Unary);
+    super(ExprType.Unary);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.UnaryValue && node.id !== NativeExpIds.BooleanFactor) {
@@ -1735,10 +1730,12 @@ export class UnaryValueExpr extends ValueExpr {
     writer.appendExp(this.value);
   }
 }
-
+/**
+ * Represent constant literal like string, data, time, timestamp, number or null
+ */
 export class LiteralExpr extends ValueExpr {
   public constructor(public readonly valueType: LiteralValueType, public readonly rawValue: string) {
-    super(ExpressionType.Literal);
+    super(ExprType.Literal);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.LiteralValue) {
@@ -1760,6 +1757,7 @@ export class LiteralExpr extends ValueExpr {
     else
       writer.append(this.rawValue);
   }
+  public static createRaw(val: string) { return new LiteralExpr(LiteralValueType.Raw, val); }
   public static createString(val: string) { return new LiteralExpr(LiteralValueType.String, val); }
   public static createNumber(val: number) { return new LiteralExpr(LiteralValueType.Raw, val.toString()); }
   public static createDate(val: Date) { return new LiteralExpr(LiteralValueType.Date, val.toDateString()); }
@@ -1767,9 +1765,12 @@ export class LiteralExpr extends ValueExpr {
   public static createTimestamp(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
   public static createNull() { return new LiteralExpr(LiteralValueType.Null, ""); }
 }
+/**
+ * Represent property name identifier
+ */
 export class PropertyNameExpr extends ValueExpr {
   public constructor(public readonly propertyPath: string) {
-    super(ExpressionType.PropertyName);
+    super(ExprType.PropertyName);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.PropertyName) {
@@ -1778,7 +1779,7 @@ export class PropertyNameExpr extends ValueExpr {
     return new PropertyNameExpr(node.path as string);
   }
   public writeTo(writer: ECSqlWriter): void {
-    //! donot quote $
+    // donot quote $
     const str = this.propertyPath.split("->");
     if (str.length === 2) {
       writer.append(str[0].split(".").map((v) => v.startsWith("[") || v === "$" ? v : `[${v}]`).join("."));
