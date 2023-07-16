@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ECDb, IModelHost } from "../../core-backend";
+import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { StatementExpr } from "../../ECSqlExpr";
 
@@ -22,7 +22,7 @@ describe.only("ECSql Exprs", () => {
   before(async () => {
     await IModelHost.startup();
     ecdb = new ECDb();
-    ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"));
+    ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"), ECDbOpenMode.ReadWrite);
     ecdb.withPreparedStatement("PRAGMA experimental_features_enabled=true", (stmt) => stmt.step());
   });
 
@@ -42,7 +42,58 @@ describe.only("ECSql Exprs", () => {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
     }
   });
-
+  it("parse DATE, TIME & TIMESTAMP", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT TIMESTAMP '2013-02-09T12:00:00'",
+        expectedECSql: "SELECT TIMESTAMP '2013-02-09T12:00:00'",
+      },
+      {
+        orignalECSql: "SELECT DATE '2012-01-18'",
+        expectedECSql: "SELECT DATE '2012-01-18'",
+      },
+      {
+        orignalECSql: "SELECT TIME '13:35:16'",
+        expectedECSql: "SELECT TIME '13:35:16'",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse NULL, NUMBER, STRING, TRUE, FALSE & ||", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT TRUE, FALSE",
+        expectedECSql: "SELECT TRUE, FALSE",
+      },
+      {
+        orignalECSql: "SELECT NULL",
+        expectedECSql: "SELECT NULL",
+      },
+      {
+        orignalECSql: "SELECT  3.14159265358",
+        expectedECSql: "SELECT 3.14159265358",
+      },
+      {
+        orignalECSql: "SELECT  314159",
+        expectedECSql: "SELECT 314159",
+      },
+      {
+        orignalECSql: "SELECT  'Hello, World'",
+        expectedECSql: "SELECT 'Hello, World'",
+      },
+      {
+        orignalECSql: "SELECT  'Hello'|| ',' || 'World'",
+        expectedECSql: "SELECT (('Hello' || ',') || 'World')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
   it("parse (!=, =, >, <, >=, <=, OR, AND)", async () => {
     const tests = [
       {
@@ -537,6 +588,54 @@ describe.only("ECSql Exprs", () => {
       {
         orignalECSql: "select s.key, s.[value], s.type from  json1.json_tree('{}') s where s.key='gravity'",
         expectedECSql: "SELECT [s].[key], [s].[value], [s].[type] FROM [json1].[json_tree]('{}') [s] WHERE ([s].[key] = 'gravity')",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse SELECT, WHERE, FROM, GROUP BY, HAVING, ORDER BY, LIMIT & ECSQLOPTIONS", async () => {
+    const tests = [
+      {
+        orignalECSql: "select count(*) from bis.element where codevalue lIKE '%s' group by ecclassid having count(*)>0 order by UserLabel limit 1 offset 10 ECSQLOPTIONS x=3",
+        expectedECSql: "SELECT COUNT(*) FROM [BisCore].[Element] WHERE [codevalue] LIKE '%s' GROUP BY [ecclassid] HAVING (COUNT(*) > 0) ORDER BY [UserLabel] LIMIT 1 OFFSET 10 ECSQLOPTIONS x = 3",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse INSERT", async () => {
+    const tests = [
+      {
+        orignalECSql: "INSERT INTO Bis.Subject(ECInstanceId) VALUES(1)",
+        expectedECSql: "INSERT INTO [BisCore].[Subject] ([ECInstanceId]) VALUES(1)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse DELETE", async () => {
+    const tests = [
+      {
+        orignalECSql: "DELETE FROM Bis.Subject WHERE ECInstanceId = 1",
+        expectedECSql: "DELETE FROM [BisCore].[Subject] WHERE ([ECInstanceId] = 1)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+    }
+  });
+  it("parse UPDATE", async () => {
+    const tests = [
+      {
+        orignalECSql: "UPDATE Bis.Subject SET CodeValue ='hello' WHERE ECInstanceId =1",
+        expectedECSql: "UPDATE [BisCore].[Subject] SET [CodeValue] = 'hello' WHERE ([ECInstanceId] = 1)",
       },
     ];
     for (const test of tests) {

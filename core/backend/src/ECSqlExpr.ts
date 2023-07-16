@@ -541,7 +541,7 @@ export class InsertStatementExpr extends StatementExpr {
   public constructor(
     public readonly className: ClassNameExpr,
     public readonly values: ValueExpr[],
-    public readonly propertyNames?: string[]) {
+    public readonly propertyNames?: PropertyNameExpr[]) {
     super(ExprType.InsertStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode): InsertStatementExpr {
@@ -550,15 +550,20 @@ export class InsertStatementExpr extends StatementExpr {
     }
 
     const className = ClassNameExpr.deserialize(node.class as NativeECSqlParseNode);
-    const values = Array.from((node.values as NativeECSqlParseNode[]).map((v) => ValueExpr.deserialize(v)));
-    let properties: string[] | undefined;
-    if (node.properties) {
-      properties = node.properties as string[];
+    if (className.polymorphicInfo) {
+      // Patch as INSERT are always ONLY but parser have issue accepting ONLY.
+      if (className.polymorphicInfo.scope === OnlyOrAllOp.Only) {
+        className.polymorphicInfo = undefined;
+      }
     }
+    const values = Array.from((node.values as NativeECSqlParseNode[]).map((v) => ValueExpr.deserialize(v)));
+    const properties = node.properties ? Array.from((node.properties as NativeECSqlParseNode[]).map((v) => PropertyNameExpr.deserialize(v))) : undefined;
     return new InsertStatementExpr(className, values, properties);
   }
   public override writeTo(writer: ECSqlWriter): void {
     writer.appendKeyword("INSERT");
+    writer.appendSpace();
+    writer.appendKeyword("INTO");
     writer.appendSpace();
     writer.appendExp(this.className);
     writer.appendSpace();
@@ -568,7 +573,7 @@ export class InsertStatementExpr extends StatementExpr {
         if (i > 0) {
           writer.appendComma();
         }
-        writer.append(v);
+        writer.appendExp(v);
       });
       writer.append(")");
     }
@@ -1378,7 +1383,7 @@ export class TableValuedFuncExpr extends ClassRefExpr {
   }
 }
 export class ClassNameExpr extends ClassRefExpr {
-  public constructor(public readonly schemaNameOrAlias: string, public readonly className: string, public readonly tablespace?: string, public readonly alias?: string, public readonly polymorphicInfo?: PolymorphicInfo, public readonly memberFunc?: MemberFuncCallExpr) {
+  public constructor(public readonly schemaNameOrAlias: string, public readonly className: string, public readonly tablespace?: string, public readonly alias?: string, public polymorphicInfo?: PolymorphicInfo, public readonly memberFunc?: MemberFuncCallExpr) {
     super(ExprType.ClassName);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
@@ -1422,15 +1427,15 @@ export class ClassNameExpr extends ClassRefExpr {
 }
 
 export class UpdateStatementExpr extends StatementExpr {
-  public constructor(public readonly className: string, public readonly assignement: AssignmentClauseExpr, public readonly where?: WhereClauseExp, public readonly options?: ECSqlOptionsClauseExpr) {
+  public constructor(public readonly className: ClassNameExpr, public readonly assignement: AssignmentClauseExpr, public readonly where?: WhereClauseExp, public readonly options?: ECSqlOptionsClauseExpr) {
     super(ExprType.UpdateStatement);
   }
   public static override deserialize(node: NativeECSqlParseNode) {
     if (node.id !== NativeExpIds.UpdateStatement) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.UpdateStatement'. ${JSON.stringify(node)}`);
     }
-    const className = node.className as string;
-    const assignment = AssignmentClauseExpr.deserialize(node.assignment as NativeECSqlParseNode);
+    const className = ClassNameExpr.deserialize(node.className);
+    const assignment = AssignmentClauseExpr.deserialize(node.assignment as NativeECSqlParseNode[]);
     const where = node.where ? WhereClauseExp.deserialize(node.where as NativeECSqlParseNode) : undefined;
     const options = node.options ? ECSqlOptionsClauseExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
     return new UpdateStatementExpr(className, assignment, where, options);
@@ -1438,7 +1443,7 @@ export class UpdateStatementExpr extends StatementExpr {
   public writeTo(writer: ECSqlWriter): void {
     writer.appendKeyword("UPDATE");
     writer.appendSpace();
-    writer.append(this.className);
+    writer.appendExp(this.className);
     writer.appendSpace();
     writer.appendExp(this.assignement);
     if (this.where) {
@@ -1482,7 +1487,7 @@ export class ECSqlOptionsClauseExpr extends Expr {
   }
 }
 export interface PropertyValueAssignment {
-  propertyName: string;
+  propertyName: PropertyNameExpr;
   valueExpr: ValueExpr;
 }
 export class AssignmentClauseExpr extends Expr {
@@ -1490,18 +1495,20 @@ export class AssignmentClauseExpr extends Expr {
     super(ExprType.AssignmentClause);
   }
   public static deserialize(node: NativeECSqlParseNode) {
-    if (node.id !== NativeExpIds.Assignment) {
-      throw new Error(`Parse node is 'node.id !== NativeExpIds.Assignment'. ${JSON.stringify(node)}`);
+    if (!Array.isArray(node)) {
+      throw new Error(`AssignmentClause expect array of NativeECSqlParseNode. ${JSON.stringify(node)}`);
     }
-    const properties = node.properties as string[];
-    const values = node.properties as NativeECSqlParseNode[];
+    const assignments = node as NativeECSqlParseNode[];
     const propertyValuesList: PropertyValueAssignment[] = [];
-    for (let i = 0; i < properties.length; ++i) {
+    assignments.forEach((v) => {
+      if (v.id !== NativeExpIds.Assignment) {
+        throw new Error(`Parse node is 'node.id !== NativeExpIds.Assignment'. ${JSON.stringify(node)}`);
+      }
       propertyValuesList.push({
-        propertyName: properties[i],
-        valueExpr: ValueExpr.deserialize(values[i]),
+        propertyName: PropertyNameExpr.deserialize(v.propertyName),
+        valueExpr: ValueExpr.deserialize(v.value)
       });
-    }
+    });
     return new AssignmentClauseExpr(propertyValuesList);
   }
   public writeTo(writer: ECSqlWriter): void {
@@ -1511,7 +1518,7 @@ export class AssignmentClauseExpr extends Expr {
       if (i > 0) {
         writer.appendComma();
       }
-      writer.append(v.propertyName);
+      writer.appendExp(v.propertyName);
       writer.appendBinaryOp("=");
       writer.appendExp(v.valueExpr);
     });
