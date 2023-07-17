@@ -136,12 +136,12 @@ export enum ExprType {
   IIF = "IIF",
   FuncCall = "FuncCall",
   PropertyName = "PropertyName",
-  SubqueryValue = "SubqueryValue",
+  Subquery = "Subquery",
 
   Between = "Between",
   // Match = "Match",
   Like = "Like",
-  In = "InExp",
+  In = "In",
   Not = "Not",
   IsOfType = "IsOfType",
   IsNull = "IsNull",
@@ -156,17 +156,17 @@ export enum ExprType {
   TableValuedFunc = "TableValuedFunc",
 
   DerivedProperty = "DerivedProperty",
-  AssignmentClause = "Assignment",
-  Select = "SingleSelect",
-  ECSqlOptions = "ECSqlOptions",
+  AssignmentsClause = "AssignmentClause",
+  Select = "Select",
+  ECSqlOptionsClause = "ECSqlOptions",
   CteBlock = "CteBlock",
-  MemberFuncCall = "MemberFuncCallExp",
+  MemberFuncCall = "MemberFuncCall",
 
   Cte = "Cte",
-  UpdateStatement = "Update",
-  InsertStatement = "Insert",
-  DeleteStatement = "Delete",
-  SelectStatement = "Select",
+  UpdateStatement = "UpdateStatement",
+  InsertStatement = "InsertStatement",
+  DeleteStatement = "DeleteStatement",
+  SelectStatement = "SelectStatement",
   SelectionClause = "SelectionClause",
 
   WhereClause = "WhereClause",
@@ -217,7 +217,7 @@ export abstract class Expr {
           return;
       }
       parent = current;
-      list.push(...current.children);
+      list.push(...current.children.reverse());
     }
   }
   /**
@@ -559,8 +559,9 @@ export enum JoinType {
  * Use to describe selection clause terms in a SELECT statements
  */
 export class DerivedPropertyExpr extends Expr {
+  public static readonly type = ExprType.DerivedProperty;
   public constructor(public readonly computedExpr: ComputedExpr, public readonly alias?: string) {
-    super(ExprType.DerivedProperty);
+    super(DerivedPropertyExpr.type);
   }
   public override get children(): Expr[] {
     return [this.computedExpr];
@@ -584,11 +585,12 @@ export class DerivedPropertyExpr extends Expr {
  * Describes a ECSQL delete statement
  */
 export class DeleteStatementExpr extends StatementExpr {
+  public static readonly type = ExprType.DeleteStatement;
   public constructor(
     public readonly className: ClassNameExpr,
     public readonly where?: WhereClauseExp,
     public readonly options?: ECSqlOptionsClauseExpr) {
-    super(ExprType.DeleteStatement);
+    super(DeleteStatementExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.className];
@@ -627,11 +629,12 @@ export class DeleteStatementExpr extends StatementExpr {
  * Describe a ECSQL Insert statement.
  */
 export class InsertStatementExpr extends StatementExpr {
+  public static readonly type = ExprType.InsertStatement;
   public constructor(
     public readonly className: ClassNameExpr,
     public readonly values: ValueExpr[],
     public readonly propertyNames?: PropertyNameExpr[]) {
-    super(ExprType.InsertStatement);
+    super(InsertStatementExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.className];
@@ -689,12 +692,13 @@ export class InsertStatementExpr extends StatementExpr {
  * Describes a JOIN clause e.g. <classNameExpr> JOIN <classNameExpr> ON <joinspec>
  */
 export class QualifiedJoinExpr extends ClassRefExpr {
+  public static readonly type = ExprType.QualifiedJoin;
   public constructor(
     public readonly joinType: JoinType,
     public readonly from: ClassRefExpr,
     public readonly to: ClassRefExpr,
     public readonly spec: JoinSpec) {
-    super(ExprType.QualifiedJoin);
+    super(QualifiedJoinExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.from, this.to];
@@ -762,12 +766,13 @@ export class QualifiedJoinExpr extends ClassRefExpr {
  * Describe a JOIN USING clause.
  */
 export class UsingRelationshipJoinExpr extends ClassRefExpr {
+  public static readonly type = ExprType.UsingRelationshipJoin;
   public constructor(
     public readonly fromClassName: ClassRefExpr,
     public readonly toClassName: ClassNameExpr,
     public readonly toRelClassName: ClassNameExpr,
     public readonly direction?: JoinDirection) {
-    super(ExprType.UsingRelationshipJoin);
+    super(UsingRelationshipJoinExpr.type);
   }
   public override get children(): Expr[] {
     return [this.fromClassName, this.toClassName, this.toRelClassName];
@@ -799,8 +804,9 @@ export class UsingRelationshipJoinExpr extends ClassRefExpr {
   }
 }
 export class SubqueryTestExpr extends BooleanExpr {
+  public static readonly type = ExprType.SubqueryTest;
   public constructor(public readonly op: SubqueryTestOp, public readonly query: SubqueryExpr) {
-    super(ExprType.SubqueryTest);
+    super(SubqueryTestExpr.type);
   }
   public override get children(): Expr[] {
     return [this.query];
@@ -823,8 +829,9 @@ export class SubqueryTestExpr extends BooleanExpr {
  * Describe a subquery when used in FROM clause.
  */
 export class SubqueryRefExpr extends ClassRefExpr {
+  public static readonly type = ExprType.SubqueryRef;
   public constructor(public readonly query: SubqueryExpr, public readonly polymorphicInfo?: PolymorphicInfo, public readonly alias?: string) {
-    super(ExprType.SubqueryRef);
+    super(SubqueryRefExpr.type);
   }
   public override get children(): Expr[] {
     return [this.query];
@@ -854,8 +861,9 @@ export class SubqueryRefExpr extends ClassRefExpr {
   }
 }
 export class SelectStatementExpr extends StatementExpr {
+  public static readonly type = ExprType.SelectStatement;
   public constructor(public readonly singleSelect: SelectExpr, public readonly nextSelect?: NextSelect) {
-    super(ExprType.SelectStatement);
+    super(SelectStatementExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.singleSelect];
@@ -897,8 +905,9 @@ export class SelectStatementExpr extends StatementExpr {
  * Describe selection in a SELECT query
  */
 export class SelectionClauseExpr extends Expr {
+  public static readonly type = ExprType.SelectionClause;
   public constructor(public readonly derivedPropertyList: DerivedPropertyExpr[]) {
-    super(ExprType.SelectionClause);
+    super(SelectionClauseExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.derivedPropertyList];
@@ -922,8 +931,9 @@ export class SelectionClauseExpr extends Expr {
  * Describe a GROUP BY clause in a SELECT statement.
  */
 export class GroupByClauseExpr extends Expr {
+  public static readonly type = ExprType.GroupByClause;
   public constructor(public readonly exprList: ValueExpr[]) {
-    super(ExprType.GroupByClause);
+    super(GroupByClauseExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.exprList];
@@ -951,8 +961,9 @@ export class GroupByClauseExpr extends Expr {
  * Describe a HAVING clause in a SELECT statement.
  */
 export class HavingClauseExpr extends Expr {
+  public static readonly type = ExprType.HavingClause;
   public constructor(public readonly filterExpr: ComputedExpr) {
-    super(ExprType.HavingClause);
+    super(HavingClauseExpr.type);
   }
   public override get children(): Expr[] {
     return [this.filterExpr];
@@ -974,8 +985,9 @@ export class HavingClauseExpr extends Expr {
  * Describe a FROM clause in a SELECT statement.
  */
 export class FromClauseExpr extends Expr {
+  public static readonly type = ExprType.FromClause;
   public constructor(public readonly classRefs: ClassRefExpr[]) {
-    super(ExprType.FromClause);
+    super(FromClauseExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.classRefs];
@@ -1002,8 +1014,9 @@ export class FromClauseExpr extends Expr {
  * Describe a WHERE clause in a SELECT, UPDATE and DELETE statement.
  */
 export class WhereClauseExp extends Expr {
+  public static readonly type = ExprType.WhereClause
   public constructor(public readonly filterExpr: ComputedExpr) {
-    super(ExprType.WhereClause);
+    super(WhereClauseExp.type);
   }
   public override get children(): Expr[] {
     return [this.filterExpr];
@@ -1025,8 +1038,9 @@ export class WhereClauseExp extends Expr {
  * Describe a single sorted term in a ORDER BY clause of a SELECT statement.
  */
 export class OrderBySpecExpr extends Expr {
+  public static readonly type = ExprType.OrderBySpec
   public constructor(public readonly term: ValueExpr, public readonly sortDirection?: SortDirection) {
-    super(ExprType.OrderBySpec);
+    super(OrderBySpecExpr.type);
   }
   public override get children(): Expr[] {
     return [this.term];
@@ -1050,11 +1064,12 @@ export class OrderBySpecExpr extends Expr {
  * Describe a ORDER BY clause in a SELECT statement.
  */
 export class OrderByClauseExpr extends Expr {
+  public static readonly type = ExprType.OrderByClause
   public constructor(public readonly terms: OrderBySpecExpr[]) {
-    super(ExprType.OrderByClause);
+    super(OrderByClauseExpr.type);
   }
   public override get children(): Expr[] {
-    return [...this.terms.map((v)=>v.term)];
+    return [...this.terms.map((v) => v.term)];
   }
   public static deserialize(node: NativeECSqlParseNode) {
     if (!Array.isArray(node)) {
@@ -1079,8 +1094,9 @@ export class OrderByClauseExpr extends Expr {
  * Describe a LIMIT clause in a SELECT statement.
  */
 export class LimitClauseExpr extends Expr {
+  public static readonly type = ExprType.LimitClause;
   public constructor(public readonly limit: ValueExpr, public readonly offset?: ValueExpr) {
-    super(ExprType.LimitClause);
+    super(LimitClauseExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.limit];
@@ -1109,6 +1125,7 @@ export class LimitClauseExpr extends Expr {
  * Describe a single select statement.
  */
 export class SelectExpr extends Expr {
+  public static readonly type = ExprType.Select;
   public constructor(
     public readonly selection: SelectionClauseExpr,
     public readonly rowQuantifier?: AllOrDistinctOp,
@@ -1119,7 +1136,7 @@ export class SelectExpr extends Expr {
     public readonly orderBy?: OrderByClauseExpr,
     public readonly limit?: LimitClauseExpr,
     public readonly options?: ECSqlOptionsClauseExpr) {
-    super(ExprType.Select);
+    super(SelectExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.selection];
@@ -1195,8 +1212,9 @@ export class SelectExpr extends Expr {
  * Describe a subquery when used as value. This kind of query expect to return one column and one one value.
  */
 export class SubqueryExpr extends ValueExpr {
+  public static readonly type = ExprType.Subquery;
   public constructor(public readonly query: SelectStatementExpr) {
-    super(ExprType.BinaryBoolean);
+    super(SubqueryExpr.type);
   }
   public override get children(): Expr[] {
     return [this.query];
@@ -1218,8 +1236,9 @@ export class SubqueryExpr extends ValueExpr {
  * Describe a binary boolean expression in ECSQL.
  */
 export class BinaryBooleanExpr extends BooleanExpr {
+  public static readonly type = ExprType.BinaryBoolean;
   public constructor(public readonly op: BinaryBooleanOp, public readonly lhsExpr: ComputedExpr, public readonly rhsExpr: ComputedExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExprType.BinaryBoolean);
+    super(BinaryBooleanExpr.type);
   }
   public override get children(): Expr[] {
     return [this.lhsExpr, this.rhsExpr];
@@ -1256,8 +1275,9 @@ export enum LiteralValueType {
  * Describe a <expr> IS NULL boolean expression
  */
 export class IsNullExpr extends BooleanExpr {
+  public static readonly type = ExprType.IsNull;
   public constructor(public readonly operandExpr: ValueExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExprType.IsNull);
+    super(IsNullExpr.type);
   }
   public override get children(): Expr[] {
     return [this.operandExpr];
@@ -1299,8 +1319,9 @@ export class IsNullExpr extends BooleanExpr {
  * Describe a <expr> IS (type1[, type2]) in ECSQL.
  */
 export class IsOfTypeExpr extends BooleanExpr {
+  public static readonly type = ExprType.IsOfType;
   public constructor(public readonly lhsExpr: ValueExpr, public readonly typeNames: ClassNameExpr[], public readonly not?: UnaryBooleanOp) {
-    super(ExprType.IsOfType);
+    super(IsOfTypeExpr.type);
   }
   public override get children(): Expr[] {
     return [this.lhsExpr, ...this.typeNames];
@@ -1346,8 +1367,9 @@ export class IsOfTypeExpr extends BooleanExpr {
  * Describe a NOT <expr>  boolean expression
  */
 export class NotExpr extends BooleanExpr {
+  public static readonly type = ExprType.Not;
   public constructor(public readonly operandExpr: ComputedExpr) {
-    super(ExprType.Not);
+    super(NotExpr.type);
   }
   public override get children(): Expr[] {
     return [this.operandExpr];
@@ -1372,8 +1394,9 @@ export class NotExpr extends BooleanExpr {
  * Describe a <expr> IN subquery|(val1[,val2...]) boolean expression
  */
 export class InExpr extends BooleanExpr {
+  public static readonly type = ExprType.In;
   public constructor(public readonly lhsExpr: ValueExpr, public readonly rhsExpr: ValueExpr[] | SubqueryExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExprType.In);
+    super(InExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.lhsExpr];
@@ -1433,8 +1456,9 @@ export class InExpr extends BooleanExpr {
  * Describe a <expr> LIKE <expr> [ESCAPE <expr>] boolean expression
  */
 export class LikeExpr extends BooleanExpr {
+  public static readonly type = ExprType.Like;
   public constructor(public readonly lhsExpr: ValueExpr, public readonly patternExpr: ValueExpr, public readonly escapeExpr?: ValueExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExprType.Like);
+    super(LikeExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.lhsExpr, this.patternExpr];
@@ -1481,8 +1505,9 @@ export class LikeExpr extends BooleanExpr {
  */
 
 export class BetweenExpr extends BooleanExpr {
+  public static readonly type = ExprType.Between;
   public constructor(public readonly lhsExpr: ValueExpr, public readonly lowerBoundExpr: ValueExpr, public readonly upperBoundExpr: ValueExpr, public readonly not?: UnaryBooleanOp) {
-    super(ExprType.Between);
+    super(BetweenExpr.type);
   }
   public override get children(): Expr[] {
     return [this.lhsExpr, this.lowerBoundExpr, this.upperBoundExpr];
@@ -1526,8 +1551,9 @@ export class BetweenExpr extends BooleanExpr {
  */
 
 export class CteExpr extends StatementExpr {
+  public static readonly type = ExprType.Cte;
   public constructor(public readonly cteBlocks: CteBlockExpr[], public readonly query: SelectStatementExpr, public readonly recursive?: RecursiveCte) {
-    super(ExprType.Cte);
+    super(CteExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.cteBlocks, this.query];
@@ -1562,8 +1588,9 @@ export class CteExpr extends StatementExpr {
  */
 
 export class CteBlockExpr extends Expr {
+  public static readonly type = ExprType.CteBlock;
   public constructor(public readonly name: string, public readonly query: SelectStatementExpr, public readonly props: string[]) {
-    super(ExprType.CteBlock);
+    super(CteBlockExpr.type);
   }
   public override get children(): Expr[] {
     return [this.query];
@@ -1602,8 +1629,9 @@ export class CteBlockExpr extends Expr {
  */
 
 export class CteBlockRefExpr extends ClassRefExpr {
+  public static readonly type = ExprType.CteBlockRef;
   public constructor(public readonly name: string, public readonly alias?: string) {
-    super(ExprType.CteBlockRef);
+    super(CteBlockRefExpr.type);
   }
   public override get children(): Expr[] {
     return [];
@@ -1627,8 +1655,9 @@ export class CteBlockRefExpr extends ClassRefExpr {
  */
 
 export class TableValuedFuncExpr extends ClassRefExpr {
+  public static readonly type = ExprType.TableValuedFunc;
   public constructor(public readonly schemaName: string, public readonly memberFunc: MemberFuncCallExpr, public readonly alias?: string) {
-    super(ExprType.TableValuedFunc);
+    super(TableValuedFuncExpr.type);
   }
   public override get children(): Expr[] {
     return [this.memberFunc];
@@ -1654,8 +1683,9 @@ export class TableValuedFuncExpr extends ClassRefExpr {
  * Describe a class name reference in ECSQL that appear in FROM clause of a SELECT.
  */
 export class ClassNameExpr extends ClassRefExpr {
+  public static readonly type = ExprType.ClassName;
   public constructor(public readonly schemaNameOrAlias: string, public readonly className: string, public readonly tablespace?: string, public readonly alias?: string, public polymorphicInfo?: PolymorphicInfo, public readonly memberFunc?: MemberFuncCallExpr) {
-    super(ExprType.ClassName);
+    super(ClassNameExpr.type);
   }
   public override get children(): Expr[] {
     return [];
@@ -1704,8 +1734,9 @@ export class ClassNameExpr extends ClassRefExpr {
  * Describe a UPDATE statement in ECSQL.
  */
 export class UpdateStatementExpr extends StatementExpr {
-  public constructor(public readonly className: ClassNameExpr, public readonly assignement: AssignmentClauseExpr, public readonly where?: WhereClauseExp, public readonly options?: ECSqlOptionsClauseExpr) {
-    super(ExprType.UpdateStatement);
+  public static readonly type = ExprType.UpdateStatement;
+  public constructor(public readonly className: ClassNameExpr, public readonly assignement: AssignmentsClauseExpr, public readonly where?: WhereClauseExp, public readonly options?: ECSqlOptionsClauseExpr) {
+    super(UpdateStatementExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [this.className, this.assignement];
@@ -1718,7 +1749,7 @@ export class UpdateStatementExpr extends StatementExpr {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.UpdateStatement'. ${JSON.stringify(node)}`);
     }
     const className = ClassNameExpr.deserialize(node.className);
-    const assignment = AssignmentClauseExpr.deserialize(node.assignment as NativeECSqlParseNode[]);
+    const assignment = AssignmentsClauseExpr.deserialize(node.assignment as NativeECSqlParseNode[]);
     const where = node.where ? WhereClauseExp.deserialize(node.where as NativeECSqlParseNode) : undefined;
     const options = node.options ? ECSqlOptionsClauseExpr.deserialize(node.options as NativeECSqlParseNode) : undefined;
     return new UpdateStatementExpr(className, assignment, where, options);
@@ -1752,8 +1783,9 @@ export interface ECSqlOption {
  * Describe ECSQL option clause.
  */
 export class ECSqlOptionsClauseExpr extends Expr {
+  public static readonly type = ExprType.ECSqlOptionsClause;
   public constructor(public readonly options: ECSqlOption[]) {
-    super(ExprType.ECSqlOptions);
+    super(ECSqlOptionsClauseExpr.type);
   }
   public override get children(): Expr[] {
     return [];
@@ -1786,9 +1818,10 @@ export interface PropertyValueAssignment {
 /**
  * Describe a assignement clause in a UPDATE statement
  */
-export class AssignmentClauseExpr extends Expr {
+export class AssignmentsClauseExpr extends Expr {
+  public static readonly type = ExprType.AssignmentsClause;
   public constructor(public readonly propertyValuesList: PropertyValueAssignment[]) {
-    super(ExprType.AssignmentClause);
+    super(AssignmentsClauseExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [];
@@ -1810,7 +1843,7 @@ export class AssignmentClauseExpr extends Expr {
         valueExpr: ValueExpr.deserialize(v.value)
       });
     });
-    return new AssignmentClauseExpr(propertyValuesList);
+    return new AssignmentsClauseExpr(propertyValuesList);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendKeyword("SET");
@@ -1829,8 +1862,9 @@ export class AssignmentClauseExpr extends Expr {
  * Describe a strong typed IIF function in ECSQL
  */
 export class IIFExpr extends ValueExpr {
+  public static readonly type = ExprType.IIF;
   public constructor(public readonly whenExpr: BooleanExpr, public readonly thenExpr: ValueExpr, public readonly elseExpr: ValueExpr) {
-    super(ExprType.IIF);
+    super(IIFExpr.type);
   }
   public override get children(): Expr[] {
     return [this.whenExpr, this.thenExpr, this.elseExpr];
@@ -1861,8 +1895,9 @@ export interface WhenThenBlock {
  * Describe a CASE-WHEN-THEN expression in ECSQL
  */
 export class SearchCaseExpr extends ValueExpr {
+  public static readonly type = ExprType.SearchCase;
   public constructor(public readonly whenThenList: WhenThenBlock[], public readonly elseExpr?: ValueExpr) {
-    super(ExprType.SearchCase);
+    super(SearchCaseExpr.type);
   }
   public override get children(): Expr[] {
     const exprs: Expr[] = [];
@@ -1912,8 +1947,9 @@ export class SearchCaseExpr extends ValueExpr {
  * Describe a binary value expression
  */
 export class BinaryValueExpr extends ValueExpr {
+  public static readonly type = ExprType.BinaryValue;
   public constructor(public readonly op: BinaryValueOp, public readonly lhsExpr: ValueExpr, public readonly rhsExpr: ValueExpr) {
-    super(ExprType.BinaryValue);
+    super(BinaryValueExpr.type);
   }
   public override get children(): Expr[] {
     return [this.lhsExpr, this.rhsExpr];
@@ -1937,8 +1973,9 @@ export class BinaryValueExpr extends ValueExpr {
  * Cast a expression into a target time e.g. CAST(<expr> AS STRING)
  */
 export class CastExpr extends ValueExpr {
+  public static readonly type = ExprType.Cast;
   public constructor(public readonly valueExpr: ValueExpr, public readonly targetType: string) {
-    super(ExprType.Cast);
+    super(CastExpr.type);
   }
   public override get children(): Expr[] {
     return [this.valueExpr];
@@ -1964,8 +2001,9 @@ export class CastExpr extends ValueExpr {
  * Represent a member function called w.r.t a @ref ClassNameExpr
  */
 export class MemberFuncCallExpr extends Expr {
+  public static readonly type = ExprType.MemberFuncCall;
   public constructor(public readonly functionName: string, public readonly args: ValueExpr[]) {
-    super(ExprType.MemberFuncCall);
+    super(MemberFuncCallExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.args];
@@ -1995,8 +2033,9 @@ export class MemberFuncCallExpr extends Expr {
  * Represent a function call in ecsql
  */
 export class FuncCallExpr extends ValueExpr {
+  public static readonly type = ExprType.FuncCall;
   public constructor(public readonly functionName: string, public readonly args: ValueExpr[], public readonly allOrDistinct?: AllOrDistinctOp) {
-    super(ExprType.FuncCall);
+    super(FuncCallExpr.type);
   }
   public override get children(): Expr[] {
     return [...this.args];
@@ -2132,8 +2171,9 @@ export class FuncCallExpr extends ValueExpr {
  * Represent positional or named parameter
  */
 export class ParameterExpr extends ValueExpr {
+  public static readonly type = ExprType.Parameter;
   public constructor(public readonly name?: string) {
-    super(ExprType.Parameter);
+    super(ParameterExpr.type);
   }
   public override get children(): Expr[] {
     return [];
@@ -2156,8 +2196,9 @@ export class ParameterExpr extends ValueExpr {
  * Unary value with operator e.g. [+|-|~]<number>
  */
 export class UnaryValueExpr extends ValueExpr {
+  public static readonly type = ExprType.Unary;
   public constructor(public readonly op: UnaryValueOp, public readonly valueExpr: ValueExpr) {
-    super(ExprType.Unary);
+    super(UnaryValueExpr.type);
   }
   public override get children(): Expr[] {
     return [this.valueExpr];
@@ -2180,8 +2221,9 @@ export class UnaryValueExpr extends ValueExpr {
  * Represent constant literal like string, data, time, timestamp, number or null
  */
 export class LiteralExpr extends ValueExpr {
+  public static readonly type = ExprType.Literal;
   public constructor(public readonly valueType: LiteralValueType, public readonly rawValue: string) {
-    super(ExprType.Literal);
+    super(LiteralExpr.type);
   }
   public override get children(): Expr[] {
     return [];
@@ -2206,20 +2248,21 @@ export class LiteralExpr extends ValueExpr {
     else
       writer.append(this.rawValue);
   }
-  public static createRaw(val: string) { return new LiteralExpr(LiteralValueType.Raw, val); }
-  public static createString(val: string) { return new LiteralExpr(LiteralValueType.String, val); }
-  public static createNumber(val: number) { return new LiteralExpr(LiteralValueType.Raw, val.toString()); }
-  public static createDate(val: Date) { return new LiteralExpr(LiteralValueType.Date, val.toDateString()); }
-  public static createTime(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
-  public static createTimestamp(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
-  public static createNull() { return new LiteralExpr(LiteralValueType.Null, ""); }
+  public static makeRaw(val: string) { return new LiteralExpr(LiteralValueType.Raw, val); }
+  public static makeString(val: string) { return new LiteralExpr(LiteralValueType.String, val); }
+  public static makeNumber(val: number) { return new LiteralExpr(LiteralValueType.Raw, val.toString()); }
+  public static makeDate(val: Date) { return new LiteralExpr(LiteralValueType.Date, val.toDateString()); }
+  public static makeTime(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
+  public static makeTimestamp(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
+  public static makeNull() { return new LiteralExpr(LiteralValueType.Null, ""); }
 }
 /**
  * Represent property name identifier
  */
 export class PropertyNameExpr extends ValueExpr {
+  public static readonly type = ExprType.PropertyName;
   public constructor(public readonly propertyPath: string) {
-    super(ExprType.PropertyName);
+    super(PropertyNameExpr.type);
   }
   public override get children(): Expr[] {
     return [];
