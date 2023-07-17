@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { StatementExpr } from "../../ECSqlExpr";
+import { AllOrDistinctOp, BinaryBooleanExpr, BinaryBooleanOp, BinaryValueExpr, BinaryValueOp, BooleanExpr, ClassNameExpr, DerivedPropertyExpr, FromClauseExpr, GroupByClauseExpr, LiteralExpr, LiteralValueType, PropertyNameExpr, SelectExpr, SelectStatementExpr, SelectionClauseExpr, StatementExpr, WhereClauseExp } from "../../ECSqlExpr";
 
 describe.only("ECSql Exprs", () => {
   let ecdb: ECDb;
@@ -643,22 +643,28 @@ describe.only("ECSql Exprs", () => {
       assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
     }
   });
+  function reviver(name: string, _value: any) {
+    console.log(name);
+  }
   it("build SelectStatementExpr", async () => {
-    // const stmt = new SelectStatementExpr(
-    //   new SelectExpr([new DerivedPropertyExpr(new PropertyNameExpr("Name"))],
-    //     AllOrDistinctOp.All,
-    //     [new ClassNameExpr("meta", "ECClassDef")],
-    //     new BinaryBooleanExpr(BinaryBooleanOp.EqualTo, new PropertyNameExpr("ECInstanceId"), LiteralExpr.createNumber(1)),
-    //     {
-    //       groupBy: [new PropertyNameExpr("ECClassId")],
-    //       having: new BinaryBooleanExpr(BinaryBooleanOp.GreaterThan, new FuncCallExpr("COUNT", [LiteralExpr.createRaw("*")]), LiteralExpr.createNumber(0))
-    //     },
-    //     [{ exp: new PropertyNameExpr("DisplayLabel"), direction: SortDirection.Ascending }],
-    //     { limit: LiteralExpr.createNumber(1), offset: LiteralExpr.createNumber(10) }
-    //   ));
-    // const expected = "SELECT ALL [Name] FROM [meta].[ECClassDef] WHERE ([ECInstanceId] = 1) GROUP BY [ECClassId] HAVING (COUNT(*) > 0) ORDER BY [DisplayLabel] ASC LIMIT 1 OFFSET 10";
-    // const normalized = "SELECT ALL [Name] FROM [ECDbMeta].[ECClassDef] WHERE ([ECInstanceId] = 1) GROUP BY [ECClassId] HAVING (COUNT(*) > 0) ORDER BY [DisplayLabel] ASC LIMIT 1 OFFSET 10";
-    // assert.equal(stmt.toECSql(), expected);
-    // assert.equal(toNormalizeECSql(stmt.toECSql()), normalized);
+    const stmt = new SelectStatementExpr(
+      new SelectExpr(
+        new SelectionClauseExpr([
+          new DerivedPropertyExpr(
+            new PropertyNameExpr("ECInstanceId")),
+          new DerivedPropertyExpr(
+            new PropertyNameExpr("CodeValue"))]),
+        AllOrDistinctOp.All,
+        new FromClauseExpr([
+          new ClassNameExpr("bis", "Element")
+        ]),
+        new WhereClauseExp(
+          new BinaryBooleanExpr(
+            BinaryBooleanOp.EqualTo,
+            new PropertyNameExpr("ECInstanceId"),
+            new LiteralExpr(LiteralValueType.Raw, "1"))))
+    );
+    const expected = "SELECT ALL [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = 1)";
+    assert.equal(stmt.toECSql(), expected);
   });
 });
