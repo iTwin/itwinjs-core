@@ -37,7 +37,7 @@ export class CopyExternalsPlugin {
 
   public async handleModule(currentModule: ExternalModule, outputDir: string, compilation: Compilation) {
     const pkgName = this.pathToPackageName(currentModule.userRequest);
-    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
+    if (pkgName === "electron" || this.isBuiltinModule(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
     let packageJsonPath = "";
@@ -89,5 +89,15 @@ export class CopyExternalsPlugin {
   private pathToPackageName(p: string) {
     const parts = p.replace(/^.*node_modules[\\\/]/, "").replace(externalPrefix, "").split(/[\\\/]/);
     return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
+  }
+
+  private isBuiltinModule(pkgName: string): boolean {
+    if (builtinModules.includes(pkgName))
+      return true;
+
+    if (pkgName.startsWith("node:") && builtinModules.includes(pkgName.substring(5)))
+      return true;
+
+    return false;
   }
 }

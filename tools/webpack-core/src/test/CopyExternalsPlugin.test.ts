@@ -30,6 +30,17 @@ describe("CopyExternalsPlugin", () => {
     expect(fs.existsSync(path.join(__dirname, "dist/node_modules"))).to.be.false;
   });
 
+  it("skips node builtin modules", async () => {
+    fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `import * as url from "node:url";`,
+    });
+    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["node:url"]);
+
+    const { logging } = await runWebpack(testConfig);
+    expect(logging).to.not.haveOwnProperty("CopyExternalsPlugin");
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules"))).to.be.false;
+  });
+
   it("should copy direct external dependencies", async () => {
     fsFromJson({
       "lib/test/assets/copy-externals-plugin-test/test.js": `import * as foo from "foo";`,
