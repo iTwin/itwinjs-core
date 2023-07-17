@@ -38,7 +38,7 @@ rm -r $incomingPath
 # regen CHANGELOG.md
 rush publish --regenerate-changelogs #updates changelogs
 
-commitMessage=$(git log --format=%B -n 1 $commitid)
+commitMessage=$(git log --format=%B -n 1 $commitId)
 git add .
 git commit -m "$commitMessage Changelogs"
 
