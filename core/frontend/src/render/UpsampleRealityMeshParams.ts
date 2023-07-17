@@ -120,7 +120,7 @@ export function upsampleRealityMeshParams(params: RealityMeshParams, uvSampleRan
     mesh: builder.finish(),
     heightRange: Range1d.createXX(
       Quantization.unquantize(zRange.low, qParams.origin.z, qParams.scale.z),
-      Quantization.unquantize(zRange.high, qParams.origin.z, qParams.scale.z)
+      Quantization.unquantize(zRange.high, qParams.origin.z, qParams.scale.z),
     ),
   };
 }

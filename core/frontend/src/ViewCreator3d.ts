@@ -85,7 +85,7 @@ export class ViewCreator3d {
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
       baseExtents,
-      options
+      options,
     );
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);

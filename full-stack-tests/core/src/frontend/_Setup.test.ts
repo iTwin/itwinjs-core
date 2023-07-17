@@ -73,7 +73,7 @@ export function deepEqualWithFpTolerance(
       return aSize === bSize && Object.keys(a).every(
         (key) =>
           (key in b || options.considerNonExistingAndUndefinedEqual) &&
-          deepEqualWithFpTolerance(a[key], b[key], options)
+          deepEqualWithFpTolerance(a[key], b[key], options),
       );
     default: // bigint unhandled
       throw Error("unhandled deep compare type");
@@ -84,7 +84,7 @@ Assertion.addMethod(
   "equalWithFpTolerance",
   function equalWithFpTolerance(
     expected: any,
-    options: DeepEqualWithFpToleranceOpts = {}
+    options: DeepEqualWithFpToleranceOpts = {},
   ) {
     if (options.tolerance === undefined)
       options.tolerance = 1e-10;
@@ -100,9 +100,9 @@ Assertion.addMethod(
       `expected ${isDeep ? "deep inequality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
-      actual
+      actual,
     );
-  }
+  },
 );
 
 if (!ProcessDetector.isElectronAppFrontend) {

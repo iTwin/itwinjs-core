@@ -266,7 +266,7 @@ export class RegionOpsFaceToFaceSearch {
     binaryOp: RegionBinaryOpType,
     dataB: MultiLineStringDataVariant[],
     opB: RegionGroupOpType,
-    purgeSliverExteriorFaces: boolean
+    purgeSliverExteriorFaces: boolean,
   ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;

@@ -589,7 +589,7 @@ describe("VUGraph", () => {
     graph.announceNodes(
       (_g: HalfEdgeGraph, _node: HalfEdge) => {
         numNodes++; return true;
-      }
+      },
     );
     ck.testExactNumber(4, numNodes);
 
@@ -606,7 +606,7 @@ describe("VUGraph", () => {
     graph.announceVertexLoops(
       (_g: HalfEdgeGraph, node: HalfEdge) => {
         return !node.findAroundVertex(edgeB);
-      }
+      },
     );
     ck.testLT(numNodes, 3);
 
@@ -614,7 +614,7 @@ describe("VUGraph", () => {
     graph.announceFaceLoops(
       (_g: HalfEdgeGraph, node: HalfEdge) => {
         return !node.findAroundFace(edgeB);
-      }
+      },
     );
     ck.testExactNumber(numNodes, 0, "Graph's only face contains all nodes");
 

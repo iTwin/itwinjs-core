@@ -107,7 +107,7 @@ export class Tracing {
     return Tracing._openTelemetry.context.with(
       Tracing._openTelemetry.trace.setSpan(
         parent,
-        Tracing._tracer.startSpan(name, options, Tracing._openTelemetry.context.active())
+        Tracing._tracer.startSpan(name, options, Tracing._openTelemetry.context.active()),
       ),
       async () => {
         try {

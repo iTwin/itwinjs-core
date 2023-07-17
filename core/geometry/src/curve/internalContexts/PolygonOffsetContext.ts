@@ -81,7 +81,7 @@ export class JointOptions {
    */
   constructor(
     leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90,
-    preserveEllipticalArcs = false, allowSharpestCorners = false
+    preserveEllipticalArcs = false, allowSharpestCorners = false,
   ) {
     this.leftOffsetDistance = leftOffsetDistance;
     this.minArcDegrees = minArcDegrees;
@@ -93,7 +93,7 @@ export class JointOptions {
   public clone(): JointOptions {
     return new JointOptions(
       this.leftOffsetDistance, this.minArcDegrees, this.maxChamferTurnDegrees,
-      this.preserveEllipticalArcs, this.allowSharpestCorners
+      this.preserveEllipticalArcs, this.allowSharpestCorners,
     );
   }
   /** Copy values of input options */
@@ -226,7 +226,7 @@ class Joint {
   public previousJoint?: Joint;
   // capture references to all data . . .
   public constructor(
-    curve0: CurvePrimitive | undefined, curve1: CurvePrimitive | undefined, swingPoint: Point3d | undefined
+    curve0: CurvePrimitive | undefined, curve1: CurvePrimitive | undefined, swingPoint: Point3d | undefined,
   ) {
     this.curve0 = curve0;
     this.curve1 = curve1;
@@ -304,7 +304,7 @@ class Joint {
         }
         return numOut++ < maxTest;
       },
-      maxTest
+      maxTest,
     );
   }
   private static collectPrimitive(destination: CurvePrimitive[], primitive?: CurvePrimitive) {
@@ -359,7 +359,7 @@ class Joint {
         }
         return numOut++ < maxTest;
       },
-      maxTest
+      maxTest,
     );
   }
   /** Execute `joint.annotateJointMode()` at all joints on the chain to set some of the joints attributes. */
@@ -443,7 +443,7 @@ class Joint {
   }
   /** Select the index at which summed fraction difference is smallest */
   private selectIntersectionIndexByFraction(
-    fractionA: number, fractionB: number, intersections: CurveLocationDetailPair[]
+    fractionA: number, fractionB: number, intersections: CurveLocationDetailPair[],
   ): number {
     let index = -1;
     let aMin = Number.MAX_VALUE;
@@ -515,7 +515,7 @@ class Joint {
    * @param start
    */
   public static removeDegeneratePrimitives(
-    start: Joint, options: JointOptions, maxTest: number
+    start: Joint, options: JointOptions, maxTest: number,
   ): { newStart: Joint, numJointRemoved: number } {
     /*
     if (Checker.noisy.PolygonOffset)
@@ -613,14 +613,14 @@ export class PolygonWireOffsetContext {
   private static _offsetB = Point3d.create();
   // Construct a single offset from base points
   private static createOffsetSegment(
-    basePointA: Point3d, basePointB: Point3d, distance: number
+    basePointA: Point3d, basePointB: Point3d, distance: number,
   ): CurvePrimitive | undefined {
     Vector3d.createStartEnd(basePointA, basePointB, this._unitAlong);
     if (this._unitAlong.normalizeInPlace()) {
       this._unitAlong.rotate90CCWXY(this._unitPerp);
       const segment = LineSegment3d.create(
         basePointA.plusScaled(this._unitPerp, distance, this._offsetA),
-        basePointB.plusScaled(this._unitPerp, distance, this._offsetB)
+        basePointB.plusScaled(this._unitPerp, distance, this._offsetB),
       );
       CurveChainWireOffsetContext.applyBasePoints(segment, basePointA.clone(), basePointB.clone());
       return segment;
@@ -639,7 +639,7 @@ export class PolygonWireOffsetContext {
    * object.
    */
   public constructPolygonWireXYOffset(
-    points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions
+    points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions,
   ): CurveChain | undefined {
     /**
      * if "wrap = true", then first and last point in the points array must be close; otherwise
@@ -713,7 +713,7 @@ export class CurveChainWireOffsetContext {
    * @return the input CurvePrimitive with annotations
    */
   public static applyBasePoints(
-    cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined
+    cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined,
   ): CurvePrimitive | undefined {
     if (cp !== undefined) {
       if (startPoint !== undefined)
@@ -732,7 +732,7 @@ export class CurveChainWireOffsetContext {
    * @param offsetDistanceOrOptions offset distance (positive to left of g), or options object
    */
   public static createSingleOffsetPrimitiveXY(
-    g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions
+    g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions,
   ): CurvePrimitive | CurvePrimitive[] | undefined {
     const offset = g.constructOffsetXY(offsetDistanceOrOptions);
     if (offset === undefined)
@@ -758,7 +758,7 @@ export class CurveChainWireOffsetContext {
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
   public static constructCurveXYOffset(
-    curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions
+    curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions,
   ): CurveCollection | undefined {
     const wrap: boolean = curves instanceof Loop;
     const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);

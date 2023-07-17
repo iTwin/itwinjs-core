@@ -56,7 +56,7 @@ export class TaggedNumericData {
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,
-    intData?: number[], doubleData?: number[]
+    intData?: number[], doubleData?: number[],
   ) {
     this.tagA = tagA;
     this.tagB = tagB;

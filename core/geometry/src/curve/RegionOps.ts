@@ -143,7 +143,7 @@ export class RegionOps {
   public static addLoopsToGraph(
     graph: HalfEdgeGraph,
     data: MultiLineStringDataVariant,
-    announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void
+    announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void,
   ): void {
     if (data instanceof Loop) {
       const points = data.getPackedStrokes();
@@ -187,7 +187,7 @@ export class RegionOps {
    * @internal
    */
   public static addLoopsWithEdgeTagToGraph(
-    graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any
+    graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any,
   ): HalfEdge[] | undefined {
     const loopSeeds: HalfEdge[] = [];
     this.addLoopsToGraph(graph, data, (_graph: HalfEdgeGraph, seed: HalfEdge) => {
@@ -226,13 +226,13 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaIntersectLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false
+    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
       loopsB,
       (inA: boolean, inB: boolean) => (inA && inB),
-      this._graphCheckPointFunction
+      this._graphCheckPointFunction,
     );
     return this.finishGraphToPolyface(graph, triangulate);
   }
@@ -246,13 +246,13 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaUnionLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false
+    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
       loopsB,
       (inA: boolean, inB: boolean) => (inA || inB),
-      this._graphCheckPointFunction
+      this._graphCheckPointFunction,
     );
     return this.finishGraphToPolyface(graph, triangulate);
   }
@@ -266,13 +266,13 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaDifferenceLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false
+    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
       loopsB,
       (inA: boolean, inB: boolean) => (inA && !inB),
-      this._graphCheckPointFunction
+      this._graphCheckPointFunction,
     );
     return this.finishGraphToPolyface(graph, triangulate);
   }
@@ -291,7 +291,7 @@ export class RegionOps {
     loopsA: AnyRegion | AnyRegion[] | undefined,
     loopsB: AnyRegion | AnyRegion[] | undefined,
     operation: RegionBinaryOpType,
-    mergeTolerance: number = Geometry.smallMetricDistance
+    mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
@@ -312,7 +312,7 @@ export class RegionOps {
           if (loop)
             result.tryAddChild(loop);
         }
-      }
+      },
     );
     return result;
   }
@@ -332,13 +332,13 @@ export class RegionOps {
     inputA: MultiLineStringDataVariant[],
     operation: RegionBinaryOpType,
     inputB: MultiLineStringDataVariant[],
-    triangulate: boolean = false
+    triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA, RegionGroupOpType.Union,
       operation,
       inputB, RegionGroupOpType.Union,
-      true
+      true,
     );
     return this.finishGraphToPolyface(graph, triangulate);
   }
@@ -356,7 +356,7 @@ export class RegionOps {
   public static polygonBooleanXYToLoops(
     inputA: MultiLineStringDataVariant[],
     operation: RegionBinaryOpType,
-    inputB: MultiLineStringDataVariant[]
+    inputB: MultiLineStringDataVariant[],
   ): AnyRegion | undefined {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA,
@@ -364,7 +364,7 @@ export class RegionOps {
       operation,
       inputB,
       RegionGroupOpType.Union,
-      true
+      true,
     );
     if (!graph)
       return undefined;
@@ -396,7 +396,7 @@ export class RegionOps {
    * object.
    */
   public static constructPolygonWireXYOffset(
-    points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions
+    points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions,
   ): CurveChain | undefined {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistanceOrOptions);
@@ -411,7 +411,7 @@ export class RegionOps {
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
   public static constructCurveXYOffset(
-    curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions
+    curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions,
   ): CurveCollection | undefined {
     return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
@@ -436,7 +436,7 @@ export class RegionOps {
    * @param consolidateAdjacentPrimitives whether to simplify the result by calling [[consolidateAdjacentPrimitives]]
    */
   public static createLoopPathOrBagOfCurves(
-    curves: CurvePrimitive[], wrap: boolean = true, consolidateAdjacentPrimitives: boolean = false
+    curves: CurvePrimitive[], wrap: boolean = true, consolidateAdjacentPrimitives: boolean = false,
   ): CurveCollection | undefined {
     const n = curves.length;
     if (n === 0)
@@ -478,7 +478,7 @@ export class RegionOps {
    * @param cutterCurves input curves to intersect with `curvesToCut`
    */
   public static cloneCurvesWithXYSplits(
-    curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection
+    curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection,
   ): AnyCurve | undefined {
     return CurveSplitContext.cloneCurvesWithXYSplits(curvesToCut, cutterCurves);
   }
@@ -510,7 +510,7 @@ export class RegionOps {
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
   public static collectInsideAndOutsideOffsets(
-    fragments: AnyCurve[], offsetDistance: number, gapTolerance: number
+    fragments: AnyCurve[], offsetDistance: number, gapTolerance: number,
   ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
     return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
   }
@@ -530,7 +530,7 @@ export class RegionOps {
    * @returns output object with all fragments split among `insideParts`, `outsideParts`, and `coincidentParts`
    */
   public static splitPathsByRegionInOnOutXY(
-    curvesToCut: AnyCurve | undefined, region: AnyRegion
+    curvesToCut: AnyCurve | undefined, region: AnyRegion,
   ): { insideParts: AnyCurve[], outsideParts: AnyCurve[], coincidentParts: AnyCurve[] } {
     const result = { insideParts: [], outsideParts: [], coincidentParts: [] };
     const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplits(curvesToCut, region);
@@ -568,7 +568,7 @@ export class RegionOps {
    * normal in z column. If not a rectangle, return undefined.
    */
   public static rectangleEdgeTransform(
-    data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint: boolean = true
+    data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint: boolean = true,
   ): Transform | undefined {
     if (data instanceof LineString3d) {
       return this.rectangleEdgeTransform(data.packedPoints);
@@ -596,7 +596,7 @@ export class RegionOps {
         && vector12.isAlmostEqual(vector03)
         && vector01.isPerpendicularTo(vector03)) {
         return Transform.createOriginAndMatrixColumns(
-          dataToUse.getPoint3dAtUncheckedPointIndex(0), vector01, vector03, normalVector
+          dataToUse.getPoint3dAtUncheckedPointIndex(0), vector01, vector03, normalVector,
         );
       }
     } else if (Array.isArray(data)) {
@@ -629,7 +629,7 @@ export class RegionOps {
    * @param options options for tolerance and selective simplification.
    */
   public static consolidateAdjacentPrimitives(
-    curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions
+    curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions,
   ): void {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
@@ -678,7 +678,7 @@ export class RegionOps {
    * to the edge and a constituent curve in each.
    */
   public static constructAllXYRegionLoops(
-    curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance
+    curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
   ): SignedLoops[] {
     const primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
     const range = this.curveArrayRange(primitives);
@@ -702,7 +702,7 @@ export class RegionOps {
     candidates: AnyCurve | AnyCurve[],
     collectorArray?: CurvePrimitive[],
     smallestPossiblePrimitives: boolean = false,
-    explodeLinestrings: boolean = false
+    explodeLinestrings: boolean = false,
   ): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
     if (candidates instanceof CurvePrimitive) {
@@ -763,7 +763,7 @@ export class RegionOps {
 }
 /** @internal */
 function pushToInOnOutArrays(
-  curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[]
+  curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[],
 ): void {
   if (select > 0)
     arrayPositive.push(curve);

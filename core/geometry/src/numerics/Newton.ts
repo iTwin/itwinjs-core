@@ -288,7 +288,7 @@ export class SimpleNewton {
     x: number,
     func: (x: number) => number | undefined,
     derivative: (x: number) => number | undefined,
-    absoluteTolerance: number = Geometry.smallFloatingPoint
+    absoluteTolerance: number = Geometry.smallFloatingPoint,
   ): number | undefined {
     let numConverged = 0;
     let tolerance: number;
