@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master
+          ref: master # This should reflect the changelogs we are updating
           fetch-depth: 0
       - name: Set Git Config
         run: |
@@ -32,4 +32,4 @@ jobs:
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
       - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master # should match the ref in the checkout task
