@@ -27,6 +27,7 @@ export class ECSchemaXmlContext {
     this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
   }
 
+  /** @internal */
   public get nativeContext(): IModelJsNative.ECSchemaXmlContext {
     assert(undefined !== this._nativeContext);
     return this._nativeContext;
@@ -43,6 +44,7 @@ export class ECSchemaXmlContext {
   /**
    * Set the last locater to be used when trying to find a schema
    * @param locater Locater that should be used as the last locater when trying to find a schema
+   * @internal
    */
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
     this.nativeContext.setSchemaLocater(locater);
@@ -51,6 +53,7 @@ export class ECSchemaXmlContext {
   /**
    * Adds a schema locater as first to the current context
    * @param locater Locater to add to the current context
+   * @internal
    */
   public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
     this.nativeContext.setFirstSchemaLocater(locater);
