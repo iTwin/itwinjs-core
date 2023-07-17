@@ -560,36 +560,34 @@ export class CurveChainWireOffsetContext {
     return cp;
   }
   /**
-   * Create the offset of a single primitive as viewed in the xy-plane (ignoring z).
-   * * each primitive may be labeled (as an `any` object) with start or end point of base curve:
+   * Create the offset of a single curve primitive as viewed in the xy-plane (ignoring z).
+   * * Each primitive may be labeled (as an `any` object) with start or end point of base curve:
    *   * `(primitive as any).baseCurveStart: Point3d`
    *   * `(primitive as any).baseCurveEnd: Point3d`
-   * @param g primitive to offset
-   * @param offsetDistanceOrOptions offset distance (positive to left of g), or options object
+   * @param curve primitive to offset
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object
    */
   public static createSingleOffsetPrimitiveXY(
-    g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions
+    curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions
   ): CurvePrimitive | CurvePrimitive[] | undefined {
-    const offset = g.constructOffsetXY(offsetDistanceOrOptions);
+    const offset = curve.constructOffsetXY(offsetDistanceOrOptions);
     if (offset === undefined)
       return undefined;
     // decorate each offset with its base curve's endpoints
     if (Array.isArray(offset)) {
-      const basePrims = g.collectCurvePrimitives(undefined, true, true);
+      const basePrims = curve.collectCurvePrimitives(undefined, true, true);
       if (basePrims.length !== offset.length)
         return undefined; // unexpected aggregate curve type!
       for (let i = 0; i < basePrims.length; ++i)
         this.applyBasePoints(offset[i], basePrims[i].startPoint(), basePrims[i].endPoint());
       return offset;
     }
-    return this.applyBasePoints(offset, g.startPoint(), g.endPoint());
+    return this.applyBasePoints(offset, curve.startPoint(), curve.endPoint());
   }
   /**
    * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
-   * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * See [[JointOptions]] class doc for offset construction rules.
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */

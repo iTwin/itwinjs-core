@@ -16,6 +16,7 @@ import { MultiChainCollector } from "./internalContexts/MultiChainCollector";
 import { CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
+import { OffsetOptions } from "./OffsetOptions";
 import { Path } from "./Path";
 import { ChainTypes } from "./RegionOps";
 import { StrokeOptions } from "./StrokeOptions";
@@ -103,6 +104,23 @@ export class CurveOps {
     } else {
       return { insideOffsets: myOffsetA, outsideOffsets: myOffsetB, chains };
     }
+  }
+  /**
+   * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
+   * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
+   */
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined {
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
+  }
+  /**
+   * Create the offset of a single curve primitive as viewed in the xy-plane (ignoring z).
+   * @param curve primitive to offset
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object
+   */
+  public static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    return CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(curve, offsetDistanceOrOptions);
   }
   /**
    * Restructure curve fragments as Paths and Loops.

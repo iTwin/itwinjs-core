@@ -30,9 +30,10 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
-import { CurveChainWireOffsetContext, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
+import { JointOptions, OffsetOptions } from "./OffsetOptions";
 import { ParityRegion } from "./ParityRegion";
 import { Path } from "./Path";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
@@ -42,8 +43,6 @@ import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
-
-import type { JointOptions, OffsetOptions } from "./OffsetOptions";
 
 /**
  * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and
@@ -390,8 +389,6 @@ export class RegionOps {
    * the xy-plane.
    * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not
    * guarantee a simple area offset.
-   * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * See [[JointOptions]] class doc for offset construction rules.
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or JointOptions
@@ -407,15 +404,14 @@ export class RegionOps {
    * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
-   * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * See [[JointOptions]] class doc for offset construction rules.
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
   public static constructCurveXYOffset(
     curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions
   ): CurveCollection | undefined {
-    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
+    const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);
+    return CurveOps.constructCurveXYOffset(curves, offsetOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a region.
