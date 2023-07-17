@@ -1,7 +1,7 @@
 # Triggered on a new release git tag pushed, starts the final steps of a release.
 #
 # Steps currently include
-#   1. Cherry-pick changelogs, change history, and other doc updates to master
+#   1. Updating master changelogs using JS script
 
 name: Finalize Release
 
