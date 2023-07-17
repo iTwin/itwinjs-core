@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Using git termanology, current represents the branch targeted for changes, incoming is the branch with new changelogs
 currentPath="./temp-current-changelogs"
 incomingPath="./temp-incoming-changelogs"
@@ -37,6 +39,7 @@ rm -r $incomingPath
 rush publish --regenerate-changelogs #updates changelogs
 
 commitMessage=$(git log --format=%B -n 1 $commitid)
+git add .
 git commit -m "$commitMessage Changelogs"
 
 rush change --bulk --message "" --bump-type none
