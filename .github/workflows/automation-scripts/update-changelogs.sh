@@ -1,10 +1,10 @@
 #!/bin/bash
 
-targetPath="/temp-target-changelogs"
-incomingPath="/temp-incoming-changelogs"
+targetPath="./temp-target-changelogs"
+incomingPath="./temp-incoming-changelogs"
 
-sudo mkdir $targetPath
-sudo mkdir $incomingPath
+mkdir $targetPath
+mkdir $incomingPath
 
 # find the latest release, and make that the target for the changelogs
 targetBranch=$(git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/remotes\///')
@@ -25,7 +25,7 @@ fi
 
 # copy all changelogs from the incoming branch to a temp folder, the files will be named: package_name_CHANGELOG.json
 git checkout $commitId
-find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "/temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
+find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
 if [ -z "$targetBranch" ]; then
   echo "ERROR: the variable targetBranch was not delcared"
@@ -34,7 +34,7 @@ fi
 
 # copy all changelogs from the target branch to a temp folder, the files will be named: package_name_CHANGELOG.json
 git checkout $targetBranch
-find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "/temp-target-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
+find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
 # run js script that will add the new changes from incoming to the target changelogs and output new json files into temp-target-changelogs
 node ./.github/workflows/automation-scripts/update-changelogs.js $targetPath $incomingPath
