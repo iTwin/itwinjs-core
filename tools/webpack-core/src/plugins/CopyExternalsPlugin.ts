@@ -95,8 +95,6 @@ export class CopyExternalsPlugin {
     if (builtinModules.includes(pkgName))
       return true;
 
-    // Node v18 added "node:" prefix for loading core modules.
-    // https://nodejs.org/en/blog/announcements/v18-release-announce#test-runner-module-(experimental)
     if (pkgName.startsWith("node:") && builtinModules.includes(pkgName.substring(5)))
       return true;
 
