@@ -6,7 +6,7 @@ module.exports = [
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/indent": "off",
       "max-statements-per-line": "off",

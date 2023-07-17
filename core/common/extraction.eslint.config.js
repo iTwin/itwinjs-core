@@ -2,7 +2,7 @@ const iTwinPlugin = require("@itwin/eslint-plugin");
 
 module.exports = [
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     ...iTwinPlugin.configs.extensionExportsConfig,
   }
 ];

@@ -6,7 +6,7 @@ module.exports = [
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-var-requires": "off",

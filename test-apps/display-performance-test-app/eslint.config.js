@@ -6,7 +6,8 @@ const customLanguageOptions = {
   parserOptions: {
     project: [
       "./tsconfig.json",
-      "./tsconfig.backend.json"],
+      "./tsconfig.backend.json"
+    ],
     ecmaVersion: "latest",
     ecmaFeatures: {
       jsx: true,

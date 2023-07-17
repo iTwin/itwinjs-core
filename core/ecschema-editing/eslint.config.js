@@ -6,7 +6,7 @@ module.exports = [
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn"

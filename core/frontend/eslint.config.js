@@ -6,7 +6,7 @@ module.exports = [
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "@itwin/no-internal-barrel-imports": [
         "error",
@@ -31,8 +31,8 @@ module.exports = [
   {
     files: [
       "*.test.ts",
-      "*.test.tsx",
-      "**/test/**/*.ts"],
+      "**/test/**/*.ts"
+    ],
     rules: {
       "@itwin/no-internal-barrel-imports": "off"
     }

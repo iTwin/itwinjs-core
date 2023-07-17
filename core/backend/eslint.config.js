@@ -6,13 +6,16 @@ module.exports = [
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/no-non-null-assertion": "error"
     }
   },
   {
-    files: ["*.test.ts", "**/test/**/*.ts"],
+    files: [
+      "*.test.ts",
+      "**/test/**/*.ts"
+    ],
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off"
     }

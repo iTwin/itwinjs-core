@@ -7,7 +7,8 @@ const customLanguageOptions = {
     project: [
       "./tsconfig.json",
       "./tsconfig.backend.json",
-      "./tsconfig.buildScripts.json"],
+      "./tsconfig.buildScripts.json"
+    ],
     ecmaVersion: "latest",
     ecmaFeatures: {
       jsx: true,

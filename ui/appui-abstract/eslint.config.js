@@ -10,7 +10,7 @@ module.exports = [
     ...iTwinPlugin.configs.jsdocConfig,
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["**/*.ts"],
     rules: {
       "max-statements-per-line": "off"
     }
