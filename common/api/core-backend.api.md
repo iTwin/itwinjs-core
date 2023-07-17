@@ -1682,7 +1682,7 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class ECSchemaXmlContext {
     constructor();
     // (undocumented)

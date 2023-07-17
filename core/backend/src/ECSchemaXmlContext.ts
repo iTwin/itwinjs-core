@@ -17,7 +17,7 @@ export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 /** @internal */
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
-/** @internal */
+/** @beta */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 
