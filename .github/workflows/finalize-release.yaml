@@ -28,6 +28,7 @@ jobs:
         run: ./.github/workflows/automation-scripts/update-changelogs.sh
         env:
           commitId: ${{ github.sha }}
+          currentBranch: master
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
       - name: Push to master
