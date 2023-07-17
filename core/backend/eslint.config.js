@@ -12,10 +12,7 @@ module.exports = [
     }
   },
   {
-    files: [
-      "*.test.ts",
-      "**/test/**/*.ts"
-    ],
+    files: ["**/test/**/*.ts"],
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off"
     }

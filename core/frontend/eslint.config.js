@@ -29,10 +29,7 @@ module.exports = [
     }
   },
   {
-    files: [
-      "*.test.ts",
-      "**/test/**/*.ts"
-    ],
+    files: ["**/test/**/*.ts"],
     rules: {
       "@itwin/no-internal-barrel-imports": "off"
     }
