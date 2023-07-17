@@ -1,11 +1,22 @@
 #!/bin/bash
 
-# Using git termanology, current represents the branch targeted for changes, incoming is the branch with new changelogs
-currentPath="./temp-current-changelogs"
-incomingPath="./temp-incoming-changelogs"
+targetPath="/temp-target-changelogs"
+incomingPath="/temp-incoming-changelogs"
 
-mkdir $currentPath
-mkdir $incomingPath
+sudo mkdir $targetPath
+sudo mkdir $incomingPath
+
+# find the latest release, and make that the target for the changelogs
+targetBranch=$(git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/remotes\///')
+currentBranch=$(git branch --show-current)
+
+if [ "origin/$currentBranch" = "$targetBranch" ]; then
+  echo "The incoming branch is the latest release, so the target will be master branch"
+  targetBranch=master
+else
+  echo "The incoming branch is the $currentBranch, so the target will be $targetBranch branch"
+fi
+
 
 if [ -z "$commitId" ]; then
   echo "ERROR: the variable commitId was not delcared"
@@ -14,25 +25,25 @@ fi
 
 # copy all changelogs from the incoming branch to a temp folder, the files will be named: package_name_CHANGELOG.json
 git checkout $commitId
-find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
+find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "/temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
-if [ -z "$currentBranch" ]; then
-  echo "ERROR: the variable currentBranch was not delcared"
+if [ -z "$targetBranch" ]; then
+  echo "ERROR: the variable targetBranch was not delcared"
   exit 1
 fi
 
 # copy all changelogs from the target branch to a temp folder, the files will be named: package_name_CHANGELOG.json
-git checkout $currentBranch
-find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-current-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
+git checkout $targetBranch
+find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "/temp-target-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
-# run js script that will add the new changes from incoming to the target changelogs and output new json files into temp-current-changelogs
-node ./.github/workflows/automation-scripts/update-changelogs.js $currentPath $incomingPath
+# run js script that will add the new changes from incoming to the target changelogs and output new json files into temp-target-changelogs
+node ./.github/workflows/automation-scripts/update-changelogs.js $targetPath $incomingPath
 
 # copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-find ./temp-current-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-current-changelogs/\(.*\)_|./\1/|; s|_|/|g")"' \;
+find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\(.*\)_|./\1/|; s|_|/|g")"' \;
 
 # delete temps
-rm -r $currentPath
+rm -r $targetPath
 rm -r $incomingPath
 
 # regen CHANGELOG.md

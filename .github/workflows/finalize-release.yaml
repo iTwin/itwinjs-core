@@ -18,7 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master # This should reflect the changelogs we are updating
           fetch-depth: 0
       - name: Set Git Config
         run: |
@@ -28,7 +27,6 @@ jobs:
         run: ./.github/workflows/automation-scripts/update-changelogs.sh
         env:
           commitId: ${{ github.sha }}
-          currentBranch: master
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
       - name: Push to master
