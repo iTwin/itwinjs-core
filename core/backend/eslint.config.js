@@ -1,4 +1,5 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
 
 module.exports = [
   {
@@ -16,5 +17,6 @@ module.exports = [
     rules: {
       "@typescript-eslint/no-non-null-assertion": "off"
     }
-  }
+  },
+  ...eslintBaseConfig,
 ];

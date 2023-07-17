@@ -1,4 +1,5 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
 
 module.exports = [
   {
@@ -20,10 +21,5 @@ module.exports = [
       ]
     }
   },
-  {
-    files: ["**/test/**/*.ts"],
-    rules: {
-      "@itwin/no-internal-barrel-imports": "off"
-    }
-  }
+  ...eslintBaseConfig,
 ];
