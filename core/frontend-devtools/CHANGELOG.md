@@ -1,6 +1,11 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Wed, 12 Jul 2023 15:50:01 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Jul 2023 12:21:56 GMT and should not be manually modified.
+
+## 4.0.5
+Tue, 18 Jul 2023 12:21:56 GMT
+
+_Version update only_
 
 ## 4.0.4
 Wed, 12 Jul 2023 15:50:01 GMT
