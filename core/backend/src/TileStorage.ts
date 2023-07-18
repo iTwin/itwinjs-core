@@ -100,25 +100,26 @@ export class TileStorage {
   }
 
   public async *getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId> {
-    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 1000);
+    const iterator = this.getCachedTilePages(iModelId);
     for await (const page of iterator) {
-      const tiles = this.convertPage(page);
-      for (const tile of tiles) {
+      for (const tile of page) {
         yield tile;
       }
     }
   }
 
   private async *getCachedTilePages(iModelId: string): AsyncGenerator<TileId[]> {
-    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 1000);
-    let prevPage: ObjectReference[] = [];
-    for await (const page of iterator) {
-      // during the first iteration, prevPage will be empty. We want to immediately start loading the second page into memory, but
-      if (prevPage.length > 0)
-        yield this.convertPage(prevPage);
-      prevPage = page;
-    }
-    yield this.convertPage(prevPage);
+    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 500);
+    let prevPage: IteratorResult<ObjectReference[], any> | undefined = undefined;
+    do {
+      // initiate loading the next page
+      const page = iterator.next();
+      // process results from the previous page
+      if (prevPage)
+        yield this.convertPage(prevPage.value);
+      // finish loading the next page
+      prevPage = await page;
+    } while (!prevPage.done);
   }
 
   private convertPage(page: ObjectReference[]): TileId[] {
@@ -149,7 +150,11 @@ export class TileStorage {
    * Returns a list of all tiles that are found in the cloud cache.
    */
   public async getCachedTiles(iModelId: string): Promise<TileId[]> {
-    return this.convertPage(await this.storage.listObjects({ baseDirectory: iModelId }));
+    const results: TileId[] = [];
+    for await (const page of this.getCachedTilePages(iModelId)) {
+      results.push(...page);
+    }
+    return results;
   }
 
   /**
