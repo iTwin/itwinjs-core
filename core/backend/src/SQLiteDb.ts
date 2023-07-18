@@ -152,7 +152,7 @@ export class SQLiteDb {
    * @internal
    */
   public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => Promise<T>) {
-    return CloudSqlite.withWriteLock(args, async () => this.withOpenDb({ openMode: OpenMode.ReadWrite, ...args }, operation));
+    return CloudSqlite.withWriteLock(args, async () => this.withOpenDb({ ...args, openMode: args.openMode ?? OpenMode.ReadWrite }, operation));
   }
 
   /** vacuum this database

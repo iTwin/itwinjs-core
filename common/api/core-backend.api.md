@@ -1001,9 +1001,9 @@ export namespace CloudSqlite {
     // @internal (undocumented)
     export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
-        // (undocumented)
         container: CloudContainer;
         dbName: string;
+        openMode?: OpenMode;
         user: string;
     }
     export enum LoggingMask {
@@ -2960,7 +2960,7 @@ export abstract class IModelDb extends IModel {
     get isOpen(): boolean;
     get isReadonly(): boolean;
     // @internal (undocumented)
-    get isSchemaSyncEabled(): boolean;
+    get isSchemaSyncEnabled(): boolean;
     get isSnapshot(): boolean;
     isSnapshotDb(): this is SnapshotDb;
     // @internal
@@ -4605,12 +4605,7 @@ export namespace SchemaSync {
         constructor(props: CloudSqlite.ContainerAccessProps);
         // @internal (undocumented)
         getUri(): string;
-        static initializeDb(args: {
-            props: CloudSqlite.ContainerAccessProps;
-            initContainer?: {
-                blockSize?: number;
-            };
-        }): Promise<void>;
+        static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)

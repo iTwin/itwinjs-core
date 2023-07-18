@@ -810,18 +810,17 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public async initSchemaSynchronization() {
-    if (!this.schemaSyncAccess) {
+    if (!this.schemaSyncAccess)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
-    }
     this.nativeDb.saveChanges();
     const syncDb = this.schemaSyncAccess;
-    await this.schemaSyncAccess.withLockedDb("initialize schema synchronization", async () => {
+    await this.schemaSyncAccess.withLockedDb({ operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async () => {
       this.nativeDb.schemaSyncInit(syncDb.getUri());
-    }, OpenMode.Readonly);
+    });
   }
 
   /** @internal */
-  public get isSchemaSyncEabled() {
+  public get isSchemaSyncEnabled() {
     return this.nativeDb.schemaSyncEnabled();
   }
 
@@ -839,11 +838,11 @@ export abstract class IModelDb extends IModel {
       return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this.isSchemaSyncEabled) {
+    if (this.isSchemaSyncEnabled) {
       if (!this.schemaSyncAccess)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db store cloud access is not set.");
 
-      await this.schemaSyncAccess.withLockedDb("initialize schema synchronization", async () => {
+      await this.schemaSyncAccess.withLockedDb({ openMode: OpenMode.Readonly, operationName: "schema sync" }, async () => {
         const schemaSyncDbUri = this.schemaSyncAccess?.getUri();
         this.saveChanges();
         let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
@@ -853,10 +852,9 @@ export abstract class IModelDb extends IModel {
             await this.acquireSchemaLock();
           stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         }
-        if (DbResult.BE_SQLITE_OK !== stat) {
+        if (DbResult.BE_SQLITE_OK !== stat)
           throw new IModelError(stat, "Error importing schema");
-        }
-      }, OpenMode.Readonly);
+      });
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
         schemaLockHeld: true,
@@ -867,17 +865,16 @@ export abstract class IModelDb extends IModel {
         await this.acquireSchemaLock();
 
       const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-      if (DbResult.BE_SQLITE_OK !== stat) {
+      if (DbResult.BE_SQLITE_OK !== stat)
         throw new IModelError(stat, "Error importing schema");
-      }
     }
     this.clearCaches();
   }
   /** @internal */
   public synchronizationSchemas() {
-    if (this.isSchemaSyncEabled) {
+    if (this.isSchemaSyncEnabled) {
       if (!this.schemaSyncAccess)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync is not enabled");
 
       this.schemaSyncAccess.synchronizeWithCloud();
       this.schemaSyncAccess.openForRead();
@@ -901,11 +898,11 @@ export abstract class IModelDb extends IModel {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this.isSchemaSyncEabled) {
+    if (this.isSchemaSyncEnabled) {
       if (!this.schemaSyncAccess) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
       }
-      await this.schemaSyncAccess.withLockedDb("init schema sync", async () => {
+      await this.schemaSyncAccess.withLockedDb({ openMode: OpenMode.Readonly, operationName: "schemaSync" }, async () => {
         const schemaSyncDbUri = this.schemaSyncAccess?.getUri();
 
         this.saveChanges();
@@ -919,7 +916,7 @@ export abstract class IModelDb extends IModel {
         if (DbResult.BE_SQLITE_OK !== stat) {
           throw new IModelError(stat, "Error importing schema");
         }
-      }, OpenMode.Readonly);
+      });
     } else {
       if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();

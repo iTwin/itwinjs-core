@@ -10,29 +10,26 @@ import { AzuriteTest } from "./AzuriteTest";
 import { HubWrappers, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { Guid } from "@itwin/core-bentley";
 
-// spell:ignore mkdirs
+const containerId = "imodel-sync-itwin1";
+const storageType = "azure" as const;
 
-const blockSize = 64 * 1024;
-const propContainer = "imodel-sync-itwin1";
-
-async function initializeContainer(containerId: string) {
+async function initializeContainer() {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const
-    props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  await SchemaSync.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
+  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, storageType: "azure", containerId });
+  await SchemaSync.CloudAccess.initializeDb({ ...props, accessToken });
 }
 
-async function makeSchemaSync(moniker: string) {
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, writeable: true };
+async function makeSchemaSync(user: string) {
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
   const syncSchema = new SchemaSync.CloudAccess({ ...props, accessToken });
-  syncSchema.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  syncSchema.lockParams.moniker = moniker;
+  syncSchema.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
+  syncSchema.lockParams.user = user;
   return syncSchema;
 }
 
-describe("schema synchronization", function (this: Suite) {
+describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
 
   let sds1: SchemaSync.CloudAccess;
@@ -43,7 +40,7 @@ describe("schema synchronization", function (this: Suite) {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
-    await initializeContainer(propContainer);
+    await initializeContainer();
 
     sds1 = await makeSchemaSync("ss_b1");
     sds2 = await makeSchemaSync("ss_b2");
@@ -54,7 +51,7 @@ describe("schema synchronization", function (this: Suite) {
     IModelHost.authorizationClient = undefined;
   });
 
-  it("multiuser workflow", async () => {
+  it("multi user workflow", async () => {
     const iTwinId: string = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
@@ -76,12 +73,12 @@ describe("schema synchronization", function (this: Suite) {
     // initialize shared schema channel
     await b1.initSchemaSynchronization();
     b1.saveChanges();
-    assert.isTrue(b1.isSchemaSyncEabled);
+    assert.isTrue(b1.isSchemaSyncEnabled);
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
 
     // b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.isSchemaSyncEabled);
+    assert.isTrue(b2.isSchemaSyncEnabled);
 
     // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>

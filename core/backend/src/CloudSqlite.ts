@@ -247,6 +247,8 @@ export namespace CloudSqlite {
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
+    /** if present, open mode for Db. Default is ReadWrite */
+    openMode?: OpenMode;
   }
 
   /** Logging categories for `CloudCache.setLogMask` */
@@ -844,7 +846,7 @@ export namespace CloudSqlite {
       let lockObtained = false;
       const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler, openMode: args.openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
