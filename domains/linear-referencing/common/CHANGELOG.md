@@ -1,6 +1,11 @@
 # Change Log - @itwin/linear-referencing-common
 
-This log was last generated on Mon, 03 Jul 2023 15:28:41 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Jul 2023 19:31:25 GMT and should not be manually modified.
+
+## 4.0.4
+Wed, 12 Jul 2023 15:50:01 GMT
+
+_Version update only_
 
 ## 4.0.3
 Mon, 03 Jul 2023 15:28:41 GMT
@@ -23,6 +28,16 @@ Mon, 22 May 2023 15:34:14 GMT
 ### Updates
 
 - Update to eslint@8
+
+## 3.7.11
+Tue, 11 Jul 2023 17:17:22 GMT
+
+_Version update only_
+
+## 3.7.10
+Wed, 05 Jul 2023 13:41:21 GMT
+
+_Version update only_
 
 ## 3.7.9
 Tue, 20 Jun 2023 12:51:02 GMT
