@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { UnexpectedErrors } from "@itwin/core-bentley";
+import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ScreenViewport } from "../Viewport";
+import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
@@ -19,6 +19,7 @@ import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
+import * as sinon from "sinon";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -584,6 +585,19 @@ describe("Viewport", () => {
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
         expect(vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } })).not.to.throw;
         await vp.waitForSceneCompletion();
+      });
+    });
+  });
+
+  describe("Pixel selection", () => {
+    it("isPixelSelectable should return false when no map-layers ids", () => {
+      testBlankViewport((vp) => {
+        const stub = sinon.stub(Viewport.prototype, "mapLayerFromIds").callsFake(function _(_mapTreeId: Id64String, _layerTreeId: Id64String) {
+          return [];
+        });
+        const fakePixelData = {modelId: "123", elementId: "456"};
+        expect(vp.isPixelSelectable(fakePixelData as any)).to.be.true;
+        stub.restore();
       });
     });
   });
