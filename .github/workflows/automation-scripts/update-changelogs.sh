@@ -17,7 +17,6 @@ else
   echo "The incoming branch is the $currentBranch, so the target will be $targetBranch branch"
 fi
 
-
 if [ -z "$commitId" ]; then
   echo "ERROR: the variable commitId was not delcared"
   exit 1
