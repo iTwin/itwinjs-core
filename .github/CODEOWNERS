@@ -129,7 +129,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /extensions                           @aruniverse @calebmshafer
 /extensions/frontend-tiles            @iTwin/itwinjs-core-display @danieliborra
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
-/extensions/map-layers-*              @aruniverse @mdastous-bentley
+/extensions/map-layers-*              @aruniverse @mdastous-bentley @eringram
 
 /full-stack-tests/core                    @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig

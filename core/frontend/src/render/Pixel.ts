@@ -6,9 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
+import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
+import type { Viewport } from "../Viewport";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -33,6 +35,10 @@ export namespace Pixel {
     public readonly iModel?: IModelConnection;
     /** @internal */
     public readonly tileId?: string;
+    /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
+     * @beta
+     */
+    public readonly viewAttachmentId?: Id64String;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -47,6 +53,7 @@ export namespace Pixel {
       batchType?: BatchType;
       iModel?: IModelConnection;
       tileId?: string;
+      viewAttachmentId?: string;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -57,6 +64,7 @@ export namespace Pixel {
       this.planarity = args?.planarity ?? Planarity.Unknown;
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
+      this.viewAttachmentId = args?.viewAttachmentId;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -73,6 +81,92 @@ export namespace Pixel {
     public get geometryClass(): GeometryClass | undefined {
       return this.feature?.geometryClass;
     }
+
+    /** Computes the [[HitPriority]] of this pixel based on its [[type]] and [[planarity]]. */
+    public computeHitPriority(): HitPriority {
+      switch (this.type) {
+        case Pixel.GeometryType.Surface:
+          return Pixel.Planarity.Planar === this.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
+        case Pixel.GeometryType.Linear:
+          return HitPriority.WireEdge;
+        case Pixel.GeometryType.Edge:
+          return Pixel.Planarity.Planar === this.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
+        case Pixel.GeometryType.Silhouette:
+          return HitPriority.SilhouetteEdge;
+        default:
+          return HitPriority.Unknown;
+      }
+    }
+
+    /** Convert this pixel to a [[Pixel.HitProps]] suitable for constructing a [[HitDetail]].
+     * @param viewport The viewport in which the hit originated.
+     */
+    public toHitProps(viewport: Viewport): Pixel.HitProps {
+      let viewAttachment: ViewAttachmentHitInfo | undefined;
+      if (this.viewAttachmentId) {
+        const attachmentViewport = viewport.view.getAttachmentViewport(this.viewAttachmentId);
+        if (attachmentViewport)
+          viewAttachment = { viewport: attachmentViewport, id: this.viewAttachmentId };
+      }
+
+      return {
+        sourceId: this.elementId ?? Id64.invalid,
+        priority: this.computeHitPriority(),
+        distFraction: this.distanceFraction,
+        subCategoryId: this.subCategoryId,
+        geometryClass: this.geometryClass,
+        modelId: this.modelId,
+        tileId: this.tileId,
+        isClassifier: this.isClassifier,
+        sourceIModel: this.iModel,
+        viewAttachment,
+      };
+    }
+  }
+
+  /** Describes a subset of [[HitDetailProps]] computed from a [[Pixel.Data]], suitable for constructing a [[HitDetail]].
+   * For example, the following function creates a `HitDetail` from a `Pixel.Data` and other hit information:
+   * ```ts
+   *  function makeHitDetail(pixel: Pixel.Data, viewport: ScreenViewport, testPoint: Point3d, hitSource: HitSource, hitPoint: Point3d, distXY: number): HitDetail {
+   *    return new HitDetail({
+   *      ...pixel.toHitProps(viewport),
+   *      viewport, testPoint, hitSource, hitPoint, distXY,
+   *    };
+   *  }
+   * ```
+   * @see [[Data.toHitProps]] to convert a [[Pixel.Data]] to a `HitProps`.
+   * @public
+   */
+  export interface HitProps {
+    /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
+    sourceId: Id64String;
+    /** The hit geometry priority/classification. */
+    priority: HitPriority;
+    /** The distance in view coordinates between the hit and the near plane. */
+    distFraction: number;
+    /** The [SubCategory]($backend) to which the hit geometry belongs. */
+    subCategoryId?: Id64String;
+    /** The class of the hit geometry. */
+    geometryClass?: GeometryClass;
+    /** The Id of the [[ModelState]] from which the hit originated. */
+    modelId?: Id64String;
+    /** The IModelConnection from which the hit originated.
+     * This should almost always be left undefined, unless the hit is known to have originated from an iModel
+     * other than the one associated with the viewport.
+     * @internal
+     */
+    sourceIModel?: IModelConnection;
+    /** @internal chiefly for debugging */
+    tileId?: string;
+    /** True if the hit originated from a reality model classifier.
+     * @alpha
+     */
+    isClassifier?: boolean;
+    /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
+     * @note Only [[SheetViewState]]s can have view attachments.
+     * @beta
+     */
+    viewAttachment?: ViewAttachmentHitInfo;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */

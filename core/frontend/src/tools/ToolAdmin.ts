@@ -45,8 +45,9 @@ export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend =
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
 
-/** Class that maintains the state of tool settings properties for the current session
- * @internal
+/** Maintains the state of tool settings properties for the current session.
+ * @see [[ToolAdmin.toolSettingsState]] to access the state for the current session.
+ * @public
  */
 export class ToolSettingsState {
   /** Retrieve saved tool settings DialogItemValue by property name. */
@@ -319,6 +320,7 @@ interface ToolEvent {
 }
 
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
+ * @see [[IModelApp.toolAdmin]] to access the session's `ToolAdmin`.
  * @public
  * @extensions
  */
@@ -328,7 +330,7 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @internal */
   public readonly toolState = new ToolState();
-  /** @internal */
+  /** Maintains the state of tool settings properties for the current session. */
   public readonly toolSettingsState = new ToolSettingsState();
   private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
@@ -1765,9 +1767,9 @@ export class ToolAdmin {
     this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
-  /** @internal */
-  public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
-  /** @internal */
+  /** Fill the supplied button event from the current cursor location. */
+  public fillEventFromCursorLocation(ev: BeButtonEvent, useSnap = true) { this.currentInputState.toEvent(ev, useSnap); }
+  /** Fill the supplied button event from the last data button location. */
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   /** @internal */
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }

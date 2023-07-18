@@ -233,7 +233,7 @@ export class AccuSnap implements Decorator {
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
-  /** @internal */
+  /** Currently active snap */
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   /** Determine whether there is a current hit that is *hot*. */
   public get isHot(): boolean {
@@ -680,8 +680,9 @@ export class AccuSnap implements Decorator {
       }
     }
 
+    const hitVp = thisHit.viewAttachment ? thisHit.viewAttachment.viewport : thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
-      const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
+      const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
@@ -695,10 +696,10 @@ export class AccuSnap implements Decorator {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
       closePoint: thisHit.hitPoint,
-      worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
-      viewFlags: thisHit.viewport.viewFlags,
+      worldToView: hitVp.worldToViewMap.transform0.toJSON(),
+      viewFlags: hitVp.viewFlags,
       snapModes,
-      snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
+      snapAperture: hitVp.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
@@ -764,7 +765,11 @@ export class AccuSnap implements Decorator {
       };
 
       const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({ modelId: thisHit.modelId, elementId: thisHit.sourceId }) : undefined;
+      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
+        modelId: thisHit.modelId,
+        elementId: thisHit.sourceId,
+        viewAttachmentId: thisHit.viewAttachment?.id,
+      }) : undefined;
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
@@ -843,6 +848,21 @@ export class AccuSnap implements Decorator {
     IModelApp.accuDraw.onSnap(thisSnap); // AccuDraw can adjust nearest snap to intersection of circle (polar distance lock) or line (axis lock) with snapped to curve...
     hitList.setCurrentHit(thisHit);
     return thisSnap;
+  }
+
+  /** Request a snap from the backend for the supplied HitDetail.
+   * @param hit The HitDetail to snap to.
+   * @param snapMode Optional SnapMode, uses active snap modes if not specified.
+   * @return A Promise for the SnapDetail or undefined if no snap could be created.
+   */
+  public async doSnapRequest(hit: HitDetail, snapMode?: SnapMode): Promise<SnapDetail | undefined> {
+    let snapModes: SnapMode[];
+    if (undefined === snapMode)
+      snapModes = this.getActiveSnapModes();
+    else
+      snapModes = [snapMode];
+
+    return AccuSnap.requestSnap(hit, snapModes, this._hotDistanceInches, this.keypointDivisor);
   }
 
   private findHits(ev: BeButtonEvent, force: boolean = false): SnapStatus {

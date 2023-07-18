@@ -93,7 +93,7 @@ async function run() {
     return;
   }
 
-  await IModelHost.startup();
+  await IModelHost.startup({ profileName: "display-test-app" });
 
   const rootPath = process.argv[2];
   if (fs.statSync(rootPath).isDirectory())

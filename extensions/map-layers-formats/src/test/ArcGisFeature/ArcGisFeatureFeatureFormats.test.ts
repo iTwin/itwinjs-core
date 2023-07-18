@@ -13,7 +13,7 @@ import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFo
 import { esriFeatureSampleSource } from "./Mocks";
 import * as sinon from "sinon";
 
-describe("ArcGisFeaturePBF", () => {
+describe("ArcGisPbfFeatureReader", () => {
 
   const sandbox = sinon.createSandbox();
 

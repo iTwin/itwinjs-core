@@ -311,9 +311,10 @@ export class SchemaContext implements ISchemaItemLocater {
     return this._knownSchemas.addSchemaPromise(schemaInfo, schema, schemaPromise);
   }
 
-  /**
-   *
-   * @param schemaKey
+  /** Attempts to obtain a schema from this context that matches the specified criteria.
+   * @param schemaKey Identifies the schema to obtain.
+   * @param matchType Criteria by which to identify potentially matching schemas.
+   * @returns the schema matching the input criteria, or `undefined` if no such schema could be located.
    */
   public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
@@ -328,7 +329,7 @@ export class SchemaContext implements ISchemaItemLocater {
 
   /**
    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
-   * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
+   * The fully loaded schema can be gotten later from the context using [[getSchema]].
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -342,9 +343,11 @@ export class SchemaContext implements ISchemaItemLocater {
     return undefined;
   }
 
-  /**
-   *
-   * @param schemaKey
+  /** Attempts to obtain a schema from this context that matches the specified criteria.
+   * Will return undefined if the schema is partially loaded.  Use [[getSchema]] to await until the schema is completely loaded.
+   * @param schemaKey Identifies the schema to obtain.
+   * @param matchType Criteria by which to identify potentially matching schemas.
+   * @returns the schema matching the input criteria, or `undefined` if no such schema could be located.
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
@@ -370,7 +373,7 @@ export class SchemaContext implements ISchemaItemLocater {
 
   /**
    * Attempts to get a Schema from the context's cache.
-   * Will return undefined if the cached schema is partially loaded.  Use the async method to await partially loaded schemas.
+   * Will return undefined if the cached schema is partially loaded.  Use [[getCachedSchema]] to await until the schema is completely loaded.
    * @param schemaKey The SchemaKey to identify the Schema.
    * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
    * @internal

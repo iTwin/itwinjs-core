@@ -30,6 +30,7 @@ beta;ChangeSummary
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl
+beta;ChannelControl
 beta;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
@@ -52,6 +53,7 @@ public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
+beta;convertEC2SchemasToEC3Schemas(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
 internal;CrashReportingConfig
 internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -251,7 +253,7 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
-internal;MetaDataRegistry
+beta;MetaDataRegistry
 public;Model 
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 
@@ -352,6 +354,7 @@ public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
+public;SqliteStatement
 public;SqliteValue
 public;SqliteValueType
 public;StandaloneDb 
@@ -371,7 +374,7 @@ internal;TemplateViewDefinition3d
 public;TextAnnotation2d 
 public;TextAnnotation3d 
 public;Texture 
-internal;TextureCreateProps 
+beta;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 beta;TileStorage
 public;TitleText 
@@ -382,6 +385,7 @@ public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
+beta;upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[]
 public;UrlLink 
 internal;V1CheckpointManager
 internal;V2CheckpointAccessProps
@@ -393,6 +397,7 @@ public;ViewAttachmentLabel
 public;class ViewDefinition 
 public;ViewDefinition2d 
 public;class ViewDefinition3d 
+beta;ViewStore
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace

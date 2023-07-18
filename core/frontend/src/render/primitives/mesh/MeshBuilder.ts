@@ -28,6 +28,7 @@ export class MeshBuilder {
   public readonly areaTolerance: number;
   public readonly tileRange: Range3d;
   public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
+  public get displayParams(): DisplayParams { return this.mesh.displayParams; }
   public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
 
   /** create reference for triangleSet on demand */
@@ -242,8 +243,10 @@ export class MeshBuilder {
   }
 
   public addTriangle(triangle: Triangle): void {
-    // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
-    assert(!triangle.isDegenerate);
+    // Attempt to avoid adding vertices originating from degenerate triangles before we get here.
+    // Removed assert and just return if degenerate at this point because uncommon cases (not worth testing for) can still occur.
+    if (triangle.isDegenerate)
+      return;
 
     const onInsert = (_vk: TriangleKey) => this.mesh.addTriangle(triangle);
     this.triangleSet.insertKey(triangle, onInsert);
