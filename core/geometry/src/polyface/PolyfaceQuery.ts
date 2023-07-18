@@ -23,7 +23,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
-import { Range3d } from "../geometry3d/Range";
+import { Range2d, Range3d } from "../geometry3d/Range";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { UnionFindContext } from "../numerics/UnionFind";
@@ -35,7 +35,7 @@ import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
-import { ClipSweptLineStringContext, SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
+import { ClipSweptLineStringContext, EdgeClipData, SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
@@ -47,6 +47,8 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GriddedRaggedRange2dSet } from "./multiclip/GriddedRaggedRange2dSet";
+import { GriddedRaggedRange2dSetWithOverflow } from "./multiclip/GriddedRaggedRange2dSetWithOverflow";
 
 /**
  * Options carrier for sweeping linework onto meshes.
@@ -1050,11 +1052,11 @@ export class PolyfaceQuery {
       chainContext = ChainMergeContext.create();
     const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
     if (context) {
-      let visitor : PolyfaceVisitor;
+      let visitor: PolyfaceVisitor;
       if (polyfaceOrVisitor instanceof Polyface)
-          visitor = polyfaceOrVisitor.createVisitor(0);
-        else
-          visitor = polyfaceOrVisitor;
+        visitor = polyfaceOrVisitor.createVisitor(0);
+      else
+        visitor = polyfaceOrVisitor;
       const workNormal = Vector3d.createZero();
       for (visitor.reset(); visitor.moveToNextFacet();) {
         if (options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))) {
@@ -1074,6 +1076,55 @@ export class PolyfaceQuery {
     }
     return result;
   }
+  /**
+   * Sweeps the linestring in Z direction to intersections with a mesh.
+   * * the mesh may be held in a search structure.
+   * * Return collected line segments.
+   */
+  public static sweepLineStringToFacetsXY(
+    linestringPoints: GrowableXYZArray | Point3d[],
+    polyfaceOrVisitor: Polyface | PolyfaceVisitor,
+    searchStructure: GriddedRaggedRange2dSet<number> | GriddedRaggedRange2dSetWithOverflow<number>): CurvePrimitive[] {
+    let result: CurvePrimitive[] = [];
+    const chainContext = ChainMergeContext.create();
+    const sweepVector = Vector3d.create(0, 0, 1);
+    const searchRange = Range3d.create();
+    let visitor: PolyfaceVisitor;
+    if (polyfaceOrVisitor instanceof Polyface)
+      visitor = polyfaceOrVisitor.createVisitor(0);
+    else
+      visitor = polyfaceOrVisitor;
+    let lineStringSource;
+
+    linestringSource: GrowableXYZArray;
+    if (Array.isArray(linestringPoints))
+      lineStringSource = GrowableXYZArray.create(linestringPoints);
+    else
+      lineStringSource = linestringPoints;
+    for (let i = 1; i < lineStringSource.length; i++) {
+      const point0 = lineStringSource.getPoint3dAtUncheckedPointIndex(i - 1);
+      const point1 = lineStringSource.getPoint3dAtUncheckedPointIndex(i);
+      const edgeClipper = EdgeClipData.createPointPointSweep(point0, point1, sweepVector);
+      if (edgeClipper !== undefined) {
+        Range3d.createNull(searchRange);
+        searchRange.extendPoint(point0);
+        searchRange.extendPoint(point1);
+        searchStructure.searchRange2d(searchRange,
+          (_facetRange: Range2d, readIndex: number) => {
+            if (visitor.moveToReadIndex(readIndex))
+              edgeClipper.processPolygon(visitor.point,
+                (pointA: Point3d, pointB: Point3d) => {
+                  chainContext.addSegment(pointA, pointB);
+                });
+            return true;
+          });
+      }
+    }
+    chainContext.clusterAndMergeVerticesXYZ();
+    result = chainContext.collectMaximalChains();
+    return result;
+  }
+
   /** Find segments (within the linestring) which project to facets.
     * * Return collected line segments.
     * * This calls [[sweepLineStringToFacets]] with options created by

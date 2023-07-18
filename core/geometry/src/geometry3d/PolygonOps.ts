@@ -1325,7 +1325,33 @@ export class IndexedXYZCollectionPolygonOps {
     work.clear();
     return numCrossings;
   }
-
+  /** Return an array containing
+   * * All points that are exactly on the plane.
+   * * Crossing points between adjacent points that are (strictly) on opposite sides.
+   */
+  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: IndexedXYZCollection, crossings: Point3d[]) {
+    crossings.length = 0;
+    if (xyz.length >= 2) {
+      const xyz0 = this._xyz0Work;
+      xyz.getPoint3dAtUncheckedPointIndex(xyz.length - 1, xyz0);
+      let a0 = plane.altitude(xyz0);
+      const xyz1 = this._xyz1Work;
+      for (let i = 0; i < xyz.length; i++) {
+        xyz.getPoint3dAtUncheckedPointIndex(i, xyz1);
+        const a1 = plane.altitude(xyz1);
+        if (a0 * a1 < 0.0) {
+          // simple crossing. . .
+          const f = - a0 / (a1 - a0);
+          crossings.push(xyz0.interpolate(f, xyz1));
+        }
+        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
+          crossings.push(xyz1.clone());
+        }
+        xyz0.setFromPoint3d(xyz1);
+        a0 = a1;
+      }
+    }
+  }
   /**
    * * Input a "clipped" polygon (from clipConvexPolygonInPlace) with more than 2 crossings, i.e. is from a non-convex polygon with configurations like:
    *   * multiple distinct polygons
