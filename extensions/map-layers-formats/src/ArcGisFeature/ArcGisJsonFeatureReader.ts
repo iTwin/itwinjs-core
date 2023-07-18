@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisAttributeDrivenSymbology, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -19,12 +19,33 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
   }
 
+  private applySymbologyAttributes(attrSymbology: ArcGisAttributeDrivenSymbology, feature: any) {
+    if (attrSymbology && feature) {
+      const symbolFields = attrSymbology.rendererFields;
+      if (symbolFields && symbolFields.length > 0 && feature.attributes) {
+        const featureAttr: {[key: string]: any} = {};
+        for (const [attrKey, attrValue] of Object.entries(feature.attributes))
+          if (symbolFields.includes(attrKey)) {
+            featureAttr[attrKey] = attrValue;
+          }
+        attrSymbology.setActiveFeatureAttributes(featureAttr);
+      }
+    }
+  }
+
   public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
     const responseObj = response.data;
     if (responseObj.geometryType) {
+      const attrSymbology = renderer.attributeSymbology;
+
       const geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer, renderer.transform === undefined);
 
       for (const feature of responseObj.features) {
+        if (attrSymbology) {
+          // Read attributes if needed (attribute driven symbology)
+          this.applySymbologyAttributes(attrSymbology, feature);
+        }
+
         await geomReader.readGeometry(feature.geometry);
       }
     }
