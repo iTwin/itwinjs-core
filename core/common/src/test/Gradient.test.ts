@@ -195,6 +195,7 @@ describe("Gradient.Symb", () => {
     });
     symbArr.push(symb);
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     symbArr.sort(Gradient.Symb.compareSymb);
 
     for (let i = 1; i < symbArr.length; i++) {

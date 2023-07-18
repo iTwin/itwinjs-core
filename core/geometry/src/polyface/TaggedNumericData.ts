@@ -143,6 +143,7 @@ public doubleData?: number[];
     if (this.tagB !== other.tagB)
     return false;
     return Geometry.exactEqualNumberArrays(this.intData, other.intData)
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       && Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, Geometry.isAlmostEqualNumber);
   }
 

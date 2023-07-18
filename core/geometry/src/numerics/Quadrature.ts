@@ -199,11 +199,13 @@ export class GaussMapper {
     if (numGaussPoints > 5 || numGaussPoints < 1)
       numGaussPoints = 5;
     switch (numGaussPoints) {
+      /* eslint-disable @typescript-eslint/unbound-method */
       case 1: this.mapXAndWFunction = Quadrature.setupGauss1; break;
       case 2: this.mapXAndWFunction = Quadrature.setupGauss2; break;
       case 3: this.mapXAndWFunction = Quadrature.setupGauss3; break;
       case 4: this.mapXAndWFunction = Quadrature.setupGauss4; break;
       default: this.mapXAndWFunction = Quadrature.setupGauss5; break;
+      /* eslint-enable @typescript-eslint/unbound-method */
     }
 
   }

@@ -642,6 +642,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (SchemaItem.equalByKey(this, key))
         return true;
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       return this.traverseBaseClasses(SchemaItem.equalByKey, key);
     } else {
       assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
@@ -649,6 +650,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
     }
   }
@@ -661,6 +663,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (SchemaItem.equalByKey(this, targetClass))
       return true;
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
   }
 

@@ -241,6 +241,7 @@ export class CutLoopMergeContext {
       sortRay.direction.normalizeInPlace();
       for (const loop of this.inputLoops)
         loop.setSortCoordinates(sortRay);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.inputLoops.sort(CutLoop.sortFunction);
 
     }

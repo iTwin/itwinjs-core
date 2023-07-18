@@ -119,6 +119,8 @@ export class BriefcaseManager {
     if (this._initialized)
       return;
     this.setupCacheDir(cacheRootDir);
+    // disable this rule here since even though the method accesses "this", it is a static method accessing a static field of this class
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
   }

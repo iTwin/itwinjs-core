@@ -576,6 +576,7 @@ export class Transform implements BeJSONFunctions {
     const originY = this.origin.y;
     const originZ = this.origin.z;
     if (result) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const n = Transform.matchArrayLengths(points, result, Point3d.createZero);
       for (let i = 0; i < n; i++)
         this._matrix.multiplyInverseXYZAsPoint3d(
@@ -622,6 +623,7 @@ export class Transform implements BeJSONFunctions {
    */
   public multiplyPoint2dArray(points: Point2d[], result?: Point2d[]): Point2d[] {
     if (result) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const n = Transform.matchArrayLengths(points, result, Point2d.createZero);
       for (let i = 0; i < n; i++)
         Matrix3d.xyPlusMatrixTimesXY(this._origin, this._matrix, points[i], result[i]);
@@ -639,6 +641,7 @@ export class Transform implements BeJSONFunctions {
    */
   public multiplyPoint3dArray(points: Point3d[], result?: Point3d[]): Point3d[] {
     if (result) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const n = Transform.matchArrayLengths(points, result, Point3d.createZero);
       for (let i = 0; i < n; i++)
         Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, points[i], result[i]);

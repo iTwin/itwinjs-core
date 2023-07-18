@@ -233,6 +233,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
           { value: "counter-clockwise", label: "counter-clockwise" },
         ],
         label: "Angle Direction",
+        /* eslint-disable @typescript-eslint/unbound-method */
         getString: BearingQuantityType.bearingAngleDirectionGetter,
         setString: BearingQuantityType.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
@@ -252,6 +253,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
         label: "bearingGap",
         getBool: BearingQuantityType.bearingGapPropGetter,
         setBool: BearingQuantityType.bearingGapPropSetter,
+        /* eslint-enable @typescript-eslint/unbound-method */
       } as CheckboxFormatPropEditorSpec,
     ];
   }

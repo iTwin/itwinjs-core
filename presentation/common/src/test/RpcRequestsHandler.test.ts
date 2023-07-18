@@ -211,6 +211,7 @@ describe("RpcRequestsHandler", () => {
 
     before(() => {
       rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       defaultGetClientForInterfaceImpl = RpcManager.getClientForInterface;
       RpcManager.getClientForInterface = (() => rpcInterfaceMock.object) as any;
     });

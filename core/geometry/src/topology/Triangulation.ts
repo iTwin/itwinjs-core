@@ -668,6 +668,7 @@ export class Triangulator {
    */
   private static spliceLeftMostNodesOfHoles(graph: HalfEdgeGraph, outerNode: HalfEdge, leftMostHoleLoopNode: HalfEdge[]): HalfEdge | undefined {
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     leftMostHoleLoopNode.sort(Triangulator.compareX);
     let numFail = 0;
     // process holes from left to right

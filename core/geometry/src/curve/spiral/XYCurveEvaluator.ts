@@ -82,6 +82,7 @@ export abstract class XYCurveEvaluator {
   public static initWorkSpace() {
     XYCurveEvaluator._gaussX = new Float64Array(5);
     XYCurveEvaluator._gaussWeight = new Float64Array(5);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     XYCurveEvaluator._gaussMapper = Quadrature.setupGauss5;
   }
   /**

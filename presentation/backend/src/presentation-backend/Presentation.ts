@@ -132,6 +132,7 @@ export class Presentation {
     } else {
       this._clientsStorage = new FactoryBasedTemporaryStorage<ClientStoreItem>({
         factory: this.createClientManager.bind(this),
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         cleanupHandler: this.disposeClientManager,
         // cleanup unused managers every minute
         cleanupInterval: 60 * 1000,

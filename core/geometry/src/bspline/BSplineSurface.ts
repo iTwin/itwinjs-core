@@ -767,6 +767,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
 
   /** Return a simple array of the control points. */
   public copyPointsAndWeights(points: Point3d[], weights: number[],
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     formatter: (x: number, y: number, z: number) => any = Point3d.create) {
     Point4dArray.unpackFloat64ArrayToPointsAndWeights(this.coffs, points, weights,
       formatter);

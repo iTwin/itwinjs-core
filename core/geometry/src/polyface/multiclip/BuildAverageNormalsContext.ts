@@ -100,6 +100,7 @@ export class BuildAverageNormalsContext {
       }
     }
     // Sort by the vertex index so all the sectors around each vertex are clustered . .
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     sectors.sort(SectorData.cbVertexSort);
 
     // Walk the sectors around each vertex .  ..
@@ -137,6 +138,7 @@ export class BuildAverageNormalsContext {
       }
     }
     // Resort by original sector index.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     sectors.sort(SectorData.cbSectorSort);
     // normalize the sums and emplace in the facets  . . .
     polyface.data.normalIndex = [];

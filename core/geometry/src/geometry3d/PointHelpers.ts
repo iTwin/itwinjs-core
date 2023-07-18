@@ -359,6 +359,7 @@ export class Point4dArray {
   /** unpack from xyzw xyzw... array to array of Point3d and array of weight.
    */
   public static unpackFloat64ArrayToPointsAndWeights(data: Float64Array, points: Point3d[], weights: number[],
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     pointFormatter: (x: number, y: number, z: number) => any = Point3d.create) {
     points.length = 0;
     weights.length = 0;
@@ -832,6 +833,7 @@ export class Point3dArray {
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
   public static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][] {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const collector = new PointStringDeepXYZArrayCollector(this.xyzToArray);
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
@@ -876,6 +878,7 @@ export class Point3dArray {
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
   public static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[] {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const collector = new PointStringDeepXYZArrayCollector(Point3d.create);
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
@@ -921,6 +924,7 @@ export class Point3dArray {
     let n = points.length;
     // Get deep copy
     const xy1: Point3d[] = points.slice(0, n);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     xy1.sort(Geometry.lexicalXYLessThan);
     if (n < 3) {
       for (const p of xy1)
@@ -946,6 +950,7 @@ export class Point3dArray {
     const i0 = hullPoints.length - 1;
     xy1.length = numInside;
     xy1.push(hullPoints[0]);    // force first point to be reconsidered as final hull point.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     xy1.sort(Geometry.lexicalXYLessThan);
     n = xy1.length;
     // xy1.back () is already on stack.

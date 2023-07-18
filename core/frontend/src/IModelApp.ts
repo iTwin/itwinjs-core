@@ -340,6 +340,7 @@ export class IModelApp {
    * @note As of 4.x, iTwin.js requires WebGL 2. If the client does not support WebGL 2, the `status` field of the returned compatibility info will be [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility).
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     return queryRenderCompatibility(true, System.createContext);
   }
 
@@ -446,6 +447,7 @@ export class IModelApp {
     }
 
     this._wantEventLoop = false;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
     this.clearIntervalAnimation();
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
@@ -487,6 +489,7 @@ export class IModelApp {
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       requestAnimationFrame(IModelApp.eventLoop);
     }
   }
@@ -513,6 +516,7 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       window.addEventListener("resize", IModelApp.requestNextAnimation);
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
@@ -539,6 +543,7 @@ export class IModelApp {
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       window.removeEventListener("resize", IModelApp.requestNextAnimation);
     }
   }

@@ -50,6 +50,7 @@ export class Content {
       return undefined;
 
     if (typeof json === "string")
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       return JSON.parse(json, Content.reviver);
 
     const descriptor = Descriptor.fromJSON(json.descriptor);

@@ -170,10 +170,12 @@ describe("RecursiveClipSets", () => {
     const ck = new Checker();
     for (const perpendicularFactor of [-1.0, 1.0]) {
       for (const generatorFunction of [
+        /* eslint-disable @typescript-eslint/unbound-method */
         Sample.createFractalDiamondConvexPattern,
         Sample.createFractalSquareReversingPattern,
         Sample.createFractalLReversingPattern,
         Sample.createFractalLMildConcavePatter]) {
+        /* eslint-enable @typescript-eslint/unbound-method */
         const shifterA = new SaveAndRestoreCheckTransform(0, 20, 0);
         for (let numRecursion = 0; numRecursion < 4; numRecursion++) {
           const shifterB = new SaveAndRestoreCheckTransform(10, 0, 0);
@@ -282,12 +284,14 @@ describe("RecursiveClipSets", () => {
     const baseShift = Vector3d.create(-0.1, -0.1, 0);
     for (const perpendicularFactor of [-1.0, 1.0]) {
       for (const generatorFunction of [
+        /* eslint-disable @typescript-eslint/unbound-method */
         Sample.createFractalSquareReversingPattern,
         Sample.nonConvexQuadSimpleFractal,
         Sample.createFractalDiamondConvexPattern,
         Sample.createFractalSquareReversingPattern,
         Sample.createFractalLReversingPattern,
         Sample.createFractalLMildConcavePatter]) {
+        /* eslint-enable @typescript-eslint/unbound-method */
         const shifterA = new SaveAndRestoreCheckTransform(50, 0, 0);
         for (const depth of [0, 1, 2]) {
           const shifterB = new SaveAndRestoreCheckTransform(5, 0, 0);
@@ -438,12 +442,14 @@ describe("RecursiveClipSets", () => {
       for (const perpendicularFactor of [-1.0, 1.0]) {
         const y0 = 0;
         for (const generatorFunction of [
+        /* eslint-disable @typescript-eslint/unbound-method */
           Sample.createFractalSquareReversingPattern,
           Sample.nonConvexQuadSimpleFractal,
           Sample.createFractalDiamondConvexPattern,
           Sample.createFractalSquareReversingPattern,
           Sample.createFractalLReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
+        /* eslint-enable @typescript-eslint/unbound-method */
           for (const depth of [0, 1, 2]) {
             const polygon = generatorFunction(depth, perpendicularFactor);
             const range = Range3d.createArray(polygon);

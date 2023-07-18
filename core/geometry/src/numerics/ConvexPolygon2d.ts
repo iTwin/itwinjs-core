@@ -305,6 +305,7 @@ export class ConvexPolygon2d {
       return undefined;
     // Get deep copy
     const xy1: Point2d[] = points.slice(0, n);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     xy1.sort(Geometry.lexicalXYLessThan);
     hull.push(xy1[0]); // This is sure to stay
     hull.push(xy1[1]); // This one can be removed in loop.

@@ -1249,6 +1249,7 @@ export class PolyfaceQuery {
       }
       facetIndexAndVertexIndices.push(entry);
     }
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     facetIndexAndVertexIndices.sort(this.compareFacetIndexAndVertexIndices);
     let i0, i1;
     const n = facetIndexAndVertexIndices.length;

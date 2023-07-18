@@ -79,6 +79,7 @@ describe("Geometry.almostEqualArrays", () => {
   it("Geometry.almostEqualArrays", () => {
     const arr1: number[] = [];
     const arr2: number[] = [];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     assert.isTrue(Geometry.almostEqualArrays<number>(arr1, arr2, Geometry.isAlmostEqualNumber));
   });
 });
@@ -87,12 +88,15 @@ describe("Geometry.almostEqualNumberArrays", () => {
   it("Geometry.almostEqualNumberArrays", () => {
     let arr1: number[] = [];
     let arr2: number[] = [];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     assert.isTrue(Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
     arr1 = [1];
     arr2 = [1, 2];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
     arr1 = [1];
     arr2 = [2];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
   });
 });

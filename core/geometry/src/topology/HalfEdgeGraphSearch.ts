@@ -78,6 +78,7 @@ export class HalfEdgeGraphSearch {
    * @param areaFunction function to all to obtain area (or other numeric value)
    */
   public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     areaFunction: NodeToNumberFunction = HalfEdgeGraphSearch.signedFaceArea): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];

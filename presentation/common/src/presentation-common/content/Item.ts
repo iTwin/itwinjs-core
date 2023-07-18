@@ -111,6 +111,7 @@ export class Item {
     if (!json)
       return undefined;
     if (typeof json === "string")
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       return JSON.parse(json, Item.reviver);
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;

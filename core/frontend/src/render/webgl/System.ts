@@ -84,6 +84,7 @@ export class IdMap implements WebGLDisposable {
   /** Mapping of textures by their key values. */
   public readonly textures = new Map<string, RenderTexture>();
   /** Mapping of textures using gradient symbology. */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
   public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
