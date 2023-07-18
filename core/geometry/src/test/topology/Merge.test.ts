@@ -85,11 +85,9 @@ describe("GraphMerge", () => {
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
       GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0 += dy);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY), x0, y0 += dy, 0);
 
       Triangulator.triangulateAllPositiveAreaFaces(graph);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY), x0, y0 += dy, 0);
 
       const summary1 = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, true);

@@ -113,7 +113,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public static initWorkSpace() {
     IntegratedSpiral3d._gaussFraction = new Float64Array(5);
     IntegratedSpiral3d._gaussWeight = new Float64Array(5);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     IntegratedSpiral3d._gaussMapper = Quadrature.setupGauss5;
   }
   /** Evaluate and sum the gauss quadrature formulas to integrate cos(theta), sin(theta) fractional subset of a reference length.

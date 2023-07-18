@@ -64,7 +64,6 @@ export class RpcMarshaling {
 
     marshalingTarget = serialized;
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     serialized.objects = JSON.stringify(value, WireFormat.marshal);
     marshalingTarget = undefined as any;
     chunkThreshold = 0;
@@ -82,7 +81,6 @@ export class RpcMarshaling {
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     let result;
     try {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       result = JSON.parse(value.objects, WireFormat.unmarshal);
     } catch (error) {
       if (error instanceof SyntaxError)

@@ -129,7 +129,6 @@ export class IndexedEdgeMatcher {
   }
   /** Sort the edge index array. */
   public sort() {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     this.edges.sort(SortableEdge.lessThan);
   }
   /** Create a single or compound SortableEdgeCluster in dest. */

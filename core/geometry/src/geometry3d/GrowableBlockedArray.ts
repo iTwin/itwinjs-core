@@ -179,7 +179,6 @@ export class GrowableBlockedArray {
     return ia - ib; // so original order is maintained among duplicates !!!!
   }
   /** Return an array of block indices sorted per compareLexicalBlock function */
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public sortIndicesLexical(compareBlocks: BlockComparisonFunction = GrowableBlockedArray.compareLexicalBlock): Uint32Array {
     const n = this._inUse;
     // let numCompare = 0;

@@ -205,7 +205,6 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     return JSON.parse(await this.request(params), Content.reviver);
   }
 

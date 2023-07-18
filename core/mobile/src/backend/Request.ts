@@ -256,7 +256,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {

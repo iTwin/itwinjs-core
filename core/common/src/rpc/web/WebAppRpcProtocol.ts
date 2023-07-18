@@ -170,7 +170,6 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Constructs an HTTP protocol. */
   public constructor(configuration: RpcConfiguration) {
     super(configuration);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     this.events.addListener(WebAppRpcLogging.logProtocolEvent);
   }
 }

@@ -199,11 +199,9 @@ export class PropertyMetaData implements PropertyMetaDataProps {
           return jsonObj; // this works even for arrays or strings that are JSON because the parsed JSON is already the right type
 
         case PrimitiveTypeCode.Point2d:
-          // eslint-disable-next-line @typescript-eslint/unbound-method
           return this.createValueOrArray(Point2d.fromJSON, jsonObj);
 
         case PrimitiveTypeCode.Point3d:
-          // eslint-disable-next-line @typescript-eslint/unbound-method
           return this.createValueOrArray(Point3d.fromJSON, jsonObj);
       }
     }

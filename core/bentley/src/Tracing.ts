@@ -131,12 +131,10 @@ export class Tracing {
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
     Tracing._tracer = tracer;
     Tracing._openTelemetry = api;
-    /* eslint-disable @typescript-eslint/unbound-method */
     Logger.logTrace = Tracing.withOpenTelemetry(Logger.logTrace);
     Logger.logInfo = Tracing.withOpenTelemetry(Logger.logInfo);
     Logger.logWarning = Tracing.withOpenTelemetry(Logger.logWarning);
     Logger.logError = Tracing.withOpenTelemetry(Logger.logError);
-    /* eslint-enable @typescript-eslint/unbound-method */
   }
 
   private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {

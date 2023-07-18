@@ -57,7 +57,6 @@ export class RpcTrace {
 
 /** @internal */
 export function initializeTracing(enableOpenTelemetry: boolean = false) {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 
   if (enableOpenTelemetry) {
@@ -66,7 +65,6 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
       const api = require("@opentelemetry/api");
       const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
       Tracing.enableOpenTelemetry(tracer, api);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/naming-convention

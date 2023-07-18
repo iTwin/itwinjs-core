@@ -318,13 +318,11 @@ describe("Regularize", () => {
       let axMax = 0.0;
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         for (const generatorFunction of [
-          /* eslint-disable @typescript-eslint/unbound-method */
           Sample.createFractalSquareReversingPattern,
           Sample.createFractalDiamondConvexPattern,
           Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
-          /* eslint-enable @typescript-eslint/unbound-method */
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             const transform0 = Transform.createFixedPointAndMatrix(points[0], Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
@@ -367,7 +365,6 @@ function testRegularize(
   GeometryCoreTestIO.captureGeometry(allGeometry, mesh, dx, dy);
   const monotoneFaces: HalfEdge[] = [];
   const nonMonotoneFaces: HalfEdge[] = [];
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   RegularizationContext.collectMappedFaceRepresentatives(graph, true, RegularizationContext.isMonotoneFace, monotoneFaces, nonMonotoneFaces);
   if (monotoneFaces.length !== 0) {
     const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, monotoneFaces);
@@ -433,7 +430,6 @@ function testFullGraphRegularize(
   GeometryCoreTestIO.captureGeometry(allGeometry, mesh, dx, dy);
   const monotoneFaces: HalfEdge[] = [];
   const nonMonotoneFaces: HalfEdge[] = [];
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   RegularizationContext.collectMappedFaceRepresentatives(graph, true, RegularizationContext.isMonotoneFace, monotoneFaces, nonMonotoneFaces);
   const interiorMonotone = [];
   const exteriorMonotone = [];
@@ -635,7 +631,6 @@ function testFullGraphRegularizeAndTriangulate(
   GeometryCoreTestIO.captureGeometry(allGeometry, mesh, dx, dy);
   const monotoneFaces: HalfEdge[] = [];
   const nonMonotoneFaces: HalfEdge[] = [];
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   RegularizationContext.collectMappedFaceRepresentatives(graph, true, RegularizationContext.isMonotoneFace, monotoneFaces, nonMonotoneFaces);
   for (const seed of monotoneFaces) {
     if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR))

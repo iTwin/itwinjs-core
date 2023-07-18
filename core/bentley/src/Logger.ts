@@ -232,7 +232,6 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public static logException(category: string, err: any, log: LogFunction = Logger.logError): void {
     log(category, Logger.getExceptionMessage(err), () => {
       return { ...BentleyError.getErrorMetadata(err), exceptionType: err.constructor.name };

@@ -23,7 +23,6 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public priorityQueue: PriorityQueue<HalfEdge>;
   public activeEdges: HalfEdge[];
   public constructor(
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp) {
     this.priorityQueue = new PriorityQueue(compare);
     this.activeEdges = [];

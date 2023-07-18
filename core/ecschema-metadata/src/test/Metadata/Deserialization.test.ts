@@ -206,7 +206,6 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
@@ -274,7 +273,6 @@ describe("Full Schema Deserialization", () => {
         ],
       };
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       const locater2 = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
       locater2.addSchema("RefSchemaC", schemaCJson);
       locater2.addSchema("RefSchemaD", schemaDJson);
@@ -343,7 +341,6 @@ describe("Full Schema Deserialization", () => {
         alias: "d",
       };
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);

@@ -1585,10 +1585,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Rely on the builder's compress step to find common vertex coordinates
    * @internal
    */
-  /* eslint-disable @typescript-eslint/unbound-method */
   public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior,
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = HalfEdge.testMateMaskExterior) {
-  /* eslint-enable @typescript-eslint/unbound-method */
     let index = 0;
     const needNormals = this._options.needNormals;
     let normalIndex = 0;
@@ -1640,7 +1638,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
    * @internal
    */
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);

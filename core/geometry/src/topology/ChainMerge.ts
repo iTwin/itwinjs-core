@@ -197,7 +197,6 @@ export class ChainMergeContext {
       p.sortData = this.primarySortKey(p);
     }
     const sortArray = this._graph.allHalfEdges.slice();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     sortArray.sort(ChainMergeContext.nodeCompareSortData);
     const xyzTolerance = this._options.tolerance;
     // A node is unvisited if it is its own vertex successor !!!

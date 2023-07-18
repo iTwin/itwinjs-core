@@ -104,9 +104,7 @@ export class GraphChecker {
   }
   public static printToConsole = true;
   public static dumpGraph(graph: HalfEdgeGraph | undefined,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     formatNode: NodeFunction = HalfEdge.nodeToIdXYString,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     formatNodeWithoutCoordinates: NodeFunction = HalfEdge.nodeToId) {
     if (graph === undefined) {
       GeometryCoreTestIO.consoleLog("   **** EMPTY GRAPH ****");
@@ -127,7 +125,6 @@ export class GraphChecker {
       const totalDistance = v.sumAroundVertex((node: HalfEdge) => node.distanceXY(v));
       if (totalDistance !== 0) { // output full coordinates all the way around.
         vData.push("INCONSISTENT VERTEX XY");
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         vData.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
       } else
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
@@ -358,10 +355,8 @@ describe("VUGraph", () => {
     if (ck.testExactNumber(1, componentsB.length, "Expect single component")) {
       ck.testExactNumber(numFaces, componentsB[0].length, "face count from search");
     }
-    /* eslint-disable @typescript-eslint/unbound-method */
     ck.testExactNumber(1, graph.countFaceLoopsWithMaskFilter(HalfEdge.filterIsMaskOn, HalfEdgeMask.EXTERIOR), "Single exterior after parity");
     ck.testExactNumber(numInteriorFaces, graph.countFaceLoopsWithMaskFilter(HalfEdge.filterIsMaskOff, HalfEdgeMask.EXTERIOR), "Single exterior after parity");
-    /* eslint-disable @typescript-eslint/unbound-method */
     GraphChecker.validateCleanLoopsAndCoordinates(ck, graph);
     ck.testTrue(HalfEdgePointerInspector.inspectGraph(graph, true), "Merged Graph HalfEdgeGraph pointer properties");
     ck.testTrue(HalfEdgePointerInspector.inspectGraph(graph, false), "Merged Graph HalfEdgeGraph pointer properties");

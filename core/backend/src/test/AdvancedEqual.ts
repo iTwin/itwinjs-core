@@ -36,7 +36,6 @@ declare global {
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-// eslint-disable-next-line @typescript-eslint/unbound-method
 const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
 
 /** normalize a classname for comparisons */

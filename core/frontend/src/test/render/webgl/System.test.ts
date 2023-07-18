@@ -489,7 +489,6 @@ describe("System", () => {
   });
 
   describe("context loss", () => {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const contextLossHandler = RenderSystem.contextLossHandler;
 
     beforeEach(async () => {

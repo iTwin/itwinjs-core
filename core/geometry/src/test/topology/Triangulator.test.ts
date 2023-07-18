@@ -365,13 +365,11 @@ describe("Triangulation", () => {
         let yMax = 0.0;
         const baseVectorB = baseVectorA.clone();
         for (const generatorFunction of [
-          /* eslint-disable @typescript-eslint/unbound-method */
           Sample.createFractalSquareReversingPattern,
           Sample.createFractalDiamondConvexPattern,
           Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
-          /* eslint-enable @typescript-eslint/unbound-method */
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             const transform0 = Transform.createFixedPointAndMatrix(points[0], Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
@@ -1102,13 +1100,11 @@ describe("Triangulation", () => {
     for (const numRecursion of [1, 2, 3]) {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         for (const generatorFunction of [
-          /* eslint-disable @typescript-eslint/unbound-method */
           Sample.createFractalSquareReversingPattern,
           Sample.createFractalDiamondConvexPattern,
           Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
-          /* eslint-enable @typescript-eslint/unbound-method */
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             let range = Range3d.createArray(points);

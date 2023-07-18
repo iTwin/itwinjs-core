@@ -491,7 +491,6 @@ export class IModelHost {
     this.configuration = options;
     this.setupTileCache();
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
   }
@@ -523,7 +522,6 @@ export class IModelHost {
     this._appWorkspace = undefined;
 
     CloudSqlite.CloudCaches.destroy();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

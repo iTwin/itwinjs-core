@@ -233,7 +233,6 @@ export class RegularizationContext {
   }
   private downwardConnectionFromBottomPeak(node: HalfEdge): HalfEdge | undefined {
     let connectTo;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const upFunction = HalfEdgeGraphOps.compareNodesYXUp;
     const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0)!;
     const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0)!;
@@ -287,7 +286,6 @@ export class RegularizationContext {
    */
   private runRegularization(upSweep: boolean = true, downSweep: boolean = true) {
     if (upSweep) {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
       for (const bottomPeak of this.bottomPeaks) {
         // GeometryCoreTestIO.consoleLog("SEARCH", bottomPeak.id, [bottomPeak.x, bottomPeak.y]);
@@ -305,7 +303,6 @@ export class RegularizationContext {
       this.negateXY();
       // swap the various p and down seeds ....
       this.swapArrays();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
       for (const bottomPeak of this.bottomPeaks) {
         if (!HalfEdgeGraphOps.isDownPeak(bottomPeak))

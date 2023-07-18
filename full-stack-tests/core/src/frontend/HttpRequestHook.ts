@@ -359,7 +359,6 @@ export class HttpRequestHook {
     }
     if (typeof win[NATIVE_FETCH] === "undefined") {
       win[NATIVE_FETCH] = window.fetch;
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       win.fetch = FetchProxy.fetch;
     }
   }

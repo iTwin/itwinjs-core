@@ -240,7 +240,6 @@ export class HalfEdgeGraphSpineContext {
         candidates.push(new NodeSortKey(node, b));
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     candidates.sort(NodeSortKey.compareForSort);
 
     let key;

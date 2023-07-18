@@ -272,7 +272,6 @@ export class RegionOpsFaceToFaceSearch {
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
     const callbacks = RegionBooleanContext.create(opA, opB);
     callbacks.graph = graph;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     callbacks.faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
 
     // Add all the members in groupA ..
@@ -749,7 +748,6 @@ export class GraphComponent {
     }
     this.faceAreas.length = 0;
     if (!faceAreaFunction)
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
