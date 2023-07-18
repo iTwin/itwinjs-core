@@ -17,20 +17,18 @@ export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 /** @internal */
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
-/** The schema context for deserializing ECSchemas.
- * The schema context is made up of a group of Schema Locators. It can help improve the performance by caching schema information in memory.
- *
- * For example, to read a schema from Xml file, create a new schema context or use a existing one and use [[ECSchemaXmlContext.readSchemaFromXmlFile]] API
- * ```ts
- * const schemaXmlPath = path.join(KnownTestLocations.assetsDir, "TestSchema.ecschema.xml");
- * const context = new ECSchemaXmlContext();
- * const schema = context.readSchemaFromXmlFile(schemaXmlPath);
- * ```
+/** Context used when deserializing a [Schema]($ecschema-metadata) from an XML file.
+ * A schema may contain references to other schemas, which may reside elsewhere on the local disk than the referencing schema.
+ * The context maintains a list of directories ("search paths") to search for referenced schemas. Directories can be appended to the list via [[addSchemaPath]].
+ * When a referenced schema needs to be located, the list of directories is searched in the order in which each was added.
+ * Once located, the schema is cached to avoid performing repeated lookups in the file system.
+ * @see [[readSchemaFromXmlFile]] to deserialize a schema.
  * @beta
  */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 
+  /** Construct a context with an empty list of search paths. */
   constructor() {
     this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
   }
@@ -41,17 +39,15 @@ export class ECSchemaXmlContext {
     return this._nativeContext;
   }
 
-  /**
-   * Adds a file path to the list of file paths that will be used to search for a matching schema name.
-   * The list of file paths is traversed in a first-in, first-out (FIFO) order, meaning that the first file path added to the list is the first one traversed, and so on.
-   * @param searchPath Path to the directory where schemas can be found
+  /** Append a directory to the list of directories that will be searched to locate referenced schemas.
+   * The directories are searched in the order in which they were added to the list.
+   * @param searchPath The absolute path to the directory to search.
    */
   public addSchemaPath(searchPath: string): void {
     this.nativeContext.addSchemaPath(searchPath);
   }
 
-  /**
-   * Set the last locater to be used when trying to find a schema
+  /** Set the last locater to be used when trying to find a schema
    * @param locater Locater that should be used as the last locater when trying to find a schema
    * @internal
    */
@@ -59,8 +55,7 @@ export class ECSchemaXmlContext {
     this.nativeContext.setSchemaLocater(locater);
   }
 
-  /**
-   * Adds a schema locator to the beginning of the list of locators used to search for schemas.
+  /** Adds a schema locator to the beginning of the list of locators used to search for schemas.
    * This schema locator will be prioritized over other locators when searching for schemas in the current context.
    * @param locater Locater to add to the current context
    * @internal
@@ -69,9 +64,9 @@ export class ECSchemaXmlContext {
     this.nativeContext.setFirstSchemaLocater(locater);
   }
 
-  /**
-   * Reads an ECSchema from an ECSchemaXML-formatted file
-   * @param filePath The absolute path of the file
+  /** Deserialize a [Schema]($ecschema-metadata) from an ECSchemaXML-formatted file.
+   * @param filePath The absolute path of the XML file.
+   * @returns The JSON representation of the schema, as a [SchemaProps]($ecschema-metadata).
    * @throws [[IModelError]] if there is a problem reading schema from the XML file
    */
   public readSchemaFromXmlFile(filePath: string): any {
