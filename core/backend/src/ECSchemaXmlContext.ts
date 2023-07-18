@@ -17,7 +17,15 @@ export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 /** @internal */
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
-/** Context for deserializing ECSchemas
+/** The schema context for deserializing ECSchemas.
+ * The schema context is made up of a group of Schema Locators. It can help improve the performance by caching schema information in memory.
+ *
+ * For example, to read a schema from Xml file, create a new schema context or use a existing one and use [[ECSchemaXmlContext.readSchemaFromXmlFile]] API
+ * ```ts
+ * const schemaXmlPath = path.join(KnownTestLocations.assetsDir, "TestSchema.ecschema.xml");
+ * const context = new ECSchemaXmlContext();
+ * const schema = context.readSchemaFromXmlFile(schemaXmlPath);
+ * ```
  * @beta
  */
 export class ECSchemaXmlContext {
@@ -34,7 +42,8 @@ export class ECSchemaXmlContext {
   }
 
   /**
-   * Adds a file path that should be used to search for a matching schema name
+   * Adds a file path to the list of file paths that will be used to search for a matching schema name.
+   * The list of file paths is traversed in a first-in, first-out (FIFO) order, meaning that the first file path added to the list is the first one traversed, and so on.
    * @param searchPath Path to the directory where schemas can be found
    */
   public addSchemaPath(searchPath: string): void {
@@ -51,7 +60,8 @@ export class ECSchemaXmlContext {
   }
 
   /**
-   * Adds a schema locater as first to the current context
+   * Adds a schema locator to the beginning of the list of locators used to search for schemas.
+   * This schema locator will be prioritized over other locators when searching for schemas in the current context.
    * @param locater Locater to add to the current context
    * @internal
    */
@@ -62,6 +72,7 @@ export class ECSchemaXmlContext {
   /**
    * Reads an ECSchema from an ECSchemaXML-formatted file
    * @param filePath The absolute path of the file
+   * @throws [[IModelError]] if there is a problem reading schema from the XML file
    */
   public readSchemaFromXmlFile(filePath: string): any {
     const response = this.nativeContext.readSchemaFromXmlFile(filePath);
