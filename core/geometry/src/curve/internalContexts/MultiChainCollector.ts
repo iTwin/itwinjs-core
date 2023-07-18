@@ -28,6 +28,7 @@ import { StrokeOptions } from "../StrokeOptions";
  * * The caller makes a sequence of calls to announce individual primitives.
  * * This collector (unlike the simpler [[ChainCollectorContext]]) expects to have inputs arriving in random order, leaving multiple open chains in play at any time.
  * * When all curves have been announced, the call to `grabResults` restructures the various active chains into Paths (and optionally, Loops).
+ * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
  * * Usage pattern is
  *   * initialization: `context = new MultiChainCollector(gapTol, planeTol)`
  *   * many times:

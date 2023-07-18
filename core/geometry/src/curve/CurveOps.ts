@@ -84,6 +84,7 @@ export class CurveOps {
    * Restructure curve fragments as Paths and Loops, and construct xy-offsets of the chains.
    * * If the inputs do not form Loop(s), the classification of offsets is suspect.
    * * For best offset results, the inputs should be parallel to the xy-plane.
+   * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
    * @param fragments fragments to be chained and offset
    * @param offsetDistance offset distance, applied to both sides of each fragment to produce inside and outside xy-offset curves.
    * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail
@@ -124,6 +125,7 @@ export class CurveOps {
   }
   /**
    * Restructure curve fragments as Paths and Loops.
+   * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
    * @param fragments fragments to be chained
    * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
@@ -138,6 +140,7 @@ export class CurveOps {
   }
   /**
    * Restructure curve fragments as Paths and Loops, to be stroked and passed into the callback.
+   * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
    * @param fragments fragments to be chained and stroked
    * @param announceChain callback to process each stroked Path and Loop
    * @param strokeOptions options for stroking the chains
