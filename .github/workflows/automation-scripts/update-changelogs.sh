@@ -7,14 +7,14 @@ mkdir $targetPath
 mkdir $incomingPath
 
 # find the latest release, and make that the target for the changelogs
-targetBranch=$(git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/remotes\///')
+targetBranch=$(git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\///')
 currentBranch=$(git branch --show-current)
 
 if [ "origin/$currentBranch" = "$targetBranch" ]; then
-  echo "The incoming branch is the latest release, so the target will be master branch"
+  echo "The current branch is the latest release, so the target will be master branch"
   targetBranch=master
 else
-  echo "The incoming branch is the $currentBranch, so the target will be $targetBranch branch"
+  echo "The current branch is the $currentBranch, so the target will be $targetBranch branch"
 fi
 
 if [ -z "$commitId" ]; then
