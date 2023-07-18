@@ -6,7 +6,7 @@ incomingPath="./temp-incoming-changelogs"
 mkdir $targetPath
 mkdir $incomingPath
 
-# find the latest release, and make that the target for the changelogs
+# find the latest release branch, and make that the target for the changelogs
 targetBranch=$(git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\///')
 currentBranch=$(git branch --show-current)
 commitMessage=$(git log --format=%B -n 1)
@@ -18,14 +18,10 @@ else
   echo "The current branch is the $currentBranch, so the target will be $targetBranch branch"
 fi
 
+# copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
 find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
-if [ -z "$targetBranch" ]; then
-  echo "ERROR: the variable targetBranch was not delcared"
-  exit 1
-fi
-
-# copy all changelogs from the target branch to a temp folder, the files will be named: package_name_CHANGELOG.json
+# copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 git checkout $targetBranch
 find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;
 
