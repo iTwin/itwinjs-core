@@ -2,8 +2,63 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module ECSqlExpr
+ */
+
 import { assert } from "chai";
-import { AllOrDistinctOp, AssignmentsClauseExpr, BetweenExpr, BinaryBooleanExpr, BinaryBooleanOp, BinaryValueExpr, BinaryValueOp, BooleanExpr, CastExpr, ClassNameExpr, CteBlockExpr, CteBlockRefExpr, CteExpr, DeleteStatementExpr, DerivedPropertyExpr, ECSqlOptionsClauseExpr, Expr, ExprType, FromClauseExpr, FuncCallExpr, GroupByClauseExpr, HavingClauseExpr, IIFExpr, InExpr, InsertStatementExpr, IsNullExpr, IsOfTypeExpr, LikeExpr, LimitClauseExpr, LiteralExpr, LiteralValueType, MemberFuncCallExpr, NotExpr, OrderByClauseExpr, OrderBySpecExpr, ParameterExpr, PropertyNameExpr, QualifiedJoinExpr, SearchCaseExpr, SelectExpr, SelectStatementExpr, SelectionClauseExpr, StatementExpr, SubqueryExpr, SubqueryRefExpr, SubqueryTestExpr, TableValuedFuncExpr, UnaryValueExpr, UpdateStatementExpr, UsingRelationshipJoinExpr, WhereClauseExp } from "../../ECSqlExpr";
+import {
+  AllOrDistinctOp,
+  AssignmentExpr,
+  BetweenExpr,
+  BinaryBooleanExpr,
+  BinaryBooleanOp,
+  BinaryValueExpr,
+  CastExpr,
+  ClassNameExpr,
+  CteBlockExpr,
+  CteBlockRefExpr,
+  CteExpr,
+  DeleteStatementExpr,
+  DerivedPropertyExpr,
+  ECSqlOptionsClauseExpr,
+  Expr,
+  ExprType,
+  FromClauseExpr,
+  FuncCallExpr,
+  GroupByClauseExpr,
+  HavingClauseExpr,
+  IIFExpr,
+  InExpr,
+  InsertStatementExpr,
+  IsNullExpr,
+  IsOfTypeExpr,
+  LikeExpr,
+  LimitClauseExpr,
+  LiteralExpr,
+  LiteralValueType,
+  MemberFuncCallExpr,
+  NotExpr,
+  OrderByClauseExpr,
+  OrderBySpecExpr,
+  ParameterExpr,
+  PropertyNameExpr,
+  QualifiedJoinExpr,
+  SearchCaseExpr,
+  SelectExpr,
+  SelectionClauseExpr,
+  SelectStatementExpr,
+  SetClauseExpr,
+  StatementExpr,
+  SubqueryExpr,
+  SubqueryRefExpr,
+  SubqueryTestExpr,
+  TableValuedFuncExpr,
+  UnaryValueExpr,
+  UpdateStatementExpr,
+  UsingRelationshipJoinExpr,
+  WhereClauseExp,
+} from "../../ECSqlExpr";
 import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -783,7 +838,7 @@ describe.only("ECSql Exprs", () => {
               new PropertyNameExpr("CodeValue"))]),
           AllOrDistinctOp.All,
           new FromClauseExpr([
-            new ClassNameExpr("bis", "Element")
+            new ClassNameExpr("bis", "Element"),
           ]),
           new WhereClauseExp(
             new BinaryBooleanExpr(
@@ -813,7 +868,7 @@ describe.only("ECSql Exprs", () => {
               new PropertyNameExpr("CodeValue"))]),
           undefined,
           new FromClauseExpr([
-            new ClassNameExpr("bis", "Element")
+            new ClassNameExpr("bis", "Element"),
           ]),
           new WhereClauseExp(
             new BinaryBooleanExpr(
@@ -824,7 +879,9 @@ describe.only("ECSql Exprs", () => {
       const expected = "SELECT [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = ?)";
       assert.equal(stmt.toECSql(), expected);
       const exprs: Expr[] = [];
-      stmt.traverse((expr) => { exprs.push(expr); });
+      stmt.traverse((expr) => {
+        exprs.push(expr);
+      });
       assert.equal(exprs[0].expType, ExprType.SelectStatement);
       assert.equal(exprs[1].expType, ExprType.Select);
       assert.equal(exprs[2].expType, ExprType.SelectionClause);
@@ -841,7 +898,7 @@ describe.only("ECSql Exprs", () => {
       assert.equal(exprs.length, 13);
     });
     it("test Expr.type", async () => {
-      assert.equal(ExprType.AssignmentsClause, AssignmentsClauseExpr.type);
+      assert.equal(ExprType.AssignmentExpr, AssignmentExpr.type);
       assert.equal(ExprType.Between, BetweenExpr.type);
       assert.equal(ExprType.BinaryBoolean, BinaryBooleanExpr.type);
       assert.equal(ExprType.BinaryValue, BinaryValueExpr.type);
@@ -874,8 +931,9 @@ describe.only("ECSql Exprs", () => {
       assert.equal(ExprType.QualifiedJoin, QualifiedJoinExpr.type);
       assert.equal(ExprType.SearchCase, SearchCaseExpr.type);
       assert.equal(ExprType.Select, SelectExpr.type);
-      assert.equal(ExprType.SelectStatement, SelectStatementExpr.type);
       assert.equal(ExprType.SelectionClause, SelectionClauseExpr.type);
+      assert.equal(ExprType.SelectStatement, SelectStatementExpr.type);
+      assert.equal(ExprType.SetClause, SetClauseExpr.type);
       assert.equal(ExprType.Subquery, SubqueryExpr.type);
       assert.equal(ExprType.SubqueryRef, SubqueryRefExpr.type);
       assert.equal(ExprType.SubqueryTest, SubqueryTestExpr.type);
@@ -884,6 +942,36 @@ describe.only("ECSql Exprs", () => {
       assert.equal(ExprType.UpdateStatement, UpdateStatementExpr.type);
       assert.equal(ExprType.UsingRelationshipJoin, UsingRelationshipJoinExpr.type);
       assert.equal(ExprType.WhereClause, WhereClauseExp.type);
+    });
+    it("test ClassNameExpr.fromECSql()", async () => {
+      assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("+all Bis:Element").toECSql(), "+ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("+only Bis.Element").toECSql(), "+ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("+only Bis:Element").toECSql(), "+ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" + all  Bis.Element ").toECSql(), "+ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" + all  Bis:Element ").toECSql(), "+ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element ").toECSql(), "+ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element ").toECSql(), "+ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" all  Bis.Element ").toECSql(), "ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" all  Bis:Element ").toECSql(), "ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" only  Bis.Element ").toECSql(), "ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" only  Bis:Element ").toECSql(), "ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("all Bis.Element").toECSql(), "ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("all Bis:Element").toECSql(), "ALL [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("only Bis.Element").toECSql(), "ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("only Bis:Element").toECSql(), "ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("Bis:Element").toECSql(), "[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("Bis.Element").toECSql(), "[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("[Bis]:[Element]").toECSql(), "[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("[Bis].[Element]").toECSql(), "[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("tbl.Bis:Element").toECSql(), "[tbl].[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("tbl.Bis.Element").toECSql(), "[tbl].[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("[tbl].[Bis]:[Element]").toECSql(), "[tbl].[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("[tbl]:[Bis].[Element]").toECSql(), "[tbl].[Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element as el").toECSql(), "+ONLY [Bis].[Element] [el]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element  el ").toECSql(), "+ONLY [Bis].[Element] [el]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis.Element as el").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis:Element  el ").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
     });
   });
 });
