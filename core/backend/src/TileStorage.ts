@@ -10,6 +10,10 @@ import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
+/**
+ * Identifies a tile in cloud tile cache.
+ * @beta
+ */
 interface TileId {
   treeId: string;
   contentId: string;
@@ -110,7 +114,7 @@ export class TileStorage {
 
   private async *getCachedTilePages(iModelId: string): AsyncGenerator<TileId[]> {
     const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 500);
-    let prevPage: IteratorResult<ObjectReference[], any> | undefined = undefined;
+    let prevPage: IteratorResult<ObjectReference[], any> | undefined;
     do {
       // initiate loading the next page
       const page = iterator.next();
