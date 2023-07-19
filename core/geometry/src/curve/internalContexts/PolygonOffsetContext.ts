@@ -66,8 +66,8 @@ export class JointOptions {
    *  ranges blow up. Internally, this is implemented by applying an upper bound of 120 degrees to `maxChamferTurnDegrees`.
    * * When `allowSharpestCorners` is true, this internal upper bound is removed, allowing sharp corners for turn angles
    * up to `maxChamferTurnDegrees`.
-   * * Thus, if you know your input turn angles are no greater than `maxChamferTurnDegrees`, you can create an offset
-   * with sharp corners at each joint by setting `minArcDegrees` to 180 and `allowSharpestCorners` to true.
+   * * Thus, if you know your input turn angles are no greater than `maxChamferTurnDegrees`, you can create an offset with
+   * sharp corners at each joint by setting `maxChamferTurnDegrees < minArcDegrees` and `allowSharpestCorners` to true.
    */
   public allowSharpestCorners = false;
   /** Offset distance, positive to left of base curve. */
@@ -115,8 +115,7 @@ export class JointOptions {
       return leftOffsetDistanceOrOptions;
     return new JointOptions(leftOffsetDistanceOrOptions);
   }
-  /**
-   /** Return true if the options indicate this amount of turn should be handled with an arc. */
+  /** Return true if the options indicate this amount of turn should be handled with an arc. */
   public needArc(theta: Angle): boolean {
     return Math.abs(theta.degrees) >= this.minArcDegrees;
   }
@@ -754,6 +753,7 @@ export class CurveChainWireOffsetContext {
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * See [[JointOptions]] class doc for offset construction rules.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/Offset
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */

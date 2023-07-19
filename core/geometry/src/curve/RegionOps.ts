@@ -407,6 +407,7 @@ export class RegionOps {
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * See [[JointOptions]] class doc for offset construction rules.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/Offset
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
