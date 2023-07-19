@@ -123,10 +123,11 @@ export class TileStorage {
   }
 
   private convertPage(page: ObjectReference[]): TileId[] {
-    return page.map((objectReference) => ({
-      parts: objectReference.relativeDirectory?.split("/") ?? [""],
-      objectName: objectReference.objectName,
-    }))
+    return page
+      .map((objectReference) => ({
+        parts: objectReference.relativeDirectory?.split("/") ?? [""],
+        objectName: objectReference.objectName,
+      }))
       .filter(({ parts, objectName }) => {
         if (parts[0] !== "tiles")
           return false;
