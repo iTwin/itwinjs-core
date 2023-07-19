@@ -496,7 +496,7 @@ describe("System", () => {
     });
 
     afterEach(async () => {
-      RenderSystem.contextLossHandler = contextLossHandler;
+      RenderSystem.contextLossHandler = async () => contextLossHandler;
       await IModelApp.shutdown();
     });
 
