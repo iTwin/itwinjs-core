@@ -35,6 +35,7 @@ steps:
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
     displayName: git config
+    workingDirectory: ${{ parameters.workingDir }}
 
   - powershell: |
       # Get the new version number.
@@ -45,10 +46,12 @@ steps:
 
       Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
     displayName: Set build number
+    workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: "Set Rush Write Cache Variables"
+    workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
