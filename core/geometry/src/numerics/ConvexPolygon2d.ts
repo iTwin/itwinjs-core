@@ -23,90 +23,127 @@ export class Ray2d {
     this._origin = origin;
     this._direction = direction;
   }
-  /** Create from 2d `origin` and `target`.
-   * * `target - origin` is the direction vector.
+  /** Copy coordinates from origin and direction. */
+  public set(origin: Point2d, direction: Vector2d): void {
+    this._origin.setFrom(origin);
+    this._direction.setFrom(direction);
+  }
+  /**
+   * Create from `origin` and `target` points.
+   * @param origin ray origin, cloned
+   * @param target end of ray direction vector. The direction vector is `target - origin`.
+   * @param result optional pre-allocated object to return
    */
-  public static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d {
+  public static createOriginAndTarget(origin: Point2d, target: Point2d, result?: Ray2d): Ray2d {
+    if (result) {
+      result._origin.setFrom(origin);
+      result._direction.set(target.x - origin.x, target.y - origin.y);
+      return result;
+    }
     return new Ray2d(origin.clone(), origin.vectorTo(target));
   }
-  /** Create from (clones of) `origin` point and `direction` vector */
-  public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
+  /**
+   * Create by copying coordinates from `origin` and `direction`.
+   * @param origin ray origin
+   * @param direction ray direction
+   * @param result optional pre-allocated object to return
+   */
+  public static createOriginAndDirection(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d {
+    if (result) {
+      result.set(origin, direction);
+      return result;
+    }
     return new Ray2d(origin.clone(), direction.clone());
   }
-  /** Capture `origin` and `direction` as ray member variables. */
-  public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
+  /** Create from captured `origin` and `direction`. */
+  public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d {
+    if (result) {
+      result._origin = origin;
+      result._direction = direction;
+      return result;
+    }
     return new Ray2d(origin, direction);
   }
-  /** Get the (REFERENCE TO) the ray origin. */
+  /** Get the reference to the ray origin. */
   public get origin() { return this._origin; }
-  /** Get the (REFERENCE TO) the ray direction. */
+  /** Get the reference to the ray direction. */
   public get direction() { return this._direction; }
-
   /**
-   *  Return a ray that is parallel at distance to the left, specified as fraction of the ray's direction vector.
+   * Return a parallel ray to the left of this ray.
+   * @param leftFraction distance between rays, as a fraction of the magnitude of this ray's direction vector
    */
-  public parallelRay(leftFraction: number): Ray2d {
-    return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction);
-  }
-  /** Return a ray with same origin, direction rotated 90 degrees counterclockwise */
-  public ccwPerpendicularRay(): Ray2d {
-    return new Ray2d(this._origin, this._direction.rotate90CCWXY());
-  }
-
-  /** Return a ray with same origin, direction rotated 90 degrees clockwise */
-  public cwPerpendicularRay(): Ray2d {
-    return new Ray2d(this._origin, this._direction.rotate90CWXY());
-  }
-  /** Normalize the direction vector in place. */
-  public normalizeDirectionInPlace(defaultX: number = 1, defaultY: number = 0): boolean {
-    if (this._direction.normalize(this._direction)) {
-      return true;
-    } else {
-      this._direction.x = defaultX;
-      this._direction.y = defaultY;
-      // magnitude = 0.0;
-      return false;
+  public parallelRay(leftFraction: number, result?: Ray2d): Ray2d {
+    if (result) {
+      this._origin.addForwardLeft(0.0, leftFraction, this._direction, result._origin);
+      result._direction.setFrom(this._direction);
+      return result;
     }
+    return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction.clone());
   }
-
+  /** Return a ray with cloned origin and with direction rotated 90 degrees counterclockwise */
+  public ccwPerpendicularRay(result?: Ray2d): Ray2d {
+    if (result) {
+      result._origin.setFrom(this._origin);
+      this._direction.rotate90CCWXY(result._direction);
+      return result;
+    }
+    return new Ray2d(this._origin.clone(), this._direction.rotate90CCWXY());
+  }
+  /** Return a ray with cloned origin and with direction rotated 90 degrees clockwise */
+  public cwPerpendicularRay(result?: Ray2d): Ray2d {
+    if (result) {
+      result._origin.setFrom(this._origin);
+      this._direction.rotate90CWXY(result._direction);
+      return result;
+    }
+    return new Ray2d(this._origin.clone(), this._direction.rotate90CWXY());
+  }
   /**
-   * Intersect this ray (ASSUMED NORMALIZED) with unbounded line defined by points.
-   *  (The normalization assumption affects test for parallel vectors.)
-   *  Fraction and dHds passed as number[] to use by reference... Sticking to return of true and false in the case fraction is zero after
-   *  a true safe divide
+   * Normalize the direction vector in place.
+   * @param defaultX value to set `this.direction.x` if normalization fails. Default value 1.
+   * @param defaultY value to set `this.direction.y` if normalization fails. Default value 0.
+   * @returns whether normalization succeeded (i.e., direction is nonzero)
    */
-  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean {
+  public normalizeDirectionInPlace(defaultX: number = 1, defaultY: number = 0): boolean {
+    if (this._direction.normalize(this._direction))
+      return true;
+    this._direction.x = defaultX;
+    this._direction.y = defaultY;
+    return false;
+  }
+  /**
+   * Intersect this ray with the unbounded line defined by the given points.
+   * @param linePointA start of the line
+   * @param linePointB end of the line
+   * @returns object with named values:
+   * * `hasIntersection`: whether the intersection exists.
+   * * `fraction`: ray parameter of intersection, or 0.0 if `!hasIntersection`. If the instance is normalized, this is the signed distance along the ray to the intersection point.
+   * * `cross`: the 2D cross product `this.direction x (linePointB - linePointA)`, useful for determining orientation of the line and ray.
+   */
+  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d): { hasIntersection: boolean, fraction: number, cross: number } {
     const lineDirection = linePointA.vectorTo(linePointB);
     const vector0 = linePointA.vectorTo(this._origin);
     const h0 = vector0.crossProduct(lineDirection);
-    dHds[0] = this._direction.crossProduct(lineDirection);
+    const dHds = this._direction.crossProduct(lineDirection);
     // h = h0 + s * dh
-    const ff = Geometry.conditionalDivideFraction(-h0, dHds[0]);
-    if (ff !== undefined) {
-      fraction[0] = ff;
-      return true;
-    } else {
-      fraction[0] = 0.0;
-      return false;
-    }
+    const ff = Geometry.conditionalDivideFraction(-h0, dHds);
+    const hasIntersection = ff !== undefined;
+    return { hasIntersection, fraction: hasIntersection ? ff : 0.0, cross: dHds };
   }
-
-  /** return the ray fraction where point projects to the ray */
+  /** Return the ray fraction where the given point projects onto the ray. */
   public projectionFraction(point: Point2d): number {
     return this._origin.vectorTo(point).fractionOfProjectionToVector(this._direction);
   }
-
-  /** return the fraction of projection to the perpendicular ray */
+  /** Return the ray fraction where the given point projects onto the perpendicular ray. */
   public perpendicularProjectionFraction(point: Point2d): number {
     const uv = this._direction.crossProduct(this._origin.vectorTo(point));
     const uu = this._direction.magnitudeSquared();
     // Want zero returned if failure case, not undefined
     return Geometry.safeDivideFraction(uv, uu, 0.0);
   }
-
-  /** Return point from origin plus a scaled vector */
-  public fractionToPoint(f: number): Point2d {
-    return this._origin.plusScaled(this._direction, f);
+  /** Compute and return origin plus scaled direction. */
+  public fractionToPoint(f: number, result?: Point2d): Point2d {
+    return this._origin.plusScaled(this._direction, f, result);
   }
 }
 /**
@@ -251,15 +288,14 @@ export class ConvexPolygon2d {
 
     let xy0 = this._hullPoints[n - 1];
     for (const xy1 of this._hullPoints) {
-      const distance: number[] = [];
-      const dHds: number[] = [];
-      if (ray.intersectUnboundedLine(xy0, xy1, distance, dHds)) {
-        if (dHds[0] > 0.0) {
-          if (distance[0] < distanceB)
-            distanceB = distance[0];
+      const { hasIntersection, fraction, cross } = ray.intersectUnboundedLine(xy0, xy1);
+      if (hasIntersection) {
+        if (cross > 0.0) {
+          if (fraction < distanceB)
+            distanceB = fraction;
         } else {
-          if (distance[0] > distanceA)
-            distanceA = distance[0];
+          if (fraction > distanceA)
+            distanceA = fraction;
         }
         if (distanceA > distanceB)
           return Range1d.createNull();
