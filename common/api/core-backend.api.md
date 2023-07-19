@@ -1934,7 +1934,6 @@ export { Element_2 as Element }
 
 // @public
 export class ElementAspect extends Entity {
-    // @internal
     constructor(props: ElementAspectProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -2359,7 +2358,6 @@ export class ExternalSource extends InformationReferenceElement {
 
 // @public
 export class ExternalSourceAspect extends ElementMultiAspect {
-    // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
     checksum?: string;
     // @internal (undocumented)
