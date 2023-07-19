@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
-import { PolylineData, QPoint3dList } from "@itwin/core-common";
+import { QPoint3dList } from "@itwin/core-common";
 import { tesselatePolyline } from "../../../render/primitives/PolylineParams";
 
 describe("PolylineTesselator", () => {
   it("produces joint triangles", () => {
     const pts = [ new Point3d(0, 0, 0), new Point3d(0, 10, 0), new Point3d(10, 10, 0), new Point3d(10, 20, 0) ];
     const qpts = QPoint3dList.fromPoints(pts);
-    const polylines = [ new PolylineData([0, 1, 2, 3], 4) ];
+    const polylines = [ [0, 1, 2, 3] ];
 
     const tesselated = tesselatePolyline(polylines, qpts, true);
     expect(tesselated.indices.length).to.equal(72);

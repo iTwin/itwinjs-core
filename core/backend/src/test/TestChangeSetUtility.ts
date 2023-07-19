@@ -5,7 +5,7 @@
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BriefcaseDb, IModelHost, SpatialCategory } from "../core-backend";
+import { BriefcaseDb, SpatialCategory } from "../core-backend";
 import { HubMock } from "../HubMock";
 import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
 
@@ -74,6 +74,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await HubWrappers.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
+    await HubMock.deleteIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
   }
 }

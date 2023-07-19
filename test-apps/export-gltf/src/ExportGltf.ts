@@ -430,7 +430,7 @@ const exportGltfArgs = yargs
   .parseSync();
 
 (async () => {
-  await IModelHost.startup();
+  await IModelHost.startup({ profileName: "export-gltf" });
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   GltfGlobals.initialize(exportGltfArgs.input, exportGltfArgs.output);

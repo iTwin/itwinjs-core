@@ -2,6 +2,24 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "4.0.5",
+      "tag": "@itwin/core-webpack-tools_v4.0.5",
+      "date": "Tue, 18 Jul 2023 12:21:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed CopyExternalsPlugin to correctly support node builtin modules."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.0.4",
+      "tag": "@itwin/core-webpack-tools_v4.0.4",
+      "date": "Wed, 12 Jul 2023 15:50:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.3",
       "tag": "@itwin/core-webpack-tools_v4.0.3",
       "date": "Mon, 03 Jul 2023 15:28:41 GMT",
@@ -33,6 +51,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.7.11",
+      "tag": "@itwin/core-webpack-tools_v3.7.11",
+      "date": "Tue, 11 Jul 2023 17:17:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.10",
+      "tag": "@itwin/core-webpack-tools_v3.7.10",
+      "date": "Wed, 05 Jul 2023 13:41:21 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.9",

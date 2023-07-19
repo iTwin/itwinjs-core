@@ -12,7 +12,7 @@ import {
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
- * @internal
+ * @public
  */
 export interface InstancedGraphicParams {
   /** The number of instances.
@@ -25,7 +25,7 @@ export interface InstancedGraphicParams {
 
   /** An array of instance-to-model transforms.
    * Each transform consists of 3 rows of 4 columns where the 4th column holds the translation.
-   * The translations are relative to the `transformCenter` property.
+   * The translations are relative to the [[transformCenter]] property.
    */
   readonly transforms: Float32Array;
 
@@ -42,8 +42,7 @@ export interface InstancedGraphicParams {
    */
   readonly symbologyOverrides?: Uint8Array;
 
-  /** If defined, the combined range of all instances of the geometry.
-   */
+  /** If defined, the combined range of all instances of the geometry. */
   readonly range?: Range3d;
 }
 

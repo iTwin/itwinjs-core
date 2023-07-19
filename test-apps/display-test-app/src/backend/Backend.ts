@@ -215,6 +215,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     logTileLoadTimeThreshold: 3,
     logTileSizeThreshold: 500000,
     cacheDir: process.env.IMJS_BRIEFCASE_CACHE_LOCATION,
+    profileName: "display-test-app",
     hubAccess,
   };
 

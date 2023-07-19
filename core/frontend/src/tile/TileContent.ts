@@ -22,4 +22,10 @@ export interface TileContent {
   contentRange?: ElementAlignedBox3d;
   /** True if this tile requires no subdivision or refinement - i.e., has no child tiles. */
   isLeaf?: boolean;
+  /** Whether the content includes one or more point clouds.
+   * Generally, if this is true, it contains exactly one point cloud and no other geometry.
+   * We need to know this for the classification shaders.
+   * @internal
+   */
+  containsPointCloud?: boolean;
 }
