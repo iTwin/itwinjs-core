@@ -4,23 +4,64 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { UnexpectedErrors } from "@itwin/core-bentley";
+import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { ScreenViewport } from "../Viewport";
+import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
+import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
+import * as sinon from "sinon";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
+
+  describe("constructor", () => {
+    it("invokes initialize method", () => {
+      class ScreenVp extends ScreenViewport {
+        public initialized = false;
+        protected override initialize() { this.initialized = true; }
+
+        public static createVp(view: SpatialViewState): ScreenVp {
+          const parentDiv = document.createElement("div");
+          parentDiv.setAttribute("height", "100px");
+          parentDiv.setAttribute("width", "100px");
+          parentDiv.style.height = parentDiv.style.width = "100px";
+          document.body.appendChild(parentDiv);
+          return this.create(parentDiv, view) as ScreenVp;
+        }
+      }
+
+      class OffScreenVp extends OffScreenViewport {
+        public initialized = false;
+        protected override initialize() { this.initialized = true; }
+
+        public static createVp(view: SpatialViewState): OffScreenVp {
+          return this.create({ view, viewRect: new ViewRect(0, 0, 100, 100) }) as OffScreenVp;
+        }
+      }
+
+      function test(ctor: (typeof ScreenVp | typeof OffScreenVp)): void {
+        const iModel = createBlankConnection();
+        const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+        const vp = ctor.createVp(view);
+        expect(vp.initialized).to.be.true;
+        vp.dispose();
+      }
+
+      test(ScreenVp);
+      test(OffScreenVp);
+    });
+  });
 
   describe("flashedId", () => {
     type ChangedEvent = [string | undefined, string | undefined];
@@ -544,6 +585,19 @@ describe("Viewport", () => {
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
         expect(vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } })).not.to.throw;
         await vp.waitForSceneCompletion();
+      });
+    });
+  });
+
+  describe("Pixel selection", () => {
+    it("isPixelSelectable should return false when no map-layers ids", () => {
+      testBlankViewport((vp) => {
+        const stub = sinon.stub(Viewport.prototype, "mapLayerFromIds").callsFake(function _(_mapTreeId: Id64String, _layerTreeId: Id64String) {
+          return [];
+        });
+        const fakePixelData = {modelId: "123", elementId: "456"};
+        expect(vp.isPixelSelectable(fakePixelData as any)).to.be.true;
+        stub.restore();
       });
     });
   });

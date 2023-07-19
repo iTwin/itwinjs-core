@@ -48,7 +48,7 @@ const argv = yargs
   .parseSync();
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
-  await IModelHost.startup();
+  await IModelHost.startup({ profileName: "imodel-from-geojson" });
   Logger.initializeToConsole();
 
   const geoJson = new GeoJson(argv.input);

@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -261,7 +261,8 @@ export interface MapLayerScaleRangeVisibility {
  *
  * The [[Viewport.onDisplayStyleChanged]] event will be invoked exactly once, when the second frame is rendered.
  *
- * @see [[ViewManager]]
+ * @see [[ScreenViewport]] for a viewport that can render onto the screen.
+ * @see [[OffScreenViewport]] for a viewport that can render into an off-screen buffer.
  * @public
  * @extensions
  */
@@ -333,7 +334,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _doContinuousRendering = false;
   /** @internal */
   protected _inViewChangedEvent = false;
-  /** @internal */
+  /** If false, indicates that [[Decorations]] should be recreated when rendering the next frame.
+   * @note prefer to invoke [[invalidateDecorations]] rather than directly assigning to this property.
+   */
   protected _decorationsValid = false;
   /** @internal */
   protected _sceneValid = false;
@@ -543,7 +546,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   protected readonly _viewRange: ViewRect = new ViewRect();
 
-  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates. */
+  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates.
+   * @note Do not modify the ViewRect's properties.
+   */
   public abstract get viewRect(): ViewRect;
   /** @internal */
   public get isAspectRatioLocked(): boolean { return false; }
@@ -1029,7 +1034,8 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.invalidateRenderPlan();
     }
   }
-  /** @internal */
+
+  /** Obtain a tooltip from the map layer or reality model, if any, identified by the specified [[HitDetail]]. */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
@@ -1047,7 +1053,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return "";
   }
 
-  /** @alpha */
+  /** @beta */
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
     const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 
@@ -1066,11 +1072,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     for (const result of results)
       if (result !== undefined) {
 
-        if (featureInfo.layerInfo === undefined) {
-          featureInfo.layerInfo = [];
+        if (featureInfo.layerInfos === undefined) {
+          featureInfo.layerInfos = [];
         }
 
-        featureInfo.layerInfo.push(...result);
+        featureInfo.layerInfos.push(...result);
       }
     return featureInfo;
   }
@@ -1084,6 +1090,12 @@ export abstract class Viewport implements IDisposable, TileUser {
   public readonly onFrameStats = new BeEvent<(frameStats: Readonly<FrameStats>) => void>();
 
   private _frameStatsCollector = new FrameStatsCollector(this.onFrameStats);
+
+  /** A function invoked once, after the constructor, to initialize the viewport's state.
+   * Subclasses can use this perform additional initialization, as the viewport's constructor is not directly invokable.
+   */
+  protected initialize(): void {
+  }
 
   /** @internal */
   protected constructor(target: RenderTarget) {
@@ -1492,7 +1504,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.maybeInvalidateScene();
   }
 
-  /** @internal */
+  /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
+   * @note The viewport monitors various events to automatically detect when the overrides should be recomputed. This method
+   * is only needed for changes that are not observable by the viewport itself.
+   */
   public invalidateSymbologyOverrides(): void {
     this.setFeatureOverrideProviderChanged();
   }
@@ -1516,7 +1531,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** @internal */
+  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport. */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
@@ -1577,13 +1592,13 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @internal */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined {
-    return undefined === hit.modelId ? undefined : this.mapLayerFromIds(hit.modelId, hit.sourceId);
+  public mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
+    return undefined === hit.modelId ? [] : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
-    return this._mapTiledGraphicsProvider?.mapLayerFromIds(mapTreeId, layerTreeId);
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
+    return this._mapTiledGraphicsProvider === undefined ? [] : this._mapTiledGraphicsProvider.mapLayerFromIds(mapTreeId, layerTreeId);
   }
 
   /** @internal */
@@ -2552,7 +2567,9 @@ export abstract class Viewport implements IDisposable, TileUser {
       IModelApp.requestNextAnimation();
   }
 
-  /** @internal */
+  /** Populate a set of decoration graphics to be displayed in this viewport.
+   * This base implementation produces no graphics.
+   */
   protected addDecorations(_decorations: Decorations): void { }
 
   /** Read selected data about each pixel within a rectangular region of this Viewport.
@@ -2578,7 +2595,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (pixel.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.mapLayerFromIds(pixel.modelId, pixel.elementId);  // Maps no selectable.
+    return (0 === this.mapLayerFromIds(pixel.modelId, pixel.elementId).length);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
@@ -2864,6 +2881,10 @@ export abstract class Viewport implements IDisposable, TileUser {
   public onRequestStateChanged(): void {
     this.invalidateScene();
   }
+
+  /** @internal See [[OffScreenViewport.drawingToSheetTransform */
+  public get drawingToSheetTransform(): Transform | undefined { return undefined; }
+  public set drawingToSheetTransform(_: Transform | undefined) { assert(false, "drawingToSheetTransform is only relevant for OffScreenViewport"); }
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
@@ -2891,6 +2912,8 @@ export abstract class Viewport implements IDisposable, TileUser {
  *    5a. If it is currently registered with the ViewManager, it is dropped and disposed of via ViewManager.dropViewport()
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
+ *
+ * @see [[ScreenViewport.create]] to create a ScreenViewport.
  * @public
  * @extensions
  */
@@ -2975,6 +2998,8 @@ export class ScreenViewport extends Viewport {
 
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
+    vp.initialize();
+
     vp.changeView(view);
     return vp;
   }
@@ -3042,7 +3067,12 @@ export class ScreenViewport extends Viewport {
     parent.appendChild(element);
   }
 
-  /** @internal */
+  /** Add a new `HTMLDivElement` as a child of this viewport's div.
+   * @param className The CSS class name to apply to the div.
+   * @param overflowHidden Whether to set `div.style.overflow` to "hidden" instead of "visible".
+   * @param z The Z index of the div relative to its sibling `HTMLElement`s.
+   * @returns the new div.
+   */
   public addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement {
     const div = document.createElement("div");
     div.className = className;
@@ -3302,13 +3332,15 @@ export class ScreenViewport extends Viewport {
   /** Get the DOMRect of the canvas for this Viewport. */
   public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
-  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
+  /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height.
+   * @note Do not modify the ViewRect's properties.
+   */
   public get viewRect(): ViewRect {
     this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     return this._viewRange;
   }
 
-  /** @internal */
+  /** Populate a set of decoration graphics to be displayed in this viewport. */
   protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
@@ -3382,7 +3414,9 @@ export class ScreenViewport extends Viewport {
       this.animateFrustumChange(opts);
   }
 
-  /** @internal */
+  /** A point in world coordinates describing an appropriate default point for a [[ViewTool]] when no more specific point is provided by the user.
+   * This point is generally managed and used by [[ViewManip]].
+   */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
@@ -3576,7 +3610,7 @@ export class ScreenViewport extends Viewport {
     this.invalidateRenderPlan();
   }
 
-  /** @internal override */
+  /** Overrides [[Viewport.waitForSceneCompletion]] to allow the render loop to load graphics until the scene is complete. */
   public override async waitForSceneCompletion(): Promise<void> {
     if (!IModelApp.viewManager.hasViewport(this))
       return super.waitForSceneCompletion();
@@ -3654,18 +3688,31 @@ export interface OffScreenViewportOptions {
  * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
+ * @see [[OffScreenViewport.create]] to create an off-screen viewport.
  * @public
  * @extensions
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
-  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
   private _drawingToSheetTransform?: Transform;
-  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
-  public get drawingToSheetTransform(): Transform | undefined {
+
+  /** @internal */
+  protected constructor(target: RenderTarget) {
+    super(target);
+  }
+
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   * @internal
+   */
+  public override get drawingToSheetTransform(): Transform | undefined {
     return this._drawingToSheetTransform;
   }
-  public set drawingToSheetTransform(transform: Transform | undefined) {
+
+  public override set drawingToSheetTransform(transform: Transform | undefined) {
     this.detachFromView();
     this._drawingToSheetTransform = transform;
     this.attachToView();
@@ -3681,6 +3728,8 @@ export class OffScreenViewport extends Viewport {
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;
+
+    vp.initialize();
     return vp;
   }
 
@@ -3689,7 +3738,9 @@ export class OffScreenViewport extends Viewport {
     return this._isAspectRatioLocked;
   }
 
-  /** @internal */
+  /** Get the rectangle of this Viewport in [[CoordSystem.View]] coordinates.
+   * @note Do not modify the ViewRect's properties.
+   */
   public override get viewRect(): ViewRect {
     return this.target.viewRect;
   }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix background map layers failing to blend with an opaque solid base layer.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -411,9 +411,7 @@ export class SheetViewState extends ViewState2d {
     return extents;
   }
 
-  /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
-   * @internal override
-   */
+  /** Overrides [[ViewState.discloseTileTrees]] to include tile trees associated with [ViewAttachment]($backend)s displayed on this sheet. */
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachments)
@@ -496,14 +494,14 @@ export class SheetViewState extends ViewState2d {
     assert(undefined === this._attachments);
   }
 
-  /** @internal */
+  /** See [[ViewState.attachToViewport]]. */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
 
-  /** @internal */
+  /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachments = dispose(this._attachments);

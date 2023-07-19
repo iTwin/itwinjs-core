@@ -233,10 +233,6 @@
     },
     {
       "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "Element"
-      },
       "propertyCategories": [
         {
           "id": "source_information",

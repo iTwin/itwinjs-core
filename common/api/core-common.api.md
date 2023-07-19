@@ -1502,24 +1502,16 @@ export class ColorDef {
 // @public
 export type ColorDefProps = number;
 
-// @internal (undocumented)
+// @public
 export class ColorIndex {
     constructor();
-    // (undocumented)
     get hasAlpha(): boolean;
-    // (undocumented)
     initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
-    // (undocumented)
     initUniform(color: ColorDef | number): void;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     get nonUniform(): NonUniformColor | undefined;
-    // (undocumented)
     get numColors(): number;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     get uniform(): ColorDef | undefined;
 }
 
@@ -1567,7 +1559,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     isEmpty: boolean;
 }>;
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
@@ -2061,7 +2053,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }, options?: DisplayStyleSettingsOptions);
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
-    // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
     get environment(): Environment;
@@ -2472,6 +2463,8 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     // (undocumented)
     reset(options?: QueryOptions): void;
     resetBindings(): void;
+    // @internal (undocumented)
+    protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
     // (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;
@@ -2580,7 +2573,7 @@ export interface ElementAspectProps extends EntityProps {
     element: RelatedElementProps;
 }
 
-// @alpha
+// @beta
 export namespace ElementGeometry {
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
@@ -2666,13 +2659,13 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryBuilderParams {
     entryArray: ElementGeometryDataEntry[];
     viewIndependent?: boolean;
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryBuilderParamsForPart {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
@@ -2693,10 +2686,10 @@ export interface ElementGeometryDataEntry {
     opcode: ElementGeometryOpcode;
 }
 
-// @alpha
+// @beta
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
-// @alpha
+// @beta
 export interface ElementGeometryInfo {
     bbox?: Float64Array;
     brepsPresent?: boolean;
@@ -2728,7 +2721,7 @@ export enum ElementGeometryOpcode {
     TextString = 22
 }
 
-// @alpha
+// @beta
 export interface ElementGeometryRequest {
     angleTol?: number;
     chordTol?: number;
@@ -3089,29 +3082,20 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal (undocumented)
+// @public
 export class FeatureIndex {
-    // (undocumented)
     featureID: number;
-    // (undocumented)
     featureIDs?: Uint32Array;
-    // (undocumented)
     get isEmpty(): boolean;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     type: FeatureIndexType;
 }
 
-// @internal (undocumented)
+// @public
 export enum FeatureIndexType {
-    // (undocumented)
     Empty = 0,
-    // (undocumented)
     NonUniform = 2,
-    // (undocumented)
     Uniform = 1
 }
 
@@ -3225,6 +3209,7 @@ export class FeatureTable extends IndexMap<Feature> {
     get maxFeatures(): number;
     // (undocumented)
     readonly modelId: Id64String;
+    pack(): RenderFeatureTable;
     // (undocumented)
     readonly type: BatchType;
     get uniform(): Feature | undefined;
@@ -3600,7 +3585,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
@@ -3709,7 +3694,7 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
-    // @alpha
+    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -4664,7 +4649,6 @@ export abstract class IModel implements IModelProps {
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
-    // @internal (undocumented)
     toJSON(): IModelConnectionProps;
 }
 
@@ -4720,6 +4704,8 @@ export interface IModelProps {
 
 // @internal
 export abstract class IModelReadRpcInterface extends RpcInterface {
+    // (undocumented)
+    callViewStore(_iModelToken: IModelRpcProps, _version: string, _forWrite: boolean, _methodName: string, ..._args: any[]): Promise<any>;
     // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
@@ -5525,13 +5511,13 @@ export class MeshEdges {
 
 // @internal (undocumented)
 export class MeshPolyline {
-    constructor(indices?: number[]);
+    constructor(indices?: PolylineIndices);
     // (undocumented)
     addIndex(index: number): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
-    readonly indices: number[];
+    readonly indices: PolylineIndices;
 }
 
 // @internal (undocumented)
@@ -5575,7 +5561,7 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
-// @internal
+// @public
 export interface ModelFeature {
     // (undocumented)
     elementId: Id64String;
@@ -5587,13 +5573,11 @@ export interface ModelFeature {
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace ModelFeature {
-    // (undocumented)
     export function create(): ModelFeature;
-    // (undocumented)
     export function isDefined(feature: ModelFeature): boolean;
-    // (undocumented)
+    // @alpha (undocumented)
     export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
 }
 
@@ -5812,14 +5796,11 @@ export class NoContentError extends IModelError {
     constructor();
 }
 
-// @internal (undocumented)
+// @public
 export class NonUniformColor {
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
-    // (undocumented)
     readonly colors: Uint32Array;
-    // (undocumented)
     readonly indices: Uint16Array;
-    // (undocumented)
     readonly isOpaque: boolean;
 }
 
@@ -6065,6 +6046,7 @@ export interface OpenBriefcaseOptions {
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
+    readonly watchForChanges?: boolean;
 }
 
 // @public
@@ -6134,9 +6116,9 @@ export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureApp
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeature {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeId: number;
     // (undocumented)
     elementId: Id64.Uint32Pair;
@@ -6148,11 +6130,9 @@ export interface PackedFeature {
     subCategoryId: Id64.Uint32Pair;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace PackedFeature {
-    // (undocumented)
     export function create(): PackedFeature;
-    // (undocumented)
     export function createWithIndex(): PackedFeatureWithIndex;
 }
 
@@ -6213,7 +6193,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     unpack(): FeatureTable;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeatureWithIndex extends PackedFeature {
     // (undocumented)
     index: number;
@@ -6478,67 +6458,33 @@ export interface PointWithStatus {
 export const POLICY: unique symbol;
 
 // @internal (undocumented)
-export class PolylineData {
-    constructor(vertIndices?: number[], numIndices?: number);
-    // (undocumented)
-    init(polyline: MeshPolyline): boolean;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    numIndices: number;
-    // (undocumented)
-    reset(): void;
-    // (undocumented)
-    vertIndices: number[];
-}
-
-// @internal (undocumented)
 export class PolylineEdgeArgs {
-    constructor(lines?: PolylineData[]);
+    constructor(lines?: PolylineIndices[]);
     // (undocumented)
     clear(): void;
     // (undocumented)
-    init(lines?: PolylineData[]): boolean;
+    init(lines?: PolylineIndices[]): boolean;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    lines?: PolylineData[];
+    lines?: PolylineIndices[];
     // (undocumented)
     get numLines(): number;
 }
 
-// @internal
-export class PolylineFlags {
-    constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolylineTypeFlags);
-    // (undocumented)
-    clone(): PolylineFlags;
-    // (undocumented)
-    equals(other: PolylineFlags): boolean;
-    // (undocumented)
-    initDefaults(): void;
-    // (undocumented)
-    is2d: boolean;
-    // (undocumented)
-    get isAnyEdge(): boolean;
-    // (undocumented)
-    isDisjoint: boolean;
-    // (undocumented)
-    get isNormalEdge(): boolean;
-    // (undocumented)
-    get isOutlineEdge(): boolean;
-    // (undocumented)
-    isPlanar: boolean;
-    pack(): number;
-    // (undocumented)
-    setIsNormalEdge(): void;
-    // (undocumented)
-    setIsOutlineEdge(): void;
-    // (undocumented)
-    type: PolylineTypeFlags;
-    static unpack(value: number): PolylineFlags;
+// @public
+export interface PolylineFlags {
+    is2d?: boolean;
+    isDisjoint?: boolean;
+    isPlanar?: boolean;
+    // @alpha
+    type?: PolylineTypeFlags;
 }
 
-// @internal (undocumented)
+// @public
+export type PolylineIndices = number[];
+
+// @alpha
 export enum PolylineTypeFlags {
     // (undocumented)
     Edge = 1,
@@ -7229,23 +7175,23 @@ export interface RelTypeInfo {
 // @public
 export type RemoveFunction = () => void;
 
-// @internal
+// @public
 export interface RenderFeatureTable {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeIds?: UintArray;
     readonly batchModelId: Id64String;
     readonly batchModelIdPair: Id64.Uint32Pair;
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
-    // (undocumented)
+    // @alpha (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
-    // (undocumented)
+    // @alpha (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
@@ -7809,6 +7755,8 @@ export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
     readonly activityId: GuidString;
     readonly rpcMethod?: string;
+    // (undocumented)
+    readonly user?: string;
 }
 
 // @internal (undocumented)
@@ -8579,6 +8527,8 @@ export interface SerializedRpcActivity {
     id: string;
     // (undocumented)
     sessionId: string;
+    // (undocumented)
+    user?: string;
 }
 
 // @internal
@@ -8719,7 +8669,6 @@ export class SkyCube extends SkyBox {
     readonly images: SkyCubeProps;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 
@@ -8782,7 +8731,6 @@ export class SkySphere extends SkyBox {
     readonly image: TextureImageSpec;
     // @internal (undocumented)
     get textureIds(): Iterable<Id64String>;
-    // @internal
     toJSON(display?: boolean): SkyBoxProps;
 }
 
@@ -9008,7 +8956,7 @@ export interface SpatialClassifiersContainer {
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
-    modelSelectorId: Id64String;
+    modelSelectorId: ViewIdString;
 }
 
 // @public
@@ -10080,11 +10028,11 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
     // (undocumented)
-    categorySelectorId: Id64String;
+    categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
     // (undocumented)
-    displayStyleId: Id64String;
+    displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {
         viewDetails?: ViewDetailsProps;
@@ -10215,7 +10163,6 @@ export class ViewFlags {
     readonly styles: boolean;
     readonly textures: boolean;
     readonly thematicDisplay: boolean;
-    // @internal
     toFullyDefinedJSON(): Required<ViewFlagProps>;
     toJSON(): ViewFlagProps;
     readonly transparency: boolean;
@@ -10231,6 +10178,9 @@ export class ViewFlags {
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 // @public
+export type ViewIdString = Id64String;
+
+// @public
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
@@ -10239,6 +10189,11 @@ export interface ViewQueryParams extends EntityQueryParams {
 // @public
 export interface ViewStateLoadProps {
     displayStyle?: DisplayStyleLoadProps;
+    // @beta
+    queryBindings?: {
+        modelSelector?: ViewStoreRpc.QueryBindings;
+        categorySelector?: ViewStoreRpc.QueryBindings;
+    };
 }
 
 // @public
@@ -10255,6 +10210,245 @@ export interface ViewStateProps {
     sheetProps?: SheetProps;
     // (undocumented)
     viewDefinitionProps: ViewDefinitionProps;
+}
+
+// @beta
+export namespace ViewStoreRpc {
+    const // @internal
+    version: "4.0.0";
+    export interface AddViewArgs {
+        readonly categorySelectorProps?: CategorySelectorProps;
+        readonly displayStyleProps?: DisplayStyleProps;
+        // (undocumented)
+        readonly group?: IdString;
+        // (undocumented)
+        readonly isPrivate?: boolean;
+        readonly modelSelectorProps?: ModelSelectorProps;
+        // (undocumented)
+        readonly owner?: OwnerName;
+        // (undocumented)
+        readonly tags?: TagName[];
+        readonly thumbnail?: ThumbnailProps;
+        readonly viewDefinition: ViewDefinitionProps;
+    }
+    export type ClassFullName = string;
+    // @public
+    export type IdString = string;
+    export type NameOrId = {
+        name: string;
+        id?: never;
+    } | {
+        id: IdString;
+        name?: never;
+    };
+    export type OwnerName = string;
+    export interface QueryBindings {
+        // (undocumented)
+        bindings?: any[] | object;
+    }
+    export interface QueryParams {
+        readonly classNames?: ClassFullName[];
+        // (undocumented)
+        readonly group?: IdString;
+        readonly limit?: number;
+        readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+        readonly nameSearch?: string;
+        readonly offset?: number;
+        // (undocumented)
+        readonly owner?: OwnerName;
+        readonly tags?: TagName[];
+    }
+    export interface Reader {
+        findViewsByOwner(args: {
+            owner: OwnerName;
+        }): Promise<ViewInfo[]>;
+        getCategorySelector(args: NameOrId & QueryBindings): Promise<CategorySelectorProps>;
+        getDisplayStyle(args: NameOrId & {
+            opts?: DisplayStyleLoadProps;
+        }): Promise<DisplayStyleProps>;
+        getModelSelector(args: NameOrId & QueryBindings): Promise<ModelSelectorProps>;
+        getThumbnail(args: {
+            viewId: IdString;
+        }): Promise<ThumbnailProps | undefined>;
+        getTimeline(args: NameOrId): Promise<RenderTimelineProps>;
+        getViewByName(arg: {
+            name: ViewName;
+            groupId?: IdString;
+        }): Promise<ViewInfo | undefined>;
+        getViewDefinition(args: {
+            viewId: IdString;
+        }): Promise<ViewDefinitionProps>;
+        getViewGroupInfo(args: {
+            groupId?: IdString;
+        }): Promise<ViewGroupInfo | undefined>;
+        getViewGroups(args: {
+            parent?: ViewGroupSpec;
+        }): Promise<{
+            id: IdString;
+            name: string;
+        }[]>;
+        getViewInfo(args: {
+            viewId: IdString;
+        }): Promise<ViewInfo | undefined>;
+        queryViews(queryParams: QueryParams): Promise<ViewInfo[]>;
+    }
+    const isViewStoreId: (id?: ViewIdString) => boolean;
+    export type SelectorProps = {
+        query: SelectorQuery;
+        ids?: never;
+    } | {
+        query?: never;
+        ids: Id64Array | CompressedId64Set;
+    };
+    export interface SelectorQuery {
+        adds?: Id64Array | CompressedId64Set;
+        from: ClassFullName;
+        only?: boolean;
+        removes?: Id64Array | CompressedId64Set;
+        where?: string;
+    }
+    export type TagName = string;
+    export interface ViewGroupInfo {
+        defaultView?: IdString;
+        id: IdString;
+        name: ViewGroupName;
+        parent?: IdString;
+    }
+    export type ViewGroupName = string;
+    export type ViewGroupPath = string;
+    export type ViewGroupSpec = IdString | ViewGroupPath;
+    export interface ViewInfo {
+        categorySelectorId: IdString;
+        className: ClassFullName;
+        displayStyleId: IdString;
+        groupId: IdString;
+        id: IdString;
+        isPrivate: boolean;
+        modelSelectorId?: IdString;
+        name?: ViewName;
+        owner?: OwnerName;
+        tags?: TagName[];
+    }
+    export type ViewName = string;
+    export interface Writer {
+        addCategorySelector(args: {
+            name?: string;
+            selector: SelectorProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addDisplayStyle(args: {
+            name?: string;
+            className: string;
+            settings: DisplayStyleSettingsProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addModelSelector(args: {
+            name?: string;
+            selector: SelectorProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addOrReplaceThumbnail(args: {
+            viewId: IdString;
+            thumbnail: ThumbnailProps;
+        }): Promise<void>;
+        addTagsToView(args: {
+            viewId: IdString;
+            tags: TagName[];
+        }): Promise<void>;
+        addTimeline(args: {
+            name?: string;
+            timeline: RenderSchedule.ScriptProps;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        addView(args: AddViewArgs): Promise<IdString>;
+        addViewGroup(args: {
+            name: string;
+            parentId?: IdString;
+            owner?: OwnerName;
+        }): Promise<IdString>;
+        changeDefaultViewId(args: {
+            defaultView: IdString;
+            group?: ViewGroupSpec;
+        }): Promise<void>;
+        deleteCategorySelector(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteDisplayStyle(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteModelSelector(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteTag(args: {
+            name: TagName;
+        }): Promise<void>;
+        deleteThumbnail(args: {
+            viewId: IdString;
+        }): Promise<void>;
+        deleteTimeline(args: {
+            id: IdString;
+        }): Promise<void>;
+        deleteView(args: {
+            viewId: IdString;
+        }): Promise<void>;
+        deleteViewGroup(args: {
+            name: ViewGroupSpec;
+        }): Promise<void>;
+        removeTagFromView(args: {
+            viewId: IdString;
+            tag: TagName;
+        }): Promise<void>;
+        renameCategorySelector(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameDisplayStyle(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameModelSelector(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameTag(args: {
+            oldName: TagName;
+            newName: TagName;
+        }): Promise<void>;
+        renameTimeline(args: {
+            id: IdString;
+            name?: string;
+        }): Promise<void>;
+        renameView(args: {
+            viewId: IdString;
+            name: string;
+        }): Promise<void>;
+        renameViewGroup(args: {
+            groupId: IdString;
+            name: string;
+        }): Promise<void>;
+        updateCategorySelector(args: NameOrId & {
+            selector: SelectorProps;
+        }): Promise<void>;
+        updateDisplayStyle(args: NameOrId & {
+            className: string;
+            settings: DisplayStyleSettingsProps;
+        }): Promise<void>;
+        updateModelSelector(args: NameOrId & {
+            selector: SelectorProps;
+        }): Promise<void>;
+        updateTimeline(args: NameOrId & {
+            timeline: RenderSchedule.ScriptProps;
+        }): Promise<void>;
+        updateViewDefinition(args: {
+            viewId: IdString;
+            viewDefinition: ViewDefinitionProps;
+        }): Promise<void>;
+        updateViewShared(arg: {
+            viewId: IdString;
+            isShared: boolean;
+            owner?: string;
+        }): Promise<void>;
+    }
 }
 
 // @internal (undocumented)

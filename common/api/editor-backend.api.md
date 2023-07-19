@@ -56,7 +56,7 @@ import { TransformProps } from '@itwin/core-geometry';
 import { TransformSubEntityProps } from '@itwin/editor-common';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @alpha (undocumented)
+// @beta
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
     constructor(iModel: IModelDb, _str: string);
     // (undocumented)
@@ -111,11 +111,9 @@ export class EditCommandAdmin {
     static get activeCommand(): EditCommand | undefined;
     // (undocumented)
     static readonly commands: Map<string, typeof EditCommand>;
-    // @internal (undocumented)
     static finishCommand(): Promise<void>;
     static register(commandType: EditCommandType): void;
     static registerModule(moduleObj: any): void;
-    // @internal
     static runCommand(cmd: EditCommand): Promise<any>;
     static unRegister(commandId: string): void;
 }

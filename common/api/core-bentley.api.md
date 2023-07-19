@@ -970,10 +970,10 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
-// @internal
+// @public
 export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
 
-// @internal
+// @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
 // @public (undocumented)
@@ -1688,20 +1688,17 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
 
-// @internal
+// @public
 export class YieldManager {
     constructor(options?: YieldManagerOptions);
-    // (undocumented)
+    // @internal (undocumented)
     protected actualYield(): Promise<void>;
-    // (undocumented)
     allowYield(): Promise<void>;
-    // (undocumented)
-    options: Readonly<Required<YieldManagerOptions>>;
+    readonly options: Readonly<Required<YieldManagerOptions>>;
 }
 
-// @internal
+// @public
 export interface YieldManagerOptions {
-    // (undocumented)
     iterationsBeforeYield?: number;
 }
 

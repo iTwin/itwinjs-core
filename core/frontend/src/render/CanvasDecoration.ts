@@ -37,10 +37,14 @@ export interface CanvasDecoration {
   pick?(pt: XAndY): boolean;
   /** Optional method to be called whenever this decorator is picked and the mouse first enters this decoration. */
   onMouseEnter?(ev: BeButtonEvent): void;
-  /** Optional method to be called whenever when the mouse leaves this decoration. */
+  /** Optional method to be called whenever the mouse leaves this decoration. */
   onMouseLeave?(): void;
-  /** Optional method to be called whenever when the mouse moves inside this decoration. */
+  /** Optional method to be called whenever the mouse moves inside this decoration. */
   onMouseMove?(ev: BeButtonEvent): void;
+  /** Optional method to be called whenever the mouse moves inside this decoration that determines whether the event is forwarded to the active tool.
+   * @return true if the event was *not* handled by this decoration and should be forwarded to the active tool.
+   */
+  propagateMouseMove?(ev: BeButtonEvent): boolean;
   /**
    * Optional method to be called whenever this decorator is picked and a mouse button is pressed or released inside this decoration.
    * @return true if the event was handled by this decoration and should *not* be forwarded to the active tool.

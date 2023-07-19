@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "add ViewStore apis",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

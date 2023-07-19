@@ -4,26 +4,86 @@
 
 ```ts
 
+import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { SpatialTileTreeReferences } from '@itwin/core-frontend';
 
-// @alpha
+// @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
 // @internal (undocumented)
 export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
-// @alpha
+// @beta
 export interface FrontendTilesOptions {
-    computeSpatialTilesetBaseUrl: ComputeSpatialTilesetBaseUrl;
+    computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
     maxLevelsToSkip?: number;
 }
 
 // @internal (undocumented)
 export function getMaxLevelsToSkip(): number;
 
-// @alpha
+// @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
+
+// @beta
+export interface MeshExport {
+    // (undocumented)
+    displayName: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    _links: {
+        mesh: {
+            href: string;
+        };
+    };
+    // (undocumented)
+    request: {
+        iModelId: string;
+        changesetId: string;
+        exportType: string;
+        geometryOptions: any;
+        viewDefinitionFilter: any;
+    };
+    // (undocumented)
+    status: string;
+}
+
+// @internal
+export interface MeshExports {
+    // (undocumented)
+    exports: MeshExport[];
+    // (undocumented)
+    _links: {
+        next?: {
+            href: string;
+        };
+    };
+}
+
+// @beta
+export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export interface ObtainMeshExportTilesetUrlArgs {
+    accessToken: AccessToken;
+    iModel: IModelConnection;
+    requireExactChangeset?: boolean;
+    urlPrefix?: string;
+}
+
+// @beta
+export function queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport>;
+
+// @beta
+export interface QueryMeshExportsArgs {
+    accessToken: AccessToken;
+    changesetId?: string;
+    iModelId: string;
+    includeIncomplete?: boolean;
+    urlPrefix?: string;
+}
 
 // (No @packageDocumentation comment for this package)
 

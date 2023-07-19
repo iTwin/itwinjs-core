@@ -83,7 +83,7 @@ export interface ElementGeometryDataEntry {
 }
 
 /** Information provided to [[ElementGeometryFunction]].
- * @alpha
+ * @beta
  */
 export interface ElementGeometryInfo {
   /** ID for the [Category]($core-backend), undefined for geometry parts */
@@ -102,12 +102,12 @@ export interface ElementGeometryInfo {
 
 /** A callback function that receives geometry stream data.
  * @see [IModelDb.elementGeometryRequest]($core-backend)
- * @alpha
+ * @beta
  */
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
 /** Parameters for [IModelDb.elementGeometryRequest]($core-backend)
- * @alpha
+ * @beta
  */
 export interface ElementGeometryRequest {
   /** The source element for the geometry stream */
@@ -130,7 +130,7 @@ export interface ElementGeometryRequest {
 
 /** Parameters for building the geometry stream of a [[GeometricElement]] using ElementGeometry.Builder
  * Note: The geometry stream is always in local coordinates, that is, relative to the element's [[Placement]].
- * @alpha
+ * @beta
  */
 export interface ElementGeometryBuilderParams {
   /** The geometry stream data */
@@ -140,7 +140,7 @@ export interface ElementGeometryBuilderParams {
 }
 
 /** Parameters for building the geometry stream of a [[GeometryPart]] using ElementGeometry.Builder.
- * @alpha
+ * @beta
  */
 export interface ElementGeometryBuilderParamsForPart {
   /** The geometry stream data */
@@ -254,7 +254,7 @@ export interface BRepGeometryInfo {
 export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
 
 /** Provides utility functions for working with [[ElementGeometryDataEntry]].
- * @alpha
+ * @beta
  */
 export namespace ElementGeometry {
   /** [[ElementGeometry.Builder]] is a helper class for populating a [[ElementGeometryDataEntry]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */

@@ -23,8 +23,8 @@ import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Rel
 export class FunctionalPartition extends InformationPartitionElement {
   /** @internal */
   public static override get className(): string { return "FunctionalPartition"; }
-  /** @internal */
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
+
+  protected constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -35,9 +35,11 @@ export class FunctionalPartition extends InformationPartitionElement {
 export class FunctionalModel extends RoleModel {
   /** @internal */
   public static override get className(): string { return "FunctionalModel"; }
+
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
   }
+
   /** Insert a FunctionalPartition and a FunctionalModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The FunctionalPartition will be inserted as a child of this Subject element.
@@ -66,8 +68,8 @@ export class FunctionalModel extends RoleModel {
 export abstract class FunctionalElement extends RoleElement {
   /** @internal */
   public static override get className(): string { return "FunctionalElement"; }
-  /** @internal */
-  public constructor(props: FunctionalElementProps, iModel: IModelDb) {
+
+  protected constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -78,8 +80,8 @@ export abstract class FunctionalElement extends RoleElement {
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
   /** @internal */
   public static override get className(): string { return "FunctionalBreakdownElement"; }
-  /** @internal */
-  public constructor(props: FunctionalElementProps, iModel: IModelDb) {
+
+  protected constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -88,8 +90,8 @@ export abstract class FunctionalBreakdownElement extends FunctionalElement {
 export class FunctionalComposite extends FunctionalBreakdownElement {
   /** @internal */
   public static override get className(): string { return "FunctionalComposite"; }
-  /** @internal */
-  public constructor(props: FunctionalElementProps, iModel: IModelDb) {
+
+  protected constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -100,8 +102,8 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
 export abstract class FunctionalComponentElement extends FunctionalElement {
   /** @internal */
   public static override get className(): string { return "FunctionalComponentElement"; }
-  /** @internal */
-  public constructor(props: FunctionalElementProps, iModel: IModelDb) {
+
+  protected constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }
@@ -112,8 +114,8 @@ export abstract class FunctionalComponentElement extends FunctionalElement {
 export abstract class FunctionalType extends TypeDefinitionElement {
   /** @internal */
   public static override get className(): string { return "FunctionalType"; }
-  /** @internal */
-  public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
+
+  protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }

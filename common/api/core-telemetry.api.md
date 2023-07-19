@@ -6,18 +6,18 @@
 
 import { RpcActivity } from '@itwin/core-common';
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export interface TelemetryClient {
     // (undocumented)
     postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
-// @alpha
+// @internal
 export enum TelemetryClientLoggerCategory {
     Telemetry = "telemetry-client.Telemetry"
 }
 
-// @alpha
+// @internal
 export class TelemetryEvent {
     constructor(
     eventName: string,
@@ -49,7 +49,7 @@ export class TelemetryEvent {
     } | undefined;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class TelemetryManager {
     constructor(...clients: TelemetryClient[]);
     // (undocumented)
@@ -61,7 +61,6 @@ export class TelemetryManager {
     // (undocumented)
     postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

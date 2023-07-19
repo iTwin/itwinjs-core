@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
@@ -22,9 +22,9 @@ import { SurfaceType } from "../../../common/render/primitives/SurfaceParams";
 import {
   ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams,
 } from "../../../common/render/primitives/VertexTableSplitter";
-import {
-  createMeshParams, createPointStringParams, MeshArgs, PolylineArgs,
-} from "../../../render-primitives";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createPointStringParams } from "../../../render/primitives/PointStringParams";
+import { MeshArgs, PolylineArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 
 interface Point {
   x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
@@ -81,9 +81,9 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     features: featureIndex,
     width: 1,
     linePixels: LinePixels.Solid,
-    flags: new PolylineFlags(false, true, true),
+    flags: { isPlanar: true, isDisjoint: true },
     points: qpoints,
-    polylines: [ new PolylineData([...new Array<number>(points.length).keys()], points.length) ],
+    polylines: [[...new Array<number>(points.length).keys()] ],
   };
 
   const params = createPointStringParams(args)!;

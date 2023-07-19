@@ -499,7 +499,7 @@ export abstract class IModel implements IModelProps {
     };
   }
 
-  /** @internal */
+  /** Convert this iModel to a JSON representation. */
   public toJSON(): IModelConnectionProps {
     return this.getConnectionProps();
   }

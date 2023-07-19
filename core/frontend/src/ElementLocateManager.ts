@@ -8,7 +8,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitList, HitPriority, HitSource, ViewAttachmentHitInfo } from "./HitDetail";
+import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
@@ -168,24 +168,9 @@ export class ElementPicker {
       this.hitList.resetCurrentHit();
   }
 
-  private getPixelPriority(pixel: Pixel.Data) {
-    switch (pixel.type) {
-      case Pixel.GeometryType.Surface:
-        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
-      case Pixel.GeometryType.Linear:
-        return HitPriority.WireEdge;
-      case Pixel.GeometryType.Edge:
-        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
-      case Pixel.GeometryType.Silhouette:
-        return HitPriority.SilhouetteEdge;
-      default:
-        return HitPriority.Unknown;
-    }
-  }
-
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
-    const priority1 = this.getPixelPriority(pixel1);
-    const priority2 = this.getPixelPriority(pixel2);
+    const priority1 = pixel1.computeHitPriority();
+    const priority2 = pixel2.computeHitPriority();
     if (priority1 < priority2)
       return -1;
     if (priority1 > priority2)
@@ -269,30 +254,13 @@ export class ElementPicker {
         if (!hitPointWorld)
           continue;
 
-        let viewAttachment: ViewAttachmentHitInfo | undefined;
-        if (pixel.viewAttachmentId) {
-          const attachmentViewport = vp.view.getAttachmentViewport(pixel.viewAttachmentId);
-          if (attachmentViewport)
-            viewAttachment = { viewport: attachmentViewport, id: pixel.viewAttachmentId };
-        }
-
-        const modelId = pixel.modelId;
         const hit = new HitDetail({
+          ...pixel.toHitProps(vp),
           testPoint: pickPointWorld,
           viewport: vp,
           hitSource: options.hitSource,
           hitPoint: hitPointWorld,
-          sourceId: pixel.elementId,
-          priority: this.getPixelPriority(pixel),
           distXY: testPointView.distance(elmPoint),
-          distFraction: pixel.distanceFraction,
-          subCategoryId: pixel.subCategoryId,
-          geometryClass: pixel.geometryClass,
-          modelId,
-          sourceIModel: pixel.iModel,
-          tileId: pixel.tileId,
-          isClassifier: pixel.isClassifier,
-          viewAttachment,
         });
 
         this.hitList!.addHit(hit);

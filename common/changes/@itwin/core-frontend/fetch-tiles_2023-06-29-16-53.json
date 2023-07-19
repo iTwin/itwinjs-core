@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "avoid unnecessary preflight requests when loading tiles from cloud cache",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
