@@ -12,9 +12,10 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { ConvexPolygon2d, Ray2d } from "../../numerics/ConvexPolygon2d";
+import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Ray2d } from "../../geometry3d/Ray2d";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.
