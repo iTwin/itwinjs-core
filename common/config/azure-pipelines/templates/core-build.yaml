@@ -32,6 +32,20 @@ steps:
       checkLatest: true
 
   - script: |
+      cd /d ${{ parameters.workingDir }}
+      dir
+      git branch
+    displayName: 'Dir'
+    continueOnError: true
+
+  - script: |
+      dir
+      git branch
+    displayName: 'Dir WD'
+    workingDirectory: ${{ parameters.workingDir }}
+    continueOnError: true
+
+  - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
     displayName: git config
