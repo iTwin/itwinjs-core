@@ -14,7 +14,7 @@ import { IModelHost } from "./IModelHost";
  * Identifies a tile in cloud tile cache.
  * @beta
  */
-interface TileId {
+export interface TileId {
   treeId: string;
   contentId: string;
   guid: string;
