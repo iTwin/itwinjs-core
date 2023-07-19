@@ -1055,7 +1055,8 @@ export class ToolAdmin {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
 
-      return; // we're inside a pickable decoration, don't send event to tool
+      if (undefined === overlayHit.propagateMouseMove || !overlayHit.propagateMouseMove(ev))
+        return; // we're inside a pickable decoration that doesn't want event sent to tool
     }
 
     this._mouseMoveOverTimeout = setTimeout(async () => {

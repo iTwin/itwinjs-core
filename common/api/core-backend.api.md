@@ -1683,18 +1683,16 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @internal (undocumented)
+// @beta
 export class ECSchemaXmlContext {
     constructor();
-    // (undocumented)
     addSchemaPath(searchPath: string): void;
-    // (undocumented)
+    // @internal (undocumented)
     get nativeContext(): IModelJsNative.ECSchemaXmlContext;
-    // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
-    // (undocumented)
+    // @internal
     setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
-    // (undocumented)
+    // @internal
     setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
 }
 

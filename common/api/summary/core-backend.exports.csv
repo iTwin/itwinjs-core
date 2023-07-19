@@ -99,7 +99,7 @@ beta;class DriverBundleElement
 public;ECDb 
 public;ECDbOpenMode
 public;ECEnumValue
-internal;ECSchemaXmlContext
+beta;ECSchemaXmlContext
 public;ECSqlBinder
 public;ECSqlColumnInfo
 public;ECSqlInsertResult
