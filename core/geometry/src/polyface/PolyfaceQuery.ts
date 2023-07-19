@@ -47,8 +47,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GriddedRaggedRange2dSet } from "./multiclip/GriddedRaggedRange2dSet";
-import { GriddedRaggedRange2dSetWithOverflow } from "./multiclip/GriddedRaggedRange2dSetWithOverflow";
+import { Range2dSearchInterface } from "./multiclip/Range2dSearchInterface";
 
 /**
  * Options carrier for sweeping linework onto meshes.
@@ -1084,7 +1083,7 @@ export class PolyfaceQuery {
   public static sweepLineStringToFacetsXY(
     linestringPoints: GrowableXYZArray | Point3d[],
     polyfaceOrVisitor: Polyface | PolyfaceVisitor,
-    searchStructure: GriddedRaggedRange2dSet<number> | GriddedRaggedRange2dSetWithOverflow<number>): CurvePrimitive[] {
+    searchStructure: Range2dSearchInterface<number>): CurvePrimitive[] {
     let result: CurvePrimitive[] = [];
     const chainContext = ChainMergeContext.create();
     const sweepVector = Vector3d.create(0, 0, 1);

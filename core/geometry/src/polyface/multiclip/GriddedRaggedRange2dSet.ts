@@ -9,7 +9,10 @@
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
-
+/**
+ * Type abbreviation to allow undefined as a LinearSearchRange2dArray parameter.
+ * @public
+ */
 export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
 /**
  * A GriddedRaggedRange2dSet is
@@ -18,7 +21,7 @@ export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | 
  * * Member ranges are noted in the grid block containing the range's lower left corner.
  * * Member ranges larger than twice the grid size are rejected by the insert method.
  * * Hence a search involving a point in grid block (i,j) must examine ranges in grid blocks left and below, i.e. (i-1,j-1), (i-1,j), (i,j-1)
- * @internal
+ * @public
  */
 export class GriddedRaggedRange2dSet<T> {
   private _range: Range2d;

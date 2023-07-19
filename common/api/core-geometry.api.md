@@ -2288,6 +2288,26 @@ export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, prope
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 
 // @public
+export class GriddedRaggedRange2dSet<T> {
+    conditionalInsert(range: Range2d | Range3d, tag: T): boolean;
+    static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined;
+    searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
+    searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
+    // (undocumented)
+    visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void): void;
+}
+
+// @public
+export class GriddedRaggedRange2dSetWithOverflow<T> {
+    addRange(range: Range2d | Range3d, tag: T): void;
+    static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSetWithOverflow<T> | undefined;
+    searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
+    searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
+    // (undocumented)
+    visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void): void;
+}
+
+// @public
 export class GrowableBlockedArray {
     constructor(blockSize: number, initialBlocks?: number, growthFactor?: number);
     addBlock(newData: number[]): void;
@@ -3078,6 +3098,7 @@ export class IndexedXYZCollectionPolygonOps {
     // @internal
     static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength?: number, tolerance?: number): CutLoopMergeContext;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
+    static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: IndexedXYZCollection, crossings: Point3d[]): void;
     // @internal
     static reorderCutLoops(loops: CutLoopMergeContext): void;
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
@@ -4012,6 +4033,9 @@ export class OffsetOptions {
 // @public
 export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
 
+// @public
+export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
+
 // @internal
 export class Order2Bezier extends BezierCoffs {
     constructor(f0?: number, f1?: number);
@@ -4816,7 +4840,8 @@ export class PolyfaceQuery {
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
     static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums;
-    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[];
+    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyfaceOrVisitor: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): CurvePrimitive[];
+    static sweepLineStringToFacetsXY(linestringPoints: GrowableXYZArray | Point3d[], polyfaceOrVisitor: Polyface | PolyfaceVisitor, searchStructure: Range2dSearchInterface<number>): CurvePrimitive[];
     // @deprecated
     static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
     // @deprecated

@@ -32,8 +32,9 @@ Table of contents:
 When a locate operation identifies an element inside of a view attachment, the attachment's element Id can be obtained via [HitDetail.viewAttachment]($frontend). If you are using [Viewport.readPixels]($frontend), the Id will be included in [Pixel.Data]($frontend). All world coordinates (e.g., [HitDetail.hitPoint]($frontend)) will be in the *sheet* model's coordinate space. You can pass the attachment Id to [ViewState.computeDisplayTransform]($frontend) to obtain the [Transform]($core-geometry) from the view attachment's coordinate space to the sheet.
 
 Note: most view attachments are two-dimensional drawings or orthographic spatial views. Attachments of perspective (camera) views do not support locating elements inside them, nor snapping to them.
- - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
- - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
+
+- [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+- [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -96,10 +97,11 @@ In the first example, a mesh with an upward facing main surface has smaller vert
 
 ![sweepLineStringToFacetsExampleIso](./assets/SweepLineStringToFacetsVerticalSweep.png)
 
-In the second example, the same red linestring is swept to the same facets but along
-a non-vertical direction.
+In the second example, the same red linestring is swept to the same facets but along a non-vertical direction.
 
 ![sweepLineStringToFacetsExampleIso](./assets/SweepLinStringToFacetsNonVertical.png)
+
+New method  [PolyfaceQuery.sweepLineStringToFacetsXY]($core-geometry) performs the same sweep optimized around a 2D range search object which the caller supplies.  The search object must support the queries in the interface [Range2dSearchInterface]($core-geometry).
 
 ## Map Layers
 

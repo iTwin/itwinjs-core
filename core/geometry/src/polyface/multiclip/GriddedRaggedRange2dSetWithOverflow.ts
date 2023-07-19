@@ -17,7 +17,7 @@ import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
  * * A modest number of oversizes.
  * * Maintain the smallish ones in a GriddedRaggedRange2dSet.
  * * Maintain the overflows in a LinearSearchRange2dArray
- * @internal
+ * @public
  */
 export class GriddedRaggedRange2dSetWithOverflow<T> {
   private _gridSet: GriddedRaggedRange2dSet<T>;
