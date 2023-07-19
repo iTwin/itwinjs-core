@@ -297,8 +297,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
    * Return some point on the plane.
    */
   public override getAnyPointOnPlane(result?: Point3d): Point3d {
-    // This function returns origin but in general A Point x is on plane if
-    // and only if x = o + a*u + b*v for unique (scalar) parameters a and b.
+    // This function returns the plane origin. In general, a point x is on the plane if
+    // and only if x = o + a*u + b*v, where a and b are scalars.
     return this.origin.clone(result);
   }
   private static _workVector: Vector3d;

@@ -306,7 +306,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
   }
   /** Return (a clone of) the origin. */
   public override getAnyPointOnPlane(result?: Point3d): Point3d {
-    // This function returns origin but in general A Point x is on plane if and only if (x-o).n = 0.
+    // This function returns the plane origin. In general, a point x is on the plane if and only if (x-o).n = 0.
     return this._origin.clone(result);
   }
   /** Return the signed altitude of weighted spacePoint above or below the plane.  (Below is negative) */
