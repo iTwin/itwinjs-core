@@ -2041,6 +2041,7 @@ export interface CanvasDecoration {
     onWheel?(ev: BeWheelEvent): boolean;
     pick?(pt: XAndY): boolean;
     position?: XAndY;
+    propagateMouseMove?(ev: BeButtonEvent): boolean;
 }
 
 // @public
