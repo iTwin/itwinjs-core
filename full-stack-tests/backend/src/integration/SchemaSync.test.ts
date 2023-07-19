@@ -5,10 +5,10 @@
 
 import { assert } from "chai";
 import { Suite } from "mocha";
-import { CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { Guid, OpenMode } from "@itwin/core-bentley";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
 
 const storageType = "azure" as const;
 const containerProps = { baseUri: AzuriteTest.baseUri, storageType, containerId: "imodel-sync-itwin1", writeable: true };
@@ -42,7 +42,7 @@ describe("Schema synchronization", function (this: Suite) {
   };
 
   it("multi user workflow", async () => {
-    const iTwinId: string = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
@@ -53,9 +53,14 @@ describe("Schema synchronization", function (this: Suite) {
 
     const iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "schemaSync" });
 
-    const b1 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user1AccessToken, iTwinId, iModelId });
-    const b2 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user2AccessToken, iTwinId, iModelId });
-    const b3 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user3AccessToken, iTwinId, iModelId });
+    const openNewBriefcase = async (accessToken: AccessToken) => {
+      const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+      return BriefcaseDb.open(bcProps);
+    };
+
+    const b1 = await openNewBriefcase(user1AccessToken);
+    const b2 = await openNewBriefcase(user2AccessToken);
+    const b3 = await openNewBriefcase(user3AccessToken);
 
     SchemaSync.setTestCache(b1, "briefcase1");
     SchemaSync.setTestCache(b2, "briefcase2");
