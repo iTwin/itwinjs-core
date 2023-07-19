@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { join } from "path";
 import * as fs from "fs";
+import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -48,6 +48,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
@@ -55,7 +56,6 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { SchemaSync } from "./SchemaSync";
 
 import type { BlobContainer } from "./BlobContainerService";
 
@@ -240,8 +240,6 @@ export abstract class IModelDb extends IModel {
   private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-  /** @internal */
-  public schemaSyncAccess?: SchemaSync.CloudAccess;
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
 
@@ -808,22 +806,6 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.restartTxnSession();
   }
 
-  /** @internal */
-  public async initSchemaSynchronization() {
-    if (!this.schemaSyncAccess)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
-    this.nativeDb.saveChanges();
-    const syncDb = this.schemaSyncAccess;
-    await this.schemaSyncAccess.withLockedDb({ operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async () => {
-      this.nativeDb.schemaSyncInit(syncDb.getUri());
-    });
-  }
-
-  /** @internal */
-  public get isSchemaSyncEnabled() {
-    return this.nativeDb.schemaSyncEnabled();
-  }
-
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -838,12 +820,10 @@ export abstract class IModelDb extends IModel {
       return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this.isSchemaSyncEnabled) {
-      if (!this.schemaSyncAccess)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db store cloud access is not set.");
+    if (this.nativeDb.schemaSyncEnabled()) {
 
-      await this.schemaSyncAccess.withLockedDb({ openMode: OpenMode.Readonly, operationName: "schema sync" }, async () => {
-        const schemaSyncDbUri = this.schemaSyncAccess?.getUri();
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
         let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
@@ -870,20 +850,6 @@ export abstract class IModelDb extends IModel {
     }
     this.clearCaches();
   }
-  /** @internal */
-  public synchronizationSchemas() {
-    if (this.isSchemaSyncEnabled) {
-      if (!this.schemaSyncAccess)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync is not enabled");
-
-      this.schemaSyncAccess.synchronizeWithCloud();
-      this.schemaSyncAccess.openForRead();
-      this.nativeDb.schemaSyncPull(this.schemaSyncAccess.getUri());
-      // we need to make sure if there was any change at all that was pulled rather then clear cache every time.
-      this.clearCaches();
-      this.schemaSyncAccess.closeDb();
-    }
-  }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
@@ -898,13 +864,9 @@ export abstract class IModelDb extends IModel {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this.isSchemaSyncEnabled) {
-      if (!this.schemaSyncAccess) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
-      }
-      await this.schemaSyncAccess.withLockedDb({ openMode: OpenMode.Readonly, operationName: "schemaSync" }, async () => {
-        const schemaSyncDbUri = this.schemaSyncAccess?.getUri();
-
+    if (this.nativeDb.schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
         let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
         if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
@@ -913,9 +875,8 @@ export abstract class IModelDb extends IModel {
             await this.acquireSchemaLock();
           stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
         }
-        if (DbResult.BE_SQLITE_OK !== stat) {
+        if (DbResult.BE_SQLITE_OK !== stat)
           throw new IModelError(stat, "Error importing schema");
-        }
       });
     } else {
       if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock

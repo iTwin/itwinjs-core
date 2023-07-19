@@ -316,7 +316,7 @@ public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
-beta;SchemaSync
+internal;SchemaSync
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingLocation 

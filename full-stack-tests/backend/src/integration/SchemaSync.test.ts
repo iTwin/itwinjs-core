@@ -5,51 +5,41 @@
 
 import { assert } from "chai";
 import { Suite } from "mocha";
-import { CloudSqlite, HubMock, IModelHost, SchemaSync } from "@itwin/core-backend";
+import { CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-import { HubWrappers, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { Guid } from "@itwin/core-bentley";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { Guid, OpenMode } from "@itwin/core-bentley";
 
-const containerId = "imodel-sync-itwin1";
 const storageType = "azure" as const;
+const containerProps = { baseUri: AzuriteTest.baseUri, storageType, containerId: "imodel-sync-itwin1", writeable: true };
 
 async function initializeContainer() {
-  await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, storageType: "azure", containerId });
-  await SchemaSync.CloudAccess.initializeDb({ ...props, accessToken });
-}
-
-async function makeSchemaSync(user: string) {
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  const syncSchema = new SchemaSync.CloudAccess({ ...props, accessToken });
-  syncSchema.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
-  syncSchema.lockParams.user = user;
-  return syncSchema;
+  await AzuriteTest.Sqlite.createAzContainer(containerProps);
+  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: containerProps.containerId });
+  await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken });
 }
 
 describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
-
-  let sds1: SchemaSync.CloudAccess;
-  let sds2: SchemaSync.CloudAccess;
-  let sds3: SchemaSync.CloudAccess;
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     await initializeContainer();
-
-    sds1 = await makeSchemaSync("ss_b1");
-    sds2 = await makeSchemaSync("ss_b2");
-    sds3 = await makeSchemaSync("ss_b3");
   });
 
   after(async () => {
     IModelHost.authorizationClient = undefined;
   });
+
+  const synchronizeSchemas = async (iModel: IModelDb) => {
+    await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
+      const uri = syncAccess.getUri();
+      iModel.nativeDb.schemaSyncPull(uri);
+      iModel.clearCaches();
+    });
+  };
 
   it("multi user workflow", async () => {
     const iTwinId: string = Guid.createValue();
@@ -58,27 +48,26 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
-    const iModelName = "test iModel";
-    const iModelId = await HubWrappers.createIModel(user1AccessToken, iTwinId, iModelName);
+    const iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "schemaSync" });
 
     const b1 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user1AccessToken, iTwinId, iModelId });
     const b2 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user2AccessToken, iTwinId, iModelId });
     const b3 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user3AccessToken, iTwinId, iModelId });
 
-    b1.schemaSyncAccess = sds1;
-    b2.schemaSyncAccess = sds2;
-    b3.schemaSyncAccess = sds3;
+    SchemaSync.setTestCache(b1, "briefcase1");
+    SchemaSync.setTestCache(b2, "briefcase2");
+    SchemaSync.setTestCache(b3, "briefcase3");
 
-    // initialize shared schema channel
-    await b1.initSchemaSynchronization();
-    b1.saveChanges();
-    assert.isTrue(b1.isSchemaSyncEnabled);
+    await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
+    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
 
     // b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.isSchemaSyncEnabled);
+    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
 
     // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -97,7 +86,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
-    b2.synchronizationSchemas();
+    await synchronizeSchemas(b2);
     b2.saveChanges();
 
     // ensure b2 have class and its properties
@@ -122,7 +111,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
-    b1.synchronizationSchemas();
+    await synchronizeSchemas(b1);
     b1.saveChanges();
 
     // ensure b1 have class and its properties

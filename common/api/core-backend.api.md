@@ -2950,15 +2950,11 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
-    // @internal (undocumented)
-    initSchemaSynchronization(): Promise<void>;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal (undocumented)
-    get isSchemaSyncEnabled(): boolean;
     get isSnapshot(): boolean;
     isSnapshotDb(): this is SnapshotDb;
     // @internal
@@ -3018,10 +3014,6 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingDictionary): void;
-    // @internal (undocumented)
-    schemaSyncAccess?: SchemaSync.CloudAccess;
-    // @internal (undocumented)
-    synchronizationSchemas(): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -4597,14 +4589,27 @@ export class Schemas {
     static unregisterSchema(schemaName: string): boolean;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export namespace SchemaSync {
     export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
         constructor(props: CloudSqlite.ContainerAccessProps);
-        // @internal (undocumented)
+        // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
+    const // (undocumented)
+    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    const // (undocumented)
+    withLockedAccess: (iModel: TestCacheIModel, args: {
+        operationName: string;
+        openMode?: OpenMode;
+        user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    initializeForIModel: (arg: {
+        iModel: IModelDb;
+        containerProps: CloudSqlite.ContainerProps;
+    }) => Promise<void>;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
         protected createDDL(): void;
