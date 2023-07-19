@@ -82,7 +82,7 @@ export abstract class XYCurveEvaluator {
   public static initWorkSpace() {
     XYCurveEvaluator._gaussX = new Float64Array(5);
     XYCurveEvaluator._gaussWeight = new Float64Array(5);
-    XYCurveEvaluator._gaussMapper = Quadrature.setupGauss5;
+    XYCurveEvaluator._gaussMapper = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss5(xA, xB, xMapped, wMapped);
   }
   /**
    * Integrate between nominal fractions with default gauss rule.

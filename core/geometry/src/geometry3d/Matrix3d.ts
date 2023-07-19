@@ -2085,7 +2085,7 @@ export class Matrix3d implements BeJSONFunctions {
     PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.coffs, result.coffs);
     if (this.inverseState === InverseMatrixState.inverseStored
       && other.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixMatrix, other.inverseCoffs, this.inverseCoffs);
+      result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.inverseCoffs);
     else if (this.inverseState === InverseMatrixState.singular
       || other.inverseState === InverseMatrixState.singular)
       result.inverseState = InverseMatrixState.singular;
@@ -2103,7 +2103,7 @@ export class Matrix3d implements BeJSONFunctions {
     result = result ? result : new Matrix3d();
     PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, Matrix3d._productBuffer);
     if (this.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixMatrix, other.coffs, this.inverseCoffs);
+      result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.coffs, this.inverseCoffs);
     else
       result.inverseState = InverseMatrixState.unknown;
     PackedMatrix3dOps.copy(Matrix3d._productBuffer, result.coffs);
@@ -2119,7 +2119,7 @@ export class Matrix3d implements BeJSONFunctions {
     result = result ? result : new Matrix3d();
     PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, Matrix3d._productBuffer);
     if (other.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixMatrix, other.inverseCoffs, this.coffs);
+      result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.coffs);
     else
       result.inverseState = InverseMatrixState.unknown;
     PackedMatrix3dOps.copy(Matrix3d._productBuffer, result.coffs);
@@ -2137,7 +2137,7 @@ export class Matrix3d implements BeJSONFunctions {
     result = result ? result : new Matrix3d();
     PackedMatrix3dOps.multiplyMatrixMatrixTranspose(this.coffs, other.coffs, result.coffs);
     if (this.inverseState === InverseMatrixState.inverseStored && other.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixTransposeMatrix, other.inverseCoffs, this.inverseCoffs);
+      result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixTransposeMatrix(a, b, _result), other.inverseCoffs, this.inverseCoffs);
     else if (this.inverseState === InverseMatrixState.singular || other.inverseState === InverseMatrixState.singular)
       result.inverseState = InverseMatrixState.singular;
     else
@@ -2156,7 +2156,7 @@ export class Matrix3d implements BeJSONFunctions {
     result = result ? result : new Matrix3d();
     PackedMatrix3dOps.multiplyMatrixTransposeMatrix(this.coffs, other.coffs, result.coffs);
     if (this.inverseState === InverseMatrixState.inverseStored && other.inverseState === InverseMatrixState.inverseStored)
-      result.finishInverseCoffs(PackedMatrix3dOps.multiplyMatrixMatrixTranspose, other.inverseCoffs, this.inverseCoffs);
+      result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrixTranspose(a, b, _result), other.inverseCoffs, this.inverseCoffs);
     else if (this.inverseState === InverseMatrixState.singular || other.inverseState === InverseMatrixState.singular)
       result.inverseState = InverseMatrixState.singular;
     else

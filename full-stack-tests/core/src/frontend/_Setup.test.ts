@@ -35,7 +35,7 @@ declare global {
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = (a, b, tol) => Geometry.isSameCoordinate(a, b, tol);
 
 /**
  * The diff shown on failure will show undefined fields as part of the diff even if

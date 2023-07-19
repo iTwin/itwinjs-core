@@ -36,7 +36,7 @@ declare global {
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = (a, b, tol) => Geometry.isSameCoordinate(a, b, tol);
 
 /** normalize a classname for comparisons */
 const normalizeClassName = (name: string) => name.toLowerCase().replace(/:/, ".");

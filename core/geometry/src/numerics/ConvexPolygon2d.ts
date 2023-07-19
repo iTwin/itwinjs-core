@@ -305,7 +305,7 @@ export class ConvexPolygon2d {
       return undefined;
     // Get deep copy
     const xy1: Point2d[] = points.slice(0, n);
-    xy1.sort(Geometry.lexicalXYLessThan);
+    xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     hull.push(xy1[0]); // This is sure to stay
     hull.push(xy1[1]); // This one can be removed in loop.
 

@@ -489,7 +489,7 @@ describe("System", () => {
   });
 
   describe("context loss", () => {
-    const contextLossHandler = RenderSystem.contextLossHandler;
+    const contextLossHandler = async () => RenderSystem.contextLossHandler();
 
     beforeEach(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });

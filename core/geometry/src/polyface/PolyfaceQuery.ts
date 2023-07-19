@@ -1249,7 +1249,7 @@ export class PolyfaceQuery {
       }
       facetIndexAndVertexIndices.push(entry);
     }
-    facetIndexAndVertexIndices.sort(this.compareFacetIndexAndVertexIndices);
+    facetIndexAndVertexIndices.sort((arrayA, arrayB) => this.compareFacetIndexAndVertexIndices(arrayA, arrayB));
     let i0, i1;
     const n = facetIndexAndVertexIndices.length;
     const clusterArray = [];

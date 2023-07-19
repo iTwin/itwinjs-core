@@ -104,8 +104,8 @@ export class GraphChecker {
   }
   public static printToConsole = true;
   public static dumpGraph(graph: HalfEdgeGraph | undefined,
-    formatNode: NodeFunction = HalfEdge.nodeToIdXYString,
-    formatNodeWithoutCoordinates: NodeFunction = HalfEdge.nodeToId) {
+    formatNode: NodeFunction = (node) => HalfEdge.nodeToIdXYString(node),
+    formatNodeWithoutCoordinates: NodeFunction = (node) => HalfEdge.nodeToId(node)) {
     if (graph === undefined) {
       GeometryCoreTestIO.consoleLog("   **** EMPTY GRAPH ****");
       return;
@@ -125,7 +125,7 @@ export class GraphChecker {
       const totalDistance = v.sumAroundVertex((node: HalfEdge) => node.distanceXY(v));
       if (totalDistance !== 0) { // output full coordinates all the way around.
         vData.push("INCONSISTENT VERTEX XY");
-        vData.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
+        vData.push(JSON.stringify(v.collectAroundVertex((node) => HalfEdge.nodeToIdMaskXY(node))));
       } else
         vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
@@ -355,8 +355,8 @@ describe("VUGraph", () => {
     if (ck.testExactNumber(1, componentsB.length, "Expect single component")) {
       ck.testExactNumber(numFaces, componentsB[0].length, "face count from search");
     }
-    ck.testExactNumber(1, graph.countFaceLoopsWithMaskFilter(HalfEdge.filterIsMaskOn, HalfEdgeMask.EXTERIOR), "Single exterior after parity");
-    ck.testExactNumber(numInteriorFaces, graph.countFaceLoopsWithMaskFilter(HalfEdge.filterIsMaskOff, HalfEdgeMask.EXTERIOR), "Single exterior after parity");
+    ck.testExactNumber(1, graph.countFaceLoopsWithMaskFilter((node, mask) => HalfEdge.filterIsMaskOn(node, mask), HalfEdgeMask.EXTERIOR), "Single exterior after parity");
+    ck.testExactNumber(numInteriorFaces, graph.countFaceLoopsWithMaskFilter((node, mask) => HalfEdge.filterIsMaskOff(node, mask), HalfEdgeMask.EXTERIOR), "Single exterior after parity");
     GraphChecker.validateCleanLoopsAndCoordinates(ck, graph);
     ck.testTrue(HalfEdgePointerInspector.inspectGraph(graph, true), "Merged Graph HalfEdgeGraph pointer properties");
     ck.testTrue(HalfEdgePointerInspector.inspectGraph(graph, false), "Merged Graph HalfEdgeGraph pointer properties");
