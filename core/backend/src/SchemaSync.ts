@@ -40,8 +40,11 @@ export namespace SchemaSync {
     const access = new CloudAccess({ ...props, accessToken });
     if (iModel.testSyncCache)
       access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: iModel.testSyncCache }));
-    await access.withLockedDb(args, async () => operation(access));
-    access.close();
+    try {
+      await access.withLockedDb(args, async () => operation(access));
+    } finally {
+      access.close();
+    }
   };
 
   export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps }) => {
