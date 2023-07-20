@@ -63,7 +63,7 @@ steps:
       scriptSource: 'filePath'
       scriptPath: common/scripts/run_rush_change.py
       arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-    Advanced
+    Advanced:
       workingDirectory: '$(Build.SourcesDirectory)/itwinjs-core'
       failOnStderr: true
 
