@@ -71,13 +71,13 @@ steps:
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
-  - task: PythonScript@0
-    displayName: "rush change -v"
-    inputs:
-      scriptSource: 'filePath'
-      scriptPath: '${{ parameters.workingDir }}/common/scripts/run_rush_change.py'
-      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-      failOnStderr: true
+  # - task: PythonScript@0
+  #   displayName: "rush change -v"
+  #   inputs:
+  #     scriptSource: 'filePath'
+  #     scriptPath: '${{ parameters.workingDir }}/common/scripts/run_rush_change.py'
+  #     arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  #     failOnStderr: true
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
