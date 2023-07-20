@@ -365,7 +365,7 @@ describe("Filters", () => {
       "aaaaaa",
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "^a^a^a^a^a^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      fuzzyScore
+      fuzzyScore,
     );
   });
 
@@ -373,29 +373,29 @@ describe("Filters", () => {
     assertMatches(
       "jfjfj",
       "fjfjfjfjfjfjfjfjfjfjfj",
-      undefined, fuzzyScore
+      undefined, fuzzyScore,
     );
     assertMatches(
       "jfjfjfjfjfjfjfjfjfj",
       "fjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj",
-      undefined, fuzzyScore
+      undefined, fuzzyScore,
     );
     assertMatches(
       "jfjfjfjfjfjfjfjfjfjjfjfjfjfjfjfjfjfjfjjfjfjfjfjfjfjfjfjfjjfjfjfjfjfjfjfjfjfjjfjfjfjfjfjfjfjfjfjjfjfjfjfjfjfjfjfjfj",
       "fjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj",
-      undefined, fuzzyScore
+      undefined, fuzzyScore,
     );
     assertMatches(
       "jfjfjfjfjfjfjfjfjfj",
       "fJfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj",
       "f^J^f^j^f^j^f^j^f^j^f^j^f^j^f^j^f^j^f^jfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj", // strong match
-      fuzzyScore
+      fuzzyScore,
     );
     assertMatches(
       "jfjfjfjfjfjfjfjfjfj",
       "fjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj",
       "f^j^f^j^f^j^f^j^f^j^f^j^f^j^f^j^f^j^f^jfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfjfj", // any match
-      fuzzyScore, { firstMatchCanBeWeak: true }
+      fuzzyScore, { firstMatchCanBeWeak: true },
     );
   });
 
@@ -407,13 +407,13 @@ describe("Filters", () => {
       "fsfsfs",
       "dsafdsafdsafdsafdsafdsafdsafasdfdsa",
       undefined,
-      fuzzyScore
+      fuzzyScore,
     );
     assertMatches(
       "fsfsfsfsfsfsfsf",
       "dsafdsafdsafdsafdsafdsafdsafasdfdsafdsafdsafdsafdsfdsafdsfdfdfasdnfdsajfndsjnafjndsajlknfdsa",
       undefined,
-      fuzzyScore
+      fuzzyScore,
     );
   });
 
@@ -545,13 +545,13 @@ describe("Filters", () => {
       "foo",
       "ffffffffffffffffffffffffffffbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar_foo",
       "ffffffffffffffffffffffffffffbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar_^f^o^o",
-      fuzzyScore
+      fuzzyScore,
     );
     assertMatches(
       "foo",
       "Gffffffffffffffffffffffffffffbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar_foo",
       undefined,
-      fuzzyScore
+      fuzzyScore,
     );
   });
 

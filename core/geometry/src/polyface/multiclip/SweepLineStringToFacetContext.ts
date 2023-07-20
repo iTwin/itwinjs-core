@@ -147,7 +147,7 @@ class EdgeClipData {
         (f0: number, f1: number) => {
           announceEdge(this._crossingPoints[0].interpolate(f0, this._crossingPoints[1]),
             this._crossingPoints[0].interpolate(f1, this._crossingPoints[1]));
-        }
+        },
       );
     }
   }

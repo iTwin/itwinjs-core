@@ -6,70 +6,69 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveChain";
-import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { ChainTypes, RegionOps } from "../../curve/RegionOps";
+
 import { Geometry } from "../../Geometry";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveChainWireOffsetContext } from "./PolygonOffsetContext";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { XYAndZ } from "../../geometry3d/XYZProps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Arc3d } from "../Arc3d";
+import { AnyCurve } from "../CurveChain";
+import { BagOfCurves, CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
+import { Loop } from "../Loop";
+import { Path } from "../Path";
+import { ChainTypes, RegionOps } from "../RegionOps";
+import { StrokeOptions } from "../StrokeOptions";
 
 /**
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.
  * * The caller makes a sequence of calls to announce individual primitives.
- * * This collector (unlike the simpler "ChainCollector") expects to have inputs arriving in random order, leaving multiple open chains in play at any time.
- *    * chainCollector.announceCurvePrimitive (curve, searchAllPaths).
- * * When all curves have been announced, the call to grab the paths option restructures the various active chains into Path and Loop objects.
+ * * This collector (unlike the simpler [[ChainCollectorContext]]) expects to have inputs arriving in random order, leaving multiple open chains in play at any time.
+ * * When all curves have been announced, the call to `grabResults` restructures the various active chains into Paths (and optionally, Loops).
+ * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
  * * Usage pattern is
- *   * initialization: `context = new ChainCollectorContext (makeClones: boolean)`
- *   * many times
- *       * `   context.captureCurve (anyCurve, searchAllPaths)`
- *       * `   context.captureCurvePrimitive (primitive, searchAllPaths)`
- *   * end:        ` result = context.grabResult (formLoopsIfClosed)`
+ *   * initialization: `context = new MultiChainCollector(gapTol, planeTol)`
+ *   * many times:
+ *       * `context.captureCurve(anyCurve)`
+ *       * `context.captureCurvePrimitive(primitive)`
+ *   * end: `result = context.grabResult(makeLoopIfClosed)`
  * @internal
  */
 export class MultiChainCollector {
+  /** accumulated chains */
   private _chains: CurvePrimitive[][];
+  /** largest gap distance to close */
+  private _gapTolerance: number;
+  /** end point snap tolerance (assumed to be as tight or tighter than gapTolerance) */
+  private _snapTolerance: number;
+  /** tolerance for choosing Path or Loop. If undefined, always Path. */
+  private _planeTolerance: number | undefined;
 
   private static _staticPointA: Point3d;
   private static _staticPointB: Point3d;
-
-  /** LOOSE tolerance for snap to end */
-  private _endPointShiftTolerance: number;
-  /** TIGHT tolerance for snap to end */
-  private _endPointHitTolerance: number;
-  /** tolerance for choosing Path or Loop.   If undefined, ALWAYS PATH */
-  private _planarityTolerance: number | undefined;
-  /** Initialize with an empty array of chains.
-   * @param endPointShiftTolerance tolerance for calling endpoints identical
-   * @param planeTolerance tolerance for considering a loop to be planar.  If undefined, only create Path.  If defined, create Loop curves are if within tolerance of a plane.
-   */
-  public constructor(endPointShiftTolerance = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
-    this._chains = [];
-    this._endPointShiftTolerance = endPointShiftTolerance;
-    this._endPointHitTolerance = Geometry.smallMetricDistance;
-    this._planarityTolerance = planeTolerance;
-  }
-
   private _xyzWork0?: Point3d;
+  private _xyzWork1?: Point3d;
+
+  /** Initialize with an empty array of chains.
+   * @param gapTolerance tolerance for calling endpoints identical
+   * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
+   */
+  public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
+    this._chains = [];
+    this._gapTolerance = gapTolerance;
+    this._snapTolerance = Geometry.smallMetricDistance;
+    this._planeTolerance = planeTolerance;
+  }
   /**
    * Find a chain (with index _other than_ exceptChainIndex) that starts or ends at xyz
-   * @param xyz
-   * @param tolerance
-   * @param exceptChainIndex index of chain to ignore.  Send -1 to consider all chains.
+   * @param xyz endpoint to check
+   * @param tolerance absolute distance tolerance for equating endpoints
+   * @param exceptChainIndex index of chain to ignore. Send -1 to consider all chains.
    */
   private findAnyChainToConnect(xyz: Point3d, tolerance: number, exceptChainIndex: number = -1): { chainIndex: number, atEnd: boolean } | undefined {
-
     for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
       if (exceptChainIndex === chainIndexA)
         continue;
@@ -83,37 +82,93 @@ export class MultiChainCollector {
     }
     return undefined;
   }
-
-  private _xyzWork1?: Point3d;
   /**
    * Insert a single curve primitive into the active chains.
    * * The primitive is captured (not cloned)
    * * The primitive may be reversed in place
-   * @param candidate
+   * @param candidate curve to add to the context
    */
   public captureCurvePrimitive(candidate: CurvePrimitive) {
-    if (this.attachPrimitiveToAnyChain(candidate, this._endPointHitTolerance)) return;
-    if (this.attachPrimitiveToAnyChain(candidate, this._endPointShiftTolerance)) return;
+    if (this._snapTolerance < this._gapTolerance) {
+      if (this.attachPrimitiveToAnyChain(candidate, this._snapTolerance))
+        return;
+    }
+    if (this.attachPrimitiveToAnyChain(candidate, this._gapTolerance))
+      return;
     this._chains.push([candidate]);
-    return;
   }
-
   /**
    * Insert any curve into the collection.
    * * This recurses into Path, Loop, BagOfCurves etc
-   * * The all primitives are captured, and may be reversed in place.
-   * @param candidate
+   * * All primitives are captured, and may be reversed in place.
+   * @param candidate curve to add to the context
    */
-  public captureCurve(candidate: GeometryQuery) {
+  public captureCurve(candidate: AnyCurve) {
     if (candidate instanceof CurvePrimitive)
       this.captureCurvePrimitive(candidate);
     else if (candidate instanceof CurveCollection && candidate.children !== undefined) {
       for (const c of candidate.children) {
-        this.captureCurve(c);
+        this.captureCurve(c as AnyCurve);
       }
     }
   }
-
+  /** If allowed by the geometry type, move an endpoint. */
+  private static simpleEndPointMove(curve: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
+    if (curve instanceof (LineSegment3d)) {
+      if (atEnd) {
+        curve.point1Ref.setFrom(to);
+      } else {
+        curve.point0Ref.setFrom(to);
+      }
+      return true;
+    } else if (curve instanceof LineString3d && curve.numPoints() > 0) {
+      const i = atEnd ? curve.numPoints() - 1 : 0;
+      curve.packedPoints.setAtCheckedPointIndex(i, to);
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Try to move the end of curve0 and/or the start of curve1 to a common point.
+   * * All z-coordinates are ignored.
+   * @param curve0 first curve, assumed to end close to the start of curve1
+   * @param curve1 second curve, assumed to start close to the end of curve0
+   * @param gapTolerance max distance to move a curve start/end point
+   * @returns whether curve start/end point(s) moved
+   */
+  private static moveHeadOrTail(curve0: CurvePrimitive, curve1: CurvePrimitive, gapTolerance: number): boolean {
+    const xyz0 = curve0.endPoint();
+    const xyz1 = curve1.startPoint();
+    const minShift = Geometry.smallMetricDistance * 0.001;
+    const d01 = xyz0.distanceXY(xyz1);
+    if (d01 < minShift)
+      return false;
+    // try lines and linestrings
+    if (d01 < gapTolerance) {
+      if (this.simpleEndPointMove(curve1, false, xyz0) || this.simpleEndPointMove(curve0, true, xyz1))
+        return true;
+    }
+    // try other primitive types
+    const intersections = CurveCurve.intersectionXYPairs(curve0, true, curve1, true);
+    const shiftFactor = 5.0;
+    for (const pair of intersections) {
+      const detail0 = pair.detailA;
+      const detail1 = pair.detailB;
+      const distance0 = detail0.point.distanceXY(xyz0);
+      const distance1 = detail1.point.distanceXY(xyz1);
+      if (distance0 < shiftFactor * gapTolerance && distance1 < shiftFactor * gapTolerance) {
+        if (curve0 instanceof Arc3d && curve1 instanceof Arc3d) {
+          const radians0End = curve0.sweep.fractionToRadians(detail0.fraction);
+          curve0.sweep.setStartEndRadians(curve0.sweep.startRadians, radians0End);
+          const radians1Start = curve1.sweep.fractionToRadians(detail1.fraction);
+          curve1.sweep.setStartEndRadians(radians1Start, curve1.sweep.endRadians);
+          return true;
+        }
+        // TODO: other combinations of types
+      }
+    }
+    return false;
+  }
   /** Announce a curve primitive
    * * If a "nearby" connection is possible, insert the candidate in the chain and force endpoint match.
    * * Otherwise start a new chain.
@@ -127,33 +182,33 @@ export class MultiChainCollector {
           const chain = this._chains[connect.chainIndex];
           const index0 = chain.length - 1;
           this._chains[connect.chainIndex].push(candidate);
-          OffsetHelpers.moveHeadOrTail(chain[index0], chain[index0 + 1], this._endPointShiftTolerance);
+          MultiChainCollector.moveHeadOrTail(chain[index0], chain[index0 + 1], this._gapTolerance);
           this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
           return true;
         } else {
           candidate.reverseInPlace();
           const chain = this._chains[connect.chainIndex];
           chain.splice(0, 0, candidate);
-          OffsetHelpers.moveHeadOrTail(chain[0], chain[1], this._endPointShiftTolerance);
+          MultiChainCollector.moveHeadOrTail(chain[0], chain[1], this._gapTolerance);
           this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
           return true;
         }
       } else {
         this._xyzWork0 = candidate.endPoint(this._xyzWork0);
         connect = this.findAnyChainToConnect(this._xyzWork0, tolerance);
-        if (connect) {  // START of new primitive ..
+        if (connect) {
           if (connect.atEnd) {
             candidate.reverseInPlace();
             const chain = this._chains[connect.chainIndex];
             const index0 = chain.length - 1;
             this._chains[connect.chainIndex].push(candidate);
-            OffsetHelpers.moveHeadOrTail(chain[index0], chain[index0 + 1], this._endPointShiftTolerance);
+            MultiChainCollector.moveHeadOrTail(chain[index0], chain[index0 + 1], this._gapTolerance);
             this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
             return true;
           } else {
             const chain = this._chains[connect.chainIndex];
             chain.splice(0, 0, candidate);
-            OffsetHelpers.moveHeadOrTail(chain[0], chain[1], this._endPointShiftTolerance);
+            MultiChainCollector.moveHeadOrTail(chain[0], chain[1], this._gapTolerance);
             this.searchAndMergeChainIndex(connect.chainIndex, tolerance);
             return true;
           }
@@ -163,10 +218,13 @@ export class MultiChainCollector {
     return false;
   }
   /**
-   * * Move each primitive from chainB to the end of  chainA.
-   * * clear chainB.
-   * * move the final chain to chainB index.
-   * * reduce the _chain.length by 1.
+   * Merge two entries in the chain array.
+   * * Move each primitive from chainB to the end of chainA.
+   * * Clear chainB.
+   * * Move the final chain to chainB index.
+   * * Decrement the array length.
+   * @param chainIndexA index of chainA
+   * @param chainIndexB index of chainB
    */
   private mergeChainsForwardForward(chainIndexA: number, chainIndexB: number) {
     const chainA = this._chains[chainIndexA];
@@ -174,29 +232,26 @@ export class MultiChainCollector {
     for (const p of chainB) {
       chainA.push(p);
     }
-    // chainIndexB is unused.
-    chainB.length = 0;
+    chainB.length = 0; // chainIndexB is unused
     const lastChainIndex = this._chains.length - 1;
-    if (chainIndexB !== lastChainIndex) {
+    if (chainIndexB !== lastChainIndex)
       this._chains[chainIndexB] = this._chains[lastChainIndex];
-      this._chains.pop();
-    } else {
-      this._chains.pop();
-    }
+    this._chains.pop();
   }
+  /** Reverse the curve chain in place. */
   private reverseChain(chainIndex: number) {
     const chain = this._chains[chainIndex];
     chain.reverse();
     for (const p of chain)
       p.reverseInPlace();
   }
-  // see if the head or tail of chainIndex matches any existing chain.  If so, merge
+  /** See if the head or tail of chainIndex matches any existing chain. If so, merge the two chains. */
   private searchAndMergeChainIndex(chainIndex: number, tolerance: number): void {
     // ASSUME valid index of non-empty chain
     const chain = this._chains[chainIndex];
     const lastIndexInChain = chain.length - 1;
     this._xyzWork0 = chain[0].startPoint(this._xyzWork0);
-    // this start with any other chain ..
+    // try start with any other chain
     let connect = this.findAnyChainToConnect(this._xyzWork0, tolerance, chainIndex);
     if (connect) {
       if (!connect.atEnd)
@@ -214,9 +269,11 @@ export class MultiChainCollector {
       return;
     }
   }
-  /** turn an array of curve primitives into the simplest possible strongly typed curve structure.
-   * * The input array is assumed to be connected appropriately to act as the curves of a Path.
-   * * When a path is created the curves array is CAPTURED.
+  /**
+   * Convert an array of curve primitives into the simplest possible strongly typed curve structure.
+   * @param curves input array, assembled correctly into a single contiguous path, captured by returned object
+   * @param makeLoopIfClosed whether to return a Loop from physically closed curves array, otherwise Path
+   * @return Loop or Path if multiple curves; the primitive if only one curve; undefined if no curves
    */
   private promoteArrayToCurves(curves: CurvePrimitive[], makeLoopIfClosed: boolean): CurvePrimitive | Path | Loop | undefined {
     if (curves.length === 0)
@@ -226,20 +283,18 @@ export class MultiChainCollector {
       const primitiveN = curves[curves.length - 1];
       MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
       MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
-      const distanceAToB = MultiChainCollector._staticPointA.distance(MultiChainCollector._staticPointB);
-      if (distanceAToB < this._endPointShiftTolerance) {
-        // adjust for closure (and get the corrected coordinates)
-        OffsetHelpers.moveHeadOrTail(primitiveN, primitive0, this._endPointShiftTolerance);
+      if (MultiChainCollector.moveHeadOrTail(primitiveN, primitive0, this._gapTolerance)) {
+        // get the corrected coordinates
         MultiChainCollector._staticPointA = primitive0.startPoint(MultiChainCollector._staticPointA);
         MultiChainCollector._staticPointB = primitiveN.endPoint(MultiChainCollector._staticPointB);
       }
-      if (MultiChainCollector._staticPointA.isAlmostEqual(MultiChainCollector._staticPointB)) {
+      if (MultiChainCollector._staticPointA.isAlmostEqual(MultiChainCollector._staticPointB, this._gapTolerance)) {
         const localToWorld = FrameBuilder.createRightHandedLocalToWorld(curves);
         if (localToWorld) {
           const worldToLocal = localToWorld.inverse();
           if (worldToLocal) {
             const range = RegionOps.curveArrayRange(curves, worldToLocal);
-            if (this._planarityTolerance !== undefined && range.zLength() <= this._planarityTolerance) {
+            if (this._planeTolerance !== undefined && range.zLength() <= this._planeTolerance) {
               return Loop.createArray(curves);
             }
           }
@@ -251,17 +306,16 @@ export class MultiChainCollector {
       return curves[0];
     return Path.createArray(curves);
   }
-  private chainToLineString3d(curves: CurvePrimitive[]): LineString3d | undefined{
-    if (curves.length === 0)
+  /** Stroke the curve chain to a line string, de-duplicate the points. */
+  private chainToLineString3d(chain: CurvePrimitive[], options?: StrokeOptions): LineString3d | undefined {
+    if (chain.length === 0)
       return undefined;
-    const linestring = LineString3d.create ();
-    for (const curve of curves){
-      curve.emitStrokes (linestring);
-      linestring.removeDuplicatePoints ();
-    }
+    const linestring = LineString3d.create();
+    for (const curve of chain)
+      curve.emitStrokes(linestring, options);
+    linestring.removeDuplicatePoints(this._gapTolerance);
     return linestring;
   }
-
   /** Return the collected results, structured as the simplest possible type. */
   public grabResult(makeLoopIfClosed: boolean = false): ChainTypes {
     const chains = this._chains;
@@ -276,163 +330,19 @@ export class MultiChainCollector {
     }
     return bag;
   }
-/** Return chains as individual calls to announceChain. */
-public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void {
-  const chains = this._chains;
-  if (chains.length === 1){
-    const ls = this.chainToLineString3d(chains[0]);
-    if (ls)
-      announceChain(ls);
-  } else if (chains.length > 1){
-    for (const chain of chains) {
-      const ls = this.chainToLineString3d(chain);
+  /** Return chains as individual calls to announceChain. */
+  public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void, options?: StrokeOptions): void {
+    const chains = this._chains;
+    if (chains.length === 1) {
+      const ls = this.chainToLineString3d(chains[0], options);
       if (ls)
         announceChain(ls);
+    } else if (chains.length > 1) {
+      for (const chain of chains) {
+        const ls = this.chainToLineString3d(chain, options);
+        if (ls)
+          announceChain(ls);
       }
     }
-  }
-}
-
-/**
- * Static methods to assist offset sequences.
- * @internal
- */
-export class OffsetHelpers {
-  // recursively sum lengths, allowing CurvePrimitive, CurveCollection, or array of such at any level.
-  public static sumLengths(data: any): number {
-    let mySum = 0;
-    if (data instanceof CurvePrimitive) {
-      mySum += data.curveLength();
-    } else if (data instanceof CurveCollection) {
-      mySum += data.sumLengths();
-    } else if (Array.isArray(data)) {
-      for (const data1 of data)
-        mySum += this.sumLengths(data1);
-    }
-    return mySum;
-  }
-  // recursively sum lengths, allowing CurvePrimitive, CurveCollection, or array of such at any level.
-  public static extendRange(range: Range3d, data: any): Range3d {
-    if (data instanceof GeometryQuery) {
-      data.extendRange(range);
-    } else if (Array.isArray(data)) {
-      for (const data1 of data)
-        this.extendRange(range, data1);
-    }
-    return range;
-  }
-
-  // construct (separately) the offsets of each entry of data (Path, Loop, BagOfCurve, or Array of those)
-  // push all offset geometry into the result array
-  // return summed length
-  public static appendOffsets(data: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number {
-    let summedLengths = 0;
-    if (data instanceof CurvePrimitive) {
-      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(Path.create(data), offset);
-      if (resultA) {
-        summedLengths += this.sumLengths(resultA);
-        result.push(resultA);
-      }
-    } else if (data instanceof Loop || data instanceof Path) {
-      const resultA = CurveChainWireOffsetContext.constructCurveXYOffset(data, offset);
-      if (resultA) {
-        summedLengths += this.sumLengths(resultA);
-        result.push(resultA);
-      }
-    } else if (data instanceof BagOfCurves) {
-      for (const q of data.children)
-        summedLengths += this.appendOffsets(q, offset, result);
-    } else if (Array.isArray(data)) {
-      for (const q of data)
-        summedLengths += this.appendOffsets(q, offset, result);
-    }
-    return summedLengths;
-  }
-
-  /**
-   * * Restructure curve fragments as chains and offsets
-   * * Return object with named chains, insideOffsets, outsideOffsets
-   * * BEWARE that if the input is not a loop the classification of outputs is suspect.
-   * @param fragments fragments to be chained
-   * @param offsetDistance offset distance.
-   */
-  public static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
-    const collector = new MultiChainCollector(gapTolerance);
-    for (const s of fragments) {
-      collector.captureCurve(s);
-    }
-    const myChains = collector.grabResult(true);
-    const myOffsetA: CurveCollection[] = [];
-    const myOffsetB: CurveCollection[] = [];
-    const offsetLengthA = OffsetHelpers.appendOffsets(myChains, offsetDistance, myOffsetA);
-    const offsetLengthB = OffsetHelpers.appendOffsets(myChains, -offsetDistance, myOffsetB);
-    if (offsetLengthA > offsetLengthB) {
-      return { outsideOffsets: myOffsetA, insideOffsets: myOffsetB, chains: myChains };
-    } else {
-      return { insideOffsets: myOffsetA, outsideOffsets: myOffsetB, chains: myChains };
-    }
-  }
-  /**
-   * * Restructure curve fragments as chains and offsets
-   * * BEWARE that if the input is not a loop the classification of outputs is suspect.
-   * @param fragments fragments to be chained
-   * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail.
-   */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number, planarTolerance: number = Geometry.smallMetricDistance): ChainTypes {
-    const collector = new MultiChainCollector(gapTolerance, planarTolerance);
-    for (const s of fragments) {
-      collector.captureCurve(s);
-    }
-    return collector.grabResult(true);
-  }
-
-  /** If allowed by the geometry type, move an endpoint.
-   *
-   */
-  public static simpleEndPointMove(g: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
-    if (g instanceof (LineSegment3d)) {
-      if (atEnd) {
-        g.point1Ref.setFrom(to);
-      } else {
-        g.point0Ref.setFrom(to);
-      }
-      return true;
-    } else if (g instanceof LineString3d && g.numPoints() > 0) {
-      const i = atEnd ? g.numPoints() - 1 : 0;
-      g.packedPoints.setAtCheckedPointIndex(i, to);
-      return true;
-    }
-    return false;
-  }
-  // Try to move move tail (end) of g0 and/or head (beginning) of g1 to a common point.
-  public static moveHeadOrTail(g0: CurvePrimitive, g1: CurvePrimitive, maxShift: number): boolean {
-    const xyz0 = g0.endPoint();
-    const xyz1 = g1.startPoint();
-    const minShift = Geometry.smallMetricDistance * 0.001;
-    const d01 = xyz0.distanceXY(xyz1);
-    if (d01 < minShift)
-      return true;
-    if (this.simpleEndPointMove(g1, false, xyz0) || this.simpleEndPointMove(g0, true, xyz1))
-      return true;
-    //    const detail1On0 = g0.closestPoint(xyz1);
-    //    const detail0On1 = g1.closestPoint(xyz0);
-    const intersections = CurveCurve.intersectionXYPairs(g0, true, g1, true);
-    const shiftFactor = 5.0;
-    for (const pair of intersections) {
-      const detail0 = pair.detailA;
-      const detail1 = pair.detailB;
-      const distance0 = detail0.point.distanceXY(xyz0);
-      const distance1 = detail1.point.distanceXY(xyz1);
-      if (distance0 < shiftFactor * maxShift && distance1 < shiftFactor * maxShift) {
-        if (g0 instanceof Arc3d && g1 instanceof Arc3d) {
-          const radians0End = g0.sweep.fractionToRadians(detail0.fraction);
-          g0.sweep.setStartEndRadians(g0.sweep.startRadians, radians0End);
-          const radians1Start = g1.sweep.fractionToRadians(detail1.fraction);
-          g1.sweep.setStartEndRadians(radians1Start, g1.sweep.endRadians);
-          return true;
-        }
-      }
-    }
-    return false;
   }
 }
