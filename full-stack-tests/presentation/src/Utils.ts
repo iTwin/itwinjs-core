@@ -6,10 +6,10 @@
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
-import { BisCodeSpec, Code, IModel, LocalFileName } from "@itwin/core-common";
+import { BisCodeSpec, Code, IModel, LocalFileName, PhysicalElementProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
-import { GuidString } from "@itwin/core-bentley";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -109,6 +109,57 @@ export function insertDocumentPartition(db: IModelDb, code: string, label?: stri
     federationGuid,
   });
   return { className: "BisCore:DocumentPartition", id };
+}
+
+/** Insert a model element into created imodel. Return created element's className and Id. */
+export function insertPhysicalModel(db: IModelDb, label: string, parentId?: Id64String) {
+  const partitionId = db.elements.insertElement({
+    classFullName: "BisCore:PhysicalPartition",
+    model: IModel.repositoryModelId,
+    code: new Code({ scope: parentId ?? IModel.rootSubjectId, spec: BisCodeSpec.informationPartitionElement, value: label }),
+    parent: {
+      id: parentId ?? IModel.rootSubjectId,
+      relClassName: "BisCore:SubjectOwnsPartitionElements",
+    },
+  });
+  const modelClassName = "BisCore:PhysicalModel";
+  const modelId = db.models.insertModel({
+    classFullName: modelClassName,
+    modeledElement: { id: partitionId },
+  });
+  return { className: modelClassName, id: modelId };
+}
+
+/** Insert a spatial category element into created imodel. Return created element's className and Id. */
+export function insertSpatialCategory(db: IModelDb, label: string, modelId = IModel.dictionaryId) {
+  const className = "BisCore:SpatialCategory";
+  const id = db.elements.insertElement({
+    classFullName: className,
+    model: modelId,
+    code: new Code({ spec: BisCodeSpec.spatialCategory, scope: modelId, value: label }),
+  });
+  return { className, id };
+}
+
+/** Insert a physical element into created imodel. Return created element's className and Id. */
+export function insertPhysicalElement(db: IModelDb, label: string, modelId: Id64String, categoryId: Id64String, parentId?: Id64String) {
+  const className = "Generic:PhysicalObject";
+  const id = db.elements.insertElement({
+    classFullName: className,
+    model: modelId,
+    category: categoryId,
+    code: Code.createEmpty(),
+    userLabel: label,
+    ...(parentId
+      ? {
+        parent: {
+          id: parentId,
+          relClassName: "BisCore:PhysicalElementAssemblesElements",
+        },
+      }
+      : undefined),
+  } as PhysicalElementProps);
+  return { className, id };
 }
 
 function setupOutputFileLocation(fileName: string): LocalFileName {

@@ -8,13 +8,14 @@ import * as sinon from "sinon";
 import { assert, BeDuration, BeTimePoint, Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
+  ChildNodeSpecificationTypes,
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { buildTestIModelConnection, getFieldByLabel, insertDocumentPartition } from "../Utils";
+import { buildTestIModelConnection, getFieldByLabel, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../Utils";
 
 describe("Content", () => {
 
@@ -98,9 +99,9 @@ describe("Content", () => {
 
   describe("Distinct Values", () => {
 
-    async function validatePagedDistinctValuesResponse(ruleset: Ruleset, keys: KeySet, descriptor: Descriptor, fieldDescriptor: FieldDescriptor, expectedResult: DisplayValueGroup[]) {
+    async function validatePagedDistinctValuesResponse(db: IModelConnection, ruleset: Ruleset, keys: KeySet, descriptor: Descriptor | {}, fieldDescriptor: FieldDescriptor, expectedResult: DisplayValueGroup[]) {
       // first request all pages and confirm the result is valid
-      const allDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor });
+      const allDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel: db, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor });
       expect(allDistinctValues).to.be.deep.equal({
         total: expectedResult.length,
         items: expectedResult,
@@ -110,7 +111,7 @@ describe("Content", () => {
       const pageSize = 2;
       const pagesCount = Math.ceil(expectedResult.length / pageSize);
       for (let i = 0; i < pagesCount; ++i) {
-        const pagedDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor, paging: { size: pageSize, start: i * pageSize } });
+        const pagedDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel: db, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor, paging: { size: pageSize, start: i * pageSize } });
         expect(pagedDistinctValues).to.be.deep.equal({
           total: expectedResult.length,
           items: expectedResult.slice(i * pageSize, (i + 1) * pageSize),
@@ -136,13 +137,13 @@ describe("Content", () => {
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
 
       let field = getFieldByLabel(descriptor.fields, "User Label");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "TestClass",
         groupedRawValues: ["TestClass"],
       }]);
 
       field = getFieldByLabel(descriptor.fields, "True-False");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "False",
         groupedRawValues: [false],
       }, {
@@ -151,7 +152,7 @@ describe("Content", () => {
       }]);
 
       field = getFieldByLabel(descriptor.fields, "<0");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "0.00",
         groupedRawValues: [1e-7, 0.0007575],
       }, {
@@ -160,7 +161,7 @@ describe("Content", () => {
       }]);
 
       field = getFieldByLabel(descriptor.fields, "<100");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "100.01",
         groupedRawValues: [100.01],
       }, {
@@ -205,7 +206,7 @@ describe("Content", () => {
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = getFieldByLabel(descriptor.fields, "Model Label");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2",
         groupedRawValues: ["Properties_60InstancesWithUrl2"],
       }]);
@@ -228,7 +229,7 @@ describe("Content", () => {
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = getFieldByLabel(descriptor.fields, "Name");
-      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
       }]);
@@ -252,7 +253,7 @@ describe("Content", () => {
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
       const field = getFieldByLabel(descriptor.fields, "User Label");
 
-      await validatePagedDistinctValuesResponse(ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "",
         groupedRawValues: [undefined],
       }, {
@@ -264,7 +265,7 @@ describe("Content", () => {
         className: "PCJ_TestSchema:TestClass",
         id: Id64.invalid,
       }]);
-      await validatePagedDistinctValuesResponse(ruleset, typeOneKey, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, typeOneKey, descriptor, field.getFieldDescriptor(), [{
         displayValue: "TestClass",
         groupedRawValues: ["TestClass"],
       }]);
@@ -273,9 +274,94 @@ describe("Content", () => {
         className: "Generic:PhysicalObject",
         id: Id64.invalid,
       }]);
-      await validatePagedDistinctValuesResponse(ruleset, typeTwoKey, descriptor, field.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(imodel, ruleset, typeTwoKey, descriptor, field.getFieldDescriptor(), [{
         displayValue: "",
         groupedRawValues: [undefined],
+      }]);
+    });
+
+    it("gets distinct content values based on hierarchy level descriptor", async function () {
+      // create an imodel with Model -> Elements relationship
+      const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        const categoryKey = insertSpatialCategory(db, "Category");
+        const modelKeyA = insertPhysicalModel(db, "Model A");
+        insertPhysicalElement(db, "Element A1", modelKeyA.id, categoryKey.id);
+        insertPhysicalElement(db, "Element A2", modelKeyA.id, categoryKey.id);
+        const modelKeyB = insertPhysicalModel(db, "Model B");
+        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
+        insertPhysicalElement(db, "Element B", modelKeyB.id, categoryKey.id);
+      });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["PhysicalModel"],
+              arePolymorphic: false,
+            }],
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }, {
+          ruleType: RuleTypes.ChildNodes,
+          condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+          specifications: [
+            {
+              specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+              relationshipPaths: [
+                {
+                  relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                  direction: "Forward",
+                },
+              ],
+              groupByClass: false,
+              groupByLabel: false,
+            },
+          ],
+        }],
+      };
+      const rootNodes = await Presentation.presentation.getNodes({ imodel: testIModel, rulesetOrId: ruleset });
+      expect(rootNodes.length).to.eq(2);
+
+      const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      // ensure descriptor returns a correct ruleset
+      expect(descriptor!.hierarchyLevelRuleset!.rules).to.deep.equal([{
+        ruleType: "Content",
+        specifications: [{
+          specType: "ContentRelatedInstances",
+          relationshipPaths: [{
+            relationship: {
+              schemaName: "BisCore",
+              className: "ModelContainsElements",
+            },
+            direction: "Forward",
+          }],
+        }],
+      }]);
+
+      const userLabelField = getFieldByLabel(descriptor!.fields, "User Label");
+
+      // user labels are different for every child element, expect 2 unique values
+      await validatePagedDistinctValuesResponse(testIModel, descriptor!.hierarchyLevelRuleset!, new KeySet([rootNodes[0].key]), {}, userLabelField.getFieldDescriptor(), [
+        {
+          displayValue: "Element A1",
+          groupedRawValues: ["Element A1"],
+        },
+        {
+          displayValue: "Element A2",
+          groupedRawValues: ["Element A2"],
+        },
+      ]);
+
+      // user label is the same for every child element, expect only 1 unique value
+      await validatePagedDistinctValuesResponse(testIModel, descriptor!.hierarchyLevelRuleset!, new KeySet([rootNodes[1].key]), {}, userLabelField.getFieldDescriptor(), [{
+        displayValue: "Element B",
+        groupedRawValues: ["Element B"],
       }]);
     });
 

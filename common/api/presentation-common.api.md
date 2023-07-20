@@ -535,6 +535,8 @@ export class Descriptor implements DescriptorSource {
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
+    // @beta
+    readonly hierarchyLevelRuleset?: Ruleset;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
@@ -571,6 +573,8 @@ export interface DescriptorJSON {
     inputKeysHash: string;
     // @beta (undocumented)
     instanceFilter?: InstanceFilterDefinition;
+    // @beta (undocumented)
+    ruleset?: Ruleset;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -610,6 +614,8 @@ export interface DescriptorSource {
     fieldsFilterExpression?: string;
     // @deprecated
     filterExpression?: string;
+    // @beta
+    readonly hierarchyLevelRuleset?: Ruleset;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;

@@ -14,6 +14,7 @@ import {
 import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
+import { Ruleset } from "../rules/Ruleset";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -179,6 +180,8 @@ export interface DescriptorJSON {
   fieldsFilterExpression?: string;
   /** @beta */
   instanceFilter?: InstanceFilterDefinition;
+  /** @beta */
+  ruleset?: Ruleset;
 }
 
 /**
@@ -268,6 +271,12 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /**
+   * A ruleset used to create the nodes descriptor for a specific hierarchy level.
+   * It is only returned with `GetNodesDescriptor`. Otherwise, undefined.
+   * @beta
+   */
+  readonly hierarchyLevelRuleset?: Ruleset;
+  /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
@@ -326,6 +335,12 @@ export class Descriptor implements DescriptorSource {
   public readonly fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
   public readonly contentFlags: number;
+  /**
+   * A ruleset used to create the nodes descriptor for a specific hierarchy level.
+   * It is only returned with `GetNodesDescriptor`. Otherwise, undefined.
+   * @beta
+   */
+  public readonly hierarchyLevelRuleset?: Ruleset;
   /** Field used to sort the content */
   public sortingField?: Field;
   /** Sorting direction */
@@ -375,6 +390,7 @@ export class Descriptor implements DescriptorSource {
     this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.instanceFilter = source.instanceFilter;
+    this.hierarchyLevelRuleset = source.hierarchyLevelRuleset;
   }
 
   /** Serialize [[Descriptor]] to JSON */
