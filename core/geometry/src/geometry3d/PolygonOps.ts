@@ -286,9 +286,8 @@ export class CutLoopMergeContext {
     }
   }
 }
-/** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
- * Various (static method) computations for arrays of points interpreted as a polygon.
+ * Various static methods to perform computations on an array of points interpreted as a polygon.
  * @public
  */
 export class PolygonOps {
