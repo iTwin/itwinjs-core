@@ -7883,7 +7883,7 @@ export enum RpcEndpoint {
 
 // @public
 export abstract class RpcInterface {
-    // @internal
+    // @beta
     constructor(routing?: RpcRoutingToken);
     // @internal
     readonly configuration: RpcConfiguration;
