@@ -38,12 +38,12 @@ steps:
   #   displayName: 'Dir'
   #   continueOnError: true
 
-  # - script: |
-  #     dir
-  #     git branch
-  #   displayName: 'Dir WD'
-  #   workingDirectory: ${{ parameters.workingDir }}
-  #   continueOnError: true
+  - script: |
+      dir
+      git branch
+    displayName: 'Dir WD'
+    workingDirectory: ${{ parameters.workingDir }}
+    continueOnError: true
 
   - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -74,10 +74,10 @@ steps:
   - task: PythonScript@0
     displayName: "rush change -v"
     inputs:
-      workingDirectory: '${{ parameters.workingDir }}'
-      scriptSource: filepath
+      scriptSource: 'filePath'
       scriptPath: common/scripts/run_rush_change.py
       arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+      workingDirectory: '${{ parameters.workingDir }}'
       failOnStderr: true
 
   - script: node common/scripts/install-run-rush.js install
