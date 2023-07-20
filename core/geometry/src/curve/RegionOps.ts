@@ -404,6 +404,7 @@ export class RegionOps {
    * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/Offset
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */

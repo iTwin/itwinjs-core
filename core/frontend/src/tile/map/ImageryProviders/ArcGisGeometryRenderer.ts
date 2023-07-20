@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
+import { ArcGisAttributeDrivenSymbology } from "../../internal";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
@@ -10,6 +11,7 @@ import { Transform } from "@itwin/core-geometry";
  */
 export interface ArcGisGeometryRenderer {
   transform: Transform | undefined;
+  attributeSymbology?: ArcGisAttributeDrivenSymbology;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
@@ -23,6 +25,7 @@ export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRender
   constructor(world2PixelTransform?: Transform) {
     this._transform = world2PixelTransform;
   }
+  public abstract get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
 
   public get transform() { return this._transform; }
 
