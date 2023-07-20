@@ -39,8 +39,8 @@ export class JointOptions {
    *  ranges blow up. Internally, this is implemented by applying an upper bound of 120 degrees to `maxChamferTurnDegrees`.
    * * When `allowSharpestCorners` is true, this internal upper bound is removed, allowing sharp corners for turn angles
    * up to `maxChamferTurnDegrees`.
-   * * Thus, if you know your input turn angles are no greater than `maxChamferTurnDegrees`, you can create an offset
-   * with sharp corners at each joint by setting `minArcDegrees` to 180 and `allowSharpestCorners` to true.
+   * * Thus, if you know your input turn angles are no greater than `maxChamferTurnDegrees`, you can create an offset with
+   * sharp corners at each joint by setting `maxChamferTurnDegrees < minArcDegrees` and `allowSharpestCorners` to true.
    */
   public allowSharpestCorners = false;
   /** Offset distance, positive to left of base curve. */
@@ -88,8 +88,7 @@ export class JointOptions {
       return leftOffsetDistanceOrOptions;
     return new JointOptions(leftOffsetDistanceOrOptions);
   }
-  /**
-   /** Return true if the options indicate this amount of turn should be handled with an arc. */
+  /** Return true if the options indicate this amount of turn should be handled with an arc. */
   public needArc(theta: Angle): boolean {
     return Math.abs(theta.degrees) >= this.minArcDegrees;
   }
