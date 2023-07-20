@@ -49,8 +49,8 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
  * same plane).
  *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed (so curves have to
  * be on the same plane).
- * - `ParityRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by parity rules.
- * - `UnionRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by union rules.
+ * - `ParityRegion` -- a collection of coplanar `Loop`, with "in/out" classification by parity rules.
+ * - `UnionRegion` -- a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
  * - `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
  *
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
