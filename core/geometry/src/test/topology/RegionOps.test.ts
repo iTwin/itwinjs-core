@@ -8,7 +8,6 @@ import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
-import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
@@ -16,14 +15,17 @@ import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { JointOptions, OffsetOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollectorContext";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
@@ -1418,5 +1420,53 @@ describe("RegionOps.constructCurveXYOffset", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetCustomOption");
+  });
+
+  it("EllipsePreserveEllipticalArcsTrue", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const vector0 = Vector3d.create(5, 0, 0);
+    const vector90 = Vector3d.create(0, 2, 0);
+    const loop = Loop.create(
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+    );
+    const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
+    const jointOptions: JointOptions[] = [];
+    const minArcDegrees = 180;
+    const maxChamferDegrees = 90;
+    const preserveEllipticalArcs = true;
+    for (let i = 0; i < offsetDistances.length; i++) {
+      jointOptions[i] = new JointOptions(offsetDistances[i], minArcDegrees, maxChamferDegrees, preserveEllipticalArcs);
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    for (const jointOption of jointOptions) {
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsTrue");
+  });
+
+  it("EllipsePreserveEllipticalArcsFalse", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const vector0 = Vector3d.create(5, 0, 0);
+    const vector90 = Vector3d.create(0, 2, 0);
+    const loop = Loop.create(
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+    );
+    const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
+    const jointOptions: JointOptions[] = [];
+    const minArcDegrees = 180;
+    const maxChamferDegrees = 90;
+    const preserveEllipticalArcs = false;
+    for (let i = 0; i < offsetDistances.length; i++) {
+      jointOptions[i] = new JointOptions(offsetDistances[i], minArcDegrees, maxChamferDegrees, preserveEllipticalArcs);
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    for (const jointOption of jointOptions) {
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsFalse");
   });
 });

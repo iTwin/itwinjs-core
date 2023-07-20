@@ -16,7 +16,7 @@ import type { Ray3d } from "../geometry3d/Ray3d";
 import type { Transform } from "../geometry3d/Transform";
 import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import type { Range1d, Range3d } from "../geometry3d/Range";
-import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
+import type { OffsetOptions } from "./OffsetOptions";
 import type { LineString3d } from "./LineString3d";
 import type { StrokeOptions } from "./StrokeOptions";
 
