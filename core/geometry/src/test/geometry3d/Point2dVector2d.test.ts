@@ -132,12 +132,12 @@ describe("Point2d", () => {
         ck.testAngleNoShift(
           vectorI.angleTo(vectorJ),
           signedAngle,
-          "cross product used consistently for signed angle"
+          "cross product used consistently for signed angle",
         );
         ck.testCoordinate(
           vectorJ.angleTo(vectorI).radians,
           -vectorI.angleTo(vectorJ).radians,
-          "cross product used consistently for reverse order signed angle"
+          "cross product used consistently for reverse order signed angle",
         );
         /*
         * ccw angle is positive and cw is negative. cross product is positive if thumb points up
@@ -152,7 +152,7 @@ describe("Point2d", () => {
           origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3));
         ck.testVector2d(
           vectorR.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
-          vectorR.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3)
+          vectorR.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3),
         );
 
         /* be sure to exercise interpolate with fractions on both sides of 0.5 */
@@ -233,7 +233,7 @@ describe("Point2d", () => {
     ck.testCoordinate(
       vectorU.dotProduct(vectorV),
       pointA.dotVectorsToTargets(pointB, pointC),
-      "dotVectorsToTargets"
+      "dotVectorsToTargets",
     );
 
     const fTangent = 1.8;

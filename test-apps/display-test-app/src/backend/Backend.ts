@@ -252,7 +252,7 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
     ProcessDetector.isElectronAppBackend &&
     checkEnvVars(
       "IMJS_OIDC_ELECTRON_TEST_CLIENT_ID",
-      "IMJS_OIDC_ELECTRON_TEST_SCOPES"
+      "IMJS_OIDC_ELECTRON_TEST_SCOPES",
     )
   ) {
     return new ElectronMainAuthorization({

@@ -54,7 +54,7 @@ export class JointOptions {
    */
   constructor(
     leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90,
-    preserveEllipticalArcs = false, allowSharpestCorners = false
+    preserveEllipticalArcs = false, allowSharpestCorners = false,
   ) {
     this.leftOffsetDistance = leftOffsetDistance;
     this.minArcDegrees = minArcDegrees;
@@ -66,7 +66,7 @@ export class JointOptions {
   public clone(): JointOptions {
     return new JointOptions(
       this.leftOffsetDistance, this.minArcDegrees, this.maxChamferTurnDegrees,
-      this.preserveEllipticalArcs, this.allowSharpestCorners
+      this.preserveEllipticalArcs, this.allowSharpestCorners,
     );
   }
   /** Copy values of input options */

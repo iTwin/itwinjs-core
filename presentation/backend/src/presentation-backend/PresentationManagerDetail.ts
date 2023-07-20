@@ -205,7 +205,7 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    return JSON.parse(await this.request(params), Content.reviver);
+    return JSON.parse(await this.request(params), (key, value) => Content.reviver(key, value));
   }
 
   public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {

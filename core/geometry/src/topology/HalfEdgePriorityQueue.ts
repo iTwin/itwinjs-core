@@ -23,7 +23,7 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public priorityQueue: PriorityQueue<HalfEdge>;
   public activeEdges: HalfEdge[];
   public constructor(
-    compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp) {
+    compare: OrderedComparator<HalfEdge> = (a, b) => HalfEdgeGraphOps.compareNodesYXUp(a, b)) {
     this.priorityQueue = new PriorityQueue(compare);
     this.activeEdges = [];
   }

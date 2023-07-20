@@ -107,7 +107,7 @@ export class Tracing {
     return Tracing._openTelemetry.context.with(
       Tracing._openTelemetry.trace.setSpan(
         parent,
-        Tracing._tracer.startSpan(name, options, Tracing._openTelemetry.context.active())
+        Tracing._tracer.startSpan(name, options, Tracing._openTelemetry.context.active()),
       ),
       async () => {
         try {
@@ -131,10 +131,10 @@ export class Tracing {
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
     Tracing._tracer = tracer;
     Tracing._openTelemetry = api;
-    Logger.logTrace = Tracing.withOpenTelemetry(Logger.logTrace);
-    Logger.logInfo = Tracing.withOpenTelemetry(Logger.logInfo);
-    Logger.logWarning = Tracing.withOpenTelemetry(Logger.logWarning);
-    Logger.logError = Tracing.withOpenTelemetry(Logger.logError);
+    Logger.logTrace = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logTrace(category, message, metaData));
+    Logger.logInfo = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logInfo(category, message, metaData));
+    Logger.logWarning = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logWarning(category, message, metaData));
+    Logger.logError = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logError(category, message, metaData));
   }
 
   private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {

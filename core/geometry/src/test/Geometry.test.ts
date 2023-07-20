@@ -79,7 +79,7 @@ describe("Geometry.almostEqualArrays", () => {
   it("Geometry.almostEqualArrays", () => {
     const arr1: number[] = [];
     const arr2: number[] = [];
-    assert.isTrue(Geometry.almostEqualArrays<number>(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(Geometry.almostEqualArrays<number>(arr1, arr2, (a, b) => Geometry.isAlmostEqualNumber(a, b)));
   });
 });
 
@@ -87,13 +87,13 @@ describe("Geometry.almostEqualNumberArrays", () => {
   it("Geometry.almostEqualNumberArrays", () => {
     let arr1: number[] = [];
     let arr2: number[] = [];
-    assert.isTrue(Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(Geometry.almostEqualNumberArrays(arr1, arr2, (a, b) => Geometry.isAlmostEqualNumber(a, b)));
     arr1 = [1];
     arr2 = [1, 2];
-    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, (a, b) => Geometry.isAlmostEqualNumber(a,b)));
     arr1 = [1];
     arr2 = [2];
-    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, (a, b) => Geometry.isAlmostEqualNumber(a, b)));
   });
 });
 

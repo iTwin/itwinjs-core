@@ -91,7 +91,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
   /** Implement by proxyCurve */
   public fractionToPointAnd2Derivatives(
-    fraction: number, result?: Plane3dByOriginAndVectors
+    fraction: number, result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors | undefined {
     return this._proxyCurve.fractionToPointAnd2Derivatives(fraction, result);
   }
@@ -105,7 +105,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
   /** Implement by proxyCurve */
   public override constructOffsetXY(
-    offsetDistanceOrOptions: number | OffsetOptions
+    offsetDistanceOrOptions: number | OffsetOptions,
   ): CurvePrimitive | CurvePrimitive[] | undefined {
     return this._proxyCurve.constructOffsetXY(offsetDistanceOrOptions);
   }

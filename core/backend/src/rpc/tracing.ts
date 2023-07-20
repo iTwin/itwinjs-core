@@ -57,7 +57,7 @@ export class RpcTrace {
 
 /** @internal */
 export function initializeTracing(enableOpenTelemetry: boolean = false) {
-  RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
+  RpcInvocation.runActivity = async (activity, fn) => RpcTrace.run(activity, fn); // redirect the invocation processing to the tracer
 
   if (enableOpenTelemetry) {
     try {
@@ -65,7 +65,7 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
       const api = require("@opentelemetry/api");
       const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
       Tracing.enableOpenTelemetry(tracer, api);
-      RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
+      RpcInvocation.runActivity = async (activity, fn) => RpcTrace.runWithSpan(activity, fn); // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
