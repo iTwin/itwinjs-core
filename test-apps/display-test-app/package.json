@@ -43,8 +43,8 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/icons-generic": "^1.0.15",
-    "@bentley/icons-generic-webfont": "^1.0.15",
+    "@bentley/icons-generic": "^1.0.34",
+    "@bentley/icons-generic-webfont": "^1.0.34",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^0.5.1",
     "@itwin/core-backend": "workspace:*",
