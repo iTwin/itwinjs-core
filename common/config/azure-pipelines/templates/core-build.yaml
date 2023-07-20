@@ -77,8 +77,8 @@ steps:
       scriptSource: 'filePath'
       scriptPath: common/scripts/run_rush_change.py
       arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-      workingDirectory: '${{ parameters.workingDir }}'
-      failOnStderr: true
+    workingDirectory: '${{ parameters.workingDir }}'
+    failOnStderr: true
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
