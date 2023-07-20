@@ -8,9 +8,10 @@
  */
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
-import { Point3dArray } from "../geometry3d/PointHelpers";
+
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { MultiChainCollector, OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -18,36 +19,38 @@ import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { UnionFindContext } from "../numerics/UnionFind";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
+import { HalfEdgeGraphFromIndexedLoopsContext } from "../topology/HalfEdgeGraphFromIndexedLoopsContext";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
+import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
+import {
+  ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail,
+} from "./FacetLocationDetail";
 import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
+import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
+import { Range2dSearchInterface } from "./multiclip/Range2dSearchInterface";
 import { ClipSweptLineStringContext, EdgeClipData, SweepLineStringToFacetContext } from "./multiclip/SweepLineStringToFacetContext";
 import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
-import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
-import { HalfEdgeGraphFromIndexedLoopsContext } from "../topology/HalfEdgeGraphFromIndexedLoopsContext";
-import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { ConvexFacetLocationDetail, FacetIntersectOptions, FacetLocationDetail, NonConvexFacetLocationDetail, TriangularFacetLocationDetail } from "./FacetLocationDetail";
-import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { Range2dSearchInterface } from "./multiclip/Range2dSearchInterface";
 
 /**
  * Options carrier for sweeping linework onto meshes.
