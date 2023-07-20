@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -302,8 +303,8 @@ describe("GriddedRaggedRange2dSet", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("FacetGrid", () => {
-    const ck = new Checker(true, true);
+  it("FacetGrid", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const griddedSweepTimerName = "sweepLineStringToFacetsXY";
@@ -395,13 +396,14 @@ describe("GriddedRaggedRange2dSet", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, spacePoints, x0, y1, 4.0);
         GeometryCoreTestIO.consoleTime(griddedSweepTimerName);
-        const sweptCurves = PolyfaceQuery.sweepLineStringToFacetsXY(spacePoints, facets, allRanges);
+        const sweptCurvesA = PolyfaceQuery.sweepLineStringToFacetsXY(spacePoints, facets, allRanges);
         GeometryCoreTestIO.consoleTimeEnd(griddedSweepTimerName);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptCurves, x0, y1, 0.01);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptCurvesA, x0, y1, 0.01);
 
         GeometryCoreTestIO.consoleTime(simpleSweepTimerName);
         const sweptCurvesB = PolyfaceQuery.sweepLineStringToFacets(GrowableXYZArray.create(spacePoints), facets);
         GeometryCoreTestIO.consoleTimeEnd(simpleSweepTimerName);
+        ck.testCoordinate(sumLengths(sweptCurvesA), sumLengths(sweptCurvesB), "same length by two projection methods");
         // GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, spacePoints, x0, y2, 4.0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptCurvesB, x0, y2, 0.01);
@@ -427,4 +429,11 @@ function createSinSamplePoints(range: Range2d, numPoint: number, totalTurns: num
     points.push(Point3d.createFrom(range.fractionToPoint(uv.x, uv.y)));
   }
   return points;
+}
+function sumLengths(curves: CurvePrimitive[]): number {
+  let s = 0;
+  for (const c of curves) {
+    s += c.curveLength();
+  }
+  return s;
 }
