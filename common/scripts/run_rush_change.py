@@ -35,4 +35,5 @@ if (out):
   print(out)
 if (err):
   print(err)
-exit(proc.returncode)
+# exit(proc.returncode)
+exit(1)
