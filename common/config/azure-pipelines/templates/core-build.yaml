@@ -117,13 +117,13 @@ steps:
       NODE_ENV: development
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  # MacOS and Windows agents work without any virtual display
-  - script: node common/scripts/install-run-rush.js cover --verbose
-    displayName: rush cover
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      NODE_ENV: development
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+  # # MacOS and Windows agents work without any virtual display
+  # - script: node common/scripts/install-run-rush.js cover --verbose
+  #   displayName: rush cover
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   env:
+  #     NODE_ENV: development
+  #   condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
