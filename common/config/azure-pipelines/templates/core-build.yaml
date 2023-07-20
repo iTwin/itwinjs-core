@@ -57,19 +57,18 @@ steps:
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
-  - task: PythonScript@0
-    displayName: "rush change -v"
-    inputs:
-      scriptSource: 'filePath'
-      scriptPath: common/scripts/run_rush_change.py
-      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-    Advanced:
-      workingDirectory: '$(Build.SourcesDirectory)/itwinjs-core'
-      failOnStderr: true
-
-  # - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  # - task: PythonScript@0
   #   displayName: "rush change -v"
-  #   workingDirectory: ${{ parameters.workingDir }}
+  #   inputs:
+  #     scriptSource: 'filePath'
+  #     scriptPath: common/scripts/run_rush_change.py
+  #     arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  #     workingDirectory: '$(Build.SourcesDirectory)/itwinjs-core'
+  #     failOnStderr: true
+
+  - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+    displayName: "rush change -v"
+    workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
