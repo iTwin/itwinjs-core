@@ -100,7 +100,7 @@ export class BuildAverageNormalsContext {
       }
     }
     // Sort by the vertex index so all the sectors around each vertex are clustered . .
-    sectors.sort(SectorData.cbVertexSort);
+    sectors.sort((left, right) => SectorData.cbVertexSort(left, right));
 
     // Walk the sectors around each vertex .  ..
     // For each unassigned sector
@@ -137,7 +137,7 @@ export class BuildAverageNormalsContext {
       }
     }
     // Resort by original sector index.
-    sectors.sort(SectorData.cbSectorSort);
+    sectors.sort((left, right) => SectorData.cbSectorSort(left, right));
     // normalize the sums and emplace in the facets  . . .
     polyface.data.normalIndex = [];
     polyface.data.normal = new GrowableXYZArray(sectors.length);

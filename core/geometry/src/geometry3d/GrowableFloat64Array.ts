@@ -236,7 +236,7 @@ export class GrowableFloat64Array {
    * * Uses insertion sort -- fine for small arrays (less than 30), slow for larger arrays
    * @param compareMethod comparison method
    */
-  public sort(compareMethod: (a: any, b: any) => number = GrowableFloat64Array.compare) {
+  public sort(compareMethod: (a: any, b: any) => number = (a, b) => GrowableFloat64Array.compare(a, b)) {
     for (let i = 0; i < this._inUse; i++) {
       for (let j = i + 1; j < this._inUse; j++) {
         const tempI = this._data[i];
