@@ -2475,8 +2475,8 @@ importers:
 
   ../../test-apps/display-test-app:
     specifiers:
-      '@bentley/icons-generic': ^1.0.15
-      '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/icons-generic': ^1.0.34
+      '@bentley/icons-generic-webfont': ^1.0.34
       '@esbuild-plugins/node-globals-polyfill': ^0.2.3
       '@esbuild-plugins/node-modules-polyfill': ^0.2.2
       '@itwin/appui-abstract': workspace:*
