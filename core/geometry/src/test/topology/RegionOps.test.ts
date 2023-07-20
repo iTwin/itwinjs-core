@@ -1427,7 +1427,7 @@ describe("RegionOps.constructCurveXYOffset", () => {
     const vector0 = Vector3d.create(5, 0, 0);
     const vector90 = Vector3d.create(0, 2, 0);
     const loop = Loop.create(
-      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180)),
     );
     const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
     const jointOptions: JointOptions[] = [];
@@ -1451,7 +1451,7 @@ describe("RegionOps.constructCurveXYOffset", () => {
     const vector0 = Vector3d.create(5, 0, 0);
     const vector90 = Vector3d.create(0, 2, 0);
     const loop = Loop.create(
-      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180)),
     );
     const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
     const jointOptions: JointOptions[] = [];
