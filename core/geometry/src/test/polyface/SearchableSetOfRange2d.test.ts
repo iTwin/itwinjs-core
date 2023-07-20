@@ -320,7 +320,6 @@ describe("GriddedRaggedRange2dSet", () => {
       const yStep = 2 * fullRange.yLength();
       const y1 = yStep;
       const y2 = y1 + yStep;
-      const y3 = y2 + yStep;
       const xStep = 2 * fullRange.xLength();
       const x1 = x0 + xStep;
       const totalTurns = numX / 8.234;
