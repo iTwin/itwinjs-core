@@ -249,7 +249,7 @@ public;Range2dProps =
 public;Range3d 
 public;Range3dProps =
 public;class RangeBase
-internal;Ray2d
+public;Ray2d
 public;Ray3d 
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor

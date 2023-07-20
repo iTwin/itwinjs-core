@@ -151,6 +151,7 @@ export * from "./geometry3d/Point3dArrayCarrier";
 export * from "./geometry3d/PolylineOps";
 export * from "./geometry3d/PolygonOps";
 export * from "./geometry3d/Range";
+export * from "./geometry3d/Ray2d";
 export * from "./geometry3d/Ray3d";
 export * from "./geometry3d/Segment1d";
 export * from "./geometry3d/Transform";

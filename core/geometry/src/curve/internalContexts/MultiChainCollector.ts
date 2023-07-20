@@ -129,10 +129,10 @@ export class MultiChainCollector {
     return false;
   }
   /**
-   * Try to move move end of g0 and/or start of g1 to a common point.
+   * Try to move the end of curve0 and/or the start of curve1 to a common point.
    * * All z-coordinates are ignored.
-   * @param curve0 first curve, assumed to end close to the start of g1
-   * @param curve1 second curve, assumed to start close to the end of g0
+   * @param curve0 first curve, assumed to end close to the start of curve1
+   * @param curve1 second curve, assumed to start close to the end of curve0
    * @param gapTolerance max distance to move a curve start/end point
    * @returns whether curve start/end point(s) moved
    */

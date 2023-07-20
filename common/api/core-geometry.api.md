@@ -1740,6 +1740,8 @@ export class CurveOps {
         outsideOffsets: AnyCurve[];
         chains: ChainTypes;
     };
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined;
+    static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
     static sumLengths(curves: AnyCurve | AnyCurve[]): number;
 }
@@ -2807,7 +2809,6 @@ export namespace IModelJson {
         // @internal (undocumented)
         static parseTaggedNumericProps(json: any): TaggedNumericData | undefined;
         static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined;
-        // @alpha
         static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined;
     }
     export interface RotationalSweepProps {
@@ -2897,7 +2898,6 @@ export namespace IModelJson {
         // (undocumented)
         handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps;
         handleTorusPipe(data: TorusPipe): any;
-        // @alpha
         handleTransitionSpiral(data: TransitionSpiral3d): any;
         handleUnionRegion(data: UnionRegion): any;
         static toIModelJson(data: any): any;
@@ -4303,7 +4303,7 @@ export class PlaneByOriginAndVectors4d {
 // @public
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
-    addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d;
+    addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d, result?: Point2d): Point2d;
     clone(result?: Point2d): Point2d;
     static create(x?: number, y?: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
@@ -5225,21 +5225,26 @@ export abstract class RangeBase {
     static rangeToRangeAbsoluteDistance(lowA: number, highA: number, lowB: number, highB: number): number;
 }
 
-// @internal
+// @public
 export class Ray2d {
-    ccwPerpendicularRay(): Ray2d;
-    static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d;
-    static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d;
-    static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d;
-    cwPerpendicularRay(): Ray2d;
+    ccwPerpendicularRay(result?: Ray2d): Ray2d;
+    static createOriginAndDirection(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d;
+    static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d;
+    static createOriginAndTarget(origin: Point2d, target: Point2d, result?: Ray2d): Ray2d;
+    cwPerpendicularRay(result?: Ray2d): Ray2d;
     get direction(): Vector2d;
-    fractionToPoint(f: number): Point2d;
-    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean;
+    fractionToPoint(f: number, result?: Point2d): Point2d;
+    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d): {
+        hasIntersection: boolean;
+        fraction: number;
+        cross: number;
+    };
     normalizeDirectionInPlace(defaultX?: number, defaultY?: number): boolean;
     get origin(): Point2d;
-    parallelRay(leftFraction: number): Ray2d;
+    parallelRay(leftFraction: number, result?: Ray2d): Ray2d;
     perpendicularProjectionFraction(point: Point2d): number;
     projectionFraction(point: Point2d): number;
+    set(origin: Point2d, direction: Vector2d): void;
 }
 
 // @public
