@@ -2595,7 +2595,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (pixel.modelId === pixel.elementId)
       return false;    // Reality Models not selectable
 
-    return undefined === this.mapLayerFromIds(pixel.modelId, pixel.elementId);  // Maps no selectable.
+    return (0 === this.mapLayerFromIds(pixel.modelId, pixel.elementId).length);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support decoding point clouds from glTF.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

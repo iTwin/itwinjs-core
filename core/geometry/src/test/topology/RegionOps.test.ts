@@ -25,6 +25,7 @@ import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
@@ -1419,5 +1420,53 @@ describe("RegionOps.constructCurveXYOffset", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetCustomOption");
+  });
+
+  it("EllipsePreserveEllipticalArcsTrue", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const vector0 = Vector3d.create(5, 0, 0);
+    const vector90 = Vector3d.create(0, 2, 0);
+    const loop = Loop.create(
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+    );
+    const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
+    const jointOptions: JointOptions[] = [];
+    const minArcDegrees = 180;
+    const maxChamferDegrees = 90;
+    const preserveEllipticalArcs = true;
+    for (let i = 0; i < offsetDistances.length; i++) {
+      jointOptions[i] = new JointOptions(offsetDistances[i], minArcDegrees, maxChamferDegrees, preserveEllipticalArcs);
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    for (const jointOption of jointOptions) {
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsTrue");
+  });
+
+  it("EllipsePreserveEllipticalArcsFalse", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const vector0 = Vector3d.create(5, 0, 0);
+    const vector90 = Vector3d.create(0, 2, 0);
+    const loop = Loop.create(
+      Arc3d.create(origin, vector0, vector90, AngleSweep.createStartEndDegrees(-180, 180))
+    );
+    const offsetDistances: number[] = [-5, -3, -1, 1, 3, 5];
+    const jointOptions: JointOptions[] = [];
+    const minArcDegrees = 180;
+    const maxChamferDegrees = 90;
+    const preserveEllipticalArcs = false;
+    for (let i = 0; i < offsetDistances.length; i++) {
+      jointOptions[i] = new JointOptions(offsetDistances[i], minArcDegrees, maxChamferDegrees, preserveEllipticalArcs);
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, loop);
+    for (const jointOption of jointOptions) {
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsFalse");
   });
 });
