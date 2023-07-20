@@ -769,7 +769,17 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public override setContent(content: TerrainTileContent): void {
-    this._mesh = content.terrain?.mesh;
+
+    if (this.quadId.level < this.maxDepth) {
+      const childIds = this.quadId.getChildIds();
+      for (const childId of childIds) {
+        if (!this.mapLoader.isTileAvailable(childId)) {
+          this._mesh = content.terrain?.mesh; // If a child is unavailable retain mesh for upsampling.
+          break;
+        }
+      }
+    }
+
     if (this.mapTree.produceGeometry) {
       const iModelTransform = this.mapTree.iModelTransform;
       const geometryTransform = content.terrain?.renderGeometry?.transform;

@@ -14,10 +14,9 @@ import {
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { TelemetryEvent } from "@itwin/core-telemetry";
-import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
@@ -91,7 +90,7 @@ export class BriefcaseManager {
   public static getChangedElementsPathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
   private static _briefcaseSubDir = "briefcases";
-  /** @internal */
+  /** Get the local path of the folder storing briefcases associated with the specified iModel. */
   public static getBriefcaseBasePath(iModelId: GuidString): LocalDirName {
     return path.join(this.getIModelPath(iModelId), this._briefcaseSubDir);
   }
@@ -380,6 +379,14 @@ export class BriefcaseManager {
     return IModelHost.hubAccess.getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
+  /** Query the Id of an iModel by name.
+   * @param arg Identifies the iModel of interest
+   * @returns the Id of the corresponding iModel, or `undefined` if no such iModel exists.
+   */
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName(arg);
+  }
+
   /** Deletes a folder and all it's contents.
    *  - Does not throw any errors, but logs them.
    *  - returns true if the delete was successful.
@@ -503,24 +510,4 @@ export class BriefcaseManager {
     }
   }
 
-  /** @internal */
-  public static logUsage(imodel: IModelDb, activity?: RpcActivity) { // eslint-disable-line deprecation/deprecation
-
-    const telemetryEvent = new TelemetryEvent(
-      "core-backend - Open iModel",
-      "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      imodel.iTwinId,
-      imodel.iModelId,
-      imodel.changeset?.id,
-    );
-    activity = activity ?? {
-      activityId: "",
-      applicationId: IModelHost.applicationId,
-      applicationVersion: IModelHost.applicationVersion,
-      sessionId: IModelHost.sessionId,
-      accessToken: "", // IModelHost.getAccessToken(); ACCESS_TOKEN_NEEDS_WORK
-    };
-
-    IModelHost.telemetry.postTelemetry(activity, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
 }

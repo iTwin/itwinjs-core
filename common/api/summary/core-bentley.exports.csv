@@ -61,8 +61,8 @@ public;IndexedValue
 public;IndexMap
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
-internal;isProperSubclassOf
-internal;isSubclassOf
+public;isProperSubclassOf
+public;isSubclassOf
 public;JSONSchema
 public;JSONSchemaMap
 public;JSONSchemaSnippet
@@ -133,5 +133,5 @@ public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-internal;YieldManager
-internal;YieldManagerOptions
+public;YieldManager
+public;YieldManagerOptions

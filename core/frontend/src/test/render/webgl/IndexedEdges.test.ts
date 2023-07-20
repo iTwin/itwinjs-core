@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
+import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { createEdgeParams } from "../../../render/primitives/EdgeParams";
@@ -27,7 +27,7 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
   edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
   edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
   edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
-  edges.polylines.lines = [new PolylineData([0, 2, 4]), new PolylineData([2, 4, 3, 1]), new PolylineData([1, 0])];
+  edges.polylines.lines = [[0, 2, 4], [2, 4, 3, 1], [1, 0]];
 
   return {
     points: QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]),
@@ -89,7 +89,7 @@ describe("IndexedEdgeParams", () => {
         tileAdmin: { enableIndexedEdges: false },
         localization: new EmptyLocalization(),
       });
-      expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("non-indexed");
 
       const args = createMeshArgs();
       const edges = createEdgeParams(args)!;
@@ -104,6 +104,7 @@ describe("IndexedEdgeParams", () => {
   describe("when enabled", () => {
     before(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("compact");
     });
 
     after(async () => {

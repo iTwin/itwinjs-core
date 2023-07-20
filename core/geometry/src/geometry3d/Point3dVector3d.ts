@@ -981,24 +981,38 @@ export class Vector3d extends XYZ {
     return undefined;
   }
   /**
-   * Return fractional projection of this vector on the target vector.
-   * * It's returning the signed projection magnitude divided by the target magnitude.
-   * * To find the projection vector, scale the target vector by the value that this function is returning.
+   * Create a normalized vector from startPoint to endPoint
+   * @param startPoint start point of vector
+   * @param endPoint end point of vector
+   * @param result optional result
+   * @returns undefined if and only if normalization fails.
+  */
+  public static createNormalizedStartEnd(startPoint: XYAndZ, endPoint: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    result = Vector3d.createStartEnd(startPoint, endPoint, result);
+    if (result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
+
+  /**
+   * Return fractional length of the projection of the instance onto the target vector.
+   * * To find the projection vector, scale the target vector by the return value.
    * * Math details can be found at docs/learning/geometry/PointVector.md
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnVector
    * and https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    * @param target the target vector
-   * @param defaultFraction the returned value in case magnitude square of target vector is very small
+   * @param defaultFraction the returned value in case the magnitude of `target` is too small
+   * @returns the signed length of the projection divided by the length of `target`
    * */
   public fractionOfProjectionToVector(target: Vector3d, defaultFraction: number = 0): number {
     /*
      * Projection vector is ((this.target)/||target||)(target/||target||) = ((this.target)/||target||^2)target
      * This function returns (this.target)/||target||^2
      */
-    const numerator = this.dotProduct(target);
     const denominator = target.magnitudeSquared();
     if (denominator < Geometry.smallMetricDistanceSquared)
       return defaultFraction;
+    const numerator = this.dotProduct(target);
     return numerator / denominator;
   }
   /**

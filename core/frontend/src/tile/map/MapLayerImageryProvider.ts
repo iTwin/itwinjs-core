@@ -13,6 +13,7 @@ import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { HitDetail } from "../../HitDetail";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -46,6 +47,9 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   public get status() { return this._status; }
+
+  /** @alpha */
+  public get supportsMapFeatureInfo() { return false; }
 
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
@@ -137,7 +141,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
   }

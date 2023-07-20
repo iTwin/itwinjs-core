@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
+import { MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
 import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import {
@@ -16,11 +16,11 @@ import {
 import { tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
 import { IModelApp } from "../../IModelApp";
 
-function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
+function convertPolylinesAndEdges(polylines?: PolylineIndices[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
   if (undefined !== polylines)
     for (const pd of polylines)
-      numIndices += (pd.vertIndices.length - 1);
+      numIndices += (pd.length - 1);
 
   if (0 === numIndices)
     return undefined;
@@ -42,13 +42,13 @@ function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]
 
   if (undefined !== polylines) {
     for (const pd of polylines) {
-      const num = pd.vertIndices.length - 1;
+      const num = pd.length - 1;
       for (let i = 0; i < num; ++i) {
-        let p0 = pd.vertIndices[i];
-        let p1 = pd.vertIndices[i + 1];
+        let p0 = pd[i];
+        let p1 = pd[i + 1];
         if (p1 < p0) { // swap so that lower index is first.
           p0 = p1;
-          p1 = pd.vertIndices[i];
+          p1 = pd[i];
         }
         addPoint(p0, p1, 0);
         addPoint(p1, p0, 2);
@@ -109,7 +109,7 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
 
   const numHardEdges = hardEdges?.length ?? 0;
   const numSilhouettes = silhouettes?.edges?.length ?? 0;
-  const numPolylines = polylines ? polylines.reduce((count: number, pd: PolylineData) => count + Math.max(0, pd.vertIndices.length - 1), 0) : 0;
+  const numPolylines = polylines ? polylines.reduce((count: number, pd: PolylineIndices) => count + Math.max(0, pd.length - 1), 0) : 0;
   const numSegmentEdges = numHardEdges + numPolylines;
   const numTotalEdges = numSegmentEdges + numSilhouettes;
   if (numTotalEdges === 0)
@@ -143,10 +143,10 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
 
   if (polylines) {
     for (const pd of polylines) {
-      const num = pd.vertIndices.length - 1;
+      const num = pd.length - 1;
       for (let i = 0; i < num; i++) {
-        const p0 = pd.vertIndices[i];
-        const p1 = pd.vertIndices[i + 1];
+        const p0 = pd[i];
+        const p1 = pd[i + 1];
         // Ensure lower index is first.
         if (p0 < p1)
           setEdge(curIndex++, p0, p1);
@@ -199,7 +199,7 @@ export function createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgePar
   let silhouettes: SilhouetteParams | undefined;
   let indexed: IndexedEdgeParams | undefined;
 
-  if (IModelApp.tileAdmin.enableIndexedEdges) {
+  if ("non-indexed" !== IModelApp.tileAdmin.edgeOptions.type) {
     indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
   } else {
     segments = convertPolylinesAndEdges(undefined, args.edges.edges);

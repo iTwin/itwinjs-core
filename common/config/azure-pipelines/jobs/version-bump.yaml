@@ -40,15 +40,32 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
+  - job: CheckPrevCommit
+    displayName: Check Previous Commit
+    condition: and(eq('${{ parameters.BumpType }}', 'nightly'), eq(variables['Build.Reason'], 'Schedule'))
+    steps:
+      - checkout: self
+
+      - bash: |
+          prevAuthor=$(git log -1 --pretty=format:'%an')
+          echo $prevAuthor
+          if [ "$prevAuthor" = "imodeljs-admin" ]; then
+            echo "Previous commit appears to be from imodeljs-admin. Skipping current nightly bump."
+            exit 1
+          fi
+        continueOnError: true
+
   - job: Bump
     displayName: Bump Version
+    dependsOn: CheckPrevCommit
+    condition: in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped')
     steps:
     - checkout: self
 
     - task: NodeTool@0
       displayName: Use Node 18.x
       inputs:
-        versionSpec: 18.x
+        versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
         checkLatest: true
 
     - bash: |
@@ -184,7 +201,7 @@ jobs:
       - task: NodeTool@0
         displayName: 'Use Node 18.x'
         inputs:
-          versionSpec: 18.x
+          versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
           checkLatest: true
 
       - bash: |

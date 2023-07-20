@@ -108,8 +108,11 @@ export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
 
 // @public
 export interface CalculatedPropertiesSpecification {
+    categoryId?: string | CategoryIdentifier;
+    editor?: PropertyEditorSpecification;
     label: string;
     priority?: number;
+    renderer?: CustomRendererSpecification;
     value: string;
 }
 
@@ -827,6 +830,8 @@ export interface ECValueBinding extends BasePresentationQueryBinding {
     value: any;
     // (undocumented)
     valueType: string;
+    // (undocumented)
+    valueTypeExtended?: string;
 }
 
 // @alpha (undocumented)
@@ -837,6 +842,8 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
     value: any[];
     // (undocumented)
     valueType: string;
+    // (undocumented)
+    valueTypeExtended?: string;
 }
 
 // @public
@@ -1234,6 +1241,7 @@ export interface IdBinding extends BasePresentationQueryBinding {
 // @public
 export interface IdCategoryIdentifier {
     categoryId: string;
+    createClassCategory?: boolean;
     type: "Id";
 }
 

@@ -15,7 +15,7 @@ import { IModelDb } from "./IModelDb";
 
 /** A [TextureProps]($common) in which the image data can be specified either as a base-64-encoded string or a Uint8Array.
  * @see [[Texture]] constructor.
- * @internal
+ * @beta
  */
 export interface TextureCreateProps extends Omit<TextureProps, "data"> {
   data: Base64EncodedString | Uint8Array;
@@ -31,15 +31,14 @@ export class Texture extends DefinitionElement {
   public data: Uint8Array;
   public description?: string;
 
-  /** @internal */
-  constructor(props: TextureCreateProps, iModel: IModelDb) {
+  /** @beta */
+  protected constructor(props: TextureCreateProps, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
     this.data = typeof props.data === "string" ? Base64EncodedString.toUint8Array(props.data) : props.data;
     this.description = props.description;
   }
 
-  /** @internal */
   public override toJSON(): TextureProps {
     const val = super.toJSON() as TextureProps;
     val.format = this.format;

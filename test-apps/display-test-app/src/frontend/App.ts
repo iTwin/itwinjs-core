@@ -51,6 +51,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { MacroTool } from "./MacroTools";
+import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
@@ -329,6 +330,7 @@ export class DisplayTestApp {
       PushChangesTool,
       PurgeTileTreesTool,
       RecordFpsTool,
+      RecordTileSizesTool,
       RefreshTilesTool,
       ReopenIModelTool,
       ResizeWindowTool,
@@ -359,7 +361,7 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    MapLayersFormats.initialize();
+    await MapLayersFormats.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

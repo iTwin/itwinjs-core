@@ -6,6 +6,27 @@
       "additionalProperties": false,
       "description": "This content modifier allows including additional calculated properties into the content.",
       "properties": {
+        "categoryId": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParentCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/RootCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The attribute allows moving the calculated property into a different category."
+        },
+        "editor": {
+          "$ref": "#/definitions/PropertyEditorSpecification",
+          "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
+        },
         "label": {
           "description": "Specifies label of the calculated property. Supports localization.",
           "type": "string"
@@ -13,6 +34,10 @@
         "priority": {
           "description": "Assign a custom `Field.priority` to the property. It's up to the UI component to make sure that priority\nis respected - properties with higher priority should appear before or above properties with lower priority.",
           "type": "integer"
+        },
+        "renderer": {
+          "$ref": "#/definitions/CustomRendererSpecification",
+          "description": "Custom property renderer specification that allows assigning a\ncustom value renderer to be used in UI. The specification is used to set up `Field.renderer` for\nthis property and it's up to the UI component to make sure appropriate renderer is used to render the property."
         },
         "value": {
           "description": "Defines an expression to calculate the value. The expression can use ECInstance\nand Ruleset Variables symbol contexts.",
@@ -922,6 +947,10 @@
         "categoryId": {
           "description": "ID of the category pointed to by this identifier",
           "type": "string"
+        },
+        "createClassCategory": {
+          "description": "Controls whether a class category should be included under the category pointed to by this identifier",
+          "type": "boolean"
         },
         "type": {
           "description": "Type of the identifier",

@@ -39,7 +39,7 @@ public;BezierCurve3d
 public;BezierCurve3dH 
 public;class BezierCurveBase 
 internal;BezierPolynomialAlgebra
-internal;BilinearPatch 
+public;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
 public;BooleanClipFactory
@@ -87,7 +87,6 @@ public;ConvexFacetLocationDetail
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
-internal;CurveChainWireOffsetContext
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
@@ -102,6 +101,7 @@ public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
+public;CurveOps
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
@@ -179,6 +179,8 @@ public;Matrix3d
 public;Matrix3dProps = number[][] | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
+public;MiteredSweepOptions
+public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
@@ -235,7 +237,6 @@ public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
 public;PolygonOps
-internal;PolygonWireOffsetContext
 public;PolylineOps
 internal;PowerPolynomial
 public;class ProxyCurve 
@@ -248,7 +249,7 @@ public;Range2dProps =
 public;Range3d 
 public;Range3dProps =
 public;class RangeBase
-internal;Ray2d
+public;Ray2d
 public;Ray3d 
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
@@ -259,6 +260,7 @@ public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample
+public;SectionSequenceWithPlanes
 public;Segment1d
 public;SignedLoops
 internal;SimpleNewton
@@ -278,6 +280,7 @@ alpha;StringifiedClipVector
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
+public;SweepLineStringToFacetsOptions
 public;TaggedNumericConstants
 public;TaggedNumericData
 internal;TorusImplicit

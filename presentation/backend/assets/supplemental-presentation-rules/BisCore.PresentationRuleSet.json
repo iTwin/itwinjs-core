@@ -233,6 +233,54 @@
     },
     {
       "ruleType": "ContentModifier",
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "Source Information",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
+        },
+        {
+          "id": "model_source",
+          "label": "Model Source",
+          "parentId": "source_information",
+          "autoExpand": true
+        },
+        {
+          "id": "secondary_sources",
+          "label": "Secondary Sources",
+          "parentId": "source_information",
+          "autoExpand": true
+        },
+        {
+          "id": "document_link",
+          "label": "Document Link",
+          "parentId": "source_information",
+          "autoExpand": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "ElementAspect"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "Source Information",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
         "className": "Element"
@@ -271,22 +319,6 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
-      "propertyCategories": [
-        {
-          "id": "source_information",
-          "label": "Source Information",
-          "parentId": {
-            "type": "Root"
-          },
-          "autoExpand": true
-        },
-        {
-          "id": "model_source",
-          "label": "Model Source",
-          "parentId": "source_information",
-          "autoExpand": true
-        }
-      ],
       "relatedProperties": [
         {
           "propertiesSource": {
@@ -391,12 +423,6 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
-      "propertyCategories": [
-        {
-          "id": "source_information",
-          "label": "Source Information"
-        }
-      ],
       "relatedProperties": [
         {
           "relationshipMeaning": "SameInstance",
@@ -439,28 +465,6 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
-      "propertyCategories": [
-        {
-          "id": "source_information",
-          "label": "Source Information",
-          "parentId": {
-            "type": "Root"
-          },
-          "autoExpand": true
-        },
-        {
-          "id": "secondary_sources",
-          "label": "Secondary Sources",
-          "parentId": "source_information",
-          "autoExpand": true
-        },
-        {
-          "id": "document_link",
-          "label": "Document Link",
-          "parentId": "source_information",
-          "autoExpand": true
-        }
-      ],
       "relatedProperties": [
         {
           "relationshipMeaning": "SameInstance",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed world decorations disappearing and asserts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

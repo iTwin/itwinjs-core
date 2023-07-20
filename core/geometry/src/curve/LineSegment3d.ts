@@ -21,8 +21,8 @@ import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -32,8 +32,8 @@ import { StrokeOptions } from "./StrokeOptions";
  * * A 3d line segment represented by its start and end coordinates
  *   * startPoint
  *   * endPoint
- * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these
- * equivalent forms to map fraction `f` to a point `X(f)`
+ * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. each of these
+ * equivalent forms maps fraction `f` to a point `X(f)`:
  * ```
  * equation
  *  X(f) = P_0 + f*(P_1 - P_0)\newline
@@ -48,18 +48,20 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof LineSegment3d;
   }
+  /** Start point of the segment */
   private _point0: Point3d;
+  /** End point of the segment */
   private _point1: Point3d;
   /**
    * Return REFERENCE to the start point of this segment.
-   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
+   * * This is distinct from the `CurvePrimitive` abstract method `startPoint()` which creates a returned point.
    */
   public get point0Ref(): Point3d {
     return this._point0;
   }
   /**
    * Return REFERENCE to the end point of this segment.
-   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
+   * * This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point.
    */
   public get point1Ref(): Point3d {
     return this._point1;

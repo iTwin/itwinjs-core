@@ -203,7 +203,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Create a Transform with translation provided by x,y,z parts.
    * * Translation Transform maps any vector `v` to `v + p` where `p = (x,y,z)`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeMove
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeTransform
    * @param x x part of translation
    * @param y y part of translation
    * @param z z part of translation
@@ -216,7 +216,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Create a Transform with specified `translation` part.
    * * Translation Transform maps any vector `v` to `v + translation`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeMove
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeTransform
    * @param translation x,y,z parts of the translation
    * @param result optional pre-allocated Transform
    * @returns new or updated transform
@@ -355,7 +355,7 @@ export class Transform implements BeJSONFunctions {
    * Create a Transform which leaves the fixedPoint unchanged and scales everything else around it by
    * a single scale factor. The returned Transform maps a point `p` to `M*p + (f - M*f)`
    * where `f` is the fixedPoint and M is the scale matrix (i.e., `Tp = M*(p-f) + f`).
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeScale
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeTransform
    */
   public static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform {
     const matrix = Matrix3d.createScale(scale, scale, scale);
@@ -365,6 +365,18 @@ export class Transform implements BeJSONFunctions {
      */
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix, result);
+  }
+  /**
+   * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different from the plane normal.
+   * @param sweepVector vector for the sweep direction
+   * @param planePoint any point on the plane
+   * @param planeNormal vector normal to the plane.
+   */
+  public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planePoint: XYAndZ, planeNormal: Vector3d): Transform | undefined {
+    const matrix = Matrix3d.createFlattenAlongVectorToPlane(sweepVector, planeNormal);
+    if (matrix === undefined)
+      return undefined;
+    return Transform.createFixedPointAndMatrix(planePoint, matrix);
   }
   /**
    * Transform the input 2d point (using `Tp = M*p + o`).

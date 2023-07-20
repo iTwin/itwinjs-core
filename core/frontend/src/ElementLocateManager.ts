@@ -8,7 +8,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
+import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
@@ -168,24 +168,9 @@ export class ElementPicker {
       this.hitList.resetCurrentHit();
   }
 
-  private getPixelPriority(pixel: Pixel.Data) {
-    switch (pixel.type) {
-      case Pixel.GeometryType.Surface:
-        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarSurface : HitPriority.NonPlanarSurface;
-      case Pixel.GeometryType.Linear:
-        return HitPriority.WireEdge;
-      case Pixel.GeometryType.Edge:
-        return Pixel.Planarity.Planar === pixel.planarity ? HitPriority.PlanarEdge : HitPriority.NonPlanarEdge;
-      case Pixel.GeometryType.Silhouette:
-        return HitPriority.SilhouetteEdge;
-      default:
-        return HitPriority.Unknown;
-    }
-  }
-
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
-    const priority1 = this.getPixelPriority(pixel1);
-    const priority2 = this.getPixelPriority(pixel2);
+    const priority1 = pixel1.computeHitPriority();
+    const priority2 = pixel2.computeHitPriority();
     if (priority1 < priority2)
       return -1;
     if (priority1 > priority2)
@@ -269,10 +254,16 @@ export class ElementPicker {
         if (!hitPointWorld)
           continue;
 
-        const modelId = pixel.modelId;
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel, pixel.tileId, pixel.isClassifier);
-        this.hitList!.addHit(hit);
+        const hit = new HitDetail({
+          ...pixel.toHitProps(vp),
+          testPoint: pickPointWorld,
+          viewport: vp,
+          hitSource: options.hitSource,
+          hitPoint: hitPointWorld,
+          distXY: testPointView.distance(elmPoint),
+        });
 
+        this.hitList!.addHit(hit);
         if (this.hitList!.hits.length > options.maxHits)
           this.hitList!.hits.length = options.maxHits; // truncate array...
       }

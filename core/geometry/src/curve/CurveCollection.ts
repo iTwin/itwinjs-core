@@ -45,10 +45,12 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
  * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
  * - `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive` joining head-to-tail.
  * The two instantiable forms of `CurveChain` are
- *   - `Path` - A chain not required to close, and not enclosing a planar area
- *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed.
- * - `ParityRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by parity rules
- * - `UnionRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by union rules
+ *   - `Path` - A chain not required to close and not enclosing a planar area (so curves do not have to be on the
+ * same plane).
+ *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed (so curves have to
+ * be on the same plane).
+ * - `ParityRegion` -- a collection of coplanar `Loop`, with "in/out" classification by parity rules.
+ * - `UnionRegion` -- a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
  * - `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
  *
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
@@ -86,7 +88,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * Return the max gap between adjacent primitives in Path and Loop collections.
    * * In a Path, gaps are computed between consecutive primitives.
    * * In a Loop, gaps are computed between consecutive primitives and between last and first.
-   * * gaps are NOT computed between consecutive CurvePrimitives in "unstructured" collections.  The type is
+   * * Gaps are NOT computed between consecutive CurvePrimitives in "unstructured" collections. The type is
    * "unstructured" so gaps should not be semantically meaningful.
    */
   public maxGap(): number {
@@ -108,11 +110,15 @@ export abstract class CurveCollection extends GeometryQuery {
   public override cloneTransformed(transform: Transform): CurveCollection | undefined {
     return CloneCurvesContext.clone(this, transform);
   }
-  /** Create a deep copy with all linestrings expanded to multiple LineSegment3d. */
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
   public cloneWithExpandedLineStrings(): CurveCollection {
     return CloneWithExpandedLineStrings.clone(this);
   }
-  /** Recurse through children to collect CurvePrimitive's in flat array. */
+  /**
+   * Push all CurvePrimitives contained in the instance onto the `results` array.
+   * * This method is recursive. For example, if the CurveCollection contains a Loop, all CurvePrimitives
+   * of the Loop are pushed onto `results`.
+   */
   private collectCurvePrimitivesGo(
     results: CurvePrimitive[], smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false
   ): void {
@@ -126,10 +132,12 @@ export abstract class CurveCollection extends GeometryQuery {
     }
   }
   /**
-   * Return an array containing only the curve primitives.
+   * Return an array containing all CurvePrimitives in the instance.
+   * * This method is recursive. For example, if the CurveCollection contains a Loop, all CurvePrimitives of
+   * the Loop are pushed onto the returned array.
    * @param collectorArray optional array to receive primitives. If present, new primitives are ADDED (without
-   * clearing the array.)
-   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true,
+   * clearing the array).
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself. If true,
    * it recurses to its (otherwise hidden) children.
    */
   public collectCurvePrimitives(
@@ -146,7 +154,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `UnionRegion`
    */
   public get isAnyRegionType(): boolean {
-    return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 5 || this.dgnBoundaryType() === 4;
+    return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 4 || this.dgnBoundaryType() === 5;
   }
   /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail */
   public get isOpenPath(): boolean {
@@ -154,7 +162,7 @@ export abstract class CurveCollection extends GeometryQuery {
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
-   * * This is _not- a test for physical closure of a `Path`
+   * * This is NOT a test for physical closure of a `Path`.
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
@@ -166,7 +174,7 @@ export abstract class CurveCollection extends GeometryQuery {
   /** Clone an empty collection. */
   public abstract cloneEmptyPeer(): CurveCollection;
   /**
-   * Return the boundary type of a corresponding  MicroStation CurveVector.
+   * Return the boundary type of a corresponding MicroStation CurveVector.
    * * Derived class must implement.
    */
   public abstract dgnBoundaryType(): number;
@@ -178,7 +186,11 @@ export abstract class CurveCollection extends GeometryQuery {
   public abstract tryAddChild(child: AnyCurve | undefined): boolean;
   /** Return a child identified by by index */
   public abstract getChild(i: number): AnyCurve | undefined;
-  /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed) */
+  /**
+   * Extend (increase) the given range as needed to encompass all curves in the curve collection.
+   * @param rangeToExtend the given range.
+   * @param transform if supplied, the range is extended with transformed curves.
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const children = this.children;
     if (children) {
@@ -188,8 +200,8 @@ export abstract class CurveCollection extends GeometryQuery {
     }
   }
   /**
-   * * Find any curve primitive in the source.
-   * * Evaluate it at a fraction (which by default is an interior fraction)
+   * Find any CurvePrimitive in the source and evaluate it at the given fraction.
+   * * The first CurvePrimitive found is evaluated. Any other CurvePrimitives are ignored.
    * @param source containing `CurvePrimitive` or `CurveCollection`
    * @param fraction fraction to use in `curve.fractionToPoint(fraction)`
    */
@@ -223,21 +235,22 @@ export abstract class CurveCollection extends GeometryQuery {
 
 /**
  * Shared base class for use by both open and closed paths.
- * - A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
- * - A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance)
- * `CurveChainWithDistanceIndex`
- *   which presents itself (through method interface) as a CurvePrimitive with well defined mappings from fraction
- * to xyz, but in fact does all the
- *   calculations over multiple primitives.
- * - The specific derived classes are `Path` and `Loop`
- * - `CurveChain` is an intermediate class.   It is not instantiable on its own.
+ * * A `CurveChain` contains only CurvePrimitives. No other paths, loops, or regions allowed.
+ * * The specific derived classes are `Path` and `Loop`
+ * * `CurveChain` is an intermediate class. It is not instantiable on its own.
+ * * The related class `CurveChainWithDistanceIndex` is a `CurvePrimitive` whose API presents well-defined mappings
+ * from fraction to xyz over the entire chain, but in fact does all the calculations over multiple primitives.
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export abstract class CurveChain extends CurveCollection {
   /** The curve primitives in the chain. */
   protected _curves: CurvePrimitive[];
-  protected constructor() { super(); this._curves = []; }
+  /** Constructor */
+  protected constructor() {
+    super();
+    this._curves = [];
+  }
   /** Return the array of `CurvePrimitive` */
   public override get children(): CurvePrimitive[] {
     if (this._curves === undefined)
@@ -245,7 +258,7 @@ export abstract class CurveChain extends CurveCollection {
     return this._curves;
   }
   /**
-   * Return the `[index]` curve primitive, optionally using `modulo` to map`index` to the cyclic indexing.
+   * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
    */
@@ -253,8 +266,7 @@ export abstract class CurveChain extends CurveCollection {
     const n = this.children.length;
     if (n === 0)
       return undefined;
-    /** Try simplest non-cyclic access first . . */
-    if (index >= 0 && index < n)
+    if (index >= 0 && index < n) // try simplest non-cyclic access first
       return this.children[index];
     if (cyclic) {
       const index2 = Geometry.modulo(index, n);
@@ -267,6 +279,11 @@ export abstract class CurveChain extends CurveCollection {
    * @param options tolerance parameters controlling the stroking.
    */
   public getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined {
+    /**
+     * The object returned by "cloneStroked" has the same type (Loop or Path) but instead of a chain of
+     * CurvePrimitives as children, it has a single LineString3d child. "getPackedStrokes" just returns
+     * the points of that LineString3d using "packedPoints".
+     */
     const tree = this.cloneStroked(options);
     if (tree instanceof CurveChain) {
       const children = tree.children;
@@ -280,16 +297,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
   public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
-  /*  EDL 01/20 Path, Loop, CurveChainWithDistanceIndex all implement this.
-      Reducing it to abstract.
-      Hypothetically, a derived class in the wild might be depending on this.
-   {
-    const strokes = LineString3d.create();
-    for (const curve of this.children)
-      curve.emitStrokes(strokes, options);
-    return strokes;
-  }
-  */
   /**
    * Add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
@@ -315,13 +322,13 @@ export abstract class CurveChain extends CurveCollection {
    * Reverse each child curve (in place)
    * Reverse the order of the children in the CurveChain array.
    */
-  public reverseChildrenInPlace() {
+  public reverseChildrenInPlace(): void {
     for (const curve of this._curves)
       curve.reverseInPlace();
     this._curves.reverse();
   }
   /**
-   * Return the index where target is found in the array of children
+   * Return the index where target is found in the array of children.
    * @param alsoSearchProxies whether to also check proxy curves of the children
   */
   public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
@@ -340,7 +347,7 @@ export abstract class CurveChain extends CurveCollection {
     }
     return undefined;
   }
-  /** Evaluate an indexed curve at a fraction.  Return as a CurveLocationDetail that indicates the primitive. */
+  /** Evaluate an indexed curve at a fraction. Return as a CurveLocationDetail that indicates the primitive. */
   public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(
     index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail
   ): CurveLocationDetail | undefined {
@@ -370,7 +377,10 @@ export class BagOfCurves extends CurveCollection {
    */
   protected _children: AnyCurve[];
   /** Construct an empty `BagOfCurves` */
-  public constructor() { super(); this._children = []; }
+  public constructor() {
+    super();
+    this._children = [];
+  }
   /** Return the (reference to) array of children */
   public override get children(): AnyCurve[] {
     return this._children;

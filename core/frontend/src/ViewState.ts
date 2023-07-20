@@ -80,6 +80,10 @@ export interface ComputeDisplayTransformArgs {
    * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
    */
   timePoint?: number;
+  /** The element Id of the [ViewAttachment]($backend) through which the element or model is drawn.
+   * @beta
+   */
+  viewAttachmentId?: Id64String;
   /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
    * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
    */
@@ -177,21 +181,11 @@ const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
 
 /** Arguments to [[ViewState.attachToViewport]].
- * @internal
+ * @note The [[Viewport]] has a dependency upon and control over the [[ViewState]]. Do not use `attachToViewport` to introduce a dependency in
+ * the opposite direction.
+ * @public
  */
-export interface AttachToViewportArgs {
-  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
-  invalidateDecorations: () => void;
-  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
-   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
-   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
-   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
-   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
-   */
-  drawingToSheetTransform?: Transform;
-  /** A function that can be invoked to notify the viewport that its feature symbology overrides should be recreated. */
-  invalidateSymbologyOverrides: () => void;
-}
+export type AttachToViewportArgs = Viewport;
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -342,18 +336,6 @@ export abstract class ViewState extends ElementState {
     return json;
   }
 
-  private async loadAcs(): Promise<void> {
-    this._auxCoordSystem = undefined;
-    const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (Id64.isValid(acsId)) {
-      try {
-        const props = await this.iModel.elements.getProps(acsId);
-        if (0 !== props.length)
-          this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-      } catch { }
-    }
-  }
-
   /**
    * Populates the hydrateRequest object stored on the ViewState with:
    *  not loaded categoryIds based off of the ViewStates categorySelector.
@@ -378,7 +360,7 @@ export abstract class ViewState extends ElementState {
 
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
-    const promises: Promise<any>[] = [
+    const promises: Promise<void>[] = [
       IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
         then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
@@ -1317,11 +1299,11 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
-   * A ViewState can be attached to at most **one** Viewport.
+   * A ViewState can be attached to at most **one** Viewport at any given time.
+   * This method is invoked automatically by the viewport - there is generally no reason for applications to invoke it directly.
    * @note If you override this method you **must** call `super.attachToViewport`.
    * @throws Error if the view is already attached to any Viewport.
    * @see [[detachFromViewport]] from the inverse operation.
-   * @internal
    */
   public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
@@ -1339,9 +1321,9 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Invoked when this view, previously attached to the specified [[Viewport]] via [[attachToViewport]], is no longer the view displayed by that Viewport.
+   * This method is invoked automatically by the viewport - there is generally no reason for applications to invoke it directly.
    * @note If you override this method you **must** call `super.detachFromViewport`.
    * @throws Error if the view is not attached to any Viewport.
-   * @internal
    */
   public detachFromViewport(): void {
     if (!this.isAttachedToViewport)
@@ -1370,6 +1352,13 @@ export abstract class ViewState extends ElementState {
    */
   public get secondaryViewports(): Iterable<Viewport> {
     return [];
+  }
+
+  /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
+   * @internal
+   */
+  public getAttachmentViewport(_id: Id64String): Viewport | undefined {
+    return undefined;
   }
 }
 
@@ -1447,7 +1436,7 @@ export abstract class ViewState3d extends ViewState {
   /** Capture a copy of the viewed volume and camera parameters. */
   public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose): this {
     if (val instanceof ViewPose3d) {
       this._cameraOn = val.cameraOn;
@@ -1620,28 +1609,62 @@ export abstract class ViewState3d extends ViewState {
     return eyePoint.distance(origEyePoint);
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate. */
   public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space. */
+  /** Convert a cartographic coordinate to a point in spatial coordinates. */
   public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate using the GCS reprojection. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate using the GCS reprojection.
+   * @see [[rootToCartographicUsingGcs]] to convert multiple points at once.
+   * @see [[cartographicToRootFromGcs]] for the inverse conversion.
+   */
   public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const carto = (await backgroundMapGeometry.dbToCartographicFromGcs([root]))[0];
+    return carto.clone(result);
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space using the GCS reprojection. */
+  /** Convert spatial coordinates to cartographic coordinates using the GCS reprojection.
+   * @param root Spatial coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `root`, or `undefined` if the conversion cannot be performed.
+   * @see [[cartographicToRootUsingGcs]] for the inverse conversion.
+   */
+  public async rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.dbToCartographicFromGcs(root);
+  }
+
+  /** Convert a cartographic coordinate to a point in spatial coordinates using the GCS reprojection.
+   * @see [[cartographicToRootUsingGcs]] to convert multiple points at once.
+   * @see [[rootToCartographicFromGcs]] for the inverse conversion.
+   */
   public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const root = (await backgroundMapGeometry.cartographicToDbFromGcs([cartographic]))[0];
+    return root.clone(result);
+  }
+
+  /** Convert cartographic coordinates to spatial coordinates using the GCS reprojection.
+   * @param cartographic Cartographic coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `cartographic`, or `undefined` if the conversion cannot be performed.
+   * @see [[rootToCartographicUsingGcs]] for the inverse conversion.
+   */
+  public async cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.cartographicToDbFromGcs(cartographic);
   }
 
   public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
@@ -2072,7 +2095,9 @@ export abstract class ViewState3d extends ViewState {
   /**  Get the distance from the eyePoint to the focus plane for this view. */
   public getFocusDistance(): number { return this.camera.focusDist; }
 
-  /** @internal */
+  /** Obtain an "eye" point for this view. If the camera is on, this simply returns [[Camera.getEyePoint]].
+   * Otherwise, a pseudo-eye-point is computed from the view direction and a lens angle of PI/2.
+   */
   public getEyeOrOrthographicViewPoint(): Point3d {
     if (this.isCameraOn)
       return this.camera.getEyePoint();
@@ -2229,7 +2254,7 @@ export abstract class ViewState3d extends ViewState {
     return this.setupFromFrustum(frustum);
   }
 
-  /** @internal */
+  /** See [[ViewState.attachToViewport]]. */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
 
@@ -2239,7 +2264,7 @@ export abstract class ViewState3d extends ViewState {
 
     this._environmentDecorations = new EnvironmentDecorations(this, () => args.invalidateDecorations(), () => removeListener());
   }
-
+  /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._environmentDecorations = dispose(this._environmentDecorations);
@@ -2299,7 +2324,7 @@ export abstract class ViewState2d extends ViewState {
   /** Capture a copy of the viewed area. */
   public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal override */
+  /** See [[ViewState.applyPose]]. */
   public applyPose(val: ViewPose) {
     if (val instanceof ViewPose2d) {
       this.setOrigin(val.origin);

@@ -41,7 +41,16 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
+internal;ArcGisAttributeDrivenSymbology
 internal;ArcGisErrorCode
+internal;class ArcGisGeometryBaseRenderer 
+internal;ArcGisGeometryReaderJSON
+internal;ArcGisGeometryRenderer
+internal;ArcGisGraphicsRenderer 
+internal;ArcGISIdentifyImageDisplayProps
+internal;ArcGISIdentifyLayersProps
+internal;ArcGISIdentifyRequestUrl
+internal;ArcGISIdentifyRequestUrlProps
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISServiceMetadata
@@ -49,7 +58,7 @@ internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-internal;AttachToViewportArgs
+public;AttachToViewportArgs = Viewport
 alpha;AuxChannel 
 alpha;AuxChannelProps
 alpha;AuxChannelTable
@@ -81,7 +90,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
-alpha;BriefcaseEditorToolSettings
+beta;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 internal;CachedDecoration =
@@ -94,7 +103,7 @@ public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
 internal;CesiumIonAssetProvider
-internal;ChangeFlag
+public;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
 public;CheckboxFormatPropEditorSpec 
@@ -103,11 +112,13 @@ public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 internal;collectTransferables(document: ImdlModel.Document): Transferable[]
+internal;ColorMap 
 public;CompassMode
 internal;ComputeAnimationNodeId = (featureIndex: number) => number
 public;ComputeChordToleranceArgs
 internal;computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions
 beta;ComputeDisplayTransformArgs
+public;ComputeSpatialViewFitRangeOptions
 public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
 public;connectViewportViews(viewports: Iterable
@@ -124,11 +135,15 @@ public;CoordSystem
 internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined
 internal;createEmptyRenderPlan(): RenderPlan
 internal;createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
+internal;createMeshParams(args: MeshArgs, maxDimension: number): MeshParams
 internal;createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
+internal;createPointStringParams(args: PolylineArgs): PointStringParams | undefined
+internal;createPolylineParams(args: PolylineArgs): PolylineParams | undefined
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 public;CreateRenderMaterialArgs 
@@ -145,6 +160,7 @@ public;CustomQuantityTypeDefinition
 internal;DebugShaderFile
 internal;decodeImdlGraphics(options: ImdlDecodeOptions): Promise
 public;DecorateContext 
+public;DecorateContextCreateArgs
 public;Decorations 
 internal;DecorationsCache
 public;Decorator 
@@ -200,6 +216,7 @@ internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeigh
 public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
+internal;FetchCloudStorage 
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -224,14 +241,22 @@ public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
+internal;GenerateEdges
 beta;GenericAbortSignal
 public;GeoConverter
+internal;GeoConverterOptions
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
+internal;class Geometry
+internal;GeometryAccumulator
+internal;GeometryList
+internal;class GeometryListBuilder 
+internal;GeometryOptions
 beta;GeometryTileTreeReference 
 public;GeoServices
+internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
@@ -330,6 +355,7 @@ alpha;GroupMark
 internal;Hilites
 public;HiliteSet
 public;HitDetail
+public;HitDetailProps
 public;HitDetailType
 public;HitGeomType
 public;HitList
@@ -358,12 +384,14 @@ internal;ImdlAreaPatternSymbol
 internal;ImdlAuxChannelTable = Omit
 internal;ImdlBufferView
 internal;ImdlColorDef = number[]
+internal;ImdlCompactEdges
 internal;ImdlDecodeArgs
 internal;ImdlDecodeOptions
 internal;ImdlDecoder
 internal;ImdlDictionary
 internal;ImdlDisplayParams
 internal;ImdlDocument
+internal;ImdlEdgeVisibility
 internal;ImdlIndexedEdges
 internal;ImdlInstances
 internal;ImdlMaterialAtlas
@@ -411,7 +439,7 @@ internal;IndexBuffer
 internal;IndexedEdgeParams
 public;class InputCollector 
 public;InputSource
-internal;InstancedGraphicParams
+public;InstancedGraphicParams
 public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
@@ -451,14 +479,18 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
-alpha;MapFeatureInfo
-alpha;MapFeatureInfoRecord 
+beta;MapFeatureInfo
+beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
 beta;MapLayerAccessTokenParams
 beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
-alpha;MapLayerFeatureInfo
+beta;MapLayerFeature
+beta;MapLayerFeatureAttribute
+beta;MapLayerFeatureGeometry
+beta;MapLayerFeatureInfo
+beta;MapLayerFeatureRecord
 public;MapLayerFormat
 internal;MapLayerFormatEntry
 public;MapLayerFormatRegistry
@@ -466,6 +498,7 @@ public;MapLayerFormatType = typeof MapLayerFormat
 beta;class MapLayerImageryProvider
 public;MapLayerImageryProviderStatus
 public;MapLayerIndex
+internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
@@ -474,7 +507,7 @@ public;MapLayerSourceStatus
 public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
-alpha;MapSubLayerFeatureInfo
+beta;MapSubLayerFeatureInfo
 public;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
@@ -502,8 +535,22 @@ public;class MeasureElementTool
 public;MeasureLengthTool 
 public;MeasureLocationTool 
 public;MeasureVolumeTool 
+internal;Mesh
+internal;Mesh
+public;MeshArgs
+public;MeshArgs
+internal;fromMesh(mesh: Mesh): MeshArgs | undefined
+internal;MeshArgsEdges
+internal;MeshBuilder
+internal;MeshBuilder
+internal;MeshBuilderMap 
+internal;MeshBuilderMap
+internal;MeshBuilderPolyface
+internal;MeshEdgeCreationOptions
+internal;MeshEdgeCreationOptions
 internal;MeshFeature 
 internal;MeshFeatures
+internal;MeshList 
 internal;MeshParams
 internal;MeshPointList = Point3dList | QPoint3dList
 internal;MeshPrimitiveType
@@ -512,19 +559,20 @@ public;MessageBoxType
 public;MessageBoxValue
 internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutput?: number, maximumInputMeters?: number): number
 internal;MockRender
-internal;ModalOptions
-internal;ModalReturn
+public;ModalOptions
+public;ModalReturn
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
 public;ModelState 
 public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
-internal;MutableChangeFlags 
+public;MutableChangeFlags 
 public;NativeApp
 internal;NativeAppLogger
 public;NativeAppOpts 
 public;NoRenderApp
+internal;NormalMode
 public;class NotificationHandler
 public;NotificationManager 
 public;NotifyMessageDetails
@@ -581,10 +629,24 @@ alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
 internal;Point3dList 
+internal;PointCloudArgs
 internal;PointStringParams
+internal;PolyfacePrimitive
+internal;PolyfacePrimitiveList 
+public;PolylineArgs
+public;PolylineArgs
+internal;fromMesh(mesh: Mesh): PolylineArgs | undefined
 internal;PolylineParams
 beta;PreferenceArg 
 beta;PreferenceKeyArg
+internal;PreserveOrder
+internal;PrimitiveBuilder 
+internal;PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive
+internal;PrimitiveLineStringGeometry 
+internal;PrimitiveLoopGeometry 
+internal;PrimitivePathGeometry 
+internal;PrimitivePointStringGeometry 
+internal;PrimitivePolyfaceGeometry 
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
@@ -637,7 +699,7 @@ internal;RealityModelTileUtils
 public;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
-alpha;RealityTileGeometry
+beta;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
@@ -739,6 +801,10 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
+internal;StrokesPrimitive
+internal;StrokesPrimitiveList 
+internal;StrokesPrimitivePointList
+internal;StrokesPrimitivePointLists 
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
@@ -746,6 +812,7 @@ internal;SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas
 internal;SurfaceMaterialAtlas
 internal;SurfaceParams
 internal;SurfaceRenderMaterial
+internal;SurfacesOnly
 internal;SurfaceType
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
@@ -763,6 +830,8 @@ public;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
 internal;TesselatedPolyline
+internal;tesselatePolyline(polylines: PolylineIndices[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline
+internal;tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined
 public;TextInputFormatPropEditorSpec 
 public;TextSelectFormatPropEditorSpec 
 public;TextureCacheKey = string | Gradient.Symb
@@ -815,20 +884,23 @@ internal;TileUserIdSet
 internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
+internal;ToleranceRatio
 internal;toMaterialParams(mat: ImdlModel.SurfaceMaterialParams): MaterialParams
 public;Tool
 public;ToolAdmin
 public;ToolAssistance
 public;ToolAssistanceImage
+public;ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit"
 public;ToolAssistanceInputMethod
 public;ToolAssistanceInstruction
 public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
+public;ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "StartPoint" | "EndPoint"
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
-internal;ToolSettingsState
+public;ToolSettingsState
 internal;ToolState
 public;ToolTipOptions
 public;ToolTipProvider
@@ -839,6 +911,10 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 internal;traverseGltfNodes(ids: Iterable
+internal;Triangle
+internal;TriangleKey
+internal;TriangleList
+internal;TriangleSet 
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
@@ -854,9 +930,14 @@ internal;UpsampledMapTile
 beta;UserPreferencesAccess
 public;VaryingType
 internal;VertexIndices 
+internal;VertexKey
+internal;VertexKeyProps
+internal;VertexMap 
 internal;VertexTable
+internal;class VertexTableBuilder
 internal;VertexTableWithIndices
 public;ViewAnimationOptions
+beta;ViewAttachmentHitInfo
 public;ViewChangeOptions 
 public;ViewClipByElementTool 
 public;ViewClipByPlaneTool 
@@ -905,6 +986,8 @@ public;ViewUndoEvent
 public;ViewUndoTool 
 public;VisibleFeature
 public;WalkViewTool 
+internal;wantJointTriangles(weight: number, is2d: boolean): boolean
+internal;WebMercator
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor
