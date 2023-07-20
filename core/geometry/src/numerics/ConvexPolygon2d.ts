@@ -138,10 +138,11 @@ export class ConvexPolygon2d {
   }
 
   /**
-   * Return 2 distances bounding the intersection of the ray with a convex hull.
-   * ASSUME (for tolerance) the ray has normalized direction vector.
-   * Both negative and positive distances along the ray are possible.
-   * Returns range with extremities if less than 3 points, distanceA > distanceB, or if cross product < 0
+   * Return 2 distances bounding the intersection of the ray with this convex hull.
+   * @param ray ray to clip to this convex polygon. ASSUME normalized direction vector, so that ray fractions are distances.
+   * @returns intersection bounds as min and max distances along the ray (from its origin).
+   * * Both negative and positive distances along the ray are possible.
+   * * Range has extreme values if less than 3 points, distanceA > distanceB, or if cross product < 0.
    */
   public clipRay(ray: Ray2d): Range1d {
     let distanceA = - Number.MAX_VALUE;
