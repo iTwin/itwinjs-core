@@ -105,6 +105,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   - script: node ./common/scripts/install-run-rush webpack:test -v
+    workingDirectory: ${{ parameters.workingDir }}
     displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer
