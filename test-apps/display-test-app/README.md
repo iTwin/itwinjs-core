@@ -82,7 +82,7 @@ In addition, the configuration allows setting breakpoints in any dependent packa
 
 1. Make sure the backend is built `npm run build:backend`
 1. Run `npm run start:webserver`
-    * Launches the react-scripts dev server, providing hot-module reloading of the frontend
+    * Launches the vite dev server, providing hot-module reloading of the frontend
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
 A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
