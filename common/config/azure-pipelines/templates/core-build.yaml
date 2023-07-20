@@ -75,7 +75,7 @@ steps:
     displayName: "rush change -v"
     inputs:
       scriptSource: 'filePath'
-      scriptPath: '${{ parameters.workingDir }}'common/scripts/run_rush_change.py
+      scriptPath: '${{ parameters.workingDir }}/common/scripts/run_rush_change.py'
       arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
       failOnStderr: true
 
