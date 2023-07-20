@@ -31,20 +31,6 @@ steps:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
-  # - script: |
-  #     cd /d ${{ parameters.workingDir }}
-  #     dir
-  #     git branch
-  #   displayName: 'Dir'
-  #   continueOnError: true
-
-  # - script: |
-  #     dir
-  #     git branch
-  #   displayName: 'Dir WD'
-  #   workingDirectory: ${{ parameters.workingDir }}
-  #   continueOnError: true
-
   - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
@@ -71,19 +57,19 @@ steps:
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
-  # - task: PythonScript@0
-  #   displayName: "rush change -v"
-  #   inputs:
-  #     workingDirectory: '$(Build.SourcesDirectory)/itwinjs-core'
-  #     scriptSource: 'filePath'
-  #     scriptPath: common/scripts/run_rush_change.py
-  #     arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-  #     failOnStderr: true
-
-  - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  - task: PythonScript@0
     displayName: "rush change -v"
-    workingDirectory: ${{ parameters.workingDir }}
-    continueOnError: true
+    inputs:
+      scriptSource: 'filePath'
+      scriptPath: common/scripts/run_rush_change.py
+      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+    Advanced
+      workingDirectory: '$(Build.SourcesDirectory)/itwinjs-core'
+      failOnStderr: true
+
+  # - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  #   displayName: "rush change -v"
+  #   workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
@@ -122,13 +108,13 @@ steps:
       NODE_ENV: development
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  # # MacOS and Windows agents work without any virtual display
-  # - script: node common/scripts/install-run-rush.js cover --verbose
-  #   displayName: rush cover
-  #   workingDirectory: ${{ parameters.workingDir }}
-  #   env:
-  #     NODE_ENV: development
-  #   condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+  # MacOS and Windows agents work without any virtual display
+  - script: node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    env:
+      NODE_ENV: development
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
