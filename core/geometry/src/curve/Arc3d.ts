@@ -29,8 +29,8 @@ import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimi
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
