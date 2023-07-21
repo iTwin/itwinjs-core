@@ -120,7 +120,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * of the Loop are pushed onto `results`.
    */
   private collectCurvePrimitivesGo(
-    results: CurvePrimitive[], smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false
+    results: CurvePrimitive[], smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false,
   ): void {
     if (this.children) {
       for (const child of this.children) {
@@ -141,7 +141,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * it recurses to its (otherwise hidden) children.
    */
   public collectCurvePrimitives(
-    collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false
+    collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false,
   ): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
     this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLineStrings);
@@ -206,7 +206,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * @param fraction fraction to use in `curve.fractionToPoint(fraction)`
    */
   public static createCurveLocationDetailOnAnyCurvePrimitive(
-    source: GeometryQuery | undefined, fraction: number = 0.5
+    source: GeometryQuery | undefined, fraction: number = 0.5,
   ): CurveLocationDetail | undefined {
     if (!source)
       return undefined;
@@ -349,7 +349,7 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Evaluate an indexed curve at a fraction. Return as a CurveLocationDetail that indicates the primitive. */
   public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(
-    index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail
+    index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     const primitive = this.cyclicCurvePrimitive(index, cyclic);
     if (primitive) {

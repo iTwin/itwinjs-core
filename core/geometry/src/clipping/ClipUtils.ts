@@ -776,7 +776,7 @@ export class ClipUtilities {
     inAction: ClipStepAction,
     outAction: ClipStepAction,
     finalFragmentAction: ClipStepAction,
-    arrayCache: GrowableXYZArrayCache | undefined
+    arrayCache: GrowableXYZArrayCache | undefined,
   ) {
     if (arrayCache === undefined)
       arrayCache = new GrowableXYZArrayCache();
@@ -819,7 +819,7 @@ export class ClipUtilities {
     clippers: Clipper[],
     acceptedIn: GrowableXYZArray[] | undefined,
     acceptedOut: GrowableXYZArray[] | undefined,
-    arrayCache: GrowableXYZArrayCache | undefined
+    arrayCache: GrowableXYZArrayCache | undefined,
   ) {
     if (arrayCache === undefined)
       arrayCache = new GrowableXYZArrayCache();

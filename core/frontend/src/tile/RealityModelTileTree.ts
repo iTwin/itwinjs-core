@@ -699,7 +699,7 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
   ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree

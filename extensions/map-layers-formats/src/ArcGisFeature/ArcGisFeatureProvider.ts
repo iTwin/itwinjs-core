@@ -397,7 +397,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         spatialReference: { wkid: 102100, latestWkid: 3857 },
       }};
 
-    const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
+    const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", queryEnvelope,
         outFields, undefined, returnGeometry, toleranceWorld);
 

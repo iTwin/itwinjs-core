@@ -359,7 +359,7 @@ export class HttpRequestHook {
     }
     if (typeof win[NATIVE_FETCH] === "undefined") {
       win[NATIVE_FETCH] = window.fetch;
-      win.fetch = FetchProxy.fetch;
+      win.fetch = async (input: RequestInfo) => FetchProxy.fetch(input);
     }
   }
 
