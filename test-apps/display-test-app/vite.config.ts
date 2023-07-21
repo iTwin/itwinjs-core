@@ -22,15 +22,14 @@ const mode = process.env.NODE_ENV === "development" ? "development" : "productio
 const assets = Object.keys(packageJson.dependencies)
   .map((pkgName) => {
     try {
-      // get path and replace last segment with specific file name to "public/*"
-      let pkg = require.resolve(pkgName).replace(/[^\\/]+$/, "public/*");
-      // remove "cjs/" or "cjs\" from path
-      pkg = pkg.replace(/cjs[\/\\]/, "");
+      // gets dependency path and replaces everything after /lib/ with /lib/public/* to get static assets
+      let pkg = require.resolve(pkgName).replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
       // use relative path with forward slashes
       return path.relative(process.cwd(), pkg).replace(/\\/g, '/');
     } catch { return "undefined"; }
   })
-  .filter((path) => path !== "undefined");
+  // ignores all invalid paths, including dependencies that don't contain a lib/ directory
+  .filter((path) => path !== "undefined" && path.endsWith('lib/public/*'));
 assets.push("./public/*");
 
 // https://vitejs.dev/config/
