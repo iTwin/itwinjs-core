@@ -80,9 +80,9 @@ export class GriddedRaggedRange2dSetWithOverflow<T> implements Range2dSearchInte
       result.setNull();
     else
       result = Range2d.createNull();
-    this.visitChildren(0, (_depth: number, child: Range2dSearchInterface<T>) => {
-      const myRange = GriddedRaggedRange2dSetWithOverflow._workRange = child.totalRange(GriddedRaggedRange2dSetWithOverflow._workRange);
-      result!.extendRange(myRange);
+    this.visitChildren(0, (_depth, child) => {
+      const childRange = GriddedRaggedRange2dSetWithOverflow._workRange = child.totalRange(GriddedRaggedRange2dSetWithOverflow._workRange);
+      result!.extendRange(childRange);
     });
     return result;
   }
