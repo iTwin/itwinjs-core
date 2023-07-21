@@ -46,7 +46,7 @@ describe("Tile tolerance", () => {
     };
   }
 
-  function computeTolerance(rangeProps: Range3dProps, arg: { tileScreenSize: number }, sizeMultiplier?: number, ): number {
+  function computeTolerance(rangeProps: Range3dProps, arg: { tileScreenSize: number }, sizeMultiplier?: number ): number {
     const range = new Range3d();
     range.setFromJSON(rangeProps);
     return computeTileChordTolerance({

@@ -28,7 +28,7 @@ function multipleDegreeRotationsByAxisOrder(xDegrees: number, yDegrees: number, 
     Matrix3d.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(xDegrees))!,
     Matrix3d.createRotationAroundVector(Vector3d.unitY(), Angle.createDegrees(yDegrees))!,
     Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(zDegrees))!,
-    axisOrder
+    axisOrder,
   );
 }
 
@@ -78,7 +78,7 @@ function testMultiAngleEquivalence(ck: Checker, xDegrees: number, yDegrees: numb
     ck.testMatrix3d(
       matrixA,
       matrixB,
-      "classic base rotation matrixes (column-based) and Rodriguez formula (matrix form)"
+      "classic base rotation matrixes (column-based) and Rodriguez formula (matrix form)",
     );
 
     // rotation matrix calculated by row-based base rotation matrixes (negative angles) and reversed axis order
@@ -89,7 +89,7 @@ function testMultiAngleEquivalence(ck: Checker, xDegrees: number, yDegrees: numb
     ck.testMatrix3d(
       matrixA,
       matrixC.transpose(matrixC), // transpose has to be applied
-      "classic base rotation matrixes (column-based) and row-based base rotation matrixes and reversed axis order"
+      "classic base rotation matrixes (column-based) and row-based base rotation matrixes and reversed axis order",
     );
   }
 }
@@ -219,7 +219,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.YXZ, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     let expectedMatrix = Matrix3d.createRowValues(
@@ -236,7 +236,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.XYZ, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
@@ -253,13 +253,13 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(45),
       AxisOrder.ZXY, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
       angles.zAngle.cos(), -angles.zAngle.sin(), 0,
       angles.zAngle.sin(), angles.zAngle.cos(), 0,
-      0, 0, 1
+      0, 0, 1,
     );
     ck.testMatrix3d(matrix, expectedMatrix);
 
@@ -345,7 +345,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.YXZ, // order does not matter because we only rotate around one axis,
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     let expectedMatrix = Matrix3d.createRowValues(
@@ -362,7 +362,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.XYZ, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
@@ -379,13 +379,13 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(45),
       AxisOrder.ZXY, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
       angles.zAngle.cos(), -angles.zAngle.sin(), 0,
       angles.zAngle.sin(), angles.zAngle.cos(), 0,
-      0, 0, 1
+      0, 0, 1,
     ).transpose();
     ck.testMatrix3d(matrix, expectedMatrix);
 
@@ -471,7 +471,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.YXZ, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     let expectedMatrix = Matrix3d.createRowValues(
@@ -488,7 +488,7 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(0),
       AxisOrder.XYZ, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
@@ -505,13 +505,13 @@ describe("OrderedRotationAngles", () => {
       Angle.createDegrees(45),
       AxisOrder.ZXY, // order does not matter because we only rotate around one axis
       undefined,
-      angles
+      angles,
     );
     angles.toMatrix3d(matrix);
     expectedMatrix = Matrix3d.createRowValues(
       angles.zAngle.cos(), angles.zAngle.sin(), 0,
       -angles.zAngle.sin(), angles.zAngle.cos(), 0,
-      0, 0, 1
+      0, 0, 1,
     );
     ck.testMatrix3d(matrix, expectedMatrix);
 
@@ -617,7 +617,7 @@ describe("OrderedRotationAngles", () => {
             rollAngle.degrees,
             -pitchAngle.degrees,
             yawAngle.degrees,
-            AxisOrder.XYZ
+            AxisOrder.XYZ,
           );
           const orderedMatrix = orderedAngles.toMatrix3d();
           if (!ck.testMatrix3d(yprMatrix, orderedMatrix)) {
@@ -670,7 +670,7 @@ describe("OrderedRotationAngles", () => {
               pitchAngle.degrees,
               yawAngle.degrees,
               AxisOrder.XYZ,
-              xyzRotationIsClockwise
+              xyzRotationIsClockwise,
             );
             const orderedMatrix = orderedAngles.toMatrix3d();
             if (!ck.testMatrix3d(yprMatrix, orderedMatrix)) {

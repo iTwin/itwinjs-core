@@ -67,7 +67,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * * Returns undefined if `normal.normalize()` returns undefined.
    */
   public static create(
-    origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal
+    origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal | undefined {
     if (result) {
       if (normal.normalize(result._normal) === undefined)
@@ -86,7 +86,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * * Returns undefined if `source.getUnitNormal()` returns undefined.
    */
   public static createFrom(
-    source: Plane3d, result?: Plane3dByOriginAndUnitNormal
+    source: Plane3d, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal | undefined {
     if (source instanceof Plane3dByOriginAndUnitNormal)
       return source.clone(result);
@@ -108,7 +108,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * * If unable to normalize return undefined. (And if result is given it is left unchanged)
    */
   public static createXYZUVW(
-    ax: number, ay: number, az: number, ux: number, uy: number, uz: number, result?: Plane3dByOriginAndUnitNormal
+    ax: number, ay: number, az: number, ux: number, uy: number, uz: number, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const magU = Geometry.hypotenuseXYZ(ux, uy, uz);
     if (magU < Geometry.smallMetricDistance)
@@ -128,7 +128,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * * Returns undefined if the normal vector is all zeros.
    */
   public static createOriginAndTargetXY(
-    origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal
+    origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const ux = target.x - origin.x;
     const uy = target.y - origin.y;
@@ -139,7 +139,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * * Returns undefined if the normal vector is all zeros.
    */
   public static createXYAngle(
-    x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal
+    x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal,
   ): Plane3dByOriginAndUnitNormal {
     if (result) {
       result._origin.set(x, y, 0.0);
@@ -147,7 +147,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
       return result;
     }
     return new Plane3dByOriginAndUnitNormal(
-      Point3d.create(x, y, 0), Vector3d.create(normalAngleFromX.cos(), normalAngleFromX.sin())
+      Point3d.create(x, y, 0), Vector3d.create(normalAngleFromX.cos(), normalAngleFromX.sin()),
     );
   }
   /**
@@ -157,7 +157,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * @param vector any vector in the plane but not parallel to the vector from pointA to pointB
    */
   public static createPointPointVectorInPlane(
-    pointA: Point3d, pointB: Point3d, vector: Vector3d
+    pointA: Point3d, pointB: Point3d, vector: Vector3d,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vector.crossProductStartEnd(pointA, pointB);
     if (cross.tryNormalizeInPlace())
@@ -171,7 +171,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * @param pointC any third point in the plane but not on the line of pointA and pointB
    */
   public static createOriginAndTargets(
-    pointA: Point3d, pointB: Point3d, pointC: Point3d
+    pointA: Point3d, pointB: Point3d, pointC: Point3d,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = pointA.crossProductToPoints(pointB, pointC);
     if (cross.tryNormalizeInPlace())
@@ -185,7 +185,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
    * @param vectorC any vector in the plane but not parallel to vectorB
    */
   public static createOriginAndVectors(
-    pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d
+    pointA: Point3d, vectorB: Vector3d, vectorC: Vector3d,
   ): Plane3dByOriginAndUnitNormal | undefined {
     const cross = vectorB.crossProduct(vectorC);
     if (cross.tryNormalizeInPlace())

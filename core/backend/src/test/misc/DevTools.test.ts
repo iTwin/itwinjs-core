@@ -84,5 +84,5 @@ describe("DevTools", () => {
     assert.isDefined(versions.iTwinJs);
     assert.isDefined(versions.availableRpcs);
   });
-}
+},
 );

@@ -160,7 +160,7 @@ it("ExpandToMaximalPlanarFacetsA", () => {
   const allGeometry: GeometryQuery[] = [];
   const builder = PolyfaceBuilder.create();
   const linestringA = LineString3d.create(
-    [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 1], [4, 0, 0]
+    [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 1], [4, 0, 0],
   );
   const dx = 0;
   let dy = 1;
@@ -254,7 +254,7 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
       if (x === 3 && y === 2) return false;
       if (x === 5 && y === 2) return false;
       return true;
-    }
+    },
   );
   let dx = 0;
   let dy = 0;
@@ -351,7 +351,7 @@ it("FillHoles", () => {
       if (x === 3 && y === 2) return false;
       if (x === 3 && y === 3) return false;
       return true;
-    }
+    },
   );
 
   const dx = 0;

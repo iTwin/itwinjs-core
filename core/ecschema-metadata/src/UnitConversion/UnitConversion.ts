@@ -40,7 +40,7 @@ export class UnitConversion {
   public compose(conversion: UnitConversion): UnitConversion {
     return new UnitConversion(
       this.factor * conversion.factor,
-      conversion.factor * this.offset + conversion.offset
+      conversion.factor * this.offset + conversion.offset,
     );
   }
 

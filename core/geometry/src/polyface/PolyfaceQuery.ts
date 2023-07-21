@@ -103,7 +103,7 @@ export class SweepLineStringToFacetsOptions {
       Geometry.resolveValue(assembleChains, true),
       Geometry.resolveValue(collectOnForwardFacets, true),
       Geometry.resolveValue(collectOnSideFacets, true),
-      Geometry.resolveValue(collectOnRearFacets, true)
+      Geometry.resolveValue(collectOnRearFacets, true),
     );
   }
   /** Return true if all outputs are requested */
@@ -859,7 +859,7 @@ export class PolyfaceQuery {
         (_loop: Point3d[], triangles: Point3d[][]) => {
           for (const t of triangles)
             builder.addPolygon(t);
-        }
+        },
       )) {
       } else {
         rejected = true;
@@ -1307,7 +1307,7 @@ export class PolyfaceQuery {
       }
       facetIndexAndVertexIndices.push(entry);
     }
-    facetIndexAndVertexIndices.sort(this.compareFacetIndexAndVertexIndices);
+    facetIndexAndVertexIndices.sort((arrayA, arrayB) => this.compareFacetIndexAndVertexIndices(arrayA, arrayB));
     let i0, i1;
     const n = facetIndexAndVertexIndices.length;
     const clusterArray = [];
@@ -1577,7 +1577,7 @@ export class PolyfaceQuery {
       mesh.data.getPoint(vertexIndex, xyz);
       halfEdge.setXYZ(xyz);
       return true;
-    }
+    },
     );
     return graph;
   }
