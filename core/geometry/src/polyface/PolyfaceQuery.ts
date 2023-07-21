@@ -1099,7 +1099,6 @@ export class PolyfaceQuery {
       visitor = polyfaceOrVisitor;
     let lineStringSource;
 
-    linestringSource: GrowableXYZArray;
     if (Array.isArray(linestringPoints))
       lineStringSource = GrowableXYZArray.create(linestringPoints);
     else
