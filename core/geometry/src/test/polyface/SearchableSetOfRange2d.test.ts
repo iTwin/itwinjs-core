@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { BilinearPatch, PolyfaceQuery } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -11,18 +12,18 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedRange2dSet";
 import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
+import { Range2dSearchInterface } from "../../polyface/multiclip/Range2dSearchInterface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Checker } from "../Checker";
 import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BilinearPatch, PolyfaceQuery } from "../../core-geometry";
 
 function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined, range: Range2d | Range3d, xOrigin: number, yOrigin: number, zOrigin: number = 0) {
   const x0 = range.low.x;
@@ -211,7 +212,7 @@ describe("GriddedRaggedRange2dSet", () => {
       saveRange(allGeometry, 0.1, fullRange, x0, y0, -0.0001);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      rangesInGrid.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
+      rangesInGrid.visitChildren(0, (depth: number, child: Range2dSearchInterface<number>) => {
         saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
       });
       const testStep = Math.max(1, Math.floor(numRange / 10));
@@ -348,7 +349,7 @@ describe("GriddedRaggedRange2dSet", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      allRanges.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
+      allRanges.visitChildren(0, (depth: number, child: Range2dSearchInterface<number>) => {
         saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
       });
 

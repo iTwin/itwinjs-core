@@ -200,7 +200,7 @@ public;OffsetMeshOptions
 public;OffsetMeshSelectiveOutputOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
-public;OptionalLinearSearchRange2dArray
+internal;OptionalRange2dSearchInterface
 internal;Order2Bezier 
 internal;Order3Bezier 
 internal;Order4Bezier 

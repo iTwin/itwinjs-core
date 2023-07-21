@@ -2296,23 +2296,24 @@ export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, prope
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 
 // @public
-export class GriddedRaggedRange2dSet<T> {
-    conditionalInsert(range: Range2d | Range3d, tag: T): boolean;
+export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
+    addRange(range: LowAndHighXY, tag: T): void;
+    conditionalInsert(range: Range2d | Range3d | LowAndHighXY, tag: T): boolean;
     static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined;
     searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
     searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
-    // (undocumented)
-    visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void): void;
+    totalRange(result?: Range2d): Range2d;
+    visitChildren(initialDepth: number, handler: (depth: number, child: Range2dSearchInterface<T>) => void): void;
 }
 
 // @public
-export class GriddedRaggedRange2dSetWithOverflow<T> {
-    addRange(range: Range2d | Range3d, tag: T): void;
+export class GriddedRaggedRange2dSetWithOverflow<T> implements Range2dSearchInterface<T> {
+    addRange(range: LowAndHighXY, tag: T): void;
     static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSetWithOverflow<T> | undefined;
     searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
     searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
-    // (undocumented)
-    visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void): void;
+    totalRange(result?: Range2d): Range2d;
+    visitChildren(initialDepth: number, handler: (depth: number, child: Range2dSearchInterface<T>) => void): void;
 }
 
 // @public
@@ -4030,8 +4031,8 @@ export class OffsetOptions {
 // @public
 export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
 
-// @public
-export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
+// @internal
+export type OptionalRange2dSearchInterface<T> = Range2dSearchInterface<T> | undefined;
 
 // @internal
 export class Order2Bezier extends BezierCoffs {
