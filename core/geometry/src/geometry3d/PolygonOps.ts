@@ -1482,38 +1482,20 @@ export class Point3dArrayPolygonOps {
    * @param xyzOut array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
    */
-  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
+  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void {
     const xyzCarrier = new Point3dArrayCarrier(xyz);
     const xyzInCarrier = new Point3dArrayCarrier(xyzIn);
     const xyzOutCarrier = new Point3dArrayCarrier(xyzOut);
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, xyzCarrier, xyzInCarrier, xyzOutCarrier, altitudeRange);
-
   }
 
   /** Return an array containing
    * * All points that are exactly on the plane.
    * * Crossing points between adjacent points that are (strictly) on opposite sides.
    */
-  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]) {
-    crossings.length = 0;
-    if (xyz.length >= 2) {
-      const xyz0 = this._xyz0Work;
-      xyz0.setFromPoint3d(xyz[xyz.length - 1]);
-      let a0 = plane.altitude(xyz0);
-      for (const xyz1 of xyz) {
-        const a1 = plane.altitude(xyz1);
-        if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          crossings.push(xyz0.interpolate(f, xyz1));
-        }
-        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
-          crossings.push(xyz1.clone());
-        }
-        xyz0.setFromPoint3d(xyz1);
-        a0 = a1;
-      }
-    }
+  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void {
+    const xyzSource = new Point3dArrayCarrier(xyz);
+    return IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(plane, xyzSource, crossings);
   }
   /**
    * Clip a polygon, returning the clip result in the same object.

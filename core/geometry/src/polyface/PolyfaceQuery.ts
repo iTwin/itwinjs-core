@@ -23,7 +23,9 @@ import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
@@ -1097,10 +1099,9 @@ export class PolyfaceQuery {
       visitor = polyfaceOrVisitor.createVisitor(0);
     else
       visitor = polyfaceOrVisitor;
-    let lineStringSource;
-
+    let lineStringSource: IndexedXYZCollection;
     if (Array.isArray(linestringPoints))
-      lineStringSource = GrowableXYZArray.create(linestringPoints);
+      lineStringSource = new Point3dArrayCarrier(linestringPoints);
     else
       lineStringSource = linestringPoints;
     for (let i = 1; i < lineStringSource.length; i++) {
