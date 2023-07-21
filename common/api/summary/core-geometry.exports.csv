@@ -167,6 +167,7 @@ public;InverseMatrixState
 public;IStrokeHandler
 public;JointOptions
 public;KnotVector
+public;LinearCurvePrimitive = LineSegment3d | LineString3d
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
