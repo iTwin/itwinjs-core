@@ -12,7 +12,7 @@
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { CurveOps } from "../curve/CurveOps";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { LinearCurvePrimitive } from "../curve/CurvePrimitive";
 import { MultiChainCollector } from "../curve/internalContexts/MultiChainCollector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -29,7 +29,7 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
-import { Range2d, Range3d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
@@ -1014,13 +1014,13 @@ export class PolyfaceQuery {
     matcher.sortAndCollectClusters(allEdges, allEdges, allEdges, allEdges);
     return this.partitionFacetIndicesBySortableEdgeClusters(allEdges, numFacets);
   }
-  /** Find segments (within the linestring) which project to facets.
-   * * Assemble each segment pair as a facet in a new polyface
-   * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
+  /** Find segments (within the line string) which project to facets.
+   * * Assemble each input segment paired with its projected segment/point as a quad/triangle facet in a new polyface.
+   * * Input facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
-  public static sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+  public static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     const builder = PolyfaceBuilder.create();
-    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
+    this.announceSweepLinestringToConvexPolyfaceXY(lineStringPoints, polyface,
       (_linestring: GrowableXYZArray, _segmentIndex: number,
         _polyface: Polyface, _facetIndex: number, points: Point3d[]) => {
         if (points.length === 4)
@@ -1037,14 +1037,14 @@ export class PolyfaceQuery {
   }
 
   /**
-   * Sweeps the linestring to intersections with a mesh.
+   * Sweep the line string to intersections with a mesh.
    * * Return collected line segments.
    * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
    * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
    */
-  public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyfaceOrVisitor: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): CurvePrimitive[] {
-    let result: CurvePrimitive[] = [];
+  public static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyfaceOrVisitor: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[] {
+    let result: LinearCurvePrimitive[] = [];
     // setup default options:
     if (options === undefined)
       options = SweepLineStringToFacetsOptions.create(
@@ -1082,15 +1082,25 @@ export class PolyfaceQuery {
     return result;
   }
   /**
-   * Sweeps the linestring in Z direction to intersections with a mesh.
-   * * the mesh may be held in a search structure.
-   * * Return collected line segments.
+   * Sweep the line string in the z-direction to intersections with a mesh, using a search object for speedup.
+   * @param lineStringPoints input line string to drape on the mesh
+   * @param polyfaceOrVisitor mesh, or mesh visitor to traverse only part of a mesh
+   * @param searchByReadIndex object for searching facet 2D ranges tagged by mesh read index
+   * @example Using a 5x5 indexed search grid:
+   * ```
+   * const xyRange = Range2d.createFrom(myPolyface.range());
+   * const searcher = GriddedRaggedRange2dSetWithOverflow.create<number>(xyRange, 5, 5)!;
+   * for (const visitor = myPolyface.createVisitor(0); visitor.moveToNextFacet();) {
+   *   searcher.addRange(visitor.point.getRange(), visitor.currentReadIndex());
+   * }
+   * const drapedLineStrings = PolyfaceQuery.sweepLineStringToFacetsXY(lineString, myPolyface, searcher);
+   * ```
+   * @returns collected line strings
    */
   public static sweepLineStringToFacetsXY(
-    linestringPoints: GrowableXYZArray | Point3d[],
+    lineStringPoints: GrowableXYZArray | Point3d[],
     polyfaceOrVisitor: Polyface | PolyfaceVisitor,
-    searchStructure: Range2dSearchInterface<number>): CurvePrimitive[] {
-    let result: CurvePrimitive[] = [];
+    searchByReadIndex: Range2dSearchInterface<number>): LineString3d[] {
     const chainContext = ChainMergeContext.create();
     const sweepVector = Vector3d.create(0, 0, 1);
     const searchRange = Range3d.create();
@@ -1100,10 +1110,10 @@ export class PolyfaceQuery {
     else
       visitor = polyfaceOrVisitor;
     let lineStringSource: IndexedXYZCollection;
-    if (Array.isArray(linestringPoints))
-      lineStringSource = new Point3dArrayCarrier(linestringPoints);
+    if (Array.isArray(lineStringPoints))
+      lineStringSource = new Point3dArrayCarrier(lineStringPoints);
     else
-      lineStringSource = linestringPoints;
+      lineStringSource = lineStringPoints;
     for (let i = 1; i < lineStringSource.length; i++) {
       const point0 = lineStringSource.getPoint3dAtUncheckedPointIndex(i - 1);
       const point1 = lineStringSource.getPoint3dAtUncheckedPointIndex(i);
@@ -1112,20 +1122,16 @@ export class PolyfaceQuery {
         Range3d.createNull(searchRange);
         searchRange.extendPoint(point0);
         searchRange.extendPoint(point1);
-        searchStructure.searchRange2d(searchRange,
-          (_facetRange: Range2d, readIndex: number) => {
+        searchByReadIndex.searchRange2d(searchRange,
+          (_facetRange, readIndex) => {
             if (visitor.moveToReadIndex(readIndex))
-              edgeClipper.processPolygon(visitor.point,
-                (pointA: Point3d, pointB: Point3d) => {
-                  chainContext.addSegment(pointA, pointB);
-                });
+              edgeClipper.processPolygon(visitor.point, (pointA, pointB) => chainContext.addSegment(pointA, pointB));
             return true;
           });
       }
     }
     chainContext.clusterAndMergeVerticesXYZ();
-    result = chainContext.collectMaximalChains();
-    return result;
+    return chainContext.collectMaximalChains();
   }
 
   /** Find segments (within the linestring) which project to facets.

@@ -168,7 +168,7 @@ export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
     }
     return true;
   }
-  /** Return the overall range of all member ranges. */
+  /** Return the overall range of all members. */
   public totalRange(result?: Range2d): Range2d {
     if (result)
       result.setNull();

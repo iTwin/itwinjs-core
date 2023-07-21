@@ -138,13 +138,13 @@ export class EdgeClipData {
     return undefined;
   }
 
+  /** Intersect this edge plane with the given convex polygon and announce the intersection segment to the callback. */
   public processPolygon(polygon: Point3d[] | GrowableXYZArray, announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
     this._crossingPoints.length = 0;
     if (Array.isArray(polygon))
       Point3dArrayPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
     else
       IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
-    // process a convex polygon (or non-convex if lucky)
     if (this._crossingPoints.length === 2) {
       // use the end planes to clip the [0,1] swept edge to [f0,f1]
       this.clip.announceClippedSegmentIntervals(0, 1, this._crossingPoints[0], this._crossingPoints[1],

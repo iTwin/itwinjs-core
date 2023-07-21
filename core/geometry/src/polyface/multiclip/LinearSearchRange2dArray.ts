@@ -30,7 +30,7 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
   private updateForSearch() {
     this._isDirty = false;
   }
-  /** Return the overall range of all member ranges. */
+  /** Return the overall range of all members. */
   public totalRange(result?: Range2d): Range2d {
     return this._compositeRange.clone(result);
   }
