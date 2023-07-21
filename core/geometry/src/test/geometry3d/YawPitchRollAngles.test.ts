@@ -20,7 +20,7 @@ describe("YPR", () => {
     ck.testTrue(YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(), "isIdentity with wrap");
     ck.testFalse(
       YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(false),
-      "is not Identity if we don't allow period shift"
+      "is not Identity if we don't allow period shift",
     );
     for (const degrees of [
       Vector3d.create(10, 0, 0),

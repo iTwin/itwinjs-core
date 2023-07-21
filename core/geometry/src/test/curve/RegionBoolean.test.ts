@@ -384,7 +384,7 @@ describe("RegionBoolean", () => {
 
     const banana = Loop.create(
       Arc3d.create(Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-180, -360)),
-      Arc3d.create(Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(0, 180))
+      Arc3d.create(Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(0, 180)),
     );
     const expected: SignedLoopCounts[] = [{ numPositiveAreaLoops: 1, numNegativeAreaLoops: 1, numSlivers: 0, numEdges: 2 }];
 
@@ -1077,7 +1077,7 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], components: SignedLoops 
           const perp = tangentRayAtTicMark.direction.unitPerpendicularXY();
           GeometryCoreTestIO.captureCloneGeometry(allGeometry,
             [midPoint, tangentRayAtTicMark.origin, tangentRayAtTicMark.origin.plusScaled(perp, ticLength)],
-            x0, yy, zz
+            x0, yy, zz,
           );
         }
       };

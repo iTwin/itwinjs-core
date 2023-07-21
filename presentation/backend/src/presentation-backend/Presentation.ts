@@ -132,7 +132,7 @@ export class Presentation {
     } else {
       this._clientsStorage = new FactoryBasedTemporaryStorage<ClientStoreItem>({
         factory: this.createClientManager.bind(this),
-        cleanupHandler: this.disposeClientManager,
+        cleanupHandler: (_id, storeItem) => this.disposeClientManager(_id, storeItem),
         // cleanup unused managers every minute
         cleanupInterval: 60 * 1000,
         // by default, manager is disposed after 1 hour of being unused

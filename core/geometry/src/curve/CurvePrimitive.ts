@@ -283,7 +283,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * to any increase in size.
    */
   public rangeBetweenFractionsByCount(
-    fraction0: number, fraction1: number, count: number, transform?: Transform, extrapolationFactor: number = 0.0
+    fraction0: number, fraction1: number, count: number, transform?: Transform, extrapolationFactor: number = 0.0,
   ): Range3d {
     const range = Range3d.createNull();
     const workPoint = Point3d.create();
@@ -331,7 +331,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param numInterval number of quadrature intervals
    */
   public curveLengthWithFixedIntervalCountQuadrature(
-    fraction0: number, fraction1: number, numInterval: number, numGauss: number = 5
+    fraction0: number, fraction1: number, numInterval: number, numGauss: number = 5,
   ): number {
     if (fraction0 > fraction1) {
       const fSave = fraction0;
@@ -378,7 +378,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * member
    */
   public moveSignedDistanceFromFraction(
-    startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail
+    startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     const scale = this.getFractionToDistanceScale();
     if (scale !== undefined) {
@@ -419,7 +419,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param result
    */
   protected moveSignedDistanceFromFractionGeneric(
-    startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail
+    startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     let limitFraction: number;
     const slackFraction = 0.1;  // slack to use when integration would otherwise have no room to work
@@ -488,7 +488,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     }
     if (numConverged > 1)
       return CurveLocationDetail.createConditionalMoveSignedDistance(
-        allowExtension, this, startFraction, fractionB, signedDistance, result
+        allowExtension, this, startFraction, fractionB, signedDistance, result,
       );
     result = CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result);
     result.curveSearchStatus = CurveSearchStatus.error;
@@ -606,7 +606,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     allowExtend: boolean = true,
     applySnappedCoordinates: boolean = false,
     startEndFractionTolerance = Geometry.smallAngleRadians,
-    startEndXYZTolerance = Geometry.smallMetricDistance
+    startEndXYZTolerance = Geometry.smallMetricDistance,
   ): void {
     const n0 = details.length;
     let acceptIndex = 0;
@@ -755,7 +755,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * push only the [[LineString3d]].
    */
   public collectCurvePrimitivesGo(
-    collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings: boolean = false
+    collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings: boolean = false,
   ): void {
     collectorArray.push(this);
   }
@@ -768,7 +768,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * it recurses to its (otherwise hidden) children.
    */
   public collectCurvePrimitives(
-    collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLinestrings: boolean = false
+    collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLinestrings: boolean = false,
   ): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
     this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLinestrings);

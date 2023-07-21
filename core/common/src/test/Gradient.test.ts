@@ -195,7 +195,7 @@ describe("Gradient.Symb", () => {
     });
     symbArr.push(symb);
 
-    symbArr.sort(Gradient.Symb.compareSymb);
+    symbArr.sort((lhs, rhs) => Gradient.Symb.compareSymb(lhs, rhs));
 
     for (let i = 1; i < symbArr.length; i++) {
       const prev = symbArr[i - 1];

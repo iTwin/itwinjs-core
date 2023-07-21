@@ -281,7 +281,7 @@ export class AttachCesiumAssetTool extends Tool {
     const props = {
       tilesetUrl: getCesiumAssetUrl(
         assetId,
-        accessKey
+        accessKey,
       ),
     };
     // Alternative new way to attach using rdSourceKey
