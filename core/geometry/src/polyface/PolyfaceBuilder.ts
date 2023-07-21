@@ -1585,8 +1585,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Rely on the builder's compress step to find common vertex coordinates
    * @internal
    */
-  public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior,
-    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = HalfEdge.testMateMaskExterior) {
+  public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+    isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node)) {
     let index = 0;
     const needNormals = this._options.needNormals;
     let normalIndex = 0;
@@ -1638,7 +1638,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
    * @internal
    */
-  public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior): IndexedPolyface {
+  public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node)): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);
     builder.endFace();

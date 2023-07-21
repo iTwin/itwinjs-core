@@ -6,11 +6,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { BagOfCurves } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
-import { Path } from "./Path";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { BagOfCurves } from "../CurveCollection";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Loop } from "../Loop";
+import { Path } from "../Path";
 
 /**
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.

@@ -199,11 +199,11 @@ export class GaussMapper {
     if (numGaussPoints > 5 || numGaussPoints < 1)
       numGaussPoints = 5;
     switch (numGaussPoints) {
-      case 1: this.mapXAndWFunction = Quadrature.setupGauss1; break;
-      case 2: this.mapXAndWFunction = Quadrature.setupGauss2; break;
-      case 3: this.mapXAndWFunction = Quadrature.setupGauss3; break;
-      case 4: this.mapXAndWFunction = Quadrature.setupGauss4; break;
-      default: this.mapXAndWFunction = Quadrature.setupGauss5; break;
+      case 1: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss1(xA, xB, xMapped, wMapped); break;
+      case 2: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss2(xA, xB, xMapped, wMapped); break;
+      case 3: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss3(xA, xB, xMapped, wMapped); break;
+      case 4: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss4(xA, xB, xMapped, wMapped); break;
+      default: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss5(xA, xB, xMapped, wMapped); break;
     }
 
   }

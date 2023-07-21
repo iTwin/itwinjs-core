@@ -111,7 +111,7 @@ export class Item {
     if (!json)
       return undefined;
     if (typeof json === "string")
-      return JSON.parse(json, Item.reviver);
+      return JSON.parse(json, (key, value) => Item.reviver(key, value));
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {

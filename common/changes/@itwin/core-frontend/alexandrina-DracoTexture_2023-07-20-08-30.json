@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix decoding of draco-compressed texture coordinates in glTF.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

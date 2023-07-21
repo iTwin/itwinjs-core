@@ -1352,7 +1352,7 @@ class Compositor extends SceneCompositor {
         if (!this._textures.enableVolumeClassifier(width, height, this._antialiasSamples))
           return false;
 
-        if (!this._geom.enableVolumeClassifier(this._textures, this._depth!,))
+        if (!this._geom.enableVolumeClassifier(this._textures, this._depth!))
           return false;
 
         this.enableVolumeClassifierFbos(this._textures, this._depth!, this._vcAltDepthStencil, this._depthMS, this._vcAltDepthStencilMS);

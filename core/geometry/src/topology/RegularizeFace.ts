@@ -233,7 +233,7 @@ export class RegularizationContext {
   }
   private downwardConnectionFromBottomPeak(node: HalfEdge): HalfEdge | undefined {
     let connectTo;
-    const upFunction = HalfEdgeGraphOps.compareNodesYXUp;
+    const upFunction = (a: HalfEdge, b: HalfEdge) => HalfEdgeGraphOps.compareNodesYXUp(a, b);
     const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0)!;
     const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0)!;
     connectTo = this.updateMaxNode(connectTo, upEdgeBase, upFunction);
@@ -286,7 +286,7 @@ export class RegularizationContext {
    */
   private runRegularization(upSweep: boolean = true, downSweep: boolean = true) {
     if (upSweep) {
-      this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
+      this.bottomPeaks.sort((a, b) => HalfEdgeGraphOps.compareNodesYXUp(a, b));
       for (const bottomPeak of this.bottomPeaks) {
         // GeometryCoreTestIO.consoleLog("SEARCH", bottomPeak.id, [bottomPeak.x, bottomPeak.y]);
         if (!HalfEdgeGraphOps.isDownPeak(bottomPeak))
@@ -303,7 +303,7 @@ export class RegularizationContext {
       this.negateXY();
       // swap the various p and down seeds ....
       this.swapArrays();
-      this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
+      this.bottomPeaks.sort((a, b) => HalfEdgeGraphOps.compareNodesYXUp(a, b));
       for (const bottomPeak of this.bottomPeaks) {
         if (!HalfEdgeGraphOps.isDownPeak(bottomPeak))
           continue;

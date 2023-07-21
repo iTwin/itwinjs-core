@@ -85,10 +85,10 @@ describe("GraphMerge", () => {
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
       GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0 += dy);
 
-      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY), x0, y0 += dy, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)), x0, y0 += dy, 0);
 
       Triangulator.triangulateAllPositiveAreaFaces(graph);
-      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, HalfEdge.testFacePositiveAreaXY), x0, y0 += dy, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)), x0, y0 += dy, 0);
 
       const summary1 = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, true);
       ck.testExactNumber(summary1.numNegative, summary1.negativeItemArray!.length, " negative face counts");

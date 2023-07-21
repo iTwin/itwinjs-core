@@ -119,7 +119,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
   }
 
   private static findExtremesInDirection(
-    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d,
   ): PlaneAltitudeRangeContext | undefined {
     const origin = direction instanceof Ray3d ? direction.origin : Point3d.createZero();
     const vector = direction instanceof Ray3d ? direction.direction : direction;
@@ -147,7 +147,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param lowHigh optional receiver for output
   */
   public static findExtremePointsInDirection(
-    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d,
   ): LineSegment3d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && context.highPoint && context.lowPoint)
@@ -164,7 +164,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param lowHigh optional receiver for output
   */
   public static findExtremeAltitudesInDirection(
-    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d,
   ): Range1d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && !context.range.isNull)
@@ -180,7 +180,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param lowHigh optional receiver for output
    */
   public static findExtremeFractionsAlongDirection(
-    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d,
   ): Range1d | undefined {
     const range = this.findExtremeAltitudesInDirection(geometry, direction, lowHigh);
     if (undefined !== range) {

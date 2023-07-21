@@ -170,6 +170,6 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Constructs an HTTP protocol. */
   public constructor(configuration: RpcConfiguration) {
     super(configuration);
-    this.events.addListener(WebAppRpcLogging.logProtocolEvent);
+    this.events.addListener(async (event, object) => WebAppRpcLogging.logProtocolEvent(event, object));
   }
 }
