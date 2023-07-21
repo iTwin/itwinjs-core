@@ -535,11 +535,11 @@ export class Descriptor implements DescriptorSource {
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
-    // @beta
-    readonly hierarchyLevelRuleset?: Ruleset;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -614,11 +614,11 @@ export interface DescriptorSource {
     fieldsFilterExpression?: string;
     // @deprecated
     filterExpression?: string;
-    // @beta
-    readonly hierarchyLevelRuleset?: Ruleset;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;

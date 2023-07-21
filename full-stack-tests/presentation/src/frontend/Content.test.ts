@@ -15,7 +15,8 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
-import { buildTestIModelConnection, getFieldByLabel, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../Utils";
+import { getFieldByLabel } from "../Utils";
+import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
 
 describe("Content", () => {
 
@@ -327,10 +328,11 @@ describe("Content", () => {
       };
       const rootNodes = await Presentation.presentation.getNodes({ imodel: testIModel, rulesetOrId: ruleset });
       expect(rootNodes.length).to.eq(2);
-
       const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
-      // ensure descriptor returns a correct ruleset
-      expect(descriptor!.hierarchyLevelRuleset!.rules).to.deep.equal([{
+      assert(!!descriptor);
+
+      // ensure descriptor contains the ruleset used to create it
+      expect(descriptor.ruleset!.rules).to.deep.equal([{
         ruleType: "Content",
         specifications: [{
           specType: "ContentRelatedInstances",
@@ -344,10 +346,9 @@ describe("Content", () => {
         }],
       }]);
 
-      const userLabelField = getFieldByLabel(descriptor!.fields, "User Label");
-
+      const userLabelField = getFieldByLabel(descriptor.fields, "User Label");
       // user labels are different for every child element, expect 2 unique values
-      await validatePagedDistinctValuesResponse(testIModel, descriptor!.hierarchyLevelRuleset!, new KeySet([rootNodes[0].key]), {}, userLabelField.getFieldDescriptor(), [
+      await validatePagedDistinctValuesResponse(testIModel, descriptor.ruleset!, new KeySet([rootNodes[0].key]), {}, userLabelField.getFieldDescriptor(), [
         {
           displayValue: "Element A1",
           groupedRawValues: ["Element A1"],
@@ -359,7 +360,7 @@ describe("Content", () => {
       ]);
 
       // user label is the same for every child element, expect only 1 unique value
-      await validatePagedDistinctValuesResponse(testIModel, descriptor!.hierarchyLevelRuleset!, new KeySet([rootNodes[1].key]), {}, userLabelField.getFieldDescriptor(), [{
+      await validatePagedDistinctValuesResponse(testIModel, descriptor.ruleset!, new KeySet([rootNodes[1].key]), {}, userLabelField.getFieldDescriptor(), [{
         displayValue: "Element B",
         groupedRawValues: ["Element B"],
       }]);

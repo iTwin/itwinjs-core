@@ -271,11 +271,11 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /**
-   * A ruleset used to create the nodes descriptor for a specific hierarchy level.
-   * It is only returned with `GetNodesDescriptor`. Otherwise, undefined.
+   * A ruleset used to create this descriptor.
+   * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
    * @beta
    */
-  readonly hierarchyLevelRuleset?: Ruleset;
+  readonly ruleset?: Ruleset;
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
@@ -336,11 +336,11 @@ export class Descriptor implements DescriptorSource {
   /** [[ContentFlags]] used to create the descriptor */
   public readonly contentFlags: number;
   /**
-   * A ruleset used to create the nodes descriptor for a specific hierarchy level.
-   * It is only returned with `GetNodesDescriptor`. Otherwise, undefined.
+   * A ruleset used to create this descriptor.
+   * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
    * @beta
    */
-  public readonly hierarchyLevelRuleset?: Ruleset;
+  public readonly ruleset?: Ruleset;
   /** Field used to sort the content */
   public sortingField?: Field;
   /** Sorting direction */
@@ -390,7 +390,7 @@ export class Descriptor implements DescriptorSource {
     this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.instanceFilter = source.instanceFilter;
-    this.hierarchyLevelRuleset = source.hierarchyLevelRuleset;
+    this.ruleset = source.ruleset;
   }
 
   /** Serialize [[Descriptor]] to JSON */
@@ -417,6 +417,7 @@ export class Descriptor implements DescriptorSource {
       this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
       this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
+      this.ruleset !== undefined && { ruleset: this.ruleset },
     );
   }
 
