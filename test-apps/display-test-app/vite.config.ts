@@ -71,7 +71,7 @@ export default defineConfig(() => {
             rollupVisualizer({
               open: true,
               filename: "stats.html",
-              template: "network",
+              template: "treemap",
               sourcemap: true,
             }),
             webpackStats(), // needs to be the last plugin
