@@ -77,7 +77,7 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
    *
    */
   public classifyAltitudeXYZ(
-    x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance
+    x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance,
   ): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitudeXYZ(x, y, z), tolerance);
   }

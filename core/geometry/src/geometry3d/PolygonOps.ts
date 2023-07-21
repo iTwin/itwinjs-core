@@ -241,7 +241,7 @@ export class CutLoopMergeContext {
       sortRay.direction.normalizeInPlace();
       for (const loop of this.inputLoops)
         loop.setSortCoordinates(sortRay);
-      this.inputLoops.sort(CutLoop.sortFunction);
+      this.inputLoops.sort((loopA, loopB) => CutLoop.sortFunction(loopA, loopB));
 
     }
   }
@@ -286,9 +286,8 @@ export class CutLoopMergeContext {
     }
   }
 }
-/** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
- * Various (static method) computations for arrays of points interpreted as a polygon.
+ * Various static methods to perform computations on an array of points interpreted as a polygon.
  * @public
  */
 export class PolygonOps {

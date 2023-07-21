@@ -642,14 +642,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (SchemaItem.equalByKey(this, key))
         return true;
 
-      return this.traverseBaseClasses(SchemaItem.equalByKey, key);
+      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
     } else {
       assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
 
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
-      return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
     }
   }
 
@@ -661,7 +661,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (SchemaItem.equalByKey(this, targetClass))
       return true;
 
-    return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
+    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
   }
 
   /**

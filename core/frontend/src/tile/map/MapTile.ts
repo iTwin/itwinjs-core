@@ -554,7 +554,7 @@ export class MapTile extends RealityTile {
       stats.addTerrain(this._mesh.indices.byteLength
         + this._mesh.positions.points.byteLength
         + this._mesh.uvs.points.byteLength
-        + (this._mesh.normals ? this._mesh.normals.byteLength : 0)
+        + (this._mesh.normals ? this._mesh.normals.byteLength : 0),
       );
     }
   }
@@ -635,7 +635,7 @@ export class MapTile extends RealityTile {
     for (const layerImageryTree of this.mapTree.layerImageryTrees) {
       let tmpTiles = new Array<ImageryMapTile>();
       const tmpLeafTiles = new Array<ImageryMapTile>();
-      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args,)) {
+      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args)) {
         this._imageryTiles = undefined;
         return;
       }
