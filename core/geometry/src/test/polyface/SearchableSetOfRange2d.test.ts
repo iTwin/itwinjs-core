@@ -19,7 +19,6 @@ import { Range2d, Range3d } from "../../geometry3d/Range";
 import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedRange2dSet";
 import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
-import { Range2dSearchInterface } from "../../polyface/multiclip/Range2dSearchInterface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Checker } from "../Checker";
 import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
