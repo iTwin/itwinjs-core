@@ -212,9 +212,7 @@ describe("GriddedRaggedRange2dSet", () => {
       saveRange(allGeometry, 0.1, fullRange, x0, y0, -0.0001);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      rangesInGrid.visitChildren(0, (depth: number, child: Range2dSearchInterface<number>) => {
-        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
-      });
+      rangesInGrid.visitChildren(0, (depth, child) => saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0));
       const testStep = Math.max(1, Math.floor(numRange / 10));
 
       // const testUV = Point3d.create(0.3, 0.2);
@@ -349,10 +347,7 @@ describe("GriddedRaggedRange2dSet", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      allRanges.visitChildren(0, (depth: number, child: Range2dSearchInterface<number>) => {
-        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
-      });
-
+      allRanges.visitChildren(0, (depth, child) => saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0));
       if (numFacets > 10) {
         visitor.setNumWrap(1);
         const sampleStep = Math.max(1, Math.ceil(numFacets / 5));
