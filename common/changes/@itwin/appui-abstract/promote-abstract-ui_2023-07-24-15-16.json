@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Promote appui-abstract APIs in use by AppUi.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}
