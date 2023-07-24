@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#########################################################################
+# To run manually:
+# git checkout master; git pull
+# git checkout release/X.X.X; git pull
+# uncomment git checkout -b cmd and fix branch name
+# open PR into master
+#########################################################################
+
 targetPath="./temp-target-changelogs"
 incomingPath="./temp-incoming-changelogs"
 
@@ -37,6 +45,11 @@ rm -r $incomingPath
 
 # regen CHANGELOG.md
 rush publish --regenerate-changelogs #updates changelogs
+
+#########################################################################
+# Uncomment For Manual runs and fix branch name to appropriate version
+# git checkout -b finalize-release-4.0.X
+#########################################################################
 
 git add .
 git commit -m "$commitMessage Changelogs"
