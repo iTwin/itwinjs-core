@@ -10,6 +10,7 @@ import { IModelApp } from "../../IModelApp";
 /** @packageDocumentation
  * @module Tiles
  */
+
 /** @internal */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
@@ -19,9 +20,10 @@ export enum ArcGisErrorCode {
   NoTokenService = 1001,
 }
 
-/** Class representing an ArcGIS service metadata.
+/**
+ * Class representing an ArcGIS service metadata.
  * @internal
- * */
+ */
 export interface ArcGISServiceMetadata {
   /** JSON content from the service */
   content: any;
@@ -30,7 +32,10 @@ export interface ArcGISServiceMetadata {
   accessTokenRequired: boolean;
 }
 
-/** @internal */
+/**
+ * Class containing utilities relating to ArcGIS services and coordinate systems.
+ * @beta
+ */
 export class ArcGisUtilities {
 
   private static getBBoxString(range?: MapCartoRectangle) {
@@ -67,6 +72,7 @@ export class ArcGisUtilities {
     }
     return sources;
   }
+
   public static async getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]> {
     if (undefined === baseUrl)
       baseUrl = url;
@@ -94,6 +100,13 @@ export class ArcGisUtilities {
 
     return sources;
   }
+
+  /**
+   * Get map layer sources from an ArcGIS query.
+   * @param range Range for the query.
+   * @param url URL for the query.
+   * @returns List of map layer sources.
+   */
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
@@ -116,7 +129,7 @@ export class ArcGisUtilities {
   }
 
   /**
-   * Parse the URL to check if it represent a valid ArcGIS service
+   * Parse the URL to check if it represents a valid ArcGIS service
    * @param url URL to validate.
    * @param serviceType Service type to validate (i.e FeatureServer, MapServer)
    * @return Validation Status.
@@ -145,7 +158,7 @@ export class ArcGisUtilities {
    * @param password Username to use for legacy token based security.
    * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
    * @return Validation Status. If successful, a list of available sub-layers will also be returned.
-  */
+   */
   public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const metadata = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
     const json = metadata?.content;
@@ -197,7 +210,7 @@ export class ArcGisUtilities {
 
   /**
    * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
-  */
+   */
   public static isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
       return false;
@@ -265,8 +278,7 @@ export class ArcGisUtilities {
     }
   }
 
-  /** Read a response from ArcGIS server and check for error code in the response.
-  */
+  /** Read a response from ArcGIS server and check for error code in the response. */
   public static async checkForResponseErrorCode(response: Response) {
     const tmpResponse = response;
     if (response.headers && tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
@@ -312,8 +324,7 @@ export class ArcGisUtilities {
    * @param latitude Latitude in degrees to use to compute scales (i.e 0 for Equator)
    * @param tileSize Size of a tile in pixels (i.e 256)
    * @param screenDpi Monitor resolution in dots per inch (i.e. typically 96dpi is used by Google Maps)
-   *
-  * @returns An array containing resolution and scale values for each requested zoom level
+   * @returns An array containing resolution and scale values for each requested zoom level
    */
   public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96): {zoom: number, resolution: number, scale: number}[] {
     // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.
@@ -336,12 +347,12 @@ export class ArcGisUtilities {
   }
 
   /**
-   * Match the provided minScale,maxScale values to corresponding wgs84 zoom levels
+   * Match the provided minScale, maxScale values to corresponding wgs84 zoom levels
    * @param defaultMaxLod Value of the last LOD (i.e 22)
    * @param tileSize Size of a tile in pixels (i.e 256)
    * @param minScale Minimum scale value that needs to be matched to a LOD level
    * @param maxScale Maximum  scale value that needs to be matched to a LOD level
-  * @returns minLod: LOD value matching minScale,  maxLod: LOD value matching maxScale
+   * @returns minLod: LOD value matching minScale,  maxLod: LOD value matching maxScale
    */
   public static getZoomLevelsScales( defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance: number = 0): {minLod?: number, maxLod?: number} {
 

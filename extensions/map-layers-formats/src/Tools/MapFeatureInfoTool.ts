@@ -84,7 +84,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
   /**
    * Get map layer information from a hit.
-   * @param {HitDetail} hit The hit to get info from.
+   * @param hit The hit to get info from.
    * @returns Returns a list of [[MapLayerInfoFromTileTree]]s.
    * @internal
    */
