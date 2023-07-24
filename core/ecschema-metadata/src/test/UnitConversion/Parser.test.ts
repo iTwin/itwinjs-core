@@ -38,7 +38,7 @@ describe("DefinitionParser tests", () => {
   type KeyValuePair = [string, DefinitionFragment];
 
   const expectedData: { [key: string]: KeyValuePair[] } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./ParserTests.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "..", "assets", "./ParserTests.json"), "utf-8"),
   );
 
   describe("parsing individual tokens", () => {
@@ -126,7 +126,7 @@ describe("DefinitionParser tests", () => {
   function testTokenizations(definition: string) {
     it(`tokenization of ${definition} matches expected data`, async () => {
       expect([...parseDefinition(definition)]).to.have.deep.members(
-        expectedData[definition]
+        expectedData[definition],
       );
     });
   }

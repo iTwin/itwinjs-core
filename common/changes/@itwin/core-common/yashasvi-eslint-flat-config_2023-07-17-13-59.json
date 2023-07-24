@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Switch to ESLint new flat config system",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

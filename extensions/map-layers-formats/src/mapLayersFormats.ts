@@ -39,7 +39,7 @@ export class MapLayersFormats {
     // register namespace containing localized strings for this package
     MapLayersFormats.localization = config?.localization ?? IModelApp.localization;
     await MapLayersFormats.localization.registerNamespace(
-      MapLayersFormats.localizationNamespace
+      MapLayersFormats.localizationNamespace,
     );
 
     MapFeatureInfoTool.register(MapLayersFormats.localizationNamespace);

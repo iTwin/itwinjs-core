@@ -199,10 +199,10 @@ export class PropertyMetaData implements PropertyMetaDataProps {
           return jsonObj; // this works even for arrays or strings that are JSON because the parsed JSON is already the right type
 
         case PrimitiveTypeCode.Point2d:
-          return this.createValueOrArray(Point2d.fromJSON, jsonObj);
+          return this.createValueOrArray((obj) => Point2d.fromJSON(obj), jsonObj);
 
         case PrimitiveTypeCode.Point3d:
-          return this.createValueOrArray(Point3d.fromJSON, jsonObj);
+          return this.createValueOrArray((obj) => Point3d.fromJSON(obj), jsonObj);
       }
     }
     if (this.isNavigation)

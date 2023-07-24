@@ -153,7 +153,7 @@ export class TestRunner {
 
   public constructor(
     props: TestSetsProps,
-    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher()
+    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher(),
   ) {
     // NB: The default minimum spatial chord tolerance was changed from "no minimum" to 1mm. To preserve prior behavior,
     // override it to zero.
