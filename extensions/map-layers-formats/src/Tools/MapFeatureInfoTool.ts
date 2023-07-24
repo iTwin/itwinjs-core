@@ -21,7 +21,8 @@ import { BeEvent } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
-/** Data provided every time [[MapFeatureInfoTool]] retrieve feature information.
+/**
+ * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.
  * @see [[MapFeatureInfoToolData]]
  * @beta
  */
@@ -30,9 +31,10 @@ export interface MapFeatureInfoToolData {
   mapInfo?: MapFeatureInfo;
 }
 
-/** Tools that allow extracting feature information from map-layers.
- * Simulate feature highlight by drawing overlay decorations.  It also
- * fire an event that provide further feature information meant to be displayed in a UI / Widget.
+/**
+ * Tools that allow extracting feature information from map-layers.
+ * Simulates feature highlight by drawing overlay decorations. It also
+ * fires an event that provides further feature information meant to be displayed in a UI / Widget.
  * @see [[MapFeatureInfoToolData]]
  * @beta
  */
@@ -57,7 +59,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
     this._layerSettingsCache.clear();
 
-    // Listen of display style configuration changes, that we don't have to restart the tool to be up to date.
+    // Listen for display style configuration changes, so that we don't have to restart the tool to be up to date.
     const vp = this.targetView;
     if (vp) {
 
@@ -80,7 +82,12 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
-  /** @internal */
+  /**
+   * Get map layer information from a hit.
+   * @param {HitDetail} hit The hit to get info from.
+   * @returns Returns a list of [[MapLayerInfoFromTileTree]]s.
+   * @internal
+   */
   private getMapLayerInfoFromHit(hit: HitDetail) {
     let mapLayerFromHit: MapLayerInfoFromTileTree[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);
