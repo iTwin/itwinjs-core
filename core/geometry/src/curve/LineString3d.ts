@@ -1214,7 +1214,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         announce(
           Geometry.interpolate(globalFractionA, localFraction0, globalFractionB),
           Geometry.interpolate(globalFractionA, localFraction1, globalFractionB),
-          this
+          this,
         );
     };
     const pointA = LineString3d._workPointA;

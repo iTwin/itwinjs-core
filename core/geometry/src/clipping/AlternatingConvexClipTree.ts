@@ -76,7 +76,7 @@ export class AlternatingCCTreeNode implements PolygonClipper {
     builder.buildHullTree(result);  // <-- Currently ALWAYS returns true
     return result;
   }
-  /** Build the outer convex hull will inlets as first level children. */
+  /** Build the outer convex hull with inlets as first level children. */
   public static createHullAndInletsForPolygon(points: Point3d[], result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
     result = result ? result : new AlternatingCCTreeNode();
     result.empty();
@@ -91,7 +91,7 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   }
   /**
    * Return an array with all the loops in the tree.
-   * This looses the alternating structure of the tree, but the collection still matches well-formed polygons by
+   * This loses the alternating structure of the tree, but the collection still matches well-formed polygons by
    * parity rules.
    */
   public extractLoops(): Point3d[][] {
@@ -150,14 +150,14 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   }
   /** Append start-end positions for curve intervals classified as inside or outside. */
   public appendCurvePrimitiveClipIntervals(
-    curve: CurvePrimitive, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]
+    curve: CurvePrimitive, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[],
   ): void {
     const clipper = new AlternatingCCTreeNodeCurveClipper();
     clipper.appendSingleClipPrimitive(this, curve, insideIntervals, outsideIntervals);
   }
   /** Append start-end positions for curve intervals classified as inside or outside. */
   public appendCurveCollectionClipIntervals(
-    curves: CurveCollection, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]
+    curves: CurveCollection, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[],
   ): void {
     const clipper = new AlternatingCCTreeNodeCurveClipper();
     clipper.appendCurveCollectionClip(this, curves, insideIntervals, outsideIntervals);
@@ -174,7 +174,7 @@ export class AlternatingCCTreeNode implements PolygonClipper {
     xyz: GrowableXYZArray,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache
+    arrayCache: GrowableXYZArrayCache,
   ): void {
     // At first level ..
     // newInside is subject to re-clip by children.
@@ -326,7 +326,7 @@ export class AlternatingCCTreeBuilder {
     }
   }
   private buildHullTreeGo(
-    root: AlternatingCCTreeNode, isPositiveArea: boolean, recurseToChildren: boolean = true
+    root: AlternatingCCTreeNode, isPositiveArea: boolean, recurseToChildren: boolean = true,
   ): boolean {
     this.collectHullChain(root.startIdx, root.numPoints, isPositiveArea ? 1.0 : -1.0);
     root.points.length = 0;
@@ -342,7 +342,7 @@ export class AlternatingCCTreeBuilder {
         if (k1 === this.indexAfter(k0)) {
           // two original points in sequence -- need a clip plane right here!!!
           const plane = ClipPlane.createEdgeAndUpVector(
-            points[k0], points[k1], Vector3d.create(0, 0, 1), Angle.createRadians(0)
+            points[k0], points[k1], Vector3d.create(0, 0, 1), Angle.createRadians(0),
           );
           if (plane !== undefined) {
             if (isPositiveArea)

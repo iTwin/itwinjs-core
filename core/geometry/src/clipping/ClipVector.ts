@@ -171,7 +171,7 @@ export class ClipVector implements Clipper {
    * * Implement as dispatch to clipPlaneSets as supplied by derived class.
    */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)

@@ -142,7 +142,7 @@ export class ClipPrimitive implements Clipper {
    * @param isInvisible set the invisible flag on the ClipPrimitive
    */
   public static createCapture(
-    planes: UnionOfConvexClipPlaneSets | ConvexClipPlaneSet | undefined, isInvisible: boolean = false
+    planes: UnionOfConvexClipPlaneSets | ConvexClipPlaneSet | undefined, isInvisible: boolean = false,
   ): ClipPrimitive {
     let planeData;
     if (planes instanceof UnionOfConvexClipPlaneSets)
@@ -213,7 +213,7 @@ export class ClipPrimitive implements Clipper {
    * * Implement as dispatch to clipPlaneSets as supplied by derived class.
    */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     this.ensurePlaneSets();
     let hasInsideParts = false;
@@ -371,7 +371,7 @@ export class ClipShape extends ClipPrimitive {
   protected _transformToClip?: Transform;
 
   protected constructor(
-    polygon: Point3d[] = [], zLow?: number, zHigh?: number, transform?: Transform, isMask: boolean = false, invisible: boolean = false
+    polygon: Point3d[] = [], zLow?: number, zHigh?: number, transform?: Transform, isMask: boolean = false, invisible: boolean = false,
   ) {
     super(undefined, invisible); // ClipPlaneSets will be set up later after storing points
     this._isMask = false;
@@ -512,7 +512,7 @@ export class ClipShape extends ClipPrimitive {
     transform?: Transform,
     isMask: boolean = false,
     invisible: boolean = false,
-    result?: ClipShape
+    result?: ClipShape,
   ): ClipShape | undefined {
     if (polygon.length < 3)
       return undefined;
@@ -542,7 +542,7 @@ export class ClipShape extends ClipPrimitive {
     isMask: boolean = false,
     invisible: boolean = false,
     transform?: Transform,
-    result?: ClipShape
+    result?: ClipShape,
   ): ClipShape {
     const low = extremities.low;
     const high = extremities.high;
@@ -560,12 +560,12 @@ export class ClipShape extends ClipPrimitive {
       transform,
       isMask,
       invisible,
-      result
+      result,
     )!;
   }
   /** Creates a new ClipShape with undefined members and a polygon points array of zero length. */
   public static createEmpty(
-    isMask = false, invisible: boolean = false, transform?: Transform, result?: ClipShape
+    isMask = false, invisible: boolean = false, transform?: Transform, result?: ClipShape,
   ): ClipShape {
     if (result) {
       result._clipPlanes = undefined;
@@ -615,7 +615,7 @@ export class ClipShape extends ClipPrimitive {
    * defining the bounded region of linear planes. Returns true if successful.
    */
   private parseLinearPlanes(
-    set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number
+    set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number,
   ): boolean {
     // Handles the degenerate case of 2 distinct points (used by select by line).
     const normal = start.vectorTo(end);
@@ -626,16 +626,16 @@ export class ClipShape extends ClipPrimitive {
     if (cameraFocalLength === undefined) {
       const perpendicular = Vector2d.create(-normal.y, normal.x);
       convexSet.planes.push(
-        ClipPlane.createNormalAndPoint(Vector3d.create(normal.x, normal.y), Point3d.createFrom(start), this._invisible)!
+        ClipPlane.createNormalAndPoint(Vector3d.create(normal.x, normal.y), Point3d.createFrom(start), this._invisible)!,
       );
       convexSet.planes.push(
-        ClipPlane.createNormalAndPoint(Vector3d.create(-normal.x, -normal.y), Point3d.createFrom(end), this._invisible)!
+        ClipPlane.createNormalAndPoint(Vector3d.create(-normal.x, -normal.y), Point3d.createFrom(end), this._invisible)!,
       );
       convexSet.planes.push(
-        ClipPlane.createNormalAndPoint(Vector3d.create(perpendicular.x, perpendicular.y), Point3d.createFrom(start), this._invisible)!
+        ClipPlane.createNormalAndPoint(Vector3d.create(perpendicular.x, perpendicular.y), Point3d.createFrom(start), this._invisible)!,
       );
       convexSet.planes.push(
-        ClipPlane.createNormalAndPoint(Vector3d.create(-perpendicular.x, -perpendicular.y), Point3d.createFrom(start), this._invisible)!
+        ClipPlane.createNormalAndPoint(Vector3d.create(-perpendicular.x, -perpendicular.y), Point3d.createFrom(start), this._invisible)!,
       );
     } else {
       const start3d = Point3d.create(start.x, start.y, -cameraFocalLength);
@@ -663,7 +663,7 @@ export class ClipShape extends ClipPrimitive {
     polygon: Point3d[],
     direction: number,
     buildExteriorClipper: boolean,
-    cameraFocalLength?: number
+    cameraFocalLength?: number,
   ): boolean {
     const samePointTolerance = 1.0e-8; // This could possibly be replaced with more widely used constants
     const edges: PolyEdge[] = [];
@@ -712,15 +712,15 @@ export class ClipShape extends ClipPrimitive {
           for (const edge of edges)
             convexSet.planes.push(
               ClipPlane.createNormalAndDistance(
-                Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB)).normalize()!, 0.0
-              )!
+                Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB)).normalize()!, 0.0,
+              )!,
             );
         else
           for (const edge of edges)
             convexSet.planes.push(
               ClipPlane.createNormalAndDistance(
-                Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA)).normalize()!, 0.0
-              )!
+                Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA)).normalize()!, 0.0,
+              )!,
             );
       }
       convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
@@ -732,7 +732,7 @@ export class ClipShape extends ClipPrimitive {
    * Given a (possibly non-convex) polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets
    * with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful.
    */
-  private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number
+  private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number,
   ): boolean {
     const cleanPolygon = PolylineOps.compressDanglers(polygon, true);
     const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {

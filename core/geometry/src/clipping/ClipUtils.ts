@@ -151,7 +151,7 @@ export class ClipUtilities {
    * * pass accepted intervals to `announce(f0,f1,curve)`
    */
   public static selectIntervals01(
-    curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive
+    curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive,
   ): boolean {
     unsortedFractions.push(0);
     unsortedFractions.push(1);
@@ -186,7 +186,7 @@ export class ClipUtilities {
    * @param announce function to receive data
    */
   public static announceNNC(
-    intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive
+    intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive,
   ): boolean {
     if (announce) {
       for (const ab of intervals) {
@@ -209,7 +209,7 @@ export class ClipUtilities {
           if (partialCurve)
             result.push(partialCurve);
         }
-      }
+      },
     );
     return result;
   }
@@ -229,7 +229,7 @@ export class ClipUtilities {
    * @return An multidimensional array of points, where each array is the boundary of part of the remaining polygon.
    */
   public static clipPolygonToClipShapeReturnGrowableXYZArrays(
-    polygon: Point3d[], clipShape: ClipPrimitive
+    polygon: Point3d[], clipShape: ClipPrimitive,
   ): GrowableXYZArray[] {
     const output: GrowableXYZArray[] = [];
     const clipper = clipShape.fetchClipPlanesRef();
@@ -246,7 +246,7 @@ export class ClipUtilities {
    * * ClipStatus.TrivialReject if neither of those occurred.
    */
   public static pointSetSingleClipStatus(
-    points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number
+    points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number,
   ): ClipStatus {
     if (planeSet.convexSets.length === 0)
       return ClipStatus.TrivialAccept;
@@ -294,7 +294,7 @@ export class ClipUtilities {
     loopFunction: (loopPoints: GrowableXYZArray) => void,
     includeConvexSetFaces: boolean = true,
     includeRangeFaces: boolean = true,
-    ignoreInvisiblePlanes = false
+    ignoreInvisiblePlanes = false,
   ): void {
     const work = new GrowableXYZArray();
     if (includeConvexSetFaces) {
@@ -356,7 +356,7 @@ export class ClipUtilities {
     range: Range3d,
     includeConvexSetFaces: boolean = true,
     includeRangeFaces: boolean = true,
-    ignoreInvisiblePlanes = false
+    ignoreInvisiblePlanes = false,
   ): GeometryQuery[] {
     const result: GeometryQuery[] = [];
     if (allClippers instanceof UnionOfConvexClipPlaneSets) {
@@ -407,7 +407,7 @@ export class ClipUtilities {
   public static rangeOfClipperIntersectionWithRange(
     clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined,
     range: Range3d,
-    observeInvisibleFlag: boolean = true
+    observeInvisibleFlag: boolean = true,
   ): Range3d {
     if (clipper === undefined)
       return range.clone();
@@ -458,7 +458,7 @@ export class ClipUtilities {
   public static doesClipperIntersectRange(
     clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined,
     range: Range3d,
-    observeInvisibleFlag: boolean = true
+    observeInvisibleFlag: boolean = true,
   ): boolean {
     if (clipper === undefined)
       return true;
@@ -508,7 +508,7 @@ export class ClipUtilities {
     range: Range3d,
     includeConvexSetFaces: boolean = true,
     includeRangeFaces: boolean = true,
-    ignoreInvisiblePlanes = false
+    ignoreInvisiblePlanes = false,
   ): boolean {
     const work = new GrowableXYZArray();
     if (includeConvexSetFaces) {
@@ -551,7 +551,7 @@ export class ClipUtilities {
    * @return whether the local ranges are adjacent or intersect. Also returns false if local1ToWorld is singular.
    */
   public static doLocalRangesIntersect(
-    range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number
+    range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number,
   ): boolean {
     const worldToLocal1 = ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform);
     if (!worldToLocal1)
@@ -599,7 +599,7 @@ export class ClipUtilities {
    * @param cache cache for array management
    */
   public static restoreSingletonInPlaceOfMultipleShards(
-    fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache
+    fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache,
   ): void {
     if (fragments && fragments.length > baseCount + 1) {
       while (fragments.length > baseCount) {
@@ -619,7 +619,7 @@ export class ClipUtilities {
    * @alpha
    */
   public static createXYOffsetClipFromLineString(
-    points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number
+    points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number,
   ): UnionOfConvexClipPlaneSets {
     if (Array.isArray(points)) {
       return LineStringOffsetClipperContext.createClipBetweenOffsets(
@@ -629,7 +629,7 @@ export class ClipUtilities {
   }
   /** If data.length >= minLength threshold, push it to destination; if smaller drop it back to the cache. */
   public static captureOrDrop(
-    data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache
+    data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache,
   ): void {
     if (data.length >= minLength)
       destination.push(data);
@@ -651,7 +651,7 @@ export class ClipUtilities {
      * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
    */
   public static clipSegmentToLLeftOfLineXY(
-    linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14
+    linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14,
   ): void {
     const ux = linePointB.x - linePointA.x;
     const uy = linePointB.y - linePointA.y;
@@ -695,7 +695,7 @@ export class ClipUtilities {
    * @param absoluteTolerance absolute tolerance for begin "on a line"
    */
   public static clipSegmentToCCWTriangleXY(
-    pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14
+    pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14,
   ): void {
     if (!interval.isNull) {
       this.clipSegmentToLLeftOfLineXY(pointA, pointB, segment0, segment1, interval, absoluteTolerance);
@@ -722,7 +722,7 @@ export class ClipUtilities {
      * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
    */
   public static clipSegmentBelowPlaneXY(
-    plane: Plane3dByOriginAndUnitNormal, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14
+    plane: Plane3dByOriginAndUnitNormal, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance: number = 1.0e-14,
   ): void {
     // negative is in positive is out ...
     const h0 = plane.altitudeXY(segmentPoint0.x, segmentPoint0.y);
@@ -764,7 +764,7 @@ export class ClipUtilities {
    * @param absoluteTolerance absolute tolerance for begin "on a line"
    */
   public static clipSegmentBelowPlanesXY(
-    planes: Plane3dByOriginAndUnitNormal[], segment0: XAndY, segment1: XAndY, interval: Range1d, signedAltitude: number = 1.0e-14
+    planes: Plane3dByOriginAndUnitNormal[], segment0: XAndY, segment1: XAndY, interval: Range1d, signedAltitude: number = 1.0e-14,
   ): void {
     const numPlanes = planes.length;
     for (let i = 0; (!interval.isNull) && i < numPlanes; i++) {
@@ -778,7 +778,7 @@ export class ClipUtilities {
    * @param announce caller's handler for simple point pairs.
    */
   public static announcePolylineClip(
-    clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void
+    clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void,
   ): void {
     for (let i = 0; i + 1 < points.length; i++) {
       clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1],
@@ -951,7 +951,7 @@ export class ClipUtilities {
 function moveFragments(
   fragments: GrowableXYZArray[],
   destination: GrowableXYZArray[] | undefined,
-  arrayCache: GrowableXYZArrayCache
+  arrayCache: GrowableXYZArrayCache,
 ) {
   if (destination === undefined)
     arrayCache.dropAllToCache(fragments);
@@ -977,7 +977,7 @@ function distributeFragments(
   acceptedIn: GrowableXYZArray[] | undefined,
   acceptedOut: GrowableXYZArray[] | undefined,
   passToNextStep: GrowableXYZArray[] | undefined,
-  arrayCache: GrowableXYZArrayCache
+  arrayCache: GrowableXYZArrayCache,
 ) {
   let destination;
   if (action === ClipStepAction.acceptIn)

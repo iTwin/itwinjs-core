@@ -353,7 +353,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedSegmentIntervals(
       0.0, 1.0, this._point0, this._point1,
-      announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined
+      announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined,
     );
   }
   /**

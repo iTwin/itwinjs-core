@@ -32,7 +32,7 @@ export class LineStringOffsetClipperContext {
    * @param closed indicates that first and last points are identical and need wrap logic.
    */
   public static createUnit(
-    points: IndexedXYZCollection, index0: number, closed: boolean, xyOnly: boolean = true
+    points: IndexedXYZCollection, index0: number, closed: boolean, xyOnly: boolean = true,
   ): Vector3d | undefined {
     // pick two indices of active points, allowing for wrap if needed:
     // normally use index0 and index0 + 1
@@ -63,12 +63,12 @@ export class LineStringOffsetClipperContext {
     return undefined;
   }
   private static createDirectedPlane(
-    basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, interior: boolean = false
+    basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, interior: boolean = false,
   ): ClipPlane | undefined {
     return ClipPlane.createNormalAndPointXYZXYZ(
       vector.x * normalScale, vector.y * normalScale, vector.z * normalScale,
       basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z,
-      interior, interior
+      interior, interior,
     );
   }
   /**
@@ -86,18 +86,21 @@ export class LineStringOffsetClipperContext {
       perpAB.normalizeInPlace();
       if (degreesA > 0)
         clipSet.addPlaneToConvexSet(
-          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, -this._positiveOffsetRight, 1.0, false)
+          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, -this._positiveOffsetRight, 1.0, false),
         );
       else
         clipSet.addPlaneToConvexSet(
-          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, this._positiveOffsetLeft, -1.0, false)
+          LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, this._positiveOffsetLeft, -1.0, false),
         );
     }
   }
-  private createOffsetFromSegment(pointA: Point3d, pointB: Point3d,
+  private createOffsetFromSegment(
+    pointA: Point3d,
+    pointB: Point3d,
     unitA: Vector3d | undefined,
     unitB: Vector3d | undefined,
-    unitC: Vector3d | undefined): ConvexClipPlaneSet | undefined {
+    unitC: Vector3d | undefined,
+  ): ConvexClipPlaneSet | undefined {
     if (unitB === undefined)
       return undefined;
     if (unitA === undefined)
@@ -111,16 +114,16 @@ export class LineStringOffsetClipperContext {
     unitBC.normalizeInPlace();
     const clipSet = ConvexClipPlaneSet.createEmpty();
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, this._positiveOffsetLeft, -1.0, false)
+      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, this._positiveOffsetLeft, -1.0, false),
     );
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, -this._positiveOffsetRight, 1.0, false)
+      LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, -this._positiveOffsetRight, 1.0, false),
     );
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(pointA, unitAB, 0, 1.0, true)
+      LineStringOffsetClipperContext.createDirectedPlane(pointA, unitAB, 0, 1.0, true),
     );
     clipSet.addPlaneToConvexSet(
-      LineStringOffsetClipperContext.createDirectedPlane(pointB, unitBC, 0, -1.0, true)
+      LineStringOffsetClipperContext.createDirectedPlane(pointB, unitBC, 0, -1.0, true),
     );
     this.createChamferCut(clipSet, pointA, unitA, unitB);
     this.createChamferCut(clipSet, pointB, unitB, unitC);
@@ -160,7 +163,7 @@ export class LineStringOffsetClipperContext {
     positiveOffsetLeft: number,
     positiveOffsetRight: number,
     z0: number | undefined,
-    z1: number | undefined
+    z1: number | undefined,
   ): UnionOfConvexClipPlaneSets {
     const context = new LineStringOffsetClipperContext(positiveOffsetLeft, positiveOffsetRight);
     const result = UnionOfConvexClipPlaneSets.createEmpty();
