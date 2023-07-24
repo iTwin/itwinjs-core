@@ -57,6 +57,11 @@ steps:
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
+  - script: python --version
+    displayName: "linux and mac"
+    workingDirectory: ${{ parameters.workingDir }}
+    continueOnError: true
+
   - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
     displayName: "rush change -v"
     workingDirectory: ${{ parameters.workingDir }}
