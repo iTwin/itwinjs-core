@@ -6,7 +6,6 @@ import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteInspect from "vite-plugin-inspect";
-import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import { NodeModulesPolyfillPlugin } from "@esbuild-plugins/node-modules-polyfill";
 import { externalGlobalPlugin } from "esbuild-plugin-external-global";
 import copy from "rollup-plugin-copy";
@@ -26,10 +25,10 @@ const assets = Object.keys(packageJson.dependencies)
       let pkg = require.resolve(pkgName).replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
       // use relative path with forward slashes
       return path.relative(process.cwd(), pkg).replace(/\\/g, '/');
-    } catch { return "undefined"; }
+    } catch { return undefined }
   })
   // ignores all invalid paths, including dependencies that don't contain a lib/ directory
-  .filter((path) => path !== "undefined" && path.endsWith('lib/public/*'));
+  .filter((path) => path?.endsWith('lib/public/*'));
 assets.push("./public/*");
 
 // https://vitejs.dev/config/
@@ -66,7 +65,7 @@ export default defineConfig(() => {
         input: "src/index.ts",
         // run `rushx build --stats` to view stats
         plugins: [
-          ...(process.env.npm_config_stats !== undefined ? [
+          ...(process.env.OUTPUT_STATS !== undefined ? [
             rollupVisualizer({
               open: true,
               filename: "stats.html",
@@ -106,11 +105,6 @@ export default defineConfig(() => {
     optimizeDeps: {
       esbuildOptions: {
         plugins: [
-          NodeGlobalsPolyfillPlugin({
-          // Node.js globals not available to bundler by default ('process', '__dirname', etc.)
-            process: true,
-            buffer: true,
-          }),
           // Node.js modules not available to bundler by default
           NodeModulesPolyfillPlugin(),
           externalGlobalPlugin({
