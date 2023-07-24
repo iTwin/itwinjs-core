@@ -1159,7 +1159,7 @@ export class AccuSnap implements Decorator {
   }
 }
 
-/** @internal */
+/** @public */
 export class TentativeOrAccuSnap {
   public static get isHot(): boolean { return IModelApp.accuSnap.isHot || IModelApp.tentativePoint.isSnapped; }
 
