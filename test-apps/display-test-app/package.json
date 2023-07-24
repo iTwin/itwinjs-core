@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "build": "npm run -s build:frontend-vite && npm run -s build:backend",
-    "build:stats": "env OUTPUT_STATS=TRUE npm run build",
+    "build:stats": "cross-env OUTPUT_STATS=TRUE npm run build",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
