@@ -2096,7 +2096,6 @@ export class UiEventDispatcher {
     dispatchSyncUiEvents(eventIds: string[]): void;
     hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
     get onSyncUiEvent(): UiSyncEvent;
-    // @internal
     setTimeoutPeriod(period: number): void;
     get syncEventIds(): Set<string>;
     get timeoutPeriod(): number;
@@ -2128,7 +2127,6 @@ export enum UiItemsApplicationAction {
 
 // @public @deprecated
 export class UiItemsManager {
-    // @internal
     static clearAllProviders(): void;
     static getBackstageItems(): BackstageItem[];
     static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
@@ -2162,7 +2160,6 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     static hasAssociatedLockProperty(item: DialogItem): boolean;
     // (undocumented)
     get items(): ReadonlyArray<DialogItem>;
-    // @internal (undocumented)
     layoutDialogRows(): DialogRow[];
     // (undocumented)
     protected loadItemsInternal(items: ReadonlyArray<DialogItem> | undefined): void;

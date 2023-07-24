@@ -80,8 +80,7 @@ interface UiItemProviderEntry {
 export class UiItemsManager {
   private static _registeredUiItemsProviders: Map<string, UiItemProviderEntry> = new Map<string, UiItemProviderEntry>();
 
-  /** For use in unit testing
-   * @internal */
+  /** For use in unit testing */
   public static clearAllProviders() {
     UiItemsManager._registeredUiItemsProviders.clear();
   }

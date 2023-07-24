@@ -120,7 +120,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   }
 
   /**
-   * @internal
+   * Creates the rows in the grid-style dialog or tool settings widget
    */
   public layoutDialogRows(): DialogRow[] {
     const rows: DialogRow[] = [];

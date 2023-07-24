@@ -41,7 +41,7 @@ export class UiEventDispatcher {
     this._secondaryTimeoutPeriod = this._timeoutPeriod / 2;
   }
 
-  /** @internal - used for testing only */
+  /** @public - used for testing only */
   /* istanbul ignore next */
   public setTimeoutPeriod(period: number): void {
     this._timeoutPeriod = period;
