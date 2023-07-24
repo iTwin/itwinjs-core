@@ -1205,7 +1205,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const n = this._points.length;
-    if (n < 2) return false;
+    if (n < 2)
+      return false;
     let globalFractionA = 0.0;
     let globalFractionB = 1.0;
     const capture = (localFraction0: number, localFraction1: number) => {
@@ -1213,7 +1214,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         announce(
           Geometry.interpolate(globalFractionA, localFraction0, globalFractionB),
           Geometry.interpolate(globalFractionA, localFraction1, globalFractionB),
-          this);
+          this,
+        );
     };
     const pointA = LineString3d._workPointA;
     const pointB = LineString3d._workPointB;
