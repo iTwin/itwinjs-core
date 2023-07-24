@@ -2477,7 +2477,6 @@ importers:
     specifiers:
       '@bentley/icons-generic': ^1.0.34
       '@bentley/icons-generic-webfont': ^1.0.34
-      '@esbuild-plugins/node-globals-polyfill': ^0.2.3
       '@esbuild-plugins/node-modules-polyfill': ^0.2.2
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
@@ -2576,7 +2575,6 @@ importers:
       body-parser: 1.20.2
       vhacd-js: 0.0.1
     devDependencies:
-      '@esbuild-plugins/node-globals-polyfill': 0.2.3
       '@esbuild-plugins/node-modules-polyfill': 0.2.2
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
@@ -5601,12 +5599,6 @@ packages:
       comment-parser: 1.3.1
       esquery: 1.5.0
       jsdoc-type-pratt-parser: 4.0.0
-
-  /@esbuild-plugins/node-globals-polyfill/0.2.3:
-    resolution: {integrity: sha512-r3MIryXDeXDOZh7ih1l/yE9ZLORCd5e8vWg02azWRGj5SPTuoh69A2AIyn0Z31V/kHBfZ4HgWJ+OK3GTTwLmnw==}
-    peerDependencies:
-      esbuild: '*'
-    dev: true
 
   /@esbuild-plugins/node-modules-polyfill/0.2.2:
     resolution: {integrity: sha512-LXV7QsWJxRuMYvKbiznh+U1ilIop3g2TeKRzUxOG5X3YITc8JyyTa90BmLwqqv0YnX4v32CSlG+vsziZp9dMvA==}
