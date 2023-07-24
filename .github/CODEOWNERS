@@ -59,10 +59,10 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @pmconne
 /common/**/editor-*/                          @bbastings @pmconne
-/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse
-/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse
-/common/**/core-frontend.*                    @bbastings @iTwin/itwinjs-core-display
-/common/**/core-frontend/                     @bbastings @iTwin/itwinjs-core-display
+/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/common/**/core-frontend.*                    @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
+/common/**/core-frontend/                     @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
 /common/**/core-i18n/                         @calebmshafer @wgoehrig
 /common/**/core-markup.*                      @pmconne @bbastings
@@ -97,9 +97,9 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
 /core/electron                  @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server            @paulius-valiunas @wgoehrig
-/core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
-/core/frontend                  @bbastings @iTwin/itwinjs-core-display
-/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
+/core/extension                 @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/core/frontend                  @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
+/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @ben-polinsky
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
 /core/geometry                  @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
