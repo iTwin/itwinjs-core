@@ -265,7 +265,7 @@ export class ClassRegistry {
 /**
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
- * @beta
+ * @internal
  */
 export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();
