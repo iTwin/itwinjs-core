@@ -820,7 +820,7 @@ public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
 public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
 public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
-internal;TentativeOrAccuSnap
+public;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
 public;class TerrainMeshProvider
