@@ -366,6 +366,72 @@ describe("Content", () => {
       }]);
     });
 
+    it("filters distinct content values using descriptor's instance filter", async function () {
+      const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        insertDocumentPartition(db, "A", "A");
+        insertDocumentPartition(db, "B1", "B");
+        insertDocumentPartition(db, "B2", "B");
+      });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: {
+              schemaName: "BisCore",
+              classNames: ["DocumentPartition"],
+            },
+          }],
+        }],
+      };
+
+      const descriptor = await Presentation.presentation.getContentDescriptor({ imodel: testIModel, rulesetOrId: ruleset, keys: new KeySet(), displayType: "" });
+      assert(!!descriptor);
+
+      const userLabelField = getFieldByLabel(descriptor.fields, "User Label");
+      descriptor.instanceFilter = { expression: "this.UserLabel = \"B\"", selectClassName: "BisCore:DocumentPartition" };
+      await validatePagedDistinctValuesResponse(testIModel, ruleset, new KeySet(), descriptor, userLabelField.getFieldDescriptor(), [{
+        displayValue: "B",
+        groupedRawValues: ["B"],
+      }]);
+    });
+
+    it("filters distinct content values using descriptor's fields filter", async function () {
+      const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
+        insertDocumentPartition(db, "A", "A");
+        insertDocumentPartition(db, "B1", "B");
+        insertDocumentPartition(db, "B2", "B");
+      });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: {
+              schemaName: "BisCore",
+              classNames: ["DocumentPartition"],
+            },
+          }],
+        }],
+      };
+
+      const descriptor = await Presentation.presentation.getContentDescriptor({ imodel: testIModel, rulesetOrId: ruleset, keys: new KeySet(), displayType: "" });
+      assert(!!descriptor);
+
+      const userLabelField = getFieldByLabel(descriptor.fields, "User Label");
+      descriptor.fieldsFilterExpression = `${userLabelField.name} = "B"`;
+      await validatePagedDistinctValuesResponse(testIModel, ruleset, new KeySet(), descriptor, userLabelField.getFieldDescriptor(), [{
+        displayValue: "B",
+        groupedRawValues: ["B"],
+      }]);
+    });
+
   });
 
   describe("Fields Selector", () => {
