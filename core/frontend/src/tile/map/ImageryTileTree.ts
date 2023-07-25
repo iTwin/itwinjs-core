@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Logger, assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -359,11 +359,9 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
       return undefined;
     }
 
-
     try {
       await imageryProvider.initialize();
-    }
-    catch (e:any) {
+    } catch (e: any) {
       Logger.logError(loggerCategory, `Could not initialize imagery provider for map layer '${id.settings.name}' : ${e}`);
       throw e;
     }
