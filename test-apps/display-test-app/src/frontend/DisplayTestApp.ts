@@ -148,11 +148,11 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
 
 // simple function to extract file name, without path or extension, on Windows or Linux
 function getFileName(path: string): string {
-  let strs = path.split('/');
+  let strs = path.split("/");
   let str = strs[strs.length - 1];
-  strs = str.split('\\');
+  strs = str.split("\\");
   str = strs[strs.length - 1];
-  const ndx = str.lastIndexOf('.');
+  const ndx = str.lastIndexOf(".");
   if (ndx > 0) // allow files starting with .
     str = str.substring(0, ndx);
   return str;
