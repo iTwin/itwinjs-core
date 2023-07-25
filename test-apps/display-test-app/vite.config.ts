@@ -62,7 +62,7 @@ export default defineConfig(() => {
         ],
       },
       rollupOptions: {
-        input: "src/index.ts",
+        input: "./index.html",
         // run `rushx build --stats` to view stats
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined ? [
