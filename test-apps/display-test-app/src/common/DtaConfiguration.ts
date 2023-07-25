@@ -54,7 +54,7 @@ export interface DtaStringConfiguration {
   oidcClientId?: string; // default is undefined, used for auth setup
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
-  useFrontendTiles?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
+  frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
 }
 
 export interface DtaNumberConfiguration {
@@ -97,7 +97,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.standalonePath = process.env.IMJS_STANDALONE_FILEPATH; // optional (browser-use only)
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
   configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
-  configuration.useFrontendTiles = process.env.IMJS_USE_FRONTEND_TILES;
+  configuration.frontendTilesUrlTemplate = process.env.IMJS_FRONTEND_TILES_URL_TEMPLATE;
 
   if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
     configuration.enableDiagnostics = false;

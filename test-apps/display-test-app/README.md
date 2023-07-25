@@ -215,7 +215,7 @@ You can use these environment variables to alter the default behavior of various
   * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 * IMJS_NO_ELECTRON_AUTH
   * If defined, the authorization client will not be initialized for the electron app, to work around a current bug that causes it to produce constant exceptions when attempting to obtain an access token.
-* IMJS_USE_FRONTEND_TILES
+* IMJS_FRONTEND_TILES_URL_TEMPLATE
   * If defined, specifies the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost.
   * The string can include special tokens: {iModel.key} or {iModel.filename}.
     * e.g.: http://localhost:8080{iModel.key}-tiles/3dft/ or http://localhost:8080/MshX/{iModel.filename}/
