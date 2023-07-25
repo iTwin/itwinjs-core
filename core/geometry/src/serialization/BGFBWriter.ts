@@ -476,7 +476,7 @@ export class BGFBWriter {
       const valuesOffset = BGFBAccessors.PolyfaceAuxChannelData.createValuesVector(this.builder, channelData.values);
       return BGFBAccessors.PolyfaceAuxChannelData.createPolyfaceAuxChannelData(this.builder,
         channelData.input,
-        valuesOffset
+        valuesOffset,
       );
     }
     return undefined;
@@ -494,7 +494,7 @@ export class BGFBWriter {
       return BGFBAccessors.PolyfaceAuxChannel.createPolyfaceAuxChannel(this.builder,
         channel.dataType,
         nameOffset,
-        inputNameOffset, valuesOffset
+        inputNameOffset, valuesOffset,
       );
     }
     return undefined;
@@ -510,7 +510,7 @@ export class BGFBWriter {
       const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, data.indices);
       return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder,
         indicesOffset,
-        channelOffsetsOffset
+        channelOffsetsOffset,
       );
     }
     return undefined;

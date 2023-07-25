@@ -10,8 +10,8 @@ import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDe
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
-import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
+import { OffsetOptions } from "../curve/OffsetOptions";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";

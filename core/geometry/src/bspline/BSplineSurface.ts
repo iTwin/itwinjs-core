@@ -830,7 +830,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    * @param formatter optional xyz formatter. By default, returns a Point3d of form [wx,wy,wz].
    */
   public copyPointsAndWeights(points: Point3d[], weights: number[],
-    formatter: (x: number, y: number, z: number) => any = Point3d.create) {
+    formatter: (x: number, y: number, z: number) => any = (x, y, z) => Point3d.create(x, y, z)) {
     Point4dArray.unpackFloat64ArrayToPointsAndWeights(this.coffs, points, weights, formatter);
   }
   /**

@@ -98,7 +98,7 @@ export abstract class RpcInterface {
   /** @internal */
   public readonly routing: RpcRoutingToken;
 
-  /** @internal */
+  /** @beta */
   public constructor(routing: RpcRoutingToken = RpcRoutingToken.default) {
     this.routing = routing;
     this.configuration = RpcConfiguration.supply(this);

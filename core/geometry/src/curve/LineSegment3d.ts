@@ -21,8 +21,8 @@ import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -174,7 +174,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional existing LineSegment to be reinitialized.
    */
   public static createXYZXYZ(
-    x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d
+    x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d,
   ): LineSegment3d {
     if (result) {
       result._point0.set(x0, y0, z0);
@@ -206,7 +206,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * the unbounded line that contains the bounded segment.
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail
+    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);
@@ -351,8 +351,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param announce function to be called announcing fractional intervals `announce(fraction0, fraction1, curvePrimitive)`
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    return clipper.announceClippedSegmentIntervals(0.0, 1.0, this._point0, this._point1,
-      announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined);
+    return clipper.announceClippedSegmentIntervals(
+      0.0, 1.0, this._point0, this._point1,
+      announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined,
+    );
   }
   /**
    * Return (if possible) a curve primitive which is a portion of this curve.
@@ -387,14 +389,14 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
   public override constructOffsetXY(
-    offsetDistanceOrOptions: number | OffsetOptions
+    offsetDistanceOrOptions: number | OffsetOptions,
   ): CurvePrimitive | CurvePrimitive[] | undefined {
     const offsetVec = Vector3d.createStartEnd(this._point0, this._point1);
     if (offsetVec.normalizeInPlace()) {
       offsetVec.rotate90CCWXY(offsetVec);
       const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
       return LineSegment3d.create(
-        this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist)
+        this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist),
       );
     }
     return undefined;

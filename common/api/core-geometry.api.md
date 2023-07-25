@@ -1521,14 +1521,6 @@ export abstract class CurveChain extends CurveCollection {
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
-// @internal
-export class CurveChainWireOffsetContext {
-    constructor();
-    static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
-    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
-    static createSingleOffsetPrimitiveXY(g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-}
-
 // @public
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
@@ -1754,6 +1746,22 @@ export class CurveLocationDetailPair {
     detailA: CurveLocationDetail;
     detailB: CurveLocationDetail;
     swapDetails(): void;
+}
+
+// @public
+export class CurveOps {
+    static appendXYOffsets(curves: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number | undefined): ChainTypes;
+    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, planeTolerance?: number | undefined): void;
+    static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: AnyCurve[];
+        outsideOffsets: AnyCurve[];
+        chains: ChainTypes;
+    };
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined;
+    static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
+    static sumLengths(curves: AnyCurve | AnyCurve[]): number;
 }
 
 // @public
@@ -2819,7 +2827,6 @@ export namespace IModelJson {
         // @internal (undocumented)
         static parseTaggedNumericProps(json: any): TaggedNumericData | undefined;
         static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined;
-        // @alpha
         static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined;
     }
     export interface RotationalSweepProps {
@@ -2909,7 +2916,6 @@ export namespace IModelJson {
         // (undocumented)
         handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps;
         handleTorusPipe(data: TorusPipe): any;
-        // @alpha
         handleTransitionSpiral(data: TransitionSpiral3d): any;
         handleUnionRegion(data: UnionRegion): any;
         static toIModelJson(data: any): any;
@@ -3833,15 +3839,6 @@ export class MomentData {
     toJSON(): any;
 }
 
-// @internal
-export class MultiChainCollector {
-    constructor(endPointShiftTolerance?: number, planeTolerance?: number | undefined);
-    announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void;
-    captureCurve(candidate: GeometryQuery): void;
-    captureCurvePrimitive(candidate: CurvePrimitive): void;
-    grabResult(makeLoopIfClosed?: boolean): ChainTypes;
-}
-
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
@@ -4330,7 +4327,7 @@ export class PlaneByOriginAndVectors4d {
 // @public
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
-    addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d;
+    addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d, result?: Point2d): Point2d;
     clone(result?: Point2d): Point2d;
     static create(x?: number, y?: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
@@ -4933,12 +4930,6 @@ export class PolygonOps {
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
 }
 
-// @internal
-export class PolygonWireOffsetContext {
-    constructor();
-    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
-}
-
 // @public
 export class PolylineOps {
     static addClosurePoint(data: Point3d[] | Point3d[][]): void;
@@ -5258,21 +5249,26 @@ export abstract class RangeBase {
     static rangeToRangeAbsoluteDistance(lowA: number, highA: number, lowB: number, highB: number): number;
 }
 
-// @internal
+// @public
 export class Ray2d {
-    ccwPerpendicularRay(): Ray2d;
-    static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d;
-    static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d;
-    static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d;
-    cwPerpendicularRay(): Ray2d;
+    ccwPerpendicularRay(result?: Ray2d): Ray2d;
+    static createOriginAndDirection(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d;
+    static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d, result?: Ray2d): Ray2d;
+    static createOriginAndTarget(origin: Point2d, target: Point2d, result?: Ray2d): Ray2d;
+    cwPerpendicularRay(result?: Ray2d): Ray2d;
     get direction(): Vector2d;
-    fractionToPoint(f: number): Point2d;
-    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean;
+    fractionToPoint(f: number, result?: Point2d): Point2d;
+    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d): {
+        hasIntersection: boolean;
+        fraction: number;
+        cross: number;
+    };
     normalizeDirectionInPlace(defaultX?: number, defaultY?: number): boolean;
     get origin(): Point2d;
-    parallelRay(leftFraction: number): Ray2d;
+    parallelRay(leftFraction: number, result?: Ray2d): Ray2d;
     perpendicularProjectionFraction(point: Point2d): number;
     projectionFraction(point: Point2d): number;
+    set(origin: Point2d, direction: Vector2d): void;
 }
 
 // @public

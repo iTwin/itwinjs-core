@@ -31,7 +31,7 @@ export class CurveCurve {
    */
   public static intersectionXYPairs(
     geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
-    tolerance: number = Geometry.smallMetricDistance
+    tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB, tolerance);
     if (geometryB instanceof CurvePrimitive) {
@@ -55,7 +55,7 @@ export class CurveCurve {
    */
   public static intersectionProjectedXYPairs(
     worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
-    tolerance: number = Geometry.smallMetricDistance
+    tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB, tolerance);
     geometryA.dispatchToGeometryHandler(handler);
@@ -72,7 +72,7 @@ export class CurveCurve {
    * @param extendB true to allow geometryB to extend
    */
   public static intersectionXYZ(
-    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean
+    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
   ): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXYZ(geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
@@ -84,7 +84,7 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static allIntersectionsAmongPrimitivesXY(
-    primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance
+    primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, undefined, false, undefined, false, tolerance);
     for (let i = 0; i < primitives.length; i++) {
@@ -102,7 +102,7 @@ export class CurveCurve {
    * @param geometryB second geometry
    */
   public static closeApproachProjectedXYPairs(
-    geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number
+    geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveCloseApproachXY(geometryA, geometryB);
     handler.maxDistanceToAccept = maxDistance;

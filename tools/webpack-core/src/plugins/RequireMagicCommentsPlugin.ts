@@ -120,7 +120,7 @@ export const addExternalPrefix = (req: string) => externalPrefix + req;
 
 export const handlePrefixedExternals = (
   { request }: any,
-  cb: (err?: Error, result?: string) => void
+  cb: (err?: Error, result?: string) => void,
 ) => {
   if (request.startsWith(externalPrefix)) {
     return cb(undefined, `commonjs ${request.replace(externalPrefix, "")}`);

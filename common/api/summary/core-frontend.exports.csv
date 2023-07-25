@@ -41,6 +41,7 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
+internal;ArcGisAttributeDrivenSymbology
 internal;ArcGisErrorCode
 internal;class ArcGisGeometryBaseRenderer 
 internal;ArcGisGeometryReaderJSON
@@ -819,7 +820,7 @@ public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
 public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
 public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
-internal;TentativeOrAccuSnap
+public;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
 public;class TerrainMeshProvider

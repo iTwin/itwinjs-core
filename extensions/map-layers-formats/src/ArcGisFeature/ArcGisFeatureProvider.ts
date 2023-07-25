@@ -8,13 +8,14 @@ import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bent
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureGeometryType, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
 import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
 import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -29,7 +30,7 @@ interface ArcGisFeatureUrl {
 * @internal
 */
 export class ArcGisFeatureProvider extends ArcGISImageryProvider {
-  // Debug flags, should always be commited to FALSE !
+  // Debug flags, should always be committed to FALSE !
   private _drawDebugInfo = false;
   private _debugFeatureGeom = false;
 
@@ -38,13 +39,42 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   private _layerId = 0;
   private _layerMetadata: any;
   private _format: ArcGisFeatureFormat | undefined;
-  public serviceJson: any;
-  private _symbologyRenderer: ArcGisSymbologyRenderer | undefined;
-  private static readonly _nbSubTiles = 2;
   private _outSR = 102100;
 
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
+
+  private _defaultSymbol: EsriSymbol|undefined;
+  private _renderer: EsriRenderer|undefined;
+
+  private static readonly _nbSubTiles = 2;     // Number of subtiles for a single axis
+  public serviceJson: any;
+
+  private static readonly defaultPMS: EsriPMSProps = {
+    type: "esriPMS",
+    url: "",
+    contentType: "image/png",
+    imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmBJREFUOE+Nk01IVFEUx//n3jfvOZOaJkMtiiJ7o9RG3LgoqKhFSFJBTS1ahFBBi0ijfJXCIyQr+hBbSIsoW7iQoKKFCw2CkAI3tZAgy8Ei+xhoTCbnje/NPfHGnA816KzuPR+/c8/HJRQJE7o+VUhym0DcCOYGgBQEXjOLlyqo+nHanCkMoaL4rslKjZwOQLT4ek3Mmz3FACFNLB67ut6M1nWphbg8wI6VyJK5KEH0EQFVJRKbwzokAW++p/ErraAYSQK3u47bC3vLnA+ZB9i2gHF0oyQMCfCGNaUa+vauxs71wWz2V18cnBj8gQ8J1/eeBnHUa4sMFQDGdGno+4gwEAoQzjVUon3rqlx1KY9x7+0MWobjAPg3QJ2eZV4tAEyFNCN5FkSXyw2B3j1hRGvLcgBXMV5MptA4MOXr0gT0u5bZnAf0jBsyiSgJPAxqhON1K3FlRxUMvwFAtv7u0Wl0jvwEmJNEuOhakTt5wKEBifr6Oo14BIBRpgt07w6jcVMIngKGY7NofR5HwlF+zDcpsC193vyYB/innvHywCzdZfAR/+onX1segBTAxHzzfPE7/8yzzIPLjJE1LTixHZx5CtCK4gXLzovBiDPUsYxVM7gUkB3nWKlm6DYEnQGzXARxCOK+a1WfKtQXb6LNAvr7iCboCUA1Ocdsdv5KLPe7F6pH/w3wLbc+BwOuc5IZ1wEE/jonQbjptZn24tKKX7BgvR2r0NKZRwDvAqCI+Z30VJPTURv7P4A9psuQcYAUPwAoReBLrmX2Lmls7i8sZ7kWLwuoxA1FVJGxzMPLufi6P2r+2xFbOUjGAAAAAElFTkSuQmCC",
+    width: 16,
+    height: 16,
+    xoffset: -8,
+    yoffset: -16,
+  };
+
+  private static readonly defaultSLS: EsriSLSProps = {
+    type: "esriSLS",
+    color: [0, 0, 0, 255],
+    width: 1,
+    style: "esriSLSSolid",
+  };
+
+  private static readonly defaultSFS: EsriSFSProps = {
+    type: "esriSFS",
+    color:  [0, 0, 255, 255],   // blue fill
+    style: "esriSFSSolid",
+    outline: this.defaultSLS,
+  };
+
   public override get minimumZoomLevel(): number { return this._minDepthFromLod; }
   public override get maximumZoomLevel(): number { return this._maxDepthFromLod; }
 
@@ -202,7 +232,35 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Some servers advertises a max LOD of 0, it should be interpreted as 'not defined' (otherwise a max lod of 0 would would mean never display anything)
     this._maxDepthFromLod = (scales.maxLod ? scales.maxLod : this.defaultMaximumZoomLevel);
 
-    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
+    this._defaultSymbol = ArcGisFeatureProvider.getDefaultSymbology(this._layerMetadata?.geometryType);
+    if (!this._defaultSymbol) {
+      Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
+      throw new Error("Could not determine default symbology: geometry type not supported");
+    }
+    if (this._defaultSymbol.type === "esriPMS") {
+      await (this._defaultSymbol as EsriPMS).loadImage();
+    }
+
+    try {
+      this._renderer = EsriRenderer.fromJSON(this._layerMetadata?.drawingInfo?.renderer);
+      await this._renderer.initialize();
+    } catch {
+      Logger.logError(loggerCategory, `Could not initialize symbology renderer`);
+    }
+
+  }
+
+  public static getDefaultSymbology(geomType: ArcGisFeatureGeometryType) {
+    if (geomType) {
+      if (geomType === "esriGeometryPoint" || geomType === "esriGeometryMultipoint") {
+        return EsriPMS.fromJSON(ArcGisFeatureProvider.defaultPMS);
+      } else if (geomType === "esriGeometryLine" || geomType === "esriGeometryPolyline") {
+        return EsriSLS.fromJSON(ArcGisFeatureProvider.defaultSLS);
+      } else if (geomType === "esriGeometryPolygon") {
+        return EsriSFS.fromJSON(ArcGisFeatureProvider.defaultSFS);
+      }
+    }
+    return undefined;
   }
 
   private async fetchLayerExtent() {
@@ -339,7 +397,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         spatialReference: { wkid: 102100, latestWkid: 3857 },
       }};
 
-    const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
+    const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", queryEnvelope,
         outFields, undefined, returnGeometry, toleranceWorld);
 
@@ -358,14 +416,16 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       try {
         let responseData = await doFeatureInfoQuery("PBF", "", true);
         if (responseData) {
-          Logger.logInfo(loggerCategory, JSON.stringify(responseData.data.toObject()));
+          const json = JSON.stringify(responseData.data.toObject());
+          Logger.logInfo(loggerCategory, json);
         }
         responseData = await doFeatureInfoQuery("JSON", "", true);
         if (responseData) {
-          Logger.logInfo(loggerCategory, JSON.stringify(responseData.data));
+          const json = JSON.stringify(responseData.data);
+          Logger.logInfo(loggerCategory, json);
         }
       } catch (e) {
-        Logger.logInfo(loggerCategory, `Error occured with debug FeatureInfo: ${e}`);
+        Logger.logInfo(loggerCategory, `Error occurred with debug FeatureInfo: ${e}`);
       }
     }
 
@@ -400,7 +460,13 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const geomOverride: ArcGisGeometry | undefined = (refineEnvelope ? { geom: refineEnvelope, type: "esriGeometryEnvelope" } : undefined);
-    const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride);
+    let outFields: string|undefined;
+    if (this._renderer?.type === "uniqueValue" ) {
+      const uvRenderer = this._renderer as EsriUniqueValueRenderer;
+      if (uvRenderer.field1)
+        outFields = uvRenderer.field1;
+    }
+    const tileUrl = this.constructFeatureUrl(row, column, zoomLevel, this.format, "tile", geomOverride, outFields);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
       return undefined;
@@ -457,10 +523,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       return undefined;
     }
 
-    if (!this._symbologyRenderer) {
-      Logger.logError(loggerCategory, "No symbology renderer available for loading tile.");
-      return undefined;
-    }
     try {
 
       // Compute transform if CoordinatesQuantization is not supported by service
@@ -472,7 +534,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         }
       }
 
-      const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer, transfo);
+      // Create the renderer
+      const symbRenderer = ArcGisSymbologyRenderer.create(this._renderer, this._defaultSymbol!);
+      const renderer = new ArcGisCanvasRenderer(ctx, symbRenderer, transfo);
       const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
@@ -500,6 +564,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         let responseData: ArcGisResponseData | undefined;
         try {
           response = await this.fetchTile(row, column, zoomLevel, envelope);
+
           if (!response) {
             Logger.logError(loggerCategory, `Error occurred while fetching tile (${zoomLevel}/${row}/${column})`);
             return;
