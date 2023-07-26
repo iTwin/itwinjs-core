@@ -124,6 +124,22 @@ export const aggregateLoad: {
     lastResponse: number;
 };
 
+// @alpha
+export enum AllOrAnyOp {
+    // (undocumented)
+    All = "ALL",
+    // (undocumented)
+    Only = "ONLY"
+}
+
+// @alpha
+export enum AllOrDistinctOp {
+    // (undocumented)
+    All = "ALL",
+    // (undocumented)
+    Distinct = "DISTINCT"
+}
+
 // @public
 export class AmbientLight {
     constructor(json?: AmbientLightProps);
@@ -330,6 +346,23 @@ export namespace AreaPattern {
         symbolId?: Id64String;
         weight?: number;
     }
+}
+
+// @alpha
+export class AssignmentExpr extends Expr {
+    constructor(propertyName: PropertyNameExpr, valueExpr: ValueExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): AssignmentExpr;
+    // (undocumented)
+    readonly propertyName: PropertyNameExpr;
+    // (undocumented)
+    static readonly type = ExprType.Assignment;
+    // (undocumented)
+    readonly valueExpr: ValueExpr;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @beta
@@ -666,6 +699,115 @@ export { BentleyError }
 
 export { BentleyStatus }
 
+// @alpha
+export class BetweenExpr extends BooleanExpr {
+    constructor(lhsExpr: ValueExpr, lowerBoundExpr: ValueExpr, upperBoundExpr: ValueExpr, not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): BetweenExpr;
+    // (undocumented)
+    readonly lhsExpr: ValueExpr;
+    // (undocumented)
+    readonly lowerBoundExpr: ValueExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    static parseOp(op: string): boolean[];
+    // (undocumented)
+    static readonly type = ExprType.Between;
+    // (undocumented)
+    readonly upperBoundExpr: ValueExpr;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class BinaryBooleanExpr extends BooleanExpr {
+    constructor(op: BinaryBooleanOp, lhsExpr: ComputedExpr, rhsExpr: ComputedExpr, not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): BinaryBooleanExpr;
+    // (undocumented)
+    readonly lhsExpr: ComputedExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    readonly op: BinaryBooleanOp;
+    // (undocumented)
+    readonly rhsExpr: ComputedExpr;
+    // (undocumented)
+    static readonly type = ExprType.BinaryBoolean;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum BinaryBooleanOp {
+    // (undocumented)
+    And = "AND",
+    // (undocumented)
+    EqualTo = "=",
+    // (undocumented)
+    GreaterThan = ">",
+    // (undocumented)
+    GreaterThanOrEqualTo = ">=",
+    // (undocumented)
+    LessThan = "<",
+    // (undocumented)
+    LessThanOrEqualTo = "<=",
+    // (undocumented)
+    NotEqualTo = "<>",
+    // (undocumented)
+    NotEqualTo2 = "!=",
+    // (undocumented)
+    Or = "OR"
+}
+
+// @alpha
+export class BinaryValueExpr extends ValueExpr {
+    constructor(op: BinaryValueOp, lhsExpr: ValueExpr, rhsExpr: ValueExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): BinaryValueExpr;
+    // (undocumented)
+    readonly lhsExpr: ValueExpr;
+    // (undocumented)
+    readonly op: BinaryValueOp;
+    // (undocumented)
+    readonly rhsExpr: ValueExpr;
+    // (undocumented)
+    static readonly type = ExprType.BinaryValue;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum BinaryValueOp {
+    // (undocumented)
+    BitwiseAnd = "&",
+    // (undocumented)
+    BitwiseOr = "|",
+    // (undocumented)
+    BitwiseShiftLeft = "<<",
+    // (undocumented)
+    BitwiseShiftRight = ">>",
+    // (undocumented)
+    Concat = "||",
+    // (undocumented)
+    Divide = "/",
+    // (undocumented)
+    Minus = "-",
+    // (undocumented)
+    Modulus = "%",
+    // (undocumented)
+    Multiply = "*",
+    // (undocumented)
+    Plus = "+"
+}
+
 // @public
 export enum BisCodeSpec {
     // @internal (undocumented)
@@ -737,6 +879,14 @@ export class BlobOptionsBuilder {
 
 // @beta (undocumented)
 export type BlobRange = QueryLimit;
+
+// @alpha
+export abstract class BooleanExpr extends ComputedExpr {
+    // (undocumented)
+    static readonly deserializableIds: NativeExpIds[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): BooleanExpr | SubqueryTestExpr | BetweenExpr | LikeExpr | InExpr | IsNullExpr | IsOfTypeExpr | NotExpr | BinaryBooleanExpr;
+}
 
 // @public
 export class BoundingSphere {
@@ -1012,6 +1162,23 @@ export class CartographicRange {
     intersectsRange(other: CartographicRange): boolean;
 }
 
+// @alpha
+export class CastExpr extends ValueExpr {
+    constructor(valueExpr: ValueExpr, targetType: string);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): CastExpr;
+    // (undocumented)
+    readonly targetType: string;
+    // (undocumented)
+    static readonly type = ExprType.Cast;
+    // (undocumented)
+    readonly valueExpr: ValueExpr;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
@@ -1166,6 +1333,41 @@ export interface ClassifierTileTreeId {
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
+
+// @alpha
+export class ClassNameExpr extends ClassRefExpr {
+    constructor(schemaNameOrAlias: string, className: string, tablespace?: string | undefined, alias?: string | undefined, polymorphicInfo?: PolymorphicInfo | undefined, memberFunc?: MemberFuncCallExpr | undefined);
+    // (undocumented)
+    readonly alias?: string | undefined;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly className: string;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): ClassNameExpr;
+    // (undocumented)
+    static fromECSql(ecsql: string): ClassNameExpr;
+    // (undocumented)
+    readonly memberFunc?: MemberFuncCallExpr | undefined;
+    // (undocumented)
+    polymorphicInfo?: PolymorphicInfo | undefined;
+    // (undocumented)
+    readonly schemaNameOrAlias: string;
+    // (undocumented)
+    readonly tablespace?: string | undefined;
+    // (undocumented)
+    static readonly type = ExprType.ClassName;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export abstract class ClassRefExpr extends Expr {
+    // (undocumented)
+    static readonly deserializableIds: NativeExpIds[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): ClassNameExpr | SubqueryRefExpr | UsingRelationshipJoinExpr | QualifiedJoinExpr | CteBlockRefExpr | TableValuedFuncExpr;
 }
 
 // @public
@@ -1555,6 +1757,18 @@ export class CompositeTileHeader extends TileHeader {
     readonly tilePosition: number;
 }
 
+// @alpha
+export enum CompoundSelectOp {
+    // (undocumented)
+    Except = "EXCEPT",
+    // (undocumented)
+    Intersect = "INTERSECT",
+    // (undocumented)
+    Union = "UNION",
+    // (undocumented)
+    UnionAll = "UNION ALL"
+}
+
 // @internal
 export function computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata): {
     children: TileProps[];
@@ -1566,6 +1780,12 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     range: Range3d;
     isEmpty: boolean;
 }>;
+
+// @alpha
+export abstract class ComputedExpr extends Expr {
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): ValueExpr | BooleanExpr;
+}
 
 // @internal (undocumented)
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
@@ -1740,6 +1960,61 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
 // @internal
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
     readonly allowEdit?: string;
+}
+
+// @alpha
+export class CteBlockExpr extends Expr {
+    constructor(name: string, query: SelectStatementExpr, props: string[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): CteBlockExpr;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly props: string[];
+    // (undocumented)
+    readonly query: SelectStatementExpr;
+    // (undocumented)
+    static readonly type = ExprType.CteBlock;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class CteBlockRefExpr extends ClassRefExpr {
+    constructor(name: string, alias?: string | undefined);
+    // (undocumented)
+    readonly alias?: string | undefined;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): CteBlockRefExpr;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    static readonly type = ExprType.CteBlockRef;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class CteExpr extends StatementExpr {
+    constructor(cteBlocks: CteBlockExpr[], query: SelectStatementExpr, recursive?: "RECURSIVE" | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly cteBlocks: CteBlockExpr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): CteExpr;
+    // (undocumented)
+    readonly query: SelectStatementExpr;
+    // (undocumented)
+    readonly recursive?: "RECURSIVE" | undefined;
+    // (undocumented)
+    static readonly type = ExprType.Cte;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @internal (undocumented)
@@ -2015,6 +2290,25 @@ export interface DeletedElementGeometryChange {
     readonly type: DbOpcode.Delete;
 }
 
+// @alpha
+export class DeleteStatementExpr extends StatementExpr {
+    constructor(className: ClassNameExpr, where?: WhereClauseExp | undefined, options?: ECSqlOptionsClauseExpr | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly className: ClassNameExpr;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): DeleteStatementExpr;
+    // (undocumented)
+    readonly options?: ECSqlOptionsClauseExpr | undefined;
+    // (undocumented)
+    static readonly type = ExprType.DeleteStatement;
+    // (undocumented)
+    readonly where?: WhereClauseExp | undefined;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export interface DeprecatedBackgroundMapProps {
     // @deprecated
@@ -2023,6 +2317,23 @@ export interface DeprecatedBackgroundMapProps {
     };
     // @deprecated
     providerName?: string;
+}
+
+// @alpha
+export class DerivedPropertyExpr extends Expr {
+    constructor(computedExpr: ComputedExpr, alias?: string | undefined);
+    // (undocumented)
+    readonly alias?: string | undefined;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly computedExpr: ComputedExpr;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): DerivedPropertyExpr;
+    // (undocumented)
+    static readonly type = ExprType.DerivedProperty;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @internal
@@ -2276,6 +2587,9 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
     subCategory?: Id64String;
 }
 
+// @alpha
+export type DisqualifyOp = "+";
+
 // @beta
 export enum DomainOptions {
     CheckRecommendedUpgrades = 1,
@@ -2453,6 +2767,29 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
+// @alpha
+export interface ECSqlOption {
+    // (undocumented)
+    name: ECSqlSupportedOptions;
+    // (undocumented)
+    value?: string;
+}
+
+// @alpha
+export class ECSqlOptionsClauseExpr extends Expr {
+    constructor(options: ECSqlOption[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): ECSqlOptionsClauseExpr;
+    // (undocumented)
+    readonly options: ECSqlOption[];
+    // (undocumented)
+    static readonly type = ExprType.ECSqlOptionsClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @beta
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
@@ -2477,6 +2814,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     step(): Promise<boolean>;
     toArray(): Promise<any[]>;
 }
+
+// @alpha
+export type ECSqlSupportedOptions = "NoECClassIdFilter" | "ReadonlyPropertiesAreUpdatable";
 
 // @public
 export enum ECSqlSystemProperty {
@@ -2538,6 +2878,62 @@ export enum ECSqlValueType {
     Struct = 13,
     // (undocumented)
     StructArray = 15
+}
+
+// @alpha
+export class ECSqlWriter {
+    constructor(options?: ECSqlWriterArgs);
+    // (undocumented)
+    append(val: string): this;
+    // (undocumented)
+    appendBinaryOp(val: string): this;
+    // (undocumented)
+    appendComma(): void;
+    // (undocumented)
+    appendExp(exp: Expr): this;
+    // (undocumented)
+    appendKeyword(val: Keywords): this;
+    // (undocumented)
+    appendLine(): this;
+    // (undocumented)
+    appendLineOrSpace(): this;
+    // (undocumented)
+    appendQuoted(val: string): this;
+    // (undocumented)
+    appendSpace(): this;
+    // (undocumented)
+    appendStringLiteral(val: string): this;
+    // (undocumented)
+    clear(): this;
+    // (undocumented)
+    indent(): void;
+    // (undocumented)
+    readonly options: ECSqlWriterArgs;
+    // (undocumented)
+    squash(): this;
+    // (undocumented)
+    toString(): string;
+    // (undocumented)
+    unindent(): void;
+}
+
+// @alpha
+export interface ECSqlWriterArgs {
+    // (undocumented)
+    readonly eol: "\r\n" | "\n";
+    // (undocumented)
+    readonly indent: {
+        readonly size: number;
+        readonly char: string;
+    };
+    // (undocumented)
+    readonly keywordCasing: "lower" | "UPPER";
+    // (undocumented)
+    readonly multiline: boolean;
+    // (undocumented)
+    readonly spaceAfterComma: boolean;
+    // (undocumented)
+    readonly spaceAroundBinOp: boolean;
 }
 
 // @internal (undocumented)
@@ -2948,6 +3344,114 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
+// @alpha
+export abstract class Expr {
+    constructor(expType: ExprType);
+    // (undocumented)
+    asInstanceOf<T extends Expr>(type: Constructor<T>): T | undefined;
+    // (undocumented)
+    abstract get children(): Expr[];
+    // (undocumented)
+    readonly expType: ExprType;
+    findInstancesOf<T extends Expr>(type: Constructor<T>): T[];
+    isInstanceOf<T extends Expr>(type: Constructor<T>): boolean;
+    toECSql(args?: ECSqlWriterArgs): string;
+    traverse(callback: (expr: Expr, parent?: Expr) => void | boolean): void;
+    abstract writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum ExprType {
+    // (undocumented)
+    Assignment = "Assignment",
+    // (undocumented)
+    Between = "Between",
+    // (undocumented)
+    BinaryBoolean = "BinaryBoolean",
+    // (undocumented)
+    BinaryValue = "BinaryValue",
+    // (undocumented)
+    Cast = "Cast",
+    // (undocumented)
+    ClassName = "ClassName",
+    // (undocumented)
+    Cte = "Cte",
+    // (undocumented)
+    CteBlock = "CteBlock",
+    // (undocumented)
+    CteBlockRef = "CteBlockRef",
+    // (undocumented)
+    DeleteStatement = "DeleteStatement",
+    // (undocumented)
+    DerivedProperty = "DerivedProperty",
+    // (undocumented)
+    ECSqlOptionsClause = "ECSqlOptions",
+    // (undocumented)
+    FromClause = "FromClause",
+    // (undocumented)
+    FuncCall = "FuncCall",
+    // (undocumented)
+    GroupByClause = "GroupByClause",
+    // (undocumented)
+    HavingClause = "HavingCluase",
+    // (undocumented)
+    IIF = "IIF",
+    // (undocumented)
+    In = "In",
+    // (undocumented)
+    InsertStatement = "InsertStatement",
+    // (undocumented)
+    IsNull = "IsNull",
+    // (undocumented)
+    IsOfType = "IsOfType",
+    // (undocumented)
+    Like = "Like",
+    // (undocumented)
+    LimitClause = "LimitClause",
+    // (undocumented)
+    Literal = "Literal",
+    // (undocumented)
+    MemberFuncCall = "MemberFuncCall",
+    // (undocumented)
+    Not = "Not",
+    // (undocumented)
+    OrderByClause = "OrderByClause",
+    // (undocumented)
+    OrderBySpec = "OrderBySpec",
+    // (undocumented)
+    Parameter = "Parameter",
+    // (undocumented)
+    PropertyName = "PropertyName",
+    // (undocumented)
+    QualifiedJoin = "QualifiedJoin",
+    // (undocumented)
+    SearchCase = "SearchCase",
+    // (undocumented)
+    Select = "Select",
+    // (undocumented)
+    SelectionClause = "SelectionClause",
+    // (undocumented)
+    SelectStatement = "SelectStatement",
+    // (undocumented)
+    SetClause = "SetClause",
+    // (undocumented)
+    Subquery = "Subquery",
+    // (undocumented)
+    SubqueryRef = "SubqueryRef",
+    // (undocumented)
+    SubqueryTest = "SubqueryTest",
+    // (undocumented)
+    TableValuedFunc = "TableValuedFunc",
+    // (undocumented)
+    Unary = "Unary",
+    // (undocumented)
+    UpdateStatement = "UpdateStatement",
+    // (undocumented)
+    UsingRelationshipJoin = "UsingRelationshipJoin",
+    // (undocumented)
+    WhereClause = "WhereClause"
+}
+
 // @public
 export interface ExtantElementGeometryChange {
     readonly id: Id64String;
@@ -3340,6 +3844,21 @@ export interface FresnelSettingsProps {
     invert?: boolean;
 }
 
+// @alpha
+export class FromClauseExpr extends Expr {
+    constructor(classRefs: ClassRefExpr[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly classRefs: ClassRefExpr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): FromClauseExpr;
+    // (undocumented)
+    static readonly type = ExprType.FromClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export class Frustum {
     constructor();
@@ -3395,6 +3914,93 @@ export namespace FrustumPlanes {
         Outside = 0,
         Partial = 1
     }
+}
+
+// @alpha
+export class FuncCallExpr extends ValueExpr {
+    constructor(functionName: string, args: ValueExpr[], allOrDistinct?: AllOrDistinctOp | undefined);
+    // (undocumented)
+    readonly allOrDistinct?: AllOrDistinctOp | undefined;
+    // (undocumented)
+    readonly args: ValueExpr[];
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): FuncCallExpr;
+    // (undocumented)
+    readonly functionName: string;
+    // (undocumented)
+    static makeAbs(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeEcClassId(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeEcClassName(arg0: ValueExpr, fmt?: "s:c" | "a:c" | "s" | "a" | "c" | "s.c" | "a.c"): FuncCallExpr;
+    // (undocumented)
+    static makeGuidToStr(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeHexToId(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeIdToHex(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeInstanceOf(arg0: ValueExpr, arg1: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeInstr(arg0: ValueExpr, arg1: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLength(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLHex(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLIfNull(arg0: ValueExpr, arg1: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLike(arg0: ValueExpr, arg1: ValueExpr, arg2?: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLikelihood(arg0: ValueExpr, arg1: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLower(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeLTrim(arg0: ValueExpr, arg1?: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeMax(arg: ValueExpr, ...optionalArgs: ValueExpr[]): FuncCallExpr;
+    // (undocumented)
+    static makeMin(arg: ValueExpr, ...optionalArgs: ValueExpr[]): FuncCallExpr;
+    // (undocumented)
+    static makePrintf(arg: ValueExpr, ...optionalArgs: ValueExpr[]): FuncCallExpr;
+    // (undocumented)
+    static makeQuote(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeRandom(): FuncCallExpr;
+    // (undocumented)
+    static makeRandomBlob(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeReplace(arg0: ValueExpr, arg1: ValueExpr, arg2: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeRound(arg0: ValueExpr, arg1?: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeRTrim(arg0: ValueExpr, arg1?: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeSign(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeSoundex(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeStrToGuid(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeSubstring(arg0: ValueExpr, arg1: ValueExpr, arg2: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeTrim(arg0: ValueExpr, arg1?: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeTypeOf(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeUnhex(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeUnlikely(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeUpper(arg: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static makeZeroBlob(arg0: ValueExpr): FuncCallExpr;
+    // (undocumented)
+    static readonly type = ExprType.FuncCall;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public (undocumented)
@@ -4088,6 +4694,36 @@ export interface GroundPlaneProps {
     elevation?: number;
 }
 
+// @alpha
+export class GroupByClauseExpr extends Expr {
+    constructor(exprList: ValueExpr[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): GroupByClauseExpr;
+    // (undocumented)
+    readonly exprList: ValueExpr[];
+    // (undocumented)
+    static readonly type = ExprType.GroupByClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class HavingClauseExpr extends Expr {
+    constructor(filterExpr: ComputedExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): HavingClauseExpr;
+    // (undocumented)
+    readonly filterExpr: ComputedExpr;
+    // (undocumented)
+    static readonly type = ExprType.HavingClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     constructor(data?: Helmert2DWithZOffsetProps);
@@ -4431,6 +5067,25 @@ export interface IgnoreAnimationOverridesArgs {
     readonly elementId: Readonly<Id64.Uint32Pair>;
 }
 
+// @alpha
+export class IIFExpr extends ValueExpr {
+    constructor(whenExpr: BooleanExpr, thenExpr: ValueExpr, elseExpr: ValueExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): IIFExpr;
+    // (undocumented)
+    readonly elseExpr: ValueExpr;
+    // (undocumented)
+    readonly thenExpr: ValueExpr;
+    // (undocumented)
+    static readonly type = ExprType.IIF;
+    // (undocumented)
+    readonly whenExpr: BooleanExpr;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export class ImageBuffer {
     // @internal
@@ -4766,6 +5421,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
     // (undocumented)
+    parseECSql(_iModelToken: IModelRpcProps, _ecsql: string): Promise<NativeECSqlParseNode>;
+    // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
@@ -4881,6 +5538,27 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
 };
 
+// @alpha
+export class InExpr extends BooleanExpr {
+    constructor(lhsExpr: ValueExpr, rhsExpr: ValueExpr[] | SubqueryExpr, not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): InExpr;
+    // (undocumented)
+    readonly lhsExpr: ValueExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    static parseOp(op: string): boolean[];
+    // (undocumented)
+    readonly rhsExpr: ValueExpr[] | SubqueryExpr;
+    // (undocumented)
+    static readonly type = ExprType.In;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
@@ -4889,6 +5567,25 @@ export interface InformationPartitionElementProps extends ElementProps {
 
 // @internal (undocumented)
 export const initializeRpcRequest: () => void;
+
+// @alpha
+export class InsertStatementExpr extends StatementExpr {
+    constructor(className: ClassNameExpr, values: ValueExpr[], propertyNames?: PropertyNameExpr[] | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly className: ClassNameExpr;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): InsertStatementExpr;
+    // (undocumented)
+    readonly propertyNames?: PropertyNameExpr[] | undefined;
+    // (undocumented)
+    static readonly type = ExprType.InsertStatement;
+    // (undocumented)
+    readonly values: ValueExpr[];
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
 
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
@@ -5122,6 +5819,46 @@ export abstract class IpcWebSocketTransport {
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
+// @alpha
+export class IsNullExpr extends BooleanExpr {
+    constructor(operandExpr: ValueExpr, not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): IsNullExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    readonly operandExpr: ValueExpr;
+    // (undocumented)
+    static parseOp(node: NativeECSqlParseNode): boolean[];
+    // (undocumented)
+    static readonly type = ExprType.IsNull;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class IsOfTypeExpr extends BooleanExpr {
+    constructor(lhsExpr: ValueExpr, typeNames: ClassNameExpr[], not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): IsOfTypeExpr;
+    // (undocumented)
+    readonly lhsExpr: ValueExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    static parseOp(node: NativeECSqlParseNode): boolean[];
+    // (undocumented)
+    static readonly type = ExprType.IsOfType;
+    // (undocumented)
+    readonly typeNames: ClassNameExpr[];
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
 
@@ -5137,11 +5874,37 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 // @internal
 export const iTwinChannel: (channel: string) => string;
 
+// @alpha
+export enum JoinDirection {
+    // (undocumented)
+    Backward = "BACKWARD",
+    // (undocumented)
+    Forward = "FORWARD"
+}
+
+// @alpha
+export type JoinSpec = BooleanExpr | string[] | undefined;
+
+// @alpha
+export enum JoinType {
+    // (undocumented)
+    FullOuter = "FULL OUTER JOIN",
+    // (undocumented)
+    Inner = "INNER JOIN",
+    // (undocumented)
+    LeftOuter = "LEFT OUTER JOIN",
+    // (undocumented)
+    RightOuter = "RIGHT OUTER JOIN"
+}
+
 // @public
 export interface JsonGeometryStream {
     data: GeometryStreamProps;
     format: "json";
 }
+
+// @alpha
+export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
 
 // @internal
 export interface LegacyAnalysisStyleProps {
@@ -5199,6 +5962,46 @@ export interface LightSettingsProps {
     };
     solar?: SolarLightProps;
     specularIntensity?: number;
+}
+
+// @alpha
+export class LikeExpr extends BooleanExpr {
+    constructor(lhsExpr: ValueExpr, patternExpr: ValueExpr, escapeExpr?: ValueExpr | undefined, not?: UnaryBooleanOp | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): LikeExpr;
+    // (undocumented)
+    readonly escapeExpr?: ValueExpr | undefined;
+    // (undocumented)
+    readonly lhsExpr: ValueExpr;
+    // (undocumented)
+    readonly not?: UnaryBooleanOp | undefined;
+    // (undocumented)
+    static parseOp(op: string): boolean[];
+    // (undocumented)
+    readonly patternExpr: ValueExpr;
+    // (undocumented)
+    static readonly type = ExprType.Like;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class LimitClauseExpr extends Expr {
+    constructor(limit: ValueExpr, offset?: ValueExpr | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): LimitClauseExpr;
+    // (undocumented)
+    readonly limit: ValueExpr;
+    // (undocumented)
+    readonly offset?: ValueExpr | undefined;
+    // (undocumented)
+    static readonly type = ExprType.LimitClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
@@ -5281,6 +6084,53 @@ export interface LineStyleProps extends DefinitionElementProps {
     data: string;
     // (undocumented)
     description?: string;
+}
+
+// @alpha
+export class LiteralExpr extends ValueExpr {
+    constructor(valueType: LiteralValueType, rawValue: string);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): LiteralExpr;
+    // (undocumented)
+    static makeDate(val: Date): LiteralExpr;
+    // (undocumented)
+    static makeNull(): LiteralExpr;
+    // (undocumented)
+    static makeNumber(val: number): LiteralExpr;
+    // (undocumented)
+    static makeRaw(val: string): LiteralExpr;
+    // (undocumented)
+    static makeString(val: string): LiteralExpr;
+    // (undocumented)
+    static makeTime(val: Date): LiteralExpr;
+    // (undocumented)
+    static makeTimestamp(val: Date): LiteralExpr;
+    // (undocumented)
+    readonly rawValue: string;
+    // (undocumented)
+    static readonly type = ExprType.Literal;
+    // (undocumented)
+    readonly valueType: LiteralValueType;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum LiteralValueType {
+    // (undocumented)
+    Date = "DATE",
+    // (undocumented)
+    Null = "NULL",
+    // (undocumented)
+    Raw = "RAW",
+    // (undocumented)
+    String = "STRING",
+    // (undocumented)
+    Time = "TIME",
+    // (undocumented)
+    Timestamp = "TIMESTAMP"
 }
 
 // @public
@@ -5500,6 +6350,23 @@ export interface MaterialProps {
     rotation?: YawPitchRollProps;
     // @internal (undocumented)
     size?: XYZProps;
+}
+
+// @alpha
+export class MemberFuncCallExpr extends Expr {
+    constructor(functionName: string, args: ValueExpr[]);
+    // (undocumented)
+    readonly args: ValueExpr[];
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): MemberFuncCallExpr;
+    // (undocumented)
+    readonly functionName: string;
+    // (undocumented)
+    static readonly type = ExprType.MemberFuncCall;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @internal (undocumented)
@@ -5789,6 +6656,12 @@ export interface NativeAppNotifications {
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
 
+// @alpha
+export interface NativeECSqlParseNode {
+    // (undocumented)
+    [key: string]: any;
+}
+
 // @public
 export interface NavigationBindingValue {
     id: Id64String;
@@ -5807,6 +6680,14 @@ export function nextHighestPowerOfTwo(num: number): number;
 
 // @internal
 export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d;
+
+// @alpha
+export interface NextSelect {
+    // (undocumented)
+    op: CompoundSelectOp;
+    // (undocumented)
+    select: SelectStatementExpr;
+}
 
 // @public
 export class NoContentError extends IModelError {
@@ -5842,6 +6723,21 @@ export interface NormalMapParams {
 // @public
 export interface NormalMapProps extends TextureMapProps {
     NormalFlags?: NormalMapFlags;
+}
+
+// @alpha
+export class NotExpr extends BooleanExpr {
+    constructor(operandExpr: ComputedExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): NotExpr;
+    // (undocumented)
+    readonly operandExpr: ComputedExpr;
+    // (undocumented)
+    static readonly type = ExprType.Not;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
@@ -6092,6 +6988,38 @@ export interface OrbitGtBlobProps {
     sasToken: string;
 }
 
+// @alpha
+export class OrderByClauseExpr extends Expr {
+    constructor(terms: OrderBySpecExpr[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): OrderByClauseExpr;
+    // (undocumented)
+    readonly terms: OrderBySpecExpr[];
+    // (undocumented)
+    static readonly type = ExprType.OrderByClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class OrderBySpecExpr extends Expr {
+    constructor(term: ValueExpr, sortDirection?: SortDirection | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): OrderBySpecExpr;
+    // (undocumented)
+    readonly sortDirection?: SortDirection | undefined;
+    // (undocumented)
+    readonly term: ValueExpr;
+    // (undocumented)
+    static readonly type = ExprType.OrderBySpec;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @beta
 export enum OverriddenBy {
     // (undocumented)
@@ -6219,6 +7147,21 @@ export class PackedFeatureTable implements RenderFeatureTable {
 export interface PackedFeatureWithIndex extends PackedFeature {
     // (undocumented)
     index: number;
+}
+
+// @alpha
+export class ParameterExpr extends ValueExpr {
+    constructor(name?: string | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): ParameterExpr;
+    // (undocumented)
+    readonly name?: string | undefined;
+    // (undocumented)
+    static readonly type = ExprType.Parameter;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @internal
@@ -6550,6 +7493,14 @@ export enum PolylineTypeFlags {
     Outline = 2
 }
 
+// @alpha
+export interface PolymorphicInfo {
+    // (undocumented)
+    allOrAny: AllOrAnyOp;
+    // (undocumented)
+    disqualify?: DisqualifyOp;
+}
+
 // @public
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
     constructor(data?: PositionalVectorTransformProps);
@@ -6784,6 +7735,21 @@ export interface PropertyMetaDataProps {
     structName?: string;
 }
 
+// @alpha
+export class PropertyNameExpr extends ValueExpr {
+    constructor(propertyPath: string);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): PropertyNameExpr;
+    // (undocumented)
+    readonly propertyPath: string;
+    // (undocumented)
+    static readonly type = ExprType.PropertyName;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @internal
 export interface PullChangesOptions {
     enableCancellation?: boolean;
@@ -6971,6 +7937,27 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @alpha
+export class QualifiedJoinExpr extends ClassRefExpr {
+    constructor(joinType: JoinType, from: ClassRefExpr, to: ClassRefExpr, spec: JoinSpec);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): QualifiedJoinExpr;
+    // (undocumented)
+    readonly from: ClassRefExpr;
+    // (undocumented)
+    readonly joinType: JoinType;
+    // (undocumented)
+    readonly spec: JoinSpec;
+    // (undocumented)
+    readonly to: ClassRefExpr;
+    // (undocumented)
+    static readonly type = ExprType.QualifiedJoin;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
@@ -7193,6 +8180,9 @@ export class RealityModelDisplaySettings {
     readonly pointCloud: PointCloudDisplaySettings;
     toJSON(): RealityModelDisplayProps | undefined;
 }
+
+// @alpha
+export type RecursiveCte = "RECURSIVE";
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
@@ -8529,6 +9519,23 @@ export enum SchemaState {
     UpToDate = 0
 }
 
+// @alpha
+export class SearchCaseExpr extends ValueExpr {
+    constructor(whenThenList: WhenThenBlock[], elseExpr?: ValueExpr | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SearchCaseExpr;
+    // (undocumented)
+    readonly elseExpr?: ValueExpr | undefined;
+    // (undocumented)
+    static readonly type = ExprType.SearchCase;
+    // (undocumented)
+    readonly whenThenList: WhenThenBlock[];
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
 // @public
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
     sectionView?: RelatedElementProps;
@@ -8564,6 +9571,69 @@ export enum SectionType {
     Plan = 6,
     // (undocumented)
     Section = 3
+}
+
+// @alpha
+export class SelectExpr extends Expr {
+    constructor(selection: SelectionClauseExpr, rowQuantifier?: AllOrDistinctOp | undefined, from?: FromClauseExpr | undefined, where?: WhereClauseExp | undefined, groupBy?: GroupByClauseExpr | undefined, having?: HavingClauseExpr | undefined, orderBy?: OrderByClauseExpr | undefined, limit?: LimitClauseExpr | undefined, options?: ECSqlOptionsClauseExpr | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SelectExpr;
+    // (undocumented)
+    readonly from?: FromClauseExpr | undefined;
+    // (undocumented)
+    readonly groupBy?: GroupByClauseExpr | undefined;
+    // (undocumented)
+    readonly having?: HavingClauseExpr | undefined;
+    // (undocumented)
+    readonly limit?: LimitClauseExpr | undefined;
+    // (undocumented)
+    readonly options?: ECSqlOptionsClauseExpr | undefined;
+    // (undocumented)
+    readonly orderBy?: OrderByClauseExpr | undefined;
+    // (undocumented)
+    readonly rowQuantifier?: AllOrDistinctOp | undefined;
+    // (undocumented)
+    readonly selection: SelectionClauseExpr;
+    // (undocumented)
+    static readonly type = ExprType.Select;
+    // (undocumented)
+    readonly where?: WhereClauseExp | undefined;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class SelectionClauseExpr extends Expr {
+    constructor(derivedPropertyList: DerivedPropertyExpr[]);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly derivedPropertyList: DerivedPropertyExpr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SelectionClauseExpr;
+    // (undocumented)
+    static readonly type = ExprType.SelectionClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class SelectStatementExpr extends StatementExpr {
+    constructor(singleSelect: SelectExpr, nextSelect?: NextSelect | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SelectStatementExpr;
+    // (undocumented)
+    readonly nextSelect?: NextSelect | undefined;
+    // (undocumented)
+    readonly singleSelect: SelectExpr;
+    // (undocumented)
+    static readonly type = ExprType.SelectStatement;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
@@ -8634,6 +9704,21 @@ export interface SessionProps {
     readonly applicationId: string;
     readonly applicationVersion: string;
     readonly sessionId: GuidString;
+}
+
+// @alpha
+export class SetClauseExpr extends Expr {
+    constructor(assignments: AssignmentExpr[]);
+    // (undocumented)
+    readonly assignments: AssignmentExpr[];
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SetClauseExpr;
+    // (undocumented)
+    static readonly type = ExprType.SetClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @beta
@@ -8919,6 +10004,14 @@ export interface SolarShadowSettingsProps {
     color?: ColorDefProps;
 }
 
+// @alpha
+export enum SortDirection {
+    // (undocumented)
+    Ascending = "ASC",
+    // (undocumented)
+    Desending = "DESC"
+}
+
 // @public
 export interface SourceAndTarget {
     // (undocumented)
@@ -9017,6 +10110,12 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 // @public
 export type StandaloneOpenOptions = OpenDbKey;
+
+// @alpha
+export abstract class StatementExpr extends Expr {
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): StatementExpr | InsertStatementExpr | UpdateStatementExpr | DeleteStatementExpr | CteExpr;
+}
 
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
@@ -9132,6 +10231,63 @@ export interface SubjectProps extends ElementProps {
 // @public (undocumented)
 export type SubLayerId = string | number;
 
+// @alpha
+export class SubqueryExpr extends ValueExpr {
+    constructor(query: SelectStatementExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SubqueryExpr;
+    // (undocumented)
+    readonly query: SelectStatementExpr;
+    // (undocumented)
+    static readonly type = ExprType.Subquery;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class SubqueryRefExpr extends ClassRefExpr {
+    constructor(query: SubqueryExpr, polymorphicInfo?: PolymorphicInfo | undefined, alias?: string | undefined);
+    // (undocumented)
+    readonly alias?: string | undefined;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SubqueryRefExpr;
+    // (undocumented)
+    readonly polymorphicInfo?: PolymorphicInfo | undefined;
+    // (undocumented)
+    readonly query: SubqueryExpr;
+    // (undocumented)
+    static readonly type = ExprType.SubqueryRef;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export class SubqueryTestExpr extends BooleanExpr {
+    constructor(op: SubqueryTestOp, query: SubqueryExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SubqueryTestExpr;
+    // (undocumented)
+    readonly op: SubqueryTestOp;
+    // (undocumented)
+    readonly query: SubqueryExpr;
+    // (undocumented)
+    static readonly type = ExprType.SubqueryTest;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum SubqueryTestOp {
+    // (undocumented)
+    Exists = "EXISTS"
+}
+
 // @beta
 export interface SynchronizationConfigLinkProps extends UrlLinkProps {
     // (undocumented)
@@ -9143,6 +10299,25 @@ export enum SyncMode {
     FixedVersion = 1,
     PullAndPush = 2,
     PullOnly = 3
+}
+
+// @alpha
+export class TableValuedFuncExpr extends ClassRefExpr {
+    constructor(schemaName: string, memberFunc: MemberFuncCallExpr, alias?: string | undefined);
+    // (undocumented)
+    readonly alias?: string | undefined;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): TableValuedFuncExpr;
+    // (undocumented)
+    readonly memberFunc: MemberFuncCallExpr;
+    // (undocumented)
+    readonly schemaName: string;
+    // (undocumented)
+    static readonly type = ExprType.TableValuedFunc;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
@@ -10000,11 +11175,65 @@ export enum TypeOfChange {
     Property = 1
 }
 
+// @alpha
+export enum UnaryBooleanOp {
+    // (undocumented)
+    Not = "NOT"
+}
+
+// @alpha
+export class UnaryValueExpr extends ValueExpr {
+    constructor(op: UnaryValueOp, valueExpr: ValueExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): UnaryValueExpr;
+    // (undocumented)
+    readonly op: UnaryValueOp;
+    // (undocumented)
+    static readonly type = ExprType.Unary;
+    // (undocumented)
+    readonly valueExpr: ValueExpr;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export enum UnaryValueOp {
+    // (undocumented)
+    BitwiseNot = "~",
+    // (undocumented)
+    Minus = "-",
+    // (undocumented)
+    Plus = "+"
+}
+
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
+
+// @alpha
+export class UpdateStatementExpr extends StatementExpr {
+    constructor(className: ClassNameExpr, assignement: SetClauseExpr, where?: WhereClauseExp | undefined, options?: ECSqlOptionsClauseExpr | undefined);
+    // (undocumented)
+    readonly assignement: SetClauseExpr;
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly className: ClassNameExpr;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): UpdateStatementExpr;
+    // (undocumented)
+    readonly options?: ECSqlOptionsClauseExpr | undefined;
+    // (undocumented)
+    static readonly type = ExprType.UpdateStatement;
+    // (undocumented)
+    readonly where?: WhereClauseExp | undefined;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
 
 // @beta
 export interface UpgradeOptions {
@@ -10019,6 +11248,35 @@ export interface UrlLinkProps extends ElementProps {
     description?: string;
     // (undocumented)
     url?: string;
+}
+
+// @alpha
+export class UsingRelationshipJoinExpr extends ClassRefExpr {
+    constructor(fromClassName: ClassRefExpr, toClassName: ClassNameExpr, toRelClassName: ClassNameExpr, direction?: JoinDirection | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): UsingRelationshipJoinExpr;
+    // (undocumented)
+    readonly direction?: JoinDirection | undefined;
+    // (undocumented)
+    readonly fromClassName: ClassRefExpr;
+    // (undocumented)
+    readonly toClassName: ClassNameExpr;
+    // (undocumented)
+    readonly toRelClassName: ClassNameExpr;
+    // (undocumented)
+    static readonly type = ExprType.UsingRelationshipJoin;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
+export abstract class ValueExpr extends ComputedExpr {
+    // (undocumented)
+    static readonly deserializableIds: NativeExpIds[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr;
 }
 
 // @public
@@ -10593,6 +11851,29 @@ export class WebAppRpcRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;
+}
+
+// @alpha
+export interface WhenThenBlock {
+    // (undocumented)
+    thenExpr: ValueExpr;
+    // (undocumented)
+    whenExpr: BooleanExpr;
+}
+
+// @alpha
+export class WhereClauseExp extends Expr {
+    constructor(filterExpr: ComputedExpr);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): WhereClauseExp;
+    // (undocumented)
+    readonly filterExpr: ComputedExpr;
+    // (undocumented)
+    static readonly type = ExprType.WhereClause;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
 }
 
 // @public
