@@ -60,9 +60,14 @@ export interface ChannelControl {
   verifyChannel(modelId: Id64String): void;
 }
 
+/** @beta */
+export namespace ChannelControl {
+  /** the name of the special "shared" channel holding information that is editable by any application. */
+  export const sharedChannelName = "shared";
+}
+
 /** @internal */
 export class ChannelAdmin implements ChannelControl {
-  /** the name of the special "shared" channel holding information that is editable by any application. */
   public static readonly sharedChannel = "shared";
   public static readonly channelClassName = "bis:ChannelRootAspect";
   private _allowedChannels = new Set<ChannelKey>();
@@ -71,7 +76,7 @@ export class ChannelAdmin implements ChannelControl {
   private _hasChannels?: boolean;
 
   public constructor(private _iModel: IModelDb) {
-    this._allowedChannels.add(ChannelAdmin.sharedChannel);
+    this._allowedChannels.add(ChannelControl.sharedChannelName);
   }
   public addAllowedChannel(channelKey: ChannelKey) {
     this._allowedChannels.add(channelKey);
@@ -94,7 +99,7 @@ export class ChannelAdmin implements ChannelControl {
   }
   public getChannelKey(elementId: Id64String): ChannelKey {
     if (!this.hasChannels || elementId === IModel.rootSubjectId)
-      return ChannelAdmin.sharedChannel;
+      return ChannelControl.sharedChannelName;
 
     const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
       stmt.bindId(1, elementId);
@@ -128,7 +133,7 @@ export class ChannelAdmin implements ChannelControl {
     return this.verifyChannel(modelId);
   }
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
-    if (ChannelAdmin.sharedChannel !== this.getChannelKey(args.elementId))
+    if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };

@@ -46,39 +46,48 @@ interface SemverType {
 export abstract class RpcInterface {
 
   private static findDiff(backend: SemverType, frontend: SemverType) {
-    return backend.major !== frontend.major ? "major" : backend.minor !== frontend.minor ? "minor" : backend.patch !== frontend.patch ? "patch" : backend.prerelease !== frontend.prerelease ? "prerelease" : "same";
+    return backend.major !== frontend.major ? "major" :
+      backend.minor !== frontend.minor ? "minor" :
+        backend.patch !== frontend.patch ? "patch" :
+          backend.prerelease !== frontend.prerelease ? "prerelease" :
+            "same";
   }
 
   private static parseVer(version: string): SemverType {
-    // Split the version string into major.minor.path and prerelease tag
-    const split = version.split(/[:-]/);
-    // Split the major.minor.path into seperate components
-    const prefix = split[0].split(".");
-    if (split.length === 1) {
-      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
-    } else {
-      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
-    }
+    // separate the version from the prerelease tag
+    const parts = version.split(/[:-]/);
+    // Split the major.minor.path into separate components
+    const prefix = parts[0].split(".");
+
+    const ver: SemverType = { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
+    if (parts.length > 1)
+      ver.prerelease = parts[1];
+    return ver;
   }
 
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
   public static isVersionCompatible(backend: string, frontend: string): boolean {
+    if (backend === frontend)
+      return true; // most common case, versions are identical
+
     const backendSemver = this.parseVer(backend);
     const frontendSemver = this.parseVer(frontend);
-    const difference = this.findDiff(backendSemver, frontendSemver);
 
+    // if either has a prerelease tag, they are not compatible unless version strings are identical
+    if (backendSemver.prerelease || frontendSemver.prerelease)
+      return false;
+
+    const difference = this.findDiff(backendSemver, frontendSemver);
     // If the major versions are different, the versions are not compatible
-    // In the case of prerelease tags, they are compatible if the whole version string matches, otherwise it fails
-    if ((backendSemver.prerelease !== undefined || frontendSemver.prerelease !== undefined) || difference === "major") {
-      return difference === "same";
-    } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
-      // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
-      return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
-    } else {
-      // If the strings match exactly, major and minor match but patch differs, versions are compatible
-      // If minor versions differ, compatible as long as backend patch versionn is greater
-      return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
-    }
+    if (difference === "major")
+      return false;
+
+    // special case for major version 0. If patch difference, backend patch must be greater than frontend patch
+    if (backendSemver.major === 0)
+      return (difference === "patch" && frontendSemver.patch < backendSemver.patch);
+
+    // patch difference is fine. If minor versions differ, compatible as long as backend minor version is greater
+    return difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
   }
 
   /** The configuration for the RPC interface.
@@ -89,7 +98,7 @@ export abstract class RpcInterface {
   /** @internal */
   public readonly routing: RpcRoutingToken;
 
-  /** @internal */
+  /** @beta */
   public constructor(routing: RpcRoutingToken = RpcRoutingToken.default) {
     this.routing = routing;
     this.configuration = RpcConfiguration.supply(this);

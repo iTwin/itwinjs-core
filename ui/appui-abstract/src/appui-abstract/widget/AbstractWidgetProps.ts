@@ -12,7 +12,7 @@ import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
- * @deprecated in 3.6. Use [WidgetProps]($appui-react) instead.
+ * @deprecated in 3.6. Use [Widget]($appui-react) instead.
  * @public
  */
 export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line deprecation/deprecation

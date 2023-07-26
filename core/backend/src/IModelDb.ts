@@ -7,6 +7,7 @@
  */
 
 import { join } from "path";
+import * as fs from "fs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -15,24 +16,26 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
-  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
+  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
+  PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -49,10 +52,11 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
+
+import type { BlobContainer } from "./BlobContainerService";
 
 // spell:ignore fontid fontmap
 
@@ -417,9 +421,7 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get isStandalone(): boolean { return false; }
-  /** Type guard for instanceof [[StandaloneDb]]
-   * @internal
-   */
+  /** Type guard for instanceof [[StandaloneDb]]. */
   public isStandaloneDb(): this is StandaloneDb { return this.isStandalone; }
 
   /** Return `true` if the underlying nativeDb is open and valid.
@@ -488,6 +490,12 @@ export abstract class IModelDb extends IModel {
     }
   }
   /** Allow to execute query and read results along with meta data. The result are streamed.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   *
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
@@ -510,7 +518,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -532,7 +540,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -554,7 +562,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
@@ -949,7 +957,7 @@ export abstract class IModelDb extends IModel {
     return schemaState;
   }
 
-  /** Get the ClassMetaDataRegistry for this iModel.
+  /** The registry of entity metadata for this iModel.
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
@@ -992,9 +1000,9 @@ export abstract class IModelDb extends IModel {
   /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
-  public constructEntity<T extends Entity>(props: EntityProps): T {
+  public constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T {
     const jsClass = this.getJsClass(props.classFullName);
-    return new jsClass(props, this) as T;
+    return Entity.instantiate(jsClass, props, this) as T;
   }
 
   /** Get the JavaScript class that handles a given entity class.  */
@@ -1260,7 +1268,7 @@ export abstract class IModelDb extends IModel {
 
   /** Request geometry stream information from an element in binary format instead of json.
    * @returns IModelStatus.Success if successful
-   * @alpha
+   * @beta
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
@@ -1295,9 +1303,7 @@ export abstract class IModelDb extends IModel {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
       stmt.bindString(3, JSON.stringify(dict));
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "cannot save setting");
+      stmt.stepForWrite();
     });
     this.saveChanges("add settings");
   }
@@ -1310,9 +1316,7 @@ export abstract class IModelDb extends IModel {
     this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "cannot delete setting");
+      stmt.stepForWrite();
     });
     this.saveChanges("delete settings");
   }
@@ -1324,7 +1328,7 @@ export abstract class IModelDb extends IModel {
 
     this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      while (stmt.nextRow()) {
         try {
           const dict = JSON.parse(stmt.getValueString(1));
           this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
@@ -1366,8 +1370,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this.tryGetModelJson({ id });
     }
 
-    /** Query for the last modified time of the specified Model.
-     * @internal
+    /** Query for the last modified time for a [[Model]].
+     * @param modelId The Id of the model.
+     * @throws IModelError if `modelId` does not identify a model in the iModel.
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
@@ -1559,12 +1564,31 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
   }
 
+  export interface GuidMapper {
+    getFederationGuidFromId(id: Id64String): GuidString | undefined;
+    getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
+  }
+
   /** The collection of elements in an [[IModelDb]].
    * @public
    */
-  export class Elements {
+  export class Elements implements GuidMapper {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
+
+    public getFederationGuidFromId(id: Id64String): GuidString | undefined {
+      return this._iModel.withPreparedSqliteStatement(`SELECT FederationGuid FROM bis_Element WHERE Id=?`, (stmt) => {
+        stmt.bindId(1, id);
+        return stmt.nextRow() ? stmt.getValueGuid(0) : undefined;
+      });
+    }
+
+    public getIdFromFederationGuid(guid?: GuidString): Id64String | undefined {
+      return guid ? this._iModel.withPreparedSqliteStatement(`SELECT Id FROM bis_Element WHERE FederationGuid=?`, (stmt) => {
+        stmt.bindGuid(1, guid);
+        return !stmt.nextRow() ? undefined : stmt.getValueId(0);
+      }) : undefined;
+    }
 
     /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
@@ -1695,8 +1719,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    /** Query for the last modified time of the specified element.
-     * @internal
+    /** Query for an [[Element]]'s last modified time.
+     * @param elementId The Id of the element.
+     * @throws IModelError if `elementId` does not identify an element in the iModel.
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
@@ -2017,6 +2042,43 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
+    private static viewStoreProperty = { namespace: "itwinjs", name: "DefaultViewStore" };
+    private _viewStore?: ViewStore.CloudAccess;
+    public get hasViewStore(): boolean { return undefined !== this._viewStore; }
+
+    /** @beta */
+    public get viewStore(): ViewStore.CloudAccess {
+      if (undefined === this._viewStore)
+        throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
+      return this._viewStore;
+    }
+    public set viewStore(viewStore: ViewStore.CloudAccess) {
+      this._viewStore = viewStore;
+    }
+    /** @beta */
+    public async accessViewStore(args: { userToken?: AccessToken, props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
+      let props = args.props;
+      if (undefined === props) {
+        const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
+        if (!propsString)
+          throw new Error("iModel does not have a default ViewStore");
+
+        props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
+      }
+      const accessToken = await CloudSqlite.requestToken(props);
+      if (!this._viewStore)
+        this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, iModel: this._iModel });
+
+      this._viewStore.container.accessToken = accessToken;
+      return this._viewStore;
+    }
+
+    /** @beta */
+    public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
+      const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
+      this._iModel.saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));
+      this._iModel.saveChanges("update default ViewStore");
+    }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
      * @param className Query for view definitions of this class.
@@ -2044,11 +2106,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
      * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
-     *
-     * **Example: Finding all views of a specific DrawingModel**
-     * ``` ts
-     * [[include:IModelDb.Views.iterateViews]]
-     * ```
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
@@ -2067,81 +2124,86 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    private loadViewStateProps(viewDefinitionElement: ViewDefinition, options?: ViewStateLoadProps, drawingExtents?: Range3d): ViewStateProps {
-      const elements = this._iModel.elements;
-      const viewDefinitionProps = viewDefinitionElement.toJSON();
-      const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
+    private loadViewData(viewId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
+      const iModel = this._iModel;
+      const elements = iModel.elements;
+      const loader = (() => {
+        if (ViewStoreRpc.isViewStoreId(viewId)) {
+          const reader = this.viewStore.reader;
+          return {
+            loadView: () => reader.getViewDefinitionSync({ viewId }),
+            loadCategorySelector: (id: ViewIdString) => reader.getCategorySelectorSync({ id, bindings: options?.queryBindings?.categorySelector }),
+            loadDisplayStyle: (id: ViewIdString) => reader.getDisplayStyleSync({ id, opts: options?.displayStyle }),
+            loadModelSelector: (id: ViewIdString) => reader.getModelSelectorSync({ id, bindings: options?.queryBindings?.modelSelector }),
+          };
+        }
+        return {
+          loadView: () => elements.getElementProps<ViewDefinitionProps>(viewId),
+          loadCategorySelector: (id: Id64String) => elements.getElementProps<CategorySelectorProps>(id),
+          loadDisplayStyle: (id: Id64String) => elements.getElementProps<DisplayStyleProps>({ id, displayStyle: options?.displayStyle }),
+          loadModelSelector: (id: Id64String) => elements.getElementProps<ModelSelectorProps>(id),
+        };
+      })();
 
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
-        id: viewDefinitionProps.displayStyleId,
-        displayStyle: options?.displayStyle,
-      });
+      const props = {} as ViewStateProps;
+      props.viewDefinitionProps = loader.loadView();
+      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
+      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyleId);
+      const modelSelectorId = (props.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      if (modelSelectorId !== undefined)
+        props.modelSelectorProps = loader.loadModelSelector(modelSelectorId);
 
-      const viewStateData: ViewStateProps = {
-        viewDefinitionProps,
-        displayStyleProps,
-        categorySelectorProps,
-      };
-
-      const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
-      if (modelSelectorId !== undefined) {
-        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
-      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
-        viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
+      const viewClass = iModel.getJsClass(props.viewDefinitionProps.classFullName);
+      const baseModelId = (props.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (viewClass.is(SheetViewDefinition)) {
+        props.sheetProps = elements.getElementProps<SheetProps>(baseModelId);
+        props.sheetAttachments = Array.from(iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
-          where: `Model.Id=${viewDefinitionElement.baseModelId}`,
+          where: `Model.Id=${baseModelId}`,
         }));
-      } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
-        // Ensure view has known extents
-        if (drawingExtents && !drawingExtents.isNull)
-          viewStateData.modelExtents = drawingExtents.toJSON();
-
+      } else if (viewClass.is(DrawingViewDefinition)) {
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
-        try {
-          const sectionDrawing = this._iModel.elements.tryGetElement<SectionDrawing>(viewDefinitionElement.baseModelId);
-          if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
-            viewStateData.sectionDrawing = {
-              spatialView: sectionDrawing.spatialView.id,
-              displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
-              drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
-            };
-          }
-        } catch {
-          //
+        const sectionDrawing = iModel.elements.tryGetElement<SectionDrawing>(baseModelId);
+        if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
+          props.sectionDrawing = {
+            spatialView: sectionDrawing.spatialView.id,
+            displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
+            drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
+          };
         }
       }
-
-      return viewStateData;
+      return props;
     }
 
     /** @deprecated in 3.x. use [[getViewStateProps]]. */
-    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
-      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
-      let drawingExtents;
-      if (view instanceof DrawingViewDefinition) {
-        try {
-          drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents);
-        } catch {
-          //
-        }
+    public getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
+      const viewStateData = this.loadViewData(viewDefinitionId, options);
+      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (baseModelId) {
+        const drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: baseModelId }).modelExtents);
+        if (!drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
       }
-
-      return this.loadViewStateProps(view, options, drawingExtents);
+      return viewStateData;
     }
 
-    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
-    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
-      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
-      let drawingExtents;
-      if (view instanceof DrawingViewDefinition)
-        drawingExtents = (await this._iModel.models.queryRange(view.baseModelId));
-
-      return this.loadViewStateProps(view, options, drawingExtents);
+    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
+    public async getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const viewStateData = this.loadViewData(viewDefinitionId, options);
+      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (baseModelId) {
+        const drawingExtents = await this._iModel.models.queryRange(baseModelId);
+        if (!drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
+      }
+      return viewStateData;
     }
 
-    private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
+    private getViewThumbnailArg(viewDefinitionId: ViewIdString): FilePropertyProps {
+      if (!Id64.isValid(viewDefinitionId))
+        throw new Error("illegal thumbnail id");
+
       return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
 
@@ -2186,9 +2248,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** Represents the current state of a pollable tile content request.
-   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-   * @internal
-   */
+ * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+ * @internal
+ */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
@@ -2337,6 +2399,9 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  /** Event raised after a BriefcaseDb has been closed. */
+  public readonly onClosed = new BeEvent<() => void>();
+
   /** @alpha */
   public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
@@ -2419,9 +2484,17 @@ export class BriefcaseDb extends IModelDb {
     this.onOpen.raiseEvent(args);
 
     const file = { path: args.fileName, key: args.key };
-    const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
+    const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
+    // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
+    if (args.watchForChanges && undefined === args.container) {
+      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
+    }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -2433,7 +2506,6 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
@@ -2474,6 +2546,11 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+  }
+
+  public override close() {
+    super.close();
+    this.onClosed.raiseEvent();
   }
 }
 
@@ -2546,6 +2623,8 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
+  public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
+  public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
@@ -2630,10 +2709,13 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
   public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
+    this.onOpen.raiseEvent(path, opts);
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
-    return new SnapshotDb(nativeDb, file.key);
+    const db = new SnapshotDb(nativeDb, file.key);
+    this.onOpened.raiseEvent(db);
+    return db;
   }
 
   /** Open a previously downloaded V1 checkpoint file.
@@ -2750,6 +2832,20 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.closeIModel();
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
+  }
+
+  /** Creates or updates views in the iModel to permit visualizing the EC content as ECClasses and ECProperties rather than raw database tables and columns.
+   * This can be helpful when debugging the EC data, especially when the raw tables make use of shared columns or spread data across multiple tables.
+   * @throws IModelError if view creation failed.
+   * @note The views are strictly intended for developers and debugging purposes only - they should not be used in application code.
+   * @beta
+   */
+  public createClassViews(): void {
+    const result = this.nativeDb.createClassViewsInDb();
+    if (BentleyStatus.SUCCESS !== result)
+      throw new IModelError(result, "Error creating class views");
+    else
+      this.saveChanges();
   }
 
   /** Open a standalone iModel file.

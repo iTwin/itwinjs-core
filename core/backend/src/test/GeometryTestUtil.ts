@@ -15,7 +15,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 export const brepData: { data: string } = JSON.parse(
   fs.readFileSync(IModelTestUtils.resolveAssetFile("brepdata1.json"), {
     encoding: "utf8",
-  })
+  }),
 );
 
 export function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {

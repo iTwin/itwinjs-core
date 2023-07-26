@@ -23,14 +23,12 @@ export class Relationship extends Entity {
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
-  /** @internal */
-  constructor(props: RelationshipProps, iModel: IModelDb) {
+  protected constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
   }
 
-  /** @internal */
   public override toJSON(): RelationshipProps {
     const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;
@@ -91,7 +89,7 @@ export class ElementRefersToElements extends Relationship {
     return iModel.relationships.insertInstance(relationship.toJSON());
   }
 
-  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
@@ -391,8 +389,7 @@ export class ElementDrivesElement extends Relationship {
   /** Affects the order in which relationships are processed in the case where two relationships have the same output. */
   public priority: number;
 
-  /** @internal */
-  constructor(props: ElementDrivesElementProps, iModel: IModelDb) {
+  protected constructor(props: ElementDrivesElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.status = props.status;
     this.priority = props.priority;
@@ -410,7 +407,7 @@ export class ElementDrivesElement extends Relationship {
     return props;
   }
 
-  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
@@ -440,7 +437,7 @@ export class Relationships {
   private _iModel: IModelDb;
 
   /** @internal */
-  constructor(iModel: IModelDb) { this._iModel = iModel; }
+  public constructor(iModel: IModelDb) { this._iModel = iModel; }
 
   /** Create a new instance of a Relationship.
    * @param props The properties of the new Relationship.

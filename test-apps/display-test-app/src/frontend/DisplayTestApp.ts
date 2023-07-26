@@ -146,6 +146,18 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   return [renderSystemOptions, tileAdminProps];
 }
 
+// simple function to extract file name, without path or extension, on Windows or Linux
+function getFileName(path: string): string {
+  let strs = path.split("/");
+  let str = strs[strs.length - 1];
+  strs = str.split("\\");
+  str = strs[strs.length - 1];
+  const ndx = str.lastIndexOf(".");
+  if (ndx > 0) // allow files starting with .
+    str = str.substring(0, ndx);
+  return str;
+}
+
 // main entry point.
 const dtaFrontendMain = async () => {
   RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
@@ -153,23 +165,6 @@ const dtaFrontendMain = async () => {
 
   // retrieve, set, and output the global configuration variable
   await getFrontendConfig();
-
-  if (configuration.useFrontendTiles) {
-    initializeFrontendTiles({
-      computeSpatialTilesetBaseUrl: async (iModel) => {
-        const url = new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`);
-        try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
-          await response.json();
-          return url;
-        } catch (_) {
-          // No tileset available.
-          return undefined;
-        }
-      },
-    });
-  }
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   let tileAdminProps: TileAdmin.Props;
@@ -200,6 +195,26 @@ const dtaFrontendMain = async () => {
       alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
       return;
     }
+  }
+
+  // this needs to execute after all DisplayTestApp.startup executions so that env var will be current
+  if (configuration.frontendTilesUrlTemplate) {
+    initializeFrontendTiles({
+      computeSpatialTilesetBaseUrl: async (iModel) => {
+        let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
+        urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
+        const url = new URL(urlStr);
+        try {
+          // See if a tileset has been published for this iModel.
+          const response = await fetch(`${url}tileset.json`);
+          await response.json();
+          return url;
+        } catch (_) {
+          // No tileset available.
+          return undefined;
+        }
+      },
+    });
   }
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT

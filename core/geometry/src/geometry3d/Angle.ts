@@ -62,6 +62,12 @@ export class Angle implements BeJSONFunctions {
     return new Angle(radians);
   }
   /**
+   * Return a new `Angle` object with the default "small" angle measurement specified by [[Geometry.smallAngleRadians]].
+   */
+  public static createSmallAngle(): Angle {
+    return new Angle(Geometry.smallAngleRadians);
+  }
+  /**
    * Return a (new) Angle object that is interpolated between two inputs (based on a fraction)
    * @param angle0 first angle in radians
    * @param fraction the interpolation fraction
@@ -330,6 +336,14 @@ export class Angle implements BeJSONFunctions {
     return Math.abs(delta1) <= radianTol;
   }
   /**
+ * Test if this angle has magnitude no greater than that of `other`.
+ * @param other the other angle
+ */
+  public isMagnitudeLessThanOrEqual(other: Angle): boolean {
+    return Math.abs(this.radians) <= Math.abs(other.radians);
+  }
+
+  /**
    * Test if this angle and other are equivalent, allowing shift by full circle (i.e., multiples of `2 * PI`).
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
@@ -454,7 +468,7 @@ export class Angle implements BeJSONFunctions {
    * @param dotUV dot product of vectorU with vectorV
    */
   public static dotProductsToHalfAngleTrigValues(
-    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true
+    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true,
   ): TrigValues {
 
     const cos2t0 = dotUU - dotVV;
@@ -474,7 +488,7 @@ export class Angle implements BeJSONFunctions {
    * @param vz z component of vector v
    */
   public static radiansBetweenVectorsXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number
+    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);

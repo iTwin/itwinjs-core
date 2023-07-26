@@ -7,21 +7,18 @@
  * @module Views
  */
 
-/*
-API for creating a 3D default view for an iModel.
-Either takes in a list of modelIds, or displays all 3D models by default.
-*/
-
-import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, CustomViewState3dCreatorOptions, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
-  QueryRowFormat, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  Camera, CategorySelectorProps, Code, CustomViewState3dCreatorOptions, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface,
+  ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
+import { StandardViewId } from "./StandardView";
+import { ViewState } from "./ViewState";
+
+/** Api for creating a 3d default view for an iModel. Either takes in a list of modelIds, or displays all 3d models by default. */
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -79,7 +76,7 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const rpcOptions: CustomViewState3dCreatorOptions = modelIds ? { modelIds: CompressedId64Set.sortAndCompress(modelIds) } : { };
+    const rpcOptions: CustomViewState3dCreatorOptions = modelIds ? { modelIds: CompressedId64Set.sortAndCompress(modelIds) } : {};
     const rpc = IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token);
     const serializedProps = await rpc.getCustomViewState3dData(this._imodel.getRpcProps(), rpcOptions);
 
@@ -88,7 +85,7 @@ export class ViewCreator3d {
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
       baseExtents,
-      options
+      options,
     );
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
@@ -241,40 +238,15 @@ export class ViewCreator3d {
   }
 
   /**
-   * Get ID of default view.
+   * Get the Id of the default view.
    */
   private async _getDefaultViewId(): Promise<Id64String | undefined> {
     const viewId = await this._imodel.views.queryDefaultViewId();
-    const params: ViewQueryParams = {};
-    params.from = SpatialViewState.classFullName;
-    params.where = `ECInstanceId=${viewId}`;
+    if (viewId !== Id64.invalid)
+      return viewId;
 
-    // Check validity of default view
-    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._imodel.getRpcProps(), params);
-    if (viewProps.length === 0) {
-      // Return the first view we can find
-      const viewList = await this._imodel.views.getViewList({ wantPrivate: false });
-      if (viewList.length === 0)
-        return undefined;
-
-      const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
-      if (spatialViewList.length === 0)
-        return undefined;
-
-      return spatialViewList[0].id;
-    }
-
-    return viewId;
+    // Return the first spatial view
+    const viewList = await this._imodel.views.getViewList({ wantPrivate: false, limit: 1, from: SpatialViewState.classFullName });
+    return viewList.length === 0 ? undefined : viewList[0].id;
   }
-
-  /**
-   * Helper function to execute ECSql queries.
-   */
-  private _executeQuery = async (query: string) => {
-    const rows = [];
-    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      rows.push(row.id);
-
-    return rows;
-  };
 }

@@ -8,7 +8,9 @@
 
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Point3d } from "./Point3dVector3d";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
 import { Range1d } from "./Range";
 
@@ -45,7 +47,7 @@ export class PolylineOps {
    * @param source input points
    * @param maxEdgeLength
    */
-  public static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[] {
+  public static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);
     PolylineCompressionContext.compressInPlaceByShortEdgeLength(dest, maxEdgeLength);
     return dest.getPoint3dArray();
@@ -97,7 +99,7 @@ export class PolylineOps {
    * @param pointQ
    * @param tolerance
    */
-  private static isDanglerConfiguration(points: Point3d[], indexA: number, indexB: number,pointQ: Point3d, squaredDistanceTolerance: number): boolean {
+  private static isDanglerConfiguration(points: Point3d[], indexA: number, indexB: number, pointQ: Point3d, squaredDistanceTolerance: number): boolean {
     if (indexA < 0 || indexA >= points.length)
       return false;
     const pointA = points[indexA];
@@ -118,62 +120,64 @@ export class PolylineOps {
     const d2B = pointA.distanceSquared(pointB);
     let distanceSquared;
     if (d2Q >= d2B) {
-    //                        pointB----------------------------------->>>>>>> pointA
-    //          pointQ<<<<---------------------------------------------------------
+      //                        pointB----------------------------------->>>>>>> pointA
+      //          pointQ<<<<---------------------------------------------------------
       const fraction = dot / d2Q; // safe to divide because of earlier d2Q test.
       distanceSquared = this.squaredDistanceToInterpolatedPoint(pointB, pointA, fraction, pointQ);
     } else {
       //           pointB----------------------------------->>>>>>> pointA
       //                         pointQ<<<<----------------------
       const fraction = dot / d2B;
-    distanceSquared = this.squaredDistanceToInterpolatedPoint(pointQ, pointA, fraction, pointB);
+      distanceSquared = this.squaredDistanceToInterpolatedPoint(pointQ, pointA, fraction, pointB);
     }
     return distanceSquared < squaredDistanceTolerance;
   }
-/**
-   * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
-   * @param source input points
-   */
-   public static compressDanglers(source: Point3d[], closed: boolean = false, tolerance: number = Geometry.smallMetricDistance): Point3d[] {
-     let n = source.length;
-     const squaredDistanceTolerance = tolerance * tolerance;
-     if (closed)
+  /**
+     * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
+     * @param source input points
+     * @param closed if true, an edge returning to point 0 is implied even if final point does not match.
+     * @param tolerance tolerance for near-zero distance.
+     */
+  public static compressDanglers(source: Point3d[], closed: boolean = false, tolerance: number = Geometry.smallMetricDistance): Point3d[] {
+    let n = source.length;
+    const squaredDistanceTolerance = tolerance * tolerance;
+    if (closed)
       while (n > 1 && source[n - 1].distanceSquared(source[0]) <= squaredDistanceTolerance)
-          n--;
-     const dest = [];
-     dest.push(source[0].clone());
-     for (let i = 1; i < n; i++){
-       const newPoint = source[i];
-       while (this.isDanglerConfiguration(dest, dest.length - 1, dest.length - 2, newPoint, squaredDistanceTolerance))
-         dest.pop();
-       dest.push(newPoint.clone());
-     }
-     if (closed) {
-       // No purge moving backwards.   Last point
-       let leftIndex = 0;
-       let rightIndex = dest.length - 1;
-       while (rightIndex > leftIndex + 2) {
-         if (this.isDanglerConfiguration(dest, leftIndex, leftIndex + 1, dest[rightIndex], squaredDistanceTolerance)) {
-           leftIndex++;
-         } else if (this.isDanglerConfiguration(dest, rightIndex, rightIndex - 1, dest[leftIndex], squaredDistanceTolerance)) {
-           rightIndex--;
-         } else {
-           break;
-         }
-       }
-       if (rightIndex + 1 < dest.length)
-         dest.length = rightIndex + 1;
-       if (leftIndex > 0) {
-         dest.splice(0, leftIndex);
-       }
-     }
-     return dest;
+        n--;
+    const dest = [];
+    dest.push(source[0].clone());
+    for (let i = 1; i < n; i++) {
+      const newPoint = source[i];
+      while (this.isDanglerConfiguration(dest, dest.length - 1, dest.length - 2, newPoint, squaredDistanceTolerance))
+        dest.pop();
+      dest.push(newPoint.clone());
+    }
+    if (closed) {
+      // No purge moving backwards.   Last point
+      let leftIndex = 0;
+      let rightIndex = dest.length - 1;
+      while (rightIndex > leftIndex + 2) {
+        if (this.isDanglerConfiguration(dest, leftIndex, leftIndex + 1, dest[rightIndex], squaredDistanceTolerance)) {
+          leftIndex++;
+        } else if (this.isDanglerConfiguration(dest, rightIndex, rightIndex - 1, dest[leftIndex], squaredDistanceTolerance)) {
+          rightIndex--;
+        } else {
+          break;
+        }
+      }
+      if (rightIndex + 1 < dest.length)
+        dest.length = rightIndex + 1;
+      if (leftIndex > 0) {
+        dest.splice(0, leftIndex);
+      }
+    }
+    return dest;
   }
   /**
    * Add closure points to a polyline or array of polylines
    * @param data points.
    */
-   public static addClosurePoint(data: Point3d[] | Point3d[][]) {
+  public static addClosurePoint(data: Point3d[] | Point3d[][]) {
     if (data.length === 0)
       return;
     const q0 = data[0];
@@ -185,7 +189,7 @@ export class PolylineOps {
       return;
     }
     const q1 = data[data.length - 1];
-    if (q0 instanceof Point3d && q1 instanceof Point3d && !q0.isAlmostEqual (q1)) {
+    if (q0 instanceof Point3d && q1 instanceof Point3d && !q0.isAlmostEqual(q1)) {
       (data as Point3d[]).push(q0.clone());
     }
   }
@@ -193,7 +197,7 @@ export class PolylineOps {
    * Remove closure points a polyline or array of polylines
    * @param data points.
    */
-   public static removeClosurePoint(data: Point3d[] | Point3d[][]) {
+  public static removeClosurePoint(data: Point3d[] | Point3d[][]) {
     if (data.length === 0)
       return;
     const q0 = data[0];
@@ -205,8 +209,61 @@ export class PolylineOps {
       return;
     }
     const q1 = data[data.length - 1];
-    if (q0 instanceof Point3d && q1 instanceof Point3d && q0.isAlmostEqual (q1)) {
-      (data as Point3d[]).pop ();
+    if (q0 instanceof Point3d && q1 instanceof Point3d && q0.isAlmostEqual(q1)) {
+      (data as Point3d[]).pop();
     }
+  }
+  /** Create an array of planes.
+   * * First plane has origin at first centerline point, with unit normal directed at the next point.
+   * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors along the incoming and outgoing segments.
+   * * Last plane has origin at last centerline point, with unit normal directed from previous point.
+   * * All sets of adjacent coincident points are reduced to a single point.
+   *    * Hence the output array may have fewer points than the centerline.
+   * * If there are one or fewer distinct input points, the return is undefined
+   * @param centerline points to reside in output planes
+   * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last output planes are averaged and equated (cloned).
+   */
+  public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
+    const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
+    if (packedPoints.length < 2)
+      return undefined;
+    const bisectorPlanes: Plane3dByOriginAndUnitNormal[] = [];
+    const point0 = packedPoints[0];
+    const point1 = packedPoints[1];
+    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1)!;
+    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01)!;
+    const perpendicular1 = Plane3dByOriginAndUnitNormal.createXYPlane();
+    // FIRST point gets simple perpendicular
+    bisectorPlanes.push(perpendicular0.clone());
+    // Each intermediate point gets average of adjacent perpendiculars
+    for (let i = 1; i + 1 < packedPoints.length; i++) {
+      Vector3d.createNormalizedStartEnd(packedPoints[i], packedPoints[i + 1], unit01);
+      // remark: the prior pack should ensure the normalization is ok.  But if it fails, we ignore this point...
+      if (undefined !== Plane3dByOriginAndUnitNormal.create(packedPoints[i], unit01, perpendicular1)) {
+        const newBisectorNormal = perpendicular0.getNormalRef().interpolate(0.5, perpendicular1.getNormalRef());
+        const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(packedPoints[i], newBisectorNormal);
+        if (undefined !== newBisectorPlane)
+          bisectorPlanes.push(newBisectorPlane);
+        perpendicular0.setFrom(perpendicular1);
+      }
     }
+    // LAST point gets simple perpendicular inherited from last pass
+    bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())!);
+    // reset end planes to their average plane, but leave them alone if the closure point is a cusp
+    const lastIndex = bisectorPlanes.length - 1;
+    if (lastIndex > 0 && wrapIfPhysicallyClosed) {
+      const firstPlane = bisectorPlanes[0];
+      const lastPlane = bisectorPlanes[lastIndex];
+      if (Geometry.isSamePoint3d(firstPlane.getOriginRef(), lastPlane.getOriginRef())) {
+        const newBisectorNormal = firstPlane.getNormalRef().plus(lastPlane.getNormalRef()); // could be zero vector at a cusp
+        const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal);
+        if (undefined !== newBisectorPlane) {
+          bisectorPlanes[0] = newBisectorPlane;
+          bisectorPlanes[lastIndex] = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal)!;
+        }
+      }
+    }
+    return bisectorPlanes.length > 1 ? bisectorPlanes : undefined;
+  }
+
 }

@@ -11,6 +11,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("Transform.Inverse", () => {
   it("Transform.Inverse", () => {
@@ -125,13 +126,13 @@ describe("Transform.CreateOriginAndMatrix", () => {
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
           transformA.matrix.columnZ(),
-          transformB
+          transformB,
         );
         const transformB2 = Transform.createOriginAndMatrixColumns(
           transformA.getOrigin(),
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
-          transformA.matrix.columnZ()
+          transformA.matrix.columnZ(),
         );
         ck.testTrue(transformB === transformB1, "input result and returned result are the same");
         ck.testTransform(transformA, transformB1);
@@ -158,7 +159,7 @@ describe("Transform.Singular", () => {
       const transform = Transform.createRefs(origin, matrix);
       ck.testUndefined(
         transform.inverse(),
-        "Inverse of a transform is undefined if the transform has singular matrix part"
+        "Inverse of a transform is undefined if the transform has singular matrix part",
       );
       const pointB = transform.multiplyInverseXYZ(pointA.x, pointA.y, pointA.z);
       ck.testUndefined(pointB);
@@ -175,7 +176,7 @@ describe("Transform.MultiplyTransformMatrix3d", () => {
     const points = Sample.createPoint3dLattice(-2, 1, 2);
     const transformA = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11),
     ); // [A a]
     const matrixB = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
     const transformB = Transform.createOriginAndMatrix(undefined, matrixB); // [B 0]
@@ -206,7 +207,7 @@ describe("Transform.MultiplyMatrix3dTransform", () => {
     const transformA = Transform.createOriginAndMatrix(undefined, matrixA); // [A 0]
     const transformB = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11),
     ); // [B b]
     const transformC = matrixA.multiplyMatrixTransform(transformB); // [AB Ab]
     const transformD = matrixA.multiplyMatrixTransform(transformB, Transform.createIdentity()); // [AB Ab]
@@ -273,13 +274,13 @@ describe("Transform.CloneRigid", () => {
     const singularTransformA = Transform.createRowValues(
       1, 2, 4, 0,
       2, 4, 3, 1,
-      3, 6, -10, 1
+      3, 6, -10, 1,
     ); // columns X and Y (or 0 and 1) are dependent so matrix part is singular
     const points = [Point3d.create(1, 2, 3), Point3d.create(3, 2, 9)];
     ck.testFalse(singularTransformA.multiplyInversePoint3dArrayInPlace(points));
     ck.testUndefined(
       singularTransformA.cloneRigid(AxisOrder.XYZ),
-      "cloneRigid fail because column X and Y are dependent"
+      "cloneRigid fail because column X and Y are dependent",
     );
 
     const rigidTransformA = singularTransformA.cloneRigid(AxisOrder.ZXY);
@@ -334,6 +335,7 @@ describe("Transform.GetMatrix", () => {
     ck.testTransform(transform0, transform1);
     const matrix = transform1.getMatrix();
     ck.testMatrix3d(matrix, Matrix3d.identity);
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
@@ -346,5 +348,33 @@ describe("Transform.CreateMatrixPickupPutdown", () => {
     const transform = Transform.createMatrixPickupPutdown(matrix, a, b);
     const c = transform.multiplyPoint3d(a);
     ck.testPoint3d(b, c);
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Transform.createFlattenAlongVectorToPlane", () => {
+  it("Transform.createFlattenAlongVectorToPlane", () => {
+    const ck = new Checker();
+    const spacePoints = Sample.point3d;
+    for (const planeOrigin of spacePoints) {
+      for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(2, 3, -1)]) {
+        for (const sweepDirection of ([Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)])) {
+          const transform = Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
+          if (ck.testDefined(transform, "expect good transform") && transform !== undefined) {
+            for (const pointA of spacePoints) {
+              const pointB = transform.multiplyPoint3d(pointA);
+              const dotB = planeNormal.dotProductStartEnd(planeOrigin, pointB);
+              if (!ck.testCoordinate(0.0, dotB, "ProjectedPoint on plane")) {
+                GeometryCoreTestIO.consoleLog({ planeOrigin, planeNormal, sweepDirection, trans: transform.toJSON() });
+                GeometryCoreTestIO.consoleLog({ pointA, pointB });
+                Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 });

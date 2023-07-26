@@ -3,13 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery, SweepLineStringToFacetsOptions } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -52,7 +59,7 @@ it("DrapeLinestringAsPanels", async () => {
         return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
       });
 
-    const _panels = PolyfaceQuery.sweepLinestringToFacetsXYreturnSweptFacets(linestring.packedPoints, mesh);
+    const _panels = PolyfaceQuery.sweepLineStringToFacetsXYReturnSweptFacets(linestring.packedPoints, mesh);
     // GeometryCoreTestIO.captureGeometry(allGeometry, [mesh, linestring, panels], 0, dy, 0);
     _dy += 20.0;
   }
@@ -105,9 +112,11 @@ it("DrapeLinestringAsLines", async () => {
           (x: number, y: number, _z: number) => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
-      const lines = await Promise.resolve(PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh));
+      const lines = await Promise.resolve(PolyfaceQuery.sweepLineStringToFacets(linestring.packedPoints, mesh,
+        SweepLineStringToFacetsOptions.create(undefined, undefined, false, true, true, true)));
       // GeometryCoreTestIO.consoleLog({ awaitBlocks: PolyfaceQuery.awaitBlockCount });
-      const chains = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh);
+      const chains = PolyfaceQuery.sweepLineStringToFacets(linestring.packedPoints, mesh,
+        SweepLineStringToFacetsOptions.create(undefined, undefined, true, true, true, true));
       let lineSum = 0;
       let chainSum = 0;
       for (const g of lines) lineSum += g.curveLength();
@@ -185,7 +194,9 @@ it("DrapeLinestringLargeMesh", async () => {
           (x: number, y: number, _z: number) => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
-      const lines = PolyfaceQuery.sweepLinestringToFacetsXYReturnLines(linestring.packedPoints, mesh);
+      const lines = PolyfaceQuery.sweepLineStringToFacets(linestring.packedPoints, mesh,
+        SweepLineStringToFacetsOptions.create(undefined, undefined, false, true, true, true),
+      );
       const name = `sweptLineString ${numX * numY} ${linestring.packedPoints.length}`;
       GeometryCoreTestIO.consoleTime(name);
       const _chains = Promise.resolve(PolyfaceQuery.asyncSweepLinestringToFacetsXYReturnChains(linestring.packedPoints, mesh));
@@ -211,3 +222,114 @@ it("DrapeLinestringLargeMesh", async () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("sweepLinestringToFacetsXYZingers", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+
+  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
+  let x0 = 0;
+  const y0 = 0;
+  const z0 = 0;
+  const doScale = false;
+  if (Array.isArray(data) && data.length === 3) {
+    if (ck.testType(data[0], LineString3d, "Expect linestring")
+      && ck.testType(data[1], IndexedPolyface, "Expect mesh")
+      && ck.testType(data[2], IndexedPolyface, "expect mesh")) {
+      const linestringA = data[0];
+      const meshB = data[1];
+      const meshC = data[2];
+
+      const origin = linestringA.pointAt(0)!;
+      const translate = Transform.createTranslationXYZ(-origin.x, -origin.y, -origin.z);
+      const scale = Transform.createScaleAboutPoint(Point3d.create(0, 0, 0), 1.0e-4);
+      if (doScale) {
+        linestringA.tryTransformInPlace(translate);
+        linestringA.tryTransformInPlace(scale);
+        meshB.tryTransformInPlace(translate);
+        meshB.tryTransformInPlace(scale);
+        meshC.tryTransformInPlace(translate);
+        meshC.tryTransformInPlace(scale);
+      }
+
+      const range = linestringA.range();
+      range.extendRange(meshB.range());
+      range.extendRange(meshC.range());
+      const stepX = range.xLength();
+      const stepZ = doScale ? 5.0 * range.zLength() : 100;
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, data, x0, y0);
+
+      for (const mesh of [meshB, meshC]) {
+        const lines = PolyfaceQuery.sweepLineStringToFacets(linestringA.packedPoints, mesh);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines, x0, y0, z0 + stepZ);
+      }
+
+      x0 += stepX;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringZingers5506");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+it("sweepLinestringToFacetsXYZVerticalMesh", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  let x0 = 0;
+  const y0 = 0;
+  const z0 = 0;
+  const contour0 = GrowableXYZArray.create([
+    Point3d.create(-1, 0, 0),
+    Point3d.create(-1, 0, 1),
+    Point3d.create(1.2, 0, 1),
+    Point3d.create(1.2, 0, 0),
+    Point3d.create(0.8, 0, 0),
+  ]);
+
+  const contour1 = contour0.clone();
+  contour1.multiplyTransformInPlace(Transform.createTranslationXYZ(0, 8, 0));
+  const builder = PolyfaceBuilder.create();
+  builder.addGreedyTriangulationBetweenLineStrings(contour0, contour1);
+  const mesh = builder.claimPolyface();
+  const zz = 1.5;
+  const lineToDrape = LineString3d.create([
+    [-2, 1, zz],
+    [0, 1, zz],
+    [1, 2, zz],
+    [3, 0, 2]]);
+
+  for (const direction of [Vector3d.create(0, 0, 1), Vector3d.create(1, -3, 1)]) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineToDrape, x0, y0, z0);
+    const options = SweepLineStringToFacetsOptions.create(direction);
+    const linesA = PolyfaceQuery.sweepLineStringToFacets(lineToDrape.packedPoints, mesh, options);
+    for (const p of lineToDrape.points) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+        [p, p.plusScaled(direction, -2.5)], x0, y0, z0);
+    }
+    const sumLengths = (curves: CurvePrimitive[]): number => {
+      let s = 0.0;
+      for (const c of curves)
+        s += c.curveLength();
+      return s;
+    };
+    const sumA = sumLengths(linesA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, linesA, x0, y0, z0);
+    let sumB = 0.0;
+    for (const optionsB of [
+      SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), true, true, false, false),
+      SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), true, false, true, false),
+      SweepLineStringToFacetsOptions.create(direction, Angle.createDegrees(2), false, false, false, true),
+    ]) {
+      x0 += 5.0;
+      const linesB = PolyfaceQuery.sweepLineStringToFacets(lineToDrape.packedPoints, mesh, optionsB);
+      sumB += sumLengths(linesB);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, linesB, x0, y0, z0);
+
+    }
+    ck.testCoordinate(sumA, sumB, "Same length returned by various combinations.");
+    x0 += 50.0;
+  }
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "sweepLinestringToFacetsXYZVerticalMesh");
+  expect(ck.getNumErrors()).equals(0);
+});

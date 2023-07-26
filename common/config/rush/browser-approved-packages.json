@@ -143,6 +143,14 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@esbuild-plugins/node-globals-polyfill",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@esbuild-plugins/node-modules-polyfill",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },
@@ -351,6 +359,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@kckst8/vite-plugin-commonjs",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@loaders.gl/core",
       "allowedCategories": [ "frontend" ]
     },
@@ -371,8 +383,24 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@rollup/plugin-commonjs",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@rollup/plugin-replace",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@vitejs/plugin-legacy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -409,6 +437,10 @@
     {
       "name": "browserify-zlib",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "browserslist-to-esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "buffer",
@@ -480,7 +512,7 @@
     },
     {
       "name": "cpx2",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "cross-env",
@@ -520,6 +552,10 @@
     },
     {
       "name": "esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "esbuild-plugin-external-global",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -747,6 +783,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "playwright",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },
@@ -769,6 +809,30 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "rollup-plugin-copy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-ignore",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-includepaths",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-node-polyfills",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-visualizer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-webpack-stats",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sanitize-filename",
@@ -852,6 +916,26 @@
     },
     {
       "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-env-compatible",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-inspect",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-svgr",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-tsconfig-paths",
       "allowedCategories": [ "internal" ]
     },
     {

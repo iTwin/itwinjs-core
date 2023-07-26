@@ -1,7 +1,13 @@
 sep=;
 Release Tag;API Item
-alpha;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
+beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 internal;createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create
-alpha;FrontendTilesOptions
+beta;FrontendTilesOptions
 internal;getMaxLevelsToSkip(): number
-alpha;initializeFrontendTiles(options: FrontendTilesOptions): void
+beta;initializeFrontendTiles(options: FrontendTilesOptions): void
+beta;MeshExport
+internal;MeshExports
+beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
+beta;ObtainMeshExportTilesetUrlArgs
+beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
+beta;QueryMeshExportsArgs

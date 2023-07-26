@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Promote RpcInterface constructor to beta.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

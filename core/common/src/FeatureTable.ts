@@ -57,11 +57,8 @@ export class Feature {
   }
 }
 
-/** A [[Feature]] with a modelId identifying the model containing the feature.
- * Typically produced from a PackedFeature.
- * Prior to the introduction of MultiModelPackedFeatureTable, every (Packed)FeatureTable was associated with exactly one model.
- * Now, each feature in a table may be associated with a different model.
- * @internal
+/** A [[Feature]] with a modelId identifying the model containing the feature, obtained from a [[RenderFeatureTable]].
+ * @public
  */
 export interface ModelFeature {
   modelId: Id64String;
@@ -70,8 +67,11 @@ export interface ModelFeature {
   geometryClass: GeometryClass;
 }
 
-/** @internal */
+/** @public */
 export namespace ModelFeature {
+  /** Create a ModelFeature of [[GeometryClass.Primary]] with all invalid Ids.
+   * This is primarily useful for creating a `result` argument for [[RenderFeatureTable.findFeature]] and [[RenderFeatureTable.getFeature]].
+   */
   export function create(): ModelFeature {
     return {
       modelId: Id64.invalid,
@@ -81,10 +81,12 @@ export namespace ModelFeature {
     };
   }
 
+  /** Returns `true` if any of `feature`'s properties differ from the defaults (invalid Ids and [[GeometryClass.Primary]]). */
   export function isDefined(feature: ModelFeature): boolean {
     return !Id64.isInvalid(feature.modelId) || !Id64.isInvalid(feature.elementId) || !Id64.isInvalid(feature.subCategoryId) || feature.geometryClass !== GeometryClass.Primary;
   }
 
+  /** @alpha */
   export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature {
     result.modelId = unpackedModelId ?? Id64.fromUint32PairObject(packed.modelId);
     result.elementId = Id64.fromUint32PairObject(packed.elementId);
@@ -94,22 +96,30 @@ export namespace ModelFeature {
   }
 }
 
-/** @internal */
+/** Represents a [[Feature]] within a [[RenderFeatureTable]]. This representation is optimized for use on the GPU.
+ * @public
+ */
 export interface PackedFeature {
   modelId: Id64.Uint32Pair;
   elementId: Id64.Uint32Pair;
   subCategoryId: Id64.Uint32Pair;
   geometryClass: GeometryClass;
+  /** @alpha */
   animationNodeId: number;
 }
 
-/** @internal */
+/** Represents a [[PackedFeature]] obtained from a [[RenderFeatureTable]], including the index of that feature within the table.
+ * @public
+ */
 export interface PackedFeatureWithIndex extends PackedFeature {
   index: number;
 }
 
-/** @internal */
+/** @public */
 export namespace PackedFeature {
+  /** Create a PackedFeature of [[GeometryClass.Primary]] with all invalid Ids.
+   * This is primarily useful for creating a `result` argument for [[RenderFeatureTable.getPackedFeature]].
+   */
   export function create(): PackedFeature {
     const pair = { upper: 0, lower: 0 };
     return {
@@ -121,6 +131,9 @@ export namespace PackedFeature {
     };
   }
 
+  /** Create a PackedFeatureWithIndex of [[GeometryClass.Primary]] with all invalid Ids and an index of zero.
+   * This is primarily useful for creating a reusable `output` argument for [[RenderFeatureTable.iterable]].
+   */
   export function createWithIndex(): PackedFeatureWithIndex {
     const result = create() as PackedFeatureWithIndex;
     result.index = 0;
@@ -203,13 +216,20 @@ export class FeatureTable extends IndexMap<Feature> {
 
   /** @internal */
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
+
+  /** Convert this feature table to a representation that can be supplied to [RenderSystem.createBatch]($frontend). */
+  public pack(): RenderFeatureTable {
+    return PackedFeatureTable.pack(this);
+  }
 }
 
-/** @internal */
+/** @alpha */
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
-/** Interface common to PackedFeatureTable and MultiModelPackedFeatureTable.
- * @internal
+/** Representation of a [[FeatureTable]] suitable for use with [RenderSystem.createBatch]($frontend).
+ * The [[Feature]]s are represented as [[PackedFeature]]s. The feature table may contain features from multiple [Model]($backend)s.
+ * @see [[FeatureTable.pack]] to produce a RenderFeatureTable.
+ * @public
  */
 export interface RenderFeatureTable {
   /** The "model Id" of the tile tree containing the tile from which this feature table originated.
@@ -217,28 +237,42 @@ export interface RenderFeatureTable {
    * persistent models batched together.
    */
   readonly batchModelId: Id64String;
-  /** Split representation of batchModelId, so we're not constantly having to parse the string. */
+  /** A split representation of [[batchModelId]], to avoid having to constantly having to parse the string. */
   readonly batchModelIdPair: Id64.Uint32Pair;
   /** The number of features in the table; equivalently, one more than the largest feature index. */
   readonly numFeatures: number;
-  /** Strictly for reporting memory usage. */
+  /** The number of bytes consumed by the feature table, strictly for diagnostic purposes. */
   readonly byteLength: number;
   readonly type: BatchType;
+  /** @alpha */
   animationNodeIds?: UintArray;
 
-  /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
+  /** Get the feature at the specified index. The caller is responsible for validating featureIndex less than numFeatures. */
   getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
-  /** Find the specified feature. Returns undefined if featureIndex >= numFeatures. */
+
+  /** Find the feature at the specified index. Returns undefined if featureIndex >= [[numFeatures]]. */
   findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
-  /** Find the Id of the element of the specified feature. */
+
+  /** Find the Id of the element associated with the feature at the specified index. */
   findElementId(featureIndex: number): Id64String | undefined;
-  /** Get the Id of the element of the specified feature as a pair of 32-bit integers, asserting that feature index < numFeatures. */
+
+  /** Get the Id of the element associated with the feature at the specified index as a pair of 32-bit integers.
+   * The caller is responsible for validating that `featureIndex` is less than [[numFeatures]].
+   */
   getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
-  /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
+
+  /** Get the feature at the specified index. The caller is responsible for validating featureIndex less than numFeatures. */
   getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
-  /** Get an object that provides iteration over all features, in order. `output` is reused as the current value on each iteration. */
+
+  /** Get an object that provides ordered iteration over all features.
+   * @note The `output` object is reused (mutated in place) as the current value on each iteration.
+   */
   iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+
+  /** @alpha */
   populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+
+  /** @alpha */
   getAnimationNodeId(featureIndex: number): number;
 }
 

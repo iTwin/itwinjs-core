@@ -33,7 +33,7 @@ function loadEnv(envFile: string) {
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
-  const iModelHost: IModelHostOptions = {};
+  const iModelHost: IModelHostOptions = { profileName: "display-performance-test-app" };
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
@@ -61,7 +61,7 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       "IMJS_OIDC_REDIRECT_URI",
       "IMJS_OIDC_SCOPE",
       "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD"
+      "IMJS_OIDC_PASSWORD",
     ))
       return undefined;
     return new TestBrowserAuthorizationClient({

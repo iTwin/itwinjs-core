@@ -215,6 +215,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     logTileLoadTimeThreshold: 3,
     logTileSizeThreshold: 500000,
     cacheDir: process.env.IMJS_BRIEFCASE_CACHE_LOCATION,
+    profileName: "display-test-app",
     hubAccess,
   };
 
@@ -251,7 +252,7 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
     ProcessDetector.isElectronAppBackend &&
     checkEnvVars(
       "IMJS_OIDC_ELECTRON_TEST_CLIENT_ID",
-      "IMJS_OIDC_ELECTRON_TEST_SCOPES"
+      "IMJS_OIDC_ELECTRON_TEST_SCOPES",
     )
   ) {
     return new ElectronMainAuthorization({

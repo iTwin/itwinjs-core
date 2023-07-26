@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "refactor chain collectors and internal contexts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

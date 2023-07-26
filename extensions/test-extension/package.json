@@ -12,7 +12,7 @@
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --external:os --minify",
     "clean": "rimraf lib dist",
     "lint": "",
-    "//lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
+    "//lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "start": "",
     "test": "",
     "cover": "",
@@ -30,9 +30,9 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "esbuild": "^0.13.8",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
   },
@@ -40,12 +40,6 @@
     "@itwin/core-extension": "workspace:*",
     "buffer": "^6.0.3",
     "url": "^0.11.0"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@bentley"
-    ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
   },
   "activationEvents": [
     "onStartup"

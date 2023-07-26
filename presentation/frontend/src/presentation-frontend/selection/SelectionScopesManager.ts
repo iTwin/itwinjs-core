@@ -82,7 +82,7 @@ export class SelectionScopesManager {
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
       batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, scope: scopeProps }));
     }
-    const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
+    const batchKeys = (await Promise.all(batchKeyPromises)).map((json) => KeySet.fromJSON(json));
     batchKeys.forEach((bk) => keys.add(bk));
     return keys;
   }

@@ -693,7 +693,7 @@ describe("RulesetsFactory", () => {
         "My Property", createStringTypeDescription(), true, 1, [property]);
       const record = new Item([], faker.random.word(), "", recordClass,
         { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test display value" }, []);
-      const callback = sinon.fake(() => "TEST");
+      const callback = sinon.fake(async () => "TEST");
       const result = await factory.createSimilarInstancesRuleset(field, record, callback);
       expect(callback).to.be.calledOnceWithExactly(field.type.typeName, "test value", "test display value");
       expect(result.description).to.eq(`[My Class].[My Property] = TEST`);
