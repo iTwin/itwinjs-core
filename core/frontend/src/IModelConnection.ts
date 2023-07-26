@@ -15,9 +15,9 @@ import {
   ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NativeECSqlParseNode, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  SnapshotIModelRpcInterface, StatementExpr, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -273,6 +273,17 @@ export abstract class IModelConnection extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /**
+   * Return ecsql parse expression tree that can be enumerated and traverse.
+   * @param ecsql Input ecsql statement which can be insert/udpate/delete or select.
+   * @returns return one of the subtypes of @see [[StatementExpr]]
+   * @alpha
+   */
+  public async parseECSql(ecsql: string): Promise<StatementExpr> {
+    const parseNode = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).parseECSql(this.getRpcProps(), ecsql);
+    return StatementExpr.deserialize(parseNode);
   }
 
   /**

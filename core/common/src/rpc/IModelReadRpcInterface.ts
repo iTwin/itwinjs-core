@@ -36,6 +36,7 @@ import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { RpcOperation } from "./core/RpcOperation";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
+import { NativeECSqlParseNode } from "../ECSqlExpr";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -84,7 +85,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.6.0";
+  public static interfaceVersion = "3.7.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -113,6 +114,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
+  public async parseECSql(_iModelToken: IModelRpcProps, _ecsql: string): Promise<NativeECSqlParseNode> { return this.forward(arguments); }
   /** @deprecated in 3.x use ViewStore apis. */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation

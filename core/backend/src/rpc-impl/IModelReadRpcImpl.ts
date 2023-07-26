@@ -16,7 +16,7 @@ import {
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  ModelExtentsProps, ModelProps, NativeECSqlParseNode, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
   SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";
@@ -317,6 +317,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await getIModelForRpc(tokenProps);
     const el = iModelDb.elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
+  }
+
+  public async parseECSql(tokenProps: IModelRpcProps, ecsql: string): Promise<NativeECSqlParseNode> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    return iModelDb.nativeDb.getECSqlParseTree(ecsql);
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.

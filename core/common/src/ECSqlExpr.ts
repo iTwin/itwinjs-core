@@ -1380,6 +1380,20 @@ export class BinaryBooleanExpr extends BooleanExpr {
     writer.appendExp(this.rhsExpr);
     writer.append(")");
   }
+  // public static makeMultiple(public readonly op: BinaryBooleanOp, ...exprs: ComputedExpr[]) {
+  //   if (exprs.length % 2 !== 0) {
+  //     throw new Error("expect multiple of two exprs");
+  //   }
+  //   let lastExpr: BinaryBooleanExpr | undefined;
+  //   exprs.reverse().forEach((v, i) => {
+  //     if (i === 0)
+  //       return;
+  //     if (i === 1) {
+  //       lastExpr = new BinaryBooleanExpr(op,   exprs[i - 1])
+  //     }
+  //   });
+
+  // }
 }
 
 /**
@@ -2074,6 +2088,7 @@ export interface WhenThenBlock {
 
 /**
  * Describe a CASE-WHEN-THEN expression in ECSQL
+ * @alpha
  */
 export class SearchCaseExpr extends ValueExpr {
   public static readonly type = ExprType.SearchCase;

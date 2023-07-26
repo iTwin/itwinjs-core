@@ -13,7 +13,6 @@ import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { NativeECSqlParseNode } from "./ECSqlExpr";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -96,16 +95,6 @@ export class ECDb implements IDisposable {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
-  }
-
-  /** @internal return parse tree */
-  public getECSqlParseTree(ecsql: string): NativeECSqlParseNode {
-    return this.nativeDb.getECSqlParseTree(ecsql) as NativeECSqlParseNode;
-  }
-
-  /** @internal return normalize ecsql */
-  public getNormalizeECSQL(ecsql: string): string {
-    return this.nativeDb.getNormalizeECSql(ecsql);
   }
 
   /** @internal use to test statement caching */
