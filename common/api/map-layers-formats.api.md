@@ -8,6 +8,7 @@ import { ArcGISImageryProvider } from '@itwin/core-frontend';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
+import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
@@ -35,6 +36,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D): void;
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
+    // (undocumented)
+    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriPMS | EsriSLS | EsriSFS | undefined;
     // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)

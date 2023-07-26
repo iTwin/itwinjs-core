@@ -133,7 +133,7 @@ public;CodeSpecProperties
 public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
-internal;ColorIndex
+public;ColorIndex
 public;CommonLoggerCategory
 public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
@@ -141,7 +141,7 @@ internal;CompositeTileHeader
 alpha;CompoundSelectOp
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 alpha;class ComputedExpr 
-internal;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
+alpha;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
@@ -281,8 +281,8 @@ public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
 public;FeatureAppearanceSource
-internal;FeatureIndex
-internal;FeatureIndexType
+public;FeatureIndex
+public;FeatureIndexType
 public;FeatureOverrides 
 public;FeatureOverrideType
 public;FeatureTable 
@@ -508,8 +508,9 @@ public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
 public;ModelExtentsProps
-internal;ModelFeature
-internal;ModelFeature
+public;ModelFeature
+public;ModelFeature
+alpha;unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -533,7 +534,7 @@ public;nextHighestPowerOfTwo(num: number): number
 internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
 alpha;NextSelect
 public;NoContentError 
-internal;NonUniformColor
+public;NonUniformColor
 public;NormalMapFlags
 beta;NormalMapParams
 public;NormalMapProps 
@@ -570,11 +571,11 @@ public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | Overri
 public;OverrideFeatureAppearanceOptions
 public;OverrideModelAppearanceOptions 
 public;OverrideSubCategoryAppearanceOptions 
-internal;PackedFeature
-internal;PackedFeature
+public;PackedFeature
+public;PackedFeature
 internal;PackedFeatureModelTable
 internal;PackedFeatureTable 
-internal;PackedFeatureWithIndex 
+public;PackedFeatureWithIndex 
 alpha;ParameterExpr 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
@@ -604,10 +605,10 @@ beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
 public;PointWithStatus
 internal;POLICY: unique symbol
-internal;PolylineData
 internal;PolylineEdgeArgs
-internal;PolylineFlags
-internal;PolylineTypeFlags
+public;PolylineFlags
+public;PolylineIndices = number[]
+alpha;PolylineTypeFlags
 alpha;PolymorphicInfo
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
@@ -675,7 +676,7 @@ public;RelatedElementProps
 public;RelationshipProps 
 internal;RelTypeInfo
 public;RemoveFunction = () => void
-internal;RenderFeatureTable
+public;RenderFeatureTable
 public;class RenderMaterial
 public;RenderMaterial
 public;RenderMaterialAssetMapsProps

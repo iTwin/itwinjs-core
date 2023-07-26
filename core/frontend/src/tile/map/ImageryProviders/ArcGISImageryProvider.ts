@@ -113,7 +113,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       response = await  fetch(tmpUrl.toString(), options);
     }
 
-    errorCode = await ArcGisUtilities.checkForResponseErrorCode(response.clone());
+    errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
 
     if (errorCode !== undefined &&
        (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) ) {
@@ -135,7 +135,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
         // Make a second attempt with refreshed token
         response = await fetch(urlObj2.toString(), options);
-        errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response.clone());
+        errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
       }
 
       if (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) {

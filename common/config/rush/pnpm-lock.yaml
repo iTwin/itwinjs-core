@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.4
+      '@bentley/imodeljs-native': 4.1.5
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.0.0
       '@itwin/core-bentley': workspace:*
@@ -52,7 +52,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.4
+      '@bentley/imodeljs-native': 4.1.5
       '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -538,7 +538,6 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.36
-      '@itwin/object-storage-azure': ^2.0.0
       '@itwin/object-storage-core': ^2.0.0
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
@@ -556,10 +555,8 @@ importers:
       eslint: ^8.36.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
-      inversify: ~6.0.1
       mocha: ^10.0.0
       nyc: ^15.1.0
-      reflect-metadata: ^0.1.13
       rimraf: ^3.0.2
       sinon: ^15.0.4
       source-map-loader: ^4.0.0
@@ -567,17 +564,14 @@ importers:
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.0.0
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.0.0
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.4.4
       '@loaders.gl/draco': 3.4.4
       fuse.js: 3.6.1
-      inversify: 6.0.1
-      reflect-metadata: 0.1.13
       wms-capabilities: 0.4.0
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -5269,8 +5263,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.4:
-    resolution: {integrity: sha512-C6eNrFUkqHPjo+1A5HMKvRJGHAe/ZPkvv+cviCT0HmGdQfigWE9vBa1kLPduTQ9/m5P9bnN2kyxBKcMT+cDZDA==}
+  /@bentley/imodeljs-native/4.1.5:
+    resolution: {integrity: sha512-4subDP83Q93KC1JwX8ZC1MdMssO8OLO3uHyhmL0FTqsmg9OgK5Dr+jcqZDzq058OiLxaFYulXctSfdcQHxaz5g==}
     requiresBuild: true
     dev: false
 
@@ -5866,7 +5860,6 @@ packages:
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
-    dev: true
 
   /@itwin/cloud-agnostic-core/2.0.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-rdSvDmEChwQbnZo5qYkpGzPTQFuHTTU99wIf9LjIgTrPfd3QpQY0o80AEmwXSMy4umD43UR2OnDwM+Ja7Dmd8g==}
@@ -6068,7 +6061,6 @@ packages:
       axios: 0.27.2
     transitivePeerDependencies:
       - debug
-    dev: true
 
   /@itwin/object-storage-core/2.0.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-LC456/G1MRDH/xvK7acGsGH6UEP48BfWZtm4LKI8Vmy19MMqIe6n4dcA4kAJnGhwikzhyj8w9+mG5QhhoYqQuQ==}

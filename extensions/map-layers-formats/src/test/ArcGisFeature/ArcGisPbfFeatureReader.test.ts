@@ -3,17 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
-import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { esriFeatureSampleSource, fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
+import { TestUtils } from "./TestUtils";
+import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 
 const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
@@ -112,7 +114,7 @@ describe("ArcGisPbfFeatureReader", () => {
 
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePolyQueryPbf);
     const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -132,7 +134,7 @@ describe("ArcGisPbfFeatureReader", () => {
     const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType);
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf);
 
-    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -149,7 +151,7 @@ describe("ArcGisPbfFeatureReader", () => {
   it("should readAndRender simple path", async () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePathQueryPbf);
-    const symbolRenderer = new ArcGisSymbologyRenderer(
+    const symbolRenderer = TestUtils.createSymbologyRenderer(
       ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.geometryType),
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
@@ -170,7 +172,7 @@ describe("ArcGisPbfFeatureReader", () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyMultiPathQueryPbf);
     const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
@@ -187,7 +189,7 @@ describe("ArcGisPbfFeatureReader", () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePointQueryPbf);
     const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
@@ -202,21 +204,39 @@ describe("ArcGisPbfFeatureReader", () => {
     expect(firstCall.args[2]).to.eql(2);              // stride
   });
 
-  it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
+  it("should call setActiveFeatureAttributes when attribute driven symbology", async () => {
     const featurePbf = createFeaturePBF();
-    const symbolRenderer = new ArcGisSymbologyRenderer(
-      "esriGeometryAny",
-      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const dataset = NeptuneCoastlineDataset.singlePolyPbf;
+    const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
-    const logErrorSpy = sandbox.spy(Logger, "logError");
-    await featurePbf.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
-    expect(logErrorSpy.calledOnce);
+    const spy = sinon.spy(symbolRenderer , "setActiveFeatureAttributes");
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
 
-    logErrorSpy.resetHistory();
-    await featurePbf.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
-    expect(logErrorSpy.calledOnce);
+    // Make sure 'setActiveFeatureAttributes' was called with the proper argument
+    expect(spy.calledOnce);
+    const firstCall = spy.getCalls()[0];
+    const featureAttr: {[key: string]: any} = {};
+    featureAttr.LU_2014 = "Open Countryside";
+    expect(firstCall.args[0]).to.eql(featureAttr);
+  });
 
+  it("should apply attribute driven symbology before rendering", async () => {
+    const featurePbf = createFeaturePBF();
+    const dataset = NeptuneCoastlineDataset.singlePolyPbf;
+    const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
+    const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
+    const symbolRenderer = TestUtils.createSymbologyRenderer(geomType, rendererDef);
+
+    const context = fakeContext;
+    const featureRenderer = new ArcGisCanvasRenderer(context, symbolRenderer);
+    await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
+
+    const refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[8].symbol as any);
+    expect(context.fillStyle).to.eql(refSymbol.color?.toRgbaString());
   });
 
 });

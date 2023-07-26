@@ -1704,24 +1704,16 @@ export class ColorDef {
 // @public
 export type ColorDefProps = number;
 
-// @internal (undocumented)
+// @public
 export class ColorIndex {
     constructor();
-    // (undocumented)
     get hasAlpha(): boolean;
-    // (undocumented)
     initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
-    // (undocumented)
     initUniform(color: ColorDef | number): void;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     get nonUniform(): NonUniformColor | undefined;
-    // (undocumented)
     get numColors(): number;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     get uniform(): ColorDef | undefined;
 }
 
@@ -1787,7 +1779,7 @@ export abstract class ComputedExpr extends Expr {
     static deserialize(node: NativeECSqlParseNode): ValueExpr | BooleanExpr;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
@@ -2808,6 +2800,8 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     // (undocumented)
     reset(options?: QueryOptions): void;
     resetBindings(): void;
+    // @internal (undocumented)
+    protected runWithRetry(request: DbQueryRequest): Promise<DbQueryResponse>;
     // (undocumented)
     setParams(param: QueryBinder): void;
     get stats(): QueryStats;
@@ -3592,29 +3586,20 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal (undocumented)
+// @public
 export class FeatureIndex {
-    // (undocumented)
     featureID: number;
-    // (undocumented)
     featureIDs?: Uint32Array;
-    // (undocumented)
     get isEmpty(): boolean;
-    // (undocumented)
     get isUniform(): boolean;
-    // (undocumented)
     reset(): void;
-    // (undocumented)
     type: FeatureIndexType;
 }
 
-// @internal (undocumented)
+// @public
 export enum FeatureIndexType {
-    // (undocumented)
     Empty = 0,
-    // (undocumented)
     NonUniform = 2,
-    // (undocumented)
     Uniform = 1
 }
 
@@ -3728,6 +3713,7 @@ export class FeatureTable extends IndexMap<Feature> {
     get maxFeatures(): number;
     // (undocumented)
     readonly modelId: Id64String;
+    pack(): RenderFeatureTable;
     // (undocumented)
     readonly type: BatchType;
     get uniform(): Feature | undefined;
@@ -5318,7 +5304,6 @@ export abstract class IModel implements IModelProps {
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
     spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic;
     spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d;
-    // @internal (undocumented)
     toJSON(): IModelConnectionProps;
 }
 
@@ -6393,13 +6378,13 @@ export class MeshEdges {
 
 // @internal (undocumented)
 export class MeshPolyline {
-    constructor(indices?: number[]);
+    constructor(indices?: PolylineIndices);
     // (undocumented)
     addIndex(index: number): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
-    readonly indices: number[];
+    readonly indices: PolylineIndices;
 }
 
 // @internal (undocumented)
@@ -6443,7 +6428,7 @@ export interface ModelExtentsProps {
     status: IModelStatus;
 }
 
-// @internal
+// @public
 export interface ModelFeature {
     // (undocumented)
     elementId: Id64String;
@@ -6455,13 +6440,11 @@ export interface ModelFeature {
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace ModelFeature {
-    // (undocumented)
     export function create(): ModelFeature;
-    // (undocumented)
     export function isDefined(feature: ModelFeature): boolean;
-    // (undocumented)
+    // @alpha (undocumented)
     export function unpack(packed: PackedFeature, result: ModelFeature, unpackedModelId?: Id64String): ModelFeature;
 }
 
@@ -6694,14 +6677,11 @@ export class NoContentError extends IModelError {
     constructor();
 }
 
-// @internal (undocumented)
+// @public
 export class NonUniformColor {
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
-    // (undocumented)
     readonly colors: Uint32Array;
-    // (undocumented)
     readonly indices: Uint16Array;
-    // (undocumented)
     readonly isOpaque: boolean;
 }
 
@@ -7064,9 +7044,9 @@ export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureApp
     subCategoryId: Id64String;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeature {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeId: number;
     // (undocumented)
     elementId: Id64.Uint32Pair;
@@ -7078,11 +7058,9 @@ export interface PackedFeature {
     subCategoryId: Id64.Uint32Pair;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace PackedFeature {
-    // (undocumented)
     export function create(): PackedFeature;
-    // (undocumented)
     export function createWithIndex(): PackedFeatureWithIndex;
 }
 
@@ -7143,7 +7121,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     unpack(): FeatureTable;
 }
 
-// @internal (undocumented)
+// @public
 export interface PackedFeatureWithIndex extends PackedFeature {
     // (undocumented)
     index: number;
@@ -7423,67 +7401,33 @@ export interface PointWithStatus {
 export const POLICY: unique symbol;
 
 // @internal (undocumented)
-export class PolylineData {
-    constructor(vertIndices?: number[], numIndices?: number);
-    // (undocumented)
-    init(polyline: MeshPolyline): boolean;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    numIndices: number;
-    // (undocumented)
-    reset(): void;
-    // (undocumented)
-    vertIndices: number[];
-}
-
-// @internal (undocumented)
 export class PolylineEdgeArgs {
-    constructor(lines?: PolylineData[]);
+    constructor(lines?: PolylineIndices[]);
     // (undocumented)
     clear(): void;
     // (undocumented)
-    init(lines?: PolylineData[]): boolean;
+    init(lines?: PolylineIndices[]): boolean;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    lines?: PolylineData[];
+    lines?: PolylineIndices[];
     // (undocumented)
     get numLines(): number;
 }
 
-// @internal
-export class PolylineFlags {
-    constructor(is2d?: boolean, isPlanar?: boolean, isDisjoint?: boolean, type?: PolylineTypeFlags);
-    // (undocumented)
-    clone(): PolylineFlags;
-    // (undocumented)
-    equals(other: PolylineFlags): boolean;
-    // (undocumented)
-    initDefaults(): void;
-    // (undocumented)
-    is2d: boolean;
-    // (undocumented)
-    get isAnyEdge(): boolean;
-    // (undocumented)
-    isDisjoint: boolean;
-    // (undocumented)
-    get isNormalEdge(): boolean;
-    // (undocumented)
-    get isOutlineEdge(): boolean;
-    // (undocumented)
-    isPlanar: boolean;
-    pack(): number;
-    // (undocumented)
-    setIsNormalEdge(): void;
-    // (undocumented)
-    setIsOutlineEdge(): void;
-    // (undocumented)
-    type: PolylineTypeFlags;
-    static unpack(value: number): PolylineFlags;
+// @public
+export interface PolylineFlags {
+    is2d?: boolean;
+    isDisjoint?: boolean;
+    isPlanar?: boolean;
+    // @alpha
+    type?: PolylineTypeFlags;
 }
 
-// @internal (undocumented)
+// @public
+export type PolylineIndices = number[];
+
+// @alpha
 export enum PolylineTypeFlags {
     // (undocumented)
     Edge = 1,
@@ -8221,23 +8165,23 @@ export interface RelTypeInfo {
 // @public
 export type RemoveFunction = () => void;
 
-// @internal
+// @public
 export interface RenderFeatureTable {
-    // (undocumented)
+    // @alpha (undocumented)
     animationNodeIds?: UintArray;
     readonly batchModelId: Id64String;
     readonly batchModelIdPair: Id64.Uint32Pair;
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
-    // (undocumented)
+    // @alpha (undocumented)
     getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
-    // (undocumented)
+    // @alpha (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
@@ -11477,7 +11421,6 @@ export class ViewFlags {
     readonly styles: boolean;
     readonly textures: boolean;
     readonly thematicDisplay: boolean;
-    // @internal
     toFullyDefinedJSON(): Required<ViewFlagProps>;
     toJSON(): ViewFlagProps;
     readonly transparency: boolean;

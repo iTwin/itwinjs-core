@@ -10,7 +10,8 @@ import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@it
 import { Presentation } from "@itwin/presentation-backend";
 import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
-import { buildTestIModelDb, getFieldByLabel } from "../Utils";
+import { getFieldByLabel } from "../Utils";
+import { buildTestIModelDb } from "../IModelSetupUtils";
 
 describe("Default supplemental rules", async () => {
   before(async () => {

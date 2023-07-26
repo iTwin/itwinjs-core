@@ -421,9 +421,7 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get isStandalone(): boolean { return false; }
-  /** Type guard for instanceof [[StandaloneDb]]
-   * @internal
-   */
+  /** Type guard for instanceof [[StandaloneDb]]. */
   public isStandaloneDb(): this is StandaloneDb { return this.isStandalone; }
 
   /** Return `true` if the underlying nativeDb is open and valid.
@@ -959,8 +957,8 @@ export abstract class IModelDb extends IModel {
     return schemaState;
   }
 
-  /** Get the ClassMetaDataRegistry for this iModel.
-   * @internal
+  /** The registry of entity metadata for this iModel.
+   * @beta
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
@@ -2508,7 +2506,6 @@ export class BriefcaseDb extends IModelDb {
       }
     }
 
-    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }

@@ -133,5 +133,5 @@ public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-internal;YieldManager
-internal;YieldManagerOptions
+public;YieldManager
+public;YieldManagerOptions
