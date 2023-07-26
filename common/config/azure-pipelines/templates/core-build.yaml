@@ -76,7 +76,14 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
 
-  - script: node common/scripts/install-run-rush.js build -v -p max
+  # - script: node common/scripts/install-run-rush.js build -v -p max
+  #   displayName: rush build
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   env:
+  #     RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+  #     RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+
+  - script: node common/scripts/install-run-rush.js build
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     env:
