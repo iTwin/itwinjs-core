@@ -1,8 +1,10 @@
+---
+defaultState: activeOpen
+---
+
 ## Base Infrastructure Schemas (BIS)
 
 ### Guide
-
-<div id="guide-list">
 
 #### Introduction
 - [Overview](./guide/intro/overview.md)
@@ -71,20 +73,16 @@
 - [Class-diagram Conventions](./guide/references/class-diagram-conventions.md)
 - [Instance-diagram Conventions](./guide/references/instance-diagram-conventions.md)
 
-</div>
-
 &nbsp;
 
 ### Domain Schemas
-
-<div id="domains-list">
 
 #### Core domains
 - [Overview](./domains/core-domains.md)
 - [Analytical](./domains/Analytical.ecschema.md)
 - [BisCore](./domains/BisCore.ecschema.md)
-- [Provenance in BIS](./domains/Provenance-in-BIS.md)
-- [Drawings & Sheets](./domains/drawings-sheets.md)
+- [- Provenance in BIS](./domains/Provenance-in-BIS.md)
+- [- Drawings & Sheets](./domains/drawings-sheets.md)
 - [Functional](./domains/Functional.ecschema.md)
 - [Generic](./domains/Generic.ecschema.md)
 - [PhysicalMaterial](./domains/PhysicalMaterial.ecschema.md)
@@ -120,8 +118,6 @@
 - [Formats](./domains/Formats.ecschema.md)
 - [Units](./domains/Units.ecschema.md)
 
-</div>
-
 &nbsp;
 
 ### Engineering Content (EC)
@@ -148,29 +144,3 @@
 - [Format](./ec/ec-format.md)
 - [ECName](./ec/ec-name.md)
 - [Changes Between ECObjects 2 and 3](./ec/differences-between-ec2-and-ec3.md)
-
-<script>
-$("#guide").append(function () {
-return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-carat'></i>"
-}).on('click', '.collapse-arrow', function (event) {
-var target = $(event.target);
-if (target.is("i")) {
-$('#guide-list').slideToggle()
-}
-});
-</script>
-<script>
-$("#domain-schemas").append(function () {
-return "<i class='icon icon-chevron-up collapse-arrow is-expanded' id='guide-carat'></i>"
-}).on('click', '.collapse-arrow', function (event) {
-var target = $(event.target);
-if (target.is("i")) {
-$('#domains-list').slideToggle()
-}
-});
-</script>
-<style>
-.h-bis-naming-guidelines {
-font-size: 15px;
-}
-</style>
