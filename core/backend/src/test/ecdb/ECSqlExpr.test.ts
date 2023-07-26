@@ -65,14 +65,10 @@ import { IModelTestUtils } from "../IModelTestUtils";
 describe("ECSql Exprs", () => {
   let ecdb: ECDb;
 
-  function parseStatement(ecsql: string) {
-    const parseNode = ecdb.nativeDb.getECSqlParseTree(ecsql);
-    return StatementExpr.deserialize(parseNode);
+  function toNormalizeECSql(ecsql: string) {
+    return ecdb.parseECSql(ecsql).toECSql();
   }
 
-  function toNormalizeECSql(ecsql: string) {
-    return parseStatement(ecsql).toECSql();
-  }
   function printTree(expr: Expr, indent: number = 0) {
     console.log(`${"".padEnd(indent, ".")}${expr.expType}${"".padEnd(30 - (indent + expr.expType.length), " ")}${expr.toECSql()}`);
     indent += 3;
@@ -951,7 +947,7 @@ describe("ECSql Exprs", () => {
     });
     it.skip("test print tree", async () => {
       const ecsql = "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
-      const selectStmt = SelectStatementExpr.deserialize(ecdb.nativeDb.getECSqlParseTree(ecsql));
+      const selectStmt = ecdb.parseECSql(ecsql);
       printTree(selectStmt);
 
     });

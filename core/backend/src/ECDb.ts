@@ -7,7 +7,7 @@
  */
 import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
+import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, StatementExpr } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -325,6 +325,17 @@ export class ECDb implements IDisposable {
     while (await reader.step())
       yield reader.formatCurrentRow();
   }
+  
+  /**
+   *
+   * @param ecsql Input ECSQL for which the expression tree will be returned.
+   * @returns On of the subclass of@see [[StatementExpr]]
+   * @alpha
+   */
+  public parseECSql(ecsql: string): StatementExpr {
+    return StatementExpr.deserialize(this.nativeDb.parseECSql(ecsql));
+  }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:

@@ -321,7 +321,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async parseECSql(tokenProps: IModelRpcProps, ecsql: string): Promise<NativeECSqlParseNode> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    return iModelDb.nativeDb.getECSqlParseTree(ecsql);
+    return iModelDb.nativeDb.parseECSql(ecsql);
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
