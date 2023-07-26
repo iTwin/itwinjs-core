@@ -31,11 +31,11 @@ steps:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
-  # - script: |
-  #     git config --local user.email imodeljs-admin@users.noreply.github.com
-  #     git config --local user.name imodeljs-admin
-  #   displayName: git config
-  #   workingDirectory: ${{ parameters.workingDir }}
+  - script: |
+      git config --local user.email imodeljs-admin@users.noreply.github.com
+      git config --local user.name imodeljs-admin
+    displayName: git config
+    workingDirectory: ${{ parameters.workingDir }}
 
   # - powershell: |
   #     # Get the new version number.
