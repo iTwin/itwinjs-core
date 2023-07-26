@@ -75,7 +75,6 @@
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
-    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@itwin/backend-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
