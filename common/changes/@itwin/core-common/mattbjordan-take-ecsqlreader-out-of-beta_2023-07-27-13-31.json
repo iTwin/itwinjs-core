@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "ECSqlReader is now out of beta",
+      "comment": "ECSqlReader is now public",
       "type": "none"
     }
   ],
