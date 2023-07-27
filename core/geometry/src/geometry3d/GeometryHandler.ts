@@ -71,9 +71,7 @@ export abstract class GeometryHandler {
   public abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
   /** handle strongly typed  [[IndexedPolyface]]  */
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
-  /** handle strongly typed [[TransitionSpiral3d]]
-   * @alpha
-   */
+  /** handle strongly typed [[TransitionSpiral3d]] */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
 
   /** handle strongly typed Path (base class method calls handleCurveCollection) */
@@ -146,9 +144,7 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
   /** no-action implementation */
   public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
-  /** no-action implementation
-   * @alpha
-   */
+  /** no-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
 
   /** no-action implementation */
@@ -211,9 +207,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
   /** no-action implementation */
   public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
-  /** no-action implementation
-   * @alpha
-   */
+  /** no-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
   /** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
   public handleChildren(g: GeometryQuery): any {
