@@ -32,8 +32,6 @@ Table of contents:
 When a locate operation identifies an element inside of a view attachment, the attachment's element Id can be obtained via [HitDetail.viewAttachment]($frontend). If you are using [Viewport.readPixels]($frontend), the Id will be included in [Pixel.Data]($frontend). All world coordinates (e.g., [HitDetail.hitPoint]($frontend)) will be in the *sheet* model's coordinate space. You can pass the attachment Id to [ViewState.computeDisplayTransform]($frontend) to obtain the [Transform]($core-geometry) from the view attachment's coordinate space to the sheet.
 
 Note: most view attachments are two-dimensional drawings or orthographic spatial views. Attachments of perspective (camera) views do not support locating elements inside them, nor snapping to them.
- - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
- - [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -96,10 +94,11 @@ In the first example, a mesh with an upward facing main surface has smaller vert
 
 ![sweepLineStringToFacetsExampleIso](./assets/SweepLineStringToFacetsVerticalSweep.png)
 
-In the second example, the same red linestring is swept to the same facets but along
-a non-vertical direction.
+In the second example, the same red linestring is swept to the same facets but along a non-vertical direction.
 
 ![sweepLineStringToFacetsExampleIso](./assets/SweepLinStringToFacetsNonVertical.png)
+
+New method [PolyfaceQuery.sweepLineStringToFacetsXY]($core-geometry) performs the same sweep along the z-axis, optimized around a 2D range search object which the caller supplies. The search object must support the queries in the interface [Range2dSearchInterface]($core-geometry) and be constructed from facet ranges tagged with Polyface read index.
 
 ## Map Layers
 
@@ -118,28 +117,21 @@ Implemented ArcGIS's [UniqueValue renderer](https://developers.arcgis.com/web-ma
 ### Geometry
 
 The two methods
-[PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) and [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) are deprecated.  Equivalent (and improved) services are provided by new function
-[PolyfaceQuery.sweepLineStringToFacets]($core-geometry).
+[PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) and [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) are deprecated.  Equivalent (and improved) services are provided by new function [PolyfaceQuery.sweepLineStringToFacets]($core-geometry).
 
-The improved set of input options in a parameter
-[SweepLineStringToFacetsOptions]($core-geometry) provides for
-
+The improved set of input options in a parameter [SweepLineStringToFacetsOptions]($core-geometry) provides for
 - sweep along any direction (i.e. not just vertical)
 - choice of chained or "just line segments" output
 - flags to selectively accept/reject output from facets that are forward, side, and/or rear facing.
 
 The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnLines]($core-geometry) is now obtained with
 [SweepLineStringToFacetsOptions]($core-geometry) options:
-
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
 ```
 
 The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geometry) is now obtained with
 [SweepLineStringToFacetsOptions]($core-geometry) options:
-
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true);
 ```
-
-Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-nested-class-categories) for more details.
