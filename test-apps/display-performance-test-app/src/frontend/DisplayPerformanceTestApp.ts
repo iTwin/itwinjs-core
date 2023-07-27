@@ -10,17 +10,34 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
+import { DptaEnvConfig } from "../common/DisplayPerfConfiguration";
+
+export const envConfiguration: DptaEnvConfig = {};
+let runner: TestRunner;
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
   public override isMarkerVisible(_marker: SectionMarker) {
     return false;
   }
+}
+
+// simple function to extract file name, without path or extension, on Windows or Linux
+function getFileName(path: string): string {
+  let strs = path.split("/");
+  let str = strs[strs.length - 1];
+  strs = str.split("\\");
+  str = strs[strs.length - 1];
+  const ndx = str.lastIndexOf(".");
+  if (ndx > 0) // allow files starting with .
+    str = str.substring(0, ndx);
+  return str;
 }
 
 export class DisplayPerfTestApp {
@@ -52,6 +69,30 @@ export class DisplayPerfTestApp {
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
+
+    const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
+    Object.assign(envConfiguration, config);
+
+    if (envConfiguration.frontendTilesUrlTemplate) {
+      initializeFrontendTiles({
+        computeSpatialTilesetBaseUrl: async (iModel) => {
+          // Note: iModel.key in DPTA is just a GUID string (not path and filename)
+          let urlStr = envConfiguration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
+          urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
+          const url = new URL(urlStr);
+          try {
+            // See if a tileset has been published for this iModel.
+            const response = await fetch(`${url}tileset.json`);
+            await response.json();
+            runner.curConfig.urlStr = urlStr;
+            return url;
+          } catch (_) {
+            // No tileset available.
+            return undefined;
+          }
+        },
+      });
+    }
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 
@@ -92,7 +133,7 @@ async function main() {
     if (props.signIn)
       await signIn();
 
-    const runner = new TestRunner(props);
+    runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
     await DisplayPerfTestApp.logException(err);

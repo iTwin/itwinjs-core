@@ -178,6 +178,7 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
+  public urlStr: string | undefined;
   public readonly iModelId?: string;
   public readonly iTwinId?: string;
   public viewName: string;
@@ -215,6 +216,7 @@ export class TestConfig {
     this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
+    this.urlStr = undefined;
     this.iModelId = props.iModelId ?? prevConfig?.iModelId;
     this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";

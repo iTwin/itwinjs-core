@@ -19,7 +19,7 @@ import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
+import { DisplayPerfTestApp, envConfiguration } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
@@ -281,7 +281,10 @@ export class TestRunner {
       await this.logTest();
 
       try {
+        this.curConfig.urlStr = undefined;
         const result = await this.runTest(context);
+        if (envConfiguration.frontendTilesUrlTemplate)
+          await this.logURL();
         if (result)
           await this.logToFile(result.selectedTileIds, { noNewLine: true });
       } catch (ex) {
@@ -628,15 +631,23 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
+  // Log url path for cases it is used
+  private async logURL(): Promise<void> {
+    const str = (this.curConfig.urlStr) ? `url: ${this.curConfig.urlStr}` : `urlError: No tiles found for ${envConfiguration.frontendTilesUrlTemplate}`
+    const outStr = `  [${str}]`;
+    await this.logToConsole(outStr);
+    return this.logToFile(outStr);
+  }
+
   private async openIModel(): Promise<TestContext> {
-    if(this.curConfig.iModelId) {
-      if(process.env.IMJS_OIDC_HEADLESS) {
+    if (this.curConfig.iModelId) {
+      if (process.env.IMJS_OIDC_HEADLESS) {
         const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
       // Download remote iModel and its saved views
       const { iModelId, iTwinId } = this.curConfig;
-      if(iTwinId === undefined)
+      if (iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());

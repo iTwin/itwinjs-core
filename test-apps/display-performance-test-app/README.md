@@ -46,6 +46,12 @@ Performance tests on iOS have more restrictions than performance tests run on ot
   * If defined, the API key supplying access to Cesium ION assets.
 * BRIEFCASE_CACHE_LOCATION
   * iModelHost.cacheDir location
+* IMJS_FRONTEND_TILES_URL_TEMPLATE
+  * If defined, specifies the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost.
+  * The string can include special tokens: {iModel.key} or {iModel.filename}.
+    * e.g.: http://localhost:8080{iModel.key}-tiles/3dft/ or http://localhost:8080/MshX/{iModel.filename}/
+  * These will get replaced by the value of iModel.key or just the filename of that (no path or extension), correspondingly.
+  * Note that the contents of iModel.key will be different on different OSes.
 * Authentication
   * [Headless](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool)
     * IMJS_OIDC_HEADLESS (any value, as long as it's set)

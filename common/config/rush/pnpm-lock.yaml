@@ -2400,6 +2400,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/electron-authorization': ^0.8.5
       '@itwin/eslint-plugin': 4.0.0-dev.44
+      '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^3.0.0
       '@itwin/imodels-access-frontend': ^3.0.0
@@ -2440,6 +2441,7 @@ importers:
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/electron-authorization': 0.8.5_jgafqqsuly2hjjpibxrcu56zma
+      '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 3.1.0_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-access-frontend': 3.1.0_ueafa4slb6ohrhyf7kbp6egmha
