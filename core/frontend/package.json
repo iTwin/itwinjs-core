@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.1.0-dev.57",
+  "version": "4.1.0-dev.73",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -15,9 +15,9 @@
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
-    "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
@@ -44,12 +44,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.1.0-dev.57",
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.57",
-    "@itwin/core-common": "workspace:^4.1.0-dev.57",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.57",
-    "@itwin/core-orbitgt": "workspace:^4.1.0-dev.57",
-    "@itwin/core-quantity": "workspace:^4.1.0-dev.57"
+    "@itwin/appui-abstract": "workspace:^4.1.0-dev.73",
+    "@itwin/core-bentley": "workspace:^4.1.0-dev.73",
+    "@itwin/core-common": "workspace:^4.1.0-dev.73",
+    "@itwin/core-geometry": "workspace:^4.1.0-dev.73",
+    "@itwin/core-orbitgt": "workspace:^4.1.0-dev.73",
+    "@itwin/core-quantity": "workspace:^4.1.0-dev.73"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -64,23 +64,23 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
-    "@types/sinon": "^9.0.0",
+    "@types/sinon": "^10.0.15",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^9.0.2",
+    "sinon": "^15.0.4",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0"
@@ -90,7 +90,6 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/object-storage-azure": "^2.0.0",
     "@itwin/cloud-agnostic-core": "^2.0.0",
     "@itwin/object-storage-core": "^2.0.0",
     "@itwin/core-i18n": "workspace:*",
@@ -99,49 +98,9 @@
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
-    "inversify": "~6.0.1",
-    "reflect-metadata": "^0.1.13",
     "wms-capabilities": "0.4.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "@itwin/no-internal-barrel-imports": [
-        "error",
-        {
-          "required-barrel-modules": [
-            "./src/tile/internal.ts"
-          ]
-        }
-      ],
-      "@itwin/public-extension-exports": [
-        "error",
-        {
-          "releaseTags": [
-            "public",
-            "preview"
-          ],
-          "outputApiFile": false
-        }
-      ]
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.test.ts",
-          "*.test.tsx",
-          "**/test/**/*.ts"
-        ],
-        "rules": {
-          "@itwin/no-internal-barrel-imports": "off"
-        }
-      }
-    ]
   }
 }

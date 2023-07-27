@@ -113,7 +113,7 @@ export class LoopCurveLoopCurve {
   public curveB?: CurvePrimitive;
   /** Constructor */
   public constructor(
-    loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined
+    loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined,
   ) {
     this.loopA = loopA;
     this.curveA = curveA;

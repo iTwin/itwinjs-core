@@ -78,7 +78,7 @@ export class HalfEdgeGraphSearch {
    * @param areaFunction function to all to obtain area (or other numeric value)
    */
   public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false,
-    areaFunction: NodeToNumberFunction = HalfEdgeGraphSearch.signedFaceArea): SignedDataSummary<HalfEdge> {
+    areaFunction: NodeToNumberFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node)): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];
 

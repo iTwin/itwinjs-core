@@ -176,7 +176,7 @@ export class ClassRegistry {
           // defaults for methods on a prototype (required for sinon to stub out methods on tests)
           writable: true,
           configurable: true,
-        }
+        },
       );
     }
 
@@ -263,7 +263,8 @@ export class ClassRegistry {
 }
 
 /**
- * A cache that records the mapping between class names and class metadata
+ * A cache that records the mapping between class names and class metadata.
+ * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
  */
 export class MetaDataRegistry {

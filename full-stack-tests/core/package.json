@@ -50,7 +50,7 @@
     "azurite": "^3.24.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "sinon": "^9.0.2",
+    "sinon": "^15.0.4",
     "sinon-chai": "^3.2.0",
     "fs-extra": "^8.1.0",
     "electron": "^25.0.0"
@@ -58,7 +58,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/object-storage-core": "^2.0.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/projects-client": "^0.6.0",
@@ -67,7 +67,7 @@
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
-    "@types/sinon": "^9.0.0",
+    "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
     "assert": "^2.0.0",
     "babel-loader": "~8.2.5",
@@ -77,7 +77,7 @@
     "crypto-browserify": "3.12.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "https-browserify": "^1.0.0",
     "internal-tools": "workspace:*",
@@ -97,11 +97,5 @@
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

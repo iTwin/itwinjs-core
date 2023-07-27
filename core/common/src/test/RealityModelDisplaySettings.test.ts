@@ -54,7 +54,7 @@ describe("PointCloudDisplaySettings", () => {
     test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 10, pixelSize: 1 }, { voxelScale: 0.5, maxPixelsPerVoxel: 12 }, { voxelScale: 0.5, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 12 });
     test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 4, pixelSize: 5, sizeMode: "voxel", shape: "square" },
       { voxelScale: undefined, minPixelsPerVoxel: undefined, maxPixelsPerVoxel: undefined, pixelSize: undefined, sizeMode: undefined, shape: undefined },
-      undefined
+      undefined,
     );
     test({ voxelScale: 2, pixelSize: 3, minPixelsPerVoxel: 4 }, { pixelSize: undefined, minPixelsPerVoxel: 5 }, { voxelScale: 2, minPixelsPerVoxel: 5 });
   });

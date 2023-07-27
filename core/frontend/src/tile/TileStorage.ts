@@ -18,7 +18,7 @@ export class TileStorage {
     changesetId: string,
     treeId: string,
     contentId: string,
-    guid?: string
+    guid?: string,
   ): Promise<Uint8Array | undefined> {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
     if(transferConfig === undefined)

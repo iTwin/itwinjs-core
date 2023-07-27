@@ -179,7 +179,7 @@ export class GrowableBlockedArray {
     return ia - ib; // so original order is maintained among duplicates !!!!
   }
   /** Return an array of block indices sorted per compareLexicalBlock function */
-  public sortIndicesLexical(compareBlocks: BlockComparisonFunction = GrowableBlockedArray.compareLexicalBlock): Uint32Array {
+  public sortIndicesLexical(compareBlocks: BlockComparisonFunction = (dataArray, size, iA, iB) => GrowableBlockedArray.compareLexicalBlock(dataArray, size, iA, iB)): Uint32Array {
     const n = this._inUse;
     // let numCompare = 0;
     const result = new Uint32Array(n);

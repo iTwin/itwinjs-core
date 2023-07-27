@@ -161,7 +161,7 @@ export class TerrainTexture {
     public readonly targetRectangle: Range2d,
     public readonly layerIndex: number,
     public transparency: number,
-    public readonly clipRectangle?: Range2d
+    public readonly clipRectangle?: Range2d,
   ) { }
 
   public cloneWithClip(clipRectangle: Range2d) {
@@ -175,7 +175,7 @@ export class DebugShaderFile {
     public readonly src: string,
     public isVS: boolean,
     public isGL: boolean,
-    public isUsed: boolean
+    public isUsed: boolean,
   ) { }
 }
 /** Transparency settings for planar grid display.
@@ -280,7 +280,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract dispose(): void;
 
-  /** @internal */
+  /** The maximum permitted width or height of a texture supported by this render system. */
   public get maxTextureSize(): number { return 0; }
 
   /** @internal */
@@ -355,12 +355,27 @@ export abstract class RenderSystem implements IDisposable {
     return undefined;
   }
 
+  /** Create a graphic from a low-level representation of a triangle mesh.
+   * @param args A description of the mesh.
+   * @param instances Repetitions of the mesh to be drawn.
+   * @see [[createGraphic]] to obtain a [[GraphicBuilder]] that can assemble a mesh from higher-level primitives.
+   */
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+  /** @internal */
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = createMeshParams(args, this.maxTextureSize);
     return this.createMesh(params, instances);
   }
 
+  /** Create a graphic from a low-level representation of a set of line strings.
+   * @param args A description of the line strings.
+   * @param instances Repetitions of the line strings to be drawn.
+   */
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+  /** @internal */
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
@@ -512,8 +527,11 @@ export abstract class RenderSystem implements IDisposable {
     return graphic;
   }
 
-  /** Create a RenderGraphic consisting of batched [[Feature]]s.
-   * @internal
+  /** Create a "batch" of graphics containing individual [Feature]($common)s.
+   * @param graphic The graphic representing the contents of the batch.
+   * @param features The features contained within the batch.
+   * @param range A volume fully encompassing the batch's geometry.
+   * @param options Options customizing the behavior of the batch.
    */
   public abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
 
@@ -559,7 +577,6 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A Promise resolving to the created RenderTexture or to undefined if the texture could not be created.
    * @note If the texture is successfully created, it will be cached on the IModelConnection such that it can later be retrieved by its ID using [[RenderSystem.findTexture]].
    * @see [[RenderSystem.loadTextureImage]].
-   * @internal
    */
   public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
     let texture = this.findTexture(id.toString(), iModel);

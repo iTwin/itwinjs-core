@@ -52,9 +52,7 @@ import * as viewTool from "./tools/ViewTool";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("./IModeljs-css");
+import "./IModeljs-css";
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 
@@ -141,7 +139,7 @@ export interface IModelAppOptions {
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
- *  @internal
+ *  @public
  */
 export interface ModalOptions {
   /** Width for the Modal dialog box. */
@@ -155,12 +153,14 @@ export interface ModalOptions {
 }
 
 /** Return type for [[IModelApp.makeModalDiv]]
- * @internal
+ * @public
  */
 export interface ModalReturn {
   /** The modal HTMLDivElement created. */
   modal: HTMLDivElement;
-  /** A function that can be set as an event handler to stop the modal dialog. This can be used if `autoClose` or `closeBox` are not enabled. */
+  /** A function that can be set as an event handler to stop the modal dialog. This can be used if [[ModalOptions.autoClose]] or [[IModalOptions.closeBox]]
+   * were not enabled for the dialog.
+   */
   stop: (_ev: Event) => void;
 }
 
@@ -213,12 +213,10 @@ export class IModelApp {
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
 
-  /** Event raised just before the frontend IModelApp is to be shut down */
+  /** Event raised just before the frontend IModelApp is to be [[shutdown]]. */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
-  /** Event raised after IModelApp is finished starting up.
-   * @internal
-   */
+  /** Event raised after IModelApp [[startup]] completes. */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
@@ -275,8 +273,16 @@ export class IModelApp {
    */
   public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
-  /** @internal */
-  public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
+  /** Whether the [renderSystem[]] has been successfully initialized.
+   * This will always be `false` before calling [[startup]] and after calling [[shutdown]].
+   * In rare circumstances (e.g., while executing in a headless test environment) it may remain `false` due to a failure to
+   * obtain a [WebGL rendering context](https://www.google.com/search?channel=fs&client=ubuntu-sn&q=mdn+webglrenderingcontext).
+   * As long as you have called [[startup]], you can generally assume it to be `true`.
+   */
+  public static get hasRenderSystem() {
+    return this._renderSystem !== undefined && this._renderSystem.isValid;
+  }
+
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
@@ -332,7 +338,7 @@ export class IModelApp {
    * @note As of 4.x, iTwin.js requires WebGL 2. If the client does not support WebGL 2, the `status` field of the returned compatibility info will be [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility).
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    return queryRenderCompatibility(true, System.createContext);
+    return queryRenderCompatibility(true, (canvas, useWebGL2, inputContextAttributes) => System.createContext(canvas, useWebGL2, inputContextAttributes));
   }
 
   /**
@@ -438,7 +444,7 @@ export class IModelApp {
     }
 
     this._wantEventLoop = false;
-    window.removeEventListener("resize", IModelApp.requestNextAnimation);
+    window.removeEventListener("resize", () => IModelApp.requestNextAnimation());
     this.clearIntervalAnimation();
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
@@ -469,7 +475,9 @@ export class IModelApp {
     }
   }
 
-  /** @internal */
+  /** Request that the event loop execute on the next [animation frame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
+   * There is generally no reason for applications to invoke this method directly.
+   */
   public static requestNextAnimation() {
     // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
     if (IModelApp._noRender)
@@ -477,7 +485,7 @@ export class IModelApp {
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
-      requestAnimationFrame(IModelApp.eventLoop);
+      requestAnimationFrame(() => IModelApp.eventLoop());
     }
   }
 
@@ -503,7 +511,7 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      window.addEventListener("resize", IModelApp.requestNextAnimation);
+      window.addEventListener("resize", () => IModelApp.requestNextAnimation());
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
     }
@@ -529,7 +537,7 @@ export class IModelApp {
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
-      window.removeEventListener("resize", IModelApp.requestNextAnimation);
+      window.removeEventListener("resize", () => IModelApp.requestNextAnimation());
     }
   }
 
@@ -579,9 +587,7 @@ export class IModelApp {
     };
   }
 
-  /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText
-   *  @internal
-   */
+  /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText. */
   public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
     /** The parent for the new HTMLElement */
     parent?: HTMLElement;
@@ -610,10 +616,9 @@ export class IModelApp {
     return el;
   }
 
-  /** Make a modal dialog on top of the root of the application. The returned HTMLDivElement will be placed topmost, all other application
+  /** Shortcut for making a modal dialog on top of the root of the application. The returned HTMLDivElement will be placed topmost, all other application
    * windows will be covered with a semi-transparent background that intercepts all key/mouse/touch events until the modal is dismissed.
    * @param options The options that describe how the modal should work.
-   * @internal
    */
   public static makeModalDiv(options: ModalOptions): ModalReturn {
     const root = options.rootDiv ? options.rootDiv : document.body;

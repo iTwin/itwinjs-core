@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../../common/render/primitives/AuxChannelTable";
 import { computeDimensions, VertexTable } from "../../common/render/primitives/VertexTable";
@@ -20,6 +20,7 @@ import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
 
+/** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
   const builder = createMeshBuilder(args);
   const vertices = builder.build(args.colors, args.features, maxDimension);
@@ -29,7 +30,7 @@ export function createMeshParams(args: MeshArgs, maxDimension: number): MeshPara
   const surface: SurfaceParams = {
     type: builder.type,
     indices: surfaceIndices,
-    fillFlags: args.fillFlags,
+    fillFlags: args.fillFlags ?? FillFlags.ByView,
     hasBakedLighting: true === args.hasBakedLighting,
     textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
     material: createSurfaceMaterial(args.material),
@@ -46,7 +47,9 @@ export function createMeshParams(args: MeshArgs, maxDimension: number): MeshPara
   };
 }
 
-/** Builds a VertexTable from some data type supplying the vertex data. */
+/** Builds a VertexTable from some data type supplying the vertex data.
+ * @internal
+ */
 export abstract class VertexTableBuilder {
   public data?: Uint8Array;
   private _curIndex: number = 0;

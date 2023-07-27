@@ -1055,7 +1055,8 @@ export class ToolAdmin {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
 
-      return; // we're inside a pickable decoration, don't send event to tool
+      if (undefined === overlayHit.propagateMouseMove || !overlayHit.propagateMouseMove(ev))
+        return; // we're inside a pickable decoration that doesn't want event sent to tool
     }
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
@@ -1767,9 +1768,9 @@ export class ToolAdmin {
     this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
-  /** @internal */
-  public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
-  /** @internal */
+  /** Fill the supplied button event from the current cursor location. */
+  public fillEventFromCursorLocation(ev: BeButtonEvent, useSnap = true) { this.currentInputState.toEvent(ev, useSnap); }
+  /** Fill the supplied button event from the last data button location. */
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
   /** @internal */
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }

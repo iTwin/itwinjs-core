@@ -133,7 +133,7 @@ describe("exportGraphics", () => {
     builder.appendGeometryParamsChange(geometryParams);
     // Cube with one material attached to two faces and another material attached to other four faces
     const testBrepData: string = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" }),
     ).data;
     builder.appendBRepData({
       data: testBrepData,
@@ -175,7 +175,7 @@ describe("exportGraphics", () => {
     geometryParams.lineColor = ColorDef.fromString("peachPuff"); // line color should be superceded by material color
     builder.appendGeometryParamsChange(geometryParams);
     const testBrepData: string = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" }),
     ).data;
     builder.appendBRepData({
       // Cube with one material attached to two faces and another material attached to other four faces
@@ -622,7 +622,7 @@ describe("exportGraphics", () => {
     const builder = new GeometryStreamBuilder();
     // 4x4x4m slab with a ~1x1x1cm slab cut out of it.
     const testBrep: { data: string } = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-small-feature.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-small-feature.json"), { encoding: "utf8" }),
     );
     builder.appendBRepData(testBrep);
     const newId = insertPhysicalElement(builder.geometryStream);

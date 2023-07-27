@@ -129,6 +129,20 @@ export class DynamicsContext extends RenderContext {
   }
 }
 
+/** Arguments supplied to [[DecorateContext.create]].
+ * @public
+ */
+export interface DecorateContextCreateArgs {
+  /** The viewport to be decorated. */
+  viewport: ScreenViewport;
+  /** The set of decoration graphics to be populated by the context. */
+  output: Decorations;
+  /** Optional cache. If omitted, one will be created.
+   * @internal
+   */
+  cache?: DecorationsCache;
+}
+
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
  * @extensions
@@ -148,6 +162,15 @@ export class DecorateContext extends RenderContext {
     super(vp);
     this._decorations = decorations;
     this._cache = cache;
+  }
+
+  /** Create a new DecorateContext.
+   * @param args Describes the inputs to the context.
+   * @note Typically the [[ScreenViewport]] takes care of creating the context for you.
+   * @public
+   */
+  public static create(args: DecorateContextCreateArgs): DecorateContext {
+    return new DecorateContext(args.viewport, args.output, args.cache ?? new DecorationsCache());
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].

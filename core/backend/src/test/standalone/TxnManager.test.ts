@@ -18,6 +18,7 @@ import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhys
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
+  let roImodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
   let testFileName: string;
 
@@ -61,9 +62,11 @@ describe("TxnManager", () => {
 
     imodel.saveChanges("schema change");
     imodel.nativeDb.deleteAllTxns();
+    roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
   after(() => {
+    roImodel.close();
     imodel.close();
     IModelJsFs.removeSync(testFileName);
   });
@@ -123,6 +126,10 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
+
+    expect(imodel.nativeDb.getCurrentTxnId()).not.equal(roImodel.nativeDb.getCurrentTxnId());
+    roImodel.nativeDb.restartDefaultTxn();
+    expect(imodel.nativeDb.getCurrentTxnId()).equal(roImodel.nativeDb.getCurrentTxnId());
 
     const classId = imodel.nativeDb.classNameToId(props.classFullName);
     assert.isTrue(Id64.isValid(classId));
@@ -532,6 +539,12 @@ describe("TxnManager", () => {
       accum.expectNumValidations(1);
       accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
+
+    EventAccumulator.testModels(roImodel, (accum) => {
+      roImodel.nativeDb.restartDefaultTxn();
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
+    });
+
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
     // NB: Updates to existing models never produce events. I don't think I want to change that as part of this PR.
@@ -561,6 +574,11 @@ describe("TxnManager", () => {
       accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
 
       accum.expectNumApplyChanges(0);
+    });
+
+    EventAccumulator.testModels(roImodel, (accum) => {
+      roImodel.nativeDb.restartDefaultTxn();
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
     });
 
     // Undo
@@ -687,6 +705,22 @@ describe("TxnManager", () => {
       imodel.elements.deleteElement(newElemId);
       return true;
     });
+
+    imodel.saveChanges();
+
+    // now test that all the changes we just made are seen by the readonly connection when we call `restartDefaultTxn`
+    let numRoEvents = 0;
+    const guid1 = imodel.models.getModel<PhysicalModel>(modelId).geometryGuid;
+
+    const dropper = roImodel.txns.onModelGeometryChanged.addListener((changes) => {
+      ++numRoEvents;
+      expect(changes.length).to.equal(1);
+      expect(changes[0].id).to.equal(modelId);
+      expect(changes[0].guid).to.equal(guid1);
+    });
+    roImodel.nativeDb.restartDefaultTxn();
+    expect(numRoEvents).equal(4);
+    dropper();
   });
 
   it("dispatches events in batches", async () => {

@@ -716,7 +716,7 @@ export namespace QPoint3dBuffer {
 
   /** Extracts and unquantizes the point at the specified index from a buffer.
    * @param buffer The array of points and the quantization parameters.
-   * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param buffer The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
    * @param result If supplied, a preallocated [Point3d]($core-geometry) to initialize with the result and return.
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
@@ -742,14 +742,14 @@ export class QPoint3dList {
   }
 
   /** Construct an empty list set up to quantize to the supplied range.
-   * @param The quantization parameters. If omitted, a null range will be used.
+   * @param params The quantization parameters. If omitted, a null range will be used.
    */
   public constructor(params?: QParams3d) {
     this.params = params ? params.clone() : QParams3d.fromRange(Range3d.createNull());
   }
 
   /** Construct a QPoint3dList containing all points in the supplied list, quantized to the range of those points.
-   * @param The points to quantize and add to the list.
+   * @param points The points to quantize and add to the list.
    * @param out If supplied, it will be cleared, its parameters recomputed, and the points will be added to it; otherwise, a new QPoint3dList will be created and returned.
    */
   public static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList {
