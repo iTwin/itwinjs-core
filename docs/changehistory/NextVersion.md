@@ -24,7 +24,6 @@ Table of contents:
   - [ArcGIS Feature uniqueValueRenderer support](#arcgis-feature-uniqueValueRenderer)
 - [API deprecations](#api-deprecations)
   - [Geometry](#geometry-1)
-  - [Property categorization](#property-categorization)
 
 ## Snapping within view attachments
 
@@ -33,9 +32,6 @@ Table of contents:
 When a locate operation identifies an element inside of a view attachment, the attachment's element Id can be obtained via [HitDetail.viewAttachment]($frontend). If you are using [Viewport.readPixels]($frontend), the Id will be included in [Pixel.Data]($frontend). All world coordinates (e.g., [HitDetail.hitPoint]($frontend)) will be in the *sheet* model's coordinate space. You can pass the attachment Id to [ViewState.computeDisplayTransform]($frontend) to obtain the [Transform]($core-geometry) from the view attachment's coordinate space to the sheet.
 
 Note: most view attachments are two-dimensional drawings or orthographic spatial views. Attachments of perspective (camera) views do not support locating elements inside them, nor snapping to them.
-
-- [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
-- [Class property categories under custom categories](#class-property-categories-under-custom-categories)
 
 ## Display
 
@@ -139,7 +135,3 @@ The output from [PolyfaceQuery.sweepLinestringToFacetsXYReturnChains]($core-geom
 ```
 const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true);
 ```
-
-### Property categorization
-
-Now when moving property into a different category using [`categoryId`](../presentation/content/PropertySpecification.md#attribute-categoryid), [IdCategoryIdentifier]($presentation-common) has a new attribute `createClassCategory` which specifies whether an additional class category should be created under the category pointed to by the [IdCategoryIdentifier.categoryId]($presentation-common) or not. See [property categorization](../presentation/content/PropertyCategorization.md#creating-nested-class-categories) for more details.
