@@ -579,7 +579,6 @@ export class HalfEdgeGraphMerge {
     HalfEdgeGraphOps.segmentArrayToGraphEdges(lineSegments, graph, HalfEdgeMask.BOUNDARY_EDGE);
     this.splitIntersectingEdges(graph);
     this.clusterAndMergeXYTheta(graph);
-
     return graph;
   }
 

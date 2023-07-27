@@ -168,7 +168,7 @@ export abstract class CurveCollection extends GeometryQuery {
     return this.dgnBoundaryType() === 2;
   }
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
-  public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract cloneStroked(options?: StrokeOptions): CurveCollection;
   /** Support method for ICurvePrimitive ... one line call to specific announce method . . */
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** Clone an empty collection. */
@@ -296,7 +296,7 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
-  public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
   /**
    * Add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.

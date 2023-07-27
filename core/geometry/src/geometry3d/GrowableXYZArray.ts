@@ -141,7 +141,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /** Create an array from various point data formats.
    * Valid inputs are:
    * * Point2d
-   * * point3d
+   * * Point3d
    * * An array of 2 doubles
    * * An array of 3 doubles
    * * A GrowableXYZArray

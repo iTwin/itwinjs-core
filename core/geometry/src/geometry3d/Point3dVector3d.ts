@@ -71,7 +71,7 @@ export class XYZ implements XYAndZ {
    * * [number,number]
    * * [number,number,number]
    */
-  public static isAnyImmediatePointType(arg: any): boolean {
+  public static isAnyImmediatePointType(arg: any): arg is XAndY | XYAndZ | number[] {
     return Point3d.isXAndY(arg) || Geometry.isNumberArray(arg, 2);
   }
   /**

@@ -213,13 +213,14 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** Set from nested array json e.g. `[[1,2,3,4],[0,1,2,4],[0,2,5,1],[0,0,1,2]]` */
   public setFromJSON(json?: Matrix4dProps) {
-    if (Geometry.isArrayOfNumberArray(json, 4, 4))
+    if (Geometry.isArrayOfNumberArray(json, 4, 4)) {
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j)
-          this._coffs[i * 4 + j] = json![i][j];
+          this._coffs[i * 4 + j] = json[i][j];
       }
-    else
+    } else {
       this.setZero();
+    }
   }
   /**
    * Return the largest (absolute) difference between this and other Matrix4d.

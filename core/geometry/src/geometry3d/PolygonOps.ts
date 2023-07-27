@@ -377,7 +377,6 @@ export class PolygonOps {
       }
     }
     s *= 0.5;
-    // GeometryCoreTestIO.consoleLog("polygon area ", s, points);
     return s;
   }
   /** These values are the integrated area moment products [xx,xy,xz, x]
@@ -1197,7 +1196,7 @@ export class PolygonOps {
 }
 
 /**
- *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
+ *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXYZCollection`
  * @public
  */
 export class IndexedXYZCollectionPolygonOps {
@@ -1461,7 +1460,6 @@ export class Point3dArrayPolygonOps {
     const xyzInCarrier = new Point3dArrayCarrier(xyzIn);
     const xyzOutCarrier = new Point3dArrayCarrier(xyzOut);
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, xyzCarrier, xyzInCarrier, xyzOutCarrier, altitudeRange);
-
   }
 
   /** Return an array containing

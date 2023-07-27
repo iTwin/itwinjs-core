@@ -9,7 +9,6 @@
 
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -205,10 +204,10 @@ export class Triangulator {
   /**
    * * Only one outer loop permitted.
    * * Largest area loop is assumed outer.
-   * @param loops an array of loops as GrowableXYZArray or XAndY[]
+   * @param loops an array of loops
    * @returns triangulated graph, or undefined if bad data.
    */
-  public static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromLoops(loops: LineStringDataVariant[]): HalfEdgeGraph | undefined {
     if (loops.length < 1)
       return undefined;
     const mask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
@@ -277,7 +276,7 @@ export class Triangulator {
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromSingleLoop(data: LineStringDataVariant): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
@@ -321,7 +320,6 @@ export class Triangulator {
    * * no masking or other markup is applied.
    */
   public static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined {
-    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let baseNode: HalfEdge | undefined;
     if (data instanceof IndexedXYZCollection) {
       const xyz = Point3d.create();
@@ -339,13 +337,12 @@ export class Triangulator {
 
   /** Create chains from coordinates.
    * * Return array of pointers to base node of the chains.
-   * * no masking or other markup is applied.
+   * * no masking or other markup is applied (save id).
    * @param graph New edges are built in this graph
    * @param data coordinate data
    * @param id id to attach to (both side of all) edges
    */
   public static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id: number = 0): HalfEdge[] {
-    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     const assembler = new AssembleXYZXYZChains(graph, id);
     VariantPointDataStream.streamXYZ(data, assembler);
     return assembler.claimSeeds();
