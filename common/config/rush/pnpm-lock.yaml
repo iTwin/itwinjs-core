@@ -2412,6 +2412,7 @@ importers:
       '@types/express': ^4.16.1
       '@types/node': 18.16.1
       body-parser: ^1.18.2
+      browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
       chrome-launcher: ^0.15.0
       cpx2: ^3.0.0
@@ -2419,6 +2420,7 @@ importers:
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^25.0.0
+      esbuild-plugin-external-global: ^1.0.1
       eslint: ^8.44.0
       express: ^4.16.3
       internal-tools: workspace:*
@@ -2426,7 +2428,14 @@ importers:
       null-loader: ^4.0.1
       react: ^18.0.0
       rimraf: ^3.0.2
+      rollup-plugin-copy: ^3.4.0
+      rollup-plugin-ignore: ^1.0.10
+      rollup-plugin-visualizer: ^5.9.2
+      rollup-plugin-webpack-stats: ^0.2.0
       typescript: ~5.0.2
+      vite: ^4.3.9
+      vite-plugin-env-compatible: ^1.1.1
+      vite-plugin-inspect: ^0.7.28
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -2456,6 +2465,7 @@ importers:
       '@types/body-parser': 1.19.2
       '@types/express': 4.17.17
       '@types/node': 18.16.1
+      browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       chrome-launcher: 0.15.2
       cpx2: 3.0.2
@@ -2463,6 +2473,7 @@ importers:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       electron: 25.3.1
+      esbuild-plugin-external-global: 1.0.1
       eslint: 8.45.0
       express: 4.18.2
       internal-tools: link:../../tools/internal
@@ -2470,7 +2481,14 @@ importers:
       null-loader: 4.0.1_webpack@5.88.2
       react: 18.2.0
       rimraf: 3.0.2
+      rollup-plugin-copy: 3.4.0
+      rollup-plugin-ignore: 1.0.10
+      rollup-plugin-visualizer: 5.9.2
+      rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.0.4
+      vite: 4.4.6_@types+node@18.16.1
+      vite-plugin-env-compatible: 1.1.1
+      vite-plugin-inspect: 0.7.33_vite@4.4.6
       webpack: 5.88.2
 
   ../../test-apps/display-test-app:
@@ -19016,7 +19034,7 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.6
+      vite: 4.4.6_@types+node@18.16.1
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -19050,6 +19068,42 @@ packages:
       terser:
         optional: true
     dependencies:
+      esbuild: 0.18.15
+      postcss: 8.4.27
+      rollup: 3.26.3
+    optionalDependencies:
+      fsevents: 2.3.2
+    dev: true
+
+  /vite/4.4.6_@types+node@18.16.1:
+    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.16.1
       esbuild: 0.18.15
       postcss: 8.4.27
       rollup: 3.26.3
