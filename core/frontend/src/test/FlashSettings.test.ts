@@ -23,13 +23,13 @@ describe("FlashSettings", () => {
 
   it("normalizes inputs", () => {
     expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(-100), litMode: -5 as FlashMode, maxIntensity: -1 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }
+      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 },
     );
     expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }
+      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 },
     );
     expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(11), litMode: 42 as FlashMode, maxIntensity: 1.1 }),
-      { duration: BeDuration.fromSeconds(10), litMode: FlashMode.Brighten, maxIntensity: 1 }
+      { duration: BeDuration.fromSeconds(10), litMode: FlashMode.Brighten, maxIntensity: 1 },
     );
   });
 

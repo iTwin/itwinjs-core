@@ -206,7 +206,7 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
+      const locater = new ReferenceSchemaLocater((jsonObj, schemaContext) => Schema.fromJsonSync(jsonObj, schemaContext), async (jsonObj, schemaContext) => Schema.fromJson(jsonObj, schemaContext));
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
 
@@ -273,7 +273,7 @@ describe("Full Schema Deserialization", () => {
         ],
       };
 
-      const locater2 = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
+      const locater2 = new ReferenceSchemaLocater((jsonObj, _context) => Schema.fromJsonSync(jsonObj, _context), async (jsonObj, _context) => Schema.fromJson(jsonObj, _context));
       locater2.addSchema("RefSchemaC", schemaCJson);
       locater2.addSchema("RefSchemaD", schemaDJson);
       locater2.addSchema("RefSchemaE", schemaEJson);
@@ -341,7 +341,7 @@ describe("Full Schema Deserialization", () => {
         alias: "d",
       };
 
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJson);
+      const locater = new ReferenceSchemaLocater((jsonObj, _context) => Schema.fromJsonSync(jsonObj, _context), async (jsonObj, _context) => Schema.fromJson(jsonObj, _context));
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
       locater.addSchema("RefSchemaC", schemaCJson);

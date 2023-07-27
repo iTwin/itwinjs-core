@@ -61,7 +61,7 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       "IMJS_OIDC_REDIRECT_URI",
       "IMJS_OIDC_SCOPE",
       "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD"
+      "IMJS_OIDC_PASSWORD",
     ))
       return undefined;
     return new TestBrowserAuthorizationClient({

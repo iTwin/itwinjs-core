@@ -124,14 +124,14 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x123" },
         (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
         modes,
-        (vp) => vp.mapLayerFromHit = () => { return [] as any; }
+        (vp) => vp.mapLayerFromHit = () => { return [] as any; },
       );
     });
 
     it("produces expected result with no display transform", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [1, 2, 3], normal: [0, 1, 0], curve: [[0, 0, 0], [1, 0, 0]] })
+        (response) => expectSnapDetail(response, { point: [1, 2, 3], normal: [0, 1, 0], curve: [[0, 0, 0], [1, 0, 0]] }),
       );
     });
 
@@ -140,7 +140,7 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [1, 2, 7], normal: [0, 1, 0], curve: [[0, 0, 4], [1, 0, 4]] }),
         [],
-        (vp) => vp.view.getModelElevation = () => 4
+        (vp) => vp.view.getModelElevation = () => 4,
       );
     });
 
@@ -157,21 +157,21 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1))
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1)),
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1))),
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))),
       );
     });
 
@@ -191,21 +191,21 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(-1, 0, 1))
+        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(-1, 0, 1)),
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1))),
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
+        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))),
       );
     });
 
@@ -218,7 +218,7 @@ describe("AccuSnap", () => {
           vp.view.getModelElevation = () => 10;
           vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))));
           vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(0, 0, -4));
-        }
+        },
       );
     });
 
@@ -230,7 +230,7 @@ describe("AccuSnap", () => {
         (vp) => {
           vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(new Point3d(1, -1, 10), Matrix3d.createIdentity()));
           vp.view.getModelElevation = () => -4;
-        }
+        },
       );
     });
   });
