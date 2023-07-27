@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ECDb.createQueryReader and IModelDb.createQueryReader is now out of beta",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "IModelConnection.createQueryReader is now out of beta",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
