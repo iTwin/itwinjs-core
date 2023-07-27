@@ -43,7 +43,6 @@ export interface QueryLimit {
   offset?: number;
 }
 
-/** @beta */
 export interface QueryPropertyMetaData {
   className: string;
   generated: boolean;
