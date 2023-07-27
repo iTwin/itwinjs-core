@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
  */
@@ -9,34 +9,14 @@
 import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ProvidedItem } from "../items/ProvidedItem";
-
-/** Used to specify the usage of the toolbar which determine the toolbar position.
- * @deprecated in 3.6. Use [ToolbarUsage]($appui-react) instead.
- * @public
- */
-export enum ToolbarUsage {
-  /** Contains tools to Create Update and Delete content - in ninezone this is in top left of content area. */
-  ContentManipulation = 0,
-  /** Manipulate view/camera - in ninezone this is in top right of content area. */
-  ViewNavigation = 1,
-}
-
-/** Used to specify the orientation of the toolbar.
- * @deprecated in 3.6. Use [ToolbarOrientation]($appui-react) instead.
- * @public
- */
-export enum ToolbarOrientation {
-  /** Horizontal toolbar. */
-  Horizontal = 0,
-  /** Vertical toolbar. */
-  Vertical = 1,
-}
+// import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export interface ToolbarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+// export interface ToolbarItem extends ProvidedItem {
+export interface ToolbarItem {
+  // eslint-disable-line deprecation/deprecation
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
@@ -110,30 +90,45 @@ export interface CustomButtonDefinition extends ToolbarItem {
 /** Any Button Type that can be inserted into a toolbar.
  * @public
  */
-export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
-
-/** Type for Toolbar Item Id
- * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
- * @public
- */
-export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
+export type CommonToolbarItem =
+  | ActionButton
+  | GroupButton
+  | CustomButtonDefinition;
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public
  */
 export class ToolbarItemUtilities {
   /** Creates an Action Button */
-  public static createActionButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton>): ActionButton => ({
-    id, itemPriority,
-    icon, label,
+  public static createActionButton = (
+    id: string,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    label: string | ConditionalStringValue,
+    execute: () => void,
+    overrides?: Partial<ActionButton>
+  ): ActionButton => ({
+    id,
+    itemPriority,
+    icon,
+    label,
     execute,
     ...overrides,
   });
 
   /** Creates a Group button. */
-  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
-    id, itemPriority,
-    icon, label,
+  public static createGroupButton = (
+    id: string,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    label: string | ConditionalStringValue,
+    items: ReadonlyArray<ActionButton | GroupButton>,
+    overrides?: Partial<GroupButton>
+  ): GroupButton => ({
+    id,
+    itemPriority,
+    icon,
+    label,
     items,
     ...overrides,
   });
@@ -149,7 +144,9 @@ export class ToolbarItemUtilities {
   }
 
   /** CustomButtonDefinition type guard. */
-  public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition {
+  public static isCustomDefinition(
+    item: CommonToolbarItem
+  ): item is CustomButtonDefinition {
     return !!(item as CustomButtonDefinition).isCustom;
   }
 }
