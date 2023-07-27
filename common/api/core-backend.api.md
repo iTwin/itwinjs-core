@@ -199,6 +199,7 @@ import { SnapshotOpenOptions } from '@itwin/core-common';
 import { SourceAndTarget } from '@itwin/core-common';
 import { SpatialViewDefinitionProps } from '@itwin/core-common';
 import { StandardViewIndex } from '@itwin/core-geometry';
+import { StatementExpr } from '@itwin/core-common';
 import { StatusCodeWithMessage } from '@itwin/core-bentley';
 import { StorageValue } from '@itwin/core-common';
 import { SubCategoryAppearance } from '@itwin/core-common';
@@ -1643,6 +1644,8 @@ export class ECDb implements IDisposable {
     // @internal (undocumented)
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
+    // @alpha (undocumented)
+    parseECSql(ecsql: string): StatementExpr;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
@@ -2978,6 +2981,8 @@ export abstract class IModelDb extends IModel {
         path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb;
+    // @alpha (undocumented)
+    parseECSql(ecsql: string): StatementExpr;
     get pathName(): LocalFileName;
     performCheckpoint(): void;
     // @internal
