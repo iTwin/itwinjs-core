@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 11 Jul 2023 17:17:21 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Jul 2023 21:50:57 GMT and should not be manually modified.
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+### Updates
+
+- Fix a failure to read some glTF data with extra padding bytes.
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:21 GMT
