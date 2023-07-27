@@ -6,7 +6,6 @@ import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteInspect from "vite-plugin-inspect";
-import { NodeModulesPolyfillPlugin } from "@esbuild-plugins/node-modules-polyfill";
 import { externalGlobalPlugin } from "esbuild-plugin-external-global";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
@@ -59,7 +58,9 @@ export default defineConfig(() => {
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
           /node_modules/, // prevent errors for modules
+          /core\/frontend/, // prevent errors with require in IModelApp
         ],
+        transformMixedEsModules: true // transforms require statements
       },
       rollupOptions: {
         input: "./index.html",
@@ -102,11 +103,12 @@ export default defineConfig(() => {
         prefix: "IMJS_",
       }),
     ],
+    define: {
+      "process.env" : process.env // injects process.env into the frontend
+    },
     optimizeDeps: {
       esbuildOptions: {
         plugins: [
-          // Node.js modules not available to bundler by default
-          NodeModulesPolyfillPlugin(),
           externalGlobalPlugin({
             // allow global `window` object to access electron as external global
             electron: "window['electron']",
