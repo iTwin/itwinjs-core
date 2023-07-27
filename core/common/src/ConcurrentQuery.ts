@@ -128,6 +128,10 @@ export interface QueryOptions extends BaseReaderOptions {
    * Determine row format.
    */
   rowFormat?: QueryRowFormat;
+  /**
+   * Default to false. Enables experimental features to be used in the query
+   */
+  experimentalFeatures?: boolean;
 }
 /** @beta */
 export type BlobRange = QueryLimit;
@@ -232,6 +236,16 @@ export class QueryOptionsBuilder {
    */
   public setDelay(val: number) {
     this._options.delay = val;
+    return this;
+  }
+  /**
+   * @internal
+   * Enables experimental features for the query. This parameter is treated as false by default.
+   * @param val A boolean value.
+   * @returns @type QueryOptionsBuilder for fluent interface.
+   */
+  public setExperimentalFeatures(val: boolean) {
+    this._options.experimentalFeatures = val;
     return this;
   }
 }
@@ -672,6 +686,7 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
   valueFormat?: DbValueFormat;
   query: string;
   args?: object;
+  enableExperimentalFeatures?: boolean;
 }
 
 /** @internal */

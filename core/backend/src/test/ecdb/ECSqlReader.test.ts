@@ -1,8 +1,8 @@
-import { assert } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { DbResult, using } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
@@ -474,6 +474,96 @@ describe("ECSqlReader", (() => {
         assert.equal(actualRowCount, expectedRowCount);
       });
 
+    });
+  });
+  describe("Concurrent Queries with experimental features", () => {
+    it("ECSqlReader Instance Query", async () => {
+      const instanceQuery = "SELECT $ -> name FROM meta.ECClassDef WHERE Description='Used to define a supplemental schema and its purpose'";
+      const errorMsg = "Instance property access '$ -> name' is experimental feature. Use 'PRAGMA experimental_features_enabled=true' to enable it.";
+
+      // Test Case 1: Query options not specified. Experimental features defaulted to false.
+      // Should fail with error
+      try {
+        reader = iModel.createQueryReader(instanceQuery);
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
+
+      const builder = new QueryOptionsBuilder();
+      // Test Case 2: Query options specified, but experimental features not specified.
+      // Should fail with error
+      try {
+        reader = iModel.createQueryReader(instanceQuery, undefined, builder.getOptions());
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
+
+      // Test Case 3: Query options specified and experimental features set to true
+      // Should succeed
+      builder.setExperimentalFeatures(true);
+      reader = iModel.createQueryReader(instanceQuery, undefined, builder.getOptions());
+      expect(await reader.step()).to.be.true;
+      expect(reader.current.toArray()[0]).to.be.eql("SchemaNameAndPurpose");
+
+      // Test Case 4: Query options specified and experimental features set to false
+      // Should fail with error
+      try {
+        builder.setExperimentalFeatures(false);
+        reader = iModel.createQueryReader(instanceQuery, undefined, builder.getOptions());
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
+    });
+    it("ECSqlReader Integrity Check", async () => {
+      const navClassIdIntegrityCheck = "PRAGMA integrity_check(check_ec_profile)";
+      const errorMsg = "PRAGMA integrity_check is experimental feature. Use 'PRAGMA experimental_features_enabled=true' to enable it.";
+
+      // Test Case 1: Query options not specified. Experimental features defaulted to false.
+      // Should fail with error
+      try {
+        reader = iModel.createQueryReader(navClassIdIntegrityCheck);
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
+
+      const builder = new QueryOptionsBuilder();
+      // Test Case 2: Query options specified, but experimental features not specified.
+      // Should fail with error
+      try {
+        reader = iModel.createQueryReader(navClassIdIntegrityCheck, undefined, builder.getOptions());
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
+
+      // Test Case 3: Query options specified and experimental features set to true
+      // Should succeed
+      const metaNameArray = [ "sno", "type", "name", "issue"];
+      const metaTypeNameArray = [ "int", "string", "string", "string"];
+      builder.setExperimentalFeatures(true);
+      reader = iModel.createQueryReader(navClassIdIntegrityCheck, undefined, builder.getOptions());
+      const props = await reader.getMetaData();
+      expect(props.length).to.be.eql(4);
+      let index = 0;
+      for (const property of props) {
+        expect(property.name).to.be.eql(metaNameArray[index]);
+        expect(property.typeName).to.be.eql(metaTypeNameArray[index]);
+        ++index;
+      }
+
+      // Test Case 4: Query options specified and experimental features set to false
+      // Should fail with error
+      try {
+        builder.setExperimentalFeatures(false);
+        reader = iModel.createQueryReader(navClassIdIntegrityCheck, undefined, builder.getOptions());
+        expect(await reader.step()).to.be.false;
+      } catch (error: any) {
+        expect(error.message).to.be.eql(errorMsg);
+      }
     });
   });
 }));

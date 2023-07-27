@@ -1842,6 +1842,8 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
     // (undocumented)
     args?: object;
     // (undocumented)
+    enableExperimentalFeatures?: boolean;
+    // (undocumented)
     query: string;
     // (undocumented)
     valueFormat?: DbValueFormat;
@@ -6963,6 +6965,7 @@ export interface QueryLimit {
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
     convertClassIdsToClassNames?: boolean;
+    experimentalFeatures?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
     rowFormat?: QueryRowFormat;
@@ -6978,6 +6981,8 @@ export class QueryOptionsBuilder {
     setConvertClassIdsToNames(val: boolean): this;
     // @internal
     setDelay(val: number): this;
+    // @internal
+    setExperimentalFeatures(val: boolean): this;
     setLimit(val: QueryLimit): this;
     // @internal
     setPriority(val: number): this;

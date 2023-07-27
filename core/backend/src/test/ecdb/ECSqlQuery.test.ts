@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -407,5 +407,52 @@ describe("ECSql Query", () => {
       const entry = dbs.indexOf(db);
       assert.equal(rowCounts[entry], resultSet.length);
     }
+  });
+  it("Concurrent Instance Queries", async () => {
+    const instanceQuery = "SELECT $ -> name FROM meta.ECClassDef WHERE Description='Relates the property to its PropertyCategory.'";
+    const errorMsg = "Instance property access '$ -> name' is experimental feature. Use 'PRAGMA experimental_features_enabled=true' to enable it.";
+
+    // Experimental features argument defaulted to false
+    const responseArgMissing = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: instanceQuery});
+    expect(responseArgMissing.status).to.be.eql(DbResponseStatus.Error_ECSql_PreparedFailed);
+    expect(responseArgMissing.error).to.be.eql(errorMsg);
+
+    // Experimental features argument set to true
+    const responseArgTrue = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: instanceQuery, enableExperimentalFeatures: true });
+    expect(responseArgTrue.status).to.be.eql(DbResponseStatus.Done);
+    expect(responseArgTrue.error).to.be.empty;
+    expect(responseArgTrue.data.toString()).to.be.eql("PropertyHasCategory");
+
+    // Experimental features argument set to false
+    const responseArgFalse = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: instanceQuery, enableExperimentalFeatures: false });
+    expect(responseArgFalse.status).to.be.eql(DbResponseStatus.Error_ECSql_PreparedFailed);
+    expect(responseArgFalse.error).to.be.eql(errorMsg);
+  });
+  it("Concurrent Integrity Checks", async () => {
+    const navClassIdIntegrityCheck = "PRAGMA integrity_check(check_nav_class_ids)";
+    const errorMsg = "PRAGMA integrity_check is experimental feature. Use 'PRAGMA experimental_features_enabled=true' to enable it.";
+
+    // Experimental features argument defaulted to false
+    const responseArgMissing = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: navClassIdIntegrityCheck});
+    expect(responseArgMissing.status).to.be.eql(DbResponseStatus.Error_ECSql_PreparedFailed);
+    expect(responseArgMissing.error).to.be.eql(errorMsg);
+
+    // Experimental features argument set to true
+    const metaNameArray = [ "sno", "id", "class", "property", "nav_id", "nav_classId"];
+    const metaTypeNameArray = [ "int", "string", "string", "string", "string", "string"];
+    const responseArgTrue = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: navClassIdIntegrityCheck, enableExperimentalFeatures: true });
+    expect(responseArgTrue.status).to.be.eql(DbResponseStatus.Done);
+    expect(responseArgTrue.error).to.be.empty;
+    let index = 0;
+    for (const property of responseArgTrue.meta) {
+      expect(property.name).to.be.eql(metaNameArray[index]);
+      expect(property.typeName).to.be.eql(metaTypeNameArray[index]);
+      ++index;
+    }
+
+    // Experimental features argument set to false
+    const responseArgFalse = await ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, { kind: DbRequestKind.ECSql, query: navClassIdIntegrityCheck, enableExperimentalFeatures: false });
+    expect(responseArgFalse.status).to.be.eql(DbResponseStatus.Error_ECSql_PreparedFailed);
+    expect(responseArgFalse.error).to.be.eql(errorMsg);
   });
 });

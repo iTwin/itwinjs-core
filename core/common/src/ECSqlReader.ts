@@ -349,6 +349,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       valueFormat,
       query: this.query,
       args: this._param,
+      enableExperimentalFeatures: this._options?.experimentalFeatures,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };

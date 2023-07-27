@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added support to enable experimental features on concurrent query and ecsqlreader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
