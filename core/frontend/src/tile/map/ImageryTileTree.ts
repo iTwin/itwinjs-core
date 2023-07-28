@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -20,6 +20,8 @@ import {
   TileTreeSupplier,
 } from "../internal";
 import { HitDetail } from "../../HitDetail";
+
+const loggerCategory = "ImageryMapTileTree";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -352,10 +354,18 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(id: ImageryMapLayerTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(id.settings);
-    if (undefined === imageryProvider)
+    if (undefined === imageryProvider) {
+      Logger.logError(loggerCategory, `Failed to create imagery provider for format '${id.settings.formatId}'`);
       return undefined;
+    }
 
-    await imageryProvider.initialize();
+    try {
+      await imageryProvider.initialize();
+    } catch (e: any) {
+      Logger.logError(loggerCategory, `Could not initialize imagery provider for map layer '${id.settings.name}' : ${e}`);
+      throw e;
+    }
+
     const modelId = iModel.transientIds.getNext();
     const tilingScheme = imageryProvider.tilingScheme;
     const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
