@@ -37,7 +37,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
     // (undocumented)
-    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriPMS | EsriSLS | EsriSFS | undefined;
+    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriSFS | EsriSLS | EsriPMS | undefined;
     // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)
