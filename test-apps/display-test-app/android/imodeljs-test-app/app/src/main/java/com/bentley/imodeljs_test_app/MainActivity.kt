@@ -132,8 +132,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(true)
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
-        host = IModelJsHost(this, alwaysExtractAssets, true)
-        host.startup()
+        host = IModelJsHost(this, alwaysExtractAssets, true).apply {
+            setBackendPath("www/mobile")
+            setHomePath("www/home")
+            startup()
+        }
 
         val webView = WebView(this)
         // using a WebViewAssetLoader so that the localization json files load properly
@@ -188,12 +191,12 @@ class MainActivity : AppCompatActivity() {
         if (env.has("IMJS_IGNORE_CACHE"))
             args += "&ignoreCache=true"
 
-        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html", args)
+        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/www/index.html", args)
     }
 
     private fun loadEnvJson() {
         env = try {
-            JSONObject(assets.open("env.json").bufferedReader().use { it.readText() })
+            JSONObject(assets.open("www/mobile/env.json").bufferedReader().use { it.readText() })
         } catch (ex: Exception) {
             JSONObject()
         }
