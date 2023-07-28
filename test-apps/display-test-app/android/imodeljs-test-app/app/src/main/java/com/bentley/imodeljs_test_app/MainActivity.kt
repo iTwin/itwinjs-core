@@ -102,7 +102,7 @@ class AssetsPathHandler(context: Context) : WebViewAssetLoader.PathHandler {
     }
 
     private fun openAsset(path: String): InputStream {
-        return mContext.assets.open(removeLeadingSlash(path), AssetManager.ACCESS_STREAMING)
+        return mContext.assets.open("www/${removeLeadingSlash(path)}", AssetManager.ACCESS_STREAMING)
     }
 
     private fun guessMimeType(path: String): String {
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
         val webView = WebView(this)
         // using a WebViewAssetLoader so that the localization json files load properly
         // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in version 2.0.1)
-        val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/assets/", AssetsPathHandler(this)).build()
+        val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/", AssetsPathHandler(this)).build()
 
         webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest): WebResourceResponse? {
@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity() {
         if (env.has("IMJS_IGNORE_CACHE"))
             args += "&ignoreCache=true"
 
-        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/www/index.html", args)
+        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/index.html", args)
     }
 
     private fun loadEnvJson() {
