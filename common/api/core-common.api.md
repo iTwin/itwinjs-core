@@ -125,20 +125,10 @@ export const aggregateLoad: {
 };
 
 // @alpha
-export enum AllOrAnyOp {
-    // (undocumented)
-    All = "ALL",
-    // (undocumented)
-    Only = "ONLY"
-}
+export type AllOrAnyOp = "ONLY" | "ALL";
 
 // @alpha
-export enum AllOrDistinctOp {
-    // (undocumented)
-    All = "ALL",
-    // (undocumented)
-    Distinct = "DISTINCT"
-}
+export type AllOrDistinctOp = "DISTINCT" | "ALL";
 
 // @public
 export class AmbientLight {
@@ -744,26 +734,7 @@ export class BinaryBooleanExpr extends BooleanExpr {
 }
 
 // @alpha
-export enum BinaryBooleanOp {
-    // (undocumented)
-    And = "AND",
-    // (undocumented)
-    EqualTo = "=",
-    // (undocumented)
-    GreaterThan = ">",
-    // (undocumented)
-    GreaterThanOrEqualTo = ">=",
-    // (undocumented)
-    LessThan = "<",
-    // (undocumented)
-    LessThanOrEqualTo = "<=",
-    // (undocumented)
-    NotEqualTo = "<>",
-    // (undocumented)
-    NotEqualTo2 = "!=",
-    // (undocumented)
-    Or = "OR"
-}
+export type BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "<=" | "<" | "<>" | "!=";
 
 // @alpha
 export class BinaryValueExpr extends ValueExpr {
@@ -785,28 +756,7 @@ export class BinaryValueExpr extends ValueExpr {
 }
 
 // @alpha
-export enum BinaryValueOp {
-    // (undocumented)
-    BitwiseAnd = "&",
-    // (undocumented)
-    BitwiseOr = "|",
-    // (undocumented)
-    BitwiseShiftLeft = "<<",
-    // (undocumented)
-    BitwiseShiftRight = ">>",
-    // (undocumented)
-    Concat = "||",
-    // (undocumented)
-    Divide = "/",
-    // (undocumented)
-    Minus = "-",
-    // (undocumented)
-    Modulus = "%",
-    // (undocumented)
-    Multiply = "*",
-    // (undocumented)
-    Plus = "+"
-}
+export type BinaryValueOp = "&" | "|" | "<<" | "||" | "/" | "-" | "*" | "+" | "%";
 
 // @public
 export enum BisCodeSpec {

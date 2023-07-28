@@ -1644,7 +1644,7 @@ export class ECDb implements IDisposable {
     // @internal (undocumented)
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
-    // @alpha (undocumented)
+    // @alpha
     parseECSql(ecsql: string): StatementExpr;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;

@@ -5,8 +5,8 @@ public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
 internal;aggregateLoad:
-alpha;AllOrAnyOp
-alpha;AllOrDistinctOp
+alpha;AllOrAnyOp = "ONLY" | "ALL"
+alpha;AllOrDistinctOp = "DISTINCT" | "ALL"
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -60,9 +60,9 @@ beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
 alpha;BetweenExpr 
 alpha;BinaryBooleanExpr 
-alpha;BinaryBooleanOp
+alpha;BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "
 alpha;BinaryValueExpr 
-alpha;BinaryValueOp
+alpha;BinaryValueOp = "&" | "|" | "
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
