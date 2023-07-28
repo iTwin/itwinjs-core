@@ -8,12 +8,9 @@
 
 import { assert } from "chai";
 import {
-  AllOrDistinctOp,
   AssignmentExpr,
   BetweenExpr,
-  BinaryBooleanExpr,
-  BinaryBooleanOp,
-  BinaryValueExpr,
+  BinaryBooleanExpr, BinaryValueExpr,
   CastExpr,
   ClassNameExpr,
   CteBlockExpr,
@@ -61,18 +58,19 @@ import {
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-
 describe("ECSql Exprs", () => {
   let conn: IModelConnection;
 
   async function parseStatement(ecsql: string) {
-    return conn.parseECSql(ecsql)
+    return conn.parseECSql(ecsql);
   }
+
   async function toNormalizeECSql(ecsql: string) {
     return (await parseStatement(ecsql)).toECSql();
   }
+
   function printTree(expr: Expr, indent: number = 0) {
-    console.log(`${"".padEnd(indent, ".")}${expr.expType}${"".padEnd(30 - (indent + expr.expType.length), " ")}${expr.toECSql()}`);
+    process.stdout.write(`${"".padEnd(indent, ".")}${expr.expType}${"".padEnd(30 - (indent + expr.expType.length), " ")}${expr.toECSql()}\n`);
     indent += 3;
     for (const child of expr.children)
       printTree(child, indent);
@@ -454,7 +452,7 @@ describe("ECSql Exprs", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
-  //! experimental feature cannot be set from frontend as of now.
+  // experimental feature cannot be set from frontend as of now.
   it.skip("parse $, $->prop", async () => {
     const tests = [
       {
@@ -844,13 +842,13 @@ describe("ECSql Exprs", () => {
               new PropertyNameExpr("ECInstanceId")),
             new DerivedPropertyExpr(
               new PropertyNameExpr("CodeValue"))]),
-          AllOrDistinctOp.All,
+          "ALL",
           new FromClauseExpr([
             new ClassNameExpr("bis", "Element"),
           ]),
           new WhereClauseExp(
             new BinaryBooleanExpr(
-              BinaryBooleanOp.EqualTo,
+              "=",
               new PropertyNameExpr("ECInstanceId"),
               new LiteralExpr(LiteralValueType.Raw, "1"))))
       );
@@ -880,7 +878,7 @@ describe("ECSql Exprs", () => {
           ]),
           new WhereClauseExp(
             new BinaryBooleanExpr(
-              BinaryBooleanOp.EqualTo,
+              "=",
               new PropertyNameExpr("ECInstanceId"),
               new ParameterExpr())))
       );

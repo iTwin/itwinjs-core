@@ -67,34 +67,13 @@ enum NativeExpIds {
  * Binary boolean operators used by @see [[BinaryBooleanExpr]]
  *  @alpha
  */
-export enum BinaryBooleanOp {
-  And = "AND",
-  Or = "OR",
-  EqualTo = "=",
-  GreaterThanOrEqualTo = ">=",
-  GreaterThan = ">",
-  LessThanOrEqualTo = "<=",
-  LessThan = "<",
-  NotEqualTo = "<>",
-  NotEqualTo2 = "!=",
-}
+export type BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "<=" | "<" | "<>" | "!=";
 
 /**
  * Binary value operators used by  @see [[BinaryValueExpr]]
  *  @alpha
  */
-export enum BinaryValueOp {
-  BitwiseAnd = "&",
-  BitwiseOr = "|",
-  BitwiseShiftLeft = "<<",
-  BitwiseShiftRight = ">>",
-  Concat = "||",
-  Divide = "/",
-  Minus = "-",
-  Multiply = "*",
-  Plus = "+",
-  Modulus = "%",
-}
+export type BinaryValueOp = "&" | "|" | "<<" | "||" | "/" | "-" | "*" | "+" | "%";
 
 /**
  * Disqualify term in ECSQL so query planner does not try to find index for it.  @see [[ClassNameExpr]]
@@ -112,19 +91,13 @@ export type RecursiveCte = "RECURSIVE";
  * Polymorphic constraint for @see [[ClassNameExpr]]
  *  @alpha
  */
-export enum AllOrAnyOp {
-  Only = "ONLY",
-  All = "ALL",
-}
+export type AllOrAnyOp = "ONLY" | "ALL";
 
 /**
  * Filter rows in select clause or aggregate functions @see [[FuncCallExpr]] and @see [[SelectExpr]]
  *  @alpha
  */
-export enum AllOrDistinctOp {
-  Distinct = "DISTINCT",
-  All = "ALL",
-}
+export type AllOrDistinctOp = "DISTINCT" | "ALL";
 
 /**
  * Return by native code
@@ -480,13 +453,7 @@ export interface ECSqlWriterArgs {
  * Keywords output by @see [[ECSqlWriter.appendKeyword]]
  * @alpha
  */
-export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY"
-| "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS"
-| "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL"
-| "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO"
-| "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON"
-| "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN"
-| "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
+export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
 
 /**
  * Write expression tree to string
@@ -741,7 +708,7 @@ export class InsertStatementExpr extends StatementExpr {
     const className = ClassNameExpr.deserialize(node.class as NativeECSqlParseNode);
     if (className.polymorphicInfo) {
       // Patch as INSERT are always ONLY but parser have issue accepting ONLY.
-      if (className.polymorphicInfo.allOrAny === AllOrAnyOp.Only) {
+      if (className.polymorphicInfo.allOrAny === "ONLY") {
         className.polymorphicInfo = undefined;
       }
     }
@@ -1380,20 +1347,6 @@ export class BinaryBooleanExpr extends BooleanExpr {
     writer.appendExp(this.rhsExpr);
     writer.append(")");
   }
-  // public static makeMultiple(public readonly op: BinaryBooleanOp, ...exprs: ComputedExpr[]) {
-  //   if (exprs.length % 2 !== 0) {
-  //     throw new Error("expect multiple of two exprs");
-  //   }
-  //   let lastExpr: BinaryBooleanExpr | undefined;
-  //   exprs.reverse().forEach((v, i) => {
-  //     if (i === 0)
-  //       return;
-  //     if (i === 1) {
-  //       lastExpr = new BinaryBooleanExpr(op,   exprs[i - 1])
-  //     }
-  //   });
-
-  // }
 }
 
 /**

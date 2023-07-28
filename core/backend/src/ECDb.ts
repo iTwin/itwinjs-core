@@ -325,9 +325,9 @@ export class ECDb implements IDisposable {
     while (await reader.step())
       yield reader.formatCurrentRow();
   }
-  
+
   /**
-   *
+   * Parse a ECSQL statement and return a ecsql expression tree.
    * @param ecsql Input ECSQL for which the expression tree will be returned.
    * @returns On of the subclass of@see [[StatementExpr]]
    * @alpha
