@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "sweepLineStringToFacets improvements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

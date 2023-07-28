@@ -4,12 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { BilinearPatch, PolyfaceQuery } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedRange2dSet";
@@ -207,9 +211,7 @@ describe("GriddedRaggedRange2dSet", () => {
       saveRange(allGeometry, 0.1, fullRange, x0, y0, -0.0001);
 
       saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      rangesInGrid.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
-        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
-      });
+      rangesInGrid.visitChildren(0, (depth, child) => saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0));
       const testStep = Math.max(1, Math.floor(numRange / 10));
 
       // const testUV = Point3d.create(0.3, 0.2);
@@ -303,12 +305,13 @@ describe("GriddedRaggedRange2dSet", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-
-    for (const sizeMultiplier of [1, 5, 10]) {
+    const griddedSweepTimerName = "sweepLineStringToFacetsXY";
+    const simpleSweepTimerName = "sweepLineStringToFacets";
+    for (const sizeMultiplier of [1, 5, 10, 40, 80]) {
       const boxHalfSize = 10;
       const fullRange = Range2d.createXYXY(-boxHalfSize, -2 * boxHalfSize, boxHalfSize, 2 * boxHalfSize);
-      const numX = 4;
-      const numY = 5;
+      const numX = Math.max(4, sizeMultiplier);
+      const numY = Math.max(5, sizeMultiplier);
       const allRanges = GriddedRaggedRange2dSetWithOverflow.create<number>(fullRange, numX, numY)!;
       const numPoints = 10 * sizeMultiplier * sizeMultiplier;
       const y0 = 0;
@@ -320,8 +323,17 @@ describe("GriddedRaggedRange2dSet", () => {
       const totalTurns = numX / 8.234;
 
       const points = createSinSamplePoints(fullRange, numPoints, totalTurns);
+      ck.show({ numPoints });
+      const patch = BilinearPatch.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, -2),
+        Point3d.create(0, 1, 1),
+        Point3d.create(1, 1, 3));
+      for (const p of points) {
+        const uv = fullRange.worldToLocal(Point2d.create(p.x, p.y))!;
+        p.z = patch.uvFractionToPoint(uv.x, uv.y).z;
+      }
       const facets = PolyfaceBuilder.pointsToTriangulatedPolyface(points)!;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
 
       const visitor = facets.createVisitor(0);
       let numFacets = 0;
@@ -330,11 +342,11 @@ describe("GriddedRaggedRange2dSet", () => {
         numFacets++;
       }
 
-      saveRange(allGeometry, 0.1, fullRange, x1, y0);
-      allRanges.visitChildren(0, (depth: number, child: LinearSearchRange2dArray<number>) => {
-        saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0);
-      });
+      if (numFacets < 1000)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
 
+      saveRange(allGeometry, 0.1, fullRange, x1, y0);
+      allRanges.visitChildren(0, (depth, child) => saveRange(allGeometry, undefined, child.totalRange(), x1 + depth * xStep, y0));
       if (numFacets > 10) {
         visitor.setNumWrap(1);
         const sampleStep = Math.max(1, Math.ceil(numFacets / 5));
@@ -363,9 +375,38 @@ describe("GriddedRaggedRange2dSet", () => {
           });
         }
       }
-      x0 += 10 * xStep;
-      const xLine = -2 * boxHalfSize;
-      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(xLine, -y1, xLine, y1), x0, y0);
+
+      const numSpacePoint = 12 * sizeMultiplier;
+      const numFacetsPerBlock = numFacets / (numX * numY);
+      ck.show({ numSpacePoint, numFacets, numFacetsPerBlock });
+      const spacePointRangeA = Range2d.createArray([fullRange.fractionToPoint(0.1, 0.2), fullRange.fractionToPoint(1.1, 1.3)]);
+      const spacePointRangeB = Range2d.createArray([fullRange.fractionToPoint(0.1, 0.2), fullRange.fractionToPoint(0.18, 0.25)]);
+      for (const spacePointsRange of [spacePointRangeA, spacePointRangeB]) {
+        const spacePointsArea = spacePointsRange.xLength() * spacePointsRange.yLength();
+        ck.show({ spacePointsRange, spacePointsArea });
+        const spacePoints = createSinSamplePoints(spacePointsRange, numSpacePoint, 1.5 / numSpacePoint);
+        x0 += 4 * xStep;
+        if (numFacets < 1000)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spacePoints, x0, y1, 4.0);
+        GeometryCoreTestIO.consoleTime(griddedSweepTimerName);
+        const sweptCurvesA = PolyfaceQuery.sweepLineStringToFacetsXY(spacePoints, facets, allRanges);
+        GeometryCoreTestIO.consoleTimeEnd(griddedSweepTimerName);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptCurvesA, x0, y1, 0.01);
+
+        GeometryCoreTestIO.consoleTime(simpleSweepTimerName);
+        const sweptCurvesB = PolyfaceQuery.sweepLineStringToFacets(GrowableXYZArray.create(spacePoints), facets);
+        GeometryCoreTestIO.consoleTimeEnd(simpleSweepTimerName);
+        ck.testCoordinate(sumLengths(sweptCurvesA), sumLengths(sweptCurvesB), "same length by two projection methods");
+        // GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spacePoints, x0, y2, 4.0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptCurvesB, x0, y2, 0.01);
+
+        x0 += 2 * xStep;
+        const xLine = -2 * boxHalfSize;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.createXYXY(xLine, -y1, xLine, y1), x0, y0);
+        x0 += 10 * xStep;
+      }
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "FacetGrid");
@@ -382,4 +423,11 @@ function createSinSamplePoints(range: Range2d, numPoint: number, totalTurns: num
     points.push(Point3d.createFrom(range.fractionToPoint(uv.x, uv.y)));
   }
   return points;
+}
+function sumLengths(curves: CurvePrimitive[]): number {
+  let s = 0;
+  for (const c of curves) {
+    s += c.curveLength();
+  }
+  return s;
 }
