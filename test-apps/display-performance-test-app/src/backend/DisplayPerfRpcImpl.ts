@@ -11,7 +11,7 @@ import { RpcManager } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
-import { DptaEnvConfig, getConfig } from "../common/DisplayPerfConfiguration";
+import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {

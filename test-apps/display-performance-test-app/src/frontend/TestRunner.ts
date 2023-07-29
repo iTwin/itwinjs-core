@@ -19,7 +19,7 @@ import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { DisplayPerfTestApp, envConfiguration } from "./DisplayPerformanceTestApp";
+import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
@@ -283,7 +283,7 @@ export class TestRunner {
       try {
         this.curConfig.urlStr = undefined;
         const result = await this.runTest(context);
-        if (envConfiguration.frontendTilesUrlTemplate)
+        if (this.curConfig.urlStr)
           await this.logURL();
         if (result)
           await this.logToFile(result.selectedTileIds, { noNewLine: true });
@@ -633,8 +633,7 @@ export class TestRunner {
 
   // Log url path for cases it is used
   private async logURL(): Promise<void> {
-    const str = (this.curConfig.urlStr) ? `url: ${this.curConfig.urlStr}` : `urlError: No tiles found for ${envConfiguration.frontendTilesUrlTemplate}`
-    const outStr = `  [${str}]`;
+    const outStr = `  [url: ${this.curConfig.urlStr}]`;
     await this.logToConsole(outStr);
     return this.logToFile(outStr);
   }

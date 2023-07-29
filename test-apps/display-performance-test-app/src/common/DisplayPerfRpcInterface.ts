@@ -6,7 +6,7 @@ import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
 import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
-import { DptaEnvConfig } from "./DisplayPerfConfiguration";
+import { DptaEnvConfig } from "./DisplayPerfEnvConfig";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 

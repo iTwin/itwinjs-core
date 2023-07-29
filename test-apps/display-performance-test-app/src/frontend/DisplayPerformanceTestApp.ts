@@ -16,7 +16,7 @@ import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { DptaEnvConfig } from "../common/DisplayPerfConfiguration";
+import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
 
 export const envConfiguration: DptaEnvConfig = {};
 let runner: TestRunner;
@@ -73,26 +73,27 @@ export class DisplayPerfTestApp {
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
 
-    if (envConfiguration.frontendTilesUrlTemplate) {
-      initializeFrontendTiles({
-        computeSpatialTilesetBaseUrl: async (iModel) => {
-          // Note: iModel.key in DPTA is just a GUID string (not path and filename)
-          let urlStr = envConfiguration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
-          urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
-          const url = new URL(urlStr);
-          try {
-            // See if a tileset has been published for this iModel.
-            const response = await fetch(`${url}tileset.json`);
-            await response.json();
-            runner.curConfig.urlStr = urlStr;
-            return url;
-          } catch (_) {
-            // No tileset available.
-            return undefined;
-          }
-        },
-      });
-    }
+    initializeFrontendTiles({
+      computeSpatialTilesetBaseUrl: async (iModel) => {
+        if (runner.curConfig.frontendTilesUrlTemplate === undefined)
+          return undefined;
+        // Note: iModel.key in DPTA is just a GUID string (not path and filename)
+        let urlStr = runner.curConfig.frontendTilesUrlTemplate.replace("{iModel.key}", iModel.key);
+        urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
+        const url = new URL(urlStr);
+        try {
+          // See if a tileset has been published for this iModel.
+          const response = await fetch(`${url}tileset.json`);
+          await response.json();
+          runner.curConfig.urlStr = urlStr;
+          return url;
+        } catch (_) {
+          runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
+          // No tileset available.
+          return undefined;
+        }
+      },
+    });
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 

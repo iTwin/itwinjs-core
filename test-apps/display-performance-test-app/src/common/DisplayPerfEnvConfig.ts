@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export interface DptaStringConfiguration {
-  frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
+export interface DtaBooleanConfiguration {
+  noDevTools?: boolean;
+  noMaximizeWindow?: boolean;
 }
 
 /** Parameters for starting display-performance-test-app with a specified initial configuration */
-export type DptaEnvConfig = DptaStringConfiguration;
+export type DptaEnvConfig = DtaBooleanConfiguration;
 
 let envConfig: DptaEnvConfig | undefined;
 
@@ -17,7 +18,10 @@ let envConfig: DptaEnvConfig | undefined;
 export const getConfig = (): DptaEnvConfig => {
 
   envConfig = {};
-  envConfig.frontendTilesUrlTemplate = process.env.IMJS_FRONTEND_TILES_URL_TEMPLATE;
+  if (undefined !== process.env.IMJS_NO_DEV_TOOLS)
+    envConfig.noDevTools = true;
+  if (undefined !== process.env.IMJS_NO_MAXIMIZE_WINDOW)
+    envConfig.noMaximizeWindow = true;
 
   return envConfig;
 };
