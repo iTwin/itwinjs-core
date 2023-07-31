@@ -161,6 +161,19 @@ Object {
     },
   ],
   "inputKeysHash": "",
+  "ruleset": Object {
+    "id": "rulesetId",
+    "rules": Array [
+      Object {
+        "ruleType": "Content",
+        "specifications": Array [
+          Object {
+            "specType": "SelectedNodeInstances",
+          },
+        ],
+      },
+    ],
+  },
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
@@ -343,6 +356,19 @@ Object {
       },
     ],
     "selectClassName": "testClass",
+  },
+  "ruleset": Object {
+    "id": "rulesetId",
+    "rules": Array [
+      Object {
+        "ruleType": "Content",
+        "specifications": Array [
+          Object {
+            "specType": "SelectedNodeInstances",
+          },
+        ],
+      },
+    ],
   },
   "selectClasses": Array [
     Object {
