@@ -11,6 +11,7 @@ import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
+import { MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
@@ -177,7 +178,11 @@ export class MobileHost {
         MobileHost.notifyMobileFrontend("notifyMemoryWarning");
       });
       this.onOrientationChanged.addListener(() => {
-        MobileHost.notifyMobileFrontend("notifyOrientationChanged");
+        // If there is no connection to the frontend, MobileHost.notifyMobileFrontend will just
+        // crash the app. So only notify if there is a connection to the frontend.
+        if (MobileRpcProtocol.obtainInterop().connectionId !== 0) {
+          MobileHost.notifyMobileFrontend("notifyOrientationChanged");
+        }
       });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");
