@@ -285,7 +285,7 @@ export class ECClasses {
 
   /**
    * Sets the name of the ECClass.
-   * @param classKey The SchemaItemKey of teh class.
+   * @param classKey The SchemaItemKey of the class.
    * @param name The new name of the class.
    * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
    */
