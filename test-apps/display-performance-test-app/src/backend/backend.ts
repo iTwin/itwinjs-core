@@ -43,7 +43,7 @@ export async function initializeBackend() {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     await ElectronHost.startup({
       electronHost: {
-        webResourcesPath: path.join(__dirname, "..", "..", "build"),
+        webResourcesPath: path.join(__dirname, "..", "..", "lib"),
         rpcInterfaces,
       },
       iModelHost,
