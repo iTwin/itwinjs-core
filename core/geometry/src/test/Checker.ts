@@ -360,6 +360,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("expect same Transform", dataA, dataB, params);
   }
+  // return true if 2 numbers are almost equal.
   public testCoordinate(dataA: number, dataB: number, ...params: any[]): boolean {
     if (Geometry.isSameCoordinate(dataA, dataB))
       return this.announceOK();

@@ -160,6 +160,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Create a convex clip plane set that clips to `x0 <= x <= x1` and `y0 <= y <= y1`.
    * * Note that there is no test for the usual ordering `x0 <= x1` or `y0 <= y1`.
    * * if the usual ordering is violated, the convex set is an empty set.
+   * * More details can be found at docs/learning/geometry/Clipping.md
    */
   public static createXYBox(
     x0: number, y0: number, x1: number, y1: number, result?: ConvexClipPlaneSet,
@@ -615,7 +616,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * valid clip in a parity sense.
    * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain
    * the polygon.
-   * @param input input polygon, usually convex.
+   * @param input polygon, usually convex.
    * @param output output polygon
    * @param work work array.
    * @param containingPlane if this plane is found in the convex set, it is NOT applied.
@@ -759,7 +760,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
-   * @param xyz input polygon.  This is not changed.
+   * @param xyz convex polygon.  This is not changed.
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from

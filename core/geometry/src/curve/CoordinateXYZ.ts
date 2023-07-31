@@ -11,7 +11,8 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryQuery } from "./GeometryQuery";
 
-/** A Coordinate is a Point3d with supporting methods from the GeometryQuery abstraction.
+/**
+ * A Coordinate is a Point3d with supporting methods from the GeometryQuery abstraction.
  * @public
  */
 export class CoordinateXYZ extends GeometryQuery {
@@ -37,10 +38,10 @@ export class CoordinateXYZ extends GeometryQuery {
     return new CoordinateXYZ(Point3d.create(x, y, z));
   }
 
-  /** return the range of the point */
+  /** Return the range of the point */
   public override range(): Range3d { return Range3d.create(this._xyz); }
 
-  /** extend `rangeToExtend` to include this point (optionally transformed) */
+  /** Extend `rangeToExtend` to include this point (optionally transformed) */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     if (transform)
       rangeToExtend.extendTransformedXYZ(transform, this._xyz.x, this._xyz.y, this._xyz.z);
@@ -52,32 +53,31 @@ export class CoordinateXYZ extends GeometryQuery {
     transform.multiplyPoint3d(this._xyz, this._xyz);
     return true;
   }
-  /** return a transformed clone.
-   */
+  /** Return a transformed clone */
   public cloneTransformed(transform: Transform): GeometryQuery | undefined {
     const result = new CoordinateXYZ(this._xyz.clone());
     result.tryTransformInPlace(transform);
     return result;
   }
-  /** return a clone */
+  /** Return a clone */
   public clone(): GeometryQuery | undefined {
     return new CoordinateXYZ(this._xyz.clone());
   }
-  /** return GeometryQuery children for recursive queries.
-   *
-   * * leaf classes do not need to implement.
+  /**
+   * Return GeometryQuery children for recursive queries.
+   * * Leaf classes do not need to implement.
    */
 
-  /** test if (other instanceof Coordinate).  */
+  /** Test if (other instanceof Coordinate).  */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof CoordinateXYZ;
   }
-  /** test for exact structure and nearly identical geometry.
-   *
+  /**
+   * Test for exact structure and nearly identical geometry.
    * *  Leaf classes must implement !!!
-   * *  base class implementation recurses through children.
-   * *  base implementation is complete for classes with children and no properties.
-   * *  classes with both children and properties must implement for properties, call super for children.
+   * *  Base class implementation recurses through children.
+   * *  Base implementation is complete for classes with children and no properties.
+   * *  Classes with both children and properties must implement for properties, call super for children.
    */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     return (other instanceof CoordinateXYZ) && this._xyz.isAlmostEqual(other._xyz);

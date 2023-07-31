@@ -75,18 +75,18 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       }
     }
   }
-  /** approach larger than this is not interesting.
-   * This is caller defined and can be undefined.
+  /**
+   * Approach larger than this is not interesting.
+   * * This is caller defined and can be undefined.
    */
   private _maxDistanceToAccept: number | undefined;
-  /** Squared max distance.  This is private, and is forced to at least small metric distance squared */
+  /** Squared max distance. This is private and is forced to at least small metric distance squared */
   private _maxDistanceSquared: number;
   private _results!: CurveLocationDetailPair[];
   // private _coincidentGeometryContext: CoincidentGeometryQuery;
   private reinitialize() {
     this._results = [];
   }
-
   /**
    * @param _geometryA first curve for intersection.  This is NOT saved.
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
@@ -108,12 +108,13 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   /** Set the (possibly undefined) max distance to accept. */
   public get maxDistanceToAccept(): number | undefined { return this._maxDistanceToAccept; }
   /** Ask if the maxDistanceToAccept value is defined and positive */
-  public get isMaxDistanceSet(): boolean { return this._maxDistanceToAccept !== undefined && this._maxDistanceToAccept > 0; }
+  public get isMaxDistanceSet(): boolean {
+    return this._maxDistanceToAccept !== undefined && this._maxDistanceToAccept > 0;
+  }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
   public resetGeometry(_geometryA: GeometryQuery, geometryB: GeometryQuery) {
     this.setGeometryB(geometryB);
   }
-
   private acceptFraction(fraction: number, fractionTol: number = 1.0e-12) {
     if (fraction < -fractionTol)
       return false;
@@ -147,9 +148,10 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       this._results.push(pair);
     }
   }
-  /** compute intersection of two line segments.
-   * filter by extension rules.
-   * record with fraction mapping.
+  /**
+   * Compute intersection of two line segments.
+   * Filter by extension rules.
+   * Record with fraction mapping.
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -164,7 +166,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     intervalDetails?: undefined | CurveLocationDetailPair) {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
-    const isInterval = intervalDetails !== undefined && intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
+    const isInterval = intervalDetails !== undefined &&
+      intervalDetails.detailA.hasFraction1 &&
+      intervalDetails.detailB.hasFraction1;
     if (isInterval) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
@@ -173,7 +177,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
-
     }
     // ignore duplicate of most recent point .  ..
     const numPrevious = this._results.length;
@@ -181,10 +184,12 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) &&
+          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
           return;
       } else {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) &&
+          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
           return;
       }
     }
@@ -207,8 +212,8 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
   }
   /**
-   * capture a close approach pair that has point and local fraction but not curve.
-   * record with fraction mapping.
+   * Capture a close approach pair that has point and local fraction but not curve.
+   * Record with fraction mapping.
    */
   private capturePairWithLocalFractions(
     pair: CurveLocationDetailPair,
@@ -227,10 +232,12 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) &&
+          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
           return;
       } else {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) &&
+          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
           return;
       }
     }
@@ -244,16 +251,16 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       this._results.push(pair);
     }
   }
-
   /**
-   * emit recordPoint for multiple pairs (on full curve!)
+   * Emit recordPoint for multiple pairs (on full curve!)
    * @param cpA first curve primitive.   (possibly different from curve in detailA, but fraction compatible)
    * @param cpB second curve primitive.   (possibly different from curve in detailA, but fraction compatible)
    * @param pairs array of pairs
    * @param reversed true to have order reversed in final structures.
    */
-  public recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive,
-    pairs: CurveLocationDetailPair[] | undefined, reversed: boolean) {
+  public recordPairs(
+    cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean,
+  ): void {
     if (pairs !== undefined) {
       for (const p of pairs) {
         this.recordPointWithLocalFractions(p.detailA.fraction, cpA, 0, 1,
@@ -262,12 +269,14 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
   }
   /**
-   * record fully assembled (but possibly reversed) detail pair.
+   * Record fully assembled (but possibly reversed) detail pair.
    * @param detailA first detail
    * @param detailB second detail
    * @param reversed true to have order reversed in final structures.
    */
-  public captureDetailPair(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean) {
+  public captureDetailPair(
+    detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
+  ): void {
     if (detailA && detailB) {
       if (reversed) {
         this._results.push(CurveLocationDetailPair.createCapture(detailA, detailB));
@@ -276,18 +285,15 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       }
     }
   }
-
-  /**
-   *
-   * @param fractionA
-   * @param pointA
-   * @param pointB0
-   * @param pointB1
-   * @param fractionB
-   * @param minDistanceSquared
-   * @param closestApproach
-   */
-  private static updatePointToSegmentDistance(fractionA: number, pointA: Point3d, pointB0: Point3d, pointB1: Point3d, fractionB: number, minDistanceSquared: number, closestApproach?: CurveLocationDetailPair): CurveLocationDetailPair | undefined {
+  private static updatePointToSegmentDistance(
+    fractionA: number,
+    pointA: Point3d,
+    pointB0: Point3d,
+    pointB1: Point3d,
+    fractionB: number,
+    minDistanceSquared: number,
+    closestApproach?: CurveLocationDetailPair,
+  ): CurveLocationDetailPair | undefined {
     if (fractionB < 0)
       fractionB = 0;
     else if (fractionB > 1)
@@ -297,7 +303,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     if (distanceSquared < minDistanceSquared) {
       if (closestApproach === undefined || distanceSquared < closestApproach.detailA.a) {
         if (closestApproach === undefined)
-          closestApproach = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
+          closestApproach = CurveLocationDetailPair.createCapture(
+            CurveLocationDetail.create(), CurveLocationDetail.create(),
+          );
         closestApproach.detailA.setFP(fractionA, pointA);
         closestApproach.detailA.a = distanceSquared;
         closestApproach.detailB.setFP(fractionB, this._workPointB0);
@@ -314,23 +322,22 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
    * @param a1  end point of line a
    * @param b0  start point of line b
    * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * @param result point to receive fractional coordinates of intersection. result.x is fraction on line a. result.y
+   * is fraction on line b.
    */
-  private static segmentSegmentBoundedApproach(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, minDistanceSquared: number): CurveLocationDetailPair | undefined {
+  private static segmentSegmentBoundedApproach(
+    a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, minDistanceSquared: number,
+  ): CurveLocationDetailPair | undefined {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;
-
     const vx = b1.x - b0.x;
     const vy = b1.y - b0.y;
     const e00x = b0.x - a0.x;
     const e00y = b0.y - a0.y;
-
     const e01x = b1.x - a0.x;
     const e01y = b1.y - a0.y;
-
     const e10x = b0.x - a1.x;
     const e10y = b0.y - a1.y;
-
     const e11x = b1.x - a1.x;
     const e11y = b1.y - a1.y;
     const hab0 = Geometry.crossProductXYXY(ux, uy, e00x, e00y);
@@ -342,21 +349,31 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       // true intersection, strictly within both segments !!!
       const fractionA = -hba0 / (hba1 - hba0);
       const fractionB = -hab0 / (hab1 - hab0);
-      return CurveLocationDetailPair.createCapture(CurveLocationDetail.createCurveFractionPoint(undefined, fractionA, a0.interpolate(fractionA, a1)),
-        CurveLocationDetail.createCurveFractionPoint(undefined, fractionB, b0.interpolate(fractionB, b1)));
+      return CurveLocationDetailPair.createCapture(
+        CurveLocationDetail.createCurveFractionPoint(undefined, fractionA, a0.interpolate(fractionA, a1)),
+        CurveLocationDetail.createCurveFractionPoint(undefined, fractionB, b0.interpolate(fractionB, b1)),
+      );
     }
     let closestApproach: CurveLocationDetailPair | undefined;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
     if (hab0 * hab0 < minDistanceSquared * uu)
-      closestApproach = this.updatePointToSegmentDistance(0, b0, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, minDistanceSquared, closestApproach);
+      closestApproach = this.updatePointToSegmentDistance(
+        0, b0, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, minDistanceSquared, closestApproach,
+      );
     if (hab1 * hab1 < minDistanceSquared * uu)
-      closestApproach = this.updatePointToSegmentDistance(1, b1, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, minDistanceSquared, closestApproach);
+      closestApproach = this.updatePointToSegmentDistance(
+        1, b1, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, minDistanceSquared, closestApproach,
+      );
 
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
     if (hba0 * hba0 < minDistanceSquared * vv)
-      closestApproach = this.updatePointToSegmentDistance(0, a0, b0, b1, -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv, minDistanceSquared, closestApproach);
+      closestApproach = this.updatePointToSegmentDistance(
+        0, a0, b0, b1, -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv, minDistanceSquared, closestApproach,
+      );
     if (hba1 * hba1 < minDistanceSquared * vv)
-      closestApproach = this.updatePointToSegmentDistance(1, a1, b0, b1, -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv, minDistanceSquared, closestApproach);
+      closestApproach = this.updatePointToSegmentDistance(
+        1, a1, b0, b1, -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv, minDistanceSquared, closestApproach,
+      );
     return closestApproach;
   }
   /**
@@ -367,10 +384,20 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
    * @param a1  end point of line a
    * @param b0  start point of line b
    * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   * @param result point to receive fractional coordinates of intersection. result.x is fraction on line a. result.y
+   * is fraction on line b.
    */
-  private testAndRecordFractionalPairApproach(cpA: CurvePrimitive, fA0: number, fA1: number, testProjectionOnA: boolean,
-    cpB: CurvePrimitive, fB0: number, fB1: number, testProjectionOnB: boolean, reversed: boolean) {
+  private testAndRecordFractionalPairApproach(
+    cpA: CurvePrimitive,
+    fA0: number,
+    fA1: number,
+    testProjectionOnA: boolean,
+    cpB: CurvePrimitive,
+    fB0: number,
+    fB1: number,
+    testProjectionOnB: boolean,
+    reversed: boolean,
+  ) {
     const pointA0 = cpA.fractionToPoint(fA0);
     const pointA1 = cpA.fractionToPoint(fA1);
     const pointB0 = cpB.fractionToPoint(fB0);
@@ -388,7 +415,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       this.testAndRecordProjection(cpB, fB1, pointB1, cpA, fA0, fA1, !reversed);
     }
   }
-
   private testAndRecordProjection(cpA: CurvePrimitive, fA: number, pointA: Point3d,
     cpB: CurvePrimitive, fB0: number, fB1: number, reversed: boolean) {
     // NO NO NO -- this is 3D closest point --- need 2d !!
@@ -400,9 +426,10 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       }
     }
   }
-  /** compute intersection of two line segments.
-   * filter by extension rules.
-   * record with fraction mapping.
+  /**
+   * Compute intersection of two line segments.
+   * Filter by extension rules.
+   * Record with fraction mapping.
    * * The fraction mappings allow portions of a linestring to be passed here.
    */
   private computeSegmentSegment3D(
@@ -418,13 +445,15 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     fractionB1: number,
     reversed: boolean,
   ) {
-    const approach = CurveCurveCloseApproachXY.segmentSegmentBoundedApproach(pointA0, pointA1, pointB0, pointB1, this._maxDistanceSquared);
+    const approach = CurveCurveCloseApproachXY.segmentSegmentBoundedApproach(
+      pointA0, pointA1, pointB0, pointB1, this._maxDistanceSquared,
+    );
     if (approach)
       this.capturePairWithLocalFractions(approach, cpA, fractionA0, fractionA1, cpB, fractionB0, fractionB1, reversed);
   }
-
   // Caller accesses data from a line segment and passes to here.
-  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.  The fraction and extend parameters
+  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
+  // The fraction and extend parameters
   // allow all combinations to be passed in)
   // This method applies transform.
   private dispatchSegmentSegment(
@@ -443,11 +472,12 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     this.computeSegmentSegment3D(
       cpA, pointA0, fractionA0, pointA1, fractionA1,
       cpB, pointB0, fractionB0, pointB1, fractionB1,
-      reversed);
+      reversed,
+    );
   }
-
   // Caller accesses data from a linestring or segment and passes it here.
-  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.  The fraction and extend parameters
+  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
+  // The fraction and extend parameters
   // allow all combinations to be passed in)
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
@@ -471,7 +501,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     // solve for theta.
     // evaluate points.
     // project back to line.
-
     const data = arc.toTransformedVectors();
     const pointA0Local = pointA0;
     const pointA1Local = pointA1;
@@ -483,7 +512,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     const radians = new GrowableFloat64Array(2);
     const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
     for (let i = 0; i < numRoots; i++) {
-      const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+      const arcPoint = data.center.plus2Scaled(
+        data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
+      );
       const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
       const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
       if (lineFraction !== undefined && this.acceptFraction(lineFraction) && this.acceptFraction(arcFraction)) {
@@ -491,7 +522,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
           arcFraction, arc, 0, 1, reversed);
       }
     }
-
     // line parallel to arc tangent.
     const dotUT = data.vector0.crossProductStartEndXY(pointA0, pointA1);
     const dotVT = data.vector90.crossProductStartEndXY(pointA0, pointA1);
@@ -505,18 +535,15 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
           arcFraction, arc, 0, 1, reversed);
       }
     }
-
   }
-
   // Caller accesses data from two arcs, ensures circular, and orders with radiusA >= radiusB
-
   private dispatchCircularCircularOrdered(
     cpA: Arc3d,
     radiusA: number,
     cpB: Arc3d,
     radiusB: number,
     reversed: boolean,
-  ) {
+  ): void {
     const c = cpA.center.distance(cpB.center);
     const e = this._maxDistanceToAccept !== undefined ? this._maxDistanceToAccept : Geometry.smallMetricDistance;
     if (c > radiusA + radiusB + e)    // widely separated !!
@@ -552,10 +579,13 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       }
     }
   }
-  /** Find the fractional point (if any) on an arc, known to be circular and displayed from the center in the direction of a scaled vector.
-   *
+  /**
+   * Find the fractional point (if any) on an arc, known to be circular and displayed from the center in the
+   * direction of a scaled vector.
    */
-  private resolveDirectionToArcXYFraction(arc: Arc3d, radialVector: Vector3d, scale: number): CurveLocationDetail | undefined {
+  private resolveDirectionToArcXYFraction(
+    arc: Arc3d, radialVector: Vector3d, scale: number,
+  ): CurveLocationDetail | undefined {
     // The scale ultimately only affects the direction --- easiest way to use it is two multiplies
     const c = scale * arc.matrixRef.columnDotXYZ(0, radialVector.x, radialVector.y, 0);
     const s = scale * arc.matrixRef.columnDotXYZ(1, radialVector.x, radialVector.y, 0);
@@ -597,7 +627,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     cpB.emitStrokes(ls);
     this.computeArcLineString(cpA, ls, reversed);
   }
-
   // Caller accesses data from two arcs.
   // Selects the best conditioned arc (in xy parts) as "circle after inversion"
   // Solves the arc-arc equations
@@ -610,22 +639,20 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     const lsB = LineString3d.create();
     bcurveB.emitStrokes(lsB);
     this.computeLineStringLineString(lsA, lsB, reversed);
-
   }
-
   private static _workPointAA0 = Point3d.create();
   private static _workPointAA1 = Point3d.create();
   private static _workPointBB0 = Point3d.create();
   private static _workPointBB1 = Point3d.create();
   private static _workPointBB2 = Point3d.create();
   private static _workVectorA = Vector3d.create();
-  /** low level dispatch of linestring with (beziers of) a bspline curve */
+  /** Low level dispatch of linestring with (beziers of) a bspline curve */
   public dispatchLineStringBSplineCurve(lsA: LineString3d, curveB: BSplineCurve3d, reversed: boolean): any {
     const lsB = LineString3d.create();
     curveB.emitStrokes(lsB);
     this.computeLineStringLineString(lsA, lsB, reversed);
   }
-  /** low level dispatch of linestring with (beziers of) a bspline curve */
+  /** Low level dispatch of linestring with (beziers of) a bspline curve */
   public dispatchSegmentBsplineCurve(lsA: LineSegment3d, curveB: BSplineCurve3d, reversed: boolean): any {
     const lsB = LineString3d.create();
     curveB.emitStrokes(lsB);
@@ -697,10 +724,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
     return undefined;
   }
-
   private static _workPointB0 = Point3d.create();
   // private static _workPointB1 = Point3d.create();
-  /** double dispatch handler for strongly typed segment.. */
+  /** Double dispatch handler for strongly typed segment.. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       const segmentB = this._geometryB;
@@ -769,7 +795,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       }
     }
   }
-  /** double dispatch handler for strongly typed linestring.. */
+  /** Double dispatch handler for strongly typed linestring.. */
   public override handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
       const lsB = this._geometryB;
@@ -783,7 +809,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
     return undefined;
   }
-  /** double dispatch handler for strongly typed arc .. */
+  /** Double dispatch handler for strongly typed arc .. */
   public override handleArc3d(arc0: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
@@ -798,7 +824,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
     return undefined;
   }
-  /** double dispatch handler for strongly typed bspline curve .. */
+  /** Double dispatch handler for strongly typed bspline curve .. */
   public override handleBSplineCurve3d(curve: BSplineCurve3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(this._geometryB, curve, true);
@@ -811,7 +837,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     }
     return undefined;
   }
-  /** double dispatch handler for strongly typed homogeneous bspline curve .. */
+  /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
     /* NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH ..."easy" if both present BezierCurve3dH span loaders
     if (this._geometryB instanceof LineSegment3d) {
