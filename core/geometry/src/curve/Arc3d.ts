@@ -763,10 +763,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param radius radius of arc
    * @param sweep sweep limits.  defaults to full circle.
    */
-  public static createXY(
-    center: Point3d,
-    radius: number,
-    sweep: AngleSweep = AngleSweep.create360()): Arc3d {
+  public static createXY(center: Point3d, radius: number, sweep: AngleSweep = AngleSweep.create360()): Arc3d {
     return new Arc3d(center.clone(), Matrix3d.createScale(radius, radius, 1.0), sweep);
   }
   /**

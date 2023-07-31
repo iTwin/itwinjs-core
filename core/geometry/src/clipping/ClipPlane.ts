@@ -11,30 +11,31 @@ import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { XYZProps } from "../geometry3d/XYZProps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3d } from "../geometry3d/Plane3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
+import { XYZProps } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Plane3d } from "../geometry3d/Plane3d";
 
-/** Wire format describing a [[ClipPlane]].
+/**
+ * Wire format describing a [[ClipPlane]].
  * If either [[normal]] or [[dist]] are omitted, defaults to a normal of [[Vector3d.unitZ]] and a distance of zero.
  * @public
  */
 export interface ClipPlaneProps {
   /** The plane's inward normal. */
   normal?: XYZProps;
-  /** The plane's distance from the origin. */
+  /** The plane's signed distance from the origin. */
   dist?: number;
   /** Defaults to `false`. */
   invisible?: boolean;
@@ -46,6 +47,7 @@ export interface ClipPlaneProps {
  * A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
  * * A signedDistance
+ * More details can be found at docs/learning/geometry/Clipping.md
  *
  * Hence
  * * The halfspace function evaluation for "point" (x,y,z) is `(x,y,z) DOT (u,v,w) - signedDistance`.
@@ -596,8 +598,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
       xyzOut.pushWrap(1);
     return xyzOut;
   }
-  /** Implement appendPolygonClip, as defined in interface PolygonClipper.
-   * @param xyz input polygon.  This is not changed.
+  /**
+   * Implement appendPolygonClip, as defined in interface PolygonClipper.
+   * @param xyz convex polygon. This is not changed. The input polygon is convex
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed
    * from the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed

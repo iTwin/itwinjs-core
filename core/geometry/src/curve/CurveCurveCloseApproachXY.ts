@@ -58,7 +58,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
    * This is caller defined and can be undefined.
    */
   private _maxDistanceToAccept: number | undefined;
-  /** Squared max distance. This is private, and is forced to at least small metric distance squared */
+  /** Squared max distance. This is private and is forced to at least small metric distance squared */
   private _maxDistanceSquared: number;
   /**
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
@@ -106,7 +106,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   public resetGeometry(geometryB: GeometryQuery) {
     this.setGeometryB(geometryB);
   }
-  /** @returns whether the `fraction` is in [0,1] within tolerance */
+  /** returns true if `fraction` is in [0,1] within tolerance */
   private acceptFraction(fraction: number, fractionTol: number = 1.0e-12) {
     if (fraction < -fractionTol)
       return false;
@@ -170,7 +170,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
-
     }
     // ignore duplicate of most recent point .  ..
     const numPrevious = this._results.length;
@@ -269,7 +268,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
    * @param detailB second detail
    * @param reversed true to have order reversed in final structures.
    */
-  private captureDetailPair(
+  public captureDetailPair(
     detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
   ): void {
     if (detailA && detailB) {
@@ -317,8 +316,8 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
    * @param a1  end point of line a
    * @param b0  start point of line b
    * @param b1 end point of line b
-   * @param result point to receive fractional coordinates of intersection. result.x is fraction on line a.
-   * result.y is fraction on line b.
+   * @param result point to receive fractional coordinates of intersection. result.x is fraction on line a. result.y
+   * is fraction on line b.
    */
   private static segmentSegmentBoundedApproach(
     a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, minDistanceSquared: number,
@@ -372,6 +371,17 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       );
     return closestApproach;
   }
+  /**
+   * Return fractions of close approach within minDistance between two line segments( a0,a1) and (b0, b1)
+   * * minDistance is assumed positive
+   * Return the fractional (not xy) coordinates in result.x, result.y
+   * @param a0 start point of line a
+   * @param a1 end point of line a
+   * @param b0 start point of line b
+   * @param b1 end point of line b
+   * @param result point to receive fractional coordinates of intersection. result.x is fraction on line a. result.y
+   * is fraction on line b.
+   */
   private testAndRecordFractionalPairApproach(
     cpA: CurvePrimitive,
     fA0: number,
@@ -458,7 +468,6 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
       cpA, pointA0, fractionA0, pointA1, fractionA1, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed,
     );
   }
-
   // Caller accesses data from a linestring or segment and passes it here.
   // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
   // The fraction and extend parameters allow all combinations to be passed in)
