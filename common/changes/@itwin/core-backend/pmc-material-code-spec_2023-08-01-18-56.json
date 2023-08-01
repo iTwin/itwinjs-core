@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix RenderMaterialElement using the wrong CodeSpec.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
