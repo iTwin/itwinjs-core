@@ -293,14 +293,14 @@ export class ECClasses {
    * @param newPropertyName The new property name.
    */
   public async setPropertyName(classKey: SchemaItemKey, existingPropertyName: string, newPropertyName: string): Promise<PropertyEditResults> {
+    const newName = new ECName(newPropertyName);
+
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey);
     } catch (e: any) {
       return { errorMessage: e.message };
     }
-
-    const newName = new ECName(newPropertyName);
 
     // Does this suffice for not allowing property overrides to be renamed?
     const existingProperty = await mutableClass.getProperty(existingPropertyName) as MutableProperty;
@@ -333,6 +333,24 @@ export class ECClasses {
     existingProperty.setName(newName);
 
     return { itemKey: classKey, propertyName: newName.name };
+  }
+
+  /**
+   * Sets the name of the ECClass.
+   * @param classKey The SchemaItemKey of the class.
+   * @param name The new name of the class.
+   * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
+   */
+  public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+    mutableClass.setName(name);
+
+    return {};
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
