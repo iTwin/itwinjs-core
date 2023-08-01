@@ -363,6 +363,26 @@ describe("Property creation tests", () => {
     expect(property).to.be.undefined;
   });
 
+  it.only("should successfully rename Entity property", async () => {
+    const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+    const property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
+    expect(property.name).to.eql(createResult.propertyName);
+
+    await testEditor.entities.setPropertyName(entityKey, "TestProperty", "TestProperty1");
+
+    expect(property.name).to.eql("TestProperty1");
+  });
+
+  it.only("should successfully rename Entity property", async () => {
+    const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+    const property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
+    expect(property.name).to.eql(createResult.propertyName);
+
+    await testEditor.entities.setPropertyName(entityKey, "TestProperty", "TestProperty1");
+
+    expect(property.name).to.eql("TestProperty1");
+  });
+
   it("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
     const schemaJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
