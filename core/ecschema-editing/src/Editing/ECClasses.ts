@@ -18,7 +18,6 @@ import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from 
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { MutableProperty } from "./Mutable/MutableProperty";
-import { forEach } from "benchmark";
 
 /**
  * @alpha
