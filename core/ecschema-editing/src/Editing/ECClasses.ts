@@ -301,7 +301,6 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    // Does this suffice for not allowing property overrides to be renamed?
     const existingProperty = await mutableClass.getProperty(existingPropertyName) as MutableProperty;
     if (!existingProperty) {
       return { errorMessage: `An ECProperty with the name ${existingPropertyName} could not be found in the class ${classKey.fullName}.` };
