@@ -305,19 +305,19 @@ export class ECClasses {
     // Does this suffice for not allowing property overrides to be renamed?
     const existingProperty = await mutableClass.getProperty(existingPropertyName) as MutableProperty;
     if (!existingProperty) {
-      return { errorMessage: `Property with the name ${existingPropertyName} could not be found in the class ${classKey.fullName}.` };
+      return { errorMessage: `An ECProperty with the name ${existingPropertyName} could not be found in the class ${classKey.fullName}.` };
     }
 
     const baseProperty = await mutableClass.getProperty(newPropertyName, true) as MutableProperty;
     if (baseProperty)
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${newPropertyName} already exists in the class ${baseProperty.class.name}.`);
+      return { errorMessage: `An ECProperty with the name ${newPropertyName} already exists in the class ${baseProperty.class.name}.` };
 
     // Handle derived classes
     const derivedProperties: Array<MutableProperty> = [];
     const derivedClasses = await this.findDerivedClasses(mutableClass);
     for (const derivedClass of derivedClasses) {
       if (await derivedClass.getProperty(newPropertyName))
-        return { errorMessage: `Property with the name ${newPropertyName} already exists in the class ${classKey.fullName}.` };
+        return { errorMessage: `An ECProperty with the name ${newPropertyName} already exists in the class ${derivedClass.fullName}.` };
 
       const propertyOverride = await derivedClass.getProperty(existingPropertyName) as MutableProperty;
       // If found the property is overridden in the derived class.

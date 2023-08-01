@@ -363,7 +363,7 @@ describe("Property creation tests", () => {
     expect(property).to.be.undefined;
   });
 
-  it.only("should successfully rename Entity property", async () => {
+  it("should successfully rename Entity property", async () => {
     const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
     const property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
     expect(property.name).to.eql(createResult.propertyName);
@@ -373,14 +373,115 @@ describe("Property creation tests", () => {
     expect(property.name).to.eql("TestProperty1");
   });
 
-  it.only("should successfully rename Entity property", async () => {
-    const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
-    const property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
-    expect(property.name).to.eql(createResult.propertyName);
+  it("should successfully rename property and all property overrides", async () => {
+    const refSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "RefSchema",
+      version: "1.0.0",
+      alias: "rs",
+      items: {
+        testEntityBase: {
+          schemaItemType: "EntityClass",
+          label: "ExampleEntity",
+          description: "An example entity class.",
+        },
+      },
+    };
 
-    await testEditor.entities.setPropertyName(entityKey, "TestProperty", "TestProperty1");
+    const refSchema = await Schema.fromJson(refSchemaJson, context);
+    await testEditor.addSchemaReference(testKey, refSchema);
+    const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
+    const childResult = await testEditor.entities.create(testKey, "testEntityChild", ECClassModifier.None, "testLabel", baseClassKey);
+    const grandChildResult = await testEditor.entities.create(testKey, "testEntityGrandChild", ECClassModifier.None, "testLabel", childResult.itemKey);
 
-    expect(property.name).to.eql("TestProperty1");
+    await testEditor.entities.createPrimitiveProperty(baseClassKey, "TestPropertyName", PrimitiveType.Double);
+    await testEditor.entities.createPrimitiveProperty(childResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
+    await testEditor.entities.createPrimitiveProperty(grandChildResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
+
+    const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
+    const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
+
+    const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
+    const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
+
+    const result = await testEditor.entities.setPropertyName(baseClassKey, "TestPropertyName", "NewPropertyName");
+
+    expect(result).to.eql({ itemKey: baseClassKey, propertyName: "NewPropertyName" });
+    expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
+    expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
+  });
+
+  it("try renaming a non-existent property in the class, returns error.", async () => {
+    await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+
+    const result = await testEditor.entities.setPropertyName(entityKey, "TestProperty2", "TestProperty3");
+
+    expect(result.errorMessage).to.eql(`An ECProperty with the name TestProperty2 could not be found in the class ${entityKey.fullName}.`);
+  });
+
+  it("try renaming property to existing name in class, returns error.", async () => {
+    await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+    await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty2", PrimitiveType.Double);
+
+    const result = await testEditor.entities.setPropertyName(entityKey, "TestProperty", "TestProperty2");
+
+    expect(result.errorMessage).to.eql(`An ECProperty with the name TestProperty2 already exists in the class ${entityKey.name}.`);
+  });
+
+  it("try renaming property to existing name in base class, returns error.", async () => {
+    const refSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "RefSchema",
+      version: "1.0.0",
+      alias: "rs",
+      items: {
+        testEntityBase: {
+          schemaItemType: "EntityClass",
+          label: "ExampleEntity",
+          description: "An example entity class.",
+        },
+      },
+    };
+
+    const refSchema = await Schema.fromJson(refSchemaJson, context);
+    await testEditor.addSchemaReference(testKey, refSchema);
+    const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
+    const result = await testEditor.entities.create(testKey, "testEntityChild", ECClassModifier.None, "testLabel", baseClassKey);
+
+    await testEditor.entities.createPrimitiveProperty(baseClassKey, "BasePropertyName", PrimitiveType.Double);
+    await testEditor.entities.createPrimitiveProperty(result.itemKey!, "ChildPropertyName", PrimitiveType.Double);
+
+    const result2 = await testEditor.entities.setPropertyName(result.itemKey!, "ChildPropertyName", "BasePropertyName");
+
+    expect(result2.errorMessage).to.eql(`An ECProperty with the name BasePropertyName already exists in the class ${baseClassKey.name}.`);
+  });
+
+  it("try renaming property to existing name in child class, returns error.", async () => {
+    const refSchemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "RefSchema",
+      version: "1.0.0",
+      alias: "rs",
+      items: {
+        testEntityBase: {
+          schemaItemType: "EntityClass",
+          label: "ExampleEntity",
+          description: "An example entity class.",
+        },
+      },
+    };
+
+    const refSchema = await Schema.fromJson(refSchemaJson, context);
+    await testEditor.addSchemaReference(testKey, refSchema);
+    const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
+    const result = await testEditor.entities.create(testKey, "testEntityChild", ECClassModifier.None, "testLabel", baseClassKey);
+
+    await testEditor.entities.createPrimitiveProperty(baseClassKey, "BasePropertyName", PrimitiveType.Double);
+    await testEditor.entities.createPrimitiveProperty(result.itemKey!, "ChildPropertyName", PrimitiveType.Double);
+
+    const result2 = await testEditor.entities.setPropertyName(baseClassKey, "BasePropertyName", "ChildPropertyName");
+
+    expect(result2.errorMessage).to.eql(`An ECProperty with the name ChildPropertyName already exists in the class ${result.itemKey!.fullName}.`);
   });
 
   it("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
