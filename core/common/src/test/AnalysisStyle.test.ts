@@ -36,7 +36,7 @@ describe("AnalysisStyle", () => {
     roundTrip({ scalar: { channelName: "scalars", range: [1, 2], thematicSettings: { stepCount: 42, colorMix: 0.5 } } }, "input");
     roundTrip(
       { scalar: { channelName: "scalars", range: [0, 1], thematicSettings: ThematicGradientSettings.defaults.toJSON() } },
-      { scalar: { channelName: "scalars", range: [0, 1] } }
+      { scalar: { channelName: "scalars", range: [0, 1] } },
     );
   });
 
@@ -61,15 +61,15 @@ describe("AnalysisStyle", () => {
     expectClone({ displacement: { channelName: "disp", scale: -2 } }, { displacement: { channelName: "disp", scale: -2 }, normalChannelName: "normals", scalar: props.scalar });
     expectClone(
       { scalar: { channelName: "s", range: [-5, 15] } },
-      { scalar: { channelName: "s", range: [-5, 15] }, displacement: props.displacement, normalChannelName: "normals" }
+      { scalar: { channelName: "s", range: [-5, 15] }, displacement: props.displacement, normalChannelName: "normals" },
     );
     expectClone(
       { scalar: { channelName: "s", range: [-5, 15], thematicSettings: ThematicGradientSettings.defaults.toJSON() } },
-      { scalar: { channelName: "s", range: [-5, 15] }, displacement: props.displacement, normalChannelName: "normals" }
+      { scalar: { channelName: "s", range: [-5, 15] }, displacement: props.displacement, normalChannelName: "normals" },
     );
     expectClone(
       { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } } },
-      { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } }, displacement: props.displacement, normalChannelName: "normals" }
+      { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } }, displacement: props.displacement, normalChannelName: "normals" },
     );
   });
 
@@ -84,20 +84,20 @@ describe("AnalysisStyle", () => {
     roundTrip({ normalChannelName: "normals" }, { normalChannelName: "normals" });
     roundTrip(
       { displacementChannelName: "disp" },
-      { displacement: { channelName: "disp" } }
+      { displacement: { channelName: "disp" } },
     );
     roundTrip({ displacementScale: 42 }, { });
     roundTrip(
       { displacementChannelName: "disp", displacementScale: 42 },
-      { displacement: { channelName: "disp", scale: 42 } }
+      { displacement: { channelName: "disp", scale: 42 } },
     );
     roundTrip(
       { scalarChannelName: "scalar", scalarRange: [1, 2] },
-      { scalar: { channelName: "scalar", range: [1, 2] } }
+      { scalar: { channelName: "scalar", range: [1, 2] } },
     );
     roundTrip(
       { scalarChannelName: "scalar", scalarRange: [1, 2], scalarThematicSettings: { stepCount: 6 } },
-      { scalar: { channelName: "scalar", range: [1, 2], thematicSettings: { stepCount: 6 } } }
+      { scalar: { channelName: "scalar", range: [1, 2], thematicSettings: { stepCount: 6 } } },
     );
     roundTrip({ scalarChannelName: "scalar" }, { });
     roundTrip({ scalarRange: [0, 1] }, { });

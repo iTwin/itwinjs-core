@@ -84,7 +84,7 @@ export class TileStorage {
     try {
       const buffer = await this.storage.download(
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
-        "buffer"
+        "buffer",
       );
       return IModelHost.compressCachedTiles ? await promisify(gunzip)(buffer) : buffer;
     } catch (err) {
@@ -132,7 +132,7 @@ export class TileStorage {
     Logger.logException(
       BackendLoggerCategory.IModelTileStorage,
       err,
-      (category, msg, errorMetadata) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg })
+      (category, msg, errorMetadata) => Logger.logError(category, `${message}: {errorMessage}`, { ...errorMetadata, errorMessage: msg }),
     );
   }
 }

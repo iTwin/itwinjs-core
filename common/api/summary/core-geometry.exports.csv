@@ -87,7 +87,6 @@ public;ConvexFacetLocationDetail
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
-internal;CurveChainWireOffsetContext
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
@@ -102,6 +101,7 @@ public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
+public;CurveOps
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
@@ -132,6 +132,8 @@ public;class GeometryQuery
 public;GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf"
 internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
 internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
+public;GriddedRaggedRange2dSet
+public;GriddedRaggedRange2dSetWithOverflow
 public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
@@ -165,6 +167,7 @@ public;InverseMatrixState
 public;IStrokeHandler
 public;JointOptions
 public;KnotVector
+public;LinearCurvePrimitive = LineSegment3d | LineString3d
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
@@ -182,7 +185,6 @@ public;Matrix4dProps = Point4dProps[]
 public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
-internal;MultiChainCollector
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
 internal;Newton1dUnboundedApproximateDerivative 
@@ -199,6 +201,7 @@ public;OffsetMeshOptions
 public;OffsetMeshSelectiveOutputOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
+internal;OptionalRange2dSearchInterface
 internal;Order2Bezier 
 internal;Order3Bezier 
 internal;Order4Bezier 
@@ -238,7 +241,6 @@ public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
 public;PolygonOps
-internal;PolygonWireOffsetContext
 public;PolylineOps
 internal;PowerPolynomial
 public;class ProxyCurve 
@@ -251,7 +253,7 @@ public;Range2dProps =
 public;Range3d 
 public;Range3dProps =
 public;class RangeBase
-internal;Ray2d
+public;Ray2d
 public;Ray3d 
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor

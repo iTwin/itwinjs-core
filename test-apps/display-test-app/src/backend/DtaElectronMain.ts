@@ -47,7 +47,7 @@ const dtaElectronMain = async () => {
   loadBackendConfig();
 
   const opts = {
-    webResourcesPath: path.join(__dirname, "..", "..", "build"),
+    webResourcesPath: path.join(__dirname, "..", "..", "lib"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],

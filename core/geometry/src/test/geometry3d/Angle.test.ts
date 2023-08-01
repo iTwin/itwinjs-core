@@ -68,7 +68,7 @@ class AngleTests {
           GeometryCoreTestIO.consoleLog(
             "adjust angle:", theta0.degrees,
             "    positive:", theta1.degrees,
-            "    signed:", theta2.degrees
+            "    signed:", theta2.degrees,
           );
         ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta1), "adjust positive");
         ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta2), "adjust signed");
@@ -109,12 +109,12 @@ class AngleTests {
       ck.testAngleAllowShift(
         sweep.fractionToAngle(f0),
         sweep.fractionToAngle(f0 + fractionPeriod),
-        "fractionPeriod steps 360"
+        "fractionPeriod steps 360",
       );
       ck.testAngleAllowShift(
         sweep.fractionToAngle(f0),
         sweep.fractionToAngle(f0 - fractionPeriod),
-        "fractionPeriod steps 360"
+        "fractionPeriod steps 360",
       );
     }
   }
@@ -251,13 +251,13 @@ describe("MiscAngles", () => {
         vectorU.x, vectorU.y, vectorU.z,
         vectorV.x, vectorV.y, vectorV.z,
         vectorW.x, vectorW.y, vectorW.z,
-        true
+        true,
       );
       const alphaFalse = Angle.orientedRadiansBetweenVectorsXYZ(
         vectorU.x, vectorU.y, vectorU.z,
         vectorV.x, vectorV.y, vectorV.z,
         vectorW.x, vectorW.y, vectorW.z,
-        false
+        false,
       );
       ck.testCoordinate(alphaTrue, radiansPositive, { degrees, adjust: true });
       ck.testCoordinate(alphaFalse, degrees <= 180.0 ? radians : Angle.adjustRadiansMinusPiPlusPi(radians), { degrees, adjust: false });
@@ -329,13 +329,13 @@ describe("MiscAngles", () => {
           angleB.radians,
           Angle.adjustRadians0To2Pi(Angle.degreesToRadians(degrees)),
           "adjustRadians0To2Pi",
-          degrees
+          degrees,
         );
         ck.testCoordinate(
           angleC.radians,
           Angle.adjustRadiansMinusPiPlusPi(Angle.degreesToRadians(degrees)),
           "adjustRadiansMinusPiPlusPi",
-          degrees
+          degrees,
         );
       }
     expect(ck.getNumErrors()).equals(0);
@@ -890,12 +890,12 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     ck.testPoint3d(
       perpSeg.startPoint(),
       uSeg1.startPoint(),
-      "the radial segment at angle t in the original arc has the same start point as the semi-axis at angle 0 in the squared arc"
+      "the radial segment at angle t in the original arc has the same start point as the semi-axis at angle 0 in the squared arc",
     );
     ck.testPoint3d(
       perpSeg.endPoint(),
       uSeg1.endPoint(),
-      "the radial segment at angle t in the original arc has the same end point as the semi-axis at angle 0 in the squared arc"
+      "the radial segment at angle t in the original arc has the same end point as the semi-axis at angle 0 in the squared arc",
     );
     ck.testPoint3d(perpSeg.point1Ref, arc1.center.plusScaled(arc1.vector0, 1.0), "point at angle t in arc equals point at angle 0 in squared arc");
     ck.testFalse(arc0.vector0.angleTo(arc1.vector0).isAlmostEqual(Angle.createRadians(t.radians)), "angle t is NOT measured from u to perpSeg");

@@ -201,7 +201,7 @@ export class PatternBuffers extends InstanceData {
     public readonly symbolToLocal: Matrix4,
     public readonly offsets: BufferHandle,
     featureId: number | undefined,
-    public readonly viewIndependentOrigin: Point3d | undefined
+    public readonly viewIndependentOrigin: Point3d | undefined,
   ) {
     super(count, rtcCenter, range);
     this.patternTransforms = this;

@@ -78,7 +78,7 @@ describe("requestElementGraphics", () => {
       quantize?: boolean;
       absolute?: boolean;
       location?: Transform;
-    }, expectedRtc: number[] | undefined
+    }, expectedRtc: number[] | undefined,
     ): Promise<void> {
       const requestProps: PersistentGraphicsRequestProps = {
         elementId: "0x29",

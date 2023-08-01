@@ -402,7 +402,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
       prog.addProgramUniform("u_atmosphereData", (uniform, params) => {
         uniform.setMatrix4(params.target.uniforms.atmosphere.atmosphereData);
       });
-    }
+    },
   );
   shader.addUniform(
     "u_sunDir",
@@ -412,7 +412,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
         params.target.uniforms.bindSunDirection(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   shader.addUniform(
     "u_atmosphereScaleMatrix",
@@ -422,7 +422,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
         params.target.uniforms.atmosphere.bindAtmosphereScaleMatrix(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   shader.addUniform(
     "u_inverseAtmosphereScaleInverseRotationMatrix",
@@ -432,7 +432,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
         params.target.uniforms.atmosphere.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   shader.addUniform(
     "u_inverseEarthScaleInverseRotationMatrix",
@@ -442,7 +442,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
         params.target.uniforms.atmosphere.bindInverseRotationInverseEarthScaleMatrix(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   shader.addUniform(
     "u_earthScaleMatrix",
@@ -452,7 +452,7 @@ const addMainShaderUniforms = (shader: FragmentShaderBuilder | VertexShaderBuild
         params.target.uniforms.atmosphere.bindEarthScaleMatrix(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   shader.addUniform("u_frustum", VariableType.Vec3, (prg) => {
     prg.addGraphicUniform("u_frustum", (uniform, params) => {
@@ -517,7 +517,7 @@ export function addAtmosphericScatteringEffect(
         params.target.uniforms.atmosphere.bindExposure(uniform);
       });
     },
-    VariablePrecision.High
+    VariablePrecision.High,
   );
   builder.frag.addFunction(applyHdr);
   builder.frag.set(FragmentShaderComponent.ApplyAtmosphericScattering, applyAtmosphericScattering);
