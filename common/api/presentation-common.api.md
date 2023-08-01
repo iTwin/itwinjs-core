@@ -538,6 +538,8 @@ export class Descriptor implements DescriptorSource {
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -571,6 +573,8 @@ export interface DescriptorJSON {
     inputKeysHash: string;
     // @beta (undocumented)
     instanceFilter?: InstanceFilterDefinition;
+    // @beta (undocumented)
+    ruleset?: Ruleset;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -613,6 +617,8 @@ export interface DescriptorSource {
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;

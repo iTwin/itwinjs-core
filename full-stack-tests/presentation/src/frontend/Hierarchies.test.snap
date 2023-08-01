@@ -191,7 +191,6 @@ Array [
             "rawValue": "filter ch1",
             "typeName": "string",
           },
-          "supportsFiltering": true,
         },
       },
       Object {
@@ -219,7 +218,6 @@ Array [
                 "rawValue": "filter ch4",
                 "typeName": "string",
               },
-              "supportsFiltering": true,
             },
           },
         ],
@@ -244,7 +242,6 @@ Array [
             "rawValue": "other ch3",
             "typeName": "string",
           },
-          "supportsFiltering": true,
         },
       },
     ],
@@ -268,7 +265,6 @@ Array [
         "rawValue": "filter r1",
         "typeName": "string",
       },
-      "supportsFiltering": true,
     },
   },
   Object {
@@ -295,7 +291,6 @@ Array [
             "rawValue": "filter ch6",
             "typeName": "string",
           },
-          "supportsFiltering": true,
         },
       },
     ],
@@ -319,7 +314,6 @@ Array [
         "rawValue": "other r3",
         "typeName": "string",
       },
-      "supportsFiltering": true,
     },
   },
 ]
