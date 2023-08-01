@@ -46,7 +46,7 @@ export class ElementAspect extends Entity {
   public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
-  /** @internal */
+  /** Construct an aspect from its JSON representation and its containing iModel. */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.element = RelatedElement.fromJSON(props.element)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -167,7 +167,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   public source?: RelatedElement;
 
-  /** @internal */
+  /** Construct an aspect from its JSON representation and its containing iModel. */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.scope = RelatedElement.fromJSON(props.scope)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion

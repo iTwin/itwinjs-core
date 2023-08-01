@@ -85,7 +85,7 @@ export class YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createDegrees(yawDegrees),
       Angle.createDegrees(pitchDegrees),
-      Angle.createDegrees(rollDegrees)
+      Angle.createDegrees(rollDegrees),
     );
   }
   /**
@@ -98,7 +98,7 @@ export class YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createRadians(yawRadians),
       Angle.createRadians(pitchRadians),
-      Angle.createRadians(rollRadians)
+      Angle.createRadians(rollRadians),
     );
   }
   /** Construct a `YawPitchRoll` object from an object with 3 named angles */
@@ -107,7 +107,7 @@ export class YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.fromJSON(json.yaw),
       Angle.fromJSON(json.pitch),
-      Angle.fromJSON(json.roll)
+      Angle.fromJSON(json.roll),
     );
   }
   /** Populate yaw, pitch and roll fields using `Angle.fromJSON` */
@@ -155,7 +155,7 @@ export class YawPitchRollAngles {
     return new YawPitchRollAngles(
       this.yaw.clone(),
       this.pitch.clone(),
-      this.roll.clone()
+      this.roll.clone(),
     );
   }
   /**
@@ -198,7 +198,7 @@ export class YawPitchRollAngles {
       cz * cy, -(sz * cx + cz * sy * sx), (sz * sx - cz * sy * cx),
       sz * cy, (cz * cx - sz * sy * sx), -(cz * sx + sz * sy * cx),
       sy, cy * sx, cy * cx,
-      result
+      result,
     );
   }
   /**
@@ -229,7 +229,7 @@ export class YawPitchRollAngles {
     return Math.max(
       this.yaw.radians - other.yaw.radians,
       this.pitch.radians - other.pitch.radians,
-      this.roll.radians - other.roll.radians
+      this.roll.radians - other.roll.radians,
     );
   }
   /** Return the largest angle in degrees. */
@@ -245,7 +245,7 @@ export class YawPitchRollAngles {
     return Math.max(
       this.yaw.degrees - other.yaw.degrees,
       this.pitch.degrees - other.pitch.degrees,
-      this.roll.degrees - other.roll.degrees
+      this.roll.degrees - other.roll.degrees,
     );
   }
   /** Return an object from a Transform as an origin and YawPitchRollAngles. */

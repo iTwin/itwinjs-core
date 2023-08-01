@@ -159,7 +159,7 @@ export class MapTileTree extends RealityTileTree {
 
     const rootPatch = EllipsoidPatch.createCapture(
       this.maxEarthEllipsoid, AngleSweep.createStartSweepRadians(0, Angle.pi2Radians),
-      AngleSweep.createStartSweepRadians(-Angle.piOver2Radians, Angle.piRadians)
+      AngleSweep.createStartSweepRadians(-Angle.piOver2Radians, Angle.piRadians),
     );
 
     let range;

@@ -85,13 +85,13 @@ export class BilinearPatch implements UVSurface {
     x00: number, y00: number, z00: number,
     x10: number, y10: number, z10: number,
     x01: number, y01: number, z01: number,
-    x11: number, y11: number, z11: number
+    x11: number, y11: number, z11: number,
   ) {
     return new BilinearPatch(
       Point3d.create(x00, y00, z00),
       Point3d.create(x10, y10, z10),
       Point3d.create(x01, y01, z01),
-      Point3d.create(x11, y11, z11)
+      Point3d.create(x11, y11, z11),
     );
   }
   /** Return a cloned patch. */
@@ -100,7 +100,7 @@ export class BilinearPatch implements UVSurface {
       this.point00.clone(),
       this.point10.clone(),
       this.point01.clone(),
-      this.point11.clone()
+      this.point11.clone(),
     );
   }
   /** Test equality of the 4 points. */
@@ -153,7 +153,7 @@ export class BilinearPatch implements UVSurface {
       f00 * this.point00.x + f10 * this.point10.x + f01 * this.point01.x + f11 * this.point11.x,
       f00 * this.point00.y + f10 * this.point10.y + f01 * this.point01.y + f11 * this.point11.y,
       f00 * this.point00.z + f10 * this.point10.z + f01 * this.point01.z + f11 * this.point11.z,
-      result
+      result,
     );
   }
   /** Evaluate as a uv surface, returning point and two derivative vectors.
@@ -180,7 +180,7 @@ export class BilinearPatch implements UVSurface {
       u0 * (this.point01.x - this.point00.x) + u * (this.point11.x - this.point10.x),
       u0 * (this.point01.y - this.point00.y) + u * (this.point11.y - this.point10.y),
       u0 * (this.point01.z - this.point00.z) + u * (this.point11.z - this.point10.z),
-      result
+      result,
     );
   }
   /** If data[iB][pivotColumn] is larger in absolute value than data[iA][pivotColumn], then swap rows iA and iB. */
@@ -218,7 +218,7 @@ export class BilinearPatch implements UVSurface {
     SmallSystem.eliminateFromPivot(coffs[0], 0, coffs[2], -1.0);
     const uvArray = SmallSystem.solveBilinearPair(
       coffs[1][1], coffs[1][2], coffs[1][3], coffs[1][4],
-      coffs[2][1], coffs[2][2], coffs[2][3], coffs[2][4]
+      coffs[2][1], coffs[2][2], coffs[2][3], coffs[2][4],
     );
     if (uvArray) {
       const result: CurveAndSurfaceLocationDetail[] = [];
@@ -227,7 +227,7 @@ export class BilinearPatch implements UVSurface {
         const point = ray.fractionToPoint(t);
         result.push(new CurveAndSurfaceLocationDetail(
           CurveLocationDetail.createRayFractionPoint(ray, t, point),
-          UVSurfaceLocationDetail.createSurfaceUVPoint(this, uv, point))
+          UVSurfaceLocationDetail.createSurfaceUVPoint(this, uv, point)),
         );
       }
       return result;

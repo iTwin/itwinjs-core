@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promoted TentativeOrAccuSnap to public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

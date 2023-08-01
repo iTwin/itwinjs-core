@@ -968,7 +968,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** The registry of entity metadata for this iModel.
-   * @beta
+   * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)

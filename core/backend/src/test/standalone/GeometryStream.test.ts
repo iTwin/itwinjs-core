@@ -1864,6 +1864,19 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
+  it("should transform PatternParams", () => {
+    const offset = Point3d.create(1, 1, 1);
+    const rotation = YawPitchRollAngles.createDegrees(45, 45, 45);
+    const t = Transform.createOriginAndMatrix(offset, rotation.toMatrix3d());
+
+    const pattern = new AreaPattern.Params();
+    pattern.origin = Point3d.createZero();
+    pattern.rotation = YawPitchRollAngles.createDegrees(0, 0, 0);
+    pattern.applyTransform(t);
+    expect(pattern.origin.isAlmostEqual(offset)).true;
+    expect(pattern.rotation.isAlmostEqual(rotation)).true;
+  });
+
   it("should insert elements and parts with binary geometry stream", () => {
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
 

@@ -382,7 +382,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     const provider = new ArcGisFeatureProvider(settings);
     (provider as any)._format = "JSON";
@@ -440,7 +440,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
@@ -459,7 +459,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -521,7 +521,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -552,7 +552,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -649,7 +649,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -679,7 +679,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -758,7 +758,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
@@ -788,7 +788,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
@@ -817,7 +817,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
@@ -850,7 +850,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     const worldSize = 100;
     const canvasSize = 10;
@@ -899,7 +899,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
@@ -952,7 +952,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
@@ -997,7 +997,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
@@ -1086,7 +1086,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     const provider = new ArcGisFeatureProvider(settings);
@@ -1100,7 +1100,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1133,7 +1133,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -1163,7 +1163,7 @@ describe("ArcGisFeatureProvider", () => {
     const settings = ImageMapLayerSettings.fromJSON({
       ...esriFeatureSampleSource,
       subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
-    }
+    },
     );
 
     const layerMetadata = {

@@ -23,11 +23,8 @@ task copyAssets {
         def assetsDir = "${rootDir}/app/src/main/assets"
 
         Map itemsToCopy = [
-            "${dtaDir}/lib/mobile/main.js": "${assetsDir}/backend",
-            "${dtaDir}/lib/mobile/assets": "${assetsDir}/backend/Assets",
-            "${dtaDir}/build": "${assetsDir}/frontend",
-            "${assetsDir}/frontend/locales/en": "${assetsDir}/frontend/locales/en-US",
-            "${dtaDir}/lib/mobile/env.json": "${assetsDir}"
+            "${dtaDir}/lib": "${assetsDir}/www",
+            "${assetsDir}/www/locales/en": "${assetsDir}/www/locales/en-US"
         ]
 
         for (def entry in itemsToCopy) {

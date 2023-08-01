@@ -234,7 +234,7 @@ export namespace AreaPattern {
     public applyTransform(transform: Transform): boolean {
       if (transform.isIdentity)
         return true;
-      const origin = this.origin ? this.origin : Point3d.createZero();
+      let origin = this.origin ? this.origin : Point3d.createZero();
       const rMatrix = this.rotation ? this.rotation.toMatrix3d() : Matrix3d.createIdentity();
       if (this.symbolId !== undefined) {
         this.space1 = Params.transformPatternSpace(transform, this.space1 ? this.space1 : 0.0, rMatrix, this.angle1);
@@ -266,7 +266,7 @@ export namespace AreaPattern {
           this.space2 = Params.transformPatternSpace(transform, this.space2, rMatrix, this.angle2);
       }
 
-      transform.multiplyPoint3d(origin);
+      origin = transform.multiplyPoint3d(origin);
       rMatrix.multiplyMatrixMatrix(transform.matrix, rMatrix);
       const normalized = Matrix3d.createRigidFromMatrix3d(rMatrix);
       if (!normalized)

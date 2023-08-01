@@ -2042,6 +2042,7 @@ export interface CanvasDecoration {
     onWheel?(ev: BeWheelEvent): boolean;
     pick?(pt: XAndY): boolean;
     position?: XAndY;
+    propagateMouseMove?(ev: BeButtonEvent): boolean;
 }
 
 // @public
@@ -7943,6 +7944,15 @@ export class MapLayerSource {
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
+// @public
+export interface MapLayerSourceProps {
+    baseMap?: boolean;
+    formatId?: string;
+    name: string;
+    transparentBackground?: boolean;
+    url: string;
+}
+
 // @beta
 export class MapLayerSources {
     // (undocumented)
@@ -13507,15 +13517,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantThematicSensors(): boolean;
 }
 
-// @internal (undocumented)
+// @public
 export class TentativeOrAccuSnap {
-    // (undocumented)
     static getCurrentPoint(): Point3d;
-    // (undocumented)
     static getCurrentSnap(checkIsHot?: boolean): SnapDetail | undefined;
-    // (undocumented)
     static getCurrentView(): ScreenViewport | undefined;
-    // (undocumented)
     static get isHot(): boolean;
 }
 
