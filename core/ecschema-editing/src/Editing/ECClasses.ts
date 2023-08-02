@@ -341,6 +341,12 @@ export class ECClasses {
    */
   public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemEditResults> {
     let mutableClass: MutableClass;
+
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    const ecClass = await schema.getItem<MutableClass>(name);
+    if (ecClass !== undefined)
+      return { errorMessage: `An EC Class with the name ${name} already exists within the schema ${schema.name}` };
+
     try {
       mutableClass = await this.getClass(classKey);
     } catch (e: any) {

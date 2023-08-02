@@ -43,6 +43,13 @@ describe("ECClass tests", () => {
     await expect(testEditor.entities.setName(result1.itemKey!, "123")).to.be.rejectedWith(ECObjectsError);
   });
 
+  it("try changing class name to existing name in the schema, returns error", async () => {
+    const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
+    await testEditor.entities.create(testKey, "testEntity2", ECClassModifier.None);
+    const result2 = await testEditor.entities.setName(result1.itemKey!, "testEntity2");
+    expect(result2.errorMessage).to.eql(`An EC Class with the name testEntity2 already exists within the schema ${testKey.name}`);
+  });
+
   describe("Property creation tests", () => {
     it("should successfully create a PrimitiveProperty from a JSON prop", async () => {
       const propertyJson = {
