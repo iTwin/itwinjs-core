@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Mon, 24 Jul 2023 05:07:33 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Aug 2023 16:48:36 GMT and should not be manually modified.
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
@@ -45,6 +45,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add support for Electron 24.
 - Drop Electron 14, 15, 16, 17, 22. Start supporting Electron 23.
 - Stopped registering any rpcs by default
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+_Version update only_
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:21 GMT
