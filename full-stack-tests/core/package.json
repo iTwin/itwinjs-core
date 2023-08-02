@@ -25,7 +25,7 @@
   "repository": {},
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@itwin/browser-authorization": "^0.5.1",
+    "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -39,7 +39,7 @@
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.8.5",
+    "@itwin/electron-authorization": "^0.14.1",
     "@itwin/express-server": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "^3.0.0",
@@ -53,7 +53,8 @@
     "sinon": "^15.0.4",
     "sinon-chai": "^3.2.0",
     "fs-extra": "^8.1.0",
-    "electron": "^25.0.0"
+    "electron": "^25.0.0",
+    "@itwin/service-authorization": "^0.6.3"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -92,8 +93,7 @@
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "typescript": "~5.0.2",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^5.0.1"
+    "webpack": "^5.76.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

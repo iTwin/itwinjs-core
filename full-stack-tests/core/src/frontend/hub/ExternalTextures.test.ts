@@ -8,6 +8,7 @@ import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelCon
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
+import sinon = require("sinon");
 
 describe("external texture requests (#integration)", () => {
 
@@ -35,9 +36,15 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
+    const user = TestUsers.regular;
+    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    }));
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
-    await TestUtility.initialize(TestUsers.regular);
+    await TestUtility.initialize(user);
     const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
@@ -48,6 +55,7 @@ describe("external texture requests (#integration)", () => {
       await imodel.close();
 
     await TestUtility.shutdownFrontend();
+    sinon.restore();
   });
 
   function onExternalTextureLoaded(req: ExternalTextureRequest) {

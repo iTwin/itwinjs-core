@@ -7,6 +7,7 @@ import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSched
 import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
+import sinon = require("sinon");
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
@@ -24,9 +25,15 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
+    const user = TestUsers.regular;
+    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    }));
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
-    await TestUtility.initialize(TestUsers.regular);
+    await TestUtility.initialize(user);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
@@ -39,6 +46,7 @@ describe("Schedule script (#integration)", () => {
     await dbOld.close();
     await dbNew.close();
     await TestUtility.shutdownFrontend();
+    sinon.restore();
   });
 
   it("obtains tile tree with script source Id", async () => {

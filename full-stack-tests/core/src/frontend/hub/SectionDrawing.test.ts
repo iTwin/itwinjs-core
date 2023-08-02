@@ -3,17 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
+import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import sinon = require("sinon");
 
 describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
+    const user = TestUsers.regular;
+    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    }));
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
-    await TestUtility.initialize(TestUsers.regular);
+    await TestUtility.initialize(user);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
@@ -25,6 +32,7 @@ describe("Section Drawings (#integration)", () => {
       await imodel.close();
 
     await TestUtility.shutdownFrontend();
+    sinon.restore();
   });
 
   afterEach(() => {

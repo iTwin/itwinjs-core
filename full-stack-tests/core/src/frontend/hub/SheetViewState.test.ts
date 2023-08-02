@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, SheetViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, SheetViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
+import sinon = require("sinon");
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -14,8 +15,14 @@ describe("Sheet views (#integration)", () => {
   const attachmentCategoryId = "0x93";
 
   before(async () => {
+    const user = TestUsers.regular;
+    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    }));
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
-    await TestUtility.initialize(TestUsers.regular);
+    await TestUtility.initialize(user);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
@@ -27,6 +34,7 @@ describe("Sheet views (#integration)", () => {
       await imodel.close();
 
     await TestUtility.shutdownFrontend();
+    sinon.restore();
   });
 
   it("loads view attachment info", async () => {
