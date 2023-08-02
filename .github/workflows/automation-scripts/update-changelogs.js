@@ -4,9 +4,9 @@ const path = require('path');
 // Read all files in the directory
 function getFilePaths(directoryPath) {
   let filePaths = [];
-  let files = fs.readdirSync(directoryPath);
+  const files = fs.readdirSync(directoryPath);
   files.forEach(file => {
-    let filePath = path.join(directoryPath, file);
+    const filePath = path.join(directoryPath, file);
     filePaths.push(filePath);
   });
   return filePaths
@@ -14,13 +14,13 @@ function getFilePaths(directoryPath) {
 
 function loadJsonFiles(filePath) {
   // Load each JSON file
-  data = fs.readFileSync(filePath);
+  const data = fs.readFileSync(filePath);
   const jsonData = JSON.parse(data);
   return jsonData;
 }
 
-function sortByVersion(objects) {
-  return objects.sort((a, b) => {
+function sortByVersion(entries) {
+  return entries.sort((a, b) => {
     const versionA = a.version.split('.').map(Number);
     const versionB = b.version.split('.').map(Number);
 
@@ -33,34 +33,13 @@ function sortByVersion(objects) {
   });
 }
 
-function findNewEntries(currentEntries, incomingEntries) {
-  currVersions = [];
-  incomingVersions = [];
-
-  currentEntries.forEach((entry) => {
-    currVersions.push(entry.version);
-  });
-
-  incomingEntries.forEach((entry) => {
-    incomingVersions.push(entry.version);
-  });
-
-  newEntries = [];
-  incomingVersions.forEach((version, i) => {
-    if (!currVersions.includes(version))
-      newEntries.push(incomingEntries[i]);
-  })
-
-  return newEntries;
-}
-
 function fixChangeLogs(files) {
   const numFiles = files.length;
   for (let i = 0; i < numFiles; i++) {
-    let currentJson = loadJsonFiles(`temp-target-changelogs/${files[i]}`);
+    const currentJson = loadJsonFiles(`temp-target-changelogs/${files[i]}`);
     const incomingJson = loadJsonFiles(`temp-incoming-changelogs/${files[i]}`);
-    const newEntries = findNewEntries(currentJson.entries, incomingJson.entries);
-    const completeEntries = sortByVersion([...currentJson.entries, ...newEntries]);
+    let completeEntries = new Map([...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]));
+    completeEntries = sortByVersion(Array.from(completeEntries.values()));
     currentJson.entries = completeEntries;
 
     let jsonString = JSON.stringify(currentJson, null, 2);
@@ -73,11 +52,11 @@ function fixChangeLogs(files) {
 }
 
 if (process.argv.length === 3) {
-  currentFiles = getFilePaths(process.argv[2]);
+  const currentFiles = getFilePaths(process.argv[2]);
   currentFiles.forEach((file, index) => {
     currentFiles[index] = file.split('/').slice(1);
   })
   fixChangeLogs(currentFiles);
 } else {
-  console.error("Script must take in 2 arguments, a temp path for the current and incoming changelogs")
+  console.error("Script must take in 1 arguments, a temp path for the current")
 }
