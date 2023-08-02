@@ -14,7 +14,7 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
-import { buildTestIModelConnection, insertDocumentPartition } from "../Utils";
+import { buildTestIModelConnection, insertDocumentPartition } from "../IModelSetupUtils";
 
 describe("Hierarchies", () => {
 
