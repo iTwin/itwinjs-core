@@ -322,12 +322,10 @@ export class TestConfigStack {
     return this._stack[this._stack.length - 1];
   }
 
-  // Push to the top of the stack and return true if the new config requires restarting IModelApp.
-  public push(props: TestConfigProps): boolean {
+  // Push to the top of the stack
+  public push(props: TestConfigProps): void {
     const config = new TestConfig(props, this.top);
-    const requiresRestart = this.top.requiresRestart(config);
     this._stack.push(config);
-    return requiresRestart;
   }
 
   public pop(): void {
