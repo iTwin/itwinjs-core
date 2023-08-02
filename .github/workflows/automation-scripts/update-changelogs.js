@@ -19,15 +19,18 @@ function loadJsonFiles(filePath) {
   return jsonData;
 }
 
-// returns true if currentVersion is greater than incoming
-function compareVersions(currentVersion, incomingVersion) {
-  currentVersion = currentVersion.split('.').map(Number);
-  incomingVersion = incomingVersion.split('.').map(Number);
-  const currentDif = currentVersion.map((num, index) => {
-    return num - incomingVersion[index];
-  })
-  const leadNum = currentDif.filter((num) => { return num !== 0 })[0];
-  return leadNum > 0;
+function sortByVersion(objects) {
+  return objects.sort((a, b) => {
+    const versionA = a.version.split('.').map(Number);
+    const versionB = b.version.split('.').map(Number);
+
+    for (let i = 0; i < 3; i++) {
+      if (versionA[i] < versionB[i]) return 1;
+      if (versionA[i] > versionB[i]) return -1;
+    }
+
+    return 0;
+  });
 }
 
 function findNewEntries(currentEntries, incomingEntries) {
@@ -51,41 +54,30 @@ function findNewEntries(currentEntries, incomingEntries) {
   return newEntries;
 }
 
-function addEntriesToCurr(currentEntries, newEntries) {
-  let i = 0;
-  let j = 0;
-  while (j !== newEntries.length) {
-    if (!compareVersions(currentEntries[i].version, newEntries[j].version)) {
-      currentEntries.splice(i, 0, newEntries[j])
-      j++;
-    }
-    i++;
-  }
-  return currentEntries;
-}
-
-function fixChangeLogs(currentFiles, incomingFiles) {
-  numFiles = currentFiles.length;
-  for (i = 0; i < numFiles; i++) {
-    let currentJson = loadJsonFiles(currentFiles[i]);
-    const incomingJson = loadJsonFiles(incomingFiles[i]);
+function fixChangeLogs(files) {
+  const numFiles = files.length;
+  for (let i = 0; i < numFiles; i++) {
+    let currentJson = loadJsonFiles(`temp-target-changelogs/${files[i]}`);
+    const incomingJson = loadJsonFiles(`temp-incoming-changelogs/${files[i]}`);
     const newEntries = findNewEntries(currentJson.entries, incomingJson.entries);
-    const completeEntries = addEntriesToCurr(currentJson.entries, newEntries);
+    const completeEntries = sortByVersion([...currentJson.entries, ...newEntries]);
     currentJson.entries = completeEntries;
 
     let jsonString = JSON.stringify(currentJson, null, 2);
     jsonString = jsonString + '\n';
-    fs.writeFileSync(currentFiles[i], jsonString, (err) => {
+    fs.writeFileSync(`temp-target-changelogs/${files[i]}`, jsonString, (err) => {
       if (err)
         console.error("Error Writing JSON file");
     });
   }
 }
 
-if (process.argv.length === 4) {
+if (process.argv.length === 3) {
   currentFiles = getFilePaths(process.argv[2]);
-  incomingFiles = getFilePaths(process.argv[3]);
-  fixChangeLogs(currentFiles, incomingFiles);
+  currentFiles.forEach((file, index) => {
+    currentFiles[index] = file.split('/').slice(1);
+  })
+  fixChangeLogs(currentFiles);
 } else {
   console.error("Script must take in 2 arguments, a temp path for the current and incoming changelogs")
 }
