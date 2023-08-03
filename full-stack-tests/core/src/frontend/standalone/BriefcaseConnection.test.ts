@@ -5,11 +5,10 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
-import { BriefcaseConnection, GenericAbortSignal, IModelApp, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
+import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
-import sinon = require("sinon");
 
 type AbortSignalListener = (this: MockAbortSignal, ev: any) => any;
 
@@ -34,20 +33,12 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("BriefcaseConnection (#integration)", async () => {
 
     beforeEach(async () => {
-      const user = TestUsers.regular;
-      sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-      }));
-      await TestUtility.shutdownFrontend();
       await TestUtility.startFrontend();
-      await TestUtility.initialize(user);
+      await TestUtility.initialize(TestUsers.regular);
     });
 
     afterEach(async () => {
       await TestUtility.shutdownFrontend();
-      sinon.restore();
     });
 
     it("should report progress when pulling changes", async () => {

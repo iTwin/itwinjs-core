@@ -12,7 +12,6 @@ import {
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
-import sinon = require("sinon");
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -26,12 +25,6 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    const user = TestUsers.regular;
-    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    }));
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
@@ -41,7 +34,7 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    await TestUtility.initialize(user);
+    await TestUtility.initialize(TestUsers.regular);
     IModelApp.authorizationClient = TestUtility.iTwinPlatformEnv.authClient;
 
     // Setup a model with a large number of change sets
@@ -56,7 +49,6 @@ describe("IModelConnection (#integration)", () => {
     if (iModel)
       await iModel.close();
     await TestUtility.shutdownFrontend();
-    sinon.restore();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {

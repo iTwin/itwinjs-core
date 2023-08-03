@@ -9,7 +9,6 @@ import { TestUtility } from "../TestUtility";
 import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
-import sinon = require("sinon");
 
 export interface IRealityDataModelInfo {
   key: RealityDataSourceKey;
@@ -33,12 +32,6 @@ describe("RealityDataAccess (#integration)", () => {
   };
   let realityDataAccess: RealityDataAccessClient;
   before(async () => {
-    const user = TestUsers.regular;
-    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    }));
     await TestUtility.shutdownFrontend();
     realityDataAccess = new RealityDataAccessClient(realityDataClientOptions);
     const options = TestUtility.iModelAppOptions;
@@ -49,7 +42,7 @@ describe("RealityDataAccess (#integration)", () => {
     await TestUtility.startFrontend({
       ...options,
     });
-    await TestUtility.initialize(user);
+    await TestUtility.initialize(TestUsers.regular);
     iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.realityDataAccess);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
@@ -60,7 +53,6 @@ describe("RealityDataAccess (#integration)", () => {
       await imodel.close();
 
     await TestUtility.shutdownFrontend();
-    sinon.restore();
   });
 
   function getAttachmentURLFromModelProps(modelProps: any): {rdsUrl: string | undefined, blobFilename: string | undefined} {

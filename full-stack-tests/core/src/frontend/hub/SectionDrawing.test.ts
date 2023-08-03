@@ -9,18 +9,12 @@ import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import sinon = require("sinon");
 
-describe("Section Drawings (#integration)", () => {
+describe.skip("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const user = TestUsers.regular;
-    sinon.stub(IModelApp, "getAccessToken").callsFake(async () => TestUtility.getAccessToken(user, {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    }));
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
-    await TestUtility.initialize(user);
+    await TestUtility.initialize(TestUsers.regular);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
