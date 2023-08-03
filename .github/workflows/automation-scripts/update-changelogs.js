@@ -49,19 +49,19 @@ await Promise.all([
   // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
   $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`,
   // delete temps
-  // $`rm -r ${targetPath}`,
-  // $`rm -r ${incomingPath}`,
+  $`rm -r ${targetPath}`,
+  $`rm -r ${incomingPath}`,
   // # regen CHANGELOG.md
   $`rush publish --regenerate-changelogs`,
   /*********************************************************************/
   // Uncomment For Manual runs and fix branch name to appropriate version
   // $`git checkout -b finalize-release-4.0.X`,
   /*********************************************************************/
-  // $`git add .`,
-  // $`git commit - m "${commitMessage} Changelogs"`,
-  // $`rush change --bulk --message "" --bump-type none`,
-  // $`git add .`,
-  // $`git commit --amend --no-edit`,
+  $`git add .`,
+  $`git commit - m "${commitMessage} Changelogs"`,
+  $`rush change --bulk --message "" --bump-type none`,
+  $`git add .`,
+  $`git commit --amend --no-edit`,
 ]);
 
 // Read all files in the directory
