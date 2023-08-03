@@ -48,9 +48,9 @@ currentFiles.forEach((file, index) => {
 fixChangeLogs(currentFiles);
 
 await Promise.all([
-  // # copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-  $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\(.*\)_|./\1/|; s|_|/|g")"' \;`,
-  // # delete temps
+  // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
+  $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`,
+  // delete temps
   // $`rm -r ${targetPath}`,
   // $`rm -r ${incomingPath}`,
   // # regen CHANGELOG.md
