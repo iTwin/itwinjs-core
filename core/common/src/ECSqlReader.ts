@@ -313,7 +313,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   *
+   * @internal
    */
   public getRowInternal(): any[] {
     if (this._localRows.length <= this._localOffset)
@@ -397,7 +397,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   *
+   * @internal
    */
   public formatCurrentRow(onlyReturnObject: boolean = false): any[] | object {
     if (!onlyReturnObject && this._options.rowFormat === QueryRowFormat.UseECSqlPropertyIndexes) {
