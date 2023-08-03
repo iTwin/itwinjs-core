@@ -581,13 +581,16 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       const univariateBezierG = new UnivariateBezier(orderG);
       const axx = matrixAInverse.at(0, 0);
       const axy = matrixAInverse.at(0, 1);
-      const axz = 0.0; const axw = matrixAInverse.at(0, 2);
+      const axz = 0.0;
+      const axw = matrixAInverse.at(0, 2);
       const ayx = matrixAInverse.at(1, 0);
       const ayy = matrixAInverse.at(1, 1);
-      const ayz = 0.0; const ayw = matrixAInverse.at(1, 2);
+      const ayz = 0.0;
+      const ayw = matrixAInverse.at(1, 2);
       const awx = matrixAInverse.at(2, 0);
       const awy = matrixAInverse.at(2, 1);
-      const awz = 0.0; const aww = matrixAInverse.at(2, 2);
+      const awz = 0.0;
+      const aww = matrixAInverse.at(2, 2);
 
       if (matrixAInverse) {
         let bezier: BezierCurve3dH | undefined;
