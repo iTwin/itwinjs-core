@@ -1,7 +1,70 @@
+#!/usr/bin/env zx
+
+import 'zx/globals'
+
 "use strict";
 
 const fs = require('fs');
 const path = require('path');
+
+/****************************************************************
+* To run manually:
+* git checkout target branch (master or latest release); git pull
+* git checkout release/X.X.X; git pull
+* uncomment git checkout -b cmd and fix branch name
+* open PR into master
+*****************************************************************/
+
+targetPath = "./temp-target-changelogs"
+incomingPath = "./temp-incoming-changelogs"
+
+await $`"mkdir ${targetPath}`
+await $`"mkdir ${incomingPath}`
+
+// find the latest release branch, and make that the target for the changelogs
+targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\///'`;
+currentBranch = await $`git branch --show-current`;
+commitMessage = await $`git log --format=%B -n 1`
+
+if (targetBranch === `origin/${currentBranch}`) {
+  console.log("The current branch is the latest release, so the target will be master branch")
+  targetBranch = 'master'
+} else
+  console.log(`The current branch is ${currentBranch}, so the target will be $targetBranch branch`)
+
+await Promise.all([
+  // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
+  $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;`,
+  // # copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
+  $`git checkout ${targetBranch}`,
+  $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\///; s/\//_/g")"' \;`,
+
+])
+
+const currentFiles = getFilePaths(targetPath);
+currentFiles.forEach((file, index) => {
+  currentFiles[index] = file.split('/').slice(1);
+})
+fixChangeLogs(currentFiles);
+
+await Promise.all([
+  // # copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
+  $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\(.*\)_|./\1/|; s|_|/|g")"' \;`,
+  // # delete temps
+  // $`rm -r ${targetPath}`,
+  // $`rm -r ${incomingPath}`,
+  // # regen CHANGELOG.md
+  $`rush publish --regenerate-changelogs`,
+  /*********************************************************************/
+  // Uncomment For Manual runs and fix branch name to appropriate version
+  // $`git checkout -b finalize-release-4.0.X`,
+  /*********************************************************************/
+  // $`git add .`,
+  // $`git commit - m "${commitMessage} Changelogs"`,
+  // $`rush change --bulk --message "" --bump-type none`,
+  // $`git add .`,
+  // $`git commit --amend --no-edit`,
+]);
 
 // Read all files in the directory
 function getFilePaths(directoryPath) {
@@ -51,14 +114,4 @@ function fixChangeLogs(files) {
         console.error("Error Writing JSON file");
     });
   }
-}
-
-if (process.argv.length === 3) {
-  const currentFiles = getFilePaths(process.argv[2]);
-  currentFiles.forEach((file, index) => {
-    currentFiles[index] = file.split('/').slice(1);
-  })
-  fixChangeLogs(currentFiles);
-} else {
-  console.error("Script must take in 1 arguments, a temp path for the current")
 }
