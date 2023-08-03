@@ -5,7 +5,6 @@
 
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { getTokenCallbackName } from "./certaCommon";
-// import { TestUtility } from "@itwin/oidc-signin-tool/lib/cjs/";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";

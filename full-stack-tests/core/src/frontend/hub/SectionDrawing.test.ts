@@ -7,9 +7,8 @@ import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, Se
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
-import sinon = require("sinon");
 
-describe.skip("Section Drawings (#integration)", () => {
+describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -26,7 +25,6 @@ describe.skip("Section Drawings (#integration)", () => {
       await imodel.close();
 
     await TestUtility.shutdownFrontend();
-    sinon.restore();
   });
 
   afterEach(() => {
