@@ -16,8 +16,8 @@ const path = require('path');
 const targetPath = "./temp-target-changelogs"
 const incomingPath = "./temp-incoming-changelogs"
 
-await $`"mkdir ${targetPath}`
-await $`"mkdir ${incomingPath}`
+await $`mkdir ${targetPath}`
+await $`mkdir ${incomingPath}`
 
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
