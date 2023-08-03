@@ -2452,10 +2452,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     get current(): QueryRowProxy;
     get done(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
-    // (undocumented)
+    // @internal (undocumented)
     getRowInternal(): any[];
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
