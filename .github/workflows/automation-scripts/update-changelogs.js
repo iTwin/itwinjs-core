@@ -1,7 +1,5 @@
 #!/usr/bin/env zx
 
-import 'zx/globals'
-
 "use strict";
 
 const fs = require('fs');
@@ -15,16 +13,16 @@ const path = require('path');
 * open PR into master
 *****************************************************************/
 
-targetPath = "./temp-target-changelogs"
-incomingPath = "./temp-incoming-changelogs"
+const targetPath = "./temp-target-changelogs"
+const incomingPath = "./temp-incoming-changelogs"
 
 await $`"mkdir ${targetPath}`
 await $`"mkdir ${incomingPath}`
 
 // find the latest release branch, and make that the target for the changelogs
-targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
-currentBranch = await $`git branch --show-current`;
-commitMessage = await $`git log --format=%B -n 1`
+let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
+const currentBranch = await $`git branch --show-current`;
+const commitMessage = await $`git log --format=%B -n 1`
 
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
