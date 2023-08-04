@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
+import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
