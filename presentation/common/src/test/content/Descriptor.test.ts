@@ -173,6 +173,15 @@ describe("Descriptor", () => {
             },
           }],
         }],
+        ruleset: {
+          id: "rulesetId",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+            }],
+          }],
+        },
       };
       const descriptor = Descriptor.fromJSON(json);
       validateParentship(descriptor!.fields);
@@ -246,6 +255,15 @@ describe("Descriptor", () => {
               targetClassName: "targetClass",
               relationshipName: "relClass",
               isForwardRelationship: true,
+            }],
+          }],
+        },
+        ruleset: {
+          id: "rulesetId",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
             }],
           }],
         },

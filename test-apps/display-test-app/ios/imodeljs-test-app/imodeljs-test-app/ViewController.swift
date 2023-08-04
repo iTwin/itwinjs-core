@@ -135,8 +135,8 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     }
     
     func setupBackend() {
-        let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/main.js"))
-        if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets"),
+        let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/www/mobile/main.js"))
+        if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets/www/mobile"),
            let envString = try? String(contentsOf: envUrl),
            let envData = JSON.fromString(envString) {
             configData = envData

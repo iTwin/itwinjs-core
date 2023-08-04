@@ -52,9 +52,7 @@ import * as viewTool from "./tools/ViewTool";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("./IModeljs-css");
+import "./IModeljs-css";
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 

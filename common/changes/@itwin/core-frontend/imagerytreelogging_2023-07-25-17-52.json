@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added logging to 'MapLayerImageryProvider.createTileTree' and added missing export in MapLayerSources.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
