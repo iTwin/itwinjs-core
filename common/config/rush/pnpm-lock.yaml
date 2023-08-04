@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.6
+      '@bentley/imodeljs-native': 4.1.8
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.0.0
       '@itwin/core-bentley': workspace:*
@@ -52,7 +52,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.6
+      '@bentley/imodeljs-native': 4.1.8
       '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -3726,8 +3726,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.6:
-    resolution: {integrity: sha512-oIekFjyHvbF/Om3lXt+P4JDKd1blHLsv4INn2H3e4r7Ltx3G3N4FnniwNtYPe6TbIPSzBTqdfvyjilaNzhFffQ==}
+  /@bentley/imodeljs-native/4.1.8:
+    resolution: {integrity: sha512-ASRPdlNCHGbIv56sR3hqB23a5akzvrBvnY+JsQkfdMI9slfUDcswtP4vlU+XZo/OMVIr4cODJKS68xIIeDRCOw==}
     requiresBuild: true
     dev: false
 
@@ -4196,9 +4196,6 @@ packages:
     peerDependencies:
       eslint: ^8.36.0
       typescript: ^3.7.0 || ^4.0.0 || ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.55.0_ile6elre7n725szrmixzt6kjvy
       '@typescript-eslint/parser': 5.55.0_xaiy4vqh4w4prx7ej54h3ywmza
@@ -7389,9 +7386,6 @@ packages:
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
       typescript: ^3.7.5 || ^4.0.0 || ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       '@typescript-eslint/utils': 5.62.0_xaiy4vqh4w4prx7ej54h3ywmza
       eslint: 8.45.0
@@ -11809,8 +11803,6 @@ packages:
         optional: true
       '@types/node':
         optional: true
-      typescript:
-        optional: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.9
@@ -11843,8 +11835,6 @@ packages:
       '@swc/wasm':
         optional: true
       '@types/node':
-        optional: true
-      typescript:
         optional: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
@@ -11882,9 +11872,6 @@ packages:
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       tslib: 1.14.1
       typescript: 5.0.4
@@ -11990,9 +11977,6 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       lunr: 2.3.9
       marked: 4.3.0
