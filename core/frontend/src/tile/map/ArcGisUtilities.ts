@@ -11,7 +11,10 @@ import { IModelApp } from "../../IModelApp";
  * @module Tiles
  */
 
-/** @internal */
+/**
+ * Class representing an ArcGIS error code.
+ * @beta
+ */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
   InvalidToken = 498,
@@ -22,7 +25,7 @@ export enum ArcGisErrorCode {
 
 /**
  * Class representing an ArcGIS service metadata.
- * @internal
+ * @beta
  */
 export interface ArcGISServiceMetadata {
   /** JSON content from the service */
@@ -38,6 +41,7 @@ export interface ArcGISServiceMetadata {
  */
 export class ArcGisUtilities {
 
+  /** @internal */
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
       range = MapCartoRectangle.createMaximum();
@@ -45,6 +49,7 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
 
+  /** @internal */
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     const response = await fetch("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList", { method: "GET" });
@@ -73,6 +78,7 @@ export class ArcGisUtilities {
     return sources;
   }
 
+  /** @internal */
   public static async getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]> {
     if (undefined === baseUrl)
       baseUrl = url;
@@ -106,6 +112,7 @@ export class ArcGisUtilities {
    * @param range Range for the query.
    * @param url URL for the query.
    * @returns List of map layer sources.
+   * @internal
    */
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
@@ -155,7 +162,7 @@ export class ArcGisUtilities {
    * @param capabilitiesFilter List of capabilities 'keyword' that needs to be advertised in the service's metadata
    * in order to be valid.  For example: 'Map', 'Query', etc
    * @param userName Username to use for legacy token based security.
-   * @param password Username to use for legacy token based security.
+   * @param password Password to use for legacy token based security.
    * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
    * @return Validation Status. If successful, a list of available sub-layers will also be returned.
    */
@@ -210,6 +217,7 @@ export class ArcGisUtilities {
 
   /**
    * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
+   * @internal
    */
   public static isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
@@ -222,11 +230,17 @@ export class ArcGisUtilities {
   private static _serviceCache = new Map<string, ArcGISServiceMetadata|undefined>();
 
   /**
-   * Fetch an ArcGIS service metadata, and returns its JSON representation.
+   * Fetches an ArcGIS service metadata, and returns its JSON representation.
    * If an access client has been configured for the specified formatId,
    * it will be used to apply required security token.
    * By default, response for each URL are cached.
-  */
+   * @param url URL of the ArcGIS service
+   * @param formatId Format ID of the service
+   * @param userName Username to use for legacy token based security
+   * @param password Password to use for legacy token based security
+   * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
+   * @param requireToken Flag to indicate if a token is required
+   */
   public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata|undefined> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
@@ -278,7 +292,10 @@ export class ArcGisUtilities {
     }
   }
 
-  /** Read a response from ArcGIS server and check for error code in the response. */
+  /**
+   * Read a response from ArcGIS server and check for error code in the response.
+   * @internal
+   */
   public static async checkForResponseErrorCode(response: Response) {
     const tmpResponse = response;
     if (response.headers && tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
@@ -325,6 +342,7 @@ export class ArcGisUtilities {
    * @param tileSize Size of a tile in pixels (i.e 256)
    * @param screenDpi Monitor resolution in dots per inch (i.e. typically 96dpi is used by Google Maps)
    * @returns An array containing resolution and scale values for each requested zoom level
+   * @internal
    */
   public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96): {zoom: number, resolution: number, scale: number}[] {
     // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.

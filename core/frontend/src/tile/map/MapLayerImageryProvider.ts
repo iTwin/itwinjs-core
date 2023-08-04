@@ -45,7 +45,6 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private _status = MapLayerImageryProviderStatus.Valid;
 
-  /** @internal */
   public get status() { return this._status; }
 
   /** @alpha */
@@ -73,11 +72,16 @@ export abstract class MapLayerImageryProvider {
 
   public cartoRange?: MapCartoRectangle;
 
-  // Those values are used internally for various computation, this should not get overriden.
-  /** @internal */
+  /**
+   * This value is used internally for various computations, this should not get overriden.
+   * @internal
+   */
   protected readonly defaultMinimumZoomLevel = 0;
 
-  /** @internal */
+  /**
+   * This value is used internally for various computations, this should not get overriden.
+   * @internal
+   */
   protected readonly defaultMaximumZoomLevel = 22;
 
   /** @internal */
@@ -173,7 +177,8 @@ export abstract class MapLayerImageryProvider {
     return undefined;
   }
 
-  /** Change the status of this provider.
+  /**
+   * Change the status of this provider.
    * Sub-classes should override 'onStatusUpdated' instead of this method.
    * @internal
    */
@@ -268,35 +273,48 @@ export abstract class MapLayerImageryProvider {
     return true;
   }
 
-  /** @internal */
-  // calculates the projected x cartesian coordinate in EPSG:3857from the longitude in EPSG:4326 (WGS84)
+  /**
+   * Calculates the projected x cartesian coordinate in EPSG:3857from the longitude in EPSG:4326 (WGS84)
+   * @param longitude Longitude in EPSG:4326 (WGS84)
+   */
   public getEPSG3857X(longitude: number): number {
     return longitude * 20037508.34 / 180.0;
   }
 
-  /** @internal */
-  // calculates the projected y cartesian coordinate in EPSG:3857from the latitude in EPSG:4326 (WGS84)
+  /**
+   * Calculates the projected y cartesian coordinate in EPSG:3857from the latitude in EPSG:4326 (WGS84)
+   * @param latitude Latitude in EPSG:4326 (WGS84)
+   */
   public getEPSG3857Y(latitude: number): number {
     const y = Math.log(Math.tan((90.0 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
     return y * 20037508.34 / 180.0;
   }
 
-  /** @internal */
-  // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
+  /**
+   * Calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
+   * @param x3857 Projected x cartesian coordinate in EPSG:3857
+   */
   public getEPSG4326Lon(x3857: number): number {
     return Angle.radiansToDegrees(x3857 / earthRadius);
   }
 
-  /** @internal */
-  // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
+  /**
+   * Calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
+   * @param y3857 Projected y cartesian coordinate in EPSG:3857
+   */
   public getEPSG4326Lat(y3857: number): number {
     const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI / 2);
     return Angle.radiansToDegrees(y);
   }
 
-  /** @internal */
-  // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.
-  // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
+  /**
+   * Get the bounding box/extents of a tile in EPSG:4326 (WGS84) format.
+   * Map tile providers like Bing and Mapbox allow the URL to be constructed directly from the zoom level and tile coordinates.
+   * However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
+   * @param row Row of the tile
+   * @param column Column of the tile
+   * @param zoomLevel Desired zoom level of the tile
+   */
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
     // so use Math.pow instead (I assume the performance lost to be minimal)
@@ -315,7 +333,12 @@ export abstract class MapLayerImageryProvider {
     return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
   }
 
-  /** @internal */
+  /**
+   * Get the bounding box/extents of a tile in EPSG:3857 format.
+   * @param row Row of the tile
+   * @param column Column of the tile
+   * @param zoomLevel Desired zoom level of the tile
+   */
   public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
     const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);
 
