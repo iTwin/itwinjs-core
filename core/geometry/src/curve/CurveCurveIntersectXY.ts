@@ -438,7 +438,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         );
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
+        if (lineFraction !== undefined &&
+          this.acceptFraction(extendA0, lineFraction, extendA1) &&
           this.acceptFraction(extendB0, arcFraction, extendB1)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
