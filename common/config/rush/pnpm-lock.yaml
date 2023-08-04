@@ -1671,7 +1671,6 @@ importers:
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.9.0
-      '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1709,6 +1708,7 @@ importers:
       stream-http: ^3.2.0
       typescript: ~5.0.2
       webpack: ^5.76.0
+      webpack-cli: ^5.0.1
     dependencies:
       '@azure/storage-blob': 12.15.0
       '@itwin/browser-authorization': 1.0.1_67wltvhdskk2oee2c3z2o4tfly
@@ -1733,7 +1733,6 @@ importers:
       '@itwin/imodels-client-authoring': 3.1.0
       '@itwin/imodels-client-management': 3.1.0
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
-      '@itwin/service-authorization': 0.6.3_mdtbcqczpmeuv6yjzfaigjndwi
       azurite: 3.25.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -1777,7 +1776,8 @@ importers:
       stream-browserify: 3.0.0
       stream-http: 3.2.0
       typescript: 5.0.4
-      webpack: 5.88.2
+      webpack: 5.88.2_webpack-cli@5.1.4
+      webpack-cli: 5.1.4_webpack@5.88.2
 
   ../../full-stack-tests/ecschema-rpc-interface:
     specifiers:
@@ -4212,9 +4212,6 @@ packages:
     peerDependencies:
       eslint: ^8.36.0
       typescript: ^3.7.0 || ^4.0.0 || ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.55.0_clam5qq3v4yna35b2k3yjbsptq
       '@typescript-eslint/parser': 5.55.0_qjkw45b3tljvcusgfgkwdbduhu
