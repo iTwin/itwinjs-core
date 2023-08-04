@@ -275,7 +275,7 @@ export class DisplayTestApp {
       // ###TODO fix that in the client and remove this
       if (!configuration.noElectronAuth)
         opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization({
-          clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test"
+          clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
         });
 
       await ElectronApp.startup(opts);
@@ -288,7 +288,7 @@ export class DisplayTestApp {
         const client = new BrowserAuthorizationClient({
           clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
           scope: getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read",
-          redirectUri: redirectUri
+          redirectUri,
         });
         await client.handleSigninCallback();
       }

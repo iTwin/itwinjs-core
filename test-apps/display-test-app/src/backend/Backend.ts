@@ -247,7 +247,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   }
 };
 
-async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization  | undefined> {
+async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization | undefined> {
   if (
     ProcessDetector.isElectronAppBackend &&
     checkEnvVars(
@@ -260,7 +260,7 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
       redirectUris:
         process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ?
-        [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
+          [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
       issuerUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
     });
   }
