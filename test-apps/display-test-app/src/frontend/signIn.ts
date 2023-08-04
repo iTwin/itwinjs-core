@@ -25,7 +25,9 @@ export async function signIn(): Promise<boolean> {
 
   let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
   if (ProcessDetector.isElectronAppFrontend) {
-    authClient = new ElectronRendererAuthorization();
+    authClient = new ElectronRendererAuthorization({
+      clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
+    });
   } else if (ProcessDetector.isMobileAppFrontend) {
     // The default auth client works on mobile
     const accessToken = await IModelApp.authorizationClient?.getAccessToken();

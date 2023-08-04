@@ -79,8 +79,8 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
     if (ProcessDetector.isElectronAppBackend) {
       return new ElectronMainAuthorization({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        scope: process.env.IMJS_OIDC_SCOPE!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI,
+        scopes: process.env.IMJS_OIDC_SCOPE!,
+        redirectUris: process.env.IMJS_OIDC_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
       });
     }
   }
