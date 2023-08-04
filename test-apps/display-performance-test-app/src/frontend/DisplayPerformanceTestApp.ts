@@ -115,7 +115,9 @@ async function signIn(): Promise<void> {
     return;
   let authorizationClient;
   if (ProcessDetector.isElectronAppFrontend)
-    authorizationClient = new ElectronRendererAuthorization();
+    authorizationClient = new ElectronRendererAuthorization({
+      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+    });
   else
     authorizationClient = new BrowserAuthorizationClient({
       clientId: process.env.IMJS_OIDC_CLIENT_ID!,
