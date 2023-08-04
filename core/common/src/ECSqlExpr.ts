@@ -1,24 +1,6 @@
 import { asInstanceOf, Constructor, isInstanceOf } from "@itwin/core-bentley";
 
 /**
- * Unary operator for @see [[ValueExpr]].
- * @alpha
- */
-export enum UnaryValueOp {
-  Minus = "-",
-  Plus = "+",
-  BitwiseNot = "~",
-}
-
-/**
- * Unary operator for @see [[BooleanExpr]]
- *  @alpha
- */
-export enum UnaryBooleanOp {
-  Not = "NOT",
-}
-
-/**
  * Id returned by native code
  * @internal
  */
@@ -62,6 +44,71 @@ enum NativeExpIds {
   LiteralValue = "LiteralValueExp",
   Subquery = "SubqueryExp",
 }
+/**
+ * Type of literal value.
+ * @alpha
+ */
+export enum LiteralValueType {
+  Null = "NULL",
+  String = "STRING",
+  Date = "DATE",
+  Time = "TIME",
+  Timestamp = "TIMESTAMP",
+  Raw = "RAW"
+}
+
+/**
+ * Sort direction specified by ORDER BY spec  @see [[OrderBySpecExpr]]
+ * @alpha
+ */
+export type SortDirection = "ASC" | "DESC";
+
+/**
+ * Describe how SELECT result is combined with another SELECT in compound select statement @see [[NextSelect]] @see [[SelectStatementExp]]
+ * @alpha
+ */
+export type CompoundSelectOp = "UNION" | "UNION ALL" | "INTERSECT" | "EXCEPT";
+
+/**
+ * Test subquery result. @see [[SubqueryTest]]
+ * @alpha
+ */
+export type SubqueryTestOp = "EXISTS";
+
+/**
+ * Describe JOIN/USING relationship direction when relationship is of time 1:1. @see [[UsingRelationshipJoin]]
+ * @alpha
+ */
+export type JoinDirection = "FORWARD" | "BACKWARD";
+
+/**
+ * Join specification of a Qualified join. @see [[QualifiedJoinExpr]]
+ * @alpha
+ */
+export type JoinSpec = BooleanExpr | string[] | undefined;
+
+/**
+ * Qualified JOIN type @see [[QualifiedJoinExpr]]
+ * @alpha
+ */
+export enum JoinType {
+  LeftOuter = "LEFT OUTER JOIN",
+  RightOuter = "RIGHT OUTER JOIN",
+  FullOuter = "FULL OUTER JOIN",
+  Inner = "INNER JOIN",
+}
+
+/**
+ * Unary operator for @see [[ValueExpr]].
+ * @alpha
+ */
+export type UnaryValueOp = "-" | "+" | "~";
+
+/**
+ * Unary operator for @see [[BooleanExpr]]
+ *  @alpha
+ */
+export type UnaryBooleanOp = "NOT";
 
 /**
  * Binary boolean operators used by @see [[BinaryBooleanExpr]]
@@ -234,6 +281,7 @@ export abstract class Expr {
     return defaultWriter.toString();
   }
 }
+
 /**
  * Base class for all ECSQL Statements. Here are list of subclasses @see [[CteExpr]], @see [[SelectStatement]], @see [[InsertStatement]], @see [UpdateStatement]] and @see [[DeleteStatement]]
  *  @alpha
@@ -253,6 +301,7 @@ export abstract class StatementExpr extends Expr {
     throw new Error(`unknow node.id = ${node.id}`);
   }
 }
+
 /**
  * Base class for all computed expression like Value and Boolean.
  * @alpha
@@ -319,6 +368,7 @@ export abstract class BooleanExpr extends ComputedExpr {
     throw new Error(`Unknown type of native value exp ${node.id}`);
   }
 }
+
 /**
  * Base class for all value expressions. Following is list of subclasses.
  * @see [[SubqueryExpr]]
@@ -381,6 +431,7 @@ export abstract class ValueExpr extends ComputedExpr {
     throw new Error(`Unknown type of native value exp ${node.id}`);
   }
 }
+
 /**
  * Hold polymorphic information about @see [[ClassNameExp]]
  * @alpha
@@ -544,68 +595,6 @@ export class ECSqlWriter {
     exp.writeTo(this);
     return this;
   }
-}
-/**
- * Sort direction specified by ORDER BY spec  @see [[OrderBySpecExpr]]
- * @alpha
- */
-export enum SortDirection {
-  Ascending = "ASC",
-  Desending = "DESC"
-}
-
-/**
- * Describe how SELECT result is combined with another SELECT in compound select statement @see [[NextSelect]] @see [[SelectStatementExp]]
- * @alpha
- */
-export enum CompoundSelectOp {
-  Union = "UNION",
-  UnionAll = "UNION ALL",
-  Intersect = "INTERSECT",
-  Except = "EXCEPT"
-}
-/**
- * Describe next select statement in a compound select statement. @see [[SelectStatementExp]]
- * @alpha
- */
-export interface NextSelect {
-  op: CompoundSelectOp;
-  select: SelectStatementExpr;
-}
-
-/**
- * Test subquery result. @see [[SubqueryTest]]
- * @alpha
- */
-export enum SubqueryTestOp {
-  // Unique = "UNIQUE", //! Not supported
-  Exists = "EXISTS"
-}
-
-/**
- * Describe JOIN/USING relationship direction when relationship is of time 1:1. @see [[UsingRelationshipJoin]]
- * @alpha
- */
-export enum JoinDirection {
-  Forward = "FORWARD",
-  Backward = "BACKWARD"
-}
-
-/**
- * Join specification of a Qualified join. @see [[QualifiedJoinExpr]]
- * @alpha
- */
-export type JoinSpec = BooleanExpr | string[] | undefined;
-
-/**
- * Qualified JOIN type @see [[QualifiedJoinExpr]]
- * @alpha
- */
-export enum JoinType {
-  LeftOuter = "LEFT OUTER JOIN",
-  RightOuter = "RIGHT OUTER JOIN",
-  FullOuter = "FULL OUTER JOIN",
-  Inner = "INNER JOIN",
 }
 /**
  * Use to describe selection clause terms in a SELECT statements @see [[SelectionClauseExpr]] @see [[SelectExpr]]
@@ -928,6 +917,15 @@ export class SubqueryRefExpr extends ClassRefExpr {
 }
 
 /**
+ * Describe next select statement in a compound select statement. @see [[SelectStatementExp]]
+ * @alpha
+ */
+export interface NextSelect {
+  op: CompoundSelectOp;
+  select: SelectStatementExpr;
+}
+
+/**
  * Describe a optionally compound SELECT statement.
  * @alpha
  */
@@ -960,7 +958,7 @@ export class SelectStatementExpr extends StatementExpr {
     writer.appendExp(this.singleSelect);
     if (this.nextSelect) {
       writer.appendSpace();
-      if (this.nextSelect.op === CompoundSelectOp.UnionAll) {
+      if (this.nextSelect.op === "UNION ALL") {
         writer.appendKeyword("UNION");
         writer.appendSpace();
         writer.appendKeyword("ALL");
@@ -1350,19 +1348,6 @@ export class BinaryBooleanExpr extends BooleanExpr {
 }
 
 /**
- * Type of literal value.
- * @alpha
- */
-export enum LiteralValueType {
-  Null = "NULL",
-  String = "STRING",
-  Date = "DATE",
-  Time = "TIME",
-  Timestamp = "TIMESTAMP",
-  Raw = "RAW"
-}
-
-/**
  * Describe a <expr> IS NULL boolean expression
  * @alpha
  */
@@ -1392,7 +1377,7 @@ export class IsNullExpr extends BooleanExpr {
       throw new Error(`Parse node has 'node.op !== IS NULL'. ${JSON.stringify(node)}`);
     }
     const exp = ValueExpr.deserialize(node.lhs as NativeECSqlParseNode);
-    return new IsNullExpr(exp, isNull ? UnaryBooleanOp.Not : undefined);
+    return new IsNullExpr(exp, isNull ? "NOT" : undefined);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendExp(this.operandExpr);
@@ -1433,7 +1418,7 @@ export class IsOfTypeExpr extends BooleanExpr {
     }
     const exp = ValueExpr.deserialize(node.lhs as NativeECSqlParseNode);
     const classNames = Array.from((node.rhs as NativeECSqlParseNode[]).map((v) => ClassNameExpr.deserialize(v)));
-    return new IsOfTypeExpr(exp, classNames, isNull ? UnaryBooleanOp.Not : undefined);
+    return new IsOfTypeExpr(exp, classNames, isNull ? "NOT" : undefined);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendExp(this.lhsExpr);
@@ -1514,9 +1499,9 @@ export class InExpr extends BooleanExpr {
     }
     const lhs = ValueExpr.deserialize(node.lhs as NativeECSqlParseNode);
     if (Array.isArray(node.rhs))
-      return new InExpr(lhs, Array.from((node.rhs as NativeECSqlParseNode[]).map((v) => ValueExpr.deserialize(v))), isNull ? UnaryBooleanOp.Not : undefined);
+      return new InExpr(lhs, Array.from((node.rhs as NativeECSqlParseNode[]).map((v) => ValueExpr.deserialize(v))), isNull ? "NOT" : undefined);
     else if (node.rhs.id === NativeExpIds.Subquery)
-      return new InExpr(lhs, SubqueryExpr.deserialize(node.rhs as NativeECSqlParseNode), isNull ? UnaryBooleanOp.Not : undefined);
+      return new InExpr(lhs, SubqueryExpr.deserialize(node.rhs as NativeECSqlParseNode), isNull ? "NOT" : undefined);
     else
       throw new Error(`unknown IN rhs ${node.rhs.id}`);
   }
@@ -1575,7 +1560,7 @@ export class LikeExpr extends BooleanExpr {
     const lhs = ValueExpr.deserialize(node.lhs as NativeECSqlParseNode);
     const pattren = ValueExpr.deserialize(node.rhs.pattren as NativeECSqlParseNode);
     const escape = node.rhs.escape ? ValueExpr.deserialize(node.rhs.escape as NativeECSqlParseNode) : undefined;
-    return new LikeExpr(lhs, pattren, escape, isNull ? UnaryBooleanOp.Not : undefined);
+    return new LikeExpr(lhs, pattren, escape, isNull ? "NOT" : undefined);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendExp(this.lhsExpr);
@@ -1624,7 +1609,7 @@ export class BetweenExpr extends BooleanExpr {
       ValueExpr.deserialize(node.lhs),
       ValueExpr.deserialize(rhs.lbound),
       ValueExpr.deserialize(rhs.ubound),
-      isNull ? UnaryBooleanOp.Not : undefined
+      isNull ? "NOT" : undefined,
     );
   }
   public writeTo(writer: ECSqlWriter): void {
@@ -2363,7 +2348,7 @@ export class UnaryValueExpr extends ValueExpr {
     if (node.id !== NativeExpIds.UnaryValue && node.id !== NativeExpIds.BooleanFactor) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.UnaryValue  && node.id !== NativeExpIds.BooleanFactor'. ${JSON.stringify(node)}`);
     }
-    if (node.op !== UnaryValueOp.Plus && node.op !== UnaryValueOp.Minus && node.op !== UnaryValueOp.BitwiseNot) {
+    if (node.op !== "+" && node.op !== "-" && node.op !== "~") {
       throw new Error(`Unrecognized operator in .node.op'. Must me on of UnaryOp. ${JSON.stringify(node)}`);
     }
     return new UnaryValueExpr(node.op as UnaryValueOp, ValueExpr.deserialize(node.exp as NativeECSqlParseNode));
