@@ -1602,7 +1602,7 @@ export enum CurveCurveApproachType {
 
 // @internal
 export class CurveCurveIntersectXY extends NullGeometryHandler {
-    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
+    constructor(worldToLocal: Matrix4d | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
@@ -1613,12 +1613,12 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     handleLineSegment3d(segmentA: LineSegment3d): any;
     handleLineString3d(lsA: LineString3d): any;
     recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean): void;
-    resetGeometry(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
+    resetGeometry(extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
 }
 
 // @internal
 export class CurveCurveIntersectXYZ extends NullGeometryHandler {
-    constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
+    constructor(extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     createPlaneWithPreferredPerpendicular(origin: Point3d, vectorA: Vector3d, cosineValue: number, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;

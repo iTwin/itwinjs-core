@@ -6,6 +6,7 @@ import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
 import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
+import { DptaEnvConfig } from "./DisplayPerfEnvConfig";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
@@ -48,4 +49,6 @@ export default class DisplayPerfRpcInterface extends RpcInterface { // eslint-di
   public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> { return this.forward(arguments); }
 
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
+
+  public async getEnvConfig(): Promise<DptaEnvConfig> { return this.forward(arguments); }
 }
