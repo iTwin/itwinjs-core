@@ -79,7 +79,7 @@ export class RenderMaterialElement extends DefinitionElement {
    * @param name The RenderMaterial name
    */
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.texture);
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.renderMaterial);
     return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
   /**
