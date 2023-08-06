@@ -10,7 +10,7 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyCurve } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";
@@ -21,16 +21,14 @@ import { RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 
 /**
- * Sweepable contour with Transform for local to world interaction.
+ * Sweepable planar contour with Transform for local to world interaction.
  * * The surface/solid classes `LinearSweep`, `RotationalSweep`, `RuledSweep` use this for their swept contours.
  * @public
  */
@@ -46,6 +44,7 @@ export class SweepContour {
     if (contour instanceof CurvePrimitive) {
       // this.curves is a CurveCollection (not AnyCurve) so that contour type determines closure.
       // This is the only time we detect CurvePrimitive closure and wrap as a relevant CurveChain.
+      // Note that we are ASSUMING closure means planar here. This is potentially problematic.
       const primitive = contour;
       contour = contour.startPoint().isAlmostEqual(contour.endPoint()) ? new Loop() : new Path();
       contour.tryAddChild(primitive);
@@ -55,8 +54,8 @@ export class SweepContour {
     this.axis = axis;
   }
   /** Create for linear sweep.
-   * * The optional default normal may be useful for guiding coordinate frame setup.
-   * * the contour is CAPTURED.
+   * @param contour curve to sweep, CAPTURED. For best results, contour should be planar.
+   * @param defaultNormal optional default normal for guiding coordinate frame setup.
    */
   public static createForLinearSweep(contour: AnyCurve, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
@@ -67,8 +66,9 @@ export class SweepContour {
   }
 
   /** Create for linear sweep.
-   * * The optional default normal may be useful for guiding coordinate frame setup.
-   * * the points are captured into linestrings and Loops as needed.
+   * @param points polygon to sweep, CAPTURED as a Loop. Closure point is optional. If multiple polygons are passed in, parity logic is employed.
+   * For best results, all points should be coplanar.
+   * @param defaultNormal optional default normal for guiding coordinate frame setup.
    */
   public static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, points);
@@ -93,8 +93,8 @@ export class SweepContour {
   }
 
   /** Create for rotational sweep.
-   * * The axis ray is retained.
-   * * the contour is CAPTURED.
+   * @param contour curve to sweep, CAPTURED. For best results, contour should be planar.
+   * @param axis rotation axis
    */
   public static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
@@ -143,71 +143,41 @@ export class SweepContour {
     return false;
   }
 
-  private _xyStrokes?: AnyCurve;
+  private _xyStrokes?: CurveCollection;
+  /** Recompute the local strokes cache for this contour */
+  public computeXYStrokes(options?: StrokeOptions): void {
+    this._xyStrokes = undefined;
+    const worldToLocal = this.localToWorld.inverse();
+    if (worldToLocal) {
+      const strokes = this.curves.cloneStroked(options);
+      if (strokes.tryTransformInPlace(worldToLocal))
+        this._xyStrokes = strokes;
+    }
+  }
+  /** Return cached contour strokes */
+  public get xyStrokes(): CurveCollection | undefined {
+    return this._xyStrokes;
+  }
+
+  private _localRegion?: AnyRegion;
   private _facets?: IndexedPolyface;
-  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes; }
   /**
    * build the (cached) internal facets.
    * @param options options for stroking the curves.
    */
   public buildFacets(options: StrokeOptions | undefined): void {
-    if (!this._facets) {
-      if (this.curves instanceof Loop) {
-        this._xyStrokes = this.curves.cloneStroked(options);
-        if (this._xyStrokes instanceof Loop && this._xyStrokes.children.length === 1) {
-          const children = this._xyStrokes.children;
-          const linestring = children[0] as LineString3d;
-          const points = linestring.points;
-          this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
-          if (PolygonOps.sumTriangleAreasXY(points) < 0)
-            points.reverse();
-          const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-          if (graph) {
-            Triangulator.flipTriangles(graph);
-            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
-            this._facets = unflippedPoly;
-            this._facets.tryTransformInPlace(this.localToWorld);
-          } else {  // earcut failed (e.g., on a split washer polygon, where the bridge edge is traversed twice)
-            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], true);
-            if (polyface) {
-              this._facets = polyface as IndexedPolyface;
-              this._facets.tryTransformInPlace(this.localToWorld);
-            }
-          }
-        }
-      } else if (this.curves instanceof ParityRegion) {
-        this._xyStrokes = this.curves.cloneStroked(options);
-        if (this._xyStrokes instanceof (ParityRegion)) {
-          const worldToLocal = this.localToWorld.inverse()!;
-          this._xyStrokes.tryTransformInPlace(worldToLocal);
-          const strokes = [];
-          for (const childLoop of this._xyStrokes.children) {
-            const loopCurves = childLoop.children;
-            if (loopCurves.length === 1) {
-              const c = loopCurves[0];
-              if (c instanceof LineString3d)
-                strokes.push(c.packedPoints);
-            }
-          }
-          const numLoops = strokes.length;
-          /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
-          const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
-          if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
-            Triangulator.flipTriangles(graph);
-            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
-            this._facets = unflippedPoly;
-            this._facets.tryTransformInPlace(this.localToWorld);
-          } else {
-            // earcut failed. Restart with full merge and parity analysis.
-            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(strokes, [], true);
-            if (polyface) {
-              this._facets = polyface as IndexedPolyface;
-              this._facets.tryTransformInPlace(this.localToWorld);
-            }
-          }
-        }
-      }
-    }
+    if (this._facets)
+      return;
+    if (!this.curves.isAnyRegionType)
+      return;
+    const worldToLocal = this.localToWorld.inverse();
+    if (!worldToLocal)
+      return;
+    this._localRegion = this.curves.cloneTransformed(worldToLocal) as AnyRegion;
+    if (!this._localRegion)
+      return;
+    if (this._facets = RegionOps.facetRegionXY(this._localRegion, options))
+      this._facets.tryTransformInPlace(this.localToWorld);
   }
   /** delete existing facets.
    * * This protects against PolyfaceBuilder reusing facets constructed with different options settings.

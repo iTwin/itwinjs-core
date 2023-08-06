@@ -13,7 +13,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve, type AnyRegion } from "./CurveChain";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -28,6 +28,9 @@ import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceCont
 import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { Path } from "./Path";
+import type { Loop } from "./Loop";
 
 /**
  * Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be
@@ -152,21 +155,39 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `Loop`
    * * `ParityRegion`
    * * `UnionRegion`
+   * @see isAnyRegion
    */
   public get isAnyRegionType(): boolean {
     return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 4 || this.dgnBoundaryType() === 5;
   }
-  /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail */
+  /** Type guard for AnyRegion */
+  public isAnyRegion(): this is AnyRegion {
+    return this.isAnyRegionType;
+  }
+  /**
+   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail
+   * @see isPath
+   */
   public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
+  }
+  /** Type guard for Path */
+  public isPath(): this is Path {
+    return this.isOpenPath;
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
    * * This is NOT a test for physical closure of a `Path`.
+   * @see isLoop
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
+  /** Type guard for Loop */
+  public isLoop(): this is Loop {
+    return this.isClosedPath;
+  }
+
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
   public abstract cloneStroked(options?: StrokeOptions): CurveCollection;
   /** Support method for ICurvePrimitive ... one line call to specific announce method . . */

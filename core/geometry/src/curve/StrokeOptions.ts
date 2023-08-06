@@ -41,7 +41,10 @@ export class StrokeOptions {
   public angleTol?: Angle;
   /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;
-  /** Caller expects convex facets.  */
+  /**
+   * Caller expects convex facets.
+   * @deprecated in 4.x - never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
+   */
   public needConvexFacets?: boolean;
   /** Minimum strokes on a primitive */
   public minStrokesPerPrimitive?: number;
@@ -87,13 +90,25 @@ export class StrokeOptions {
   public get hasMaxEdgeLength(): boolean {
     return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0;
   }
+  private _maximizeConvexFacets?: boolean;
+  /**
+   * Whether to post-process a planar triangulation by removing edges to maximize the size of convex facets.
+   * * Setting this to true also sets [[shouldTriangulate]] to true.
+   */
+  public get maximizeConvexFacets(): boolean {
+    return this._maximizeConvexFacets ?? false;
+  }
+  public set maximizeConvexFacets(value: boolean) {
+    this._maximizeConvexFacets = value;
+    if (value)
+      this.shouldTriangulate = value;
+  }
   /** Return a deep clone  */
   public clone(): StrokeOptions {
     const options = new StrokeOptions();
     options.chordTol = this.chordTol;
     options.angleTol = this.angleTol?.clone();
     options.maxEdgeLength = this.maxEdgeLength;
-    options.needConvexFacets = this.needConvexFacets;
     options.minStrokesPerPrimitive = this.minStrokesPerPrimitive;
     options.shouldTriangulate = this.shouldTriangulate;
     options._needNormals = this._needNormals;
@@ -101,6 +116,7 @@ export class StrokeOptions {
     options._needParams = this._needParams;
     options.needColors = this.needColors;
     options.defaultCircleStrokes = this.defaultCircleStrokes;
+    options._maximizeConvexFacets = this._maximizeConvexFacets;
     return options;
   }
   /** Return stroke count which is the larger of the minCount or count needed for edge length condition. */

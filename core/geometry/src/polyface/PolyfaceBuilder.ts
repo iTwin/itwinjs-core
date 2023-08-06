@@ -1150,10 +1150,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Construct facets for any planar region
    */
   public addTriangulatedRegion(region: AnyRegion): void {
-    if (region instanceof UnionRegion) {
-      for (const child of region.children)
-        this.addTriangulatedRegion(child);
-    }
     const contour = SweepContour.createForLinearSweep(region);
     if (contour)
       contour.emitFacets(this, this.reversedFlag, undefined);
