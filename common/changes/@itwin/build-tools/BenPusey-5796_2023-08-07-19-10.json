@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Replaces rush env variable with require.main.filename for finding root",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
