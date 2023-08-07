@@ -194,7 +194,7 @@ jobs:
     - job: UpdateMaster
       displayName: Update master to next minor version
       dependsOn: CreateBranch
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      condition: and(in(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
       steps:
       - checkout: self
