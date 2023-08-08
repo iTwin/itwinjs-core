@@ -36,8 +36,8 @@
     "@bentley/cif-quantity-takeoffs-schema": "^1.0.1",
     "@bentley/cif-rail-schema": "^1.0.2",
     "@bentley/cif-roads-schema": "^1.0.1",
-    "@bentley/cif-subsurface-schema": "^1.0.3",
     "@bentley/cif-subsurface-conflict-analysis-schema": "^1.0.3",
+    "@bentley/cif-subsurface-schema": "^1.0.3",
     "@bentley/cif-units-schema": "^1.0.1",
     "@bentley/plant-custom-attributes-schema": "^1.0.1",
     "@bentley/process-functional-schema": "^1.0.1",
@@ -51,10 +51,9 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodels-access-backend": "^3.0.0",
     "@itwin/imodels-client-authoring": "^3.0.0",
+    "@itwin/itwins-client": "^1.2.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/perf-tools": "workspace:*",
-    "@itwin/projects-client": "^0.6.0",
-    "sinon": "^15.0.4",
     "azurite": "^3.24.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -65,7 +64,8 @@
     "fs-extra": "^8.1.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "sinon": "^15.0.4"
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "4.0.0-dev.44",
