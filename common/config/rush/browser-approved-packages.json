@@ -295,6 +295,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/itwins-client",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/linear-referencing-common",
       "allowedCategories": [ "backend" ]
     },
