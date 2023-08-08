@@ -24,21 +24,21 @@ steps:
 
   # Download BIS Docs artifact
   - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
-    - download: current
-      artifact: Bis Docs
-      displayName: Download Bis Docs Artifact
+      - download: current
+        artifact: Bis Docs
+        displayName: Download Bis Docs Artifact
 
   - ${{ else }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Bis Docs Artifact
-      inputs:
-        buildType: specific
-        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 6075
-        buildVersionToDownload: latestFromBranch
-        branchName: refs/heads/master
-        artifactName: Bis Docs
-        targetPath: $(Pipeline.Workspace)/Bis Docs
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Bis Docs Artifact
+        inputs:
+          buildType: specific
+          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+          pipeline: 6075
+          buildVersionToDownload: latestFromBranch
+          branchName: refs/heads/master
+          artifactName: Bis Docs
+          targetPath: $(Pipeline.Workspace)/Bis Docs
 
   - task: CopyFiles@2
     displayName: Copy Bis Docs to staging
