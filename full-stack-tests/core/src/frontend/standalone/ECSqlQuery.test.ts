@@ -190,6 +190,6 @@ describe("ECSql Query", () => {
     for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
       row3 = row.toRow();
     assert.equal(row3.id, row1.id);
-    assert.include(row1.geometryStream, row3.geometryStream);
+    assert.equal(row1.geometryStream.byteLength, JSON.parse(row3.geometryStream).bytes);
   });
 });

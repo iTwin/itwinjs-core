@@ -106,6 +106,13 @@ export interface TestConfigProps {
    * Default: d:\output\performanceData\
    */
   outputPath?: string;
+  /** The url template for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost.
+   * The string can include special tokens: {iModel.key} or {iModel.filename}.
+   *   e.g.: http://localhost:8080{iModel.key}-tiles/3dft/ or http://localhost:8080/MshX/{iModel.filename}/
+   * These will get replaced by the value of iModel.key or just the filename of that (no path or extension), correspondingly.
+   * Note that the contents of iModel.key in DPTA is a GUID.
+   */
+  frontendTilesUrlTemplate?: string;
   /** The location of the iModel file(s) used by the test.
    * Default: ""
    */
@@ -178,6 +185,8 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
+  public frontendTilesUrlTemplate?: string;
+  public urlStr?: string;
   public readonly iModelId?: string;
   public readonly iTwinId?: string;
   public viewName: string;
@@ -228,6 +237,7 @@ export class TestConfig {
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
     this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
+    this.frontendTilesUrlTemplate = props.frontendTilesUrlTemplate ?? prevConfig?.frontendTilesUrlTemplate;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
@@ -312,12 +322,10 @@ export class TestConfigStack {
     return this._stack[this._stack.length - 1];
   }
 
-  // Push to the top of the stack and return true if the new config requires restarting IModelApp.
-  public push(props: TestConfigProps): boolean {
+  // Push to the top of the stack
+  public push(props: TestConfigProps): void {
     const config = new TestConfig(props, this.top);
-    const requiresRestart = this.top.requiresRestart(config);
     this._stack.push(config);
-    return requiresRestart;
   }
 
   public pop(): void {
