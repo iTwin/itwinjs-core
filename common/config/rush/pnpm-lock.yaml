@@ -1358,10 +1358,10 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/core-transformer': workspace:*
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodel-transformer': ^0.1.1
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/service-authorization': ^0.6.3
@@ -1385,9 +1385,9 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/core-transformer': link:../../core/transformer
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.1.16_b120c43d476259da971bfaebcf810965
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 0.6.3
       '@xmldom/xmldom': 0.8.6
@@ -7824,25 +7824,6 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-intersection-observer: 8.34.0_react@17.0.2
-    dev: false
-
-  /@itwin/imodel-transformer/0.1.16_b120c43d476259da971bfaebcf810965:
-    resolution: {integrity: sha512-TVa1bZHSgE7nZ6UzXZq0zrDtR0va0rTA265GH7QmxgFD+sXZxUzODWd3SIp55NPNH+A7F9Bs/hLY4/HlB708vA==}
-    engines: {node: ^18.0.0}
-    peerDependencies:
-      '@itwin/core-backend': 3.6.0 - 4.0.999
-      '@itwin/core-bentley': 3.6.0 - 4.0.999
-      '@itwin/core-common': 3.6.0 - 4.0.999
-      '@itwin/core-geometry': 3.6.0 - 4.0.999
-      '@itwin/core-quantity': 3.6.0 - 4.0.999
-      '@itwin/ecschema-metadata': 3.6.0 - 4.0.999
-    dependencies:
-      '@itwin/core-backend': link:../../core/backend
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      semver: 7.5.4
     dev: false
 
   /@itwin/imodels-access-backend/3.0.0:
