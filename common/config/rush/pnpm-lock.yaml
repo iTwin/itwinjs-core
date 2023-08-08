@@ -1303,8 +1303,8 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/imodel-transformer': ^0.1.1
+      '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1330,7 +1330,7 @@ importers:
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodel-transformer': 0.1.16_weqmipkhmjm5vfy37lv47aijmu
-      '@itwin/projects-client': 0.6.0
+      '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 0.6.3_mdtbcqczpmeuv6yjzfaigjndwi
       '@xmldom/xmldom': 0.8.10
       fs-extra: 8.1.0
@@ -1562,9 +1562,9 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/imodels-access-backend': ^3.0.0
       '@itwin/imodels-client-authoring': ^3.0.0
+      '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
-      '@itwin/projects-client': ^0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1612,9 +1612,9 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend': 3.1.0_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-client-authoring': 3.1.0
+      '@itwin/itwins-client': 1.2.0
       '@itwin/oidc-signin-tool': 3.6.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
-      '@itwin/projects-client': 0.6.0
       azurite: 3.24.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -1667,9 +1667,9 @@ importers:
       '@itwin/imodels-access-frontend': ^3.0.0
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.0.0
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.9.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1744,9 +1744,9 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
+      '@itwin/itwins-client': 1.2.0
       '@itwin/object-storage-core': 2.0.0
       '@itwin/oidc-signin-tool': 3.6.1_jgafqqsuly2hjjpibxrcu56zma
-      '@itwin/projects-client': 0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
@@ -1798,10 +1798,10 @@ importers:
       '@itwin/imodels-access-frontend': ^3.0.0
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -1855,7 +1855,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/projects-client': 0.6.0
+      '@itwin/itwins-client': 1.2.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
@@ -2068,11 +2068,11 @@ importers:
       '@itwin/imodels-access-frontend': ^3.0.0
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
+      '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.6.0
       '@itwin/service-authorization': ^0.6.3
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -2126,8 +2126,8 @@ importers:
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
+      '@itwin/itwins-client': 1.2.0
       '@itwin/presentation-backend': link:../../presentation/backend
-      '@itwin/projects-client': 0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
@@ -4302,6 +4302,13 @@ packages:
       - debug
     dev: false
 
+  /@itwin/itwins-client/1.2.0:
+    resolution: {integrity: sha512-J0yksZPMVYYp8KotRJ8u7uzz8zBIFq8gqDamBDtG2hy8Uv0MnoYDooPoFOR7zhm3JNdjMrb4Vcz0Z+ZwJ7GoRg==}
+    dependencies:
+      axios: 0.25.0
+    transitivePeerDependencies:
+      - debug
+
   /@itwin/object-storage-azure/1.6.0:
     resolution: {integrity: sha512-b0rxhn0NAFY1alOEGMAUaJtK8WG7xoJPDOVjuA8nC7zFcxxtP2VOsSOauuie2zzL3GDi9OU6vywR3gAcJcTZww==}
     engines: {node: '>=12.20 <19.0.0'}
@@ -4409,13 +4416,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-
-  /@itwin/projects-client/0.6.0:
-    resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
-    dependencies:
-      axios: 0.25.0
-    transitivePeerDependencies:
-      - debug
 
   /@itwin/reality-data-client/0.9.0_mdtbcqczpmeuv6yjzfaigjndwi:
     resolution: {integrity: sha512-vypWdeeKwHd/Yj8ffychypVDQ+LZfwaeAzT7tQhAk/F50Hn6Z/0aWibBMusUycVc1O9CC1lT3d4yYBPjVsFstQ==}
