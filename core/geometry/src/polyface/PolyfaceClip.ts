@@ -16,6 +16,7 @@ import { AnyRegion } from "../curve/CurveChain";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
 import { PlaneAltitudeEvaluator } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -129,7 +130,6 @@ export class PolyfaceClip {
    * * outputSelect determines how the clip output is structured
    *   * 0 outputs all shards -- this may have many interior edges.
    *   * 1 stitches shards together to get cleaner facets.
-   * @internal
    */
   public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
     const builderA = destination.builderA;
@@ -450,7 +450,7 @@ export class PolyfaceClip {
     }
   }
   /** Clip each facet of polyface to the ClipPlane or ConvexClipPlaneSet
-    * * This method parses  the variant input types and calls a more specific method.
+    * * This method parses the variant input types and calls a more specific method.
     * * To get both inside and outside parts, use clipPolyfaceInsideOutside
     * * WARNING: The new mesh is "points only".
     */
@@ -461,6 +461,26 @@ export class PolyfaceClip {
       return this.clipPolyfaceConvexClipPlaneSet(polyface, clipper);
     // (The if tests exhaust the type space -- this line is unreachable.)
     return undefined;
+  }
+  /**
+   * Clip the polyface by the swept region.
+   * @param polyface input mesh, untouched
+   * @param region planar region to drape onto mesh
+   * @param sweepVector optional sweep direction for region; if undefined, region normal is used
+   * @param options primarily how to stroke the contour, but also how to facet it.
+   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * @returns clipped facets. No other mesh data but vertices appear in output.
+   */
+  public static drapeRegion(polyface: Polyface, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
+    const contour = SweepContour.createForLinearSweep(region);
+    if (!contour)
+      return undefined;
+    const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweepVector, false, false, options);
+    if (!clipper)
+      return undefined;
+    const builders = ClippedPolyfaceBuilders.create(true);
+    this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, builders, 1);
+    return builders.claimPolyface(0, false);
   }
   /** Find consecutive points around a polygon (with implied closure edge) that are ON a plane
    * @param points array of points around polygon.  Closure edge is implied.

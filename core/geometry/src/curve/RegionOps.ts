@@ -839,7 +839,7 @@ export class RegionOps {
    * * `UnionRegion` input is assumed to consist of non-overlapping children.
    * * `ParityRegion` input is assumed to be correctly oriented (holes have opposite orientation to the outer loop).
    * @param options primarily how to stroke the input curves, but also how to facet the region.
-   * * By default, a triangulation is returned, but if `options.maximizeConvexFacets = true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * * By default, a triangulation is returned, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
    * @returns facets for the region, or undefined if facetting failed
    */
   public static facetRegionXY(region: AnyRegion, options?: StrokeOptions): IndexedPolyface | undefined {

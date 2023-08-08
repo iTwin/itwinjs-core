@@ -4696,12 +4696,12 @@ export class PolyfaceClip {
     static clipPolyfaceConvexClipPlaneSetToBuilders(polyface: Polyface, clipper: ConvexClipPlaneSet, destination: ClippedPolyfaceBuilders): void;
     static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelect?: number): void;
     static clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorA: PolyfaceVisitor, visitorB: PolyfaceVisitor, builderAUnderB: PolyfaceBuilder | undefined, builderAOverB: PolyfaceBuilder | undefined): void;
-    // @internal
     static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector?: number): void;
     static computeCutFill(meshA: IndexedPolyface, meshB: IndexedPolyface): {
         meshAUnderB: IndexedPolyface;
         meshAOverB: IndexedPolyface;
     };
+    static drapeRegion(polyface: Polyface, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined;
     static sectionPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane): LineString3d[];
 }
 
@@ -5842,9 +5842,9 @@ export class StrokeOptions {
 
 // @public
 export class SweepContour {
-    announceFacets(announce: (facets: IndexedPolyface) => void, options: StrokeOptions | undefined): void;
+    announceFacets(announce: (facets: IndexedPolyface) => void, options?: StrokeOptions): void;
     axis: Ray3d | undefined;
-    buildFacets(options: StrokeOptions | undefined): void;
+    buildFacets(options?: StrokeOptions): void;
     clone(): SweepContour;
     cloneTransformed(transform: Transform): SweepContour | undefined;
     computeXYStrokes(options?: StrokeOptions): void;
@@ -5857,7 +5857,7 @@ export class SweepContour {
     isAlmostEqual(other: any): boolean;
     localToWorld: Transform;
     purgeFacets(): void;
-    sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0?: boolean, cap1?: boolean): UnionOfConvexClipPlaneSets | undefined;
+    sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0?: boolean, cap1?: boolean, options?: StrokeOptions): UnionOfConvexClipPlaneSets | undefined;
     tryTransformInPlace(transform: Transform): boolean;
     get xyStrokes(): CurveCollection | undefined;
 }
