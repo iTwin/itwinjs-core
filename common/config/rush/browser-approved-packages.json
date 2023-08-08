@@ -267,6 +267,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/imodel-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/imodels-access-backend",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -280,6 +284,10 @@
     },
     {
       "name": "@itwin/imodels-client-management",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/itwins-client",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
