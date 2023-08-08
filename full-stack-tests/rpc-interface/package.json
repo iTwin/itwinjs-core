@@ -60,8 +60,8 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
+    "@itwin/itwins-client": "^1.2.0",
     "@itwin/presentation-backend": "workspace:*",
-    "@itwin/projects-client": "^0.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
