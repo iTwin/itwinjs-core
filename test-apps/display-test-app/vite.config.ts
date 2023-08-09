@@ -63,7 +63,7 @@ export default defineConfig(() => {
         transformMixedEsModules: true // transforms require statements
       },
       rollupOptions: {
-        input: "./index.html",
+        input: path.resolve(__dirname,"index.html"),
         // run `rushx build --stats` to view stats
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined ? [
@@ -76,7 +76,6 @@ export default defineConfig(() => {
             webpackStats(), // needs to be the last plugin
           ] : []),
         ],
-        external: "/scripts/checkbrowser.js",
       },
     },
     plugins: [
