@@ -264,7 +264,7 @@ describe("exportGraphics", () => {
         GrowableXYZArray.create(makeTriangle(xyz, i0, i1, i2, 3)),
         GrowableXYZArray.create(makeTriangle(normals, i0, i1, i2, 3)),
         GrowableXYArray.create(makeTriangle(uv, i0, i1, i2, 2)),
-        undefined // no colors
+        undefined, // no colors
       );
     };
 
