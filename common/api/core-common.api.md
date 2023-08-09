@@ -2445,17 +2445,17 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta
+// @public
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     get current(): QueryRowProxy;
     get done(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
-    // (undocumented)
+    // @internal (undocumented)
     getRowInternal(): any[];
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
@@ -6671,7 +6671,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     structName?: string;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     // (undocumented)
     [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined>;
@@ -6988,7 +6988,7 @@ export class QueryOptionsBuilder {
     setUsePrimaryConnection(val: boolean): this;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
@@ -7019,7 +7019,7 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta
+// @public
 export interface QueryRowProxy {
     [propertyName: string]: QueryValueType;
     [propertyIndex: number]: QueryValueType;
@@ -7028,7 +7028,7 @@ export interface QueryRowProxy {
     toRow(): any;
 }
 
-// @beta
+// @public
 export interface QueryStats {
     backendCpuTime: number;
     backendMemUsed: number;
@@ -7038,7 +7038,7 @@ export interface QueryStats {
     totalTime: number;
 }
 
-// @beta
+// @public
 export type QueryValueType = any;
 
 // @public
