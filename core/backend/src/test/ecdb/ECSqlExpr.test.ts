@@ -20,6 +20,7 @@ import {
   DerivedPropertyExpr,
   ECSqlOptionsClauseExpr,
   Expr,
+  ExprFactory,
   ExprType,
   FromClauseExpr,
   FuncCallExpr,
@@ -57,12 +58,17 @@ import {
 } from "@itwin/core-common";
 import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { promisify } from "node:util";
 
 describe("ECSql Exprs", () => {
   let ecdb: ECDb;
 
-  function toNormalizeECSql(ecsql: string) {
-    return ecdb.parseECSql(ecsql).toECSql();
+  async function toNormalizeECSql(ecsql: string) {
+    return (await parseECSql(ecsql)).toECSql();
+  }
+
+  async function parseECSql(ecsql: string) {
+    return (new ExprFactory({ parseECSql: promisify(ecdb.nativeDb.parseECSql) })).parseStatement(ecsql);
   }
 
   function printTree(expr: Expr, indent: number = 0) {
@@ -90,8 +96,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse DATE, TIME & TIMESTAMP", async () => {
@@ -110,8 +116,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse NULL, NUMBER, STRING, TRUE, FALSE & ||", async () => {
@@ -142,8 +148,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse (!=, =, >, <, >=, <=, OR, AND)", async () => {
@@ -154,8 +160,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CASE-WHEN-THEN", async () => {
@@ -166,8 +172,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] LIKE", async () => {
@@ -187,8 +193,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] IN(select|list)", async () => {
@@ -208,8 +214,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse IS [NOT] NULL", async () => {
@@ -228,8 +234,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse IS [NOT] (type[,...])", async () => {
@@ -244,8 +250,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse (NOT expr)", async () => {
@@ -260,8 +266,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse [NOT] EXISTS (<subquery>)", async () => {
@@ -276,8 +282,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])", async () => {
@@ -304,8 +310,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT DISTINCT|ALL/SUM(DISTINCT|ALL <expr>) ", async () => {
@@ -336,8 +342,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse func(args...)", async () => {
@@ -348,8 +354,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ECSQLOPTIONS", async () => {
@@ -360,8 +366,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse Subquery", async () => {
@@ -372,8 +378,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse LIMIT <expr> [OFFSET <expr>]", async () => {
@@ -388,8 +394,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse GROUP BY [expr...] HAVING [expr...]", async () => {
@@ -404,8 +410,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ORDER BY [expr...]", async () => {
@@ -420,8 +426,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse CTE", async () => {
@@ -444,8 +450,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse $, $->prop", async () => {
@@ -468,8 +474,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ?, :<param-name>", async () => {
@@ -484,8 +490,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> JOIN <to> USING rel [FORWARD|BACKWARD]", async () => {
@@ -504,8 +510,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> [INNER] [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -520,8 +526,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> RIGHT [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -536,8 +542,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse <from> FULL [OUTER] JOIN <to> [ON <exp>]", async () => {
@@ -552,8 +558,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse UNION | UNION ALL | INTERSECT | EXCEPT", async () => {
@@ -577,8 +583,8 @@ describe("ECSql Exprs", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT (<subquery>) FROM", async () => {
@@ -598,8 +604,8 @@ describe("ECSql Exprs", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse ALL | ONLY <classname>", async () => {
@@ -627,8 +633,8 @@ describe("ECSql Exprs", () => {
 
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse tablevalue function FROM json1.json_tree()", async () => {
@@ -643,8 +649,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse SELECT, WHERE, FROM, GROUP BY, HAVING, ORDER BY, LIMIT & ECSQLOPTIONS", async () => {
@@ -655,8 +661,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse INSERT", async () => {
@@ -667,8 +673,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse DELETE", async () => {
@@ -679,8 +685,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse UPDATE", async () => {
@@ -691,8 +697,8 @@ describe("ECSql Exprs", () => {
       },
     ];
     for (const test of tests) {
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.orignalECSql));
-      assert.equal(test.expectedECSql, toNormalizeECSql(test.expectedECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
   it("parse complex query", async () => {
@@ -823,7 +829,7 @@ describe("ECSql Exprs", () => {
         ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3
      */
     const expected = "WITH RECURSIVE [f0]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [f0] WHERE ([i] < 10) ORDER BY 1), [f1]([i]) AS (SELECT 3.14159265358), [f2]([i]) AS (SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [i]), [f3]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] FORWARD), [f4]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] BACKWARD), [f5]([i]) AS (SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId]) WHERE ([ECClassDef].[ECInstanceId] = :param1)) SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45)) [c0], TIMESTAMP '2013-02-09T12:00:00' [c1], DATE '2012-01-18' [c2], TIME '13:35:16' [c3], TRUE [c4], FALSE [c5], 3.14159265358 [c6], 314159 [c7], 'Hello, World' [c8], (('Hello' || ',') || 'World') [c9], IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [c10], CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END [c11], IIF('Hello, World' LIKE '\\%World' ESCAPE '\\', 2, 3) [c12], IIF('Hello, World' LIKE '%World', 2, 3) [c13], IIF('Hello, World' NOT LIKE '%World', 2, 3) [c14], IIF(3 IN (SELECT 1 [N] UNION SELECT 2), 'True', 'False') [c15], IIF(3 IN (1, 2, 3), 'True', 'False') [c16], IIF(3 NOT IN (1, 2, 3), 'True', 'False') [c17], IIF((NULL IS NULL), 'True', 'False') [c18], IIF((NULL IS NOT NULL), 'True', 'False') [c19], IIF((1 IS NOT NULL), 'True', 'False') [c20], IIF(3 IS (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c21], IIF(3 IS NOT (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c22], IIF((NOT 3), 'True', 'False') [c23], IIF((NOT (NOT (NOT (NOT 3)))), 'True', 'False') [c24], IIF(EXISTS(SELECT 1), 'True', 'False') [c25], IIF((NOT EXISTS(SELECT 1)), 'True', 'False') [c26], CAST(1 AS TEXT) [c27], CAST(1 AS INTEGER) [c28], CAST(1 AS REAL) [c29], CAST(1 AS BLOB) [c30], CAST(1 AS TIMESTAMP) [c31], INSTR('First', 'Second') [c32], [f0].[i] [c33], [f1].[i] [c34], [f2].[i] [c35], [k0].[ECInstanceId] [c36] FROM [f0], [f1], [f2], [f3], [f4], [f5], [ECDbMeta].[ECClassDef] [k0], (SELECT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION SELECT DISTINCT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION ALL SELECT ALL [ECInstanceId] FROM [ECDbMeta].[ECClassDef] EXCEPT SELECT SUM(DISTINCT [ECInstanceId]) FROM [ECDbMeta].[ECClassDef] INTERSECT SELECT SUM([ECInstanceId]) FROM [ECDbMeta].[ECClassDef] GROUP BY [ECClassId] HAVING (COUNT(*) > 1)) [k1] WHERE (([f0].[i] = [f1].[i]) AND ([k0].[ECInstanceId] = (? + 2))) GROUP BY [k0].[ECClassId], [k0].[DisplayLabel] HAVING (COUNT(*) > 1) ORDER BY [k0].[Name] ASC, [k0].[ECInstanceId] DESC LIMIT 33 OFFSET (? + :param2) ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3";
-    assert.equal(expected, toNormalizeECSql(ecsql));
+    assert.equal(expected, await toNormalizeECSql(ecsql));
   });
   describe("test methods", () => {
     it("test Expr.findInstancesOf<T>()", async () => {
@@ -943,7 +949,7 @@ describe("ECSql Exprs", () => {
     });
     it.skip("test print tree", async () => {
       const ecsql = "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
-      const selectStmt = ecdb.parseECSql(ecsql);
+      const selectStmt = await parseECSql(ecsql);
       printTree(selectStmt);
 
     });

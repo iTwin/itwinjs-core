@@ -276,17 +276,6 @@ export abstract class IModelConnection extends IModel {
   }
 
   /**
-   * Return ecsql parse expression tree that can be enumerated and traverse.
-   * @param ecsql Input ecsql statement which can be insert/udpate/delete or select.
-   * @returns return one of the subtypes of @see [[StatementExpr]]
-   * @alpha
-   */
-  public async parseECSql(ecsql: string): Promise<StatementExpr> {
-    const parseNode = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).parseECSql(this.getRpcProps(), ecsql);
-    return StatementExpr.deserialize(parseNode);
-  }
-
-  /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
    * @param compressedCategoryIds compressed category Ids
    * @returns array of SubCategoryResultRow

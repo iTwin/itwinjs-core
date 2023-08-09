@@ -20,12 +20,14 @@ import {
   DerivedPropertyExpr,
   ECSqlOptionsClauseExpr,
   Expr,
+  ExprFactory,
   ExprType,
   FromClauseExpr,
   FuncCallExpr,
   GroupByClauseExpr,
   HavingClauseExpr,
   IIFExpr,
+  IModelReadRpcInterface,
   InExpr,
   InsertStatementExpr,
   IsNullExpr,
@@ -61,12 +63,16 @@ import { TestUtility } from "../TestUtility";
 describe("ECSql Exprs", () => {
   let conn: IModelConnection;
 
-  async function parseStatement(ecsql: string) {
-    return conn.parseECSql(ecsql);
+  async function toNormalizeECSql(ecsql: string) {
+    return (await parseECSql(ecsql)).toECSql();
   }
 
-  async function toNormalizeECSql(ecsql: string) {
-    return (await parseStatement(ecsql)).toECSql();
+  async function parseECSql(ecsql: string) {
+    return (new ExprFactory({
+      parseECSql: (ecsql: string) => {
+        return IModelReadRpcInterface.getClientForRouting(conn.routingContext.token).parseECSql(conn.getRpcProps(), ecsql);
+      }
+    })).parseStatement(ecsql);
   }
 
   function printTree(expr: Expr, indent: number = 0) {

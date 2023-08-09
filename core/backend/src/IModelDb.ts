@@ -22,7 +22,7 @@ import {
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
-  SnapshotOpenOptions, SpatialViewDefinitionProps, StatementExpr, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
   ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -534,16 +534,6 @@ export abstract class IModelDb extends IModel {
     while (await reader.step())
       yield reader.formatCurrentRow();
 
-  }
-
-  /**
-   *
-   * @param ecsql Input ECSQL for which the expression tree will be returned.
-   * @returns On of the subclass of@see [[StatementExpr]]
-   * @alpha
-   */
-  public parseECSql(ecsql: string): StatementExpr {
-    return StatementExpr.deserialize(this.nativeDb.parseECSql(ecsql));
   }
 
   /** Compute number of rows that would be returned by the ECSQL.

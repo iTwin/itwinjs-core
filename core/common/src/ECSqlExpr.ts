@@ -155,10 +155,17 @@ export interface NativeECSqlParseNode {
 }
 
 /**
+ * Return by native code
+ * @alpha
+ */
+export interface NativeECSqlParseNodeProvider {
+  parseECSql: (ecsql: string) => Promise<NativeECSqlParseNode>
+}
+
+/**
  * ECSql expr type supported @see [[Expr]]
  * @alpha
  */
-
 export enum ExprType {
   Literal = "Literal",
   Unary = "Unary",
@@ -210,6 +217,17 @@ export enum ExprType {
   OrderBySpec = "OrderBySpec",
   LimitClause = "LimitClause",
   Assignment = "Assignment"
+}
+
+/**
+ * Allow to create statement expression tree from a ecsql
+ *  @alpha
+ */
+export class ExprFactory {
+  public constructor(public readonly provider: NativeECSqlParseNodeProvider) { }
+  public async parseStatement(ecsql: string): Promise<StatementExpr> {
+    return StatementExpr.deserialize(this.provider.parseECSql(ecsql));
+  }
 }
 
 /**
