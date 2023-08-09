@@ -5,8 +5,6 @@ public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
 internal;aggregateLoad:
-alpha;AllOrAnyOp = "ONLY" | "ALL"
-alpha;AllOrDistinctOp = "DISTINCT" | "ALL"
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -19,7 +17,6 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
-alpha;AssignmentExpr 
 beta;Atmosphere
 internal;Wavelengths
 internal;WavelengthsProps
@@ -58,18 +55,12 @@ beta;class BentleyCloudRpcConfiguration
 beta;BentleyCloudRpcManager 
 beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
-alpha;BetweenExpr 
-alpha;BinaryBooleanExpr 
-alpha;BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "
-alpha;BinaryValueExpr 
-alpha;BinaryValueOp = "&" | "|" | "
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 beta;BlobOptions 
 beta;BlobOptionsBuilder
 beta;BlobRange = QueryLimit
-alpha;class BooleanExpr 
 public;BoundingSphere
 alpha;BRepCutProps
 public;BRepEntity
@@ -98,7 +89,6 @@ public;Carto2DDegreesProps
 public;Cartographic 
 public;CartographicProps
 public;CartographicRange
-alpha;CastExpr 
 public;CategoryProps 
 public;CategorySelectorProps 
 internal;ChangeData
@@ -119,8 +109,6 @@ public;ChangesetType
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
-alpha;ClassNameExpr 
-alpha;class ClassRefExpr 
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
@@ -138,9 +126,7 @@ public;CommonLoggerCategory
 public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
-alpha;CompoundSelectOp
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-alpha;class ComputedExpr 
 alpha;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
@@ -159,9 +145,6 @@ internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandalone
 public;CreateIModelProps 
 public;CreateSnapshotIModelProps 
 internal;CreateStandaloneIModelProps 
-alpha;CteBlockExpr 
-alpha;CteBlockRefExpr 
-alpha;CteExpr 
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
@@ -192,9 +175,7 @@ beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
-alpha;DeleteStatementExpr 
 public;DeprecatedBackgroundMapProps
-alpha;DerivedPropertyExpr 
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -210,7 +191,6 @@ public;DisplayStyleSettings
 public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
-alpha;DisqualifyOp = "+"
 beta;DomainOptions
 public;DynamicGraphicsRequest2dProps 
 public;DynamicGraphicsRequest3dProps 
@@ -223,14 +203,9 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-alpha;ECSqlOption
-alpha;ECSqlOptionsClauseExpr 
 beta;ECSqlReader 
-alpha;ECSqlSupportedOptions = "NoECClassIdFilter" | "ReadonlyPropertiesAreUpdatable"
 public;ECSqlSystemProperty
 public;ECSqlValueType
-alpha;ECSqlWriter
-alpha;ECSqlWriterArgs
 internal;EdgeArgs
 internal;EdgeOptions
 internal;EditingScopeNotifications
@@ -268,8 +243,6 @@ alpha;EntityReferenceSet
 public;Environment
 public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
-alpha;class Expr
-alpha;ExprType
 public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
 beta;ExternalSourceAttachmentProps 
@@ -299,11 +272,9 @@ public;FontType
 internal;FormDataCommon
 public;FresnelSettings
 public;FresnelSettingsProps
-alpha;FromClauseExpr 
 public;Frustum
 public;FrustumPlanes
 public;FrustumPlanes
-alpha;FuncCallExpr 
 public;FunctionalElementProps 
 public;GeocentricTransform 
 public;GeocentricTransformProps
@@ -369,8 +340,6 @@ public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProperties = NonFunctionPropertiesOf
 public;GroundPlaneProps
-alpha;GroupByClauseExpr 
-alpha;HavingClauseExpr 
 public;Helmert2DWithZOffset 
 public;Helmert2DWithZOffsetProps
 public;HemisphereEnum = "South" | "North"
@@ -395,7 +364,6 @@ internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
 public;IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean
 public;IgnoreAnimationOverridesArgs
-alpha;IIFExpr 
 public;ImageBuffer
 public;ImageBufferFormat
 public;ImageGraphic
@@ -429,10 +397,8 @@ internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId,
 internal;IModelTileTreeProps 
 public;IModelVersion
 public;IModelVersionProps =
-alpha;InExpr 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
-alpha;InsertStatementExpr 
 internal;INSTANCE: unique symbol
 internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
@@ -455,29 +421,19 @@ internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
-alpha;IsNullExpr 
-alpha;IsOfTypeExpr 
 public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
 public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 internal;iTwinChannel: (channel: string) => string
-alpha;JoinDirection
-alpha;JoinSpec = BooleanExpr | string[] | undefined
-alpha;JoinType
 public;JsonGeometryStream
-alpha;Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH"
 internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
 public;LightSettingsProps
-alpha;LikeExpr 
-alpha;LimitClauseExpr 
 public;LinePixels
 public;LineStyle
 public;LineStyleProps 
-alpha;LiteralExpr 
-alpha;LiteralValueType
 public;LocalAlignedBox3d = Range3d
 public;LocalBriefcaseProps
 public;LocalDirName = string
@@ -499,7 +455,6 @@ public;MassPropertiesPerCandidateResponseProps
 public;MassPropertiesRequestProps
 public;MassPropertiesResponseProps
 public;MaterialProps
-alpha;MemberFuncCallExpr 
 internal;MeshEdge
 internal;MeshEdges
 internal;MeshPolyline
@@ -527,18 +482,15 @@ internal;MultiModelPackedFeatureTable
 internal;NativeAppFunctions
 internal;nativeAppIpcStrings:
 internal;NativeAppNotifications
-alpha;NativeECSqlParseNode
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
 internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
-alpha;NextSelect
 public;NoContentError 
 public;NonUniformColor
 public;NormalMapFlags
 beta;NormalMapParams
 public;NormalMapProps 
-alpha;NotExpr 
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
@@ -563,8 +515,6 @@ public;OpenBriefcaseProps
 public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
-alpha;OrderByClauseExpr 
-alpha;OrderBySpecExpr 
 beta;OverriddenBy
 public;OverrideElementAppearanceOptions 
 public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions
@@ -576,7 +526,6 @@ public;PackedFeature
 internal;PackedFeatureModelTable
 internal;PackedFeatureTable 
 public;PackedFeatureWithIndex 
-alpha;ParameterExpr 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -609,7 +558,6 @@ internal;PolylineEdgeArgs
 public;PolylineFlags
 public;PolylineIndices = number[]
 alpha;PolylineTypeFlags
-alpha;PolymorphicInfo
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
@@ -623,7 +571,6 @@ beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
-alpha;PropertyNameExpr 
 internal;PullChangesOptions
 public;QParams2d
 alpha;QParams2dProps
@@ -639,7 +586,6 @@ public;QPoint3dBuffer
 public;QPoint3dBuffer
 public;QPoint3dBufferBuilder
 public;QPoint3dList
-alpha;QualifiedJoinExpr 
 public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
 internal;isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean
@@ -669,7 +615,6 @@ beta;RealityDataSourceKey
 beta;RealityDataSourceProps
 beta;RealityModelDisplayProps
 beta;RealityModelDisplaySettings
-alpha;RecursiveCte = "RECURSIVE"
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -764,21 +709,16 @@ internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
 beta;SchemaState
-alpha;SearchCaseExpr 
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
 public;SectionType
-alpha;SelectExpr 
-alpha;SelectionClauseExpr 
-alpha;SelectStatementExpr 
 public;SerializedRpcActivity
 internal;SerializedRpcOperation
 internal;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
 public;SessionProps
-alpha;SetClauseExpr 
 beta;SheetBorderTemplateProps 
 public;SheetProps 
 beta;SheetTemplateProps 
@@ -802,7 +742,6 @@ public;SolarLight
 public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
-alpha;SortDirection
 public;SourceAndTarget
 public;SpatialClassifier
 public;SpatialClassifierFlags
@@ -814,7 +753,6 @@ public;SpatialClassifiers
 public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
 public;StandaloneOpenOptions = OpenDbKey
-alpha;class StatementExpr 
 beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
@@ -824,13 +762,8 @@ public;SubCategoryProps
 internal;SubCategoryResultRow
 public;SubjectProps 
 public;SubLayerId = string | number
-alpha;SubqueryExpr 
-alpha;SubqueryRefExpr 
-alpha;SubqueryTestExpr 
-alpha;SubqueryTestOp
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
-alpha;TableValuedFuncExpr 
 public;TerrainHeightOriginMode
 public;TerrainProps
 public;TerrainProviderName = string
@@ -893,16 +826,10 @@ public;TypeDefinition
 public;TypeDefinitionElementProps 
 internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
-alpha;UnaryBooleanOp
-alpha;UnaryValueExpr 
-alpha;UnaryValueOp
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
-alpha;UpdateStatementExpr 
 beta;UpgradeOptions
 public;UrlLinkProps 
-alpha;UsingRelationshipJoinExpr 
-alpha;class ValueExpr 
 public;VerticalCRS 
 public;VerticalCRSProps
 public;ViewAttachmentLabelProps 
@@ -928,8 +855,6 @@ internal;WEB_RPC_CONSTANTS:
 internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 
 internal;WebAppRpcRequest 
-alpha;WhenThenBlock
-alpha;WhereClauseExp 
 public;WhiteOnWhiteReversalProps
 public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 

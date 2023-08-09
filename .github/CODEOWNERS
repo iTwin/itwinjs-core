@@ -36,6 +36,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /common/**/*-extension/                       @aruniverse @calebmshafer
 
+/common/**/ecsql-*/                           @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
 /common/**/ecschema-*.*                       @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig

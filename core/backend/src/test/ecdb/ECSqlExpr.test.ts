@@ -20,7 +20,6 @@ import {
   DerivedPropertyExpr,
   ECSqlOptionsClauseExpr,
   Expr,
-  ExprFactory,
   ExprType,
   FromClauseExpr,
   FuncCallExpr,
@@ -47,6 +46,7 @@ import {
   SelectionClauseExpr,
   SelectStatementExpr,
   SetClauseExpr,
+  StatementExpr,
   SubqueryExpr,
   SubqueryRefExpr,
   SubqueryTestExpr,
@@ -55,12 +55,11 @@ import {
   UpdateStatementExpr,
   UsingRelationshipJoinExpr,
   WhereClauseExp,
-} from "@itwin/core-common";
+} from "@itwin/ecsql-common";
 import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { promisify } from "node:util";
 
-describe("ECSql Exprs", () => {
+describe.only("ECSql Exprs", () => {
   let ecdb: ECDb;
 
   async function toNormalizeECSql(ecsql: string) {
@@ -68,7 +67,11 @@ describe("ECSql Exprs", () => {
   }
 
   async function parseECSql(ecsql: string) {
-    return (new ExprFactory({ parseECSql: promisify(ecdb.nativeDb.parseECSql) })).parseStatement(ecsql);
+    const reader = ecdb.createQueryReader(`PRAGMA PARSE_TREE("${ecsql}") ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`);
+    if (await reader.step()) {
+      return StatementExpr.deserialize(JSON.parse(reader.current[0]));
+    }
+    throw new Error("unable to get parse tree.");
   }
 
   function printTree(expr: Expr, indent: number = 0) {

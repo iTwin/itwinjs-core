@@ -20,14 +20,12 @@ import {
   DerivedPropertyExpr,
   ECSqlOptionsClauseExpr,
   Expr,
-  ExprFactory,
   ExprType,
   FromClauseExpr,
   FuncCallExpr,
   GroupByClauseExpr,
   HavingClauseExpr,
   IIFExpr,
-  IModelReadRpcInterface,
   InExpr,
   InsertStatementExpr,
   IsNullExpr,
@@ -48,6 +46,7 @@ import {
   SelectionClauseExpr,
   SelectStatementExpr,
   SetClauseExpr,
+  StatementExpr,
   SubqueryExpr,
   SubqueryRefExpr,
   SubqueryTestExpr,
@@ -56,7 +55,7 @@ import {
   UpdateStatementExpr,
   UsingRelationshipJoinExpr,
   WhereClauseExp,
-} from "@itwin/core-common";
+} from "@itwin/ecsql-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
@@ -66,13 +65,12 @@ describe("ECSql Exprs", () => {
   async function toNormalizeECSql(ecsql: string) {
     return (await parseECSql(ecsql)).toECSql();
   }
-
   async function parseECSql(ecsql: string) {
-    return (new ExprFactory({
-      parseECSql: (ecsql: string) => {
-        return IModelReadRpcInterface.getClientForRouting(conn.routingContext.token).parseECSql(conn.getRpcProps(), ecsql);
-      }
-    })).parseStatement(ecsql);
+    const reader = conn.createQueryReader(`PRAGMA PARSE_TREE("${ecsql}") ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`);
+    if (await reader.step()) {
+      return StatementExpr.deserialize(JSON.parse(reader.current[0]));
+    }
+    throw new Error("unable to get parse tree.");
   }
 
   function printTree(expr: Expr, indent: number = 0) {
@@ -856,7 +854,7 @@ describe("ECSql Exprs", () => {
             new BinaryBooleanExpr(
               "=",
               new PropertyNameExpr("ECInstanceId"),
-              new LiteralExpr(LiteralValueType.Raw, "1"))))
+              new LiteralExpr(LiteralValueType.Raw, "1")))),
       );
       const expected = "SELECT ALL [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = 1)";
       assert.equal(stmt.toECSql(), expected);
@@ -886,7 +884,7 @@ describe("ECSql Exprs", () => {
             new BinaryBooleanExpr(
               "=",
               new PropertyNameExpr("ECInstanceId"),
-              new ParameterExpr())))
+              new ParameterExpr()))),
       );
       const expected = "SELECT [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = ?)";
       assert.equal(stmt.toECSql(), expected);
@@ -957,7 +955,7 @@ describe("ECSql Exprs", () => {
     });
     it.skip("test print tree", async () => {
       const ecsql = "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
-      const selectStmt = await conn.parseECSql(ecsql);
+      const selectStmt = await parseECSql(ecsql);
       printTree(selectStmt);
 
     });

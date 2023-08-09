@@ -159,7 +159,7 @@ export interface NativeECSqlParseNode {
  * @alpha
  */
 export interface NativeECSqlParseNodeProvider {
-  parseECSql: (ecsql: string) => Promise<NativeECSqlParseNode>
+  parseECSql: (ecsql: string) => Promise<NativeECSqlParseNode>;
 }
 
 /**

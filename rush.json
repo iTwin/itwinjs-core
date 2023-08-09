@@ -217,6 +217,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/ecsql-common",
+      "projectFolder": "core/ecsql/common",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/ecschema-locaters",
       "projectFolder": "core/ecschema-locaters",
       "reviewCategory": "backend",

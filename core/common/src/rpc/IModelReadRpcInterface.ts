@@ -36,7 +36,6 @@ import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { RpcOperation } from "./core/RpcOperation";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
-import { NativeECSqlParseNode } from "../ECSqlExpr";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)

@@ -16,7 +16,7 @@ import {
   GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, NativeECSqlParseNode, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
   SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";

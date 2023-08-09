@@ -33,6 +33,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-markup": "workspace:*",
+    "@itwin/ecsql-common": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/ecschema-rpcinterface-impl": "workspace:*",

@@ -296,7 +296,6 @@ import { SpatialClassifierOutsideDisplay } from '@itwin/core-common';
 import { SpatialClassifiers } from '@itwin/core-common';
 import { SpatialViewDefinitionProps } from '@itwin/core-common';
 import { StandaloneOpenOptions } from '@itwin/core-common';
-import { StatementExpr } from '@itwin/core-common';
 import { StopWatch } from '@itwin/core-bentley';
 import { StorageValue } from '@itwin/core-common';
 import { StringifiedClipVector } from '@itwin/core-geometry';
@@ -6827,8 +6826,6 @@ export abstract class IModelConnection extends IModel {
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    // @alpha
-    parseECSql(ecsql: string): Promise<StatementExpr>;
     // @internal
     get projectCenterAltitude(): number | undefined;
     // @deprecated
