@@ -677,11 +677,20 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * @alpha
-   * A setter method used specifically for schema editing.
+   * A setter method for the ECClass modifier, used specifically for schema editing.
    * @param modifier
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
+  }
+
+  /**
+   * @alpha
+   * A setter method for the ECClass name, used specifically for schema editing.
+   * @param modifier
+   */
+  protected setName(name: string) {
+    this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 }
 
@@ -713,6 +722,7 @@ export abstract class MutableStructClass extends StructClass {
 export abstract class MutableClass extends ECClass {
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
+  public abstract override setName(name: string): void;
   public abstract override createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract override createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract override createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;

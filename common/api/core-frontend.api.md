@@ -7940,6 +7940,15 @@ export class MapLayerSource {
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
+// @public
+export interface MapLayerSourceProps {
+    baseMap?: boolean;
+    formatId?: string;
+    name: string;
+    transparentBackground?: boolean;
+    url: string;
+}
+
 // @beta
 export class MapLayerSources {
     // (undocumented)
