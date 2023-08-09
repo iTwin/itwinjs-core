@@ -61,7 +61,7 @@ export class UnionRegion extends CurveCollection {
     const clone = new UnionRegion();
     let child;
     for (child of this._children) {
-      const childStrokes = child.cloneStroked(options) as ParityRegion | Loop;
+      const childStrokes = child.cloneStroked(options);
       if (childStrokes)
         clone.children.push(childStrokes);
     }
