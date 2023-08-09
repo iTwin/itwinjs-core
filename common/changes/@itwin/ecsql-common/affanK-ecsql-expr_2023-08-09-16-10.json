@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecsql-common",
+      "comment": "Add support for ECSQL Ast",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecsql-common"
+}
