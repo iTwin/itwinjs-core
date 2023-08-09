@@ -161,7 +161,6 @@ async function testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
   if (isXvfbRunning)
     window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
   else
