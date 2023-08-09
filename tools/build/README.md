@@ -30,7 +30,7 @@ The default behaviors of the scripts (without parameters) assume that the direct
   - package.json
   - tsconfig.json
 
-If the directory structure fo your package varies from this, define either RUSHSTACK_FILE_ERROR_BASE_FOLDER or NODE_PROJECT_ROOT_DIRECTORY environment variables as the path to the directory containing your package.json file.
+If the directory structure for your package varies from this, define either RUSHSTACK_FILE_ERROR_BASE_FOLDER or NODE_PROJECT_ROOT_DIRECTORY environment variables as the path to the directory containing your package.json file.
 
 The following is a list of some of the most commonly used scripts within this package:
 
