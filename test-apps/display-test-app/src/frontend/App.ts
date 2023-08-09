@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
@@ -60,6 +60,7 @@ import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { getConfigurationString } from "./DisplayTestApp";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -273,7 +274,9 @@ export class DisplayTestApp {
       // It makes debugging with "pause on caught exceptions" infuriating.
       // ###TODO fix that in the client and remove this
       if (!configuration.noElectronAuth)
-        opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
+        opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization({
+          clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
+        });
 
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
@@ -282,7 +285,12 @@ export class DisplayTestApp {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
       if (urlObj.pathname === window.location.pathname) {
-        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+        const client = new BrowserAuthorizationClient({
+          clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
+          scope: getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read",
+          redirectUri,
+        });
+        await client.handleSigninCallback();
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };

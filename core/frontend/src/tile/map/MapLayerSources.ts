@@ -43,7 +43,7 @@ export enum MapLayerSourceStatus {
  * @see [ImageryMapLayerFormatId]($common)
  * @public
  */
-interface MapLayerSourceProps {
+export interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
   formatId?: string;
   /** Name */

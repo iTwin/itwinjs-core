@@ -43,7 +43,7 @@ export async function initializeBackend() {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     await ElectronHost.startup({
       electronHost: {
-        webResourcesPath: path.join(__dirname, "..", "..", "build"),
+        webResourcesPath: path.join(__dirname, "..", "..", "lib"),
         rpcInterfaces,
       },
       iModelHost,
@@ -61,7 +61,7 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       "IMJS_OIDC_REDIRECT_URI",
       "IMJS_OIDC_SCOPE",
       "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD"
+      "IMJS_OIDC_PASSWORD",
     ))
       return undefined;
     return new TestBrowserAuthorizationClient({
@@ -79,8 +79,8 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
     if (ProcessDetector.isElectronAppBackend) {
       return new ElectronMainAuthorization({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        scope: process.env.IMJS_OIDC_SCOPE!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI,
+        scopes: process.env.IMJS_OIDC_SCOPE!,
+        redirectUris: process.env.IMJS_OIDC_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
       });
     }
   }

@@ -283,6 +283,25 @@ export class ECClasses {
     return {};
   }
 
+  /**
+   * Sets the name of the ECClass.
+   * @param classKey The SchemaItemKey of the class.
+   * @param name The new name of the class.
+   * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
+   */
+  public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    mutableClass.setName(name);
+
+    return {};
+  }
+
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     const ecClass = await schema.getItem<MutableClass>(classKey.name);

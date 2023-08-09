@@ -63,24 +63,18 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "sanitize-filename": "^1.6.3",
     "typescript": "~5.0.2",
     "i18next-http-backend": "^1.4.4"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   },
   "mocha": {
     "require": [

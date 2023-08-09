@@ -54,51 +54,56 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
  * @public
  */
 export abstract class Plane3d implements PlaneAltitudeEvaluator {
-  /** Return the altitude of spacePoint above or below the plane.  (Below is negative)
+  /**
+   * Return the altitude of spacePoint above or below the plane. (Below is negative)
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-  */
+   */
   public abstract altitude(spacePoint: Point3d): number;
-
   /** Returns true if spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(this.altitude(spacePoint)) <= tolerance;
   }
-  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of the point is
-   *    negative, near zero, or positive.
+  /**
+   * Return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of the point is
+   * negative, near zero, or positive.
    *
-  */
+   */
   public classifyAltitude(point: Point3d, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitude(point), tolerance);
   }
-  /** return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of x,y,z is
-   *    negative, near zero, or positive.
+  /**
+   * Return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of x,y,z is
+   * negative, near zero, or positive.
    *
-  */
-  public classifyAltitudeXYZ(x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
+   */
+  public classifyAltitudeXYZ(
+    x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance,
+  ): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitudeXYZ(x, y, z), tolerance);
   }
   /**
-    * Return the x component of the normal used to evaluate altitude.
-    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
-    */
+   * Return the x component of the normal used to evaluate altitude.
+   * * MUST BE IMPLEMENTED BY DERIVED CLASSES
+   * * See [[Plane3d]] note about scaling.
+   */
   public abstract normalX(): number;
   /**
-    * Return the y component of the normal used to evaluate altitude.
-    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
+   * Return the y component of the normal used to evaluate altitude.
+   * * MUST BE IMPLEMENTED BY DERIVED CLASSES
+   * * See [[Plane3d]] note about scaling.
    */
   public abstract normalY(): number;
   /**
    * Return the z component of the normal used to evaluate altitude.
-    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
+   * * MUST BE IMPLEMENTED BY DERIVED CLASSES
+   * * See [[Plane3d]] note about scaling.
    */
   public abstract normalZ(): number;
   /**
    * Return the unit normal for the plane.
    * * The abstract base class implementation assembles the normal from normalX, normalY, normalZ calls.
-   * * Derived classes should (but are not required to) override for maximum efficiency if the separate normal calls cause repeated normalization.
+   * * Derived classes should (but are not required to) override for maximum efficiency if the separate normal calls
+   * cause repeated normalization.
    * @param result
    */
   public getUnitNormal(result?: Vector3d): Vector3d | undefined {
@@ -109,36 +114,39 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
    * * Default implementation projects the origin (0,0,0) to the plane.
    * * Classes that have a preferred origin for their plane should override.
    * * Classes with a purely implicit equation of their plane can accept the default implementation
-   * */
+   */
   public getAnyPointOnPlane(result?: Point3d): Point3d {
     return this.projectPointToPlane(Point3d.create(0, 0, 0), result);
   }
-  /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative)
+  /**
+   * Return the altitude of weighted spacePoint above or below the plane.  (Below is negative)
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
-  */
+   * * See [[Plane3d]] note about scaling.
+   */
   public abstract weightedAltitude(spacePoint: Point4d): number;
-
-  /** Return the dot product of spaceVector (x,y,z) with the plane's unit normal.  This tells the rate of change of altitude
-   * for a point moving at speed one along the spaceVector.
+  /**
+   * Return the dot product of spaceVector (x,y,z) with the plane's unit normal. This tells the rate of change of
+   * altitude for a point moving at speed one along the spaceVector.
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
+   * * See [[Plane3d]] note about scaling.
    */
   public abstract velocityXYZ(x: number, y: number, z: number): number;
-  /** Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+  /**
+   * Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
+   * * See [[Plane3d]] note about scaling.
    */
   public abstract velocity(spaceVector: Vector3d): number;
-  /** Return the altitude of a point given as separate x,y,z components.
+  /**
+   * Return the altitude of a point given as separate x,y,z components.
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-    * * See [[Plane3d]] note about scaling.
-  */
+   * * See [[Plane3d]] note about scaling.
+   */
   public abstract altitudeXYZ(x: number, y: number, z: number): number;
-
-  /** Return the projection of spacePoint onto the plane.
+  /**
+   * Return the projection of spacePoint onto the plane.
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
-  */
+   */
   public abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
 }

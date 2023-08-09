@@ -126,13 +126,13 @@ describe("Transform.CreateOriginAndMatrix", () => {
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
           transformA.matrix.columnZ(),
-          transformB
+          transformB,
         );
         const transformB2 = Transform.createOriginAndMatrixColumns(
           transformA.getOrigin(),
           transformA.matrix.columnX(),
           transformA.matrix.columnY(),
-          transformA.matrix.columnZ()
+          transformA.matrix.columnZ(),
         );
         ck.testTrue(transformB === transformB1, "input result and returned result are the same");
         ck.testTransform(transformA, transformB1);
@@ -159,7 +159,7 @@ describe("Transform.Singular", () => {
       const transform = Transform.createRefs(origin, matrix);
       ck.testUndefined(
         transform.inverse(),
-        "Inverse of a transform is undefined if the transform has singular matrix part"
+        "Inverse of a transform is undefined if the transform has singular matrix part",
       );
       const pointB = transform.multiplyInverseXYZ(pointA.x, pointA.y, pointA.z);
       ck.testUndefined(pointB);
@@ -176,7 +176,7 @@ describe("Transform.MultiplyTransformMatrix3d", () => {
     const points = Sample.createPoint3dLattice(-2, 1, 2);
     const transformA = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11),
     ); // [A a]
     const matrixB = Matrix3d.createRowValues(-2, 3, -1, 6, 2, 4, -2, -3, 5);
     const transformB = Transform.createOriginAndMatrix(undefined, matrixB); // [B 0]
@@ -207,7 +207,7 @@ describe("Transform.MultiplyMatrix3dTransform", () => {
     const transformA = Transform.createOriginAndMatrix(undefined, matrixA); // [A 0]
     const transformB = Transform.createOriginAndMatrix(
       Point3d.create(1, 2, 3),
-      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11)
+      Matrix3d.createRowValues(3, 4, 5, 6, 7, 8, 9, 10, 11),
     ); // [B b]
     const transformC = matrixA.multiplyMatrixTransform(transformB); // [AB Ab]
     const transformD = matrixA.multiplyMatrixTransform(transformB, Transform.createIdentity()); // [AB Ab]
@@ -274,13 +274,13 @@ describe("Transform.CloneRigid", () => {
     const singularTransformA = Transform.createRowValues(
       1, 2, 4, 0,
       2, 4, 3, 1,
-      3, 6, -10, 1
+      3, 6, -10, 1,
     ); // columns X and Y (or 0 and 1) are dependent so matrix part is singular
     const points = [Point3d.create(1, 2, 3), Point3d.create(3, 2, 9)];
     ck.testFalse(singularTransformA.multiplyInversePoint3dArrayInPlace(points));
     ck.testUndefined(
       singularTransformA.cloneRigid(AxisOrder.XYZ),
-      "cloneRigid fail because column X and Y are dependent"
+      "cloneRigid fail because column X and Y are dependent",
     );
 
     const rigidTransformA = singularTransformA.cloneRigid(AxisOrder.ZXY);
