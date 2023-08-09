@@ -7,9 +7,9 @@ const FS = require("fs-extra");
 const path = require("path");
 
 // We cannot guarantee the folder structure of a project
-// so find the project root using rush env variable if available.
-const rootPackageJson = process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER
-  ? path.join(process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER, "package.json")
+// so find the project root using environment variables if available.
+const rootPackageJson = process.env.NODE_PROJECT_ROOT_DIRECTORY
+  ? path.join(process.env.NODE_PROJECT_ROOT_DIRECTORY, "package.json")
   : "../../../../package.json";
 
 // Check if path to root package.json is valid.
