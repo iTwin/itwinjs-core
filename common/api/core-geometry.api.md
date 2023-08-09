@@ -1600,7 +1600,7 @@ export enum CurveCurveApproachType {
 
 // @internal
 export class CurveCurveIntersectXY extends NullGeometryHandler {
-    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
+    constructor(worldToLocal: Matrix4d | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
@@ -1611,12 +1611,12 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     handleLineSegment3d(segmentA: LineSegment3d): any;
     handleLineString3d(lsA: LineString3d): any;
     recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean): void;
-    resetGeometry(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
+    resetGeometry(extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
 }
 
 // @internal
 export class CurveCurveIntersectXYZ extends NullGeometryHandler {
-    constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
+    constructor(extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     createPlaneWithPreferredPerpendicular(origin: Point3d, vectorA: Vector3d, cosineValue: number, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
@@ -2294,6 +2294,27 @@ export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, prope
 
 // @internal
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
+
+// @public
+export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
+    addRange(range: LowAndHighXY, tag: T): void;
+    conditionalInsert(range: Range2d | Range3d | LowAndHighXY, tag: T): boolean;
+    static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined;
+    searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
+    searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
+    totalRange(result?: Range2d): Range2d;
+    visitChildren(initialDepth: number, handler: (depth: number, child: Range2dSearchInterface<T>) => void): void;
+}
+
+// @public
+export class GriddedRaggedRange2dSetWithOverflow<T> implements Range2dSearchInterface<T> {
+    addRange(range: LowAndHighXY, tag: T): void;
+    static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSetWithOverflow<T> | undefined;
+    searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean;
+    searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean;
+    totalRange(result?: Range2d): Range2d;
+    visitChildren(initialDepth: number, handler: (depth: number, child: Range2dSearchInterface<T>) => void): void;
+}
 
 // @public
 export class GrowableBlockedArray {
@@ -3087,6 +3108,7 @@ export class IndexedXYZCollectionPolygonOps {
     // @internal
     static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength?: number, tolerance?: number): CutLoopMergeContext;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
+    static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: IndexedXYZCollection, crossings: Point3d[]): void;
     // @internal
     static reorderCutLoops(loops: CutLoopMergeContext): void;
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
@@ -3275,6 +3297,9 @@ export class KnotVector {
     get wrappable(): BSplineWrapMode;
     set wrappable(value: BSplineWrapMode);
 }
+
+// @public
+export type LinearCurvePrimitive = LineSegment3d | LineString3d;
 
 // @public
 export class LinearSweep extends SolidPrimitive {
@@ -4011,6 +4036,9 @@ export class OffsetOptions {
 
 // @public
 export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
+
+// @internal
+export type OptionalRange2dSearchInterface<T> = Range2dSearchInterface<T> | undefined;
 
 // @internal
 export class Order2Bezier extends BezierCoffs {
@@ -4816,12 +4844,13 @@ export class PolyfaceQuery {
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
     static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums;
-    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyface: Polyface, options?: SweepLineStringToFacetsOptions): CurvePrimitive[];
+    static sweepLineStringToFacets(linestringPoints: GrowableXYZArray, polyfaceOrVisitor: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[];
+    static sweepLineStringToFacetsXY(lineStringPoints: GrowableXYZArray | Point3d[], polyfaceOrVisitor: Polyface | PolyfaceVisitor, searchByReadIndex: Range2dSearchInterface<number>): LineString3d[];
     // @deprecated
     static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
     // @deprecated
     static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[];
-    static sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
+    static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     static visitorClientFacetCount(visitor: PolyfaceVisitor): number;
