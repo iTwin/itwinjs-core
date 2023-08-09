@@ -63,7 +63,7 @@ export default defineConfig(() => {
         transformMixedEsModules: true // transforms require statements
       },
       rollupOptions: {
-        input: path.resolve(__dirname, "./index.html"),
+        input: "./index.html",
         // run `rushx build --stats` to view stats
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined ? [
