@@ -2786,29 +2786,36 @@ describe("iModel", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
     const spacesAndNbsp = "\xa0 \n\t\v";
-    const trimmedCodeValue = "CodeValue";
-    const badCodeValue = `${spacesAndNbsp}${trimmedCodeValue}${spacesAndNbsp}`;
-    const categoryProps: ElementProps = {
-      code: SpatialCategory.createCode(imodel, IModelDb.dictionaryId, badCodeValue),
-      model: IModelDb.dictionaryId,
-      classFullName: SpatialCategory.classFullName,
-    };
+
+    const getNumberedCodeValAndProps = (n: number) => {
+      const trimmedCodeVal = `CodeValue${n}`;
+      const untrimmedCodeVal = `${spacesAndNbsp}${trimmedCodeVal}${spacesAndNbsp}`;
+      const props: ElementProps = {
+        code: SpatialCategory.createCode(imodel, IModelDb.dictionaryId, untrimmedCodeVal),
+        model: IModelDb.dictionaryId,
+        classFullName: SpatialCategory.classFullName,
+      };
+      return { trimmedCodeVal, untrimmedCodeVal, props };
+    }
 
     expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
 
-    const categ1Id = imodel.elements.createElement(categoryProps);
+    const code1 = getNumberedCodeValAndProps(1);
+    const categ1Id = imodel.elements.insertElement(code1.props);
     const categ1 = imodel.elements.getElement(categ1Id);
-    expect(categ1.code.value).to.equal(trimmedCodeValue);
+    expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
-    const categ2Id = imodel.elements.createElement(categoryProps);
+    const code2 = getNumberedCodeValAndProps(2);
+    const categ2Id = imodel.elements.insertElement(code2.props);
     const categ2 = imodel.elements.getElement(categ2Id);
-    expect(categ2.code.value).to.equal(badCodeValue);
+    expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";
-    const categ3Id = imodel.elements.createElement(categoryProps);
+    const code3 = getNumberedCodeValAndProps(3);
+    const categ3Id = imodel.elements.insertElement(code3.props);
     const categ3 = imodel.elements.getElement(categ3Id);
-    expect(categ3.code.value).to.equal(trimmedCodeValue);
+    expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
   });
