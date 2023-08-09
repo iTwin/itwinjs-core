@@ -2789,32 +2789,34 @@ describe("iModel", () => {
 
     const getNumberedCodeValAndProps = (n: number) => {
       const trimmedCodeVal = `CodeValue${n}`;
-      const untrimmedCodeVal = `${spacesAndNbsp}${trimmedCodeVal}${spacesAndNbsp}`;
+      const untrimmedCodeVal = `${trimmedCodeVal}\xa0`;
+      const spec = imodel.codeSpecs.getByName(SpatialCategory.getCodeSpecName()).id;
       const props: ElementProps = {
-        code: SpatialCategory.createCode(imodel, IModelDb.dictionaryId, untrimmedCodeVal),
+        // the [[Code]] class still (as it always has) trims unicode space, so avoid it
+        code: { spec, scope: IModelDb.dictionaryId, value: untrimmedCodeVal },
         model: IModelDb.dictionaryId,
         classFullName: SpatialCategory.classFullName,
       };
       return { trimmedCodeVal, untrimmedCodeVal, props };
-    }
+    };
 
     expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
 
     const code1 = getNumberedCodeValAndProps(1);
     const categ1Id = imodel.elements.insertElement(code1.props);
-    const categ1 = imodel.elements.getElement(categ1Id);
+    const categ1 = imodel.elements.getElementJson({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
     const categ2Id = imodel.elements.insertElement(code2.props);
-    const categ2 = imodel.elements.getElement(categ2Id);
+    const categ2 = imodel.elements.getElementJson({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";
     const code3 = getNumberedCodeValAndProps(3);
     const categ3Id = imodel.elements.insertElement(code3.props);
-    const categ3 = imodel.elements.getElement(categ3Id);
+    const categ3 = imodel.elements.getElement({ id: categ3Id });
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
