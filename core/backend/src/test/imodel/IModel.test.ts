@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -2780,5 +2780,36 @@ describe("iModel", () => {
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
 
+  });
+
+  it('should allow untrimmed codes when using "exact" codeValueBehavior', () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
+    const spacesAndNbsp = "\xa0 \n\t\v";
+    const trimmedCodeValue = "CodeValue";
+    const badCodeValue = `${spacesAndNbsp}${trimmedCodeValue}${spacesAndNbsp}`;
+    const categoryProps: ElementProps = {
+      code: SpatialCategory.createCode(imodel, IModelDb.dictionaryId, badCodeValue),
+      model: IModelDb.dictionaryId,
+      classFullName: SpatialCategory.classFullName,
+    };
+
+    expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
+
+    const categ1Id = imodel.elements.createElement(categoryProps);
+    const categ1 = imodel.elements.getElement(categ1Id);
+    expect(categ1.code.value).to.equal(trimmedCodeValue);
+
+    imodel.codeValueBehavior = "exact";
+    const categ2Id = imodel.elements.createElement(categoryProps);
+    const categ2 = imodel.elements.getElement(categ2Id);
+    expect(categ2.code.value).to.equal(badCodeValue);
+
+    imodel.codeValueBehavior = "trim-unicode-whitespace";
+    const categ3Id = imodel.elements.createElement(categoryProps);
+    const categ3 = imodel.elements.getElement(categ3Id);
+    expect(categ3.code.value).to.equal(trimmedCodeValue);
+
+    imodel.close();
   });
 });

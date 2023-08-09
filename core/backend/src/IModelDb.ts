@@ -1338,6 +1338,21 @@ export abstract class IModelDb extends IModel {
       }
     });
   }
+
+  /**
+   * For cases where you need to preserve exact [[Code]]s between databases,
+   * you can set the codeValueBehavior to "exact". The default is "trim-unicode-whitespace".
+   * Code Values should be trimmed, this is primiarly for compatibility with iModels that
+   * failed to trim their codes.
+   * @beta
+   */
+  public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
+    return this.nativeDb.getCodeValueBehavior();
+  }
+
+  public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
+    this.nativeDb.setCodeValueBehavior(newBehavior);
+  }
 }
 
 /** @public */
