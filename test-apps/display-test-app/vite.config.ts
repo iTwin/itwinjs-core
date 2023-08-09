@@ -76,6 +76,7 @@ export default defineConfig(() => {
             webpackStats(), // needs to be the last plugin
           ] : []),
         ],
+        external: "/scripts/checkbrowser.js",
       },
     },
     plugins: [
