@@ -2785,7 +2785,6 @@ describe("iModel", () => {
   it('should allow untrimmed codes when using "exact" codeValueBehavior', () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
-    const spacesAndNbsp = "\xa0 \n\t\v";
 
     const getNumberedCodeValAndProps = (n: number) => {
       const trimmedCodeVal = `CodeValue${n}`;
