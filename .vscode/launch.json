@@ -617,6 +617,21 @@
       "outputCapture": "std"
     },
     {
+      "name": "export-gltf",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/export-gltf",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/test-apps/export-gltf/lib/ExportGltf.js",
+      "args": [   // customize your input/output below
+        "--input=d:\\foo.bim",
+        "--output=d:\\foo.gltf"
+      ],
+      "outputCapture": "std"
+    },
+    {
       "name": "imodel-from-geojson",
       "presentation": {
         "group": "6_Misc"
