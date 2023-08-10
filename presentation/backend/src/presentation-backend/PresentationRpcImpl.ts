@@ -6,8 +6,8 @@
  * @module RPC
  */
 
-import { IModelDb } from "@itwin/core-backend";
-import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { IModelDb, RpcTrace } from "@itwin/core-backend";
+import { AccessToken, assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   ClientDiagnostics, ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags,
@@ -106,10 +106,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return Presentation.getManager(clientId);
   }
 
-  private getIModel(token: IModelRpcProps): IModelDb {
+  private async getIModel(accessToken: AccessToken, token: IModelRpcProps): Promise<IModelDb> {
     let imodel: IModelDb;
     try {
       imodel = IModelDb.findByKey(token.key);
+      // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
+      await imodel.refreshContainer(accessToken);
     } catch {
       throw new PresentationError(PresentationStatus.InvalidArgument, "IModelRpcProps doesn't point to a valid iModel");
     }
@@ -128,7 +130,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request not found, creating a new one`);
       let imodel: IModelDb;
       try {
-        imodel = this.getIModel(token);
+        imodel = await this.getIModel(RpcTrace.expectCurrentActivity.accessToken, token);
       } catch (e) {
         assert(e instanceof Error);
         return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
