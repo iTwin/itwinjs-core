@@ -3,7 +3,7 @@
     {
       "packageName": "@itwin/build-tools",
       "comment": "Changes name of environment variable that provides project root directory. Allows use of RUSHSTACK variable as well and updates README.",
-      "type": "minor"
+      "type": "none"
     }
   ],
   "packageName": "@itwin/build-tools"
