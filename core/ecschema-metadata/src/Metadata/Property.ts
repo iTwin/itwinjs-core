@@ -214,6 +214,10 @@ export abstract class Property implements CustomAttributeContainerProps {
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
+  protected setName(name: ECName) {
+    this._name = name;
+  }
+
   /**
    * Retrieve all custom attributes in the current property and its base
    * This is the async version of getCustomAttributesSync()
