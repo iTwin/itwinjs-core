@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 02 Aug 2023 16:48:36 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Aug 2023 13:19:24 GMT and should not be manually modified.
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+### Updates
+
+- @bentley/imodeljs-native@4.0.14
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
