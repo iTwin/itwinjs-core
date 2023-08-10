@@ -8,7 +8,6 @@ enum NativeExpIds {
   AllOrAny = "AllOrAnyExp", /** Not supported or working */
   Assignment = "AssignmentExp",
   BetweenRangeValue = "BetweenRangeValueExp",
-  PropertyName = "PropertyNameExp",
   BinaryBoolean = "BinaryBooleanExp",
   BinaryValue = "BinaryValueExp",
   BooleanFactor = "BooleanFactorExp",
@@ -20,29 +19,30 @@ enum NativeExpIds {
   CrossJoin = "CrossJoinExp",
   DeleteStatement = "DeleteStatementExp",
   DerivedProperty = "DerivedPropertyExp",
-  UsingRelationshipJoinExp = "UsingRelationshipJoinExp",
   FunctionCall = "FunctionCallExp",
   IIF = "IIFExp",
   InsertStatement = "InsertStatementExp",
   LikeRhsValue = "LikeRhsValueExp",
   LimitOffset = "LimitOffsetExp",
+  LiteralValue = "LiteralValueExp",
   MemberFunctionCall = "MemberFunctionCallExp",
   NaturalJoin = "NaturalJoinExp",
+  Options = "OptionsExp",
   OrderBySpec = "OrderBySpecExp",
   Parameter = "ParameterExp",
+  PropertyName = "PropertyNameExp",
   QualifiedJoin = "QualifiedJoinExp",
   RowConstructor = "RowConstructor",
   SearchCaseValue = "SearchCaseValueExp",
   SelectStatement = "SelectStatementExp",
   SingleSelectStatement = "SingleSelectStatementExp",
+  Subquery = "SubqueryExp",
   SubqueryRef = "SubqueryRefExp",
   SubqueryTest = "SubqueryTestExp",
   TableValuedFunction = "TableValuedFunctionExp",
   UnaryValue = "UnaryValueExp",
   UpdateStatement = "UpdateStatementExp",
-  Options = "OptionsExp",
-  LiteralValue = "LiteralValueExp",
-  Subquery = "SubqueryExp",
+  UsingRelationshipJoinExp = "UsingRelationshipJoinExp",
 }
 /**
  * Type of literal value.
@@ -56,6 +56,11 @@ export enum LiteralValueType {
   Timestamp = "TIMESTAMP",
   Raw = "RAW"
 }
+/**
+ * Sort direction specified by ORDER BY spec  @see [[OrderBySpecExpr]]
+ * @alpha
+ */
+export type FirstOrLast = "FIRST" | "LAST";
 
 /**
  * Sort direction specified by ORDER BY spec  @see [[OrderBySpecExpr]]
@@ -502,6 +507,7 @@ export abstract class ClassRefExpr extends Expr {
     throw new Error(`Unknown type of native value exp ${node.id}`);
   }
 }
+
 /**
  * Options for @see [[ECSqlWriter]]
  * @alpha
@@ -522,7 +528,7 @@ export interface ECSqlWriterArgs {
  * Keywords output by @see [[ECSqlWriter.appendKeyword]]
  * @alpha
  */
-export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
+export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FIRST" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LAST" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "NULLS" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
 
 /**
  * Write expression tree to string
@@ -614,6 +620,7 @@ export class ECSqlWriter {
     return this;
   }
 }
+
 /**
  * Use to describe selection clause terms in a SELECT statements @see [[SelectionClauseExpr]] @see [[SelectExpr]]
  * @alpha
@@ -828,6 +835,7 @@ export class QualifiedJoinExpr extends ClassRefExpr {
     }
   }
 }
+
 /**
  * Describe a JOIN USING clause.
  * @alpha
@@ -988,6 +996,7 @@ export class SelectStatementExpr extends StatementExpr {
     }
   }
 }
+
 /**
  * Describe selection in a SELECT query
  * @alpha
@@ -1015,6 +1024,7 @@ export class SelectionClauseExpr extends Expr {
     });
   }
 }
+
 /**
  * Describe a GROUP BY clause in a SELECT statement.
  * @alpha
@@ -1046,6 +1056,7 @@ export class GroupByClauseExpr extends Expr {
     });
   }
 }
+
 /**
  * Describe a HAVING clause in a SELECT statement.
  * @alpha
@@ -1132,7 +1143,7 @@ export class WhereClauseExp extends Expr {
  */
 export class OrderBySpecExpr extends Expr {
   public static readonly type = ExprType.OrderBySpec;
-  public constructor(public readonly term: ValueExpr, public readonly sortDirection?: SortDirection) {
+  public constructor(public readonly term: ValueExpr, public readonly sortDirection?: SortDirection, public readonly nulls?: FirstOrLast) {
     super(OrderBySpecExpr.type);
   }
   public override get children(): Expr[] {
@@ -1149,6 +1160,12 @@ export class OrderBySpecExpr extends Expr {
     if (this.sortDirection) {
       writer.appendSpace();
       writer.appendKeyword(this.sortDirection);
+    }
+    if (this.nulls) {
+      writer.appendSpace();
+      writer.appendKeyword("NULLS");
+      writer.appendSpace();
+      writer.appendKeyword(this.nulls);
     }
   }
 }
@@ -1217,6 +1234,7 @@ export class LimitClauseExpr extends Expr {
     }
   }
 }
+
 /**
  * Describe a single select statement.
  * @alpha
@@ -1549,6 +1567,7 @@ export class InExpr extends BooleanExpr {
     }
   }
 }
+
 /**
  * Describe a <expr> LIKE <expr> [ESCAPE <expr>] boolean expression
  * @alpha
@@ -1598,11 +1617,11 @@ export class LikeExpr extends BooleanExpr {
     }
   }
 }
+
 /**
  * Describe a <expr> BETWEEN <expr> AND <expr> boolean expression
  * @alpha
  */
-
 export class BetweenExpr extends BooleanExpr {
   public static readonly type = ExprType.Between;
   public constructor(public readonly lhsExpr: ValueExpr, public readonly lowerBoundExpr: ValueExpr, public readonly upperBoundExpr: ValueExpr, public readonly not?: UnaryBooleanOp) {
@@ -1651,7 +1670,6 @@ export class BetweenExpr extends BooleanExpr {
  * Describe a common table expression base query statement
  * @alpha
  */
-
 export class CteExpr extends StatementExpr {
   public static readonly type = ExprType.Cte;
   public constructor(public readonly cteBlocks: CteBlockExpr[], public readonly query: SelectStatementExpr, public readonly recursive?: RecursiveCte) {
@@ -1897,6 +1915,7 @@ export class UpdateStatementExpr extends StatementExpr {
     }
   }
 }
+
 /**
  * Supported options in ECSQL option clause
  * @alpha
@@ -1970,6 +1989,7 @@ export class AssignmentExpr extends Expr {
     writer.appendExp(this.valueExpr);
   }
 }
+
 /**
  * Describe a set clause in a UPDATE statement
  * @alpha
@@ -2324,6 +2344,7 @@ export class FuncCallExpr extends ValueExpr {
     return new FuncCallExpr("EC_INSTANCEOF", [arg0, arg1]);
   }
 }
+
 /**
  * Represent positional or named parameter
  * @alpha
@@ -2376,6 +2397,7 @@ export class UnaryValueExpr extends ValueExpr {
     writer.appendExp(this.valueExpr);
   }
 }
+
 /**
  * Represent constant literal like string, data, time, timestamp, number or null
  * @alpha
@@ -2416,6 +2438,7 @@ export class LiteralExpr extends ValueExpr {
   public static makeTimestamp(val: Date) { return new LiteralExpr(LiteralValueType.String, val.toTimeString()); }
   public static makeNull() { return new LiteralExpr(LiteralValueType.Null, ""); }
 }
+
 /**
  * Represent property name identifier
  * @alpha

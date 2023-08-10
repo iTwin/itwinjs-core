@@ -83,11 +83,6 @@ export class ECDb implements IDisposable {
   /** Returns true if the ECDb is open */
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
-  /** @internal use to test statement caching */
-  public clearStatementCache() {
-    this._statementCache.clear();
-  }
-
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.
    */
@@ -95,6 +90,11 @@ export class ECDb implements IDisposable {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
+  }
+
+  /** @internal use to test statement caching */
+  public clearStatementCache() {
+    this._statementCache.clear();
   }
 
   /** @internal use to test statement caching */
@@ -289,7 +289,7 @@ export class ECDb implements IDisposable {
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * @beta
+   * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
@@ -325,7 +325,6 @@ export class ECDb implements IDisposable {
     while (await reader.step())
       yield reader.formatCurrentRow();
   }
-
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:

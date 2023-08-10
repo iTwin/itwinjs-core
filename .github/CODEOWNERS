@@ -90,7 +90,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines  @aruniverse @calebmshafer @ColinKerr @wgoehrig
-
+/core/ecsql                     @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
 /core/backend                   @iTwin/itwinjs-core-admins
 /core/bentley                   @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display

@@ -55,7 +55,7 @@ import {
   UpdateStatementExpr,
   UsingRelationshipJoinExpr,
   WhereClauseExp,
-} from "../ECSqlExpr";
+} from "../ECSqlAst";
 
 describe("ECSql AST", () => {
   it("test Expr.findInstancesOf<T>()", async () => {
