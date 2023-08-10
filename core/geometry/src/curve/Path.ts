@@ -9,7 +9,6 @@
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { AnyCurve } from "./CurveChain";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -66,7 +65,7 @@ export class Path extends CurveChain {
     return result;
   }
   /** Return a deep copy, with leaf-level curve primitives stroked. */
-  public cloneStroked(options?: StrokeOptions): AnyCurve {
+  public cloneStroked(options?: StrokeOptions): Path {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);

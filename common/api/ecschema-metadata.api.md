@@ -1215,6 +1215,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get propertyType(): PropertyType;
     get schema(): Schema;
+    // (undocumented)
+    protected setName(name: ECName): void;
     toJSON(): PropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
