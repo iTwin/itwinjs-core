@@ -31,7 +31,10 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionXYPairs(
-    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    geometryA: GeometryQuery,
+    extendA: boolean,
+    geometryB: GeometryQuery,
+    extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, extendA, geometryB, extendB, tolerance);
@@ -56,7 +59,11 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionProjectedXYPairs(
-    worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    worldToLocal: Matrix4d,
+    geometryA: GeometryQuery,
+    extendA: boolean,
+    geometryB: GeometryQuery,
+    extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(worldToLocal, extendA, geometryB, extendB, tolerance);
@@ -104,6 +111,7 @@ export class CurveCurve {
    * * **NOTE:** GeometryQuery inputs should really be AnyCurve.
    * @param geometryA first geometry
    * @param geometryB second geometry
+   * @param maxDistance maximum allowed approach length
    */
   public static closeApproachProjectedXYPairs(
     geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number,

@@ -1601,7 +1601,7 @@ export enum CurveCurveApproachType {
 }
 
 // @internal
-export class CurveCurveIntersectXY extends NullGeometryHandler {
+export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     constructor(worldToLocal: Matrix4d | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
@@ -1617,7 +1617,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
 }
 
 // @internal
-export class CurveCurveIntersectXYZ extends NullGeometryHandler {
+export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     constructor(extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
     computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;

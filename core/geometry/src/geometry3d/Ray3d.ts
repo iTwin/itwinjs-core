@@ -381,6 +381,7 @@ export class Ray3d implements BeJSONFunctions {
   }
   /**
    * Compute the intersection of the ray with a triangle.
+   * * This method is faster than `BarycentricTriangle.intersectRay3d`.
    * @param vertex0 first vertex of the triangle
    * @param vertex1 second vertex of the triangle
    * @param vertex2 third vertex of the triangle
