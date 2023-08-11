@@ -299,8 +299,7 @@ describe("PresentationRpcImpl", () => {
           .returns(async () => result2)
           .verifiable();
 
-        const actualResultPromise1 = impl.
-          getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResultPromise1 = impl.getNodesCount(testData.imodelToken, rpcOptions);
         const actualResultPromise2 = impl.getNodesCount(iModelRpcProps2, rpcOptions);
 
         await result1.resolve(111);
