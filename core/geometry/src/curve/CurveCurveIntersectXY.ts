@@ -13,7 +13,7 @@ import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Geometry } from "../Geometry";
 import { CoincidentGeometryQuery } from "../geometry3d/CoincidentGeometryOps";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
+import { RecurseToCurvesGeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
@@ -86,7 +86,7 @@ export class CurveLocationDetailArrayPair {
  * * geometryB is saved for later reference.
  * @internal
  */
-export class CurveCurveIntersectXY extends NullGeometryHandler {
+export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _extendA: boolean;
   private _geometryB: GeometryQuery | undefined;
   private _extendB: boolean;
@@ -511,7 +511,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     // Line:  contains points A0,A1
     // Arc point colinear with line if det (A0, A1, X) = 0
     // with homogeneous xyw points and vectors.
-    // With equational X:   det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
+    // With equational X:   det (A0, A1, C) + c det (A0, A1, U) + s det (A0, A1, V) = 0.
     // solve for theta.
     // evaluate points.
     // project back to line.

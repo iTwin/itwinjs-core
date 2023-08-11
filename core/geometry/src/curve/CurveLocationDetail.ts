@@ -205,7 +205,7 @@ export class CurveLocationDetail {
     result.curve = curve;
     return result;
   }
-  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
+  /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
     curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
   ): CurveLocationDetail {

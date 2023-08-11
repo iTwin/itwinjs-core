@@ -31,7 +31,10 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionXYPairs(
-    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    geometryA: GeometryQuery,
+    extendA: boolean,
+    geometryB: GeometryQuery,
+    extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, extendA, geometryB, extendB, tolerance);
@@ -56,7 +59,11 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionProjectedXYPairs(
-    worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    worldToLocal: Matrix4d,
+    geometryA: GeometryQuery,
+    extendA: boolean,
+    geometryB: GeometryQuery,
+    extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(worldToLocal, extendA, geometryB, extendB, tolerance);
@@ -100,10 +107,12 @@ export class CurveCurve {
     return handler.grabPairedResults();
   }
   /**
-   * Return xy close approaches of 2 projected curves.
+   * Return at least one XY close approach between 2 geometries. If more than one approach is returned, one of
+   * them is the closest approach.
    * * **NOTE:** GeometryQuery inputs should really be AnyCurve.
    * @param geometryA first geometry
    * @param geometryB second geometry
+   * @param maxDistance maximum XY distance (z is ignored) between 2 geometries
    */
   public static closeApproachProjectedXYPairs(
     geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number,

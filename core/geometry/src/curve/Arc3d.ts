@@ -546,12 +546,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       -uv,
       this._matrix.dotColumnY(vectorQ),
       -this._matrix.dotColumnX(vectorQ),
-      0.0, radians);
+      0.0,
+      radians,
+    );
     if (_endpoints) {
       radians.push(this.sweep.startRadians);
       radians.push(this.sweep.endRadians);
     }
-
     return radians;
   }
   /**
