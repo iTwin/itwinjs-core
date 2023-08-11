@@ -187,7 +187,7 @@ async function testWindowSizeSettings() {
   assert(sizeAndPos?.height === height);
 
   const x = 15;
-  const y = 16;
+  const y = 25;
   window.setPosition(x, y);
   await BeDuration.wait(250); // wait for new position to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);

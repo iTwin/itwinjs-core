@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ECDb.createQueryReader and IModelDb.createQueryReader are now public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
