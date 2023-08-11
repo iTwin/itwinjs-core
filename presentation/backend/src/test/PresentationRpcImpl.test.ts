@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelDb } from "@itwin/core-backend";
+import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
@@ -36,7 +36,14 @@ import { RulesetVariablesManager } from "../presentation-backend/RulesetVariable
 
 describe("PresentationRpcImpl", () => {
 
+  beforeEach(() => {
+    sinon.stub(RpcTrace, "expectCurrentActivity").get(() => {
+      return { accessToken: "" };
+    });
+  });
+
   afterEach(() => {
+    sinon.restore();
     Presentation.terminate();
   });
 
@@ -75,6 +82,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
+    imodelMock.setup((x: any) => x.then).returns(() => undefined); // need to define .then because mocks aren't typically 'thenable'.
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -110,6 +118,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
+    imodelMock.setup((x: any) => x.then).returns(() => undefined); // need to define .then because mocks aren't typically 'thenable'.
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -143,6 +152,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
+    imodelMock.setup((x: any) => x.then).returns(() => undefined); // need to define .then because mocks aren't typically 'thenable'.
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -180,6 +190,7 @@ describe("PresentationRpcImpl", () => {
         pageOptions: { start: 123, size: 45 } as PageOptions,
         displayType: "sample display type",
       };
+      testData.imodelMock.setup((x: any) => x.then).returns(() => undefined); // need to define .then because mocks aren't typically 'thenable'.
       defaultRpcParams = { clientId: faker.random.uuid() };
       stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").withArgs(testData.imodelToken.key).returns(testData.imodelMock.object);
       impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -246,9 +257,9 @@ describe("PresentationRpcImpl", () => {
           .returns(async () => result)
           .verifiable();
         const actualResultPromise = impl.getNodesCount(testData.imodelToken, rpcOptions);
-        presentationManagerMock.verifyAll();
 
         await result.resolve(999);
+        presentationManagerMock.verifyAll();
 
         const actualResult = await actualResultPromise;
         expect(actualResult.result).to.eq(999);
@@ -275,6 +286,7 @@ describe("PresentationRpcImpl", () => {
 
         const iModelRpcProps2 = createIModelRpcProps();
         const iModelMock2 = moq.Mock.ofType<IModelDb>();
+        iModelMock2.setup((x: any) => x.then).returns(() => undefined); // need to define .then because mocks aren't typically 'thenable'.
         stub_IModelDb_findByKey.withArgs(iModelRpcProps2.key).returns(iModelMock2.object);
         const managerOptions2: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: iModelMock2.object,
@@ -287,12 +299,13 @@ describe("PresentationRpcImpl", () => {
           .returns(async () => result2)
           .verifiable();
 
-        const actualResultPromise1 = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResultPromise1 = impl.
+          getNodesCount(testData.imodelToken, rpcOptions);
         const actualResultPromise2 = impl.getNodesCount(iModelRpcProps2, rpcOptions);
-        presentationManagerMock.verifyAll();
 
         await result1.resolve(111);
         await result2.resolve(222);
+        presentationManagerMock.verifyAll();
 
         expect((await actualResultPromise1).result).to.eq(111);
         expect((await actualResultPromise2).result).to.eq(222);
