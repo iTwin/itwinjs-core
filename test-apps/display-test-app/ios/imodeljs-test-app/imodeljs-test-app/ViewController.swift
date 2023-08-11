@@ -151,6 +151,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
         let webView = WKWebView(frame: .zero, configuration: config)
+#if DEBUG && compiler(>=5.8)
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+#endif
         self.webView = webView
         webView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(webView)
@@ -176,8 +181,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             hashParams.append("&ignoreCache=true")
         }
 
-        webView.addUserContentController(OpenModelHander(self))
-        webView.addUserContentController(ModelOpenedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
+        _ = OpenModelHander(webView: webView, viewController: self)
+        _ = ModelOpenedHandler(webView: webView)
+        _ = FirstRenderFinishedHandler(webView: webView, exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil)
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
@@ -311,16 +317,16 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
     }
     
-    class OpenModelHander: NSObject, MessageHandler {
-        static let NAME = "openModel"
+    class OpenModelHander: MessageHandler {
         private var viewController: ViewController
         
-        init (_ viewController: ViewController) {
+        init(webView: WKWebView, viewController: ViewController) {
             self.viewController = viewController
+            super.init(webView: webView, name: "openModel")
         }
         
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if let webView = self.viewController.webView, let promiseName = message.body as? String, promiseName.count > 0 {
+        override func onMessage(body: String?) {
+            if let webView = self.webView, let promiseName = body, promiseName.count > 0 {
                 viewController.pickSnapshot() { url in
                     let fileName = (url?.path.count ?? 0) > 0 ? "\"\(url!.path)\"" : "undefined";
                     let js = "window.\(promiseName)(\(fileName));"
@@ -330,21 +336,31 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
     }
     
-    class ModelOpenedHandler : NSObject, MessageHandler {
-        static let NAME = "modelOpened"
-        private var exitOnMessage: Bool
-        
-        init(exitOnMessage: Bool) {
-            self.exitOnMessage = exitOnMessage
+    class ModelOpenedHandler : MessageHandler {
+        init(webView: WKWebView) {
+            super.init(webView: webView, name: "modelOpened")
         }
-        
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if let stringMessage = message.body as? String {
-                // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
-                // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
-                // on this string to know if it succeeded.
+
+        override func onMessage(body: String?) {
+            if let stringMessage = body {
                 print("iModel opened: \(stringMessage)")
             }
+        }
+    }
+
+    class FirstRenderFinishedHandler : MessageHandler {
+        private var exitOnMessage: Bool
+        
+        init(webView: WKWebView, exitOnMessage: Bool) {
+            self.exitOnMessage = exitOnMessage
+            super.init(webView: webView, name: "firstRenderFinished")
+        }
+
+        override func onMessage(body: String?) {
+            // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
+            // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
+            // on this string to know if it succeeded.
+            print("First render finished.")
             if exitOnMessage {
                 exit(EXIT_SUCCESS)
             }
@@ -352,12 +368,17 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     }
 }
 
-protocol MessageHandler : WKScriptMessageHandler {
-    static var NAME: String { get }
-}
-
-extension WKWebView {
-    func addUserContentController(_ messageHandler: MessageHandler) {
-        self.configuration.userContentController.add(messageHandler, name: type(of: messageHandler).NAME)
+class MessageHandler : NSObject, WKScriptMessageHandler {
+    weak var webView: WKWebView?
+    init(webView: WKWebView, name: String) {
+        self.webView = webView
+        super.init()
+        webView.configuration.userContentController.add(self, name: name)
     }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        onMessage(body: message.body as? String)
+    }
+    
+    open func onMessage(body: String?) {}
 }
