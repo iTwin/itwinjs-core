@@ -29,7 +29,7 @@ export class TileLoadIndicator {
         if (ProcessDetector.isMobileAppFrontend) {
           setTimeout(() => {
             // attempt to send message to mobile that the model rendered
-            MobileMessenger.postMessage("firstRenderFinished", "");            
+            MobileMessenger.postMessage("firstRenderFinished", "");
           }, 3000);
         }
       }
