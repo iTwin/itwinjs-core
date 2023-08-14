@@ -126,14 +126,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
         ProcessInfo.processInfo.arguments[1...].forEach { arg in
             if arg.hasPrefix("IMJS_") {
-                print("IMJS_ arg: \(arg)")
                 let split = arg.split(separator: "=")
                 if split.count == 2 {
-                    var argName = split[0]
-                    if argName.hasSuffix("\\") {
-                        argName = argName.dropLast()
-                    }
-                    configData[String(argName)] = String(split[1])
+                    configData[String(split[0])] = String(split[1])
                 }
             }
         }
@@ -148,10 +143,13 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
         parseArguments()
         authClient = DtaServiceAuthorizationClient(configData: configData) ?? DtaOidcAuthorizationClient(configData: configData)
+        print("About to call loadBackend")
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
+        print("Called loadBackend")
     }
 
     func setupFrontend(bimFile: URL? = nil, iModelId: String? = nil, iTwinId: String? = nil) {
+        print("setupFrontend called with bimFile: \(bimFile?.absoluteString ?? "<nil>")")
         let config = WKWebViewConfiguration()
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
