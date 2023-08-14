@@ -1,6 +1,17 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Aug 2023 14:36:34 GMT and should not be manually modified.
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Upgrade sinon to 15.0.4
+- New attributes on calculated properties: `renderer`, `editor`, `categoryId`
+- New `createClassCategory` attribute on Id category identifier
+- With hierarchy level descriptor return the ruleset that was used to create that descriptor.
+- Switch to ESLint new flat config system
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT

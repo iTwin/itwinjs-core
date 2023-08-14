@@ -2,6 +2,24 @@
   "name": "@itwin/ecschema-locaters",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/ecschema-locaters_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade sinon to 15.0.4"
+          },
+          {
+            "comment": "Implemented a new schema locater named SchemaXmlStringLocater that will locate/load schemas from strings held in memory."
+          },
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/ecschema-locaters_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",

@@ -2,6 +2,24 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Migrate from using projects-client to itwins-client api"
+          },
+          {
+            "comment": "Remove unused puppeteer dependency"
+          },
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/rpcinterface-full-stack-tests_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",

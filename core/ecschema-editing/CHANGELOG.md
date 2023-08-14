@@ -1,6 +1,16 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Aug 2023 14:36:34 GMT and should not be manually modified.
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Add the ability to update the name of an EC Class via the ecschema-editing API.
+- Added the ability to update the base class of an EC Class via the ecschema-editing API.
+- Upgrade sinon to 15.0.4
+- Switch to ESLint new flat config system
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
