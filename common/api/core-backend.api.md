@@ -5316,7 +5316,6 @@ export class TileStorage {
     constructor(storage: ServerStorage);
     downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
     getCachedTiles(iModelId: string): Promise<TileId[]>;
-    // (undocumented)
     getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId>;
     getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
     initialize(iModelId: string): Promise<void>;

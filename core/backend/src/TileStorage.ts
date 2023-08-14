@@ -103,6 +103,9 @@ export class TileStorage {
     }
   }
 
+  /**
+   * Returns an async iterator of all tiles that are found in the cloud cache.
+   */
   public async *getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId> {
     const iterator = this.getCachedTilePages(iModelId);
     for await (const page of iterator) {
