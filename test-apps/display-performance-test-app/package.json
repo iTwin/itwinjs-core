@@ -16,7 +16,7 @@
     "build:stats": "cross-env OUTPUT_STATS=TRUE npm run build",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "tsc",
-    "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192",
+    "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build",
     "clean": "rimraf .static-assets lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
