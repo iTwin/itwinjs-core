@@ -746,7 +746,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
    */
   public updateString(rscName: WorkspaceResource.Name, val: string): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "REPLACE INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
+    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
   }
 
   /** Remove a string resource. */
@@ -770,7 +770,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
    */
   public updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "REPLACE INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
+    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
   }
 
   /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
