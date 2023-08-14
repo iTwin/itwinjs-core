@@ -185,6 +185,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
 
         webView.addUserContentController(OpenModelHander(self))
+        webView.addUserContentController(LogHandler())
         webView.addUserContentController(ModelOpenedHandler())
         webView.addUserContentController(FirstRenderFinishedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
@@ -338,6 +339,16 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
                     let fileName = (url?.path.count ?? 0) > 0 ? "\"\(url!.path)\"" : "undefined";
                     let js = "window.\(promiseName)(\(fileName));"
                 }
+            }
+        }
+    }
+
+    class LogHandler : NSObject, MessageHandler {
+        static let NAME = "mobileLog"
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let stringMessage = message.body as? String {
+                print("mobileLog: \(stringMessage)")
             }
         }
     }
