@@ -88,6 +88,9 @@ steps:
   - script: bash -c 'while true; do top -b -n 1 -o +RES  | head -n 22; sleep 1s; done' & node common/scripts/install-run-rush.js build -v -p max && kill %1
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: npm run ios:all
