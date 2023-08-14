@@ -62,7 +62,7 @@ export class SmartDeviceMarker extends Marker {
     size: XAndY,
     _smartDeviceId: string,
     smartDeviceType: string,
-    elementId: string
+    elementId: string,
   ) {
     super(location, size);
     this.elementId = elementId;

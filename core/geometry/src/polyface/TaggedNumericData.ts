@@ -56,7 +56,7 @@ export class TaggedNumericData {
   public tagB: number;
 
   public constructor(tagA: number = 0, tagB: number = 0,
-    intData?: number[], doubleData?: number[]
+    intData?: number[], doubleData?: number[],
   ) {
     this.tagA = tagA;
     this.tagB = tagB;
@@ -143,7 +143,7 @@ public doubleData?: number[];
     if (this.tagB !== other.tagB)
     return false;
     return Geometry.exactEqualNumberArrays(this.intData, other.intData)
-      && Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, Geometry.isAlmostEqualNumber);
+      && Geometry.almostEqualArrays<number>(this.doubleData, other.doubleData, (a, b) => Geometry.isAlmostEqualNumber(a, b));
   }
 
   public static areAlmostEqual(dataA: TaggedNumericData | undefined, dataB: TaggedNumericData | undefined): boolean{

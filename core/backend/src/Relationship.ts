@@ -89,7 +89,7 @@ export class ElementRefersToElements extends Relationship {
     return iModel.relationships.insertInstance(relationship.toJSON());
   }
 
-  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
@@ -407,7 +407,7 @@ export class ElementDrivesElement extends Relationship {
     return props;
   }
 
-  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);

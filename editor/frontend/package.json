@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -36,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.1.0-dev.67",
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67",
-    "@itwin/core-common": "workspace:^4.1.0-dev.67",
-    "@itwin/core-frontend": "workspace:^4.1.0-dev.67",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.67"
+    "@itwin/appui-abstract": "workspace:^4.2.0-dev.4",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4",
+    "@itwin/core-common": "workspace:^4.2.0-dev.4",
+    "@itwin/core-frontend": "workspace:^4.2.0-dev.4",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -54,9 +54,9 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
   },
@@ -66,11 +66,5 @@
   ],
   "dependencies": {
     "@itwin/editor-common": "workspace:*"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

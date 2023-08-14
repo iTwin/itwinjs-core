@@ -5,12 +5,19 @@
 
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { Arc3d } from "../../curve/Arc3d";
+import { AnyCurve } from "../../curve/CurveChain";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -569,5 +576,51 @@ describe("LineStringAnnotation", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("LineString3dOps", () => {
+  it("CollectChainsAsLineString3d", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const createFragments = (perturbClosure: boolean, includeDangler: boolean): AnyCurve[] => {
+      const fragments: AnyCurve[] = [];
+      if (includeDangler)
+        fragments.push(LineSegment3d.create(Point3d.create(4,4,0), Point3d.create(3,2,0)));
+      fragments.push(Arc3d.create(Point3d.create(1,0,0), Vector3d.create(1,0,0), Vector3d.create(0,1,0), AngleSweep.createStartEndDegrees(0, 180)));
+      fragments.push(LineString3d.create(Point3d.createZero(), Point3d.create(0,2,0), Point3d.create(3,2,0)));
+      fragments.push(LineSegment3d.create(Point3d.create(2,0,0), Point3d.create(3,0,0)));
+      fragments.push(LineSegment3d.create(Point3d.create(3,2,0), Point3d.create(3,0,0)));
+      fragments.push(LineString3d.create(Point3d.create(1,0,0), Point3d.create(0,1,0), Point3d.create(-1,0,0), Point3d.create(0,-1,0)));
+      fragments.push(LineSegment3d.create(Point3d.create(0,-1,0), Point3d.create(1, perturbClosure ? -2 * Geometry.smallMetricDistance : 0, 0)));
+      return fragments;
+    };
+
+    let deltaY = 0;
+    for (const select of [true, false]) {
+      const frags = createFragments(select, select);
+      const loops: Loop[] = [];
+      const paths: Path[] = [];
+      CurveOps.collectChainsAsLineString3d(frags, (pts: LineString3d) => {
+        if (pts.isPhysicallyClosed)
+          loops.push(Loop.create(pts));
+        else
+          paths.push(Path.create(pts));
+      });
+      if (select) {
+        ck.testExactNumber(loops.length, 0, "CurveOps.collectChainsAsLineString3d forms no loops as expected");
+        ck.testExactNumber(paths.length, 2, "CurveOps.collectChainsAsLineString3d forms 2 paths as expected");
+      } else {
+        ck.testExactNumber(loops.length, 2, "CurveOps.collectChainsAsLineString3d forms 2 loops as expected");
+        ck.testExactNumber(paths.length, 0, "CurveOps.collectChainsAsLineString3d forms no paths as expected");
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, frags, 0, deltaY);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, 5, deltaY);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, paths, 10, deltaY);
+      deltaY += 5;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3dOps", "CollectChainsAsLineString3d");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

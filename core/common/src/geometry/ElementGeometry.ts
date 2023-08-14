@@ -1635,7 +1635,7 @@ export namespace ElementGeometry {
           const angles = YawPitchRollAngles.createFromMatrix3d(Matrix3d.createRowValues(
             rotation.x00(), rotation.x01(), rotation.x02(),
             rotation.x10(), rotation.x11(), rotation.x12(),
-            rotation.x20(), rotation.x21(), rotation.x22())
+            rotation.x20(), rotation.x21(), rotation.x22()),
           );
           if (undefined !== angles && !angles.isIdentity())
             props.rotation = angles;
@@ -2217,7 +2217,7 @@ export namespace ElementGeometry {
     return Transform.createRowValues(
       sourceToWorld[0], sourceToWorld[1], sourceToWorld[2], sourceToWorld[3],
       sourceToWorld[4], sourceToWorld[5], sourceToWorld[6], sourceToWorld[7],
-      sourceToWorld[8], sourceToWorld[9], sourceToWorld[10], sourceToWorld[11]
+      sourceToWorld[8], sourceToWorld[9], sourceToWorld[10], sourceToWorld[11],
     );
   }
 

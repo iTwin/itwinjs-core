@@ -330,6 +330,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
+    // @alpha
+    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1213,6 +1215,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get propertyType(): PropertyType;
     get schema(): Schema;
+    // (undocumented)
+    protected setName(name: ECName): void;
     toJSON(): PropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;

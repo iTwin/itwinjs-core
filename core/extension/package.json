@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js Extension API",
   "type": "module",
   "typings": "index.d.ts",
@@ -38,15 +38,9 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
-    "eslint": "^8.36.0",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

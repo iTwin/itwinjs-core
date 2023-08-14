@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -41,12 +41,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67",
-    "@itwin/core-common": "workspace:^4.1.0-dev.67",
-    "@itwin/core-frontend": "workspace:^4.1.0-dev.67",
-    "@itwin/core-quantity": "workspace:^4.1.0-dev.67",
-    "@itwin/ecschema-metadata": "workspace:^4.1.0-dev.67",
-    "@itwin/presentation-common": "workspace:^4.1.0-dev.67"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4",
+    "@itwin/core-common": "workspace:^4.2.0-dev.4",
+    "@itwin/core-frontend": "workspace:^4.2.0-dev.4",
+    "@itwin/core-quantity": "workspace:^4.2.0-dev.4",
+    "@itwin/ecschema-metadata": "workspace:^4.2.0-dev.4",
+    "@itwin/presentation-common": "workspace:^4.2.0-dev.4"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -56,7 +56,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -73,7 +73,7 @@
     "cpx2": "^3.0.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "faker": "^4.1.0",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
@@ -88,11 +88,5 @@
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

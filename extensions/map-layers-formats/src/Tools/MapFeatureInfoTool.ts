@@ -108,14 +108,14 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   }
 
   public override async onDataButtonDown(
-    ev: BeButtonEvent
+    ev: BeButtonEvent,
   ): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(
       new LocateResponse(),
       true,
       ev.point,
       ev.viewport,
-      ev.inputSource
+      ev.inputSource,
     );
     if (hit !== undefined) {
       let mapInfo: MapFeatureInfo | undefined;
@@ -138,7 +138,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(
-    _ev: BeButtonEvent
+    _ev: BeButtonEvent,
   ): Promise<EventHandled> {
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
     await this.onReinitialize();

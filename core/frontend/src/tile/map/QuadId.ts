@@ -107,7 +107,7 @@ export class QuadId {
       longitude: AngleSweep.createStartEndRadians(scratchCartographic1.longitude, scratchCartographic2.longitude),
       latitude: AngleSweep.createStartEndRadians(
         Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic1.latitude),
-        Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic2.latitude)
+        Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic2.latitude),
       ),
     };
   }

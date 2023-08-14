@@ -6,7 +6,7 @@ import * as path from "path";
 import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 
 const isProductionLikeMode = (
-  options: Configuration | WebpackOptionsNormalized
+  options: Configuration | WebpackOptionsNormalized,
 ) => {
   return options.mode === "production" || !options.mode;
 };
@@ -39,7 +39,7 @@ export class FrontendDefaultsPlugin {
     if (this._enableSourcemaps) {
       compiler.options.output.devtoolModuleFilenameTemplate = (
         value: any,
-        options: Configuration
+        options: Configuration,
       ) => {
         if (value)
           return value;
@@ -49,7 +49,7 @@ export class FrontendDefaultsPlugin {
             path
               .relative(
                 options.output?.path || process.cwd(),
-                info.absoluteResourcePath
+                info.absoluteResourcePath,
               )
               .replace(/\\/g, "/");
 

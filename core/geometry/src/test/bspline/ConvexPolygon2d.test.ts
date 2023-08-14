@@ -12,9 +12,10 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { ConvexPolygon2d, Ray2d } from "../../numerics/ConvexPolygon2d";
+import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Ray2d } from "../../geometry3d/Ray2d";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.
@@ -259,7 +260,9 @@ describe("ConvexPolygon2d", () => {
 
   it("Ray2d", () => {
     const ck = new Checker();
-    const ray0 = Ray2d.createOriginAndDirection(Point2d.create(2, 3), Vector2d.create(1, 4));
+    const origin = Point2d.create(2, 3);
+    const direction = Vector2d.create(1, 4);
+    const ray0 = Ray2d.createOriginAndDirection(origin, direction);
     const pointA = Point2d.create(1, 2);
     const ray1 = Ray2d.createOriginAndTarget(pointA, pointA);
     ck.testFalse(ray1.normalizeDirectionInPlace());
@@ -271,14 +274,40 @@ describe("ConvexPolygon2d", () => {
     ck.testPerpendicular2d(perp1.direction, ray0.direction, "CW rotate");
     ck.testLT(0, ray0.direction.crossProduct(perp0.direction));
     ck.testLT(ray0.direction.crossProduct(perp1.direction), 0, "CW rotate sense");
-    ck.checkpoint("Ray2d");
-    expect(ck.getNumErrors()).equals(0);
-
     for (const f0 of [-0.3, 0.5, 0.2]) {
       const point0 = ray0.fractionToPoint(f0);
       const f1 = ray0.projectionFraction(point0);
       ck.testCoordinate(f0, f1, "projection fraction");
     }
+    const ray2 = Ray2d.createOriginAndDirection(Point2d.createZero(), Vector2d.createZero());
+    ray2.set(ray0.origin, ray0.direction);
+    ck.testPoint2d(ray0.origin, ray2.origin, "Ray2d.set sets expected origin");
+    ck.testVector2d(ray0.direction, ray2.direction, "Ray2d.set sets expected direction");
+    // cover optional result args
+    const checkResultArgIsUsed = (functionName: string, resultArg: Ray2d, returnVal: Ray2d, expectedOrigin: Point2d, expectedDirection: Vector2d) => {
+      ck.testPoint2d(expectedOrigin, resultArg.origin, `Ray2d.${functionName} sets expected origin`);
+      ck.testVector2d(expectedDirection, resultArg.direction, `Ray2d.${functionName} sets expected direction`);
+      ck.testTrue(returnVal.origin === resultArg.origin, `Ray2d.${functionName} uses result.origin`);
+      ck.testTrue(returnVal.direction === resultArg.direction, `Ray2d.${functionName} uses result.direction`);
+    };
+    let ray3 = Ray2d.createOriginAndTarget(ray0.origin, pointA, ray1);
+    checkResultArgIsUsed("createOriginAndTarget", ray1, ray3, ray0.origin, Vector2d.createStartEnd(ray0.origin, pointA));
+    ray3 = Ray2d.createOriginAndDirection(pointA, ray0.direction, ray1);
+    checkResultArgIsUsed("createOriginAndDirection", ray1, ray3, pointA, ray0.direction);
+    const pt = Point2d.create(7, 11);
+    const vec = Vector2d.create(4, -5);
+    ray3 = Ray2d.createOriginAndDirectionCapture(pt, vec, ray1);
+    ck.testTrue(pt === ray3.origin, "Ray2d.createOriginAndDirectionCapture captures origin");
+    ck.testTrue(vec === ray3.direction, "Ray2d.createOriginAndDirectionCapture captures direction");
+    checkResultArgIsUsed("createOriginAndDirectionCapture", ray1, ray3, pt, vec);
+    ray3 = ray0.parallelRay(1.0, ray1);
+    checkResultArgIsUsed("parallelRay", ray1, ray3, Point2d.create(-2, 4), ray0.direction);
+    ray3 = ray0.ccwPerpendicularRay(ray1);
+    checkResultArgIsUsed("ccwPerpendicularRay", ray1, ray3, ray0.origin, Vector2d.create(-4, 1));
+    ray3 = ray0.cwPerpendicularRay(ray1);
+    checkResultArgIsUsed("cwPerpendicularRay", ray1, ray3, ray0.origin, Vector2d.create(4, -1));
+    ck.checkpoint("Ray2d");
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("ConvexPolygon2dEmptyCases", () => {

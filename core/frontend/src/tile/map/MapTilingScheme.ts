@@ -149,7 +149,7 @@ export abstract class MapTilingScheme {
       this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level),
       this.tileXToLongitude(x + 1, level),
       this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level),
-      result
+      result,
     );
   }
 

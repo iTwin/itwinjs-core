@@ -64,7 +64,7 @@ export class StrokeCountMap {
    * @param componentData
    */
   public static createWithCurvePrimitive(
-    primitive: CurvePrimitive, numStroke: number, curveLength: number, a0: number, a1: number, componentData?: StrokeCountMap[]
+    primitive: CurvePrimitive, numStroke: number, curveLength: number, a0: number, a1: number, componentData?: StrokeCountMap[],
   ): StrokeCountMap {
     const result = new StrokeCountMap(numStroke, curveLength, a0, a1, componentData);
     result.primitive = primitive;
@@ -79,7 +79,7 @@ export class StrokeCountMap {
    * @param a1
    */
   public static createWithComponentIndex(
-    componentIndex: number = 0, numStroke: number = 0, curveLength: number = 0, a0: number = 0, a1: number = 0
+    componentIndex: number = 0, numStroke: number = 0, curveLength: number = 0, a0: number = 0, a1: number = 0,
   ): StrokeCountMap {
     const result = new StrokeCountMap(numStroke, curveLength, a0, a1);
     result.componentIndex = componentIndex;
@@ -93,7 +93,7 @@ export class StrokeCountMap {
    * @param componentData optional array of component StrokeCountMaps.
    */
   public static createWithCurvePrimitiveAndOptionalParent(
-    curvePrimitive: CurvePrimitive, parentMap?: StrokeCountMap, componentData?: StrokeCountMap[]
+    curvePrimitive: CurvePrimitive, parentMap?: StrokeCountMap, componentData?: StrokeCountMap[],
   ): StrokeCountMap {
     const a0 = parentMap ? parentMap.a1 : 0.0;
     const result = new StrokeCountMap(0, 0, a0, a0, componentData);

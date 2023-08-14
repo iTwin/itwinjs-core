@@ -2,7 +2,7 @@
   "name": "@itwin/workspace-editor",
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
@@ -31,20 +31,14 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/yargs": "17.0.19",
     "@types/glob": "^5.0.35",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

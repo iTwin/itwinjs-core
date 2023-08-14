@@ -195,7 +195,7 @@ it("DrapeLinestringLargeMesh", async () => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
       const lines = PolyfaceQuery.sweepLineStringToFacets(linestring.packedPoints, mesh,
-        SweepLineStringToFacetsOptions.create(undefined, undefined, false, true, true, true)
+        SweepLineStringToFacetsOptions.create(undefined, undefined, false, true, true, true),
       );
       const name = `sweptLineString ${numX * numY} ${linestring.packedPoints.length}`;
       GeometryCoreTestIO.consoleTime(name);

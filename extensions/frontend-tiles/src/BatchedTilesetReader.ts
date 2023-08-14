@@ -56,7 +56,7 @@ function transformFromJSON(json: schema.Transform): Transform {
   const matrix = Matrix3d.createRowValues(
     json[0], json[4], json[8],
     json[1], json[5], json[9],
-    json[2], json[6], json[10]
+    json[2], json[6], json[10],
   );
 
   return Transform.createOriginAndMatrix(translation, matrix);

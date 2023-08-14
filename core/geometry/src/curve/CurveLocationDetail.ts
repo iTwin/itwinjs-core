@@ -159,7 +159,7 @@ export class CurveLocationDetail {
     result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
     result.vectorInCurveLocationDetail = optionalVectorUpdate(
-      this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail
+      this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail,
     );
     result.a = this.a;
     result.curveSearchStatus = this.curveSearchStatus;
@@ -207,7 +207,7 @@ export class CurveLocationDetail {
   }
   /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
-    curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail
+    curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -220,7 +220,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail with only ray, fraction, and point. */
   public static createRayFractionPoint(
-    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail
+    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
@@ -235,7 +235,7 @@ export class CurveLocationDetail {
     point: Point3d,
     distance: number,
     status: CurveSearchStatus,
-    result?: CurveLocationDetail
+    result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -253,7 +253,7 @@ export class CurveLocationDetail {
     startFraction: number,
     endFraction: number,
     requestedSignedDistance: number,
-    result?: CurveLocationDetail
+    result?: CurveLocationDetail,
   ): CurveLocationDetail {
     let a = requestedSignedDistance;
     let status = CurveSearchStatus.success;
@@ -280,7 +280,7 @@ export class CurveLocationDetail {
   }
   /** Create with CurvePrimitive pointer and fraction for evaluation. */
   public static createCurveEvaluatedFraction(
-    curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail
+    curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -293,7 +293,7 @@ export class CurveLocationDetail {
   }
   /** Create with CurvePrimitive pointer and fraction for evaluation. */
   public static createCurveEvaluatedFractionPointAndDerivative(
-    curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail
+    curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -307,7 +307,7 @@ export class CurveLocationDetail {
   }
   /** Create with CurvePrimitive pointer and 2 fractions for evaluation. */
   public static createCurveEvaluatedFractionFraction(
-    curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail
+    curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -326,7 +326,7 @@ export class CurveLocationDetail {
     fraction: number,
     point: Point3d,
     a: number,
-    result?: CurveLocationDetail
+    result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -346,7 +346,7 @@ export class CurveLocationDetail {
    * @returns true if the given distance is smaller (and hence this detail was updated.)
    */
   public updateIfCloserCurveFractionPointDistance(
-    curve: CurvePrimitive, fraction: number, point: Point3d, a: number
+    curve: CurvePrimitive, fraction: number, point: Point3d, a: number,
   ): boolean {
     if (this.a < a)
       return false;
@@ -385,7 +385,7 @@ export class CurveLocationDetail {
    * @param detailB second candidate
    */
   public static chooseSmallerA(
-    detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined
+    detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined,
   ): CurveLocationDetail | undefined {
     if (detailA) {
       if (!detailB)
@@ -432,7 +432,7 @@ export class CurveLocationDetailPair {
   }
   /** Create a curve detail pair using references to two CurveLocationDetails */
   public static createCapture(
-    detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair
+    detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair,
   ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     result.detailA = detailA;
@@ -444,7 +444,7 @@ export class CurveLocationDetailPair {
    * * optionally install in reversed positions
    */
   public static createCaptureOptionalReverse(
-    detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair
+    detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair,
   ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     if (reversed) {

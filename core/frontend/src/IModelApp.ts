@@ -52,9 +52,7 @@ import * as viewTool from "./tools/ViewTool";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("./IModeljs-css");
+import "./IModeljs-css";
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 
@@ -340,7 +338,7 @@ export class IModelApp {
    * @note As of 4.x, iTwin.js requires WebGL 2. If the client does not support WebGL 2, the `status` field of the returned compatibility info will be [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility).
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    return queryRenderCompatibility(true, System.createContext);
+    return queryRenderCompatibility(true, (canvas, useWebGL2, inputContextAttributes) => System.createContext(canvas, useWebGL2, inputContextAttributes));
   }
 
   /**
@@ -446,7 +444,7 @@ export class IModelApp {
     }
 
     this._wantEventLoop = false;
-    window.removeEventListener("resize", IModelApp.requestNextAnimation);
+    window.removeEventListener("resize", () => IModelApp.requestNextAnimation());
     this.clearIntervalAnimation();
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
@@ -487,7 +485,7 @@ export class IModelApp {
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
-      requestAnimationFrame(IModelApp.eventLoop);
+      requestAnimationFrame(() => IModelApp.eventLoop());
     }
   }
 
@@ -513,7 +511,7 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      window.addEventListener("resize", IModelApp.requestNextAnimation);
+      window.addEventListener("resize", () => IModelApp.requestNextAnimation());
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
     }
@@ -539,7 +537,7 @@ export class IModelApp {
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
-      window.removeEventListener("resize", IModelApp.requestNextAnimation);
+      window.removeEventListener("resize", () => IModelApp.requestNextAnimation());
     }
   }
 

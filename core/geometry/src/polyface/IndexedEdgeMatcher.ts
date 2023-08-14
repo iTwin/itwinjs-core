@@ -129,7 +129,7 @@ export class IndexedEdgeMatcher {
   }
   /** Sort the edge index array. */
   public sort() {
-    this.edges.sort(SortableEdge.lessThan);
+    this.edges.sort((edgeA, edgeB) => SortableEdge.lessThan(edgeA, edgeB));
   }
   /** Create a single or compound SortableEdgeCluster in dest. */
   private collectSortableEdgeCluster(index0: number, index1: number, dest: SortableEdgeCluster[] | undefined) {

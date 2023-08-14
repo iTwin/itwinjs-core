@@ -10,7 +10,7 @@ import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
 
 const isProductionLikeMode = (
-  options: Configuration | WebpackOptionsNormalized
+  options: Configuration | WebpackOptionsNormalized,
 ) => {
   return options.mode === "production" || !options.mode;
 };
@@ -57,7 +57,7 @@ export class BackendDefaultsPlugin {
 
     compiler.options.output.devtoolModuleFilenameTemplate = (
       value: any,
-      options: Configuration
+      options: Configuration,
     ) => {
       if (value)
         return value;
@@ -67,7 +67,7 @@ export class BackendDefaultsPlugin {
           path
             .relative(
               options.output?.path || process.cwd(),
-              info.absoluteResourcePath
+              info.absoluteResourcePath,
             )
             .replace(/\\/g, "/");
 

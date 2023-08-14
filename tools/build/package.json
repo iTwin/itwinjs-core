@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -15,7 +15,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },
@@ -46,17 +46,8 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/node": "18.16.1",
-    "eslint": "^8.36.0"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "deprecation/deprecation": "off"
-    }
+    "eslint": "^8.44.0"
   }
 }

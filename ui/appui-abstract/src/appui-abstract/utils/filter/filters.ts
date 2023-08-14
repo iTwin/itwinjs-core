@@ -701,7 +701,7 @@ function _findAllMatches2(row: number, column: number, total: number, matches: n
             column - 1,
             matches !== 0 ? total - 1 : total, // gap penalty after first match
             matches,
-            lastMatched
+            lastMatched,
           );
         }
 

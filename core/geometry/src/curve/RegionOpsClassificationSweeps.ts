@@ -266,13 +266,13 @@ export class RegionOpsFaceToFaceSearch {
     binaryOp: RegionBinaryOpType,
     dataB: MultiLineStringDataVariant[],
     opB: RegionGroupOpType,
-    purgeSliverExteriorFaces: boolean
+    purgeSliverExteriorFaces: boolean,
   ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
     const callbacks = RegionBooleanContext.create(opA, opB);
     callbacks.graph = graph;
-    callbacks.faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
+    callbacks.faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
 
     // Add all the members in groupA ..
     for (const data of dataA) {
@@ -748,7 +748,7 @@ export class GraphComponent {
     }
     this.faceAreas.length = 0;
     if (!faceAreaFunction)
-      faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
+      faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }

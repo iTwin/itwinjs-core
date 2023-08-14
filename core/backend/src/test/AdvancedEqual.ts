@@ -36,7 +36,7 @@ declare global {
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = (a, b, tol) => Geometry.isSameCoordinate(a, b, tol);
 
 /** normalize a classname for comparisons */
 const normalizeClassName = (name: string) => name.toLowerCase().replace(/:/, ".");
@@ -85,7 +85,7 @@ export function advancedDeepEqual(
           (keyOfE in a || options.considerNonExistingAndUndefinedEqual) &&
           normalizedClassNameProps.includes(keyOfE)
             ? advancedDeepEqual(normalizeClassName(e[keyOfE]), normalizeClassName(a[keyOfE]))
-            : advancedDeepEqual(e[keyOfE], a[keyOfE], options)
+            : advancedDeepEqual(e[keyOfE], a[keyOfE], options),
       );
     default: // bigint unhandled
       throw Error(`unhandled deep compare type code returned from typeof, "${typeof e}"`);
@@ -96,7 +96,7 @@ Assertion.addMethod(
   "advancedEqual",
   function advancedEqual(
     expected: any,
-    options: DeepEqualOpts = {}
+    options: DeepEqualOpts = {},
   ) {
     if (options.tolerance === undefined)
       options.tolerance = 1e-10;
@@ -113,16 +113,16 @@ Assertion.addMethod(
         isDeep ? "deep inequality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
-      actual
+      actual,
     );
-  }
+  },
 );
 
 Assertion.addMethod(
   "subsetEqual",
   function subsetEqual(
     expected: any,
-    options: DeepEqualOpts = {}
+    options: DeepEqualOpts = {},
   ) {
     if (options.tolerance === undefined)
       options.tolerance = 1e-10;
@@ -132,7 +132,7 @@ Assertion.addMethod(
       `expected #{act} to contain as a subset #{exp}`,
       `expected #{act} not to contain as a subset #{exp}`,
       expected,
-      actual
+      actual,
     );
-  }
+  },
 );

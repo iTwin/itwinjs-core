@@ -651,7 +651,7 @@ describe("Polyface.Facets", () => {
         xA += 2 * radius;
         xB += 2 * radius;
         xC += 2 * radius;
-        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23,), radius);
+        const sphere = Sphere.createCenterRadius(Point3d.create(1, 23), radius);
         const builderA = PolyfaceBuilder.create(optionsA);
         builderA.addSphere(sphere);
         const facetsA = builderA.claimPolyface();

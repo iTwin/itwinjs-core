@@ -211,7 +211,7 @@ describe("RpcRequestsHandler", () => {
 
     before(() => {
       rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-      defaultGetClientForInterfaceImpl = RpcManager.getClientForInterface;
+      defaultGetClientForInterfaceImpl = (definition) => RpcManager.getClientForInterface(definition);
       RpcManager.getClientForInterface = (() => rpcInterfaceMock.object) as any;
     });
 

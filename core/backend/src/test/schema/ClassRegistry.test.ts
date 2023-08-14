@@ -566,7 +566,7 @@ describe("Class Registry - generated classes", () => {
     assert.isDefined(ActualDerivedWithNavProp.prototype["collectReferenceIds"]);
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
-      [...derivedElemWithNavProp.getReferenceIds()]
+      [...derivedElemWithNavProp.getReferenceIds()],
     ).to.have.members([
       EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
       EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
@@ -688,7 +688,7 @@ describe("Class Registry - generated classes", () => {
         // without any custom ancestor implementing collectReferenceIds, so Element.collectReferenceIds is called as the
         // super, and no navigation properties or other custom implementations are called so we only get "derived-4"
         EntityReferences.fromEntityType("derived-4", ConcreteEntityTypes.Element),
-      ].filter((x) => x !== undefined)
+      ].filter((x) => x !== undefined),
     );
 
     expect(elementMethodSpy.called).to.be.true; // this is the `super.collectReferenceIds` call in MyDerived4
@@ -715,8 +715,8 @@ describe("Class Registry - generated classes", () => {
           Derived4,
           Derived5, // save as above (so will be removed from set)
           Derived6, // save as above (so will be removed from set)
-        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
-      )
+        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
+      ),
     ).to.deep.equal(
       new Set(
         [
@@ -726,8 +726,8 @@ describe("Class Registry - generated classes", () => {
           Derived2,
           Derived4,
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
-      )
+        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
+      ),
     );
 
     MyTestGeneratedClasses.unregisterSchema();

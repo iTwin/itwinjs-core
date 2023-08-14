@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
-    "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"
@@ -39,21 +39,21 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.67"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.4"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
-    "@itwin/object-storage-core": "^2.1.0-dev.1",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/object-storage-core": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
     "chai": "^4.1.2",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
@@ -62,23 +62,5 @@
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "all": true
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "@itwin/public-extension-exports": [
-        "error",
-        {
-          "releaseTags": [
-            "public",
-            "preview"
-          ],
-          "outputApiFile": false
-        }
-      ]
-    }
   }
 }

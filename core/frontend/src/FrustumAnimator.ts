@@ -24,7 +24,7 @@ function interpolateSwingingEye(
   eye1: Point3d,
   distance1: number,
   fraction: number,
-  axesAtFraction: Matrix3d
+  axesAtFraction: Matrix3d,
 ): { target: Point3d, eye: Point3d, distance: number } {
   const z0 = axes0.rowZ();
   const z1 = axes1.rowZ();

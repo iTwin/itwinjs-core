@@ -59,7 +59,7 @@ export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference im
     geomClass: GeometryClass,
     modelLo: number, modelHi: number,
     type: BatchType,
-    animationNodeId: number
+    animationNodeId: number,
   ): FeatureAppearance | undefined {
     if (!this._models.isViewed(modelLo, modelHi))
       return undefined;

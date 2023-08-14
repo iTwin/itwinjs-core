@@ -359,7 +359,7 @@ export class Point4dArray {
   /** unpack from xyzw xyzw... array to array of Point3d and array of weight.
    */
   public static unpackFloat64ArrayToPointsAndWeights(data: Float64Array, points: Point3d[], weights: number[],
-    pointFormatter: (x: number, y: number, z: number) => any = Point3d.create) {
+    pointFormatter: (x: number, y: number, z: number) => any = (x, y, z) => Point3d.create(x, y, z)) {
     points.length = 0;
     weights.length = 0;
     for (let i = 0; i + 3 < data.length; i += 4) {
@@ -832,7 +832,7 @@ export class Point3dArray {
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
   public static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][] {
-    const collector = new PointStringDeepXYZArrayCollector(this.xyzToArray);
+    const collector = new PointStringDeepXYZArrayCollector((x, y, z) => this.xyzToArray(x, y, z));
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
   }
@@ -876,7 +876,7 @@ export class Point3dArray {
    * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
    */
   public static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[] {
-    const collector = new PointStringDeepXYZArrayCollector(Point3d.create);
+    const collector = new PointStringDeepXYZArrayCollector((x, y, z) => Point3d.create(x, y, z));
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
   }
@@ -921,7 +921,7 @@ export class Point3dArray {
     let n = points.length;
     // Get deep copy
     const xy1: Point3d[] = points.slice(0, n);
-    xy1.sort(Geometry.lexicalXYLessThan);
+    xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     if (n < 3) {
       for (const p of xy1)
         hullPoints.push(p);
@@ -946,7 +946,7 @@ export class Point3dArray {
     const i0 = hullPoints.length - 1;
     xy1.length = numInside;
     xy1.push(hullPoints[0]);    // force first point to be reconsidered as final hull point.
-    xy1.sort(Geometry.lexicalXYLessThan);
+    xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     n = xy1.length;
     // xy1.back () is already on stack.
     hullPoints.push(xy1[n - 1]);

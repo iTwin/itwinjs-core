@@ -240,7 +240,7 @@ export class HalfEdgeGraphSpineContext {
         candidates.push(new NodeSortKey(node, b));
     }
 
-    candidates.sort(NodeSortKey.compareForSort);
+    candidates.sort((dataA, dataB) => NodeSortKey.compareForSort(dataA, dataB));
 
     let key;
     while (undefined !== (key = candidates.pop())) {

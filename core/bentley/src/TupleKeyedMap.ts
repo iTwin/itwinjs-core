@@ -43,7 +43,7 @@ export class TupleKeyedMap<K extends readonly any[], V> {
 
   private makeKeyError() {
     return Error(
-      "A Bad key was used, it didn't match the key type of the the map."
+      "A Bad key was used, it didn't match the key type of the the map.",
     );
   }
 

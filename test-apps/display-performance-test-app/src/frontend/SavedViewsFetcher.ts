@@ -11,7 +11,7 @@ export class SavedViewsFetcher {
   public async getSavedViews(
     iTwinId: string,
     iModelId: string,
-    accessToken: string
+    accessToken: string,
   ): Promise<ViewStateSpec[]> {
     if(this._cache[iModelId])
       return this._cache[iModelId];
@@ -19,7 +19,7 @@ export class SavedViewsFetcher {
     const savedViewsList = await fetchSavedViewsList(iTwinId, iModelId, accessToken);
 
     const savedViews = await Promise.all(
-      savedViewsList.savedViews.map(async (sv) => fetchSavedView(sv.id, accessToken))
+      savedViewsList.savedViews.map(async (sv) => fetchSavedView(sv.id, accessToken)),
     );
 
     // Sanity check for the future
@@ -88,6 +88,6 @@ async function fetchSavedView(savedViewId: string, accessToken: string): Promise
       headers: {
         Authorization: accessToken, // eslint-disable-line @typescript-eslint/naming-convention
       },
-    }
+    },
   ).then(async (response) => response.json());
 }

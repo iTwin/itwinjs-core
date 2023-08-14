@@ -91,7 +91,7 @@ export class Ray3d implements BeJSONFunctions {
     return Geometry.safeDivideFraction(
       this.dotProductToPoint(spacePoint),
       this.direction.magnitudeSquared(),
-      0
+      0,
     );
   }
   /** Return the `spacePoint` projected onto the ray. */
@@ -146,7 +146,7 @@ export class Ray3d implements BeJSONFunctions {
    * @param result
    */
   public static createWeightedDerivative(
-    weightedPoint: Float64Array, weightedDerivative: Float64Array, result?: Ray3d
+    weightedPoint: Float64Array, weightedDerivative: Float64Array, result?: Ray3d,
   ): Ray3d | undefined {
     const w = weightedPoint[3];
     const dw = weightedDerivative[3];
@@ -163,14 +163,14 @@ export class Ray3d implements BeJSONFunctions {
     return Ray3d.createXYZUVW(
       x * divW, y * divW, z * divW,
       dx * divWW, dy * divWW, dz * divWW,
-      result
+      result,
     );
   }
   /** Create from coordinates of the origin and direction. */
   public static createXYZUVW(
     originX: number, originY: number, originZ: number,
     directionX: number, directionY: number, directionZ: number,
-    result?: Ray3d
+    result?: Ray3d,
   ): Ray3d {
     if (result) {
       result.getOriginRef().set(originX, originY, originZ);
@@ -230,7 +230,7 @@ export class Ray3d implements BeJSONFunctions {
     return Ray3d.create(
       transform.multiplyPoint3d(this.origin, result?.origin),
       transform.multiplyVector(this.direction, result?.direction),
-      result
+      result,
     );
   }
   /** Create a clone and return the inverse transform of the clone. */
@@ -240,9 +240,9 @@ export class Ray3d implements BeJSONFunctions {
     return Ray3d.create(
       transform.multiplyInversePoint3d(this.origin, result?.origin)!,
       transform.matrix.multiplyInverseXYZAsVector3d(
-        this.direction.x, this.direction.y, this.direction.z, result?.direction
+        this.direction.x, this.direction.y, this.direction.z, result?.direction,
       )!,
-      result
+      result,
     );
   }
   /** Apply a transform in place. */
@@ -392,7 +392,7 @@ export class Ray3d implements BeJSONFunctions {
    * @returns the intersection point if ray intersects the triangle. Otherwise, return undefined.
   */
   public intersectionWithTriangle(
-    vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d
+    vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d,
   ): Point3d | undefined {
     /**
      * Suppose ray is shown by "rayOrigin + t*rayVector" and barycentric coordinate of point
@@ -507,7 +507,7 @@ export class Ray3d implements BeJSONFunctions {
       SmallSystem.ray3dXYZUVWClosestApproachUnbounded(
         rayA.origin.x, rayA.origin.y, rayA.origin.z, rayA.direction.x, rayA.direction.y, rayA.direction.z,
         rayB.origin.x, rayB.origin.y, rayB.origin.z, rayB.direction.x, rayB.direction.y, rayB.direction.z,
-        intersectionFractions
+        intersectionFractions,
       )
     ) {
       fractionA = intersectionFractions.x;
@@ -540,7 +540,7 @@ export class Ray3d implements BeJSONFunctions {
    * @param result optional receiver.
    */
   public static interpolatePointAndTangent(
-    pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d
+    pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d,
   ): Ray3d {
     result = result ?? Ray3d.createZero();
     const dx = pt2.x - pt1.x;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -41,25 +41,19 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

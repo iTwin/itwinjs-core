@@ -22,17 +22,17 @@
     "@itwin/core-extension": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/imodel-transformer": "^0.1.1",
-    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
-    "@itwin/projects-client": "^0.6.0",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/imodel-transformer": "^0.1.1",
+    "@itwin/itwins-client": "^1.2.0",
     "@itwin/service-authorization": "^0.6.3",
-    "fs-extra": "^8.1.0",
-    "@xmldom/xmldom": "~0.8.5"
+    "@xmldom/xmldom": "~0.8.5",
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -42,7 +42,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
@@ -58,11 +58,5 @@
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
     "timeout": 999999
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

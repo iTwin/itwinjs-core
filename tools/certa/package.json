@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -18,7 +18,8 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "docs": "",
-    "cover": ""
+    "cover": "",
+    "postinstall": "npx playwright install chromium"
   },
   "keywords": [
     "Bentley",
@@ -43,7 +44,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/detect-port": "~1.1.0",
     "@types/express": "^4.16.1",
@@ -52,7 +53,7 @@
     "@types/node": "18.16.1",
     "@types/yargs": "17.0.19",
     "electron": "^25.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
@@ -63,18 +64,6 @@
   "peerDependenciesMeta": {
     "electron": {
       "optional": true
-    }
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "@typescript-eslint/no-misused-promises": "off",
-      "@typescript-eslint/no-var-requires": "off",
-      "@typescript-eslint/unbound-method": "off",
-      "no-console": "off"
     }
   }
 }

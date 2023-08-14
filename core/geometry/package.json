@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -37,14 +37,14 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
     "chai": "^4.1.2",
     "debug": "^2.6.9",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
@@ -61,16 +61,5 @@
     "functions": 85,
     "branches": 70,
     "lines": 85
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "@typescript-eslint/indent": "off",
-      "max-statements-per-line": "off",
-      "nonblock-statement-body-position": "off"
-    }
   }
 }

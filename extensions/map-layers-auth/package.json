@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-auth",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers-auth.js",
   "module": "lib/esm/map-layers-auth.js",
@@ -38,13 +38,13 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
@@ -62,12 +62,6 @@
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": false
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   },
   "mocha": {
     "require": [

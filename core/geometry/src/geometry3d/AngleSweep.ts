@@ -146,7 +146,7 @@ export class AngleSweep implements BeJSONFunctions {
   public interpolate(fraction: number, other: AngleSweep): AngleSweep {
     return new AngleSweep(
       Geometry.interpolate(this._radians0, fraction, other._radians0),
-      Geometry.interpolate(this._radians1, fraction, other._radians1)
+      Geometry.interpolate(this._radians1, fraction, other._radians1),
     );
   }
   /** Copy from other AngleSweep. */

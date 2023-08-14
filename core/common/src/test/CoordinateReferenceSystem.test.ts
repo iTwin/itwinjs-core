@@ -217,7 +217,7 @@ describe("Geodetic Settings", () => {
       sourceDatumId: "NAD27",
       targetDatumId: "NAD83/HARN-A",
     }, "input");
-  }
+  },
   );
 
   /* Geodetic Ellipsoid unit tests */

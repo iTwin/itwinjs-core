@@ -317,7 +317,7 @@ it("PolyfaceAuxData", () => {
     Sample.addAuxDataScalarChannel(p.data, 2,
       "distance", "time",
       5, 2, 3, AuxChannelDataType.Distance,
-      (t: number, xyz: Point3d) => (t * xyz.x + t * (t - 1) * xyz.y)
+      (t: number, xyz: Point3d) => (t * xyz.x + t * (t - 1) * xyz.y),
     );
     testGeometryQueryRoundTrip(ck, p);
   }

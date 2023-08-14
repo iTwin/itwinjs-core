@@ -123,7 +123,7 @@ export class OrderedRotationAngles {
       Angle.createRadians(xRadian),
       Angle.createRadians(yRadian),
       Angle.createRadians(zRadian),
-      order
+      order,
     );
   }
   /**
@@ -149,7 +149,7 @@ export class OrderedRotationAngles {
       Angle.degreesToRadians(zDegrees),
       order,
       xyzRotationIsClockwise,
-      result
+      result,
     );
   }
   /**
@@ -175,7 +175,7 @@ export class OrderedRotationAngles {
       zRotation.radians,
       order,
       xyzRotationIsClockwise,
-      result
+      result,
     );
   }
   /**

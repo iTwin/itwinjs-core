@@ -12,25 +12,26 @@ import { Clipper, ClipUtilities } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
-/** A BooleanClipFactory is a factory to create objects that implement interior nodes of a tree of boolean clip operations.
+/**
+ * A BooleanClipFactory is a factory to create objects that implement interior nodes of a tree of boolean clip operations.
  * * These methods create specific clip tree types:
  *   * Union
  *   * Intersection
  *   * Parity
  *   * Difference
- * * Each construction has a `keepInside` flag that optionally negates the initial result of the parity, intersection, parity, or difference:
- *   * if `keepInside === true`, accept the "inside" of the initial result
- *   * if `keepInside === false`, accept the "outside"  of the initial result
- * * These methods create various other specialized clippers
- *   *
+ * * Each construction has a `keepInside` flag that optionally negates the initial result of the parity, intersection,
+ * parity, or difference:
+ *   * if `keepInside === true`, accept the "inside" of the initial result.
+ *   * if `keepInside === false`, accept the "outside"  of the initial result.
+ * * These methods create various other specialized clippers.
  * @public
  */
 export class BooleanClipFactory {
   /**
-   * Create a boolean clipper which performs a union over its children
-   * * if `keepInside === true`, accept the "inside" of the union result
-   * * if `keepInside === false`, accept the "outside" of the union result
-   * @param clippers clip objects to capture
+   * Create a boolean clipper which performs a union over its children.
+   * * if `keepInside === true`, accept the "inside" of the union result.
+   * * if `keepInside === false`, accept the "outside" of the union result.
+   * @param clippers clip objects to capture.
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
@@ -39,10 +40,10 @@ export class BooleanClipFactory {
     return result;
   }
   /**
-   * Create a boolean clipper which performs an intersection over its children
-   * * if `keepInside === true`, accept the "inside" of the intersection result
-   * * if `keepInside === false`, accept the "outside" of the intersection result
-   * @param clippers clip objects to capture
+   * Create a boolean clipper which performs an intersection over its children.
+   * * if `keepInside === true`, accept the "inside" of the intersection result.
+   * * if `keepInside === false`, accept the "outside" of the intersection result.
+   * @param clippers clip objects to capture.
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
@@ -51,10 +52,10 @@ export class BooleanClipFactory {
     return result;
   }
   /**
-   * Create a boolean clipper which performs a parity over its children
-   * * if `keepInside === true`, accept the "inside" of the parity result
-   * * if `keepInside === false`, accept the "outside" of the parity result
-   * @param clippers clip objects to capture
+   * Create a boolean clipper which performs a parity over its children.
+   * * if `keepInside === true`, accept the "inside" of the parity result.
+   * * if `keepInside === false`, accept the "outside" of the parity result.
+   * @param clippers clip objects to capture.
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
@@ -63,10 +64,11 @@ export class BooleanClipFactory {
     return result;
   }
   /**
-   * Create a boolean clipper which performs a difference operation for points "inside `primaryClipper`" and "outside `excludedClipper`"
-   * * if `keepInside === true`, accept the "inside" of the difference
-   * * if `keepInside === false`, accept the "outside" of the difference
-   * @param primaryClipper any clip object whose output is treated as positive
+   * Create a boolean clipper which performs a difference operation for points "inside `primaryClipper`" and
+   * "outside `excludedClipper`".
+   * * if `keepInside === true`, accept the "inside" of the difference.
+   * * if `keepInside === false`, accept the "outside" of the difference.
+   * @param primaryClipper any clip object whose output is treated as positive.
    * @param excludeClip any clipper whose output is treated as negative.
    * @param keepInside flag to select results inside or outside the initial `primary minus excludeClipper` clippers.
    */
@@ -75,20 +77,17 @@ export class BooleanClipFactory {
     return this.createCaptureIntersection([primaryClipper, mask], keepInside);
   }
   /**
-   * Create a boolean clipper which performs the reverse of that of `primaryClipper`
-   * @param primaryClipper clip objects to capture
+   * Create a boolean clipper which performs the reverse of that of `primaryClipper`.
+   * @param primaryClipper clip objects to capture.
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureClipOutside(primaryClipper: Clipper): Clipper {
     return this.createCaptureUnion([primaryClipper], false);
   }
-
   /**
-   * convert `source` to an array of clipper objects.
+   * Convert `source` to an array of clipper objects.
    * * ANY TYPE OF Clipper is accepted.
    * * REMARK: This is normally called only from the primary public method `parseToClipper`.
-   * @param source
-   * @param internal
    */
   public static parseToClipperArray(source: any): Clipper[] | undefined {
     if (Array.isArray(source)) {
@@ -111,7 +110,7 @@ export class BooleanClipFactory {
     return undefined;
   }
   /**
-   * look for content that represents a clipper.
+   * Look for content that represents a clipper.
    * * Possible outputs are
    *   * `ClipPlane`
    *   * `ConvexClipPlaneSet`
@@ -188,6 +187,5 @@ export class BooleanClipFactory {
         return clipper.toJSON();
     }
     return undefined;
-
   }
 }

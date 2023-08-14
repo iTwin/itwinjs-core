@@ -365,11 +365,11 @@ describe("Triangulation", () => {
         let yMax = 0.0;
         const baseVectorB = baseVectorA.clone();
         for (const generatorFunction of [
-          Sample.createFractalSquareReversingPattern,
-          Sample.createFractalDiamondConvexPattern,
-          Sample.createFractalLReversingPattern,
-          Sample.createFractalHatReversingPattern,
-          Sample.createFractalLMildConcavePatter]) {
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor)]) {
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             const transform0 = Transform.createFixedPointAndMatrix(points[0], Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
@@ -1100,11 +1100,11 @@ describe("Triangulation", () => {
     for (const numRecursion of [1, 2, 3]) {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         for (const generatorFunction of [
-          Sample.createFractalSquareReversingPattern,
-          Sample.createFractalDiamondConvexPattern,
-          Sample.createFractalLReversingPattern,
-          Sample.createFractalHatReversingPattern,
-          Sample.createFractalLMildConcavePatter]) {
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
+          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor)]) {
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             let range = Range3d.createArray(points);

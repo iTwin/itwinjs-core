@@ -346,14 +346,14 @@ describe("TileStorage", () => {
   } as unknown as FrontendStorage;
 
   function stubTileRpcInterface(
-    getTileCacheConfigReturns: TransferConfig | undefined
+    getTileCacheConfigReturns: TransferConfig | undefined,
   ): sinon.SinonStub<[], IModelTileRpcInterface> {
     return sinon.stub(IModelTileRpcInterface, "getClient").returns(
       {
         async getTileCacheConfig(): Promise<TransferConfig | undefined> {
           return Promise.resolve(getTileCacheConfigReturns);
         },
-      } as unknown as IModelTileRpcInterface
+      } as unknown as IModelTileRpcInterface,
     );
   }
 

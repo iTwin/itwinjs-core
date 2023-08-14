@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
@@ -294,23 +294,25 @@ class TestITwin {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
-  private static _iTwinAccessClient?: ProjectsAccessClient;
+  private static _iTwinAccessClient?: ITwinsAccessClient;
 
-  private static get iTwinClient(): ProjectsAccessClient {
+  private static get iTwinClient(): ITwinsAccessClient {
     if (this._iTwinAccessClient === undefined)
-      this._iTwinAccessClient = new ProjectsAccessClient();
+      this._iTwinAccessClient = new ITwinsAccessClient();
     return this._iTwinAccessClient;
   }
 
   public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = TestITwin.iTwinClient;
-    const iTwinList: ITwin[] = await client.getAll(accessToken, {
-      search: {
-        searchString: name,
-        propertyName: ProjectsSearchableProperty.Name,
-        exactMatch: true,
-      },
+    const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(accessToken, ITwinSubClass.Project, {
+      displayName: name,
     });
+
+    const iTwinList = iTwinListResponse.data;
+
+    if (!iTwinList) {
+      throw new Error(`ITwin ${name} returned with no data when queried.`);
+    }
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

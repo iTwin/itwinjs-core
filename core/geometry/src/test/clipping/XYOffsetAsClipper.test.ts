@@ -4,36 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-
-import { Checker } from "../Checker";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Range3d } from "../../geometry3d/Range";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { ClipUtilities } from "../../clipping/ClipUtils";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { Angle } from "../../geometry3d/Angle";
-import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { Path } from "../../curve/Path";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { SweepContour } from "../../solid/SweepContour";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveOps } from "../../curve/CurveOps";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
+import { Path } from "../../curve/Path";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { SweepContour } from "../../solid/SweepContour";
 import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], clipper: UnionOfConvexClipPlaneSets,
   x0: number,
@@ -218,7 +217,7 @@ describe("OffsetByClip", () => {
       if (boundary) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullRoadMesh, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, y0);
-        const chainsA = OffsetHelpers.collectChains([boundary], 1.0e-6);
+        const chainsA = CurveOps.collectChains([boundary], 1.0e-6);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chainsA, x0 + dx, y0);
         // ugh .. we know it's a closed Loop.   collectChains is fuzzy in its return type ..
         if (chainsA instanceof Path) {

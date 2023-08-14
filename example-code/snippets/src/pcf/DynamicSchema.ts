@@ -41,7 +41,7 @@ export async function tryGetSchema(db: IModelDb, schemaName: string): Promise<Me
 export async function syncDynamicSchema(
   db: IModelDb,
   domainSchemaNames: string[],
-  props: DynamicSchemaProps
+  props: DynamicSchemaProps,
 ): Promise<pcf.ItemState> {
 
   const { schemaName } = props;
@@ -120,7 +120,7 @@ async function createDynamicSchema(
   db: IModelDb,
   version: SchemaVersion,
   domainSchemaNames: string[],
-  props: DynamicSchemaProps
+  props: DynamicSchemaProps,
 ): Promise<MetaSchema> {
 
   const map = props.dynamicEntityMap;

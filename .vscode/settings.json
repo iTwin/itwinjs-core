@@ -12,12 +12,7 @@
   "eslint.enable": true,
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
-  "eslint.options": {
-    "overrideConfigFile": "./package.json",
-    "resolvePluginsRelativeTo": "../../common/temp/node_modules/.pnpm/@itwin+eslint-plugin*/node_modules",
-    "useEslintrc": false
-  },
-  "eslint.packageManager": "pnpm",
+  "eslint.experimental.useFlatConfig": true,
   "eslint.validate": [
     "javascript",
     "javascriptreact",

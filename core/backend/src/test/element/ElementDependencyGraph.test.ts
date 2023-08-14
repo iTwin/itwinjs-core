@@ -430,7 +430,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges();
 
     assert.deepEqual(helper.dres.beforeOutputs, [e2id]); // only called on directly changed root elements
-    assert.deepEqual(helper.dres.allInputsHandled, [e3id, e4id],);
+    assert.deepEqual(helper.dres.allInputsHandled, [e3id, e4id]);
     assertRels(helper.dres.rootChanged, [ede_2_3.toJSON(), ede_3_4.toJSON()]);
 
     // Modify e1 directly. That should propagate to the rest of the nodes. Each should get an _onAllInputsHandled callback

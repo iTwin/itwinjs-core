@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.1.0-dev.67",
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67",
-    "@itwin/core-common": "workspace:^4.1.0-dev.67",
-    "@itwin/core-frontend": "workspace:^4.1.0-dev.67"
+    "@itwin/core-backend": "workspace:^4.2.0-dev.4",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4",
+    "@itwin/core-common": "workspace:^4.2.0-dev.4",
+    "@itwin/core-frontend": "workspace:^4.2.0-dev.4"
   },
   "dependencies": {
     "lodash": "^4.17.10",
@@ -48,7 +48,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
@@ -60,15 +60,9 @@
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

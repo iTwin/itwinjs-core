@@ -197,7 +197,7 @@ export class ChainMergeContext {
       p.sortData = this.primarySortKey(p);
     }
     const sortArray = this._graph.allHalfEdges.slice();
-    sortArray.sort(ChainMergeContext.nodeCompareSortData);
+    sortArray.sort((nodeA, nodeB) => ChainMergeContext.nodeCompareSortData(nodeA, nodeB));
     const xyzTolerance = this._options.tolerance;
     // A node is unvisited if it is its own vertex successor !!!
     // otherwise the node has already been twisted into a base vertex.

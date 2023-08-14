@@ -2,6 +2,12 @@
   "name": "@itwin/core-extension",
   "entries": [
     {
+      "version": "4.0.6",
+      "tag": "@itwin/core-extension_v4.0.6",
+      "date": "Mon, 24 Jul 2023 05:07:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.5",
       "tag": "@itwin/core-extension_v4.0.5",
       "date": "Tue, 18 Jul 2023 12:21:56 GMT",

@@ -4,24 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as fs from "fs";
+import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveChain";
+import { CurveChain } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import * as fs from "fs";
-import { CurveChain } from "../../curve/CurveCollection";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Arc3d } from "../../curve/Arc3d";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /**
  * Exercise PolygonWireOffset and output to a file.

@@ -34,7 +34,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/express": "^4.16.1",
     "@types/mocha": "^8.2.2",
@@ -45,7 +45,7 @@
     "buffer": "^6.0.3",
     "browserify-zlib": "^0.2.0",
     "chai": "^4.1.2",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "null-loader": "^4.0.1",
     "rimraf": "^3.0.2",
@@ -54,11 +54,5 @@
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

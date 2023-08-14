@@ -52,7 +52,7 @@ export function createTestSimpleContentField(props?: {
     props?.isReadonly ?? false,
     props?.priority ?? 0,
     props?.editor,
-    props?.renderer
+    props?.renderer,
   );
 }
 
@@ -79,7 +79,7 @@ export function createTestPropertiesContentField(props: {
     props.priority ?? 0,
     props.properties,
     props.editor,
-    props.renderer
+    props.renderer,
   );
 }
 

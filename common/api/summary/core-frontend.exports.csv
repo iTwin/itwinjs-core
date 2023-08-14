@@ -502,6 +502,7 @@ internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
+public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
@@ -820,7 +821,7 @@ public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
 public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
 public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
-internal;TentativeOrAccuSnap
+public;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
 public;class TerrainMeshProvider

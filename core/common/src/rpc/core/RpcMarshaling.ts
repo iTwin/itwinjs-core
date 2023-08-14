@@ -64,7 +64,7 @@ export class RpcMarshaling {
 
     marshalingTarget = serialized;
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
-    serialized.objects = JSON.stringify(value, WireFormat.marshal);
+    serialized.objects = JSON.stringify(value, (_key, _value) => WireFormat.marshal(_key, _value));
     marshalingTarget = undefined as any;
     chunkThreshold = 0;
 
@@ -81,7 +81,7 @@ export class RpcMarshaling {
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     let result;
     try {
-      result = JSON.parse(value.objects, WireFormat.unmarshal);
+      result = JSON.parse(value.objects, (_key, _value) => WireFormat.unmarshal(_key, _value));
     } catch (error) {
       if (error instanceof SyntaxError)
         throw new IModelError(BentleyStatus.ERROR, `Invalid JSON: "${value.objects}"`);

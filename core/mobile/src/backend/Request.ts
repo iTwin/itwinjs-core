@@ -256,7 +256,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     });
   }
 
-  const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
+  const errorCallback = options.errorCallback ? options.errorCallback : (response: any) => ResponseError.parse(response);
 
   if (options.readStream) {
     if (typeof window !== "undefined")

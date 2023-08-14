@@ -117,7 +117,7 @@ export class InterpolationCurve3dOptions {
     isChordLenTangent: number | undefined,
     isNaturalTangents: number | undefined,
     startTangent: Vector3d | undefined,
-    endTangent: Vector3d | undefined
+    endTangent: Vector3d | undefined,
   ) {
     this._order = Geometry.resolveToUndefined(order, 0);
     this._closed = Geometry.resolveToUndefined(closed, false);

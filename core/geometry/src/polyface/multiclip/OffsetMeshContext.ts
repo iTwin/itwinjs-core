@@ -550,7 +550,7 @@ export class OffsetMeshContext {
       node.isMaskSet(this.outsideEndOfChamferFace) ? "(@sling)" : "",
       node.isMaskSet(this.outsideOfChamferFace) ? "(@chamfer)" : "",
       this.getCoordinateString(node, showXYZ, showFaceSuccessorXYZ),
-      "]"
+      "]",
     );
     return v;
   }
@@ -628,7 +628,7 @@ export class OffsetMeshContext {
         }
       }
       return 0.0;
-    }
+    },
     );
   }
 
@@ -640,7 +640,7 @@ export class OffsetMeshContext {
         nodeAroundVertex.setMask(this._offsetCoordinatesReassigned);
       }
       return 0.0;
-    }
+    },
     );
   }
 
@@ -678,7 +678,7 @@ export class OffsetMeshContext {
       if (sectorData)
         data.accumulateNormal(node, sectorData.normal, inactiveNodeMask);
       return 0.0;
-    }
+    },
     );
     if (!data.finishNormalAveraging()) {
       return undefined;
@@ -688,7 +688,7 @@ export class OffsetMeshContext {
       if (sectorData)
         data.recordDeviation(sectorData.normal, !node.isMaskSet(inactiveNodeMask));
       return 0.0;
-    }
+    },
     );
     return data.maxDeviationRadians;
   }
@@ -1152,7 +1152,7 @@ export class OffsetMeshContext {
     sourceNode: HalfEdge,
     destinationStartNode: HalfEdge,
     description: string,
-    workPoint: Point3d
+    workPoint: Point3d,
   ) {
     if (OffsetMeshContext.stringDebugFunction !== undefined)
       OffsetMeshContext.stringDebugFunction(`    ${description} ${this.inspectMasks(sourceNode)} to ${this.inspectMasks(destinationStartNode)}} `);

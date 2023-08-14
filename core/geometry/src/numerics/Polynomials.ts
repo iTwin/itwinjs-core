@@ -7,7 +7,6 @@
  * @module Numerics
  */
 
-// import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -20,10 +19,10 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
 
-// import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
 /* eslint-disable @typescript-eslint/naming-convention */
+
 /**
  * degree 2 (quadratic) polynomial in for y = c0 + c1*x + c2*x^2
  * @internal

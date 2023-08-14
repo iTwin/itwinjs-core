@@ -9,7 +9,6 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { AnyCurve } from "./CurveChain";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -64,7 +63,7 @@ export class Loop extends CurveChain {
     return Loop.create(linestring);
   }
   /** Create a loop with the stroked form of this loop. */
-  public cloneStroked(options?: StrokeOptions): AnyCurve {
+  public cloneStroked(options?: StrokeOptions): Loop {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
@@ -114,7 +113,7 @@ export class LoopCurveLoopCurve {
   public curveB?: CurvePrimitive;
   /** Constructor */
   public constructor(
-    loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined
+    loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined,
   ) {
     this.loopA = loopA;
     this.curveA = curveA;

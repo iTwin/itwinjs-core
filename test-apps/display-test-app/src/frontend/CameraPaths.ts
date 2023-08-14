@@ -53,7 +53,7 @@ class Keyframe {
       this.target.clone(),
       this.up.clone(),
       this.lensAngle?.clone(),
-      this.extents?.clone()
+      this.extents?.clone(),
     );
   }
 
@@ -233,7 +233,7 @@ class CameraPath {
     return new CameraPath(
       json.name,
       json.duration,
-      json.keyframes.map((keyframeProps) => Keyframe.fromJSON(keyframeProps))
+      json.keyframes.map((keyframeProps) => Keyframe.fromJSON(keyframeProps)),
     );
   }
 
@@ -662,7 +662,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
           targetPoint: keyframe.target,
           upVector: keyframe.up,
           lensAngle,
-        }
+        },
       );
 
     } else {
@@ -676,7 +676,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
           viewDirection: (keyframe.target.minus(keyframe.location)),
           upVector: keyframe.up,
           newExtents: keyframe.extents,
-        }
+        },
       );
     }
 

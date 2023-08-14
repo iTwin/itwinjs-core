@@ -1167,7 +1167,7 @@ export abstract class GltfReader {
     }
 
     const uvs = draco.attributes.TEXCOORD_0?.value;
-    if (uvs && (uvs.length & 2) === 0)
+    if (uvs && (uvs.length % 2) === 0)
       for (let i = 0; i < uvs.length; i += 2)
         mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
 

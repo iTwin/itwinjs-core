@@ -55,7 +55,7 @@ export class SmartDeviceDecorator implements Decorator {
         { x: 40, y: 40 },
         value.smartDeviceId,
         value.smartDeviceType,
-        value.id
+        value.id,
       );
 
       this.markerSet.push(smartDeviceMarker);

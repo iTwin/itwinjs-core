@@ -468,7 +468,7 @@ export class Angle implements BeJSONFunctions {
    * @param dotUV dot product of vectorU with vectorV
    */
   public static dotProductsToHalfAngleTrigValues(
-    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true
+    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true,
   ): TrigValues {
 
     const cos2t0 = dotUU - dotVV;
@@ -488,7 +488,7 @@ export class Angle implements BeJSONFunctions {
    * @param vz z component of vector v
    */
   public static radiansBetweenVectorsXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number
+    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);

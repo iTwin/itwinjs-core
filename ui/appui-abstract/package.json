@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/certa": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
@@ -57,7 +57,7 @@
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "ignore-styles": "^5.0.1",
     "mocha": "^10.0.0",
@@ -72,27 +72,5 @@
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
-  ],
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": [
-      "plugin:@itwin/itwinjs-recommended",
-      "plugin:@itwin/jsdoc"
-    ],
-    "rules": {
-      "max-statements-per-line": "off"
-    },
-    "overrides": [
-      {
-        "files": [
-          "src/test/**/*"
-        ],
-        "rules": {
-          "deprecation/deprecation": "off"
-        }
-      }
-    ]
-  }
+  ]
 }

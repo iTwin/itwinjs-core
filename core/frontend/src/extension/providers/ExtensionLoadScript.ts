@@ -32,6 +32,6 @@ function execute(m: any) {
   if (m.default && typeof m.default === "function")
     return m.default();
   throw new Error(
-    `Failed to execute extension. No default function was found to execute.`
+    `Failed to execute extension. No default function was found to execute.`,
   );
 }

@@ -124,7 +124,7 @@ export class StrokeOptions {
    * from the options.
    */
   public static applyAngleTol(
-    options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number
+    options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number,
   ): number {
     sweepRadians = Math.abs(sweepRadians);
     let stepRadians = defaultStepRadians ? defaultStepRadians : Math.PI / 8.0;
@@ -141,7 +141,7 @@ export class StrokeOptions {
    * @param edgeLength
    */
   public static applyMaxEdgeLength(
-    options: StrokeOptions | undefined, minCount: number, edgeLength: number
+    options: StrokeOptions | undefined, minCount: number, edgeLength: number,
   ): number {
     if (edgeLength < 0)
       edgeLength = - edgeLength;

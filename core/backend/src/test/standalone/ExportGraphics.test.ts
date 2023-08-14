@@ -5,13 +5,13 @@
 
 import { assert } from "chai";
 import * as fs from "fs";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, DbResult, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps,
+  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
@@ -37,9 +37,14 @@ describe("exportGraphics", () => {
     return iModel.elements.insertElement(elementProps);
   }
 
-  function insertRenderMaterialWithTexture(name: string, textureId: Id64String): Id64String {
+  function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: { TextureId: textureId } });
+    const props: TextureMapProps = { TextureId: textureId, pattern_offset: [0.0, 0.0] };
+    if (patternScale)
+      props.pattern_scale = patternScale;
+    if (patternScaleMode)
+      props.pattern_scalemode = patternScaleMode;
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: props });
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
@@ -128,7 +133,7 @@ describe("exportGraphics", () => {
     builder.appendGeometryParamsChange(geometryParams);
     // Cube with one material attached to two faces and another material attached to other four faces
     const testBrepData: string = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" }),
     ).data;
     builder.appendBRepData({
       data: testBrepData,
@@ -170,7 +175,7 @@ describe("exportGraphics", () => {
     geometryParams.lineColor = ColorDef.fromString("peachPuff"); // line color should be superceded by material color
     builder.appendGeometryParamsChange(geometryParams);
     const testBrepData: string = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" }),
     ).data;
     builder.appendBRepData({
       // Cube with one material attached to two faces and another material attached to other four faces
@@ -202,18 +207,24 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
   });
 
-  it("handles materials with textures", () => {
+  let textureIdString: undefined | string;
+  function getTextureId(): string {
+    if (textureIdString !== undefined)
+      return textureIdString;
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const pngData = new Uint8Array([
-      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
+    const pngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
       74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
       97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
       84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
       0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]);
-    const textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
-    const materialId = insertRenderMaterialWithTexture("test-material-two", textureId);
+    return textureIdString = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+  }
+
+  it("handles materials with textures", () => {
+    const textureId = getTextureId();
+    const materialId = insertRenderMaterialWithTexture("test-material-2", textureId);
     const elementColor = ColorDef.fromString("aquamarine");
 
     const builder = new GeometryStreamBuilder();
@@ -237,6 +248,132 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].materialId, materialId);
     assert.strictEqual(infos[0].textureId, textureId);
     assert.strictEqual(infos[0].color, elementColor.tbgr);
+  });
+
+  it("creates meshes with expected parameters", () => {
+    const makeTriangle = (data: Float32Array, i0: number, i1: number, i2: number, dim: 2 | 3): number[] => {
+      const tri: number[] = [];
+      for (const i of [i0, i1, i2])
+        for (let j = 0; j < dim; ++j)
+          tri.push(data[dim * i + j]);
+      return tri;
+    };
+
+    const makeFacet = (builder: PolyfaceBuilder, xyz: Float32Array, normals: Float32Array, uv: Float32Array, i0: number, i1: number, i2: number) => {
+      builder.addFacetFromGrowableArrays(
+        GrowableXYZArray.create(makeTriangle(xyz, i0, i1, i2, 3)),
+        GrowableXYZArray.create(makeTriangle(normals, i0, i1, i2, 3)),
+        GrowableXYArray.create(makeTriangle(uv, i0, i1, i2, 2)),
+        undefined, // no colors
+      );
+    };
+
+    const negateV = (param: number, index: number): number => {
+      return (index % 2) ? 1 - param : param;
+    };
+
+    const unNegateV = (param: number, index: number): number => {
+      return (index % 2) ? 2 - param : param;
+    };
+
+    /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
+    const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
+      const uvArray: Float32Array[][] = [[],[]];
+      uvArray[1].push(Float32Array.from(uvRaw, negateV));
+      uvArray[1].push(uvVNegatedMeters);
+      for (let i = 0; i < 2; ++i)
+        uvArray[0].push(Float32Array.from(uvArray[1][i], unNegateV));
+      return uvArray;
+    };
+
+    const materials: Id64String[][] = [["",""],["",""]];
+    const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
+      const i = vNegate ? 1 : 0;
+      const j = meters ? 1 : 0;
+      if (materials[i][j] !== "")
+        return materials[i][j];
+      const matName = `test-material-${vNegate ? `vScaleMinus1` : `vScale1`}-${meters ? `meters` : `relative`}`;
+      const matScale = vNegate ? [1, -1] : [1, 1];
+      const matUnits = meters ? TextureMapUnits.Meters : TextureMapUnits.Relative;
+      return materials[i][j] = insertRenderMaterialWithTexture(matName, getTextureId(), matScale, matUnits);
+    };
+
+    const triangleBuilder = PolyfaceBuilder.create();
+    triangleBuilder.options.needParams = triangleBuilder.options.needNormals = true;
+    const triangleIndices = new Int32Array([0, 1, 2]);
+    const triangleXYZ = new Float32Array([1, 0, 1, 0, 0, -1, -1, 0, 1]);
+    const triangleNormals = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0]);
+    const triangleUV = new Float32Array([1, 1, 0, 0, 0, 1]);
+    const triangleUVScaled = new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]);
+    for (let i = 0; i < triangleIndices.length; i += 3)
+      makeFacet(triangleBuilder, triangleXYZ, triangleNormals, triangleUV, triangleIndices[i], triangleIndices[i + 1], triangleIndices[i + 2]);
+    const triangle = triangleBuilder.claimPolyface();
+    const triangleParams = mutateUV(triangleUV, triangleUVScaled);
+
+    const cubeBuilder = PolyfaceBuilder.create();
+    cubeBuilder.options.needParams = cubeBuilder.options.needNormals = true;
+    const cubeIndices = new Int32Array([0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 18, 17, 19, 20, 21, 22, 22, 21, 23]);
+    const cubeXYZ = new Float32Array([-1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1]);
+    const cubeNormals = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
+    const cubeUV = new Float32Array([0.875, 0.5, 0.875, 0.25, 0.625, 0.5, 0.625, 0.25, 0.625, 0.25, 0.625, 0, 0.375, 0.25, 0.375, 0, 0.625, 1, 0.625, 0.75, 0.375, 1, 0.375, 0.75, 0.375, 0.5, 0.375, 0.25, 0.125, 0.5, 0.125, 0.25, 0.625, 0.5, 0.625, 0.25, 0.375, 0.5, 0.375, 0.25, 0.625, 0.75, 0.625, 0.5, 0.375, 0.75, 0.375, 0.5]);
+    const cubeUVScaled = new Float32Array([5.25, -3, 5.25, -1, 3.75, -3, 3.75, -1, 3.75, -1, 3.75, 1, 2.25, -1, 2.25, 1, 3.75, -7, 3.75, -5, 2.25, -7, 2.25, -5, 2.25, -3, 2.25, -1, 0.75, -3, 0.75, -1, 3.75, -3, 3.75, -1, 2.25, -3, 2.25, -1, 3.75, -5, 3.75, -3, 2.25, -5, 2.25, -3]);
+    for (let i = 0; i < cubeIndices.length; i += 3)
+      makeFacet(cubeBuilder, cubeXYZ, cubeNormals, cubeUV, cubeIndices[i], cubeIndices[i + 1], cubeIndices[i + 2]);
+    const cube = cubeBuilder.claimPolyface();
+    const cubeParams = mutateUV(cubeUV, cubeUVScaled);
+
+    const testUVParamExport = (geomId: Id64String, expectedParams: Float32Array) => {
+      const infos: ExportGraphicsInfo[] = [];
+      const exportGraphicsOptions: ExportGraphicsOptions = {
+        elementIdArray: [geomId],
+        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      };
+      const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+      assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+      assert.strictEqual(infos.length, 1);
+      assert.strictEqual(infos[0].mesh.params.length, expectedParams.length);
+      assert.deepStrictEqual(infos[0].mesh.params, expectedParams, "exported params as expected");
+    };
+
+    const testMeshWithTexture = (geom: GeometryQuery, expectedUV: Float32Array, material: string) => {
+      const streamBuilder = new GeometryStreamBuilder();
+      const geometryParams = new GeometryParams(seedCategory);
+      geometryParams.materialId = material;
+      streamBuilder.appendGeometryParamsChange(geometryParams);
+      streamBuilder.appendGeometry(geom);
+      const geomId = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamExport(geomId, expectedUV);
+    };
+
+    const testMesh = (geom: GeometryQuery, expectedParams: Float32Array[][]) => {
+      for (const vNegate of [false, true])
+        for (const meters of [false, true])
+          testMeshWithTexture(geom, expectedParams[vNegate ? 1 : 0][meters ? 1 : 0], getMaterial(vNegate, meters));
+    };
+
+    testMesh(triangle, triangleParams);
+    testMesh(cube, cubeParams);
+  });
+
+  it("export elements from local bim file", () => {
+    // edit these values to run
+    const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
+    const inBimFilePathName: string = "";     // e.g., 'd:\\foo.bim'
+    const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
+
+    if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
+      const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
+      const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
+      const infos: ExportGraphicsInfo[] = [];
+      const exportGraphicsOptions: ExportGraphicsOptions = {
+        elementIdArray: elementIds,
+        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      };
+      if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
+        // examine infos here
+      }
+      myIModel.close();
+    }
   });
 
   it("creates meshes with vertices shared as expected", () => {
@@ -485,7 +622,7 @@ describe("exportGraphics", () => {
     const builder = new GeometryStreamBuilder();
     // 4x4x4m slab with a ~1x1x1cm slab cut out of it.
     const testBrep: { data: string } = JSON.parse(
-      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-small-feature.json"), { encoding: "utf8" })
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-small-feature.json"), { encoding: "utf8" }),
     );
     builder.appendBRepData(testBrep);
     const newId = insertPhysicalElement(builder.geometryStream);

@@ -748,9 +748,7 @@ export namespace IModelJson {
         return CoordinateXYZ.create(point);
       return undefined;
     }
-    /** Parse TransitionSpiral content (right side) to TransitionSpiral3d
-     * @alpha
-     */
+    /** Parse TransitionSpiral content (right side) to TransitionSpiral3d. */
     public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
@@ -1412,10 +1410,7 @@ export namespace IModelJson {
       }
       data.xyVectors = [vectorU.toJSON(), vectorV.toJSON()];
     }
-    /**
-     * parse properties of a TransitionSpiral.
-     * @alpha
-     */
+    /** Parse properties of a TransitionSpiral. */
     public handleTransitionSpiral(data: TransitionSpiral3d): any {
       // TODO: HANDLE NONRIGID TRANSFORM !!
       // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the original data

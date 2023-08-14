@@ -642,14 +642,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (SchemaItem.equalByKey(this, key))
         return true;
 
-      return this.traverseBaseClasses(SchemaItem.equalByKey, key);
+      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
     } else {
       assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
 
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
-      return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
     }
   }
 
@@ -661,7 +661,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (SchemaItem.equalByKey(this, targetClass))
       return true;
 
-    return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
+    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
   }
 
   /**
@@ -677,11 +677,20 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * @alpha
-   * A setter method used specifically for schema editing.
+   * A setter method for the ECClass modifier, used specifically for schema editing.
    * @param modifier
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
+  }
+
+  /**
+   * @alpha
+   * A setter method for the ECClass name, used specifically for schema editing.
+   * @param modifier
+   */
+  protected setName(name: string) {
+    this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 }
 
@@ -713,6 +722,7 @@ export abstract class MutableStructClass extends StructClass {
 export abstract class MutableClass extends ECClass {
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
+  public abstract override setName(name: string): void;
   public abstract override createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract override createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract override createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;

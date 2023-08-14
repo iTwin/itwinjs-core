@@ -120,7 +120,7 @@ describe("Point3d", () => {
         ck.testVector3d(vectorJ, vectorI.plus(vectorI.vectorTo(vectorJ)));
         ck.testPoint3d(
           origin.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
-          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3)
+          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3),
         );
 
         const vectorIJ = pointI.vectorTo(pointJ);
@@ -631,24 +631,24 @@ describe("Geometry", () => {
     const axisY: AxisIndex = AxisIndex.Y;
     const axisZ: AxisIndex = AxisIndex.Z;
     ck.testExactNumber(AxisOrder.XYZ,
-      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ"
+      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ",
     );
     ck.testExactNumber(AxisOrder.YZX,
-      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX"
+      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX",
     );
     ck.testExactNumber(AxisOrder.ZXY,
-      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY"
+      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY",
     );
 
     for (const phase of [0, 1, 2, 500, -10, -8, -2, -1]) {
       ck.testExactNumber(AxisOrder.XYZ,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ"
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ",
       );
       ck.testExactNumber(AxisOrder.YZX,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX"
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX",
       );
       ck.testExactNumber(AxisOrder.ZXY,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY"
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY",
       );
       for (const baseAxis of [0, 1, 2]) {
         const axis = phase * 3 + baseAxis;

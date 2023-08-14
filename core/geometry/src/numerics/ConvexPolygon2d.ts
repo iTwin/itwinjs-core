@@ -10,105 +10,8 @@
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range1d } from "../geometry3d/Range";
+import { Ray2d } from "../geometry3d/Ray2d";
 
-/**
- * Ray with xy origin and direction
- * @internal
- */
-export class Ray2d {
-  private _origin: Point2d;
-  private _direction: Vector2d;
-
-  private constructor(origin: Point2d, direction: Vector2d) {
-    this._origin = origin;
-    this._direction = direction;
-  }
-  /** Create from 2d `origin` and `target`.
-   * * `target - origin` is the direction vector.
-   */
-  public static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d {
-    return new Ray2d(origin.clone(), origin.vectorTo(target));
-  }
-  /** Create from (clones of) `origin` point and `direction` vector */
-  public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
-    return new Ray2d(origin.clone(), direction.clone());
-  }
-  /** Capture `origin` and `direction` as ray member variables. */
-  public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
-    return new Ray2d(origin, direction);
-  }
-  /** Get the (REFERENCE TO) the ray origin. */
-  public get origin() { return this._origin; }
-  /** Get the (REFERENCE TO) the ray direction. */
-  public get direction() { return this._direction; }
-
-  /**
-   *  Return a ray that is parallel at distance to the left, specified as fraction of the ray's direction vector.
-   */
-  public parallelRay(leftFraction: number): Ray2d {
-    return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction);
-  }
-  /** Return a ray with same origin, direction rotated 90 degrees counterclockwise */
-  public ccwPerpendicularRay(): Ray2d {
-    return new Ray2d(this._origin, this._direction.rotate90CCWXY());
-  }
-
-  /** Return a ray with same origin, direction rotated 90 degrees clockwise */
-  public cwPerpendicularRay(): Ray2d {
-    return new Ray2d(this._origin, this._direction.rotate90CWXY());
-  }
-  /** Normalize the direction vector in place. */
-  public normalizeDirectionInPlace(defaultX: number = 1, defaultY: number = 0): boolean {
-    if (this._direction.normalize(this._direction)) {
-      return true;
-    } else {
-      this._direction.x = defaultX;
-      this._direction.y = defaultY;
-      // magnitude = 0.0;
-      return false;
-    }
-  }
-
-  /**
-   * Intersect this ray (ASSUMED NORMALIZED) with unbounded line defined by points.
-   *  (The normalization assumption affects test for parallel vectors.)
-   *  Fraction and dHds passed as number[] to use by reference... Sticking to return of true and false in the case fraction is zero after
-   *  a true safe divide
-   */
-  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean {
-    const lineDirection = linePointA.vectorTo(linePointB);
-    const vector0 = linePointA.vectorTo(this._origin);
-    const h0 = vector0.crossProduct(lineDirection);
-    dHds[0] = this._direction.crossProduct(lineDirection);
-    // h = h0 + s * dh
-    const ff = Geometry.conditionalDivideFraction(-h0, dHds[0]);
-    if (ff !== undefined) {
-      fraction[0] = ff;
-      return true;
-    } else {
-      fraction[0] = 0.0;
-      return false;
-    }
-  }
-
-  /** return the ray fraction where point projects to the ray */
-  public projectionFraction(point: Point2d): number {
-    return this._origin.vectorTo(point).fractionOfProjectionToVector(this._direction);
-  }
-
-  /** return the fraction of projection to the perpendicular ray */
-  public perpendicularProjectionFraction(point: Point2d): number {
-    const uv = this._direction.crossProduct(this._origin.vectorTo(point));
-    const uu = this._direction.magnitudeSquared();
-    // Want zero returned if failure case, not undefined
-    return Geometry.safeDivideFraction(uv, uu, 0.0);
-  }
-
-  /** Return point from origin plus a scaled vector */
-  public fractionToPoint(f: number): Point2d {
-    return this._origin.plusScaled(this._direction, f);
-  }
-}
 /**
  * Convex hull of points in 2d.
  * @internal
@@ -235,10 +138,11 @@ export class ConvexPolygon2d {
   }
 
   /**
-   * Return 2 distances bounding the intersection of the ray with a convex hull.
-   * ASSUME (for tolerance) the ray has normalized direction vector.
-   * Both negative and positive distances along the ray are possible.
-   * Returns range with extremities if less than 3 points, distanceA > distanceB, or if cross product < 0
+   * Return 2 distances bounding the intersection of the ray with this convex hull.
+   * @param ray ray to clip to this convex polygon. ASSUME normalized direction vector, so that ray fractions are distances.
+   * @returns intersection bounds as min and max distances along the ray (from its origin).
+   * * Both negative and positive distances along the ray are possible.
+   * * Range has extreme values if less than 3 points, distanceA > distanceB, or if cross product < 0.
    */
   public clipRay(ray: Ray2d): Range1d {
     let distanceA = - Number.MAX_VALUE;
@@ -251,15 +155,14 @@ export class ConvexPolygon2d {
 
     let xy0 = this._hullPoints[n - 1];
     for (const xy1 of this._hullPoints) {
-      const distance: number[] = [];
-      const dHds: number[] = [];
-      if (ray.intersectUnboundedLine(xy0, xy1, distance, dHds)) {
-        if (dHds[0] > 0.0) {
-          if (distance[0] < distanceB)
-            distanceB = distance[0];
+      const { hasIntersection, fraction, cross } = ray.intersectUnboundedLine(xy0, xy1);
+      if (hasIntersection) {
+        if (cross > 0.0) {
+          if (fraction < distanceB)
+            distanceB = fraction;
         } else {
-          if (distance[0] > distanceA)
-            distanceA = distance[0];
+          if (fraction > distanceA)
+            distanceA = fraction;
         }
         if (distanceA > distanceB)
           return Range1d.createNull();
@@ -305,7 +208,7 @@ export class ConvexPolygon2d {
       return undefined;
     // Get deep copy
     const xy1: Point2d[] = points.slice(0, n);
-    xy1.sort(Geometry.lexicalXYLessThan);
+    xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     hull.push(xy1[0]); // This is sure to stay
     hull.push(xy1[1]); // This one can be removed in loop.
 

@@ -111,20 +111,20 @@ describe("queryMeshExports", () => {
   it("returns no results upon error", async () => {
     await mockFetch(
       () => { throw new Error("fetch threw"); },
-      async () => expectExports([], { accessToken, iModelId })
+      async () => expectExports([], { accessToken, iModelId }),
     );
     await mockFetch(
       async () => Promise.resolve(makeResponse(
-        () => { throw new Error("json threw"); })
+        () => { throw new Error("json threw"); }),
       ),
-      async () => expectExports([], { accessToken, iModelId })
+      async () => expectExports([], { accessToken, iModelId }),
     );
   });
 
   it("produces one set of results", async () => {
     await mockFetch(
       async () => makeExportsResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
-      async () => expectExports(["a", "b", "c"], { accessToken, iModelId })
+      async () => expectExports(["a", "b", "c"], { accessToken, iModelId }),
     );
   });
 
@@ -139,7 +139,7 @@ describe("queryMeshExports", () => {
           return makeExportsResponse({ exports: [{ id: "c" }, { id: "d" }] });
         }
       },
-      async () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId })
+      async () => expectExports(["a", "b", "c", "d"], { accessToken, iModelId }),
     );
 
   });
@@ -151,7 +151,7 @@ describe("queryMeshExports", () => {
         await expectExports(["a"], { iModelId, accessToken });
         await expectExports(["a", "b"], { iModelId, accessToken, includeIncomplete: true }),
         await expectExports(["a"], { iModelId, accessToken, includeIncomplete: false });
-      }
+      },
     );
   });
 });
@@ -198,7 +198,7 @@ describe("obtainMeshExportTilesetUrl", () => {
         });
 
         expect(url?.toString()).to.equal(expected);
-      }
+      },
     );
   }
 

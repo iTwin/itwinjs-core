@@ -91,7 +91,7 @@ export class ExtensionAdmin {
    */
   public async addExtensions(providers: ExtensionProvider[]): Promise<void[]> {
     return Promise.all(
-      providers.map(async (provider) => this.addExtension(provider))
+      providers.map(async (provider) => this.addExtension(provider)),
     );
   }
 

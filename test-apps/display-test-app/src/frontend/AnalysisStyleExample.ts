@@ -61,7 +61,7 @@ function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): 
 async function createCantilever(): Promise<Polyface> {
   const { cantileverJsonString } = await import("./Cantilever");
   const polyface = IModelJson.Reader.parse(
-    JSON.parse(cantileverJsonString)
+    JSON.parse(cantileverJsonString),
   ) as Polyface;
   assert(polyface instanceof Polyface);
 

@@ -752,7 +752,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         expectedPlacementOverrides = {},
       }: {
         expectedPlacementOverrides?: Partial<Placement3dProps>;
-      } = {}
+      } = {},
     ) => {
       const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
       let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
@@ -808,7 +808,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
             high: { x: 10, y: 10, z: 0 },
           },
         },
-      }
+      },
     );
 
     interface TestBoxProps {
@@ -844,7 +844,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
               high: { x: expectedXOffset + 10, y: 21, z: 12 },
             },
           },
-        }
+        },
       );
     };
 

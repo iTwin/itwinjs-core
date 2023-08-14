@@ -50,7 +50,7 @@ export class Content {
       return undefined;
 
     if (typeof json === "string")
-      return JSON.parse(json, Content.reviver);
+      return JSON.parse(json, (key, value) => Content.reviver(key, value));
 
     const descriptor = Descriptor.fromJSON(json.descriptor);
     if (!descriptor)

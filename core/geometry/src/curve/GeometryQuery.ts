@@ -55,7 +55,7 @@ export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | Sol
 export abstract class GeometryQuery {
   /** Type discriminator. */
   public abstract readonly geometryCategory: GeometryQueryCategory;
-  /** Return the range of the entire (tree) GeometryQuery */
+  /** Return the range of the entire GeometryQuery tree */
   public range(transform?: Transform, result?: Range3d): Range3d {
     if (result) result.setNull();
     const range = result ? result : Range3d.createNull();
@@ -113,7 +113,7 @@ export abstract class GeometryQuery {
     return false;
   }
   /**
-   * Apply instance method isAlmostEqual if both are defined.
+   * Apply instance method [[isAlmostEqual]] if both are defined.
    * * both undefined returns true
    * * single defined returns false
    */

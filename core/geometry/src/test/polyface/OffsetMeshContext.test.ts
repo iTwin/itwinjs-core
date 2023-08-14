@@ -320,7 +320,7 @@ function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: Index
   offsets: number[],
   signs: number[],
   xStart: number,
-  separateFaceEdgeAndVertexOutputs: boolean = false
+  separateFaceEdgeAndVertexOutputs: boolean = false,
 ) {
   let y0 = 0;
   let x0 = xStart;
@@ -374,7 +374,7 @@ function displayOffsetsWithOptionExamples(_ck: Checker, allGeometry: GeometryQue
   offset: number,
   optionsArray: OffsetMeshOptions[],
   xStart: number,
-  originalWithOffsets: boolean
+  originalWithOffsets: boolean,
 ) {
   let x0 = xStart;
   const range = polyface.data.point.getRange();

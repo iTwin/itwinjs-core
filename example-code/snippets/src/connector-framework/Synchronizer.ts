@@ -499,7 +499,7 @@ export class Synchronizer {
         stmt.step();
         const row = stmt.getRow();
         sourceId = row.id;
-      }
+      },
     );
 
     if (sourceId) {

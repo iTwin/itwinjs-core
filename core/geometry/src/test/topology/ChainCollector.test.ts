@@ -7,12 +7,12 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { AnyCurve } from "../../curve/CurveChain";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveOps } from "../../curve/CurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
@@ -42,7 +42,7 @@ describe("ChainCollector", () => {
         if (fragments instanceof CurveChain)
           fragments = [fragments];
         if (Array.isArray(fragments)) {
-          const range = OffsetHelpers.extendRange(Range3d.create(), fragments);
+          const range = CurveOps.extendRange(Range3d.create(), fragments);
           const x0 = xOut - range.low.x;
           y0 = -range.low.y;
 
@@ -100,7 +100,7 @@ describe("ChainCollector", () => {
           const pointsA = fragments.getPackedStrokes()!;
           const areaA = PolygonOps.areaXY(pointsA);
           const offsetSign = Geometry.split3WaySign(areaA, 1, 1, -1);
-          const range = OffsetHelpers.extendRange(Range3d.create(), fragments);
+          const range = CurveOps.extendRange(Range3d.create(), fragments);
           let x0 = xOut - range.low.x;
           y0 = -range.low.y;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, 0.01);
@@ -219,17 +219,17 @@ describe("ChainCollector", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.chains, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.insideOffsets, x0, y0, 0.1);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsets.outsideOffsets, x0, y0, -0.1);
-      const outsideOffsetLength = OffsetHelpers.sumLengths(offsets.outsideOffsets);
+      const outsideOffsetLength = CurveOps.sumLengths(offsets.outsideOffsets);
       // skip the inside and outside ..
       const myOffsetA: AnyCurve[] = [];
-      OffsetHelpers.appendOffsets(primitives, -offsetDistance, myOffsetA);
-      const myLengthA = OffsetHelpers.sumLengths(myOffsetA);
+      CurveOps.appendXYOffsets(primitives, -offsetDistance, myOffsetA);
+      const myLengthA = CurveOps.sumLengths(myOffsetA);
       y0 += yShift;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, myOffsetA, x0, y0);
 
       const myOffsetB: AnyCurve[] = [];
-      OffsetHelpers.appendOffsets([primitives], -offsetDistance, myOffsetB);
-      const myLengthB = OffsetHelpers.sumLengths(myOffsetB);
+      CurveOps.appendXYOffsets([primitives], -offsetDistance, myOffsetB);
+      const myLengthB = CurveOps.sumLengths(myOffsetB);
       y0 += yShift;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, myOffsetB, x0, y0);
       ck.testCoordinate(outsideOffsetLength, myLengthA);

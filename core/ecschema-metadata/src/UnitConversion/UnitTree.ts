@@ -34,7 +34,7 @@ export class GraphUtils {
           const edgeExponent = _graph.edge(v, w).exponent;
           return GraphUtils.dfsReduce(_graph, edge.w, op, p, baseUnitsMap, accumulatedExponent * edgeExponent);
         },
-        t
+        t,
       );
     } else {
       if (baseUnitsMap.has(key)) {
@@ -132,11 +132,11 @@ export class UnitGraph {
     const promiseArray: Promise<[Unit | Constant, DefinitionFragment]>[] = [];
     for (const [key, value] of umap) {
       promiseArray.push(
-        this.resolveUnit(key, unit.schema).then((u) => [u, value])
+        this.resolveUnit(key, unit.schema).then((u) => [u, value]),
       );
     }
     const resolved = await Promise.all<[Unit | Constant, DefinitionFragment]>(
-      promiseArray
+      promiseArray,
     );
 
     const children = resolved.map(async ([u, def]) => {

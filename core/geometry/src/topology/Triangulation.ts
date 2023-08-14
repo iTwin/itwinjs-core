@@ -668,7 +668,7 @@ export class Triangulator {
    */
   private static spliceLeftMostNodesOfHoles(graph: HalfEdgeGraph, outerNode: HalfEdge, leftMostHoleLoopNode: HalfEdge[]): HalfEdge | undefined {
 
-    leftMostHoleLoopNode.sort(Triangulator.compareX);
+    leftMostHoleLoopNode.sort((a, b) => Triangulator.compareX(a, b));
     let numFail = 0;
     // process holes from left to right
     for (const holeStart of leftMostHoleLoopNode) {

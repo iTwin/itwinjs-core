@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
@@ -43,18 +43,12 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/file-saver": "^2.0.1",
     "@types/node": "18.16.1",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

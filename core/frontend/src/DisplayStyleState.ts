@@ -517,7 +517,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer to change the credentials of.
    * @public
    */
-  public changeMapLayerCredentials(mapLayerIndex: MapLayerIndex, userName?: string, password?: string,) {
+  public changeMapLayerCredentials(mapLayerIndex: MapLayerIndex, userName?: string, password?: string) {
     const layers = this.getMapLayers(mapLayerIndex.isOverlay);
     const index = mapLayerIndex.index;
     if (index < 0 || index >= layers.length)

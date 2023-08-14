@@ -180,7 +180,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.red, priority: 0.1 });
         decorator.add(vp, { color: ColorDef.blue.withTransparency(0x7f), priority: 0.9 });
       },
-      (vp) => expectColor(vp, ColorDef.from(0x7f, 0, 0x80, 0x7f))
+      (vp) => expectColor(vp, ColorDef.from(0x7f, 0, 0x80, 0x7f)),
     );
   });
 
@@ -190,7 +190,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.red, priority: 0.9 });
         decorator.add(vp, { color: ColorDef.blue.withTransparency(0x7f), priority: 0.1 });
       },
-      (vp) => expectColor(vp, ColorDef.red)
+      (vp) => expectColor(vp, ColorDef.red),
     );
   });
 
@@ -209,7 +209,7 @@ describe("Transparency", async () => {
         decorator.overrideTransparency(pickableId, 0.5);
         decorator.add(vp, { color: ColorDef.red, pickableId });
       },
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f)),
     );
 
     await test(
@@ -217,7 +217,7 @@ describe("Transparency", async () => {
         decorator.overrideTransparency(pickableId, 0.5);
         decorator.add(vp, { color: ColorDef.red.withTransparency(0xcf), pickableId });
       },
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f)),
     );
   });
 
@@ -264,7 +264,7 @@ describe("Transparency", async () => {
     for (const testCase of testCases) {
       await test(
         (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
-        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1]))
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[1])),
       );
     }
   });
@@ -287,7 +287,7 @@ describe("Transparency", async () => {
     for (const testCase of testCases) {
       await test(
         (vp) => decorator.add(vp, { color: ColorDef.green, material: testCase[0] }),
-        (vp) => expectColor(vp, testCase[1])
+        (vp) => expectColor(vp, testCase[1]),
       );
     }
   });
@@ -310,7 +310,7 @@ describe("Transparency", async () => {
     for (const testCase of testCases) {
       await test(
         (vp) => decorator.add(vp, { color: ColorDef.red, material: testCase[0] }),
-        (vp) => expectColor(vp, testCase[1])
+        (vp) => expectColor(vp, testCase[1]),
       );
     }
   });
@@ -328,7 +328,7 @@ describe("Transparency", async () => {
     for (const testCase of testCases) {
       await test(
         (vp) => decorator.add(vp, { color: ColorDef.red.withTransparency(testCase[0]), material: testCase[1] }),
-        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2]))
+        (vp) => expectTransparency(vp, ColorDef.blue.withTransparency(testCase[2])),
       );
     }
   });
@@ -341,7 +341,7 @@ describe("Transparency", async () => {
         const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
         decorator.add(vp, { color: ColorDef.red, material, pickableId });
       },
-      (vp) => expectColor(vp, ColorDef.red)
+      (vp) => expectColor(vp, ColorDef.red),
     );
 
     await test(
@@ -351,7 +351,7 @@ describe("Transparency", async () => {
         const material = createMaterial(0.5, createBlueTexture(0x7f), undefined, ColorDef.green);
         decorator.add(vp, { color, material, pickableId });
       },
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0xaf))
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0xaf)),
     );
   });
 
@@ -363,7 +363,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(1, undefined, undefined, ColorDef.red) });
         decorator.overrideTransparency(pickableId, 0.5);
       },
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f)),
     );
 
     await test(
@@ -371,7 +371,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5, undefined, undefined, ColorDef.red) });
         decorator.overrideTransparency(pickableId, 0);
       },
-      (vp) => expectColor(vp, ColorDef.red)
+      (vp) => expectColor(vp, ColorDef.red),
     );
 
     await test(
@@ -379,7 +379,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5, undefined, undefined, ColorDef.red) });
         decorator.overrideTransparency(pickableId, 1);
       },
-      (vp) => expectColor(vp, ColorDef.black)
+      (vp) => expectColor(vp, ColorDef.black),
     );
 
     await test(
@@ -387,7 +387,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(1) });
         decorator.overrideTransparency(pickableId, 0.5);
       },
-      (vp) => expectTransparency(vp, ColorDef.green.withTransparency(0x7f))
+      (vp) => expectTransparency(vp, ColorDef.green.withTransparency(0x7f)),
     );
 
     await test(
@@ -395,7 +395,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(0.5) });
         decorator.overrideTransparency(pickableId, 0);
       },
-      (vp) => expectColor(vp, ColorDef.green)
+      (vp) => expectColor(vp, ColorDef.green),
     );
 
     await test(
@@ -403,7 +403,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green, pickableId, material: createMaterial(undefined, undefined, undefined, ColorDef.red) });
         decorator.overrideTransparency(pickableId, 0.5);
       },
-      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f))
+      (vp) => expectTransparency(vp, ColorDef.red.withTransparency(0x7f)),
     );
 
     await test(
@@ -411,7 +411,7 @@ describe("Transparency", async () => {
         decorator.add(vp, { color: ColorDef.green.withTransparency(0x7f), pickableId, material: createMaterial(undefined, undefined, undefined, ColorDef.red) });
         decorator.overrideTransparency(pickableId, 0);
       },
-      (vp) => expectColor(vp, ColorDef.red)
+      (vp) => expectColor(vp, ColorDef.red),
     );
   });
 
@@ -426,7 +426,7 @@ describe("Transparency", async () => {
           decorator.overrideTransparency(pickableId, transparencyOverride);
           decorator.add(vp, { color, pickableId, material });
         },
-        (vp) => expectTransparency(vp, expectedColor)
+        (vp) => expectTransparency(vp, expectedColor),
       );
     }
 
@@ -467,7 +467,7 @@ describe("Transparency", async () => {
                 color = color.withTransparency(0x7f);
 
               expectTransparency(vp, color);
-            }
+            },
           );
         }
       }

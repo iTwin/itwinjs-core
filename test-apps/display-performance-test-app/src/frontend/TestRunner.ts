@@ -146,14 +146,20 @@ export class TestRunner {
   private readonly _testNamesImages = new Map<string, number>();
   private readonly _testNamesTimings = new Map<string, number>();
   private readonly _savedViewsFetcher: SavedViewsFetcher;
+  private _lastRestartConfig: TestConfig;
 
   public get curConfig(): TestConfig {
     return this._config.top;
   }
 
+  public get lastRestartConfig(): TestConfig { return this._lastRestartConfig; }
+  public set lastRestartConfig(config: TestConfig) {
+    this._lastRestartConfig = config;
+  }
+
   public constructor(
     props: TestSetsProps,
-    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher()
+    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher(),
   ) {
     // NB: The default minimum spatial chord tolerance was changed from "no minimum" to 1mm. To preserve prior behavior,
     // override it to zero.
@@ -162,6 +168,7 @@ export class TestRunner {
     props.tileProps = props.tileProps ? { ...defaultTileProps, ...props.tileProps } : defaultTileProps;
 
     this._config = new TestConfigStack(new TestConfig(props));
+    this._lastRestartConfig = this.curConfig;
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
@@ -183,9 +190,10 @@ export class TestRunner {
       renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
       needRestart = true;
     }
-    if (IModelApp.initialized && needRestart)
+    if (IModelApp.initialized && needRestart) {
       await IModelApp.shutdown();
-    if (needRestart) {
+    }
+    if (!IModelApp.initialized) {
       const realityDataClientOptions: RealityDataClientOptions = {
         /** API Version. v1 by default */
         // version?: ApiVersion;
@@ -198,6 +206,8 @@ export class TestRunner {
         realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       });
     }
+    // save current state as reference, whether or not we restarted
+    this.lastRestartConfig = this.curConfig;
 
     // Run all the tests
     for (const set of this._testSets)
@@ -214,7 +224,7 @@ export class TestRunner {
   }
 
   private async runTestSet(set: TestSetProps): Promise<void> {
-    let needRestart = this._config.push(set);
+    this._config.push(set);
     const realityDataClientOptions: RealityDataClientOptions = {
       /** API Version. v1 by default */
       // version?: ApiVersion;
@@ -224,13 +234,12 @@ export class TestRunner {
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
-      if (this._config.push(testProps))
-        needRestart = true;
+      this._config.push(testProps);
 
       // Ensure IModelApp is initialized with options required by this test.
-      if (IModelApp.initialized && needRestart)
+      if (IModelApp.initialized && this.curConfig.requiresRestart(this.lastRestartConfig)) {
         await IModelApp.shutdown();
-
+      }
       if (!IModelApp.initialized) {
         const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
         if (!this.curConfig.useDisjointTimer) {
@@ -242,6 +251,7 @@ export class TestRunner {
           tileAdmin: this.curConfig.tileProps,
           realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         });
+        this.lastRestartConfig = this.curConfig;
       }
 
       // Run test against all iModels matching the test config.
@@ -281,7 +291,10 @@ export class TestRunner {
       await this.logTest();
 
       try {
+        this.curConfig.urlStr = undefined;
         const result = await this.runTest(context);
+        if (this.curConfig.urlStr)
+          await this.logURL();
         if (result)
           await this.logToFile(result.selectedTileIds, { noNewLine: true });
       } catch (ex) {
@@ -628,15 +641,22 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
+  // Log url path for cases it is used
+  private async logURL(): Promise<void> {
+    const outStr = `  [url: ${this.curConfig.urlStr}]`;
+    await this.logToConsole(outStr);
+    return this.logToFile(outStr);
+  }
+
   private async openIModel(): Promise<TestContext> {
-    if(this.curConfig.iModelId) {
-      if(process.env.IMJS_OIDC_HEADLESS) {
+    if (this.curConfig.iModelId) {
+      if (process.env.IMJS_OIDC_HEADLESS) {
         const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
       // Download remote iModel and its saved views
       const { iModelId, iTwinId } = this.curConfig;
-      if(iTwinId === undefined)
+      if (iTwinId === undefined)
         throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());

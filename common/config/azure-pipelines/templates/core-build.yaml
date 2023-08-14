@@ -35,6 +35,7 @@ steps:
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
     displayName: git config
+    workingDirectory: ${{ parameters.workingDir }}
 
   - powershell: |
       # Get the new version number.
@@ -45,23 +46,26 @@ steps:
 
       Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
     displayName: Set build number
+    workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['System.JobAttempt'], '1'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: "Set Rush Write Cache Variables"
+    workingDirectory: ${{ parameters.workingDir }}
 
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
-  - task: PythonScript@0
+  - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
     displayName: "rush change -v"
-    inputs:
-      workingDirectory: ${{ parameters.workingDir }}
-      scriptSource: filepath
-      scriptPath: common/scripts/run_rush_change.py
-      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-      failOnStderr: true
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq('windows_nt', variables['Agent.OS']))
+
+  - script: python common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+    displayName: "rush change -v"
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), ne('windows_nt', variables['Agent.OS']))
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
@@ -89,6 +93,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   - script: node ./common/scripts/install-run-rush webpack:test -v
+    workingDirectory: ${{ parameters.workingDir }}
     displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer

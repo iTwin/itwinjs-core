@@ -140,7 +140,7 @@ describe("MomentData", () => {
       for (const degrees of [5.0, 2.5, 1.25, 0.0625]) {
         strokeOptions.angleTol = Angle.createDegrees(degrees);
         const loop1 = loop0.cloneStroked(strokeOptions);
-        const momentData1 = RegionOps.computeXYAreaMoments(loop1 as Loop)!;
+        const momentData1 = RegionOps.computeXYAreaMoments(loop1)!;
         gyrationData.push(MomentData.inertiaProductsToPrincipalAxes(momentData1.origin, momentData1.sums)!);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0, y0, 0);
         GeometryCoreTestIO.showMomentData(allGeometry, momentData1, true, x0, y0, 0);

@@ -23,7 +23,7 @@ describe("Cross Schema unit definitions tests", () => {
   const context = new SchemaContext();
 
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./CrossSchemaTests.json"), "utf-8")
+    fs.readFileSync(path.join(__dirname, "..", "assets", "./CrossSchemaTests.json"), "utf-8"),
   );
 
   before(() => {
@@ -50,7 +50,7 @@ describe("Cross Schema unit definitions tests", () => {
       expect(
         almostEqual(test.expect, actual, almostEqual.FLT_EPSILON, almostEqual.FLT_EPSILON),
         `${test.input} ${test.from} in ${test.to} should be ${test.expect}
-         and not ${actual} error = ${Math.abs(test.expect - actual)} > ${almostEqual.FLT_EPSILON}`
+         and not ${actual} error = ${Math.abs(test.expect - actual)} > ${almostEqual.FLT_EPSILON}`,
       ).to.be.true;
     });
   });

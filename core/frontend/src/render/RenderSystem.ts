@@ -161,7 +161,7 @@ export class TerrainTexture {
     public readonly targetRectangle: Range2d,
     public readonly layerIndex: number,
     public transparency: number,
-    public readonly clipRectangle?: Range2d
+    public readonly clipRectangle?: Range2d,
   ) { }
 
   public cloneWithClip(clipRectangle: Range2d) {
@@ -175,7 +175,7 @@ export class DebugShaderFile {
     public readonly src: string,
     public isVS: boolean,
     public isGL: boolean,
-    public isUsed: boolean
+    public isUsed: boolean,
   ) { }
 }
 /** Transparency settings for planar grid display.

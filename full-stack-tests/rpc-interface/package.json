@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -44,7 +44,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
@@ -59,8 +59,8 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
+    "@itwin/itwins-client": "^1.2.0",
     "@itwin/presentation-backend": "workspace:*",
-    "@itwin/projects-client": "^0.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
@@ -69,7 +69,7 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
@@ -81,11 +81,5 @@
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

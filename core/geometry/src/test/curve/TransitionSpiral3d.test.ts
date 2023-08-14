@@ -166,7 +166,7 @@ describe("TransitionSpiral3d", () => {
       Segment1d.create(0, 100),
       AngleSweep.createStartEndDegrees(0, 15),
       Segment1d.create(0, 1),
-      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(85.5)))
+      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(85.5))),
     )!;
     // the start angle is chosen to make the true max x appear near the middle.
     const numEvalA = 4;  // a pretty crude count for the range, so as to show the properties of the extrapolation.

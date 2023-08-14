@@ -9,8 +9,8 @@
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
-import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
+import { OffsetOptions } from "../curve/OffsetOptions";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";

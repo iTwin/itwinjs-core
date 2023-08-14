@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.1.0-dev.67",
+  "version": "4.2.0-dev.4",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -17,7 +17,7 @@
     "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
-    "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
@@ -44,12 +44,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.1.0-dev.67",
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.67",
-    "@itwin/core-common": "workspace:^4.1.0-dev.67",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.67",
-    "@itwin/core-orbitgt": "workspace:^4.1.0-dev.67",
-    "@itwin/core-quantity": "workspace:^4.1.0-dev.67"
+    "@itwin/appui-abstract": "workspace:^4.2.0-dev.4",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.4",
+    "@itwin/core-common": "workspace:^4.2.0-dev.4",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.4",
+    "@itwin/core-orbitgt": "workspace:^4.2.0-dev.4",
+    "@itwin/core-quantity": "workspace:^4.2.0-dev.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -64,7 +64,7 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.36",
+    "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
@@ -75,7 +75,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
@@ -90,8 +90,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/cloud-agnostic-core": "^2.1.0-dev.1",
-    "@itwin/object-storage-core": "^2.1.0-dev.1",
+    "@itwin/cloud-agnostic-core": "^2.1.0",
+    "@itwin/object-storage-core": "^2.1.0",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
@@ -102,43 +102,5 @@
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
-  },
-  "eslintConfig": {
-    "plugins": [
-      "@itwin"
-    ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
-    "rules": {
-      "@itwin/no-internal-barrel-imports": [
-        "error",
-        {
-          "required-barrel-modules": [
-            "./src/tile/internal.ts"
-          ]
-        }
-      ],
-      "@itwin/public-extension-exports": [
-        "error",
-        {
-          "releaseTags": [
-            "public",
-            "preview"
-          ],
-          "outputApiFile": false
-        }
-      ]
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.test.ts",
-          "*.test.tsx",
-          "**/test/**/*.ts"
-        ],
-        "rules": {
-          "@itwin/no-internal-barrel-imports": "off"
-        }
-      }
-    ]
   }
 }
