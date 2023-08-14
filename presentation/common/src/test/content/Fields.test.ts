@@ -97,6 +97,21 @@ describe("Field", () => {
 
   });
 
+  describe("matchesDescriptor", () => {
+
+    it("returns `true` for matching descriptor", () => {
+      const field = createTestSimpleContentField();
+      expect(field.matchesDescriptor(field.getFieldDescriptor())).to.be.true;
+    });
+
+    it("returns `false` for non-matching descriptor", () => {
+      const field = createTestSimpleContentField();
+      const field2 = createTestSimpleContentField({ name: "x" });
+      expect(field.matchesDescriptor(field2.getFieldDescriptor())).to.be.false;
+    });
+
+  });
+
   describe("clone", () => {
 
     it("returns exact copy of itself", () => {
@@ -221,6 +236,149 @@ describe("PropertiesField", () => {
           isForwardRelationship: false,
         }],
       });
+    });
+
+  });
+
+  describe("matchesDescriptor", () => {
+
+    it("returns `false` for non-property descriptor", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(field.matchesDescriptor({ type: FieldDescriptorType.Name, fieldName: "x" })).to.be.false;
+    });
+
+    it("returns `false` if none of the properties match", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({
+            name: "x",
+            classInfo: createTestECClassInfo({ name: "x" }),
+          }),
+        }],
+      });
+      expect(field.matchesDescriptor({
+        type: FieldDescriptorType.Properties,
+        properties: [{ name: "y", class: "y" }],
+        pathFromSelectToPropertyClass: [],
+      })).to.be.false;
+    });
+
+    it("returns `true` when at least one property matches", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({
+            name: "x",
+            classInfo: createTestECClassInfo({ name: "x" }),
+          }),
+        }, {
+          property: createTestPropertyInfo({
+            name: "y",
+            classInfo: createTestECClassInfo({ name: "y" }),
+          }),
+        }],
+      });
+      expect(field.matchesDescriptor({
+        type: FieldDescriptorType.Properties,
+        properties: [{ name: "y", class: "y" }, { name: "z", class: "z" }],
+        pathFromSelectToPropertyClass: [],
+      })).to.be.true;
+    });
+
+    it("returns `false` if relationship path doesn't match", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({
+            name: "x",
+            classInfo: createTestECClassInfo({ name: "x" }),
+          }),
+        }],
+      });
+      createTestNestedContentField({
+        nestedFields: [field],
+        pathToPrimaryClass: [{
+          sourceClassInfo: createTestECClassInfo({ name: "source:a" }),
+          relationshipInfo: createTestECClassInfo({ name: "rel:a" }),
+          targetClassInfo: createTestECClassInfo({ name: "target:a" }),
+          isForwardRelationship: true,
+        }],
+      });
+      expect(field.matchesDescriptor({
+        type: FieldDescriptorType.Properties,
+        properties: [{ name: "x", class: "x" }],
+        pathFromSelectToPropertyClass: [{
+          sourceClassName: "bbb",
+          relationshipName: "bbb",
+          targetClassName: "bbb",
+          isForwardRelationship: false,
+        }],
+      })).to.be.false;
+    });
+
+    it("returns `false` if relationship path is longer than what's in descriptor", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({
+            name: "x",
+            classInfo: createTestECClassInfo({ name: "x" }),
+          }),
+        }],
+      });
+      createTestNestedContentField({
+        nestedFields: [field],
+        pathToPrimaryClass: [{
+          sourceClassInfo: createTestECClassInfo({ name: "source:a" }),
+          relationshipInfo: createTestECClassInfo({ name: "rel:a" }),
+          targetClassInfo: createTestECClassInfo({ name: "target:a" }),
+          isForwardRelationship: true,
+        }, {
+          sourceClassInfo: createTestECClassInfo({ name: "source:b" }),
+          relationshipInfo: createTestECClassInfo({ name: "rel:b" }),
+          targetClassInfo: createTestECClassInfo({ name: "target:b" }),
+          isForwardRelationship: true,
+        }],
+      });
+      expect(field.matchesDescriptor({
+        type: FieldDescriptorType.Properties,
+        properties: [{ name: "x", class: "x" }],
+        pathFromSelectToPropertyClass: [{
+          sourceClassName: "target:b",
+          relationshipName: "rel:b",
+          targetClassName: "source:b",
+          isForwardRelationship: false,
+        }],
+      })).to.be.false;
+    });
+
+    it("returns `true` if property and relationship path matches", () => {
+      const field = createTestPropertiesContentField({
+        properties: [{
+          property: createTestPropertyInfo({
+            name: "x",
+            classInfo: createTestECClassInfo({ name: "x" }),
+          }),
+        }],
+      });
+      createTestNestedContentField({
+        nestedFields: [field],
+        pathToPrimaryClass: [{
+          sourceClassInfo: createTestECClassInfo({ name: "source" }),
+          relationshipInfo: createTestECClassInfo({ name: "rel" }),
+          targetClassInfo: createTestECClassInfo({ name: "target" }),
+          isForwardRelationship: true,
+        }],
+      });
+      expect(field.matchesDescriptor({
+        type: FieldDescriptorType.Properties,
+        properties: [{ name: "x", class: "x" }],
+        pathFromSelectToPropertyClass: [{
+          sourceClassName: "target",
+          relationshipName: "rel",
+          targetClassName: "source",
+          isForwardRelationship: false,
+        }],
+      })).to.be.true;
     });
 
   });

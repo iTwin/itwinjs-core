@@ -249,6 +249,15 @@ export class Field {
       fieldName: this.name,
     } as NamedFieldDescriptor;
   }
+
+  /**
+   * Checks if this field matches given field descriptor
+   * @see [[getFieldDescriptor]]
+   * @beta
+   */
+  public matchesDescriptor(descriptor: FieldDescriptor) {
+    return FieldDescriptor.isNamed(descriptor) && descriptor.fieldName === this.name;
+  }
 }
 
 /**
@@ -354,6 +363,40 @@ export class PropertiesField extends Field {
         name: p.property.name,
       })),
     } as PropertiesFieldDescriptor;
+  }
+
+  /**
+   * Checks if this field matches given field descriptor
+   * @see [[getFieldDescriptor]]
+   * @beta
+   */
+  public override matchesDescriptor(descriptor: FieldDescriptor) {
+    if (!FieldDescriptor.isProperties(descriptor)) {
+      return false;
+    }
+
+    // ensure at least one descriptor property matches at least one property of this field
+    if (!this.properties.some(({ property: fieldProperty }) => descriptor.properties.some((descriptorProperty) => fieldProperty.name === descriptorProperty.name && fieldProperty.classInfo.name === descriptorProperty.class))) {
+      return false;
+    }
+
+    // ensure path from select to property in field and in descriptor matches
+    let stepsCount = 0;
+    let currAncestor = this.parent;
+    while (currAncestor) {
+      const pathFromCurrentToItsParent = RelationshipPath.reverse(currAncestor.pathToPrimaryClass);
+      for (const step of pathFromCurrentToItsParent) {
+        if (descriptor.pathFromSelectToPropertyClass.length < stepsCount + 1) {
+          return false;
+        }
+        if (!RelatedClassInfo.equals(step, descriptor.pathFromSelectToPropertyClass[descriptor.pathFromSelectToPropertyClass.length - stepsCount - 1])) {
+          return false;
+        }
+        ++stepsCount;
+      }
+      currAncestor = currAncestor.parent;
+    }
+    return true;
   }
 }
 
@@ -544,6 +587,21 @@ export const getFieldByName = (fields: Field[], name: string | undefined, recurs
         if (nested)
           return nested;
       }
+    }
+  }
+  return undefined;
+};
+
+/** @internal */
+export const getFieldByDescriptor = (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined => {
+  for (const field of fields) {
+    if (field.matchesDescriptor(fieldDescriptor))
+      return field;
+
+    if (recurse && field.isNestedContentField()) {
+      const nested = getFieldByDescriptor(field.nestedFields, fieldDescriptor, recurse);
+      if (nested)
+        return nested;
     }
   }
   return undefined;

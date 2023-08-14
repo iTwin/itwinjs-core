@@ -203,7 +203,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader 
+public;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -569,7 +569,7 @@ public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransver
 public;ProjectionProps
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
-beta;PropertyMetaDataMap 
+public;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
@@ -594,12 +594,12 @@ public;QueryBinder
 public;QueryLimit
 public;QueryOptions 
 public;QueryOptionsBuilder
-beta;QueryPropertyMetaData
+public;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
-beta;QueryRowProxy
-beta;QueryStats
-beta;QueryValueType = any
+public;QueryRowProxy
+public;QueryStats
+public;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
