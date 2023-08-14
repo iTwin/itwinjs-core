@@ -188,8 +188,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         _ = ModelOpenedHandler(webView: webView)
         _ = FirstRenderFinishedHandler(webView: webView, exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil)
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
+        print("about to load webView")
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
+        print("webview loaded; about to register webview with host")
         host.register(webView)
+        print("webview registered with host")
     }
 
     func showAlert(message: String, completionHandler: @escaping () -> Void = {}) {
@@ -305,6 +308,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             } else {
                 setupFrontend(bimFile: exists ? bimFile : nil)
                 if !exists {
+                    print("File does not exist: \(bimFile.path)")
                     // alert the user after the view controller has loaded
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
                         self.showAlert(message: "File does not exist: \(bimFile.path)")
