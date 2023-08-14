@@ -49,7 +49,7 @@ export default defineConfig(() => {
     publicDir: ".static-assets",
     build: {
       outDir: "./lib",
-      sourcemap: process.env.CI ? false : "inline", // append to the resulting output file if not running in CI.
+      sourcemap: "inline", // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
