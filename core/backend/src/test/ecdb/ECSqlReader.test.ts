@@ -62,24 +62,23 @@ describe("ECSqlReader", (() => {
         ecdb.saveChanges();
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.equal(r.id, "0x1");
-        const params = new QueryBinder();
-        params.bindString("name", "CompositeUnitRefersToUnit");
-        const optionBuilder = new QueryOptionsBuilder();
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name", params, optionBuilder.getOptions());
-        while (await reader.step()) {
-          // eslint-disable-next-line no-console
-          assert.equal(reader.current.id, "0x32");
-          assert.equal(reader.current.ecinstanceid, "0x32");
-          assert.equal(reader.current.name, "CompositeUnitRefersToUnit");
-          assert.equal(reader.current.ID, "0x32");
-          assert.equal(reader.current.ECINSTANCEID, "0x32");
-          assert.equal(reader.current[0], "0x32");
-          assert.equal(reader.current[1], "CompositeUnitRefersToUnit");
 
-          const row0 = reader.current.toRow();
-          assert.equal(row0.ECInstanceId, "0x32");
-          assert.equal(row0.Name, "CompositeUnitRefersToUnit");
-        }
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo", undefined, { limit: { count: 1 } });
+        assert.isTrue(await reader.step());
+        // eslint-disable-next-line no-console
+        assert.equal(reader.current.id, "0x1");
+        assert.equal(reader.current.ecinstanceid, "0x1");
+        assert.equal(reader.current.n, 20);
+        assert.equal(reader.current.ID, "0x1");
+        assert.equal(reader.current.ECINSTANCEID, "0x1");
+        assert.equal(reader.current[0], "0x1");
+        assert.equal(reader.current[1], 20);
+
+        const row0 = reader.current.toRow();
+        assert.equal(row0.ECInstanceId, "0x1");
+        assert.equal(row0.n, 20);
+
+        assert.isFalse(await reader.step());
       });
     });
   });
