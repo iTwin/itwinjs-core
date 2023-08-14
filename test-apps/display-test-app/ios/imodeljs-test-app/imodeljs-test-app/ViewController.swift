@@ -184,15 +184,15 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             hashParams.append("&ignoreCache=true")
         }
 
-        _ = OpenModelHander(webView: webView, viewController: self)
-        _ = ModelOpenedHandler(webView: webView)
-        _ = FirstRenderFinishedHandler(webView: webView, exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil)
+        webView.addUserContentController(OpenModelHander(self))
+        webView.addUserContentController(ModelOpenedHandler())
+        webView.addUserContentController(FirstRenderFinishedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
         print("about to load webView")
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         print("webview loaded; about to register webview with host")
         host.register(webView)
-        print("webview registered with host")
+        print("webview registered with host.")
     }
 
     func showAlert(message: String, completionHandler: @escaping () -> Void = {}) {
@@ -324,46 +324,43 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
     }
     
-    class OpenModelHander: MessageHandler {
+    class OpenModelHander: NSObject, MessageHandler {
+        static let NAME = "openModel"
         private var viewController: ViewController
         
-        init(webView: WKWebView, viewController: ViewController) {
+        init (_ viewController: ViewController) {
             self.viewController = viewController
-            super.init(webView: webView, name: "openModel")
         }
         
-        override func onMessage(body: String?) {
-            if let webView = self.webView, let promiseName = body, promiseName.count > 0 {
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let webView = self.viewController.webView, let promiseName = message.body as? String, promiseName.count > 0 {
                 viewController.pickSnapshot() { url in
                     let fileName = (url?.path.count ?? 0) > 0 ? "\"\(url!.path)\"" : "undefined";
                     let js = "window.\(promiseName)(\(fileName));"
-                    webView.evaluateJavaScript(js)
                 }
             }
         }
     }
-    
-    class ModelOpenedHandler : MessageHandler {
-        init(webView: WKWebView) {
-            super.init(webView: webView, name: "modelOpened")
-        }
 
-        override func onMessage(body: String?) {
-            if let stringMessage = body {
+    class ModelOpenedHandler : NSObject, MessageHandler {
+        static let NAME = "modelOpened"
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let stringMessage = message.body as? String {
                 print("iModel opened: \(stringMessage)")
             }
         }
     }
 
-    class FirstRenderFinishedHandler : MessageHandler {
+    class FirstRenderFinishedHandler : NSObject, MessageHandler {
+        static let NAME = "firstRenderFinished"
         private var exitOnMessage: Bool
-        
-        init(webView: WKWebView, exitOnMessage: Bool) {
+
+        init(exitOnMessage: Bool) {
             self.exitOnMessage = exitOnMessage
-            super.init(webView: webView, name: "firstRenderFinished")
         }
 
-        override func onMessage(body: String?) {
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
             // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
             // on this string to know if it succeeded.
@@ -375,17 +372,12 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     }
 }
 
-class MessageHandler : NSObject, WKScriptMessageHandler {
-    weak var webView: WKWebView?
-    init(webView: WKWebView, name: String) {
-        self.webView = webView
-        super.init()
-        webView.configuration.userContentController.add(self, name: name)
-    }
+protocol MessageHandler : WKScriptMessageHandler {
+    static var NAME: String { get }
+}
 
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        onMessage(body: message.body as? String)
+extension WKWebView {
+    func addUserContentController(_ messageHandler: MessageHandler) {
+        self.configuration.userContentController.add(messageHandler, name: type(of: messageHandler).NAME)
     }
-    
-    open func onMessage(body: String?) {}
 }
