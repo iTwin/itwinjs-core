@@ -818,7 +818,7 @@ export namespace ViewStore {
     public async getViewGroups(args: { parent?: ViewStoreRpc.ViewGroupSpec }) {
       const parentIdRow = args.parent ? this.findViewGroup(args.parent) : defaultViewGroupId;
       const groups: { id: string, name: string }[] = [];
-      this.withSqliteStatement(`SELECT Id,Name FROM ${tableName.viewGroups} WHERE ParentId=?`, (stmt) => {
+      this.withSqliteStatement(`SELECT Id,Name FROM ${tableName.viewGroups} WHERE parent=?`, (stmt) => {
         stmt.bindInteger(1, parentIdRow);
         while (stmt.nextRow()) {
           const id = stmt.getValueInteger(0);
