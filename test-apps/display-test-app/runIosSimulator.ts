@@ -16,10 +16,10 @@ const bimFile = "JoesHouse.bim";
 // Sort function that compares strings numerically from high to low
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
-// Similar to the launchApp function but doesn't retry, adds the --console option, and allows for args.
-Simctl.prototype.launchAppWithConsole = async function (bundleId: string, ...args: [string]) {
+// Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
+Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], ...args: [string]) {
   const { stdout } = await this.exec('launch', {
-    args: ["--console", this.requireUdid('launch'), bundleId, ...args],
+    args: [...options, this.requireUdid('launch'), bundleId, ...args],
     architectures: "x86_64",
   });
   return stdout.trim();
@@ -112,7 +112,7 @@ async function main() {
   // Launch the app instructing it to open the model and exit
   log("Launching app");
   simctl.execTimeout = 5 * 60 * 1000; // five minutes
-  const launchOutput = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
+  const launchOutput = await simctl.launchAppWithOptions(bundleId, ["--console", "--terminate-running-process"], `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
   // Note: the exit code from the app isn't passed back through simctl so we need to look for a specific string in the output.
   if (launchOutput.includes("First render finished.")) {
     process.exitCode = 0;
