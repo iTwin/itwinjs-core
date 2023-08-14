@@ -17,6 +17,12 @@
       }
     },
     {
+      "version": "4.0.7",
+      "tag": "@itwin/core-quantity_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/core-quantity_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",

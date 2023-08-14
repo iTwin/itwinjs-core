@@ -10,6 +10,11 @@ Mon, 14 Aug 2023 14:36:34 GMT
 - Upgrade sinon to 15.0.4
 - Switch to ESLint new flat config system
 
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
+
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
 
