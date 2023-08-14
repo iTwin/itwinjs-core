@@ -53,7 +53,7 @@ extension JSON {
         }
         return nil
     }
-    
+
     /// Check if a key's value equals "YES"
     /// - Parameter key: The key to check.
     /// - Returns: True if the value of the given key equals "YES".
@@ -121,7 +121,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     private var configData: JSON = [:]
     private var authClient: AuthorizationClient? = nil
     private var documentCompletion : ((URL?) -> Void)? = nil
-    
+
     private func parseArguments() {
         // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
         ProcessInfo.processInfo.arguments[1...].forEach { arg in
@@ -133,7 +133,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             }
         }
     }
-    
+
     func setupBackend() {
         let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/www/mobile/main.js"))
         if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets/www/mobile"),
@@ -189,7 +189,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         webView.addUserContentController(ModelOpenedHandler())
         webView.addUserContentController(FirstRenderFinishedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
-        print("about to load webView")
+        print("about to load webView baseURL: \(baseURL)")
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         print("webview loaded; about to register webview with host")
         host.register(webView)
@@ -203,12 +203,12 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         })
         self.present(alert, animated: true)
     }
-    
+
     /// Show alert for webkit alert
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
         showAlert(message: message, completionHandler: completionHandler)
     }
-    
+
     func pickSnapshot(completion: @escaping (URL?) -> Void) {
         self.documentCompletion = completion
         let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.bim-imodel"], in: .open)
@@ -222,7 +222,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     func getDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    
+
     func copyExternalFileWithPrompt(srcUrl: URL, destUrl: URL, handler: @escaping () -> ()) {
         if FileManager.default.fileExists(atPath: destUrl.path) {
             // File exists, check if it is the same
@@ -271,7 +271,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         documentCompletion?(url)
         documentCompletion = nil
     }
-    
+
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         let documentsDirectory = getDocumentsDirectory()
         let documentsDirectoryPath = documentsDirectory.path
@@ -292,11 +292,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             }
         }
     }
-    
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         callDocumentCompletion(nil)
     }
-  
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
@@ -324,15 +324,15 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             setupFrontend()
         }
     }
-    
+
     class OpenModelHander: NSObject, MessageHandler {
         static let NAME = "openModel"
         private var viewController: ViewController
-        
+
         init (_ viewController: ViewController) {
             self.viewController = viewController
         }
-        
+
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if let webView = self.viewController.webView, let promiseName = message.body as? String, promiseName.count > 0 {
                 viewController.pickSnapshot() { url in
