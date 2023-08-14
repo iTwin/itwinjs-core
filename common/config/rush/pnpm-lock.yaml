@@ -2827,7 +2827,7 @@ importers:
   ../../tools/build:
     specifiers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@microsoft/api-extractor': ^7.36.4
+      '@microsoft/api-extractor': ~7.36.4
       '@types/node': 18.16.1
       chalk: ^3.0.0
       cpx2: ^3.0.0
