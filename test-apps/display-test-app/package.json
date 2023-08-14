@@ -17,7 +17,7 @@
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
-    "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build -l error -d string",
+    "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build",
     "build:bundle": "npm run build:frontend-vite && npm run build:backend-webpack",
     "clean": "rimraf build lib .static-assets .rush/temp/package-deps*.json ios/imodeljs-test-app/build android/imodeljs-test-app/app/build android/imodeljs-test-app/app/src/main/assets",
     "docs": "",
