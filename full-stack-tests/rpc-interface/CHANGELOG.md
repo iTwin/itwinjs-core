@@ -11,6 +11,13 @@ Mon, 14 Aug 2023 14:36:34 GMT
 - Remove unused puppeteer dependency
 - Switch to ESLint new flat config system
 
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+### Updates
+
+- Migrate from using projects-client to itwins-client api
+
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
 
@@ -960,9 +967,9 @@ Wed, 06 May 2020 13:17:49 GMT
 - Fix issue with detecting whether or not to run a test suite.
 - react to renaming of imodeljs-clients
 - update tests to utilize FrontendAuthorizationClient
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
-- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection. 
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
+- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection.
 - React to changes in presentation APIs
 - react to new clients packages from imodeljs-clients
 - Upgrade to Rush 5.23.2
