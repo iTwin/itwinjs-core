@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
@@ -14,21 +14,27 @@ import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
 
-const mode = process.env.NODE_ENV === "development" ? "development" : "production";
+const mode =
+  process.env.NODE_ENV === "development" ? "development" : "production";
 
 // array of public directories static assets from dependencies to copy
-const assets = Object.keys(packageJson.dependencies)
-  .map((pkgName) => {
+const assets = ["./public/*"]; // assets for test-app
+Object.keys(packageJson.dependencies).forEach((pkgName) => {
+  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
     try {
       // gets dependency path and replaces everything after /lib/ with /lib/public/* to get static assets
-      let pkg = require.resolve(pkgName).replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
-      // use relative path with forward slashes
-      return path.relative(process.cwd(), pkg).replace(/\\/g, '/');
-    } catch { return undefined }
-  })
-  // ignores all invalid paths, including dependencies that don't contain a lib/ directory
-  .filter((path) => path?.endsWith('lib/public/*'));
-assets.push("./public/*");
+      let pkg = require
+        .resolve(pkgName)
+        .replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+
+      const assetsPath = path.relative(process.cwd(), pkg).replace(/\\/g, "/"); // use relative path with forward slashes
+      if (assetsPath.endsWith("lib/public/*")) {
+        // filter out pkgs that actually dont have assets
+        assets.push(assetsPath);
+      }
+    } catch {}
+  }
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -49,7 +55,7 @@ export default defineConfig(() => {
     publicDir: ".static-assets",
     build: {
       outDir: "./lib",
-      sourcemap: process.env.CI ? false : "inline", // append to the resulting output file if not running in CI.
+      sourcemap: !!process.env.CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
@@ -60,21 +66,24 @@ export default defineConfig(() => {
           /node_modules/, // prevent errors for modules
           /core\/frontend/, // prevent errors with require in IModelApp
         ],
-        transformMixedEsModules: true // transforms require statements
+        transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {
-        input: path.resolve(__dirname,"index.html"),
+        input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
+        logLevel: process.env.CI ? "silent" : "warn",
         plugins: [
-          ...(process.env.OUTPUT_STATS !== undefined ? [
-            rollupVisualizer({
-              open: true,
-              filename: "stats.html",
-              template: "treemap",
-              sourcemap: true,
-            }),
-            webpackStats(), // needs to be the last plugin
-          ] : []),
+          ...(process.env.OUTPUT_STATS !== undefined
+            ? [
+                rollupVisualizer({
+                  open: true,
+                  filename: "stats.html",
+                  template: "treemap",
+                  sourcemap: true,
+                }),
+                webpackStats(), // needs to be the last plugin
+              ]
+            : []),
         ],
       },
     },
@@ -93,9 +102,9 @@ export default defineConfig(() => {
             },
           },
         ],
-        verbose: true,
         overwrite: true,
         copyOnce: true, // only during initial build or on change
+        hook: "buildStart",
       }),
       // open http://localhost:3000/__inspect/ to debug vite plugins
       ...(mode === "development" ? [viteInspect({ build: true })] : []),
@@ -104,7 +113,7 @@ export default defineConfig(() => {
       }),
     ],
     define: {
-      "process.env" : process.env // injects process.env into the frontend
+      "process.env": process.env, // injects process.env into the frontend
     },
     optimizeDeps: {
       esbuildOptions: {
