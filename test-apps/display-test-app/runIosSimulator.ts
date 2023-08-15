@@ -49,7 +49,10 @@ async function main() {
 
   // get all iOS devices
   log("Getting iOS devices");
-  const results = await simctl.getDevices(undefined, 'iOS');
+  const allResults = await simctl.getDevices(undefined, 'iOS');
+  // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
+  // no actual data. The below filters out the empty entries.
+  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => (v as [any]).length > 0).map(([k, v]) => ({[k]:v})));
   var keys = Object.keys(results).sort(numericCompareDescending);
 
   // determine desired device and runtime
