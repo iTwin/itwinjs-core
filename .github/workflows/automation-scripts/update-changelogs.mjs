@@ -8,9 +8,9 @@ const path = require('path');
 /****************************************************************
 * To run manually:
 * git checkout target branch (master or latest release); git pull
-* git checkout release/X.X.X; git pull
+* git checkout release/X.X.x; git pull
 * uncomment git checkout -b cmd and fix branch name
-* open PR into master
+* open PR into target branch
 *****************************************************************/
 
 const targetPath = "./temp-target-changelogs"
@@ -55,7 +55,8 @@ await Promise.all([
   $`rush publish --regenerate-changelogs`,
   /*********************************************************************/
   // Uncomment For Manual runs and fix branch name to appropriate version
-  // $`git checkout -b finalize-release-4.0.X`,
+  // the version should match your incoming branch
+  // $`git checkout -b finalize-release-X.X.X`,
   /*********************************************************************/
   $`git add .`,
   $`git commit - m "${commitMessage} Changelogs"`,
