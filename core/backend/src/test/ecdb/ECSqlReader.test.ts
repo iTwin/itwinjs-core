@@ -63,7 +63,10 @@ describe("ECSqlReader", (() => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.equal(r.id, "0x1");
 
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo", undefined, { limit: { count: 1 } });
+        const params = new QueryBinder();
+        params.bindId("firstId", r.id!);
+
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
         assert.isTrue(await reader.step());
         // eslint-disable-next-line no-console
         assert.equal(reader.current.id, "0x1");
