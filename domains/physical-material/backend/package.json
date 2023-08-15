@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "4.1.0-dev.80",
+  "version": "4.2.0-dev.5",
   "main": "lib/cjs/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
   "license": "MIT",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.1.0-dev.80",
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.80",
-    "@itwin/core-common": "workspace:^4.1.0-dev.80"
+    "@itwin/core-backend": "workspace:^4.2.0-dev.5",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.5",
+    "@itwin/core-common": "workspace:^4.2.0-dev.5"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

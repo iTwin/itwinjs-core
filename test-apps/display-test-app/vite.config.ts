@@ -49,7 +49,7 @@ export default defineConfig(() => {
     publicDir: ".static-assets",
     build: {
       outDir: "./lib",
-      sourcemap: "inline", // append to the resulting output file
+      sourcemap: process.env.CI ? false : "inline", // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
@@ -63,7 +63,7 @@ export default defineConfig(() => {
         transformMixedEsModules: true // transforms require statements
       },
       rollupOptions: {
-        input: "./index.html",
+        input: path.resolve(__dirname,"index.html"),
         // run `rushx build --stats` to view stats
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined ? [
