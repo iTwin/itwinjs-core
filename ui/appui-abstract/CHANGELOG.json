@@ -77,6 +77,18 @@
       }
     },
     {
+      "version": "3.7.13",
+      "tag": "@itwin/appui-abstract_v3.7.13",
+      "date": "Tue, 08 Aug 2023 19:49:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.12",
+      "tag": "@itwin/appui-abstract_v3.7.12",
+      "date": "Thu, 27 Jul 2023 21:50:57 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.11",
       "tag": "@itwin/appui-abstract_v3.7.11",
       "date": "Tue, 11 Jul 2023 17:17:21 GMT",
