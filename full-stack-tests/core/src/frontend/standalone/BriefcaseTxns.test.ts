@@ -34,17 +34,22 @@ describe("BriefcaseTxns", () => {
     await writableConn.close();
   });
 
-  async function test(readableConn: BriefcaseConnection): Promise<void> {
-    const isSameConn = readableConn === writableConn;
+  // NB: We don't listen for onChangesApplied. Lots of them are produced, mixed in with other more interesting events.
+  type TxnEventName = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onReplayExternalTxns" | "onReplayedExternalTxns";
+  type TxnEvent = TxnEventName | "beforeUndo" | "beforeRedo" | "afterUndo" | "afterRedo";
+  type TxnType = "commit" | "undo" | "redo";
 
-    type TxnEventName = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onChangesApplied";
-    type TxnEvent = TxnEventName | "beforeUndo" | "beforeRedo" | "afterUndo" | "afterRedo";
+  interface ExpectedTxns {
+    forElement(type: TxnType, geomChanged?: boolean, modelChanged?: boolean): TxnEvent[];
+    forUndoRedoAll(type: "undo" | "redo"): TxnEvent[];
+  }
 
+  async function test(readableConn: BriefcaseConnection, expectedTxns: ExpectedTxns): Promise<void> {
     const received: TxnEvent[] = [];
     readableConn.txns.onBeforeUndoRedo.addListener((isUndo) => received.push(isUndo ? "beforeUndo" : "beforeRedo"));
     readableConn.txns.onAfterUndoRedo.addListener((isUndo) => received.push(isUndo ? "afterUndo" : "afterRedo"));
 
-    const txnEventNames: TxnEventName[] = ["onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied"];
+    const txnEventNames: TxnEventName[] = ["onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onReplayExternalTxns", "onReplayedExternalTxns"];
     for (const event of txnEventNames)
       readableConn.txns[event].addListener(() => received.push(event));
 
@@ -65,89 +70,116 @@ describe("BriefcaseTxns", () => {
       };
 
       await wait();
-      const justLog = true;
-      if (justLog)
-        console.log(JSON.stringify(received));
-      else
-        expect(received).to.deep.equal(expected);
+      console.log(JSON.stringify(received));
+      expect(received).to.deep.equal(expected);
 
       numWaits = received.length = expected.length = 0;
     };
 
-    const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
+    const expectCommit = async(geomChanged?: boolean, modelChanged?: boolean) => expectEvents(expectedTxns.forElement("commit", geomChanged, modelChanged));
 
     const dictModelId = await readableConn.models.getDictionaryModel();
     const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(writableConn.key, dictModelId, Guid.createValue(), { color: 0 });
     await writableConn.saveChanges();
-    await expectCommit("onElementsChanged");
+    await expectCommit();
 
     const code = await makeModelCode(readableConn, readableConn.models.repositoryModelId, Guid.createValue());
     const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(writableConn.key, code);
     await writableConn.saveChanges();
-    await expectCommit("onElementsChanged", "onModelsChanged");
+    await expectCommit(false, true);
 
     // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
     const elem1 = await insertLineElement(writableConn, model, category);
     await writableConn.saveChanges();
 
-    await expectCommit("onModelGeometryChanged", "onElementsChanged");
+    await expectCommit(true);
 
     await transformElements(writableConn, [elem1], Transform.createTranslationXYZ(1, 0, 0));
     await writableConn.saveChanges();
-    await expectCommit("onModelGeometryChanged", "onElementsChanged");
+    await expectCommit(true);
 
     await deleteElements(writableConn, [elem1]);
     await writableConn.saveChanges();
-    await expectCommit("onModelGeometryChanged", "onElementsChanged");
+    await expectCommit(true);
 
     const undo = async () => writableConn.txns.reverseSingleTxn();
-    const expectUndo = async (evts: TxnEvent[]) => expectEvents(isSameConn ? ["beforeUndo", ...evts, "afterUndo"] : evts);
+    const expectUndo = async (geomChanged?: boolean, modelChanged?: boolean) => expectEvents(expectedTxns.forElement("undo", geomChanged, modelChanged));
 
     await undo();
-    await expectUndo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectUndo(true);
     await undo();
-    await expectUndo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectUndo(true);
     await undo();
-    await expectUndo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectUndo(true);
     await undo();
-    await expectUndo(["onElementsChanged", "onModelsChanged", "onChangesApplied"]);
+    await expectUndo(false, true);
     await undo();
-    await expectUndo(["onElementsChanged", "onChangesApplied"]);
+    await expectUndo();
 
     const redo = async () => writableConn.txns.reinstateTxn();
-    const expectRedo = async (evts: TxnEvent[]) => expectEvents(isSameConn ? ["beforeRedo", ...evts, "afterRedo"] : evts);
+    const expectRedo = async (geomChanged?: boolean, modelChanged?: boolean) => expectEvents(expectedTxns.forElement("redo", geomChanged, modelChanged));
     await redo();
-    await expectRedo(["onElementsChanged", "onChangesApplied"]);
+    await expectRedo();
     await redo();
-    await expectRedo(["onElementsChanged", "onModelsChanged", "onChangesApplied"]);
+    await expectRedo(false, true);
     await redo();
-    await expectRedo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectRedo(true);
     await redo();
-    await expectRedo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectRedo(true);
     await redo();
-    await expectRedo(["onElementsChanged", "onChangesApplied", "onModelGeometryChanged"]);
+    await expectRedo(true);
 
     await writableConn.txns.reverseAll();
-    await expectUndo([
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-      "onElementsChanged", "onModelsChanged", "onChangesApplied",
-      "onElementsChanged", "onChangesApplied",
-    ]);
+    await expectEvents(expectedTxns.forUndoRedoAll("undo"));
 
     await writableConn.txns.reinstateTxn();
-    await expectRedo([
-      "onElementsChanged", "onChangesApplied",
-      "onElementsChanged", "onModelsChanged", "onChangesApplied",
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-      "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-    ]);
+    await expectEvents(expectedTxns.forUndoRedoAll("redo"));
   }
 
   it.only("receives events for writable connection", async () => {
-    await test(writableConn);
+    await test(writableConn, {
+      forElement(type: TxnType, geomChanged?: boolean, modelChanged?: boolean): TxnEvent[] {
+        const bookends = {
+          "commit": ["onCommit", "onCommitted"] as const,
+          "undo": ["beforeUndo", "afterUndo"] as const,
+          "redo": ["beforeRedo", "afterRedo"] as const,
+        } as const;
+
+        const txns: TxnEvent[] = [bookends[type][0]];
+
+        if (geomChanged && type === "commit")
+          txns.push("onModelGeometryChanged");
+
+        txns.push("onElementsChanged");
+        if (modelChanged)
+          txns.push("onModelsChanged");
+
+        if (geomChanged && type !== "commit")
+          txns.push("onModelGeometryChanged");
+
+        txns.push(bookends[type][1]);
+        return txns;
+      },
+      forUndoRedoAll(type: "undo" | "redo"): TxnEvent[] {
+        return type === "undo" ? [
+          "beforeUndo",
+          "onElementsChanged", "onModelGeometryChanged",
+          "onElementsChanged", "onModelGeometryChanged",
+          "onElementsChanged", "onModelGeometryChanged",
+          "onElementsChanged", "onModelsChanged",
+          "onElementsChanged",
+          "afterUndo",
+        ] : [
+          "beforeRedo",
+          "onElementsChanged",
+          "onElementsChanged", "onModelsChanged",
+          "onElementsChanged", "onModelGeometryChanged",
+          "onElementsChanged", "onModelGeometryChanged",
+          "onElementsChanged", "onModelGeometryChanged",
+          "afterRedo",
+        ];
+      },
+    });
   });
 
   it.only("receives events for read-only connection when watchForChanges is enabled", async () => {
@@ -158,7 +190,23 @@ describe("BriefcaseTxns", () => {
       watchForChanges: true,
     });
 
-    await test(readableConn);
+    await test(readableConn, {
+      forElement(_type: TxnType, geomChanged?: boolean, modelChanged?: boolean): TxnEvent[] {
+        const txns: TxnEvent[] = ["onReplayExternalTxns", "onElementsChanged"];
+        if (geomChanged)
+          txns.push("onModelGeometryChanged");
+
+        if (modelChanged)
+          txns.push("onModelsChanged");
+
+        txns.push("onReplayedExternalTxns");
+        return txns;
+      },
+      forUndoRedoAll(_type: "undo" | "redo"): TxnEvent[] {
+        return [];
+      },
+    });
+
     await readableConn.close();
   });
 });
