@@ -55,13 +55,13 @@ await $`rush publish --regenerate-changelogs`;
 /*********************************************************************/
 // Uncomment For Manual runs and fix branch name to appropriate version
 // the version should match your incoming branch
-await $`git checkout -b finalize-release-4.1.0`;
+// await $`git checkout -b finalize-release-X.X.X`;
 /*********************************************************************/
-// await $`git add .`,
-// await $`git commit - m "${commitMessage} Changelogs"`;
-// await $`rush change --bulk --message "" --bump-type none`;
-// await $`git add .`;
-// await $`git commit --amend --no-edit`;
+await $`git add .`;
+await $`git commit - m "${commitMessage} Changelogs"`;
+await $`rush change --bulk --message "" --bump-type none`;
+await $`git add .`;
+await $`git commit --amend --no-edit`;
 
 
 // Read all files in the directory

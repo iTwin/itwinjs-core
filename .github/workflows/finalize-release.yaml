@@ -26,9 +26,7 @@ jobs:
       - name: Run update-changelogs.sh
         run: |
           npm i -g zx
-          node ./.github/workflows/automation-scripts/update-changelogs.mjs
-        env:
-          commitId: ${{ github.sha }}
+          zx ./.github/workflows/automation-scripts/update-changelogs.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
       - name: Push to master
