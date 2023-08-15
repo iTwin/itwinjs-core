@@ -1340,11 +1340,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * For cases where you need to preserve exact [[Code]]s between databases,
-   * you can set the codeValueBehavior to "exact". The default is "trim-unicode-whitespace".
-   * Code Values should be trimmed, this is primiarly for compatibility with iModels that
-   * failed to trim their codes.
-   * @beta
+   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
+   * @public
    */
   public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
     return this.nativeDb.getCodeValueBehavior();
