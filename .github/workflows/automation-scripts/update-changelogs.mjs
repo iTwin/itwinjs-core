@@ -21,23 +21,23 @@ await $`mkdir ${incomingPath}`
 
 // find the latest release branch, and make that the target for the changelogs
 let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
-const currentBranch = await $`git branch --show-current`;
+let currentBranch = await $`git branch --show-current`;
 const commitMessage = await $`git log --format=%B -n 1`
+
+targetBranch = String(targetBranch).slice(0, -1);
+currentBranch = String(currentBranch).slice(0, -1);
 
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
   targetBranch = 'master'
 } else
-  console.log(`The current branch is ${currentBranch}, so the target will be $targetBranch branch`)
+  console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
 
-await Promise.all([
-  // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
-  $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`,
-  // # copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
-  $`git checkout ${targetBranch}`,
-  $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`,
-
-])
+// copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
+await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
+// # copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
+await $`git checkout ${targetBranch}`;
+await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
 const currentFiles = getFilePaths(targetPath);
 currentFiles.forEach((file, index) => {
@@ -45,25 +45,24 @@ currentFiles.forEach((file, index) => {
 })
 fixChangeLogs(currentFiles);
 
-await Promise.all([
-  // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-  $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`,
-  // delete temps
-  $`rm -r ${targetPath}`,
-  $`rm -r ${incomingPath}`,
-  // # regen CHANGELOG.md
-  $`rush publish --regenerate-changelogs`,
-  /*********************************************************************/
-  // Uncomment For Manual runs and fix branch name to appropriate version
-  // the version should match your incoming branch
-  // $`git checkout -b finalize-release-X.X.X`,
-  /*********************************************************************/
-  $`git add .`,
-  $`git commit - m "${commitMessage} Changelogs"`,
-  $`rush change --bulk --message "" --bump-type none`,
-  $`git add .`,
-  $`git commit --amend --no-edit`,
-]);
+// copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
+await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
+// delete temps
+await $`rm -r ${targetPath}`;
+await $`rm -r ${incomingPath}`;
+// # regen CHANGELOG.md
+await $`rush publish --regenerate-changelogs`;
+/*********************************************************************/
+// Uncomment For Manual runs and fix branch name to appropriate version
+// the version should match your incoming branch
+await $`git checkout -b finalize-release-4.1.0`;
+/*********************************************************************/
+// await $`git add .`,
+// await $`git commit - m "${commitMessage} Changelogs"`;
+// await $`rush change --bulk --message "" --bump-type none`;
+// await $`git add .`;
+// await $`git commit --amend --no-edit`;
+
 
 // Read all files in the directory
 function getFilePaths(directoryPath) {
