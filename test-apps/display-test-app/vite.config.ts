@@ -15,6 +15,7 @@ import * as packageJson from "./package.json";
 import path from "path";
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
+console.log(process.env.CI);
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
@@ -69,7 +70,7 @@ export default defineConfig(() => {
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
-        logLevel: process.env.CI ? "silent" : "warn",
+        logLevel: "silent",
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
