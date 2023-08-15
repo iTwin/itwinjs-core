@@ -10,7 +10,7 @@ import { BriefcaseConnection } from "@itwin/core-frontend";
 import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
-describe.only("BriefcaseTxns", () => {
+describe("BriefcaseTxns", () => {
   if (ProcessDetector.isMobileAppFrontend)
     return;
 
@@ -25,8 +25,8 @@ describe.only("BriefcaseTxns", () => {
     await TestUtility.shutdownFrontend();
   });
 
+  const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
   beforeEach(async () => {
-    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
     writableConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 
@@ -138,7 +138,19 @@ describe.only("BriefcaseTxns", () => {
     ]);
   }
 
-  it("receives events from TxnManager", async () => {
+  it("receives events for writable connection", async () => {
     await test(writableConn);
+  });
+
+  it.only("receives events for read-only connection when watchForChanges is enabled", async () => {
+    const readableConn = await BriefcaseConnection.openFile({
+      fileName: filePath,
+      key: Guid.createValue(),
+      readonly: true,
+      watchForChanges: true,
+    });
+
+    await test(readableConn);
+    await readableConn.close();
   });
 });
