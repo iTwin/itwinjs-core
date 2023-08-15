@@ -1633,7 +1633,6 @@ export class ECDb implements IDisposable {
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     dispose(): void;
     // @internal
@@ -2910,7 +2909,6 @@ export abstract class IModelDb extends IModel {
     containsClass(classFullName: string): boolean;
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
