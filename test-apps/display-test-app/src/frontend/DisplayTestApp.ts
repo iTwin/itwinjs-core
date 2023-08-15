@@ -160,10 +160,6 @@ function getFileName(path: string): string {
 
 // main entry point.
 const dtaFrontendMain = async () => {
-  if (ProcessDetector.isMobileAppFrontend) {
-    // attempt to send message to mobile that the model was opened
-    MobileMessenger.postMessage("mobileLog", "dtaFrontendMain");
-  }
   RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
   RpcConfiguration.disableRoutingValidation = true;
 
@@ -234,10 +230,6 @@ const dtaFrontendMain = async () => {
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
-      if (ProcessDetector.isMobileAppFrontend) {
-        // attempt to send message to mobile that the model was opened
-        MobileMessenger.postMessage("mobileLog", `iModel opening: ${iModelName}`);
-      }
       iModel = await openFile({ fileName: iModelName, writable });
       if (ProcessDetector.isMobileAppFrontend) {
         // attempt to send message to mobile that the model was opened
