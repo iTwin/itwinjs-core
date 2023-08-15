@@ -274,6 +274,18 @@ export class TxnManager {
   }
 
   /** @internal */
+  protected _onReplayExternalTxns() {
+    this.onReplayExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayExternalTxns");
+  }
+
+  /** @internal */
+  protected _onReplayedExternalTxns() {
+    this.onReplayedExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
+  }
+
+  /** @internal */
   protected _onChangesApplied() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
@@ -339,6 +351,8 @@ export class TxnManager {
    * @param _action The action that was performed.
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+  public readonly onReplayExternalTxns = new BeEvent<() => void>();
+  public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /**
    * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed

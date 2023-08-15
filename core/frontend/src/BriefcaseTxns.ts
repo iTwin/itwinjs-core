@@ -71,6 +71,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
 
+  public readonly onReplayExternalTxns = new BeEvent<() => void>();
+  public readonly onReplayedExternalTxns = new BeEvent<() => void>();
+
   /** Event raised after a changeset has been applied to the briefcase.
    * Changesets may be applied as a result of [[BriefcaseConnection.pullChanges]], or by undo/redo operations.
    */
@@ -229,6 +232,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** @internal */
   public notifyCommitted(hasPendingTxns: boolean, time: number) {
     this.onCommitted.raiseEvent(hasPendingTxns, time);
+  }
+
+  /** @internal */
+  public notifyReplayExternalTxns() {
+    this.onReplayExternalTxns.raiseEvent();
+  }
+
+  /** @internal */
+  public notifyReplayedExternalTxns() {
+    this.onReplayedExternalTxns.raiseEvent();
   }
 
   /** @internal */
