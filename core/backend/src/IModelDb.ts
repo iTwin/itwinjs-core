@@ -2872,6 +2872,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
+   * HI.
    */
   public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: SnapshotDbOpenArgs): StandaloneDb {
     const file = { path: filePath, key: options?.key };
