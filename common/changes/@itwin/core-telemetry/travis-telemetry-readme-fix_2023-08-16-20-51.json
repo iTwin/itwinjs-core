@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-telemetry",
-      "comment": "Fix core-telemetry's README.md",
+      "comment": "",
       "type": "none"
     }
   ],
