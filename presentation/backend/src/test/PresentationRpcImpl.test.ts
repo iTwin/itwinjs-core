@@ -82,8 +82,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
-    // need to define .then because mocks aren't 'thenable'. async functions which return IModelDb hang without this.
-    imodelMock.setup((x: any) => x.then).returns(() => undefined);
+    configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -119,8 +118,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
-    // need to define .then because mocks aren't 'thenable'. async functions which return IModelDb hang without this.
-    imodelMock.setup((x: any) => x.then).returns(() => undefined);
+    configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -154,8 +152,7 @@ describe("PresentationRpcImpl", () => {
 
     const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
-    // need to define .then because mocks aren't 'thenable'. async functions which return IModelDb hang without this.
-    imodelMock.setup((x: any) => x.then).returns(() => undefined);
+    configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -193,8 +190,7 @@ describe("PresentationRpcImpl", () => {
         pageOptions: { start: 123, size: 45 } as PageOptions,
         displayType: "sample display type",
       };
-      // need to define .then because mocks aren't 'thenable'. async functions which return IModelDb hang without this.
-      testData.imodelMock.setup((x: any) => x.then).returns(() => undefined);
+      configureForPromiseResult(testData.imodelMock);
       defaultRpcParams = { clientId: faker.random.uuid() };
       stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").withArgs(testData.imodelToken.key).returns(testData.imodelMock.object);
       impl = new PresentationRpcImpl({ requestTimeout: 10 });
@@ -290,8 +286,7 @@ describe("PresentationRpcImpl", () => {
 
         const iModelRpcProps2 = createIModelRpcProps();
         const iModelMock2 = moq.Mock.ofType<IModelDb>();
-        // need to define .then because mocks aren't 'thenable'. async functions which return IModelDb hang without this.
-        iModelMock2.setup((x: any) => x.then).returns(() => undefined);
+        configureForPromiseResult(imodelMock);
         stub_IModelDb_findByKey.withArgs(iModelRpcProps2.key).returns(iModelMock2.object);
         const managerOptions2: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: iModelMock2.object,

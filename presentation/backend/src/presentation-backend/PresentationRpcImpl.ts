@@ -106,12 +106,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return Presentation.getManager(clientId);
   }
 
-  private async getIModel(accessToken: AccessToken, token: IModelRpcProps): Promise<IModelDb> {
+  private async getIModel(token: IModelRpcProps): Promise<IModelDb> {
     let imodel: IModelDb;
     try {
       imodel = IModelDb.findByKey(token.key);
       // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
-      await imodel.refreshContainer(accessToken);
+      await imodel.refreshContainer(RpcTrace.expectCurrentActivity.accessToken);
     } catch {
       throw new PresentationError(PresentationStatus.InvalidArgument, "IModelRpcProps doesn't point to a valid iModel");
     }
@@ -130,7 +130,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request not found, creating a new one`);
       let imodel: IModelDb;
       try {
-        imodel = await this.getIModel(RpcTrace.expectCurrentActivity.accessToken, token);
+        imodel = await this.getIModel(token);
       } catch (e) {
         assert(e instanceof Error);
         return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
