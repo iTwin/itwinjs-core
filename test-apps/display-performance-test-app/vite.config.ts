@@ -55,7 +55,7 @@ export default defineConfig(() => {
     publicDir: ".static-assets",
     build: {
       outDir: "./lib",
-      sourcemap: !!process.env.CI, // append to the resulting output file if not running in CI.
+      sourcemap: !!process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
@@ -70,10 +70,9 @@ export default defineConfig(() => {
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
-        maxParallelFileOps: 15,
-        // run `rushx build --stats` to view stats
-        logLevel: process.env.CI ? "silent" : "warn",
+        logLevel: process.env.VITE_CI ? "silent" : "error",
         plugins: [
+          // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
                 rollupVisualizer({

@@ -90,6 +90,7 @@ steps:
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+      VITE_CI: true
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: npm run ios:all
