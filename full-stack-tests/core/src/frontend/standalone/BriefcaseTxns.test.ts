@@ -10,7 +10,7 @@ import { BriefcaseConnection } from "@itwin/core-frontend";
 import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
-describe.only("BriefcaseTxns", () => {
+describe("BriefcaseTxns", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
     let rwConn: BriefcaseConnection;
 
@@ -149,7 +149,49 @@ describe.only("BriefcaseTxns", () => {
     });
 
     describe("read-only connection with watchForChanges enabled", () => {
+      let roConn: BriefcaseConnection;
+
+      beforeEach(async () => {
+        roConn = await BriefcaseConnection.openFile({
+          fileName: filePath,
+          key: Guid.createValue(),
+          readonly: true,
+          watchForChanges: true,
+        });
+      });
+
+      afterEach(async () => roConn.close());
+
       it("receives events from TxnManager", async () => {
+        // This test is mostly a duplicate of the first portion of the "writable connection" test above.
+        // The events are bookended by "onReplay(ed)ExternalTxns" events instead of "onCommit(ted)", the order
+        // of the events is slightly different, "onChangesApplied" is included, and undo/redo is not supported.
+        const expectEvents = installListeners(roConn);
+        const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
+
+        const dictModelId = await rwConn.models.getDictionaryModel();
+        const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
+        const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onModelsChanged", "onChangesApplied");
+
+        // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
+        const elem1 = await insertLineElement(rwConn, model, category);
+        await rwConn.saveChanges();
+
+        await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
+
+        await transformElements(rwConn, [elem1], Transform.createTranslationXYZ(1, 0, 0));
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
+
+        await deleteElements(rwConn, [elem1]);
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
       });
     });
   }
