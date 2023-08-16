@@ -2219,7 +2219,7 @@ describe("iModel", () => {
 
     errorLogStub.resetHistory();
     expect(cloudContainer.accessToken).equal("sas");
-    await checkpoint.refreshContainerSas(accessToken);
+    await checkpoint.refreshContainer(accessToken);
     expect(cloudContainer.accessToken).equal("testSAS");
 
     assert.equal(errorLogStub.callCount, 1);
@@ -2232,7 +2232,7 @@ describe("iModel", () => {
     queryStub.callsFake(async () => {
       throw new Error("no checkpoint");
     });
-    await expect(checkpoint.refreshContainerSas(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
+    await expect(checkpoint.refreshContainer(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
   });
@@ -2250,7 +2250,7 @@ describe("iModel", () => {
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
-    await imodel1.refreshContainerSas(accessToken);
+    await imodel1.refreshContainer(accessToken);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {
