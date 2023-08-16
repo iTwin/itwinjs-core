@@ -84,7 +84,7 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
   # TEMP: build on linux but with 50% CPU saturation to prevent OOM
-  - script: node common/scripts/install-run-rush.js build -v -p '50%'
+  - script: bash -c 'while true; do top -b -n 1 -o +RES | head -n 22; sleep 1s; done' & node common/scripts/install-run-rush.js build && kill %1
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     env:
