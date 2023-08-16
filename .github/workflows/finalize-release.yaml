@@ -30,5 +30,3 @@ jobs:
           zx ./.github/workflows/automation-scripts/update-changelogs.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
-      # - name: Push to master
-      #   run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
