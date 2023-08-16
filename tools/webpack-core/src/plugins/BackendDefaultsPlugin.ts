@@ -3,17 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { AssetInfo, Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import { AssetInfo, Compiler, DefinePlugin, ExternalsPlugin, RuleSetRule } from "webpack";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
 import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
-
-const isProductionLikeMode = (
-  options: Configuration | WebpackOptionsNormalized,
-) => {
-  return options.mode === "production" || !options.mode;
-};
 
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {
@@ -34,7 +28,10 @@ export class BackendDefaultsPlugin {
       },
     ];
 
-    if (isProductionLikeMode(compiler.options)) {
+    const isProductionLikeMode =
+      compiler.options.mode === "production" || !compiler.options.mode;
+
+    if (isProductionLikeMode) {
       defaultRules.push({
         test: /\.js$/,
         loader: path.join(__dirname, "../loaders/strip-assert-loader.js"),
@@ -56,7 +53,14 @@ export class BackendDefaultsPlugin {
     ];
 
     compiler.options.output.devtoolModuleFilenameTemplate = (info: AssetInfo) => {
-      return path.resolve(info.absoluteResourcePath).replace(/\\/g, "/");
+      const devtoolPath = isProductionLikeMode
+        ? path.relative(
+          compiler.options.output?.path || process.cwd(),
+          info.absoluteResourcePath,
+        )
+        : path.resolve(info.absoluteResourcePath);
+
+      return devtoolPath.replace(/\\/g, "/");
     };
 
     if (compiler.options.ignoreWarnings === undefined)
