@@ -71,7 +71,14 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    */
   public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
 
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayedExternalTxns]] for the event raised after all such changes have been applied.
+   */
   public readonly onReplayExternalTxns = new BeEvent<() => void>();
+
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
+   */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /** Event raised after a changeset has been applied to the briefcase.
