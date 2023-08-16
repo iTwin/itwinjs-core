@@ -35,9 +35,9 @@ commitMessage = String(commitMessage).slice(0, -2);
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
   targetBranch = 'master'
-} else
+} else {
   console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
-
+}
 // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 // # copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
