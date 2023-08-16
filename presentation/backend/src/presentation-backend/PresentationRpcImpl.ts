@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { AccessToken, assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   ClientDiagnostics, ComputeSelectionRequestOptions, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags,
