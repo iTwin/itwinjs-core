@@ -104,11 +104,14 @@ for (const watchForChanges of [false, true]) {
       const view = await viewCreator.createDefaultView(undefined, [modelId]);
 
       const model = await getModel(roConn);
+      const prevGuid = model.geometryGuid;
       const ref = model.createTileTreeReference(view);
       const prevTree = (await ref.treeOwner.loadTree())!;
       expect(prevTree).not.to.be.undefined;
 
       await expectModelChanges(async () => moveElement());
+      expect(model.geometryGuid).not.to.equal(prevGuid);
+
       const newTree = (await ref.treeOwner.loadTree())!;
       expect(newTree).not.to.be.undefined;
       expect(newTree).not.to.equal(prevTree);
