@@ -534,10 +534,14 @@ export class Descriptor implements DescriptorSource {
     // @deprecated
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
+    // @beta
+    getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -571,6 +575,8 @@ export interface DescriptorJSON {
     inputKeysHash: string;
     // @beta (undocumented)
     instanceFilter?: InstanceFilterDefinition;
+    // @beta (undocumented)
+    ruleset?: Ruleset;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -613,6 +619,8 @@ export interface DescriptorSource {
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;
@@ -974,6 +982,8 @@ export class Field {
     isPropertiesField(): this is PropertiesField;
     isReadonly: boolean;
     label: string;
+    // @beta
+    matchesDescriptor(descriptor: FieldDescriptor): boolean;
     name: string;
     get parent(): NestedContentField | undefined;
     priority: number;
@@ -1046,6 +1056,9 @@ export interface FormatOptions {
     // (undocumented)
     unitSystem?: UnitSystemKey;
 }
+
+// @internal (undocumented)
+export const getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined;
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
@@ -2264,6 +2277,8 @@ export class PropertiesField extends Field {
     }, categories: CategoryDescription[]): PropertiesField | undefined;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     getFieldDescriptor(): FieldDescriptor;
+    // @beta
+    matchesDescriptor(descriptor: FieldDescriptor): boolean;
     properties: Property[];
     toJSON(): PropertiesFieldJSON;
 }

@@ -15,7 +15,8 @@
       "dom",
       "dom.iterable",
       "esnext"
-    ]
+    ],
+    "types": ["vite/client"],
   },
   "include": [
     "./src/**/*.ts"

@@ -635,11 +635,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
-  /** Return true if the vector0 and vector90 are of equal length and perpendicular. */
+  /** Return radius if the vector0 and vector90 are of equal length and perpendicular. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
     const uy = this._matrix.at(1, 0);
-    const vx = this._matrix.at(0, 1), vy = this._matrix.at(1, 1);
+    const vx = this._matrix.at(0, 1);
+    const vy = this._matrix.at(1, 1);
     const axx = Geometry.dotProductXYXY(ux, uy, ux, uy);
     const ayy = Geometry.dotProductXYXY(vx, vy, vx, vy);
     const axy = Geometry.dotProductXYXY(ux, uy, vx, vy);
@@ -647,7 +648,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       return Geometry.hypotenuseXY(ux, uy);
     return undefined;
   }
-  /** If the arc is circular, return its radius.  Otherwise return undefined */
+  /** If the arc is circular, return its radius. Otherwise return undefined */
   public circularRadius(): number | undefined {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }

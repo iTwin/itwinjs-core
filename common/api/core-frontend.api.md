@@ -6779,7 +6779,6 @@ export abstract class IModelConnection extends IModel {
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
@@ -7939,6 +7938,15 @@ export class MapLayerSource {
     userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+}
+
+// @public
+export interface MapLayerSourceProps {
+    baseMap?: boolean;
+    formatId?: string;
+    name: string;
+    transparentBackground?: boolean;
+    url: string;
 }
 
 // @beta

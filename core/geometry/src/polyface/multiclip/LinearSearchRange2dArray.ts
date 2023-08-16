@@ -11,11 +11,10 @@ import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { Range2dSearchInterface } from "./Range2dSearchInterface";
 
 /**
- * * Array of Range2d
- * * user data tag attached to each range via cast as (any).userTag.
+ * An array of decorated Range2d.
+ * * User data is attached to each range via `(myRange as any).tag = myTag`.
  * * Search operations are simple linear.
  * * This class can be used directly for "smallish" range sets, or as the leaf level of hierarchical structures for larger range sets.
- * *
  * @internal
  */
 export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
@@ -31,13 +30,12 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
   private updateForSearch() {
     this._isDirty = false;
   }
-  /** Return the overall range of all member ranges. */
+  /** Return the overall range of all members. */
   public totalRange(result?: Range2d): Range2d {
-    result = result ? result : Range2d.createNull();
     return this._compositeRange.clone(result);
   }
   /** Add a range to the search set. */
-  public addRange(range: LowAndHighXY, tag: T) {
+  public addRange(range: LowAndHighXY, tag: T): void {
     this._isDirty = true;
     const myRange = Range2d.createNull();
     (myRange as any).tag = tag;

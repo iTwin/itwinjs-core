@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "4.1.0-dev.72",
+  "version": "4.2.0-dev.6",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@microsoft/api-extractor": "7.34.4",
+    "@microsoft/api-extractor": "~7.36.4",
     "chalk": "^3.0.0",
     "cpx2": "^3.0.0",
     "cross-spawn": "^7.0.1",
