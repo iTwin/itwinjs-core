@@ -634,9 +634,9 @@ export namespace CloudSqlite {
       containerInternal.writeLockExpires = undefined;
       return val;
     } catch (e) {
+      args.container.abandonChanges();  // if operation threw, abandon all changes
       containerInternal.writeLockHeldBy = undefined;
       containerInternal.writeLockExpires = undefined;
-      args.container.abandonChanges();  // if operation threw, abandon all changes
       throw e;
     }
   }
