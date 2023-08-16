@@ -70,6 +70,7 @@ export default defineConfig(() => {
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
+        maxParallelFileOps: 15,
         // run `rushx build --stats` to view stats
         logLevel: process.env.CI ? "silent" : "warn",
         plugins: [
