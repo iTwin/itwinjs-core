@@ -22,6 +22,7 @@ import {
   VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
+  configureForPromiseResult,
   createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinition, createRandomNodePathElement,
   createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode, createTestSelectClassInfo, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
@@ -286,7 +287,7 @@ describe("PresentationRpcImpl", () => {
 
         const iModelRpcProps2 = createIModelRpcProps();
         const iModelMock2 = moq.Mock.ofType<IModelDb>();
-        configureForPromiseResult(imodelMock);
+        configureForPromiseResult(iModelMock2);
         stub_IModelDb_findByKey.withArgs(iModelRpcProps2.key).returns(iModelMock2.object);
         const managerOptions2: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: iModelMock2.object,
