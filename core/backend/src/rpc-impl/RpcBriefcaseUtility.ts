@@ -114,8 +114,8 @@ export class RpcBriefcaseUtility {
   public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
     const iModelDb = IModelDb.findByKey(iModel.key);
 
-    // call refreshContainerSas, just in case this is a V2 checkpoint whose sasToken is about to expire.
-    await iModelDb.refreshContainerSas(accessToken);
+    // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
+    await iModelDb.refreshContainer(accessToken);
     return iModelDb;
   }
 
