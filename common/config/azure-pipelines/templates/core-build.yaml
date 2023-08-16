@@ -84,12 +84,12 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
   # TEMP: build on linux but with 50% CPU saturation to prevent OOM
-  - script: bash -c 'while true; do top -b -n 1 -o +RES | head -n 22; sleep 1s; done' & node common/scripts/install-run-rush.js build && kill %1
+  - script: bash -c 'while true; do top -b -n 1 -o +RES | head -n 22; sleep 1s; done' & node common/scripts/install-run-rush.js build -v -p max && kill %1
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     env:
-      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+      # RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      # RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 

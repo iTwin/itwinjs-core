@@ -70,7 +70,7 @@ export default defineConfig(() => {
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
-        logLevel: process.env.VITE_CI ? "silent" : "error",
+        logLevel: process.env.VITE_CI ? "info" : "warn",
         plugins: [
           // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
