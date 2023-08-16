@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
+import { BriefcaseConnection, GeometricModelState, ViewCreator3d } from "@itwin/core-frontend";
 import { coreFullStackTestIpc, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -54,10 +54,12 @@ describe.only("watchForChanges", () => {
     await rwConn.close();
   });
 
-  async function waitForModelChanges(func: () => Promise<void>): Promise<Set<string>> {
-    const promise = new Promise<Set<string>>((resolve) => {
+  async function expectModelChanges(func: () => Promise<void>): Promise<void> {
+    const promise = new Promise<void>((resolve) => {
       roConn.onBufferedModelChanges.addOnce((modelIds) => {
-        resolve(modelIds);
+        expect(modelIds.size).to.equal(1);
+        expect(modelIds.has(modelId)).to.be.true;
+        resolve();
       });
     });
 
@@ -65,28 +67,48 @@ describe.only("watchForChanges", () => {
     return promise;
   }
 
-  it("updates ModelState.geometryGuid", async () => {
-    await roConn.models.load(modelId);
-    const model = roConn.models.getLoaded(modelId) as GeometricModelState;
-    expect(model).instanceof(GeometricModelState);
+  let zTranslation = 0;
+  async function moveElement(): Promise<void> {
+    const transform = Transform.createTranslationXYZ(0, 0, ++zTranslation);
+    await transformElements(rwConn, [elemId], transform);
+    await rwConn.saveChanges();
+  }
 
+  async function getModel(iModel: BriefcaseConnection): Promise<GeometricModelState> {
+    await iModel.models.load(modelId);
+    const model = iModel.models.getLoaded(modelId) as GeometricModelState;
+    expect(model).instanceof(GeometricModelState);
+    return model;
+  }
+
+  it("updates ModelState.geometryGuid when model geometry changes", async () => {
+    const model = await getModel(roConn);
     const prevGuid = model.geometryGuid;
     expect(prevGuid).not.to.be.undefined;
 
-    const modelIds = await waitForModelChanges(async () => {
-      const transform = Transform.createTranslationXYZ(0, 0, 1);
-      await transformElements(rwConn, [elemId], transform);
-      await rwConn.saveChanges();
-    });
-    expect(modelIds.size).to.equal(1);
-    expect(modelIds.has(modelId)).to.be.true;
-
+    await expectModelChanges(async () => moveElement());
     expect(roConn.models.getLoaded(model.id)).to.equal(model);
     expect(model.geometryGuid).not.to.be.undefined;
     expect(model.geometryGuid).not.to.equal(prevGuid);
 
-    await rwConn.models.load(modelId);
-    const rwModel = rwConn.models.getLoaded(modelId) as GeometricModelState;
+    const rwModel = await getModel(rwConn);
     expect(rwModel.geometryGuid).to.equal(model.geometryGuid);
+  });
+
+  it("purges and recreates tile trees when model geometry changes", async () => {
+    const viewCreator = new ViewCreator3d(roConn);
+    const view = await viewCreator.createDefaultView(undefined, [modelId]);
+
+    const model = await getModel(roConn);
+    const ref = model.createTileTreeReference(view);
+    const prevTree = (await ref.treeOwner.loadTree())!;
+    expect(prevTree).not.to.be.undefined;
+
+    await expectModelChanges(async () => moveElement());
+    const newTree = (await ref.treeOwner.loadTree())!;
+    expect(newTree).not.to.be.undefined;
+    expect(newTree).not.to.equal(prevTree);
+    expect(newTree.isDisposed).to.be.false;
+    expect(prevTree.isDisposed).to.be.true;
   });
 });
