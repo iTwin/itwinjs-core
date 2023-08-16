@@ -1,18 +1,6 @@
 # Change Log - @itwin/editor-backend
 
-This log was last generated on Wed, 16 Aug 2023 18:58:53 GMT and should not be manually modified.
-
-## 4.1.0
-Mon, 14 Aug 2023 14:36:34 GMT
-
-### Updates
-
-- Switch to ESLint new flat config system
-
-## 4.0.7
-Thu, 10 Aug 2023 13:19:24 GMT
-
-_Version update only_
+This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
