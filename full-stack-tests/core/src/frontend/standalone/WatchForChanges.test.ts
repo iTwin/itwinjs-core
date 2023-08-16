@@ -36,7 +36,10 @@ describe.only("watchForChanges", () => {
     modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
     const dictId = await rwConn.models.getDictionaryModel();
     categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
-    elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [new Point3d()] });
+
+    const projCenter = rwConn.projectExtents.center;
+    const point = new Point3d(Math.round(projCenter.x), Math.round(projCenter.y), Math.round(projCenter.z));
+    elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [point, new Point3d(point.x, point.y + 2, point.z)] });
     expect(Id64.isValid(elemId)).to.be.true;
     await rwConn.saveChanges();
 
@@ -67,9 +70,9 @@ describe.only("watchForChanges", () => {
     return promise;
   }
 
-  let zTranslation = 0;
+  let xTranslation = 0;
   async function moveElement(): Promise<void> {
-    const transform = Transform.createTranslationXYZ(0, 0, ++zTranslation);
+    const transform = Transform.createTranslationXYZ(++xTranslation, 0, 0);
     await transformElements(rwConn, [elemId], transform);
     await rwConn.saveChanges();
   }
@@ -110,5 +113,8 @@ describe.only("watchForChanges", () => {
     expect(newTree).not.to.equal(prevTree);
     expect(newTree.isDisposed).to.be.false;
     expect(prevTree.isDisposed).to.be.true;
+
+    console.log(JSON.stringify(prevTree.iModelTransform.toJSON()));
+    console.log(JSON.stringify(newTree.iModelTransform.toJSON()));
   });
 });
