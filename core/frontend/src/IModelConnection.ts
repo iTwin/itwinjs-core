@@ -1316,6 +1316,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   /** Provides access to information about the [Category]($backend)'s stored in an [[IModelConnection]].
    * This information is cached internally so that repeated requests need not query the backend.
    * @see [[IModelConnection.categories]] for the categories associated with a specific iModel.
+   * HEY
    */
   export class Categories {
     /** @internal */
