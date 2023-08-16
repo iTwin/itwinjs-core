@@ -1659,7 +1659,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.15.0
+      '@itwin/electron-authorization': ^0.16.0
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -1725,7 +1725,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.15.0_vydan7phskpjqeuaunwkdiptti
+      '@itwin/electron-authorization': 0.16.0_vydan7phskpjqeuaunwkdiptti
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 3.1.1_wj555zckjupkhkzyssqqpl4sei
@@ -2397,7 +2397,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/electron-authorization': ^0.15.0
+      '@itwin/electron-authorization': ^0.16.0
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/frontend-tiles': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -2448,7 +2448,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.15.0_vydan7phskpjqeuaunwkdiptti
+      '@itwin/electron-authorization': 0.16.0_vydan7phskpjqeuaunwkdiptti
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 3.1.1_wj555zckjupkhkzyssqqpl4sei
@@ -2513,7 +2513,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.15.0
+      '@itwin/electron-authorization': ^0.16.0
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/frontend-devtools': workspace:*
       '@itwin/frontend-tiles': workspace:*
@@ -2577,7 +2577,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.15.0_vydan7phskpjqeuaunwkdiptti
+      '@itwin/electron-authorization': 0.16.0_vydan7phskpjqeuaunwkdiptti
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -4185,11 +4185,11 @@ packages:
       js-base64: 3.7.5
     dev: false
 
-  /@itwin/electron-authorization/0.15.0_vydan7phskpjqeuaunwkdiptti:
-    resolution: {integrity: sha512-NdKsZTlvXlfCWI847nG2vbbFyHtmejnwqixaxR7ZfS8HuVzdO8sbFMqp8NaJmBpLJ4P7IA3WWWEM5Hsb4AteZg==}
+  /@itwin/electron-authorization/0.16.0_vydan7phskpjqeuaunwkdiptti:
+    resolution: {integrity: sha512-+kKb/T1vrjlbYer3QoPmhoYT6Ev2rvcnnydLo+85zAB8ePPtNpgHrI6gMNHuHauV8I9SIpNeQGIIInKzAx4tVg==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
-      electron: '>=23.0.0 <25.0.0'
+      electron: '>=23.0.0 <27.0.0'
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': 4.1.0_67wltvhdskk2oee2c3z2o4tfly

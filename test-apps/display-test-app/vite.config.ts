@@ -16,7 +16,7 @@ import path from "path";
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 console.log(`ci var: ${process.env.CI}`)
-console.log(`vite ci var: ${process.env.VITE_DISABLE_SOURCEMAPS}`)
+console.log(`vite ci var: ${process.env.VITE_CI}`)
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
@@ -71,7 +71,7 @@ export default defineConfig(() => {
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
-        logLevel: process.env.VITE_CI ? "info" : "warn",
+        logLevel: process.env.VITE_CI ? "silen" : "warn",
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
