@@ -23,7 +23,7 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
-    "start:electron": "cross-env NODE_ENV=production electron ./lib/backend/DtaElectronMain.js",
+    "start:electron": "electron ./lib/backend/DtaElectronMain.js",
     "start:electron-webpack": "electron ./lib/build/DtaElectronMain.js --trace-warnings --enable-logging",
     "start:webserver": "cross-env NODE_ENV=development vite",
     "start:mobile": "cross-env NODE_ENV=development vite --host",
