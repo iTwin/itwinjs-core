@@ -7,15 +7,18 @@ const path = require('path');
 
 /****************************************************************
 * To run manually:
+* install zx package
 * git checkout target branch (master or latest release); git pull
 * git checkout release/X.X.x; git pull
 * uncomment git checkout -b cmd and fix branch name
+* run this file using `zx .github/workflows/automation-scripts/update-changelogs.mjs`
 * open PR into target branch
 *****************************************************************/
 
 const targetPath = "./temp-target-changelogs"
 const incomingPath = "./temp-incoming-changelogs"
 
+// To run shell commands using zx use "await $cmd"
 await $`mkdir ${targetPath}`
 await $`mkdir ${incomingPath}`
 
