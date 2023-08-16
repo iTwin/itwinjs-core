@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import { AssetInfo, Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
@@ -55,23 +55,8 @@ export class BackendDefaultsPlugin {
       copyFilesRule,
     ];
 
-    compiler.options.output.devtoolModuleFilenameTemplate = (
-      value: any,
-      options: Configuration,
-    ) => {
-      if (value)
-        return value;
-
-      if (isProductionLikeMode(options))
-        return (info: any) =>
-          path
-            .relative(
-              options.output?.path || process.cwd(),
-              info.absoluteResourcePath,
-            )
-            .replace(/\\/g, "/");
-
-      return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
+    compiler.options.output.devtoolModuleFilenameTemplate = (info: AssetInfo) => {
+      return path.resolve(info.absoluteResourcePath).replace(/\\/g, "/");
     };
 
     if (compiler.options.ignoreWarnings === undefined)
