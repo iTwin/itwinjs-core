@@ -42,7 +42,7 @@ describe("BriefcaseTxns", () => {
       iModel.txns.onAfterUndoRedo.addListener((isUndo) => received.push(isUndo ? "afterUndo" : "afterRedo"));
 
       const txnEventNames: TxnEventName[] = [
-        "onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied", "onReplayExternalTxns", "onReplayedExternalTxns"
+        "onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied", "onReplayExternalTxns", "onReplayedExternalTxns",
       ];
 
       for (const event of txnEventNames)
