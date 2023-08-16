@@ -621,8 +621,8 @@ export namespace CloudSqlite {
  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
     await acquireWriteLock(args);
+    const containerInternal = args.container as CloudContainerInternal;
     try {
-      const containerInternal = args.container as CloudContainerInternal;
       if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
       containerInternal.writeLockHeldBy = args.user;
@@ -634,6 +634,8 @@ export namespace CloudSqlite {
       containerInternal.writeLockExpires = undefined;
       return val;
     } catch (e) {
+      containerInternal.writeLockHeldBy = undefined;
+      containerInternal.writeLockExpires = undefined;
       args.container.abandonChanges();  // if operation threw, abandon all changes
       throw e;
     }
