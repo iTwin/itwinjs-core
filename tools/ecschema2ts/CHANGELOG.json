@@ -2,6 +2,24 @@
   "name": "@itwin/ecschema2ts",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/ecschema2ts_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.0.7",
+      "tag": "@itwin/ecschema2ts_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/ecschema2ts_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",

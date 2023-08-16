@@ -2,6 +2,27 @@
   "name": "@itwin/map-layers-auth",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/map-layers-auth_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade sinon to 15.0.4"
+          },
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.0.7",
+      "tag": "@itwin/map-layers-auth_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/map-layers-auth_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",

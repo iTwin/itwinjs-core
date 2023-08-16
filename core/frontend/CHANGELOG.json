@@ -2,6 +2,105 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/core-frontend_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix decoding of draco-compressed texture coordinates in glTF."
+          },
+          {
+            "comment": "Take into account the aspectRatioSkew of the view inside the window area tool."
+          },
+          {
+            "comment": "Fixed world decorations disappearing and asserts"
+          },
+          {
+            "comment": "Fixed black view caused by certain cases of going back down to one viewport."
+          },
+          {
+            "comment": "Fix background map layers failing to blend with an opaque solid base layer."
+          },
+          {
+            "comment": "avoid unnecessary preflight requests when loading tiles from cloud cache"
+          },
+          {
+            "comment": "Fix Viewport.isPixelSelectable following signature change of Viewport.mapLayerFromIds"
+          },
+          {
+            "comment": "Added support for UniqueValue renderer in ArcGIS feature format"
+          },
+          {
+            "comment": "Two map-layers instances having different formatId or subLayers set should not share the same tile tree."
+          },
+          {
+            "comment": "Improved ArcGIS map-layers validation."
+          },
+          {
+            "comment": "Revisited Viewport.getMapFeatureInfo, it now return graphics along with records."
+          },
+          {
+            "comment": "Added logging to 'MapLayerImageryProvider.createTileTree' and added missing export in MapLayerSources."
+          },
+          {
+            "comment": "Upgrade sinon to 15.0.4"
+          },
+          {
+            "comment": "Fix gaps in certain reprojected tiles."
+          },
+          {
+            "comment": "Promoted TentativeOrAccuSnap to public"
+          },
+          {
+            "comment": "Ensure element Ids are loaded for RenderTimeline element when schedule scripts are applied on the frontend."
+          },
+          {
+            "comment": "Promote many rendering-related APIs."
+          },
+          {
+            "comment": "Introduce compact encoding scheme for edges in iMdl tiles."
+          },
+          {
+            "comment": "Fix assertion when reading glTF containing a normal map."
+          },
+          {
+            "comment": "Add more efficient methods for converting multiple points to and from an iModel's spatial coordinate system."
+          },
+          {
+            "comment": "Support decoding point clouds from glTF."
+          },
+          {
+            "comment": "Split iMdl tile decoding into two phases: parsing and graphics creation."
+          },
+          {
+            "comment": "Decode iMdl tile content in a web worker."
+          },
+          {
+            "comment": "Treat non-standard mimeType \"image/jpg\" as \"image/jpeg\"."
+          },
+          {
+            "comment": "Support snapping to elements inside of orthogonal view attachments."
+          },
+          {
+            "comment": "ViewCreator3d fits to the extents of the viewed models. SpatialViewState.computeFitRange accepts an optional minimal fit range."
+          },
+          {
+            "comment": "add ViewStore apis"
+          },
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.0.7",
+      "tag": "@itwin/core-frontend_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/core-frontend_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",
