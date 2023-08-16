@@ -30,7 +30,7 @@ let commitMessage = await $`git log --format=%B -n 1`;
 
 targetBranch = String(targetBranch).slice(0, -1);
 currentBranch = String(currentBranch).slice(0, -1);
-commitMessage = String(commitMessage).slice(0, -1);
+commitMessage = String(commitMessage).slice(0, -2);
 
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
