@@ -351,7 +351,13 @@ export class TxnManager {
    * @param _action The action that was performed.
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayedExternalTxns]] for the event raised after all such changes have been applied.
+   */
   public readonly onReplayExternalTxns = new BeEvent<() => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
+   */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /**

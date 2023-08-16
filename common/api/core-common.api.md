@@ -9915,6 +9915,10 @@ export interface TxnNotifications {
     // (undocumented)
     notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
+    notifyReplayedExternalTxns: () => void;
+    // (undocumented)
+    notifyReplayExternalTxns: () => void;
+    // (undocumented)
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 

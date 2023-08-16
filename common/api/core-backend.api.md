@@ -2905,7 +2905,6 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected _codeService?: CodeService;
     get codeSpecs(): CodeSpecs;
-    // @beta
     get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
     set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
@@ -5407,6 +5406,12 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onReplayedExternalTxns: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onReplayedExternalTxns(): void;
+    readonly onReplayExternalTxns: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onReplayExternalTxns(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
