@@ -211,6 +211,12 @@ describe("ClipUtilities", () => {
     const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
     GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+    // test XY length of clipped curve
+    const expectedXYLengthSqr = 200;
+    const start = (clippedCurve[0] as LineSegment3d).startPoint();
+    const end = (clippedCurve[0] as LineSegment3d).endPoint();
+    const len = start.distanceSquaredXY(end);
+    ck.testCoordinate(len, expectedXYLengthSqr);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineSegment");
     expect(ck.getNumErrors()).equals(0);
@@ -220,13 +226,7 @@ describe("ClipUtilities", () => {
       const allGeometry: GeometryQuery[] = [];
       const shift = 30;
       // primitive curve
-      const curve = LineString3d.create([
-        Point3d.create(-8, 0, 1),
-        Point3d.create(2, 10, 0),
-        Point3d.create(15, -2, 0),
-        Point3d.create(2, -15, -1),
-        Point3d.create(-8, 0, 1),
-      ]);
+      const curve = LineString3d.create([[-8, 0, 1], [2, 10, 0], [16, -2, 0], [2, -16, -1], [-8, 0, 1]]);
       GeometryCoreTestIO.captureGeometry(allGeometry, curve);
       // clipper
       const range = Range3d.createXYZXYZ(-5, -10, -3, 10, 5, 3);
@@ -236,11 +236,21 @@ describe("ClipUtilities", () => {
       const clippedCurve = ClipUtilities.clipAnyCurve(curve, clipper);
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
+      // test XY length of clipped curve elements
+      const expectedXYLengthSqr = 8;
+      let start = (clippedCurve[0] as LineSegment3d).startPoint();
+      let end = (clippedCurve[0] as LineSegment3d).endPoint();
+      let len = start.distanceSquaredXY(end);
+      ck.testCoordinate(len, expectedXYLengthSqr);
+      start = (clippedCurve[2] as LineSegment3d).startPoint();
+      end = (clippedCurve[2] as LineSegment3d).endPoint();
+      len = start.distanceSquaredXY(end);
+      ck.testCoordinate(len, expectedXYLengthSqr);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineString");
       expect(ck.getNumErrors()).equals(0);
     }),
-    it("ClipLineSegment", () => {
+    it("ClipArc", () => {
       const ck = new Checker();
       const allGeometry: GeometryQuery[] = [];
       const shift = 30;
@@ -268,22 +278,10 @@ describe("ClipUtilities", () => {
     const shift = 30;
     // path
     const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
-    const lineString1 = LineString3d.create([
-      Point3d.create(-0.2, 5),
-      Point3d.create(-1, 10),
-      Point3d.create(-2, 5),
-      Point3d.create(-3, 10),
-      Point3d.create(-4, 5),
-    ]);
+    const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
     const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-    const lineString2 = LineString3d.create([
-      Point3d.create(-4, -5),
-      Point3d.create(-3, -10),
-      Point3d.create(-2, -5),
-      Point3d.create(-1, -10),
-      Point3d.create(-0.2, -5),
-    ]);
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
     const path = Path.create();
     path.tryAddChild(arc);
     path.tryAddChild(lineString1);
@@ -309,22 +307,10 @@ describe("ClipUtilities", () => {
       const shift = 30;
       // loop
       const arc = Arc3d.createXY(Point3d.create(6, 0), 8, AngleSweep.createStartEndDegrees(-141, 141));
-      const lineString1 = LineString3d.create([
-        Point3d.create(-0.2, 5),
-        Point3d.create(-1, 10),
-        Point3d.create(-2, 5),
-        Point3d.create(-3, 10),
-        Point3d.create(-4, 5),
-      ]);
+      const lineString1 = LineString3d.create([[-0.2, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
       const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
       const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-      const lineString2 = LineString3d.create([
-        Point3d.create(-4, -5),
-        Point3d.create(-3, -10),
-        Point3d.create(-2, -5),
-        Point3d.create(-1, -10),
-        Point3d.create(-0.2, -5),
-      ]);
+      const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [-0.2, -5]]);
       const loop = Loop.create();
       loop.tryAddChild(arc);
       loop.tryAddChild(lineString1);
@@ -411,30 +397,10 @@ describe("ClipUtilities", () => {
       const allGeometry: GeometryQuery[] = [];
       const shift = 30;
       // union region
-      const lineString1 = LineString3d.create([
-        Point3d.create(-1, -2),
-        Point3d.create(3, -2),
-        Point3d.create(3, -5),
-        Point3d.create(10, -5),
-        Point3d.create(10, 5),
-        Point3d.create(3, 5),
-        Point3d.create(3, 2),
-        Point3d.create(-1, 2),
-        Point3d.create(-1, -2),
-      ]);
+      const lineString1 = LineString3d.create([[-1, -2], [3, -2], [3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
       const loop1 = Loop.create();
       loop1.tryAddChild(lineString1);
-      const lineString2 = LineString3d.create([
-        Point3d.create(1, -2),
-        Point3d.create(-3, -2),
-        Point3d.create(-3, -5),
-        Point3d.create(-10, -5),
-        Point3d.create(-10, 5),
-        Point3d.create(-3, 5),
-        Point3d.create(-3, 2),
-        Point3d.create(1, 2),
-        Point3d.create(1, -2),
-      ]);
+      const lineString2 = LineString3d.create([[1, -2], [-3, -2], [-3, -5], [-10, -5], [-10, 5], [-3, 5], [-3, 2], [1, 2], [1, -2]]);
       const loop2 = Loop.create();
       loop2.tryAddChild(lineString2);
       const unionRegion = UnionRegion.create();
@@ -490,30 +456,10 @@ describe("ClipUtilities", () => {
       const allGeometry: GeometryQuery[] = [];
       const shift = 30;
       // parity region
-      const lineString1 = LineString3d.create([
-        Point3d.create(-1, -2),
-        Point3d.create(-3, -2),
-        Point3d.create(-3, -5),
-        Point3d.create(10, -5),
-        Point3d.create(10, 5),
-        Point3d.create(3, 5),
-        Point3d.create(3, 2),
-        Point3d.create(-1, 2),
-        Point3d.create(-1, -2),
-      ]);
+      const lineString1 = LineString3d.create([[-1, -2], [-3, -2], [-3, -5], [10, -5], [10, 5], [3, 5], [3, 2], [-1, 2], [-1, -2]]);
       const loop1 = Loop.create();
       loop1.tryAddChild(lineString1);
-      const lineString2 = LineString3d.create([
-        Point3d.create(1, 2),
-        Point3d.create(3, 2),
-        Point3d.create(3, 5),
-        Point3d.create(-10, 5),
-        Point3d.create(-10, -5),
-        Point3d.create(-3, -5),
-        Point3d.create(-3, -2),
-        Point3d.create(1, -2),
-        Point3d.create(1, 2),
-      ]);
+      const lineString2 = LineString3d.create([[1, 2], [3, 2], [3, 5], [-10, 5], [-10, -5], [-3, -5], [-3, -2], [1, -2], [1, 2]]);
       const loop2 = Loop.create();
       loop2.tryAddChild(lineString2);
       const parityRegion = ParityRegion.create();
@@ -547,22 +493,10 @@ describe("ClipUtilities", () => {
     // curve primitive
     const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
     // curve collection
-    const lineString1 = LineString3d.create([
-      Point3d.create(0, 5),
-      Point3d.create(-1, 10),
-      Point3d.create(-2, 5),
-      Point3d.create(-3, 10),
-      Point3d.create(-4, 5),
-    ]);
+    const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
     const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-    const lineString2 = LineString3d.create([
-      Point3d.create(-4, -5),
-      Point3d.create(-3, -10),
-      Point3d.create(-2, -5),
-      Point3d.create(-1, -10),
-      Point3d.create(0, -5),
-    ]);
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [0, -5]]);
     const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
     const loop = Loop.create();
     loop.tryAddChild(lineString1);
@@ -592,13 +526,7 @@ describe("ClipUtilities", () => {
       // curve primitive
       const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
       // curve collection
-      const lineString1 = LineString3d.create([
-        Point3d.create(0, 0),
-        Point3d.create(7, 7),
-        Point3d.create(14, 0),
-        Point3d.create(7, -7),
-        Point3d.create(0, 0),
-      ]);
+      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
       const loop = Loop.create();
       loop.tryAddChild(lineString1);
       // bag of curves
@@ -628,22 +556,10 @@ describe("ClipUtilities", () => {
       // curve primitive
       const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
       // curve collection
-      const lineString1 = LineString3d.create([
-        Point3d.create(0, 5),
-        Point3d.create(-1, 10),
-        Point3d.create(-2, 5),
-        Point3d.create(-3, 10),
-        Point3d.create(-4, 5),
-      ]);
+      const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
       const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
       const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-      const lineString2 = LineString3d.create([
-        Point3d.create(-4, -5),
-        Point3d.create(-3, -10),
-        Point3d.create(-2, -5),
-        Point3d.create(-1, -10),
-        Point3d.create(0, -5),
-      ]);
+      const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [0, -5]]);
       const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
       const loop = Loop.create();
       loop.tryAddChild(lineString1);
@@ -673,13 +589,7 @@ describe("ClipUtilities", () => {
       // curve primitive
       const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
       // curve collection
-      const lineString1 = LineString3d.create([
-        Point3d.create(0, 0),
-        Point3d.create(7, 7),
-        Point3d.create(14, 0),
-        Point3d.create(7, -7),
-        Point3d.create(0, 0),
-      ]);
+      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
       const loop = Loop.create();
       loop.tryAddChild(lineString1);
       // bag of curves
@@ -709,13 +619,7 @@ describe("ClipUtilities", () => {
       // curve primitive
       const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
       // curve collection
-      const lineString1 = LineString3d.create([
-        Point3d.create(0, 5),
-        Point3d.create(-1, 10),
-        Point3d.create(-2, 5),
-        Point3d.create(-3, 10),
-        Point3d.create(-4, 5),
-      ]);
+      const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
       const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
       const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
       const lineString2 = LineString3d.create([
@@ -754,13 +658,7 @@ describe("ClipUtilities", () => {
       // curve primitive
       const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-1, 0));
       // curve collection
-      const lineString1 = LineString3d.create([
-        Point3d.create(0, 0),
-        Point3d.create(7, 7),
-        Point3d.create(14, 0),
-        Point3d.create(7, -7),
-        Point3d.create(0, 0),
-      ]);
+      const lineString1 = LineString3d.create([[0, 0], [7, 7], [14, 0], [7, -7], [0, 0]]);
       const loop = Loop.create();
       loop.tryAddChild(lineString1);
       // bag of curves
@@ -791,22 +689,10 @@ describe("ClipUtilities", () => {
     // curve primitive
     const arc = Arc3d.createXY(Point3d.create(6, 0), 4, AngleSweep.createStartEndDegrees(-180, 180));
     // curve collection
-    const lineString1 = LineString3d.create([
-      Point3d.create(0, 5),
-      Point3d.create(-1, 10),
-      Point3d.create(-2, 5),
-      Point3d.create(-3, 10),
-      Point3d.create(-4, 5),
-    ]);
+    const lineString1 = LineString3d.create([[0, 5], [-1, 10], [-2, 5], [-3, 10], [-4, 5]]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(-4, 5), Point3d.create(-10, 0));
     const lineSegment2 = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-4, -5));
-    const lineString2 = LineString3d.create([
-      Point3d.create(-4, -5),
-      Point3d.create(-3, -10),
-      Point3d.create(-2, -5),
-      Point3d.create(-1, -10),
-      Point3d.create(0, -5),
-    ]);
+    const lineString2 = LineString3d.create([[-4, -5], [-3, -10], [-2, -5], [-1, -10], [0, -5]]);
     const lineSegment3 = LineSegment3d.create(Point3d.create(0, -5), Point3d.create(0, 5));
     const loop = Loop.create();
     loop.tryAddChild(lineString1);
@@ -841,13 +727,7 @@ describe("ClipUtilities", () => {
       // curve primitive
       const lineSegment = LineSegment3d.create(Point3d.create(-10, 0), Point3d.create(-5, 0));
       // curve collection
-      const lineString = LineString3d.create([
-        Point3d.create(0, 5),
-        Point3d.create(10, 5),
-        Point3d.create(10, -5),
-        Point3d.create(0, -5),
-        Point3d.create(0, 5),
-      ]);
+      const lineString = LineString3d.create([[0, 5], [10, 5], [10, -5], [0, -5], [0, 5]]);
       const loop = Loop.create();
       loop.tryAddChild(lineString);
       // bag of curves

@@ -225,7 +225,7 @@ export class ClipUtilities {
   }
   /**
    * Find portions of the planar region that are within the clipper.
-   * Collect them into an array of any curves.
+   * Collect them into a single region to return.
    */
   public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
     let result: UnionRegion | undefined;
@@ -240,11 +240,11 @@ export class ClipUtilities {
     const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion;
     if (!localRegion)
       return result;
-    // Create the "rectangle". We cover the input region with a convex polygon (rectangle) that we can clip
-    // with the clipper. We can only clip convex polygons with our clipper machinery, but the input region
-    // doesn't have to be convex or a polygon. We get around this limitation by first clipping a convex
-    // polygon of sufficient size, then intersecting the resulting fragment(s) with the input region with
-    // a Boolean operation (RegionOps.regionBooleanXY).
+    // We can only clip convex polygons with our clipper machinery, but the input region doesn't have to be
+    // convex or even a polygon. We get around this limitation by using a Boolean operation, which admits
+    // *any* planar regions, albeit in local coordinates. First, we clip a rectangle that covers the input region
+    // (in world coordinates), then we intersect the resulting fragments with the input region in local coordinates.
+    // Finally, we assemble the results into a UnionRegion back in world coordinates.
     const localRegionRange = ClipUtilities._workRange = localRegion.range();
     const xLength = localRegionRange.xLength();
     const yLength = localRegionRange.yLength();

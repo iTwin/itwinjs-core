@@ -600,7 +600,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
-   * @param xyz convex polygon. This is not changed. The input polygon is convex
+   * @param xyz convex polygon. This is not changed.
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed
    * from the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed

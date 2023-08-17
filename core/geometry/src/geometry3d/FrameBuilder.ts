@@ -269,7 +269,7 @@ export class FrameBuilder {
    * Create a transform containing points or vectors in the given data.
    * * The xy columns of the transform contain the first points or vectors of the data.
    * * The z column is perpendicular to that xy plane.
-   * * The calculation favors the first points found.  It does not try to get a "best" plane.
+   * * The calculation favors the first points found. It does not try to get a "best" plane.
    */
   public static createRightHandedLocalToWorld(...params: any[]): Transform | undefined {
     const builder = new FrameBuilder();
@@ -284,7 +284,7 @@ export class FrameBuilder {
 
   /**
    * Try to create a frame whose xy plane is through points.
-   * * If 3 or more distinct points are present, the x axis is from the first point to the most distance, and y
+   * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
    * direction is toward the point most distant from that line.
    * @param points array of points
    */
@@ -304,7 +304,7 @@ export class FrameBuilder {
   /**
    * Try to create a frame whose xy plane is through points, with the points appearing CCW in the local frame.
    *
-   * * If 3 or more distinct points are present, the x axis is from the first point to the most distance, and y
+   * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
    * direction is toward the point most distant from that line.
    * @param points array of points
    */
