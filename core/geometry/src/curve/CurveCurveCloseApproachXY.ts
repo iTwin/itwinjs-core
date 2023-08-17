@@ -55,7 +55,7 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   }
   /**
    * Approach larger than this is not interesting.
-   * This is caller defined and can be undefined.
+   * * This is caller defined and can be undefined.
    */
   private _maxDistanceToAccept: number | undefined;
   /** Squared max distance. This is private and is forced to at least small metric distance squared */
@@ -160,8 +160,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
   ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
-    const isInterval = (intervalDetails !== undefined) &&
-      intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
+    const isInterval = intervalDetails !== undefined &&
+      intervalDetails.detailA.hasFraction1 &&
+      intervalDetails.detailB.hasFraction1;
     if (isInterval) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
@@ -465,7 +466,9 @@ export class CurveCurveCloseApproachXY extends NullGeometryHandler {
     reversed: boolean,
   ): void {
     this.computeSegmentSegment3D(
-      cpA, pointA0, fractionA0, pointA1, fractionA1, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed,
+      cpA, pointA0, fractionA0, pointA1, fractionA1,
+      cpB, pointB0, fractionB0, pointB1, fractionB1,
+      reversed,
     );
   }
   // Caller accesses data from a linestring or segment and passes it here.

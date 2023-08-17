@@ -240,7 +240,6 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     const detailB = CurveLocationDetail.createCurveFractionPoint(
       cpB, globalFractionB, cpB.fractionToPoint(globalFractionB),
     );
-
     if (isInterval) {
       detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
       detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
@@ -396,8 +395,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   }
   // Caller accesses data from a linestring or segment and passes it here.
   // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
-  // The fraction and extend parameters
-  // allow all combinations to be passed in)
+  // The fraction and extend parameters allow all combinations to be passed in)
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
     extendA0: boolean,
@@ -470,7 +468,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         );
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) &&
+        if (lineFraction !== undefined &&
+          this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) &&
           this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
