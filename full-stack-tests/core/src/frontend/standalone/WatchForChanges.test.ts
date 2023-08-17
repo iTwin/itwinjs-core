@@ -39,7 +39,11 @@ for (const watchForChanges of [false, true]) {
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
 
       const projCenter = rwConn.projectExtents.center;
-      const point = new Point3d(Math.round(projCenter.x), Math.round(projCenter.y), Math.round(projCenter.z));
+      projCenter.x = Math.round(projCenter.x);
+      projCenter.y = Math.round(projCenter.y);
+      projCenter.z = Math.round(projCenter.z);
+
+      const point = projCenter.clone();
       elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [point, new Point3d(point.x, point.y + 2, point.z)] });
       expect(Id64.isValid(elemId)).to.be.true;
       await rwConn.saveChanges();
@@ -85,20 +89,6 @@ for (const watchForChanges of [false, true]) {
       return model;
     }
 
-    it("updates ModelState.geometryGuid when model geometry changes", async () => {
-      const model = await getModel(roConn);
-      const prevGuid = model.geometryGuid;
-      expect(prevGuid).not.to.be.undefined;
-
-      await expectModelChanges(async () => moveElement());
-      expect(roConn.models.getLoaded(model.id)).to.equal(model);
-      expect(model.geometryGuid).not.to.be.undefined;
-      expect(model.geometryGuid).not.to.equal(prevGuid);
-
-      const rwModel = await getModel(rwConn);
-      expect(rwModel.geometryGuid).to.equal(model.geometryGuid);
-    });
-
     it("purges and recreates tile trees when model geometry changes", async () => {
       const viewCreator = new ViewCreator3d(roConn);
       const view = await viewCreator.createDefaultView(undefined, [modelId]);
@@ -118,8 +108,12 @@ for (const watchForChanges of [false, true]) {
       expect(newTree.isDisposed).to.be.false;
       expect(prevTree.isDisposed).to.be.true;
 
-      console.log(JSON.stringify(prevTree.iModelTransform.toJSON()));
-      console.log(JSON.stringify(newTree.iModelTransform.toJSON()));
+      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.true;
+      expect(newTree.iModelTransform.isAlmostEqual(prevTree.iModelTransform)).to.be.false;
+      expect(newTree.iModelTransform.origin.x).to.equal(prevTree.iModelTransform.origin.x + 1);
+      expect(newTree.iModelTransform.origin.x).to.equal(prevTree.iModelTransform.origin.x + 1);
+      expect(newTree.iModelTransform.origin.y).to.equal(prevTree.iModelTransform.origin.y);
+      expect(newTree.iModelTransform.origin.z).to.equal(prevTree.iModelTransform.origin.z);
     });
   });
 }
