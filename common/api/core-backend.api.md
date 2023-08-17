@@ -2904,6 +2904,9 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected _codeService?: CodeService;
     get codeSpecs(): CodeSpecs;
+    // @beta
+    get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
+    set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T;
     containsClass(classFullName: string): boolean;
