@@ -60,7 +60,7 @@
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.15.0",
+    "@itwin/electron-authorization": "^0.14.1",
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
