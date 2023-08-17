@@ -210,7 +210,11 @@ describe("CloudSqlite", () => {
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      expect(contain1.hasWriteLock);
+      expect(contain1.hasWriteLock).to.be.true;
+      await CloudSqlite.withWriteLock({user: user1, container: contain1 }, async () => {
+        expect(contain1.hasWriteLock).to.be.true;
+      });
+      expect(contain1.hasWriteLock).to.be.true; // Make sure that nested withWriteLocks with the same user don't release the write lock.
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
       expect(briefcase.iModelId).equals(testBimGuid);
