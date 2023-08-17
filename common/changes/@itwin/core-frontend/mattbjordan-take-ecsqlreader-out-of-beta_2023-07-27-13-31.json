@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "IModelConnection.createQueryReader is now public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

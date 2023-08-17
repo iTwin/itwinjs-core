@@ -11,7 +11,7 @@ import {
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
-/** @beta */
+/** @public */
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
   private _byPropName = new Map<string, number>();
   private _byJsonName = new Map<string, number>();
@@ -61,13 +61,13 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 
 /**
  * The format for rows returned by [[ECSqlReader]].
- * @beta
+ * @public
  */
 export type QueryValueType = any;
 
 /**
  * Methods and ways of accessing values from rows returned by [[ECSqlReader]].
- * @beta
+ * @public
  */
 export interface QueryRowProxy {
   /**
@@ -120,7 +120,7 @@ export interface QueryRowProxy {
 
 /**
  * Performance-related statistics for [[ECSqlReader]].
- * @beta
+ * @public
  */
 export interface QueryStats {
   /** Time spent running the query; not including time spent queued. Time is in microseconds */
@@ -157,8 +157,7 @@ export interface QueryStats {
  *
  * @note When iterating over the results, the current row will be a [[QueryRowProxy]] object. To get the row as a basic
  *       JavaScript object, call [[QueryRowProxy.toRow]] on it.
- *
- * @beta
+ * @public
  */
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private static readonly _maxRetryCount = 10;
@@ -314,7 +313,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   *
+   * @internal
    */
   public getRowInternal(): any[] {
     if (this._localRows.length <= this._localOffset)
@@ -398,7 +397,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   *
+   * @internal
    */
   public formatCurrentRow(onlyReturnObject: boolean = false): any[] | object {
     if (!onlyReturnObject && this._options.rowFormat === QueryRowFormat.UseECSqlPropertyIndexes) {

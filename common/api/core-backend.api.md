@@ -1633,7 +1633,6 @@ export class ECDb implements IDisposable {
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     dispose(): void;
     // @internal
@@ -2905,7 +2904,6 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected _codeService?: CodeService;
     get codeSpecs(): CodeSpecs;
-    // @beta
     get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
     set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
@@ -2913,7 +2911,6 @@ export abstract class IModelDb extends IModel {
     containsClass(classFullName: string): boolean;
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
@@ -2998,12 +2995,14 @@ export abstract class IModelDb extends IModel {
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
-    refreshContainerSas(_userAccessToken: AccessToken): Promise<void>;
+    refreshContainer(_userAccessToken: AccessToken): Promise<void>;
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @internal (undocumented)
+    restartDefaultTxn(): void;
     // @deprecated
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
@@ -4823,7 +4822,7 @@ export class SnapshotDb extends IModelDb {
     // @internal
     static openForApplyChangesets(path: LocalFileName, props?: SnapshotDbOpenArgs): SnapshotDb;
     // @internal
-    refreshContainerSas(userAccessToken: AccessToken): Promise<void>;
+    refreshContainer(userAccessToken: AccessToken): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
