@@ -83,16 +83,6 @@ steps:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
-
-  - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
-      VITE_CI: true
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
