@@ -15,8 +15,6 @@ import * as packageJson from "./package.json";
 import path from "path";
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
-console.log(`ci var: ${process.env.CI}`)
-console.log(`vite ci var: ${process.env.VITE_CI}`)
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
