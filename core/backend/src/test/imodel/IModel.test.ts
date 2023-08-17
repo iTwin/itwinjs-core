@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -2780,5 +2780,44 @@ describe("iModel", () => {
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
 
+  });
+
+  it('should allow untrimmed codes when using "exact" codeValueBehavior', () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "codeValueBehavior.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "codeValueBehaviors" } });
+
+    const getNumberedCodeValAndProps = (n: number) => {
+      const trimmedCodeVal = `CodeValue${n}`;
+      const untrimmedCodeVal = `${trimmedCodeVal}\xa0`;
+      const spec = imodel.codeSpecs.getByName(SpatialCategory.getCodeSpecName()).id;
+      const props: ElementProps = {
+        // the [[Code]] class still (as it always has) trims unicode space, so avoid it
+        code: { spec, scope: IModelDb.dictionaryId, value: untrimmedCodeVal },
+        model: IModelDb.dictionaryId,
+        classFullName: SpatialCategory.classFullName,
+      };
+      return { trimmedCodeVal, untrimmedCodeVal, props };
+    };
+
+    expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
+
+    const code1 = getNumberedCodeValAndProps(1);
+    const categ1Id = imodel.elements.insertElement(code1.props);
+    const categ1 = imodel.elements.getElementJson({ id: categ1Id });
+    expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
+
+    imodel.codeValueBehavior = "exact";
+    const code2 = getNumberedCodeValAndProps(2);
+    const categ2Id = imodel.elements.insertElement(code2.props);
+    const categ2 = imodel.elements.getElementJson({ id: categ2Id });
+    expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
+
+    imodel.codeValueBehavior = "trim-unicode-whitespace";
+    const code3 = getNumberedCodeValAndProps(3);
+    const categ3Id = imodel.elements.insertElement(code3.props);
+    const categ3 = imodel.elements.getElement({ id: categ3Id });
+    expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
+
+    imodel.close();
   });
 });
