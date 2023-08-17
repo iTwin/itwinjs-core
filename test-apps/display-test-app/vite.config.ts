@@ -53,6 +53,7 @@ export default defineConfig(() => {
     },
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
+    logLevel: process.env.VITE_CI ? "error" : "warn",
     build: {
       outDir: "./lib",
       sourcemap: !!process.env.VITE_CI, // append to the resulting output file if not running in CI.
@@ -71,7 +72,6 @@ export default defineConfig(() => {
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
-        logLevel: process.env.VITE_CI ? "error" : "warn",
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [

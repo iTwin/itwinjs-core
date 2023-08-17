@@ -58,6 +58,7 @@ export default defineConfig(() => {
       sourcemap: !!process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
+      logLevel: process.env.VITE_CI ? "error" : "warn",
       commonjsOptions: {
         // plugin to convert CommonJS modules to ES6, so they can be included in bundle
         include: [
@@ -70,7 +71,6 @@ export default defineConfig(() => {
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
-        logLevel: process.env.VITE_CI ? "error" : "warn",
         plugins: [
           // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
