@@ -2799,20 +2799,20 @@ describe("iModel", () => {
       return { trimmedCodeVal, untrimmedCodeVal, props };
     };
 
-    expect(imodel.nativeDb.getCodeValueBehavior()).to.equal("trim-unicode-whitespace");
+    expect(imodel.codeValueBehavior).to.equal("trim-unicode-whitespace");
 
     const code1 = getNumberedCodeValAndProps(1);
     const categ1Id = imodel.elements.insertElement(code1.props);
     const categ1 = imodel.elements.getElementJson({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
-    imodel.nativeDb.setCodeValueBehavior("exact");
+    imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
     const categ2Id = imodel.elements.insertElement(code2.props);
     const categ2 = imodel.elements.getElementJson({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
-    imodel.nativeDb.setCodeValueBehavior("trim-unicode-whitespace");
+    imodel.codeValueBehavior = "trim-unicode-whitespace";
     const code3 = getNumberedCodeValAndProps(3);
     const categ3Id = imodel.elements.insertElement(code3.props);
     const categ3 = imodel.elements.getElement({ id: categ3Id });
