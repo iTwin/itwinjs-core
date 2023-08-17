@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "backport codeValueBehavior API as internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
