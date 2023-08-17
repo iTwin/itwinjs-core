@@ -105,7 +105,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   public resetGeometry(geometryB: GeometryQuery) {
     this.setGeometryB(geometryB);
   }
-  /** @returns whether the `fraction` is in [0,1] within tolerance */
+  /** returns true if `fraction` is in [0,1] within tolerance */
   private acceptFraction(fraction: number, fractionTol: number = 1.0e-12) {
     if (fraction < -fractionTol)
       return false;
@@ -173,8 +173,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
-    const isInterval = (intervalDetails !== undefined) &&
-      intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
+    const isInterval = intervalDetails !== undefined &&
+      intervalDetails.detailA.hasFraction1 &&
+      intervalDetails.detailB.hasFraction1;
     if (isInterval) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
@@ -183,7 +184,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
-
     }
     // ignore duplicate of most recent approach
     const numPrevious = this._results.length;
@@ -288,7 +288,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param detailB second detail
    * @param reversed true to have order reversed in final structures.
    */
-  private captureDetailPair(
+  public captureDetailPair(
     detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
   ): void {
     if (detailA && detailB) {
@@ -336,7 +336,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param b1 end point of line b
    * @param maxDistanceSquared maximum distance squared (assumed to be positive)
    * @returns the fractional (not xy) coordinates in result.x and result.y. result.x is fraction on line a.
-   * result.y is fraction on line b
+   * result.y is fraction on line b.
    */
   private static segmentSegmentBoundedApproach(
     a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, maxDistanceSquared: number,
@@ -479,7 +479,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     reversed: boolean,
   ): void {
     this.computeSegmentSegment3D(
-      cpA, pointA0, fractionA0, pointA1, fractionA1, cpB, pointB0, fractionB0, pointB1, fractionB1, reversed,
+      cpA, pointA0, fractionA0, pointA1, fractionA1,
+      cpB, pointB0, fractionB0, pointB1, fractionB1,
+      reversed,
     );
   }
   /**

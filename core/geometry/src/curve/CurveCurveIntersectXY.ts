@@ -70,9 +70,9 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
  * @public
  */
 export class CurveLocationDetailArrayPair {
-  /** first array of details ... */
+  /** First array of details ... */
   public dataA: CurveLocationDetail[];
-  /** second array of details ... */
+  /** Second array of details ... */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];
@@ -168,7 +168,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     pointA: Point3d,
     pointB: Point3d,
     tolerance: number = Geometry.smallMetricDistance,
-  ) {
+  ): boolean {
     if (!extend0 && fraction < 0) {
       return Geometry.isDistanceWithinTol(fraction * pointA.distanceXY(pointB), tolerance);
     } else if (!extend1 && fraction > 1.0)
@@ -204,11 +204,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     fractionB1: number,
     reversed: boolean,
     intervalDetails?: undefined | CurveLocationDetailPair,
-  ) {
+  ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
     const isInterval = intervalDetails !== undefined &&
-      intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
+      intervalDetails.detailA.hasFraction1 &&
+      intervalDetails.detailB.hasFraction1;
     if (isInterval) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
@@ -233,10 +234,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
-    const detailA = CurveLocationDetail.createCurveFractionPoint(cpA,
-      globalFractionA, cpA.fractionToPoint(globalFractionA));
-    const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
-      globalFractionB, cpB.fractionToPoint(globalFractionB));
+    const detailA = CurveLocationDetail.createCurveFractionPoint(
+      cpA, globalFractionA, cpA.fractionToPoint(globalFractionA),
+    );
+    const detailB = CurveLocationDetail.createCurveFractionPoint(
+      cpB, globalFractionB, cpB.fractionToPoint(globalFractionB),
+    );
     if (isInterval) {
       detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
       detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
@@ -302,8 +305,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
       pointA0, pointA1,
       pointB0, pointB1, uv)) {
-      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance)
-        && this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {
+      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
+        this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {
         this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -370,8 +373,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       // non-perspective projection
       CurveCurveIntersectXY.setTransformedWorkPoints(this._worldToLocalAffine, pointA0, pointA1, pointB0, pointB1);
       this.computeSegmentSegment3D(
-        cpA, extendA0, CurveCurveIntersectXY._workPointA0, fractionA0, CurveCurveIntersectXY._workPointA1, fractionA1, extendA1,
-        cpB, extendB0, CurveCurveIntersectXY._workPointB0, fractionB0, CurveCurveIntersectXY._workPointB1, fractionB1, extendB1,
+        cpA, extendA0, CurveCurveIntersectXY._workPointA0,
+        fractionA0, CurveCurveIntersectXY._workPointA1, fractionA1, extendA1,
+        cpB, extendB0, CurveCurveIntersectXY._workPointB0,
+        fractionB0, CurveCurveIntersectXY._workPointB1, fractionB1, extendB1,
         reversed,
       );
     } else if (this._worldToLocalPerspective) {
@@ -389,8 +394,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   // Caller accesses data from a linestring or segment and passes it here.
-  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.  The fraction and extend parameters
-  // allow all combinations to be passed in)
+  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
+  // The fraction and extend parameters allow all combinations to be passed in)
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
     extendA0: boolean,
@@ -422,14 +427,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const cosines = new GrowableFloat64Array(2);
       const sines = new GrowableFloat64Array(2);
       const radians = new GrowableFloat64Array(2);
-      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(
+        alpha, beta, gamma, cosines, sines, radians,
+      );
       for (let i = 0; i < numRoots; i++) {
         const arcPoint = data.center.plus2Scaled(
           data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
         );
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
+        if (lineFraction !== undefined &&
+          this.acceptFraction(extendA0, lineFraction, extendA1) &&
           this.acceptFraction(extendB0, arcFraction, extendB1)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
@@ -460,8 +468,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         );
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol)
-          && this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
+        if (lineFraction !== undefined &&
+          this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) &&
+          this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
         }
@@ -821,8 +830,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const curvePoint = detail.point;
       const curvePointH = this.projectPoint(curvePoint);
       const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, curvePointH);
-      if (lineFraction !== undefined &&
-        this.acceptFraction(extendA0, lineFraction, extendA1) &&
+      if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
         this.acceptFraction(extendB, fractionB, extendB)) {
         this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
           fractionB, bcurve, 0, 1, reversed);
