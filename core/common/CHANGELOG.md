@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Aug 2023 19:39:59 GMT and should not be manually modified.
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Added check to trigger retry if concurrent query faces a timeout
+- Add documentation for ECSqlReader
+- Add `NoChange` member to `TypeOfChange` flag enum for better support for TypeScript 5.x.
+- Promote many APIs for defining graphics.
+- Introduce compact encoding scheme for edges in iMdl tiles.
+- Add to/fromJSON methods to QParams2d and QParams3d.
+- Promote RpcInterface constructor to beta.
+- fix PatternParams.applyTransform to update origin property
+- add ViewStore apis
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT

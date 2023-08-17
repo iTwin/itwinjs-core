@@ -2,6 +2,42 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "4.1.0",
+      "tag": "@itwin/map-layers-formats_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for UniqueValue renderer in ArcGIS feature format"
+          },
+          {
+            "comment": "Fix leaks in map-layers-formats tests"
+          },
+          {
+            "comment": "Fix issues with ArcGIS feature service not providing its extent in EPSG:3857.  Also make sure default symbology is correctly applied if none is provided."
+          },
+          {
+            "comment": "Improved ArcGIS map-layers validation."
+          },
+          {
+            "comment": "Revisited getMapFeatureInfo,  it now returns graphics along with records."
+          },
+          {
+            "comment": "Upgrade sinon to 15.0.4"
+          },
+          {
+            "comment": "Switch to ESLint new flat config system"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.0.7",
+      "tag": "@itwin/map-layers-formats_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/map-layers-formats_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",
