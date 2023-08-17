@@ -1341,7 +1341,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
-   * @public
+   * @internal
    */
   public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
     return this.nativeDb.getCodeValueBehavior();
