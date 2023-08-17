@@ -14,7 +14,7 @@ export class SchemaMerger {
     const changesList: SchemaChanges[] = [];
     const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
 
-    return schemaComparer.compareSchemas(targetSchema, sourceSchema).then(() => changesList[0]);
+    return schemaComparer.compareSchemas(sourceSchema, targetSchema).then(() => changesList[0]);
   }
 
   public async merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
