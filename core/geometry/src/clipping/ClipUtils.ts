@@ -7,12 +7,18 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
+import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { BagOfCurves } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
+import { Path } from "../curve/Path";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry } from "../Geometry";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -104,12 +110,13 @@ export interface Clipper {
    * Optional polygon clip method.
    * * This is expected to be implemented by planar clip structures.
    * * This is unimplemented for curve clippers (e.g. sphere) for which polygon clip result has curved edges.
+   * * The input polygon must be convex.
    */
   appendPolygonClip?: AppendPolygonClipFunction;
 }
 /**
  * Signature of method to execute polygon clip, distributing fragments of xyz among insideFragments and outsideFragments
- * @param xyz input polygon. This is not changed.
+ * @param xyz convex polygon. This is not changed.
  * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed from
  * the cache. This is NOT cleared.
  * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
@@ -124,7 +131,7 @@ type AppendPolygonClipFunction = (
 ) => void;
 
 /**
- * Interface for clipping polygons.
+ * Interface for clipping convex polygons.
  * Supported by:
  * * AlternatingCCTreeNode
  * * ConvexClipPlaneSet
@@ -145,13 +152,16 @@ export class ClipUtilities {
 
   private static _selectIntervals01TestPoint = Point3d.create();
   /**
-   * * Augment the unsortedFractionsArray with 0 and 1
+   * Augment the unsortedFractionsArray with 0 and 1
    * * sort
    * * test the midpoint of each interval with `clipper.isPointOnOrInside`
    * * pass accepted intervals to `announce(f0,f1,curve)`
    */
   public static selectIntervals01(
-    curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive,
+    curve: CurvePrimitive,
+    unsortedFractions: GrowableFloat64Array,
+    clipper: Clipper,
+    announce?: AnnounceNumberNumberCurvePrimitive,
   ): boolean {
     unsortedFractions.push(0);
     unsortedFractions.push(1);
@@ -196,7 +206,7 @@ export class ClipUtilities {
     return intervals.length > 0;
   }
   /**
-   * Find portions of the curve that are within the clipper.
+   * Find portions of the curve primitive that are within the clipper.
    * Collect them into an array of curve primitives.
    */
   public static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[] {
@@ -211,6 +221,75 @@ export class ClipUtilities {
         }
       },
     );
+    return result;
+  }
+  /**
+   * Find portions of the planar region that are within the clipper.
+   * Collect them into a single region to return.
+   */
+  public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
+    let result: UnionRegion | undefined;
+    // Create "local region" which is the result of rotating region to make
+    // it parallel to the xy-plane and then translating it to the xy-plane.
+    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
+    if (!localToWorld)
+      return result;
+    const worldToLocal = localToWorld?.inverse();
+    if (!worldToLocal)
+      return result;
+    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion;
+    if (!localRegion)
+      return result;
+    // We can only clip convex polygons with our clipper machinery, but the input region doesn't have to be
+    // convex or even a polygon. We get around this limitation by using a Boolean operation, which admits
+    // *any* planar regions, albeit in local coordinates. First, we clip a rectangle that covers the input region
+    // (in world coordinates), then we intersect the resulting fragments with the input region in local coordinates.
+    // Finally, we assemble the results into a UnionRegion back in world coordinates.
+    const localRegionRange = ClipUtilities._workRange = localRegion.range();
+    const xLength = localRegionRange.xLength();
+    const yLength = localRegionRange.yLength();
+    const rectangle = LineString3d.createRectangleXY(localRegionRange.low, xLength, yLength, true);
+    rectangle.tryTransformInPlace(localToWorld);
+    // Clip the rectangle to produce fragment(s) which we can Boolean intersect with the input region.
+    const insideFragments: GrowableXYZArray[] = [];
+    const outsideFragments: GrowableXYZArray[] = [];
+    const cache = new GrowableXYZArrayCache();
+    clipper.appendPolygonClip?.(rectangle.packedPoints, insideFragments, outsideFragments, cache);
+    if (insideFragments.length === 0)
+      return result;
+    // Create the "clipped region".
+    for (const fragment of insideFragments) {
+      const loop = Loop.createPolygon(fragment);
+      loop.tryTransformInPlace(worldToLocal);
+      const clippedLocalRegion = RegionOps.regionBooleanXY(localRegion, loop, RegionBinaryOpType.Intersection);
+      if (clippedLocalRegion) {
+        clippedLocalRegion.tryTransformInPlace(localToWorld);
+        if (!result)
+          result = (clippedLocalRegion instanceof UnionRegion) ? clippedLocalRegion : UnionRegion.create(clippedLocalRegion);
+        else if (!result.tryAddChild(clippedLocalRegion))
+          result.children.push(...(clippedLocalRegion as UnionRegion).children);
+      }
+    }
+    return result;
+  }
+  /**
+   * Find portions of any curve that are within the clipper.
+   * Collect them into an array of any curves.
+   */
+  public static clipAnyCurve(curve: AnyCurve, clipper: Clipper): AnyCurve[] {
+    if (curve instanceof CurvePrimitive)
+      return ClipUtilities.collectClippedCurves(curve, clipper);
+    if (curve.isAnyRegionType) {
+      const ret = ClipUtilities.clipAnyRegion(curve as AnyRegion, clipper);
+      return ret ? [ret] : [];
+    }
+    const result: AnyCurve[] = [];
+    if (curve instanceof Path || curve instanceof BagOfCurves) {
+      for (const child of curve.children) {
+        const partialClip = ClipUtilities.clipAnyCurve(child, clipper);
+        result.push(...partialClip);
+      }
+    }
     return result;
   }
   /**
