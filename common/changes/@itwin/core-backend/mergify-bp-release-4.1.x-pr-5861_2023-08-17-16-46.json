@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "backport codeValueBehavior API as internal",
+      "comment": "add `internal` `codeValueBehavior` API ",
       "type": "none"
     }
   ],
