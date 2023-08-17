@@ -8,7 +8,7 @@ import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState, ViewCreator3d } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 for (const watchForChanges of [false, true]) {
@@ -21,6 +21,7 @@ for (const watchForChanges of [false, true]) {
     let modelId: string;
     let categoryId: string;
     let elemId: string;
+    let projCenter: Point3d;
 
     before(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
@@ -38,7 +39,7 @@ for (const watchForChanges of [false, true]) {
       const dictId = await rwConn.models.getDictionaryModel();
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
 
-      const projCenter = rwConn.projectExtents.center;
+      projCenter = rwConn.projectExtents.center;
       projCenter.x = Math.round(projCenter.x);
       projCenter.y = Math.round(projCenter.y);
       projCenter.z = Math.round(projCenter.z);
@@ -94,15 +95,15 @@ for (const watchForChanges of [false, true]) {
       const view = await viewCreator.createDefaultView(undefined, [modelId]);
 
       const model = await getModel(roConn);
-      const prevGuid = model.geometryGuid;
+      let prevGuid = model.geometryGuid;
       const ref = model.createTileTreeReference(view);
-      const prevTree = (await ref.treeOwner.loadTree())!;
+      let prevTree = (await ref.treeOwner.loadTree())!;
       expect(prevTree).not.to.be.undefined;
 
       await expectModelChanges(async () => moveElement());
       expect(model.geometryGuid).not.to.equal(prevGuid);
 
-      const newTree = (await ref.treeOwner.loadTree())!;
+      let newTree = (await ref.treeOwner.loadTree())!;
       expect(newTree).not.to.be.undefined;
       expect(newTree).not.to.equal(prevTree);
       expect(newTree.isDisposed).to.be.false;
@@ -114,6 +115,30 @@ for (const watchForChanges of [false, true]) {
       expect(newTree.iModelTransform.origin.x).to.equal(prevTree.iModelTransform.origin.x + 1);
       expect(newTree.iModelTransform.origin.y).to.equal(prevTree.iModelTransform.origin.y);
       expect(newTree.iModelTransform.origin.z).to.equal(prevTree.iModelTransform.origin.z);
+
+      prevGuid = model.geometryGuid;
+      prevTree = newTree;
+      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({x:2, y:0, z:0})] });
+      await expectModelChanges(async () => rwConn.saveChanges());
+
+      expect(model.geometryGuid).not.to.equal(prevGuid);
+      newTree = (await ref.treeOwner.loadTree())!;
+      expect(newTree).not.to.equal(prevTree);
+      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
+      // ###TODO expected values
+
+      prevGuid = model.geometryGuid;
+      prevTree = newTree;
+      await expectModelChanges(async () => {
+        await deleteElements(rwConn, [elemId]);
+        await rwConn.saveChanges();
+      });
+
+      expect(model.geometryGuid).not.to.equal(prevGuid);
+      newTree = (await ref.treeOwner.loadTree())!;
+      expect(newTree).not.to.equal(prevTree);
+      expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
+      // ###TODO expected values
     });
   });
 }
