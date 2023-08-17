@@ -330,7 +330,7 @@ export abstract class CurveChain extends CurveCollection {
   /**
    * Return the index where target is found in the array of children.
    * @param alsoSearchProxies whether to also check proxy curves of the children
-  */
+   */
   public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++) {
       if (this._curves[i] === target)

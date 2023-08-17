@@ -15,7 +15,6 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";
@@ -25,6 +24,8 @@ import { PolygonOps } from "./PolygonOps";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
 
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
+
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
  *
@@ -32,10 +33,10 @@ import { Transform } from "./Transform";
  *   * create the FrameBuilder and make calls to announcePoint and announceVector.
  *   * the frame will be fully determined by an origin and two vectors.
  *   * the first call to announcePoint will set the origin.
- *   *  additional calls to announcePoint will produce announceVector call with the vector from the origin.
- *   * After each announcement, call getValidatedFrame(false)
+ *   * additional calls to announcePoint will produce announceVector call with the vector from the origin.
+ *   * after each announcement, call getValidatedFrame(false)
  *   * getValidatedFrame will succeed when it has two independent vectors.
- * *  to build a left handed frame,
+ * *  To build a left handed frame,
  *   *  an origin and 3 independent vectors are required.
  *   *  announce as above, but query with getValidatedFrame (true).
  *   *  this will use the third vector to select right or left handed frame.
@@ -47,18 +48,27 @@ export class FrameBuilder {
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
   // test if both vectors are defined and have significant angle between.
-  private areStronglyIndependentVectors(vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians): boolean {
+  private areStronglyIndependentVectors(
+    vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians,
+  ): boolean {
     if (vector0 !== undefined && vector1 !== undefined) {
       const q = vector0.smallerUnorientedRadiansTo(vector1);
       return q > radiansTolerance;
     }
     return false;
   }
-  /** clear all accumulated point and vector data */
-  public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
-  constructor() { this.clear(); }
-  /** Try to assemble the data into a non-singular transform.
-   *
+  /** Clear all accumulated point and vector data */
+  public clear() {
+    this._origin = undefined;
+    this._vector0 = undefined;
+    this._vector1 = undefined;
+    this._vector2 = undefined;
+  }
+  constructor() {
+    this.clear();
+  }
+  /**
+   * Try to assemble the data into a non-singular transform.
    * * If allowLeftHanded is false, vector0 and vector1 determine a right handed coordinate system.
    * * if allowLeftHanded is true, the z vector of the right handed system can be flipped to agree with vector2 direction.
    */
@@ -92,8 +102,11 @@ export class FrameBuilder {
     }
   }
   /** Ask if there is a defined origin for the evolving frame */
-  public get hasOrigin(): boolean { return this._origin !== undefined; }
-  /** Return the number of vectors saved.   Because the save process checks numerics, this should be the rank of the system.
+  public get hasOrigin(): boolean {
+    return this._origin !== undefined;
+  }
+  /**
+   * Return the number of vectors saved. Because the save process checks numerics, this should be the rank of the system.
    */
   public savedVectorCount(): number {
     if (!this._vector0)
@@ -104,7 +117,9 @@ export class FrameBuilder {
       return 2;
     return 3;
   }
-  /** announce a new point.  If this point is different from the origin, also compute and announce the vector from the origin.*/
+  /**
+   * Announce a new point. If this point is different from the origin, also compute and announce the vector from the origin.
+   */
   public announcePoint(point: Point3d): number {
     if (!this._origin) {
       this._origin = point.clone();
@@ -115,13 +130,14 @@ export class FrameBuilder {
       return this.savedVectorCount();
     return this.announceVector(this._origin.vectorTo(point));
   }
-  /** announce a new vector. */
+  /** Announce a new vector. */
   public announceVector(vector: Vector3d): number {
     if (vector.isAlmostZero)
       return this.savedVectorCount();
-
-    if (!this._vector0) { this._vector0 = vector.clone(this._vector0); return 1; }
-
+    if (!this._vector0) {
+      this._vector0 = vector.clone(this._vector0);
+      return 1;
+    }
     if (!this._vector1) {
       if (this.areStronglyIndependentVectors(vector, this._vector0, 1.0e-5)) {
         this._vector1 = vector.clone(this._vector1);
@@ -129,7 +145,6 @@ export class FrameBuilder {
       }
       return 1;
     }
-
     // vector0 and vector1 are independent.
     if (!this._vector2) {
       const unitPerpendicular = this._vector0.unitCrossProduct(this._vector1);
@@ -142,8 +157,9 @@ export class FrameBuilder {
     // fall through if prior vectors are all there -- no need for the new one.
     return 3;
   }
-  /** Inspect the content of the data.  Announce points and vectors.   Return when savedVectorCount becomes
-   * sufficient for a coordinate system.
+  /**
+   * Inspect the content of the data.  Announce points and vectors. Return when savedVectorCount becomes sufficient
+   * for a coordinate system.
    */
   public announce(data: any) {
     if (this.savedVectorCount() > 1) return;
@@ -211,11 +227,11 @@ export class FrameBuilder {
       }
     }
   }
-  /** create a localToWorld frame for the given data.
-   *
-   * *  origin is at first point
-   * *  x axis in direction of first nonzero vector present or implied by the input.
-   * *  y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
+  /**
+   * Create a localToWorld frame for the given data.
+   * * origin is at first point.
+   * * x axis in direction of first nonzero vector present or implied by the input.
+   * * y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
    */
   public static createRightHandedFrame(defaultUpVector: Vector3d | undefined, ...params: any[]): Transform | undefined {
     const builder = new FrameBuilder();
@@ -231,11 +247,9 @@ export class FrameBuilder {
         return result;
       }
     }
-
     const evaluatePrimitiveFrame = (curve: CurvePrimitive): Transform | undefined => {
       return curve.fractionToFrenetFrame(0.0);
     };
-
     // try direct evaluation of curve primitives using the above lambda
     for (const data of params) {
       if (data instanceof CurvePrimitive) {
@@ -251,10 +265,11 @@ export class FrameBuilder {
     }
     return undefined;
   }
-  /** create a transform containing points or vectors in the given data.
+  /**
+   * Create a transform containing points or vectors in the given data.
    * * The xy columns of the transform contain the first points or vectors of the data.
    * * The z column is perpendicular to that xy plane.
-   * * The calculation favors the first points found.  It does not try to get a "best" plane.
+   * * The calculation favors the first points found. It does not try to get a "best" plane.
    */
   public static createRightHandedLocalToWorld(...params: any[]): Transform | undefined {
     const builder = new FrameBuilder();
@@ -268,10 +283,9 @@ export class FrameBuilder {
   }
 
   /**
-   * try to create a frame whose xy plane is through points.
-   *
-   * *  if 3 or more distinct points are present, the x axis is from the first point to the most distance, and y direction is toward the
-   * point most distant from that line.
+   * Try to create a frame whose xy plane is through points.
+   * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
+   * direction is toward the point most distant from that line.
    * @param points array of points
    */
   public static createFrameToDistantPoints(points: Point3d[]): Transform | undefined {
@@ -288,10 +302,10 @@ export class FrameBuilder {
     return undefined;
   }
   /**
-   * try to create a frame whose xy plane is through points, with the points appearing CCW in the local frame.
+   * Try to create a frame whose xy plane is through points, with the points appearing CCW in the local frame.
    *
-   * *  if 3 or more distinct points are present, the x axis is from the first point to the most distance, and y direction is toward the
-   * point most distant from that line.
+   * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
+   * direction is toward the point most distant from that line.
    * @param points array of points
    */
   public static createFrameWithCCWPolygon(points: Point3d[]): Transform | undefined {
@@ -333,5 +347,4 @@ export class FrameBuilder {
     }
     return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), Matrix3d.createScale(a, b, c));
   }
-
 }
