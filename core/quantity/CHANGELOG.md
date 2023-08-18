@@ -1,6 +1,19 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Aug 2023 19:39:59 GMT and should not be manually modified.
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Upgrade sinon to 15.0.4
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT

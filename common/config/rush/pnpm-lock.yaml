@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.8
+      '@bentley/imodeljs-native': 4.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -52,7 +52,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.8
+      '@bentley/imodeljs-native': 4.2.0
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -2433,7 +2433,7 @@ importers:
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
       typescript: ~5.0.2
-      vite: ^4.3.9
+      vite: ^4.4.9
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
       webpack: ^5.76.0
@@ -2486,9 +2486,9 @@ importers:
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.0.4
-      vite: 4.4.6_@types+node@18.16.1
+      vite: 4.4.9_@types+node@18.16.1
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_vite@4.4.6
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/display-test-app:
@@ -2555,7 +2555,7 @@ importers:
       ts-node: ^10.8.2
       typescript: ~5.0.2
       vhacd-js: ^0.0.1
-      vite: ^4.3.9
+      vite: ^4.4.9
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
       webpack: ^5.76.0
@@ -2623,9 +2623,9 @@ importers:
       rollup-plugin-webpack-stats: 0.2.0
       ts-node: 10.9.1_typescript@5.0.4
       typescript: 5.0.4
-      vite: 4.4.6
+      vite: 4.4.9
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_vite@4.4.6
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/export-gltf:
@@ -3726,8 +3726,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.8:
-    resolution: {integrity: sha512-ASRPdlNCHGbIv56sR3hqB23a5akzvrBvnY+JsQkfdMI9slfUDcswtP4vlU+XZo/OMVIr4cODJKS68xIIeDRCOw==}
+  /@bentley/imodeljs-native/4.2.0:
+    resolution: {integrity: sha512-rfyAq+gGH6CPYjNDL9+Y3xRT/ugaF78y1Kxv1BeQEPhYSXNxt2rfXF4ETD/0cqzvabPSxrKsZ7D0MNbJjEHTrQ==}
     requiresBuild: true
     dev: false
 
@@ -10876,8 +10876,8 @@ packages:
       rollup: ^3.0.0
     dev: true
 
-  /rollup/3.26.3:
-    resolution: {integrity: sha512-7Tin0C8l86TkpcMtXvQu6saWH93nhG3dGQ1/+l5V2TDMceTxO7kDiK6GzbfLWNNxqJXm591PcEZUozZm51ogwQ==}
+  /rollup/3.28.0:
+    resolution: {integrity: sha512-d7zhvo1OUY2SXSM6pfNjgD5+d0Nz87CUp4mt8l/GgVP3oBsPwzNvSzyu1me6BSG9JIgWNTVcafIXBIyM8yQ3yw==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
@@ -12175,7 +12175,7 @@ packages:
     resolution: {integrity: sha512-4lqhBWhOzP+SaCPoCVdmpM5cXzjKQV5jgFauxea488oOeElXo/kw6bXkMIooZhrh9q7gclTl8en6N9NmnqUwRQ==}
     dev: true
 
-  /vite-plugin-inspect/0.7.33_vite@4.4.6:
+  /vite-plugin-inspect/0.7.33_vite@4.4.9:
     resolution: {integrity: sha512-cQRLQKa/+Ua++5hN0IZfqNn1JYXBg2eCQOSUatPTwhXMO7nwfSvhhSc45E1nXfBBEhzLLOxgr1OdbDu55PiDDA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -12188,14 +12188,14 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.6_@types+node@18.16.1
+      vite: 4.4.9
     transitivePeerDependencies:
       - rollup
       - supports-color
     dev: true
 
-  /vite/4.4.6:
-    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+  /vite/4.4.9:
+    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -12224,13 +12224,13 @@ packages:
     dependencies:
       esbuild: 0.18.15
       postcss: 8.4.27
-      rollup: 3.26.3
+      rollup: 3.28.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
 
-  /vite/4.4.6_@types+node@18.16.1:
-    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+  /vite/4.4.9_@types+node@18.16.1:
+    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -12260,7 +12260,7 @@ packages:
       '@types/node': 18.16.1
       esbuild: 0.18.15
       postcss: 8.4.27
-      rollup: 3.26.3
+      rollup: 3.28.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
