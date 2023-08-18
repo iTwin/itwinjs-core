@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added SchemaUtils unit tests, and fixed a bug in SchemaUtils that caused an error when calling native `SchemaUtility` APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
