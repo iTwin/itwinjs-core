@@ -47,9 +47,10 @@ export default defineConfig(() => {
     },
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
+    logLevel: process.env.VITE_CI ? "error" : "warn",
     build: {
       outDir: "./lib",
-      sourcemap: "inline", // append to the resulting output file
+      sourcemap: !!process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
