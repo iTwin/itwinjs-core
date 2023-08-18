@@ -17,6 +17,7 @@ There are three interactive Tool classifications, each of which is implemented b
   - The frontend package provides a comprehensive set of View tools; most iTwin.js applications do not need to implement their own.
 - [InputCollector]($frontend) is used to gather input for the current Primitive tool by snapping or locating elements in the iModel.
   - Pauses an active Primitive tool, can be paused by a View tool.
+  - Inherits the tool state of the suspended Primitive tool.
   - Should not modify the iModel contents without being able to coordinate with the current Primitive tool.
   - The frontend package includes several [AccuDrawShortcuts]($frontend) implementations.
 - [PrimitiveTool]($frontend) is used for graphical interactions with an iModel.
@@ -38,6 +39,8 @@ Routing of the interpreted, high-level events is as follows:
 
 - If there is an active tool, the events are directed to it. The active tool can either handle a particular event or ignore it.
 - If the active tool does not handle a particular event, it *may* be directed to the [idle tool](#idle-tool).
+
+![event routing](./event-routing.png "Interactive tool event routing diagram")
 
 As mentioned above a View tool or Input Collector can temporarily interrupt a Primitive tool. The ToolAdmin handles that sequence transparently such that the Primitive tool does not have to be aware of the interruption.
 

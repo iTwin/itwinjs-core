@@ -71,7 +71,7 @@ export class Path extends CurveChain {
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
-  /** Return the boundary type (1) of a corresponding  MicroStation CurveVector */
+  /** Return the boundary type (1) of a corresponding MicroStation CurveVector */
   public dgnBoundaryType(): number {
     return 1;
   }
