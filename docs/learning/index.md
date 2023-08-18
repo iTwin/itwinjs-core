@@ -1,18 +1,14 @@
-# Documentation Overview
+# Getting started with iTwin.js
 
-This website is organized into sections by tabs at the top of each page.
+iTwin.js has a comprehensive set of APIs that can be used anywhere an [iModel](./imodels.md) may be relevant. It's a big library: where you start will depend on what you'd like to build. If you're looking to extend an iTwin viewer's user interface -- perhaps adding a new tool or widget -- [check out the frontend guide](./frontend/index). For higher level React components, you may want to [take a look at AppUI](./ui/appui/index.md).
 
-- Please read the [Getting Started](../getting-started/index.md) page to install prerequisites for developers and for suggestions for background reading.
-- The [BIS](../bis/index.md) section explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iTwin.js APIs. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iTwin.js.
-- The _Learning_ tab (this page) introduces the building blocks of iTwin.js and provides step-by-step instructions for creating applications.
-- The [API Reference](../reference/index) tab explains the API in more detail with package/class/function level documentation.
+If you're working on a service and want to query an iModel's data you'll want to [head over to our backend documentation](./backend/index). While we're on the subject of querying data, we have a great [tutorial to get you up to speed on ECSQL](./ECSQLTutorial/index.md).
 
-## Using iTwin.js
+There's much, much more, so explore the sections to the left and the [helpful articles at the bottom of this page](#helpful-articles).
 
-The iTwin.js library has a comprehensive set of APIs that can be used anywhere an [iModel](./imodels.md) may be relevant.
-It is designed to be modular and extensible, with the expectation that iTwin.js will be used in environments with many
-other JavaScript frameworks. iTwin.js strives to be as consistent as possible with established JavaScript conventions,
-though sometimes judgement calls are required where no established convention is clear.
+In addition, iTwin.js is open source. We love suggestions and feedback on the library, but we love contributions to our codebase even more. If you think you have something to offer, submit a pull request and let's get it merged.
+
+## iTwin.js software architecture
 
 With the [iTwin.js Software architecture](./SoftwareArchitecture.md), from the same JavaScript codebase, it is possible to create:
 
@@ -20,6 +16,14 @@ With the [iTwin.js Software architecture](./SoftwareArchitecture.md), from the s
 - [Web Apps](./SoftwareArchitecture.md#web) that run in web browsers and communicate with backends
 - [Desktop Apps](./SoftwareArchitecture.md#desktop) that run on personal computers
 - [Mobile Apps](./SoftwareArchitecture.md#mobile) that run on tablets and phones
+
+## Documentation Overview
+
+This website is organized into sections by tabs at the top of each page.
+
+- The [BIS](../bis/index.md) section explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iTwin.js APIs. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iTwin.js.
+- The _Learning_ tab (this page) introduces the building blocks of iTwin.js and provides step-by-step instructions for creating applications.
+- The [API Reference](../reference/index) tab explains the API in more detail with package/class/function level documentation.
 
 ## iTwin.js vs. iModelHub
 
@@ -37,7 +41,7 @@ iTwin.js applications can be:
 
 iTwin.js is written in [TypeScript](https://www.typescriptlang.org/). Even though it _can_ be consumed in a JavaScript application, it is _highly recommended_ that iTwin.js application developers use TypeScript too when possible. Throughout the iTwin.js library, the arguments and return values of functions are decorated with their expected types in TypeScript. The TypeScript compiler will verify the types of callers. Runtime checks to enforce correct types are not encouraged inside iTwin.js, given they add overhead and are not necessary for TypeScript callers. Therefore, pure JavaScript consumers of iTwin.js must be careful to not pass incorrect types.
 
-## JavaScript Version Requirements
+## JavaScript version requirements
 
 The iTwin.js library requires a JavaScript engine with es2017 support.
 
