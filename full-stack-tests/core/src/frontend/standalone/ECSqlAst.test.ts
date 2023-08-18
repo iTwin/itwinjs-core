@@ -59,7 +59,7 @@ import {
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-describe("ECSql Exprs", () => {
+describe("ECSql Abstract Syntax Tree", () => {
   let conn: IModelConnection;
 
   async function toNormalizeECSql(ecsql: string) {

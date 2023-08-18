@@ -58,8 +58,9 @@ import {
 } from "@itwin/ecsql-common";
 import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { DbResult } from "@itwin/core-bentley";
 
-describe.only("ECSql Exprs", () => {
+describe.only("ECSql Abstract Syntax Tree", () => {
   let ecdb: ECDb;
 
   async function toNormalizeECSql(ecsql: string) {
@@ -67,11 +68,21 @@ describe.only("ECSql Exprs", () => {
   }
 
   async function parseECSql(ecsql: string) {
-    const reader = ecdb.createQueryReader(`PRAGMA PARSE_TREE("${ecsql}") ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`);
-    if (await reader.step()) {
-      return StatementExpr.deserialize(JSON.parse(reader.current[0]));
+    const parseTreeECSql = `PRAGMA PARSE_TREE("${ecsql}") ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`;
+    if (true) {
+      return ecdb.withPreparedStatement(parseTreeECSql, (stmt) => {
+        if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
+          throw new Error("unable to get parse tree.");
+        }
+        return StatementExpr.deserialize(JSON.parse(stmt.getValue(0).getString()));
+      });
+    } else {
+      const reader = ecdb.createQueryReader(parseTreeECSql);
+      if (await reader.step()) {
+        return StatementExpr.deserialize(JSON.parse(reader.current[0]));
+      }
+      throw new Error("unable to get parse tree.");
     }
-    throw new Error("unable to get parse tree.");
   }
 
   function printTree(expr: Expr, indent: number = 0) {
@@ -85,7 +96,6 @@ describe.only("ECSql Exprs", () => {
     await IModelHost.startup();
     ecdb = new ECDb();
     ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"), ECDbOpenMode.ReadWrite);
-    ecdb.withPreparedStatement("PRAGMA experimental_features_enabled=true", (stmt) => stmt.step());
   });
 
   after(async () => {
