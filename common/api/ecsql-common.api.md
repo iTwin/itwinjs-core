@@ -461,6 +461,9 @@ export enum ExprType {
 }
 
 // @alpha
+export type FirstOrLast = "FIRST" | "LAST";
+
+// @alpha
 export class FromClauseExpr extends Expr {
     constructor(classRefs: ClassRefExpr[]);
     // (undocumented)
@@ -710,7 +713,7 @@ export enum JoinType {
 }
 
 // @alpha
-export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
+export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FIRST" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LAST" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "NULLS" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH";
 
 // @alpha
 export class LikeExpr extends BooleanExpr {
@@ -868,11 +871,13 @@ export class OrderByClauseExpr extends Expr {
 
 // @alpha
 export class OrderBySpecExpr extends Expr {
-    constructor(term: ValueExpr, sortDirection?: SortDirection | undefined);
+    constructor(term: ValueExpr, sortDirection?: SortDirection | undefined, nulls?: FirstOrLast | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
     static deserialize(node: NativeECSqlParseNode): OrderBySpecExpr;
+    // (undocumented)
+    readonly nulls?: FirstOrLast | undefined;
     // (undocumented)
     readonly sortDirection?: SortDirection | undefined;
     // (undocumented)

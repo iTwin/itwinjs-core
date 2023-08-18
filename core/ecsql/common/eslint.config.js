@@ -4,6 +4,10 @@ const eslintBaseConfig = require("../../../common/config/eslint/eslint.config.ba
 module.exports = [
   {
     files: ["**/*.ts"],
+    ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
+  },
+  {
+    files: ["**/*.ts"],
     rules: {
       "@itwin/public-extension-exports": [
         "error",

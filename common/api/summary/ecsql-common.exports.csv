@@ -28,6 +28,7 @@ alpha;ECSqlWriterArgs
 alpha;class Expr
 alpha;ExprFactory
 alpha;ExprType
+alpha;FirstOrLast = "FIRST" | "LAST"
 alpha;FromClauseExpr 
 alpha;FuncCallExpr 
 alpha;GroupByClauseExpr 
@@ -40,7 +41,7 @@ alpha;IsOfTypeExpr
 alpha;JoinDirection = "FORWARD" | "BACKWARD"
 alpha;JoinSpec = BooleanExpr | string[] | undefined
 alpha;JoinType
-alpha;Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH"
+alpha;Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FIRST" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LAST" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "NULLS" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH"
 alpha;LikeExpr 
 alpha;LimitClauseExpr 
 alpha;LiteralExpr 
