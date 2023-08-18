@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 15 Aug 2023 20:28:47 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Aug 2023 13:02:53 GMT and should not be manually modified.
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+### Updates
+
+- add `internal` `codeValueBehavior` API 
 
 ## 4.1.0
 Mon, 14 Aug 2023 14:36:34 GMT
