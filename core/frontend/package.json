@@ -90,8 +90,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/cloud-agnostic-core": "^2.0.0",
-    "@itwin/object-storage-core": "^2.0.0",
+    "@itwin/cloud-agnostic-core": "^2.1.0",
+    "@itwin/object-storage-core": "^2.1.0",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
