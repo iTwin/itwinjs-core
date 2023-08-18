@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added SchemaUtils unit tests, and fixed a bug in SchemaUtils that caused an error when calling native `SchemaUtility` APIs",
+      "comment": "Fixed a null reference error when upgrading schemas to EC3",
       "type": "none"
     }
   ],
