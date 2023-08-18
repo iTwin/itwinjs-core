@@ -9,7 +9,7 @@
       "presentation": {
         "group": "__TOP__"
       },
-      "type": "node",
+      "type": "pwa-node",
       "request": "attach",
       "processId": "${command:PickProcess}"
     },
@@ -21,7 +21,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/full-stack-tests/backend/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -29,7 +29,7 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,full-stack-tests}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,full-stack-tests}/*/lib/**/*.js"
       ]
     },
     {
@@ -39,7 +39,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/backend/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -56,7 +56,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/bentley/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -73,7 +73,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/orbitgt/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -90,14 +90,14 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/common/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -107,14 +107,14 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/ecschema-metadata",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -124,14 +124,14 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/ecschema-locaters",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -141,14 +141,14 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/ecschema-editing",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -158,7 +158,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/extensions/map-layers-auth/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -175,7 +175,7 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/extensions/map-layers-formats/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -191,7 +191,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/core/frontend/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -199,7 +199,8 @@
         "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/frontend/certa.json
@@ -212,12 +213,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for Frontend Tests"
@@ -229,7 +231,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/core/i18n/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -237,7 +239,8 @@
         "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/i18n/certa.json
@@ -250,12 +253,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/i18n/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for i18n Tests"
@@ -275,7 +279,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ],
       "env": {
         "NODE_ENV": "development" // needed for asserts to fire
@@ -287,7 +291,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/core/hypermodeling/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -295,7 +299,8 @@
         "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/hypermodeling/certa.json
@@ -308,12 +313,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/hypermodeling/certa.json
+      "port": 9223,
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for HyperModeling Tests"
@@ -325,7 +331,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/core/markup/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -333,7 +339,8 @@
         "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js",
       ],
       "outputCapture": "std",
@@ -347,12 +354,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for Markup Tests"
@@ -365,55 +373,55 @@
         "order": 7
       },
       "cwd": "${workspaceFolder}/core/quantity",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     // UI TESTS
     { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for AppUI Abstract Tests",
+      "name": "[NODE] Certa Test Runner for UI Abstract Tests",
       "presentation": {
         "hidden": true
       },
-      "cwd": "${workspaceFolder}/ui/appui-abstract/",
-      "type": "node",
+      "cwd": "${workspaceFolder}/ui/abstract/",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "test",
-        "--",
-        "--debug"
+        "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/frontend/certa.json
       "cascadeTerminateToConfigurations": [
-        "[BROWSER] AppUI Abstract Tests"
+        "[BROWSER] UI Abstract Tests"
       ]
     },
     { /* PARTIAL */
-      "name": "[BROWSER] AppUI Abstract Tests",
+      "name": "[BROWSER] UI Abstract Tests",
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for AppUI Abstract Tests"
+        "[NODE] Certa Test Runner for UI Abstract Tests"
       ]
     },
     // PRESENTATION TESTS
@@ -423,7 +431,7 @@
         "group": "5_Presentation"
       },
       "cwd": "${workspaceFolder}/presentation/backend",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
@@ -445,7 +453,7 @@
         "group": "5_Presentation"
       },
       "cwd": "${workspaceFolder}/presentation/common",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
@@ -467,7 +475,7 @@
         "group": "5_Presentation"
       },
       "cwd": "${workspaceFolder}/presentation/frontend",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
@@ -479,7 +487,7 @@
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
       ],
       "env": {
         "NODE_ENV": "development"
@@ -491,7 +499,7 @@
         "group": "5_Presentation"
       },
       "cwd": "${workspaceFolder}/full-stack-tests/presentation",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
@@ -499,7 +507,7 @@
         "--no-timeouts"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
         "${workspaceFolder}/full-stack-tests/presentation/lib/**/*.js"
       ],
       "env": {
@@ -513,14 +521,14 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/example-code/app",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/example-code/app/lib/**/*.js"
       ]
     },
@@ -530,7 +538,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/example-code/snippets",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -538,7 +546,7 @@
         "test:backend"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/example-code/snippets/lib/**/*.js"
       ]
     },
@@ -548,7 +556,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/core/backend",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -556,7 +564,7 @@
         "perftest:cs"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -565,7 +573,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/core/backend",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -573,7 +581,7 @@
         "perftest:crud"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -582,7 +590,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/core/backend",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -590,7 +598,7 @@
         "perftest:schema"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
     {
@@ -599,7 +607,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/test-apps/imjs-importer",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/imjs-importer/lib/byDirectory.js",
       "args": [
@@ -614,7 +622,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/test-apps/imodel-from-geojson",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/imodel-from-geojson/lib/Main.js",
       "args": [
@@ -631,7 +639,7 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/utils/workspace-editor",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
@@ -655,11 +663,14 @@
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/tools/webpack-core",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
       ]
     },
     // TEST APPS
@@ -669,7 +680,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/test-apps/display-test-app",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "env": {
         "IMJS_LOG_LEVEL": "TRACE"
@@ -677,7 +688,8 @@
       "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,editor}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] display-test-app (chrome)"
@@ -688,12 +700,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "launch",
       "url": "http://localhost:3000",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,editor}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] display-test-app (chrome)"
@@ -720,7 +733,8 @@
       "envFile": "${workspaceFolder}/test-apps/display-test-app/.env",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,editor}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] display-test-app (electron)"
@@ -736,7 +750,8 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,editor}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] display-test-app (electron)"
@@ -748,12 +763,13 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/test-apps/display-performance-test-app",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
       "outFiles": [
-        "${workspaceFolder}/test-apps/display-performance-test-app/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/test-apps/display-performance-test-app/lib/{backend}/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] display-performance-test-app (chrome)"
@@ -764,12 +780,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "launch",
       "url": "http://localhost:3000",
       "outFiles": [
-        "${workspaceFolder}/test-apps/display-performance-test-app/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/test-apps/display-performance-test-app/lib/{backend}/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] display-performance-test-app (chrome)"
@@ -782,16 +799,19 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/full-stack-tests/core/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "debug:${input:integrationTestEnvironment}"
+        "test:${input:integrationTestEnvironment}",
+        "--",
+        "--debug"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
@@ -805,13 +825,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -824,7 +844,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/full-stack-tests/core/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -835,7 +855,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
@@ -849,13 +870,14 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -868,7 +890,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/full-stack-tests/rpc/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -893,7 +915,7 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc/certa.json
       "timeout": 200000,
@@ -912,7 +934,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/full-stack-tests/rpc-interface/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -923,7 +945,7 @@
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
@@ -939,12 +961,12 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/full-stack-tests/rpc-interface/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/rpc-interface/lib/test/backend.js",
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -957,13 +979,13 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc-interface/certa.json
       "timeout": 200000,
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/rpc-interface/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -977,7 +999,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/core/electron/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -987,7 +1009,7 @@
         "--debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
@@ -1001,12 +1023,12 @@
       "presentation": {
         "hidden": true
       },
-      "type": "chrome",
+      "type": "pwa-chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/electron/src/test/frontend/utils/certa.json
       "timeout": 60000,
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1016,7 +1038,7 @@
     {
       "name": "Extension API Generator",
       "cwd": "${workspaceFolder}/core/extension/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -1030,7 +1052,7 @@
         "group": "0_CoreTests"
       },
       "cwd": "${workspaceFolder}/core/electron/",
-      "type": "node",
+      "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
       "args": [
@@ -1181,14 +1203,14 @@
       ]
     },
     {
-      "name": "AppUI Abstract Tests",
+      "name": "UI Core Tests",
       "presentation": {
         "group": "4_UI",
         "order": 2
       },
       "configurations": [
-        "[BROWSER] AppUI Abstract Tests",
-        "[NODE] Certa Test Runner for AppUI Abstract Tests"
+        "[BROWSER] UI Abstract Tests",
+        "[NODE] Certa Test Runner for UI Abstract Tests"
       ]
     },
   ],

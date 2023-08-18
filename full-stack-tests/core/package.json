@@ -15,8 +15,6 @@
     "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "run-p -r azurite:setup test:chrome:azurite",
     "test:electron": "run-p -r azurite:setup test:electron:azurite",
-    "debug:chrome": "run-p -r azurite:setup \"test:chrome:azurite -- --debug\"",
-    "debug:electron": "run-p -r azurite:setup \"test:electron:azurite -- --debug\"",
     "test:chrome:azurite": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron:azurite": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
