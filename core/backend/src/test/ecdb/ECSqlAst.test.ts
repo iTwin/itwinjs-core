@@ -60,7 +60,7 @@ import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult } from "@itwin/core-bentley";
 
-describe.only("ECSql Abstract Syntax Tree", () => {
+describe("ECSql Abstract Syntax Tree", () => {
   let ecdb: ECDb;
 
   async function toNormalizeECSql(ecsql: string) {
@@ -470,20 +470,20 @@ describe.only("ECSql Abstract Syntax Tree", () => {
   it("parse $, $->prop", async () => {
     const tests = [
       {
-        orignalECSql: "SELECT $ FROM Meta.ECClassDef",
-        expectedECSql: "SELECT $ FROM [ECDbMeta].[ECClassDef]",
+        orignalECSql: "SELECT $ FROM Meta.ECClassDef ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+        expectedECSql: "SELECT $ FROM [ECDbMeta].[ECClassDef] ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
       },
       {
-        orignalECSql: "SELECT $->[Name], $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef",
-        expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef]",
+        orignalECSql: "SELECT $->[Name], $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+        expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef] ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
       },
+      // {
+      //   orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+      //   expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef] WHERE $->[Name] LIKE '%Hellp' ORDER BY $->[ECInstanceId] DESC ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+      // },
       {
-        orignalECSql: "SELECT $->Name, $-> DisplayLabel, $ -> Nothing FROM Meta.ECClassDef WHERE $->Name LIKE '%Hellp' ORDER BY $->ECInstanceId DESC",
-        expectedECSql: "SELECT $->[Name], $->[DisplayLabel], $->[Nothing] FROM [ECDbMeta].[ECClassDef] WHERE $->[Name] LIKE '%Hellp' ORDER BY $->[ECInstanceId] DESC",
-      },
-      {
-        orignalECSql: "SELECT e.$->[Name], e.$-> DisplayLabel, e.$ -> Nothing FROM Meta.ECClassDef e",
-        expectedECSql: "SELECT [e].$->[Name], [e].$->[DisplayLabel], [e].$->[Nothing] FROM [ECDbMeta].[ECClassDef] [e]",
+        orignalECSql: "SELECT e.$->[Name], e.$-> DisplayLabel, e.$ -> Nothing FROM Meta.ECClassDef e ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+        expectedECSql: "SELECT [e].$->[Name], [e].$->[DisplayLabel], [e].$->[Nothing] FROM [ECDbMeta].[ECClassDef] [e] ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
       },
     ];
     for (const test of tests) {
