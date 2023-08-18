@@ -5,11 +5,32 @@
 import { expect } from "chai";
 import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { ColorDef } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, GeometricModelState, ViewCreator3d } from "@itwin/core-frontend";
+import {
+  BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
+} from "@itwin/core-frontend";
 import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
+
+class System extends MockRender.System {
+  public readonly batchElementIds = new Set<string>();
+
+  public static get() {
+    expect(IModelApp.renderSystem).instanceof(System);
+    return IModelApp.renderSystem as System;
+  }
+
+  public override createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) {
+    this.batchElementIds.clear();
+
+    const packedFeature = PackedFeature.createWithIndex();
+    for (const feature of features.iterable(packedFeature))
+      this.batchElementIds.add(Id64.fromUint32PairObject(feature.elementId));
+
+    return super.createBatch(graphic, features, range);
+  }
+}
 
 for (const watchForChanges of [false, true]) {
   describe(`watchForChanges (${watchForChanges})`, () => {
@@ -24,7 +45,10 @@ for (const watchForChanges of [false, true]) {
     let projCenter: Point3d;
 
     before(async () => {
-      await TestUtility.startFrontend(undefined, undefined, true);
+      const mockRender = true;
+      const enableWebEdit = true;
+      TestUtility.systemFactory = () => new System();
+      await TestUtility.startFrontend(undefined, mockRender, enableWebEdit);
       await initializeEditTools();
     });
 
@@ -90,6 +114,19 @@ for (const watchForChanges of [false, true]) {
       return model;
     }
 
+    async function expectElementsInTile(tree: TileTree, expectedElementIds: string[]): Promise<void> {
+      // IModelTileTree.rootTile is-a RootTile that has no content of its own.
+      expect(tree.rootTile.children!.length).to.equal(1);
+      const tile = (tree.rootTile.children!)[0];
+
+      const data = await tile.requestContent(() => false) as Uint8Array;
+      expect(data).instanceof(Uint8Array);
+      const content = await tile.readContent(data, IModelApp.renderSystem, () => false);
+      expect(content.graphic).not.to.be.undefined;
+
+      expect(Array.from(System.get().batchElementIds).sort()).to.deep.equal(expectedElementIds.sort());
+    }
+
     it("purges and recreates tile trees when model geometry changes", async () => {
       const viewCreator = new ViewCreator3d(roConn);
       const view = await viewCreator.createDefaultView(undefined, [modelId]);
@@ -116,6 +153,8 @@ for (const watchForChanges of [false, true]) {
       expect(newTree.iModelTransform.origin.y).to.equal(prevTree.iModelTransform.origin.y);
       expect(newTree.iModelTransform.origin.z).to.equal(prevTree.iModelTransform.origin.z);
 
+      await expectElementsInTile(newTree, [elemId]);
+
       prevGuid = model.geometryGuid;
       prevTree = newTree;
       const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({x:2, y:0, z:0})] });
@@ -125,7 +164,8 @@ for (const watchForChanges of [false, true]) {
       newTree = (await ref.treeOwner.loadTree())!;
       expect(newTree).not.to.equal(prevTree);
       expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
-      // ###TODO expected values
+
+      await expectElementsInTile(newTree, [elemId, elemId2]);
 
       prevGuid = model.geometryGuid;
       prevTree = newTree;
@@ -138,9 +178,8 @@ for (const watchForChanges of [false, true]) {
       newTree = (await ref.treeOwner.loadTree())!;
       expect(newTree).not.to.equal(prevTree);
       expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
-      // ###TODO expected values
 
-      // ###TODO test delete model
+      await expectElementsInTile(newTree, [elemId2]);
     });
   });
 }

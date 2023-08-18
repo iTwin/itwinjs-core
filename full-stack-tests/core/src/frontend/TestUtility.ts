@@ -126,7 +126,7 @@ export class TestUtility {
     };
   }
 
-  private static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
+  public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
   private static createDefaultRenderSystem() { return new MockRender.System(); }
 
   /** Helper around the different startup workflows for different app types.
