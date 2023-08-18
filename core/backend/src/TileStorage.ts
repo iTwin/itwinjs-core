@@ -4,11 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { gunzip, gzip } from "zlib";
 import { promisify } from "util";
-import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
+
+/**
+ * Identifies a tile in cloud tile cache.
+ * @beta
+ */
+export interface TileId {
+  treeId: string;
+  contentId: string;
+  guid: string;
+}
 
 /**
  * Facilitates interaction with cloud tile cache.
@@ -94,10 +104,33 @@ export class TileStorage {
   }
 
   /**
-   * Returns a list of all tiles that are found in the cloud cache.
+   * Returns an async iterator of all tiles that are found in the cloud cache.
    */
-  public async getCachedTiles(iModelId: string): Promise<{ treeId: string, contentId: string, guid: string }[]> {
-    return (await this.storage.listObjects({ baseDirectory: iModelId }))
+  public async *getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId> {
+    const iterator = this.getCachedTilePages(iModelId);
+    for await (const page of iterator) {
+      for (const tile of page) {
+        yield tile;
+      }
+    }
+  }
+
+  private async *getCachedTilePages(iModelId: string): AsyncGenerator<TileId[]> {
+    const iterator = this.storage.getListObjectsPagedIterator({ baseDirectory: iModelId }, 500);
+    let prevPage: IteratorResult<ObjectReference[], any> | undefined;
+    do {
+      // initiate loading the next page
+      const page = iterator.next();
+      // process results from the previous page
+      if (prevPage)
+        yield this.convertPage(prevPage.value);
+      // finish loading the next page
+      prevPage = await page;
+    } while (!prevPage.done);
+  }
+
+  private convertPage(page: ObjectReference[]): TileId[] {
+    return page
       .map((objectReference) => ({
         parts: objectReference.relativeDirectory?.split("/") ?? [""],
         objectName: objectReference.objectName,
@@ -119,6 +152,17 @@ export class TileStorage {
           guid: parts[2],
         };
       });
+  }
+
+  /**
+   * Returns a list of all tiles that are found in the cloud cache.
+   */
+  public async getCachedTiles(iModelId: string): Promise<TileId[]> {
+    const results: TileId[] = [];
+    for await (const page of this.getCachedTilePages(iModelId)) {
+      results.push(...page);
+    }
+    return results;
   }
 
   /**

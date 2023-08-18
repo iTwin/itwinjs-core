@@ -76,7 +76,7 @@ export class UnionRegion extends CurveCollection {
    * * Returns false if the `AnyCurve` child is not a region type.
    */
   public tryAddChild(child: AnyCurve): boolean {
-    if (child && child instanceof ParityRegion || child instanceof Loop) {
+    if (child && (child instanceof ParityRegion || child instanceof Loop)) {
       this._children.push(child);
       return true;
     }
