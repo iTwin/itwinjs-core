@@ -2391,7 +2391,8 @@ export class GrowableXYArray extends IndexedXYCollection {
         count: number;
         offset: number;
     };
-    static create(data: XAndY[] | GrowableXYZArray): GrowableXYArray;
+    static create(data: any, result?: GrowableXYArray): GrowableXYArray;
+    // @deprecated
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined;
@@ -2422,6 +2423,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     push(toPush: XAndY): void;
     pushAll(points: XAndY[]): void;
     pushAllXYAndZ(points: XYAndZ[] | GrowableXYZArray): void;
+    pushFrom(p: any): void;
     pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number;
     pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
@@ -2458,6 +2460,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         offset: number;
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
+    static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
@@ -3494,7 +3497,7 @@ export class Loop extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Loop;
-    cloneStroked(options?: StrokeOptions): AnyCurve;
+    cloneStroked(options?: StrokeOptions): Loop;
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
     static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop;
@@ -4160,7 +4163,7 @@ export class Path extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Path;
-    cloneStroked(options?: StrokeOptions): AnyCurve;
+    cloneStroked(options?: StrokeOptions): Path;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
     readonly curveCollectionType = "path";

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "improvements to GrowableXYArray, Path, Loop",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

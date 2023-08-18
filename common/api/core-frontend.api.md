@@ -6785,7 +6785,6 @@ export abstract class IModelConnection extends IModel {
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;

@@ -159,7 +159,7 @@ jobs:
     - job: CreateBranch
       displayName: Create branch for next release
       dependsOn: Bump
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       variables:
         version: $[ dependencies.Bump.outputs['getVersion.version'] ]
 
@@ -194,7 +194,7 @@ jobs:
     - job: UpdateMaster
       displayName: Update master to next minor version
       dependsOn: CreateBranch
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      condition: and(eq(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
       steps:
       - checkout: self
