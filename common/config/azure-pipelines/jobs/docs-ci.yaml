@@ -2,7 +2,7 @@
 
 parameters:
   - name: forcePublish
-    displayName: Publish?
+    displayName: Publish
     type: boolean
     default: false
 
