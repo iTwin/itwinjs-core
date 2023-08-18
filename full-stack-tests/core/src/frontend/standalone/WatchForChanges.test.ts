@@ -12,7 +12,7 @@ import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineSt
 import { TestUtility } from "../TestUtility";
 
 for (const watchForChanges of [false, true]) {
-  describe.only(`watchForChanges (${watchForChanges})`, () => {
+  describe(`watchForChanges (${watchForChanges})`, () => {
     if (ProcessDetector.isMobileAppFrontend)
       return;
 
@@ -139,6 +139,8 @@ for (const watchForChanges of [false, true]) {
       expect(newTree).not.to.equal(prevTree);
       expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
       // ###TODO expected values
+
+      // ###TODO test delete model
     });
   });
 }
