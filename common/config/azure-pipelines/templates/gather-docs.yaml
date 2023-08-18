@@ -41,7 +41,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
-      defaultBranch: refs/heads/release/4.0.x
+      defaultBranch: refs/heads/release/4.1.x
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # Download BIS Docs artifact
@@ -103,6 +103,6 @@ steps:
       project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
       pipeline: 7436 # iTwin.js/Docs/iTwin.js Docs - YAML
       buildVersionToDownload: latestFromBranch
-      branchName: refs/heads/release/4.0.x
+      branchName: refs/heads/release/4.1.x
       artifactName: .updated.json
       targetPath: ${{ parameters.stagingDir }}/config/
