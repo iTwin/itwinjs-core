@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client";
+import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
@@ -126,7 +126,7 @@ export class TestUtility {
     };
   }
 
-  private static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
+  public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
   private static createDefaultRenderSystem() { return new MockRender.System(); }
 
   /** Helper around the different startup workflows for different app types.

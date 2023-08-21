@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add exportGraphics test to verify uv-parameter output",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

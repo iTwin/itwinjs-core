@@ -1211,6 +1211,8 @@ export class ClipUtilities {
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     static announcePolylineClip(clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void): void;
     static captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache): void;
+    static clipAnyCurve(curve: AnyCurve, clipper: Clipper): AnyCurve[];
+    static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined;
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     static clipPolygonToClipShapeReturnGrowableXYZArrays(polygon: Point3d[], clipShape: ClipPrimitive): GrowableXYZArray[];
     static clipSegmentBelowPlanesXY(planes: Plane3dByOriginAndUnitNormal[], segment0: XAndY, segment1: XAndY, interval: Range1d, signedAltitude?: number): void;
@@ -2391,7 +2393,8 @@ export class GrowableXYArray extends IndexedXYCollection {
         count: number;
         offset: number;
     };
-    static create(data: XAndY[] | GrowableXYZArray): GrowableXYArray;
+    static create(data: any, result?: GrowableXYArray): GrowableXYArray;
+    // @deprecated
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined;
@@ -2422,6 +2425,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     push(toPush: XAndY): void;
     pushAll(points: XAndY[]): void;
     pushAllXYAndZ(points: XYAndZ[] | GrowableXYZArray): void;
+    pushFrom(p: any): void;
     pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number;
     pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number): void;
     pushWrap(numWrap: number): void;
@@ -2458,6 +2462,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         offset: number;
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
+    static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
@@ -3494,7 +3499,7 @@ export class Loop extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Loop;
-    cloneStroked(options?: StrokeOptions): AnyCurve;
+    cloneStroked(options?: StrokeOptions): Loop;
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
     static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop;
@@ -4160,7 +4165,7 @@ export class Path extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Path;
-    cloneStroked(options?: StrokeOptions): AnyCurve;
+    cloneStroked(options?: StrokeOptions): Path;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
     readonly curveCollectionType = "path";
@@ -6216,7 +6221,6 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]): void;
-    // (undocumented)
     appendPolygonClip(xyz: GrowableXYZArray, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
     clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;

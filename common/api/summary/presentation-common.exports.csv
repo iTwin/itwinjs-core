@@ -150,6 +150,7 @@ public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestO
 public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;FormatOptions
+internal;getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 public;GroupingNodeKey 

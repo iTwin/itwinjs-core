@@ -12,9 +12,9 @@ import {
   RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
 import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
-import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 import { Ruleset } from "../rules/Ruleset";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
+import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -455,6 +455,14 @@ export class Descriptor implements DescriptorSource {
    */
   public getFieldByName(name: string, recurse?: boolean): Field | undefined {
     return getFieldByName(this.fields, name, recurse);
+  }
+
+  /**
+   * Get field by its descriptor.
+   * @beta
+   */
+  public getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined {
+    return getFieldByDescriptor(this.fields, fieldDescriptor, recurse);
   }
 
   /**
