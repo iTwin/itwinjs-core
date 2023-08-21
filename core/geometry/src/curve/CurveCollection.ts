@@ -253,8 +253,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return the array of `CurvePrimitive` */
   public override get children(): CurvePrimitive[] {
-    if (this._curves === undefined)
-      this._curves = [];
     return this._curves;
   }
   /**

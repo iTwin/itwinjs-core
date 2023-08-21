@@ -16,10 +16,10 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
+import { AnyCurve } from "../CurveChain";
 import { CurveChain } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { GeometryQuery } from "../GeometryQuery";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
@@ -28,7 +28,6 @@ import { LineString3d } from "../LineString3d";
 /**
  * Handler class for XY close approach between _geometryB and another geometry.
  * * Approach means the XY distance (z is ignored) between _geometryB and another geometry.
- * * **NOTE:** GeometryQuery input (_geometryB) should really be AnyCurve.
  * * Closest approach is a measure of the proximity of one curve to another. It's the length of the shortest line
  * segment perpendicular to both curves; if the curves intersect, the closest approach is zero. In the context of
  * this class, z-coordinates are ignored, so the closest approach is as seen in the top view. If you have coplanar
@@ -41,10 +40,10 @@ import { LineString3d } from "../LineString3d";
  * @internal
  */
 export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
-  private _geometryB: GeometryQuery | undefined;
+  private _geometryB: AnyCurve | undefined;
   private _circularArcB: Arc3d | undefined;
   private _circularRadiusB: number | undefined;
-  private setGeometryB(geometryB: GeometryQuery | undefined) {
+  private setGeometryB(geometryB: AnyCurve | undefined) {
     this._geometryB = geometryB;
     this._circularArcB = undefined;
     this._circularRadiusB = undefined;
@@ -82,7 +81,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Constructor.
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    */
-  public constructor(geometryB: GeometryQuery | undefined) {
+  public constructor(geometryB: AnyCurve | undefined) {
     super();
     this.setGeometryB(geometryB);
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
@@ -103,7 +102,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return this._maxDistanceToAccept !== undefined && this._maxDistanceToAccept > 0;
   }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
-  public resetGeometry(geometryB: GeometryQuery) {
+  public resetGeometry(geometryB: AnyCurve) {
     this.setGeometryB(geometryB);
   }
   /** returns true if `fraction` is in [0,1] within tolerance */
@@ -705,15 +704,15 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /** Low level dispatch of curve chain.  */
-  private dispatchCurveChain(geomA: GeometryQuery, geomAHandler: (geomA: any) => void): void {
-    const geomB = this._geometryB;
-    if (!geomB || !geomB.children)
+  private dispatchCurveChain(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    const geomB = this._geometryB;  // save
+    if (!geomB || !(geomB instanceof CurveChain))
       return;
     for (const child of geomB.children) {
       this.resetGeometry(child);
       geomAHandler(geomA);
     }
-    this._geometryB = geomB;
+    this._geometryB = geomB;  // restore
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {

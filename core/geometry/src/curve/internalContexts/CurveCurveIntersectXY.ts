@@ -28,9 +28,9 @@ import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
+import { AnyCurve } from "../CurveChain";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { GeometryQuery } from "../GeometryQuery";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
@@ -66,14 +66,13 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
 }
 /**
  * Handler class for XY intersections between _geometryB and another geometry.
- * * **NOTE:** GeometryQuery input (_geometryB) should really be AnyCurve.
  * * Instances are initialized and called from CurveCurve.
  * * geometryB is saved for later reference.
  * @internal
  */
 export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _extendA: boolean;
-  private _geometryB: GeometryQuery | undefined;
+  private _geometryB: AnyCurve | undefined;
   private _extendB: boolean;
   private _results!: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
@@ -111,7 +110,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public constructor(
     worldToLocal: Matrix4d | undefined,
     extendA: boolean,
-    geometryB: GeometryQuery | undefined,
+    geometryB: AnyCurve | undefined,
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ) {
@@ -130,7 +129,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this.reinitialize();
   }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
-  public resetGeometry(extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void {
+  public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;

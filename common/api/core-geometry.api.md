@@ -1578,11 +1578,11 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 // @public
 export class CurveCurve {
     static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance?: number): CurveLocationDetailPair[];
-    static closeApproachProjectedXYPairs(geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number): CurveLocationDetailPair[];
-    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
-    static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
+    static closeApproachProjectedXYPairs(geometryA: AnyCurve, geometryB: AnyCurve, maxDistance: number): CurveLocationDetailPair[];
+    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: AnyCurve, extendA: boolean, geometryB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
+    static intersectionXYPairs(geometryA: AnyCurve, extendA: boolean, geometryB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     // @beta
-    static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
+    static intersectionXYZ(geometryA: AnyCurve, extendA: boolean, geometryB: AnyCurve, extendB: boolean): CurveLocationDetailArrayPair;
 }
 
 // @public
