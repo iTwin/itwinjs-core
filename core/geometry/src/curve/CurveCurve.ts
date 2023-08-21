@@ -107,11 +107,11 @@ export class CurveCurve {
     return handler.grabPairedResults();
   }
   /**
-   * Return at least one XY close approach between 2 geometries. If more than one approach is returned, one of
-   * them is the closest approach.
-   * * **NOTE:** GeometryQuery inputs should really be AnyCurve.
-   * @param geometryA first geometry
-   * @param geometryB second geometry
+   * Return at least one XY close approach between 2 geometries.
+   * * If more than one approach is returned, one of them is the closest approach.
+   * * Close approaches further than `maxDistance` are not returned.
+   * @param geometryA first geometry of type `AnyCurve`
+   * @param geometryB second geometry of type `AnyCurve`
    * @param maxDistance maximum XY distance (z is ignored) between 2 geometries
    */
   public static closeApproachProjectedXYPairs(
