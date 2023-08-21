@@ -7,32 +7,32 @@
  * @module Curve
  */
 
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { BezierCurveBase } from "../bspline/BezierCurveBase";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Geometry } from "../Geometry";
-import { CoincidentGeometryQuery } from "../geometry3d/CoincidentGeometryOps";
-import { RecurseToCurvesGeometryHandler } from "../geometry3d/GeometryHandler";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { XYAndZ } from "../geometry3d/XYZProps";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { UnivariateBezier } from "../numerics/BezierPolynomials";
-import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
-import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import { Arc3d } from "./Arc3d";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
+import { BezierCurveBase } from "../../bspline/BezierCurveBase";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry } from "../../Geometry";
+import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { UnivariateBezier } from "../../numerics/BezierPolynomials";
+import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
+import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { GeometryQuery } from "../GeometryQuery";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
 
@@ -62,21 +62,6 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
       -this._rayA.direction.x, -this._rayA.direction.y, 0.0,
       this._rayB.direction.x, this._rayB.direction.y, 0.0);
     return true;
-  }
-}
-/**
- * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
- * CurveCurve.ClosestApproach
- * @public
- */
-export class CurveLocationDetailArrayPair {
-  /** First array of details ... */
-  public dataA: CurveLocationDetail[];
-  /** Second array of details ... */
-  public dataB: CurveLocationDetail[];
-  public constructor() {
-    this.dataA = [];
-    this.dataB = [];
   }
 }
 /**

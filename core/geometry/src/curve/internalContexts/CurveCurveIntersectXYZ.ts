@@ -7,21 +7,20 @@
  * @module Curve
  */
 
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Geometry } from "../Geometry";
-import { RecurseToCurvesGeometryHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import { Arc3d } from "./Arc3d";
-import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
-import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry } from "../../Geometry";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailArrayPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { GeometryQuery } from "../GeometryQuery";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
 

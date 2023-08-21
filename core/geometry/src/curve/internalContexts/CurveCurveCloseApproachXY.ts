@@ -7,20 +7,21 @@
  * @module Curve
  */
 
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Geometry } from "../Geometry";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { AnalyticRoots, SmallSystem } from "../numerics/Polynomials";
-import { Arc3d } from "./Arc3d";
-import { CurveChain } from "./CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry } from "../../Geometry";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { CurveChain } from "../CurveCollection";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { GeometryQuery } from "../GeometryQuery";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
 
@@ -31,8 +32,8 @@ import { LineString3d } from "./LineString3d";
  * * Closest approach is a measure of the proximity of one curve to another. It's the length of the shortest line
  * segment perpendicular to both curves; if the curves intersect, the closest approach is zero. In the context of
  * this class, z-coordinates are ignored, so the closest approach is as seen in the top view. If you have coplanar
- * input curves, rotate them first into a plane parallel to the xy-plane, then afterward, you should rotate the
- * results back as required.
+ * input curves and want to find closest approach in their plane, rotate them first into a plane parallel to the
+ * xy-plane, then afterward, rotate the results back as required.
  * * Close approach can also be from a curve endpoint perpendicular to another curve or from a curve endpoint to
  * another curve endpoint.
  * * Instances are initialized and called from CurveCurve.

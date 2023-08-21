@@ -9,10 +9,10 @@
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveCollection } from "./CurveCollection";
-import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
-import { CurveCurveIntersectXY, CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
-import { CurveCurveIntersectXYZ } from "./CurveCurveIntersectXYZ";
-import { CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY";
+import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY";
+import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
+import { CurveLocationDetailArrayPair, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 

@@ -472,3 +472,18 @@ export class CurveLocationDetailPair {
     this.detailB = q;
   }
 }
+
+/**
+ * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by [[CurveCurve.intersectionXYZ]].
+ * @public
+ */
+export class CurveLocationDetailArrayPair {
+  /** First array of details ... */
+  public dataA: CurveLocationDetail[];
+  /** Second array of details ... */
+  public dataB: CurveLocationDetail[];
+  public constructor() {
+    this.dataA = [];
+    this.dataB = [];
+  }
+}

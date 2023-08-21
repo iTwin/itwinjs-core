@@ -507,13 +507,6 @@ export class Bezier1dNd {
 }
 
 // @internal
-export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
-    constructor(curveA: BezierCurveBase, curveB: BezierCurveBase);
-    // (undocumented)
-    evaluate(fractionA: number, fractionB: number): boolean;
-}
-
-// @internal
 export abstract class BezierCoffs {
     constructor(data: number | Float64Array | number[]);
     addInPlace(a: number): void;
@@ -1598,37 +1591,6 @@ export enum CurveCurveApproachType {
     Intersection = 0,
     ParallelGeometry = 3,
     PerpendicularChord = 1
-}
-
-// @internal
-export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
-    constructor(worldToLocal: Matrix4d | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean, tolerance?: number);
-    computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
-    computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
-    dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
-    grabPairedResults(reinitialize?: boolean): CurveLocationDetailPair[];
-    handleArc3d(arc0: Arc3d): any;
-    handleBSplineCurve3d(curve: BSplineCurve3d): any;
-    handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
-    handleLineSegment3d(segmentA: LineSegment3d): any;
-    handleLineString3d(lsA: LineString3d): any;
-    recordPairs(cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean): void;
-    resetGeometry(extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void;
-}
-
-// @internal
-export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
-    constructor(extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
-    computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
-    computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
-    createPlaneWithPreferredPerpendicular(origin: Point3d, vectorA: Vector3d, cosineValue: number, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
-    dispatchLineStringBSplineCurve(_lsA: LineString3d, _extendA: boolean, _curveB: BSplineCurve3d, _extendB: boolean, _reversed: boolean): any;
-    grabResults(reinitialize?: boolean): CurveLocationDetailArrayPair;
-    handleArc3d(arc0: Arc3d): any;
-    handleBSplineCurve3d(curve: BSplineCurve3d): any;
-    handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
-    handleLineSegment3d(segmentA: LineSegment3d): any;
-    handleLineString3d(lsA: LineString3d): any;
 }
 
 // @public
