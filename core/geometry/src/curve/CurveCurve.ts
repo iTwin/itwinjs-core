@@ -23,49 +23,49 @@ import { AnyCurve } from "./CurveChain";
 export class CurveCurve {
   /**
    * Return xy intersections of 2 curves.
-   * @param geometryA first geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
+   * @param curveA first curve
+   * @param extendA true to allow curveA to extend
+   * @param curveB second curve
+   * @param extendB true to allow curveB to extend
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionXYPairs(
-    geometryA: AnyCurve,
+    curveA: AnyCurve,
     extendA: boolean,
-    geometryB: AnyCurve,
+    curveB: AnyCurve,
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(undefined, extendA, geometryB, extendB, tolerance);
-    if (geometryB instanceof CurvePrimitive) {
-      geometryA.dispatchToGeometryHandler(handler);
-    } else if (geometryB instanceof CurveCollection) {
-      const allCurves = geometryB.collectCurvePrimitives();
+    const handler = new CurveCurveIntersectXY(undefined, extendA, curveB, extendB, tolerance);
+    if (curveB instanceof CurvePrimitive) {
+      curveA.dispatchToGeometryHandler(handler);
+    } else if (curveB instanceof CurveCollection) {
+      const allCurves = curveB.collectCurvePrimitives();
       for (const child of allCurves) {
         handler.resetGeometry(false, child, false);
-        geometryA.dispatchToGeometryHandler(handler);
+        curveA.dispatchToGeometryHandler(handler);
       }
     }
     return handler.grabPairedResults();
   }
   /**
    * Return xy intersections of 2 projected curves.
-   * @param geometryA first geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
+   * @param curveA first curve
+   * @param extendA true to allow curveA to extend
+   * @param curveB second curve
+   * @param extendB true to allow curveB to extend
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionProjectedXYPairs(
     worldToLocal: Matrix4d,
-    geometryA: AnyCurve,
+    curveA: AnyCurve,
     extendA: boolean,
-    geometryB: AnyCurve,
+    curveB: AnyCurve,
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(worldToLocal, extendA, geometryB, extendB, tolerance);
-    geometryA.dispatchToGeometryHandler(handler);
+    const handler = new CurveCurveIntersectXY(worldToLocal, extendA, curveB, extendB, tolerance);
+    curveA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
   }
   /**
@@ -73,16 +73,16 @@ export class CurveCurve {
    *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
    *  * Not Implemented for bspline and bezier curves.
    * @beta
-   * @param geometryA first geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
+   * @param curveA first curve
+   * @param extendA true to allow curveA to extend
+   * @param curveB second curve
+   * @param extendB true to allow curveB to extend
    */
   public static intersectionXYZ(
-    geometryA: AnyCurve, extendA: boolean, geometryB: AnyCurve, extendB: boolean,
+    curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean,
   ): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXYZ(extendA, geometryB, extendB);
-    geometryA.dispatchToGeometryHandler(handler);
+    const handler = new CurveCurveIntersectXYZ(extendA, curveB, extendB);
+    curveA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
   }
   /**
@@ -95,28 +95,55 @@ export class CurveCurve {
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
     for (let i = 0; i < primitives.length; i++) {
-      const geometryA = primitives[i];
+      const curveA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {
         handler.resetGeometry(false, primitives[j], false);
-        geometryA.dispatchToGeometryHandler(handler);
+        curveA.dispatchToGeometryHandler(handler);
       }
     }
     return handler.grabPairedResults();
   }
   /**
-   * Return at least one XY close approach between 2 geometries.
+   * Return at least one XY close approach between 2 curves.
+   * * Close approach xy-distances are measured without regard to z. This is equivalent to their separation distance
+   * as seen in the top view, or as measured between their projections onto the xy-plane.
    * * If more than one approach is returned, one of them is the closest approach.
-   * * Close approaches further than `maxDistance` are not returned.
-   * @param geometryA first geometry
-   * @param geometryB second geometry
-   * @param maxDistance maximum XY distance (z is ignored) between 2 geometries
+   * @param curveA first curve
+   * @param curveB second curve
+   * @param maxDistance maximum xy-distance to consider between the curves.
+   * Close approaches further than this xy-distance are not returned.
    */
   public static closeApproachProjectedXYPairs(
-    geometryA: AnyCurve, geometryB: AnyCurve, maxDistance: number,
+    curveA: AnyCurve, curveB: AnyCurve, maxDistance: number,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveCloseApproachXY(geometryB);
+    const handler = new CurveCurveCloseApproachXY(curveB);
     handler.maxDistanceToAccept = maxDistance;
-    geometryA.dispatchToGeometryHandler(handler);
+    curveA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
+  }
+  /**
+   * Convenience method that calls [[closeApproachProjectedXYPairs]] with large maxDistance
+   * and returns the detail pair separated by the smallest xy distance.
+   * @param curveA first curve
+   * @param curveB second curve
+   * @return the closest approach pair, undefined if not found
+   */
+  public static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve): CurveLocationDetailPair | undefined {
+    const range = curveA.range();
+    range.extendRange(curveB.range());
+    const maxDistance = range.low.distanceXY(range.high);
+    const closeApproaches = this.closeApproachProjectedXYPairs(curveA, curveB, maxDistance);
+    if (!closeApproaches.length)
+      return undefined;
+    let iMin = 0;
+    let minDistXY = 2 * maxDistance;
+    for (let i = 0; i < closeApproaches.length; ++i) {
+      const distXY = closeApproaches[i].detailA.point.distanceXY(closeApproaches[i].detailB.point);
+      if (distXY < minDistXY) {
+        iMin = i;
+        minDistXY = distXY;
+      }
+    }
+    return closeApproaches[iMin];
   }
 }
