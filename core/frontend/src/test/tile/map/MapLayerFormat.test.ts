@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import {
   ImageryMapLayerTreeReference,
   MapLayerFormat,

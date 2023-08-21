@@ -381,7 +381,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
 
 /** A reference to one of our tile trees. The specific TileTree drawn may change when the desired imagery type or target iModel changes.
- * @internal
+ * @beta
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
   public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
