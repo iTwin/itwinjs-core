@@ -10,6 +10,7 @@
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Geometry } from "../Geometry";
+import { RecurseToCurvesGeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
