@@ -8,10 +8,10 @@
 
 import {
   CustomAttribute,
-  CustomAttributeContainerProps,
+  CustomAttributeContainerProps, DelayedPromiseWithProps,
   ECClass, ECName, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
   PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
-  StructClass, StructPropertyProps,
+  StructClass, StructPropertyProps, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
@@ -281,6 +281,42 @@ export class ECClasses {
     }
 
     return {};
+  }
+
+  /**
+   * Sets the base class of specified class.
+   * @param classKey The SchemaItemKey of the class.
+   * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
+   */
+  public async setBaseClass(classKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    let childClass: MutableClass;
+    try {
+      childClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    if (childClass === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The class ${classKey.fullName} could not be found in schema context.`);
+
+    if (baseClassKey === undefined) {
+      childClass.baseClass = undefined;
+      return { itemKey: classKey };
+    }
+
+    let baseClassSchema = childClass.schema;
+    if (!baseClassKey.schemaKey.matches(classKey.schemaKey))
+      baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+
+    const baseClassItem = await baseClassSchema.lookupItem<ECClass>(baseClassKey);
+    if (baseClassItem === undefined)
+      return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+
+    if (baseClassItem.schemaItemType !== childClass.schemaItemType)
+      return { errorMessage: `${baseClassItem.fullName} is not of type ${schemaItemTypeToString(childClass.schemaItemType)}.` };
+
+    childClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
+    return { itemKey: classKey };
   }
 
   /**
