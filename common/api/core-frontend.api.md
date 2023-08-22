@@ -1180,7 +1180,7 @@ export interface ArcGisAttributeDrivenSymbology {
     }) => void;
 }
 
-// @internal (undocumented)
+// @beta
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1360,7 +1360,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     };
 }
 
-// @internal
+// @beta
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
     content: any;
@@ -1388,27 +1388,30 @@ export class ArcGISTileMap {
     tileMapRequestSize: number;
 }
 
-// @internal (undocumented)
+// @beta
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
+    // @internal
     static checkForResponseErrorCode(response: Response): Promise<number | undefined>;
+    // @internal
     static computeZoomLevelsScales(startZoom?: number, endZoom?: number, latitude?: number, tileSize?: number, screenDpi?: number): {
         zoom: number;
         resolution: number;
         scale: number;
     }[];
-    // (undocumented)
+    // @internal (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
-    // (undocumented)
+    // @internal (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
-    // (undocumented)
+    // @internal
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };
+    // @internal
     static isEpsg3857Compatible(tileInfo: any): boolean;
     static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
@@ -5839,7 +5842,7 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
     static createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 }
 
-// @internal
+// @beta
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection);
     // (undocumented)
@@ -7781,9 +7784,9 @@ export abstract class MapLayerImageryProvider {
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-    // @internal (undocumented)
+    // @internal
     protected readonly defaultMaximumZoomLevel = 22;
-    // @internal (undocumented)
+    // @internal
     protected readonly defaultMinimumZoomLevel = 0;
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
@@ -7791,7 +7794,6 @@ export abstract class MapLayerImageryProvider {
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     // @internal (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // @internal (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -7800,11 +7802,8 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG3857ExtentString(row: number, column: number, zoomLevel: number): string;
-    // @internal (undocumented)
     getEPSG3857X(longitude: number): number;
-    // @internal (undocumented)
     getEPSG3857Y(latitude: number): number;
-    // @internal (undocumented)
     getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
         longitudeLeft: number;
         longitudeRight: number;
@@ -7813,9 +7812,7 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
-    // @internal (undocumented)
     getEPSG4326Lat(y3857: number): number;
-    // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void>;
@@ -7856,7 +7853,7 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @internal (undocumented)
+    // (undocumented)
     get status(): MapLayerImageryProviderStatus;
     // @alpha (undocumented)
     get supportsMapFeatureInfo(): boolean;
@@ -7997,7 +7994,7 @@ export interface MapLayerSourceValidation {
     subLayers?: MapSubLayerProps[];
 }
 
-// @internal (undocumented)
+// @beta
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
