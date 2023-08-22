@@ -30,7 +30,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
   constructor(schemaComparer: ISchemaComparer, schemaToCompare: Schema, options?: SchemaComparerOptions) {
     this._schemaComparer = schemaComparer;
     this._schemaB = schemaToCompare;
-    this._lookupFullName = options?.compareItemFullName || true;
+    this._lookupFullName = options?.compareItemFullName ?? true;
   }
 
   private async lookupItem<T extends SchemaItem = SchemaItem>(item: SchemaItem) {
