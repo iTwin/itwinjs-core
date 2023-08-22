@@ -61,6 +61,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
+    "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
