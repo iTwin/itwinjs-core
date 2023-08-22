@@ -1180,7 +1180,7 @@ export interface ArcGisAttributeDrivenSymbology {
     }) => void;
 }
 
-// @beta
+// @internal
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1360,7 +1360,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     };
 }
 
-// @beta
+// @internal
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
     content: any;
@@ -1388,30 +1388,26 @@ export class ArcGISTileMap {
     tileMapRequestSize: number;
 }
 
-// @beta
+// @internal
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
-    // @internal
     static checkForResponseErrorCode(response: Response): Promise<number | undefined>;
-    // @internal
     static computeZoomLevelsScales(startZoom?: number, endZoom?: number, latitude?: number, tileSize?: number, screenDpi?: number): {
         zoom: number;
         resolution: number;
         scale: number;
     }[];
-    // @internal (undocumented)
+    // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
-    // @internal (undocumented)
+    // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
-    // @internal
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };
-    // @internal
     static isEpsg3857Compatible(tileInfo: any): boolean;
     static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
@@ -7853,7 +7849,7 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // (undocumented)
+    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
     // @alpha (undocumented)
     get supportsMapFeatureInfo(): boolean;

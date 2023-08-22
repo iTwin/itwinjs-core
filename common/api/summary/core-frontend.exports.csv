@@ -373,7 +373,7 @@ public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): st
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 beta;ImageryMapLayerFormat 
-internal;ImageryMapLayerTreeReference 
+beta;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
@@ -506,7 +506,7 @@ public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
-internal;class MapLayerTileTreeReference 
+beta;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 beta;MapSubLayerFeatureInfo
 public;MapTile 
