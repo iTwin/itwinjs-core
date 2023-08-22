@@ -5306,14 +5306,21 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
 // @beta
+export interface TileId {
+    // (undocumented)
+    contentId: string;
+    // (undocumented)
+    guid: string;
+    // (undocumented)
+    treeId: string;
+}
+
+// @beta
 export class TileStorage {
     constructor(storage: ServerStorage);
     downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
-    getCachedTiles(iModelId: string): Promise<{
-        treeId: string;
-        contentId: string;
-        guid: string;
-    }[]>;
+    getCachedTiles(iModelId: string): Promise<TileId[]>;
+    getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId>;
     getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
     initialize(iModelId: string): Promise<void>;
     isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
@@ -5406,6 +5413,12 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onReplayedExternalTxns: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onReplayedExternalTxns(): void;
+    readonly onReplayExternalTxns: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected _onReplayExternalTxns(): void;
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
