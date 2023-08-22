@@ -349,7 +349,10 @@ export class CheckpointManager {
           const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
             (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+          const stopwatch = new StopWatch(`[${checkpoint.changeset.id}]`);
+          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
+          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           currentChangeset.index = checkpoint.changeset.index!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
