@@ -13,7 +13,7 @@ import { IModelApp } from "../../IModelApp";
 
 /**
  * Class representing an ArcGIS error code.
- * @beta
+ * @internal
  */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
@@ -25,7 +25,7 @@ export enum ArcGisErrorCode {
 
 /**
  * Class representing an ArcGIS service metadata.
- * @beta
+ * @internal
  */
 export interface ArcGISServiceMetadata {
   /** JSON content from the service */
@@ -37,11 +37,10 @@ export interface ArcGISServiceMetadata {
 
 /**
  * Class containing utilities relating to ArcGIS services and coordinate systems.
- * @beta
+ * @internal
  */
 export class ArcGisUtilities {
 
-  /** @internal */
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
       range = MapCartoRectangle.createMaximum();
@@ -49,7 +48,6 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
 
-  /** @internal */
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     const response = await fetch("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList", { method: "GET" });
@@ -78,7 +76,6 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  /** @internal */
   public static async getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]> {
     if (undefined === baseUrl)
       baseUrl = url;
@@ -112,7 +109,6 @@ export class ArcGisUtilities {
    * @param range Range for the query.
    * @param url URL for the query.
    * @returns List of map layer sources.
-   * @internal
    */
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
@@ -140,7 +136,7 @@ export class ArcGisUtilities {
    * @param url URL to validate.
    * @param serviceType Service type to validate (i.e FeatureServer, MapServer)
    * @return Validation Status.
-  */
+   */
   public static validateUrl(url: string, serviceType: string): MapLayerSourceStatus {
     const urlObj = new URL(url.toLowerCase());
     if (urlObj.pathname.includes("/rest/services/")) {
@@ -215,10 +211,7 @@ export class ArcGisUtilities {
     return { status: MapLayerSourceStatus.Valid, subLayers };
   }
 
-  /**
-   * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
-   * @internal
-   */
+  /** Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible. */
   public static isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
       return false;
@@ -292,10 +285,7 @@ export class ArcGisUtilities {
     }
   }
 
-  /**
-   * Read a response from ArcGIS server and check for error code in the response.
-   * @internal
-   */
+  /** Read a response from ArcGIS server and check for error code in the response. */
   public static async checkForResponseErrorCode(response: Response) {
     const tmpResponse = response;
     if (response.headers && tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
@@ -342,7 +332,6 @@ export class ArcGisUtilities {
    * @param tileSize Size of a tile in pixels (i.e 256)
    * @param screenDpi Monitor resolution in dots per inch (i.e. typically 96dpi is used by Google Maps)
    * @returns An array containing resolution and scale values for each requested zoom level
-   * @internal
    */
   public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96): {zoom: number, resolution: number, scale: number}[] {
     // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.

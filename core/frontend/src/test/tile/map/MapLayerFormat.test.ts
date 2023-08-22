@@ -40,7 +40,7 @@ const testMapLayer = {
   formatId: TestMapLayerFormat.formatId,
 };
 
-describe.only("MapLayerFormat", () => {
+describe("MapLayerFormat", () => {
   let imodel: IModelConnection;
 
   it("should create proper provider", async () => {

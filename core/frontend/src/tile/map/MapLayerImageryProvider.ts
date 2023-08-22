@@ -45,6 +45,7 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private _status = MapLayerImageryProviderStatus.Valid;
 
+  /** @internal */
   public get status() { return this._status; }
 
   /** @alpha */
