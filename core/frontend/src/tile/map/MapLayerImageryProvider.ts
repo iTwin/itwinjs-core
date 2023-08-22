@@ -275,7 +275,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /**
-   * Calculates the projected x cartesian coordinate in EPSG: from the longitude in EPSG:4326 (WGS84)
+   * Calculates the projected x cartesian coordinate in EPSG:3857 from the longitude in EPSG:4326 (WGS84)
    * @param longitude Longitude in EPSG:4326 (WGS84)
    */
   public getEPSG3857X(longitude: number): number {
