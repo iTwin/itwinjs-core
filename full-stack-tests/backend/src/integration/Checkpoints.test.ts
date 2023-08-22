@@ -152,6 +152,7 @@ describe("Checkpoints", () => {
       "Checkpoints/prefetch/maxRequests": 3,
     });
     const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
+    const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
     const iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
@@ -159,6 +160,7 @@ describe("Checkpoints", () => {
       changeset: testChangeSet,
     });
     expect(prefetchSpy.callCount).to.equal(1);
+    expect(settingsSpy.callCount).to.equal(1);
     // stub openFile the second time around, we only need the attach call from openCheckpointV2 to take place to trigger a prefetch.
     sinon.stub(SnapshotDb, "openFile").callsFake(() => {
       return {} as SnapshotDb;
@@ -171,6 +173,7 @@ describe("Checkpoints", () => {
       changeset: testChangeSet,
     });
     expect(prefetchSpy.callCount).to.equal(1);
+    expect(settingsSpy.callCount).to.equal(2);
     iModel.close();
     sinon.restore();
     IModelHost.appWorkspace.settings.dropDictionary("prefetch");
@@ -260,6 +263,7 @@ describe("Checkpoints", () => {
         "Checkpoints/prefetch/maxRequests": 3,
       });
       const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
+      const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
       const iModel = await SnapshotDb.openCheckpointV2({
         accessToken,
         iTwinId: testITwinId,
@@ -267,6 +271,7 @@ describe("Checkpoints", () => {
         changeset: testChangeSet,
       });
       expect(prefetchSpy.callCount).to.equal(1);
+      expect(settingsSpy.callCount).to.equal(1);
       // stub openFile the second time around, we only need the attach call from openCheckpointV2 to take place to trigger a prefetch.
       sinon.stub(SnapshotDb, "openFile").callsFake(() => {
         return {} as SnapshotDb;
@@ -279,6 +284,7 @@ describe("Checkpoints", () => {
         changeset: testChangeSet,
       });
       expect(prefetchSpy.callCount).to.equal(1);
+      expect(settingsSpy.callCount).to.equal(2);
       iModel.close();
       sinon.restore();
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
