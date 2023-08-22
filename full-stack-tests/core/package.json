@@ -63,7 +63,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/itwins-client": "^1.2.0",
-    "@itwin/object-storage-core": "^2.0.0",
+    "@itwin/object-storage-core": "^2.1.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
