@@ -2045,12 +2045,12 @@ export class FrameBuilder {
     announceVector(vector: Vector3d): number;
     applyDefaultUpVector(vector?: Vector3d): void;
     clear(): void;
-    static createFrameToDistantPoints(points: Point3d[]): Transform | undefined;
-    static createFrameWithCCWPolygon(points: Point3d[]): Transform | undefined;
-    static createLocalToWorldTransformInRange(range: Range3d, scaleSelect?: AxisScaleSelect, fractionX?: number, fractionY?: number, fractionZ?: number, defaultAxisLength?: number): Transform;
+    static createFrameToDistantPoints(points: Point3d[], result?: Transform): Transform | undefined;
+    static createFrameWithCCWPolygon(points: Point3d[], result?: Transform): Transform | undefined;
+    static createLocalToWorldTransformInRange(range: Range3d, scaleSelect?: AxisScaleSelect, fractionX?: number, fractionY?: number, fractionZ?: number, defaultAxisLength?: number, result?: Transform): Transform;
     static createRightHandedFrame(defaultUpVector: Vector3d | undefined, ...params: any[]): Transform | undefined;
     static createRightHandedLocalToWorld(...params: any[]): Transform | undefined;
-    getValidatedFrame(allowLeftHanded?: boolean): Transform | undefined;
+    getValidatedFrame(allowLeftHanded?: boolean, result?: Transform): Transform | undefined;
     get hasOrigin(): boolean;
     savedVectorCount(): number;
 }
@@ -5280,7 +5280,7 @@ export class Ray3d implements BeJSONFunctions {
     setFrom(source: Ray3d): void;
     setFromJSON(json?: any): void;
     toJSON(): any;
-    toRigidZFrame(): Transform | undefined;
+    toRigidZFrame(result?: Transform): Transform | undefined;
     transformInPlace(transform: Transform): void;
     tryNormalizeInPlaceWithAreaWeight(a: number): boolean;
     trySetDirectionMagnitudeInPlace(magnitude?: number): boolean;

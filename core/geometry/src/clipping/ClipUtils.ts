@@ -231,7 +231,7 @@ export class ClipUtilities {
     let result: UnionRegion | undefined;
     // Create "local region" which is the result of rotating region to make
     // it parallel to the xy-plane and then translating it to the xy-plane.
-    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
+    const localToWorld = ClipUtilities._workTransform = FrameBuilder.createRightHandedFrame(undefined, region, ClipUtilities._workTransform);
     if (!localToWorld)
       return result;
     const worldToLocal = localToWorld?.inverse();

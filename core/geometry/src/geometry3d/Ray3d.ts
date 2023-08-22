@@ -37,6 +37,7 @@ export class Ray3d implements BeJSONFunctions {
   private static _workVector2?: Vector3d;
   private static _workVector3?: Vector3d;
   private static _workVector4?: Vector3d;
+  private static _workMatrix?: Matrix3d;
   // constructor (captures references)
   private constructor(origin: Point3d, direction: Vector3d) {
     this.origin = origin;
@@ -266,9 +267,9 @@ export class Ray3d implements BeJSONFunctions {
    * Return a transform for rigid axes at ray origin with z in ray direction.
    * * If the direction vector is zero, axes default to identity (from [[Matrix3d.createRigidHeadsUp]])
    */
-  public toRigidZFrame(): Transform | undefined {
-    const axes = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY);
-    return Transform.createOriginAndMatrix(this.origin, axes);
+  public toRigidZFrame(result?: Transform): Transform | undefined {
+    const axes = Ray3d._workMatrix = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY, Ray3d._workMatrix);
+    return Transform.createOriginAndMatrix(this.origin, axes, result);
   }
   /** Convert {origin:[x,y,z], direction:[u,v,w]} to a Ray3d. */
   public setFromJSON(json?: any) {
