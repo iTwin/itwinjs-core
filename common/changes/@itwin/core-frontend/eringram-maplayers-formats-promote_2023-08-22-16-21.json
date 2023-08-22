@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add MapLayerFormat.test.ts with a simple custom implementation of MapLayerFormat using only public/beta APIs, also improve docs in map layer formats-related classes",
+      "comment": "Promote APIs required to implement a MapLayerFormat to beta",
       "type": "none"
     }
   ],
