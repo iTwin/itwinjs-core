@@ -13,7 +13,10 @@ import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
 
-/** @internal  */
+/**
+ * A reference to a [[TileTree]] to be used for map layer tiles.
+ * @beta
+ */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
   constructor(protected _layerSettings: MapLayerSettings, protected _layerIndex: number, public iModel: IModelConnection) {
     super();
@@ -42,7 +45,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   }
 }
 
-/** @internal  */
+/** @internal */
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
     return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
