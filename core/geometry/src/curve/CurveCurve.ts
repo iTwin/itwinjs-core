@@ -122,8 +122,12 @@ export class CurveCurve {
     return handler.grabPairedResults();
   }
   /**
-   * Convenience method that calls [[closeApproachProjectedXYPairs]] with large maxDistance
-   * and returns the detail pair separated by the smallest xy distance.
+   * Convenience method that calls [[closeApproachProjectedXYPairs]] with a large `maxDistance`
+   * and returns a detail pair representing the closest xy-approach between the curves.
+   * * There may be many detail pairs that represent "closest" xy-approach, including coincident interval pairs,
+   * isolated intersections, or close approaches within tolerance of each other. This method makes no attempt to
+   * distinguish among them, and returns a pair whose `detail.point` values are separated by the smallest xy distance
+   * found among the pairs.
    * @param curveA first curve
    * @param curveB second curve
    * @return the closest approach pair, undefined if not found
