@@ -509,7 +509,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     reversed: boolean,
   ): void {
     // 1) arc endpoints to segment endpoints or arc endpoints projection to the segment
-    this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, arc, 0, 1, true, reversed);
+    this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, arc, 0, 1, false, reversed);
     // 2) intersection between arc and segment
     // Suppose:
     // Arc: X = C + cU + sV where c = cos(theta) and s = sin(theta)
