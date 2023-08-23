@@ -90,13 +90,8 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.1.9",
-    "@itwin/cloud-agnostic-core": "^2.0.0",
-=======
-    "@bentley/imodeljs-native": "4.2.0",
     "@itwin/cloud-agnostic-core": "^2.1.0",
->>>>>>> a004c07a65 (use PagedIterator in TileStorage.listCachedTiles (#5749))
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.1.0",
     "@itwin/object-storage-core": "^2.1.0",
