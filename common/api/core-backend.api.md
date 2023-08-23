@@ -5307,14 +5307,21 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
 // @beta
+export interface TileId {
+    // (undocumented)
+    contentId: string;
+    // (undocumented)
+    guid: string;
+    // (undocumented)
+    treeId: string;
+}
+
+// @beta
 export class TileStorage {
     constructor(storage: ServerStorage);
     downloadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
-    getCachedTiles(iModelId: string): Promise<{
-        treeId: string;
-        contentId: string;
-        guid: string;
-    }[]>;
+    getCachedTiles(iModelId: string): Promise<TileId[]>;
+    getCachedTilesGenerator(iModelId: string): AsyncGenerator<TileId>;
     getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig>;
     initialize(iModelId: string): Promise<void>;
     isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean>;
