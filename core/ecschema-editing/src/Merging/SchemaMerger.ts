@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyCategory, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -62,7 +62,7 @@ export class SchemaMerger {
     };
 
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
-    await mergeSchemaItems(mergeContext, filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory), mergePropertyCategories);
+    await mergeSchemaItems(mergeContext, filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory));
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
@@ -83,8 +83,4 @@ function filterChangesByItemType(changes: SchemaChanges, type: SchemaItemType): 
     }
   }
   return result;
-}
-
-async function mergePropertyCategories(target: PropertyCategory, source: PropertyCategory) {
-  await target.fromJSON(source.toJSON());
 }
