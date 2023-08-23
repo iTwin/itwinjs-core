@@ -1,55 +1,124 @@
-import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { expect } from "chai";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { Enumeration, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaChanges } from "../../ecschema-editing";
+import { expect } from "chai";
 
-describe("Enumeration Merger Tests", async () => {
-    const sourceJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "sourceSchema",
-        version: "1.2.3",
-        alias: "sc",
+/* eslint-disable @typescript-eslint/naming-convention */
+
+describe("Enumeration merge tests", () => {
+
+  const sourceJson = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "SourceSchema",
+    version: "1.2.3",
+    alias: "source",
+  };
+  const targetJson =  {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "TargetSchema",
+    version: "1.0.0",
+    alias: "target",
+  };
+
+  describe("Enumeration missing tests", () => {
+    it("should merge missing enumeration item", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
         items: {
-            sourceEnum: {
-                schemaItemType: "Enumeration",
-                type: "int",
-                enumerators: [
-                    {
-                        name: "ZeroValue",
-                        value: 0,
-                    },
-                    {
-                        name: "OneValue",
-                        value: 1,
-                    },
-                ],
-            }
-        }
-    }
+          TestEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: true,
+            enumerators: [{
+              name: "FirstValue",
+              label: "first value",
+              value: 0,
+            },
+            {
+              name: "SecondValue",
+              label: "second value",
+              value: 1,
+            }],
+          },
+        },
+      }, new SchemaContext());
 
-    const targetJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "targetSchema",
-        version: "1.2.3",
-        alias: "sc",
-        items: {}
-    }
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, new SchemaContext());
 
-    const sourceSchemaContext = new SchemaContext();
-    const sourceSchema = await Schema.fromJson(sourceJson, sourceSchemaContext);
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
 
-    const targetSchemaContext = new SchemaContext();
-    const targetSchema = await Schema.fromJson(targetJson, targetSchemaContext);
+      const sourceEnumeration = await sourceSchema.getItem<Enumeration>("TestEnumeration");
+      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
+      expect(sourceEnumeration!.toJSON()).deep.eq(mergedEnumeration!.toJSON());
+    });
 
-  
-    it.only("should create a source schema and target schema", async () => {
-        expect(Schema.isSchema(sourceSchema)).to.be.equals(true);
-        expect(Schema.isSchema(targetSchema)).to.be.equals(true);
-    })
+    it("should merge same Enumerable with different enumerators", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          TestEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: true,
+            enumerators: [{
+              name: "FirstValue",
+              label: "first value",
+              value: 0,
+            },
+            {
+              name: "SecondValue",
+              label: "second value",
+              value: 1,
+            }],
+          },
+        },
+      }, new SchemaContext());
 
-    it.only("should return schema changes list", async ()=> {
-        const schema = await (new SchemaMerger()).merge(targetSchema, sourceSchema);
-        expect(schema).to.be.equal(sourceSchema);
-    })
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          TestEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: true,
+            enumerators: [{
+              name: "AnotherValue",
+              label: "totally different value",
+              value: 99,
+            }],
+          },
+        },
+      }, new SchemaContext());
 
-})
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
+      expect(mergedEnumeration!.toJSON()).deep.eq({
+        schemaItemType: "Enumeration",
+        type: "int",
+        isStrict: true,
+        enumerators: [{
+          name: "FirstValue",
+          label: "first value",
+          value: 0,
+        },
+        {
+          name: "SecondValue",
+          label: "second value",
+          value: 1,
+        },
+        {
+          name: "AnotherValue",
+          label: "totally different value",
+          value: 99,
+        }],
+      });
+    });
+  });
+});
