@@ -104,6 +104,11 @@ describe("Enumeration merge tests", () => {
         type: "int",
         isStrict: true,
         enumerators: [{
+          name: "AnotherValue",
+          label: "totally different value",
+          value: 99,
+        },
+        {
           name: "FirstValue",
           label: "first value",
           value: 0,
@@ -112,11 +117,6 @@ describe("Enumeration merge tests", () => {
           name: "SecondValue",
           label: "second value",
           value: 1,
-        },
-        {
-          name: "AnotherValue",
-          label: "totally different value",
-          value: 99,
         }],
       });
     });

@@ -23,29 +23,60 @@ describe("PropertyCategory merge tests", () => {
     alias: "target",
   };
 
-  describe("PropertyCategory missing tests", () => {
-    it("should merge missing PropertyCategory", async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        items: {
-          TestPropertyCategory: {
-            schemaItemType:"PropertyCategory",
-            label:"ValueTrack Metadata",
-            priority:100000,
-          },
+  it("should merge missing PropertyCategory", async () => {
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      items: {
+        TestPropertyCategory: {
+          schemaItemType:"PropertyCategory",
+          label:"ValueTrack Metadata",
+          priority:100000,
         },
-      }, new SchemaContext());
+      },
+    }, new SchemaContext());
 
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-      }, new SchemaContext());
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+    }, new SchemaContext());
 
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const merger = new SchemaMerger();
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
 
-      const sourceCategory = await sourceSchema.getItem<PropertyCategory>("TestPropertyCategory");
-      const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
-      expect(sourceCategory!.toJSON()).deep.eq(mergedCategory!.toJSON());
+    const sourceCategory = await sourceSchema.getItem<PropertyCategory>("TestPropertyCategory");
+    const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
+    expect(sourceCategory!.toJSON()).deep.eq(mergedCategory!.toJSON());
+  });
+
+  it("should override PropertyCategory", async () => {
+    const sourceSchema = await Schema.fromJson({
+      ...sourceJson,
+      items: {
+        TestPropertyCategory: {
+          schemaItemType:"PropertyCategory",
+          label:"ValueTrack Metadata",
+          priority:99,
+        },
+      },
+    }, new SchemaContext());
+
+    const targetSchema = await Schema.fromJson({
+      ...targetJson,
+      items: {
+        TestPropertyCategory: {
+          schemaItemType:"PropertyCategory",
+          label:"ValueTrack Metadata",
+          priority:100000,
+        },
+      },
+    }, new SchemaContext());
+
+    const merger = new SchemaMerger();
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
+    expect(mergedCategory!.toJSON()).deep.eq({
+      schemaItemType:"PropertyCategory",
+      label:"ValueTrack Metadata",
+      priority:99,
     });
   });
 });
