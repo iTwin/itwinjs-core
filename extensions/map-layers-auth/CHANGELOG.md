@@ -1,6 +1,11 @@
 # Change Log - @itwin/map-layers-auth
 
-This log was last generated on Fri, 18 Aug 2023 13:02:53 GMT and should not be manually modified.
+This log was last generated on Wed, 23 Aug 2023 15:25:30 GMT and should not be manually modified.
+
+## 4.1.2
+Wed, 23 Aug 2023 15:25:30 GMT
+
+_Version update only_
 
 ## 4.1.1
 Fri, 18 Aug 2023 13:02:53 GMT
