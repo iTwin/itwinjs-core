@@ -2419,7 +2419,7 @@ export function createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgePar
 // @internal (undocumented)
 export function createEmptyRenderPlan(): RenderPlan;
 
-// @internal (undocumented)
+// @internal
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 
 // @internal (undocumented)
@@ -7727,9 +7727,9 @@ export class MapLayerFeatureRecord {
 
 // @public
 export class MapLayerFormat {
-    // @internal
+    // @beta
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // @internal (undocumented)
+    // @beta
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
@@ -7995,13 +7995,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
-    // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
     iModel: IModelConnection;
-    // (undocumented)
     get isOpaque(): boolean;
-    // (undocumented)
     get layerIndex(): number;
     // (undocumented)
     protected _layerIndex: number;

@@ -384,6 +384,12 @@ const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
  * @beta
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
+  /**
+   * Constructor for an ImageryMapLayerTreeReference.
+   * @param _layerSettings Map layer settings that are applied to the ImageryMapLayerTreeReference.
+   * @param _layerIndex The index of the associated map layer. Usually passed in through [[createMapLayerTreeReference]] in [[MapTileTree]]'s constructor.
+   * @param iModel The iModel containing the ImageryMapLayerTreeReference.
+   */
   public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
     super(layerSettings, layerIndex, iModel);
   }

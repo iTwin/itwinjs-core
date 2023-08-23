@@ -18,20 +18,37 @@ import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTree
  * @beta
  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
+  /**
+   * Constructor for a MapLayerTileTreeReference.
+   * @param _layerSettings Map layer settings that are applied to the MapLayerTileTreeReference.
+   * @param _layerIndex The index of the associated map layer.
+   * @param iModel The iModel containing the MapLayerTileTreeReference.
+   */
   constructor(protected _layerSettings: MapLayerSettings, protected _layerIndex: number, public iModel: IModelConnection) {
     super();
   }
+
   protected get _transparency() { return this._layerSettings.transparency ? this._layerSettings.transparency : undefined; }
 
+  /** Returns true if the associated map layer, including its sublayers, is opaque. */
   public get isOpaque() {
     return this._layerSettings.visible && (!this._layerSettings.allSubLayersInvisible) && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
   }
+
   public get layerName() { return this._layerSettings.name; }
+
+  /** Returns the imagery provider for the tile tree. */
   public get imageryProvider(): MapLayerImageryProvider | undefined { return undefined; }
+
   public set layerSettings(layerSettings: MapLayerSettings) { this._layerSettings = layerSettings; }
+
   public get layerSettings(): MapLayerSettings { return this._layerSettings; }
+
+  /** Returns the index of the map layer associated with the tile tree. */
   public get layerIndex(): number { return this._layerIndex; }
+
   public get transparency() { return this._transparency; }
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId)
@@ -45,7 +62,14 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   }
 }
 
-/** @internal */
+/**
+ * Creates a MapLayerTileTreeReference.
+ * @param layerSettings Model or image map layer settings that are applied to the MapLayerTileTreeReference.
+ * @param layerIndex The index of the associated map layer.
+ * @param iModel The iModel containing the new MapLayerTileTreeReference.
+ * @returns Returns the new tile tree reference, either a ModelMapLayerTileTreeReference or an ImageryMapLayerTreeReference.
+ * @internal
+ */
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
     return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
