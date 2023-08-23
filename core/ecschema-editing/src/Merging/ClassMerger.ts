@@ -3,33 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClass } from "@itwin/ecschema-metadata";
-import { ChangeType, ClassChanges } from "../Validation/SchemaChanges";
-import { SchemaMergeContext } from "./SchemaMerger";
+import { MutableClass } from "../Editing/Mutable/MutableClass";
+import { ChangeType, ClassChanges, PropertyChanges } from "../Validation/SchemaChanges";
 
-export default async function mergeClasses(target: ECClass, source: ECClass, change: ClassChanges, context: SchemaMergeContext) {
+export default async function mergeClasses(target: ECClass, source: ECClass, change: ClassChanges) {
+  // TODO: This copies the SchemaItem properties such as label or description. That is suppose
+  //       to be done in the SchemaItemMerger actually. Once it's there it can removed here.
   await target.fromJSON(source.toJSON());
 
+  // This applies to all type of classes regardless if they are Entities, Structs, Mixins,...
+  // all can have properties that required to get merged.
   for(const propertyChange of change.propertyChanges.values()) {
-    if (propertyChange.propertyMissing?.changeType === ChangeType.Missing) {
+    await mergeClassProperties(target, source, propertyChange);
+  }
+}
 
-      const property = await source.getProperty(propertyChange.ecTypeName);
-      if (property === undefined) {
-        throw Error(`Property '${propertyChange.ecTypeName}' not found in class ${source.name}`);
-      }
+async function mergeClassProperties(target: ECClass, source: ECClass, propertyChange: PropertyChanges) {
+  const mutableTargetClass = target as MutableClass;
+  if (propertyChange.propertyMissing?.changeType === ChangeType.Missing) {
 
-      if (property.isPrimitive()) {
-        const primitiveProps =  property.toJSON();
-        const result = property.isArray()
-          ? await context.editor.entities.createPrimitiveArrayPropertyFromProps(target.key, propertyChange.ecTypeName, property.primitiveType, primitiveProps)
-          : await context.editor.entities.createPrimitivePropertyFromProps(target.key, propertyChange.ecTypeName, property.primitiveType, primitiveProps);
+    const property = await source.getProperty(propertyChange.ecTypeName);
+    if (property === undefined) {
+      throw Error(`Property '${propertyChange.ecTypeName}' not found in class ${source.name}`);
+    }
 
-        if (result.errorMessage !== undefined) {
-          throw Error(`Failed to merge '${propertyChange.ecTypeName}' property: ${result.errorMessage}`);
-        }
-      } else {
-        throw Error(`Failed to merge '${propertyChange.ecTypeName}' property: not supported type`);
-      }
+    if (property.isPrimitive()) {
+      const primitiveProps =  property.toJSON();
+      const result = property.isArray()
+        ? await mutableTargetClass.createPrimitiveArrayProperty(propertyChange.ecTypeName, property.primitiveType)
+        : await mutableTargetClass.createPrimitiveProperty(propertyChange.ecTypeName, property.primitiveType);
+
+      await result.fromJSON(primitiveProps);
+
+    } else {
+      throw Error(`Failed to merge '${propertyChange.ecTypeName}' property: not supported type`);
     }
   }
-
 }

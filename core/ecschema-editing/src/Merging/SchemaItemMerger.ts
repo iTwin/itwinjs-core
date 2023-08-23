@@ -38,6 +38,10 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
       (context.targetSchema as MutableSchema).addItem(targetItem = createdItem);
     }
 
+    // TODO: At this point we should merge the Schema Item properties. By doing that here, more
+    //       simpler objects such as PropertyCategory which is basically just a plain JS object
+    //       with a few properties, would not need it's own merger code.
+
     if(mergeFn) {
       await mergeFn(targetItem!, sourceItem, change, context);
     }
