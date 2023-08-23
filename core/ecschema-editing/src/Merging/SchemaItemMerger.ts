@@ -44,7 +44,15 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
     }
 
     // Sets the Schema items base properties...
-    await mergeSchemaItemProperties(targetItem!, change.propertyValueChanges);
+    await mergeSchemaItemProperties(targetItem!, change.propertyValueChanges, (item, propertyName, propertyValue) => {
+      const mutableSchemaItem = item as unknown as MutableSchemaItem;
+      switch(propertyName) {
+        case "label":
+          return mutableSchemaItem.setDisplayLabel(propertyValue);
+        case "description":
+          return mutableSchemaItem.setDescription(propertyValue);
+      }
+    });
 
     if(mergeFn) {
       await mergeFn(targetItem!, sourceItem, change, context);
@@ -52,37 +60,9 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
   }
 }
 
-async function mergeSchemaItemProperties(targetItem: SchemaItem, changes: Iterable<PropertyValueChange>) {
-  const mutableSchemaItem = targetItem as MutableSchemaItem;
+export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem: T, changes: Iterable<PropertyValueChange>, handler: (item: T, propertyName: string, propertyValue: any) => void) {
   for(const change of changes) {
     const [propertyName, propertyValue] = change.diagnostic.messageArgs!;
-    mergeSchemaItemProperty(mutableSchemaItem, propertyName, propertyValue);
+    handler(targetItem, propertyName, propertyValue);
   }
-}
-
-function mergeSchemaItemProperty(item: MutableSchemaItem, propertyName: string, propertyValue: any): void {
-  // Start with label and description, both can be set through a setter method in the
-  // MutableSchemaItem class.
-  switch(propertyName) {
-    case "label":
-      return item.setDisplayLabel(propertyValue);
-    case "description":
-      return item.setDescription(propertyValue);
-
-    // The following properties are known and shall or cannot be set after initialization.
-    case "schemaItemType":
-    case "modifier":
-      return;
-  }
-
-  // Other properties might also have a setter method which is usually following the
-  // pattern of set<PropertyName>(<PropertyValue>).
-  const setterCandidate = findSetter(item, propertyName);
-  if(setterCandidate) {
-    return setterCandidate.call(item, propertyValue);
-  }
-}
-
-function findSetter(item: SchemaItem&{[name: string]: any}, propertyName: string): ((value: any) => void) | undefined {
-  return item[`set${propertyName.charAt(0).toUpperCase()}${propertyName.slice(1)}`];
 }
