@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema } from "@itwin/ecschema-metadata";
+import { PropertyCategory, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
-import { SchemaChanges } from "../Validation/SchemaChanges";
+import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import { ClassMerger } from "./ClassMerger";
-import { EnumerationMerger } from "./EnumerationMerger";
+
+import mergeClasses from "./ClassMerger";
+import mergeEnumeration from "./EnumerationMerger";
+import mergeSchemaItems from "./SchemaItemMerger";
 
 /**
- * Defines the context of a SchemaChange.
+ * Defines the context of a Schema merging run.
  * @alpha
  */
-export interface SchemaChangeContext {
+export interface SchemaMergeContext {
   readonly targetSchema: Schema;
   readonly sourceSchema: Schema;
   readonly editor: SchemaContextEditor;
@@ -53,20 +55,36 @@ export class SchemaMerger {
    */
   public async merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
     const schemaChanges = await this.getSchemaChanges(targetSchema, sourceSchema);
-    const changeContext: SchemaChangeContext = {
+    const mergeContext: SchemaMergeContext = {
       targetSchema,
       sourceSchema,
       editor: new SchemaContextEditor(targetSchema.context),
     };
 
-    for(const changes of schemaChanges.enumerationChanges.values()) {
-      await EnumerationMerger.merge(changeContext, changes);
-    }
+    await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
+    await mergeSchemaItems(mergeContext, filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory), mergePropertyCategories);
 
-    for(const changes of schemaChanges.classChanges.values()) {
-      await ClassMerger.merge(changeContext, changes);
-    }
+    // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
+    //       with bases classes or relationships, this might need to get extended.
+    await mergeSchemaItems(mergeContext, schemaChanges.classChanges.values(), mergeClasses);
 
+    // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
+    //       merge into a temporary schema and eventually swap that with the given instance.
     return targetSchema;
   }
+
+}
+
+function filterChangesByItemType(changes: SchemaChanges, type: SchemaItemType): Iterable<SchemaItemChanges> {
+  const result: SchemaItemChanges[] = [];
+  for(const change of changes.schemaItemChanges.values()) {
+    if(change.schemaItemType === type) {
+      result.push(change);
+    }
+  }
+  return result;
+}
+
+async function mergePropertyCategories(target: PropertyCategory, source: PropertyCategory) {
+  await target.fromJSON(source.toJSON());
 }
