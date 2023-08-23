@@ -7,10 +7,6 @@ import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { ChangeType, ClassChanges, PropertyChanges } from "../Validation/SchemaChanges";
 
 export default async function mergeClasses(target: ECClass, source: ECClass, change: ClassChanges) {
-  // TODO: This copies the SchemaItem properties such as label or description. That is suppose
-  //       to be done in the SchemaItemMerger actually. Once it's there it can removed here.
-  await target.fromJSON(source.toJSON());
-
   // This applies to all type of classes regardless if they are Entities, Structs, Mixins,...
   // all can have properties that required to get merged.
   for(const propertyChange of change.propertyChanges.values()) {
