@@ -183,7 +183,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const lenSqr = start.distanceSquaredXY(end);
     const expectedLenSqr = 0.5; // (sqrt(2)/2)*(sqrt(2)/2)
     ck.testLE(lenSqr, maxDistance * maxDistance, "approach length must be smaller than maxDistance");
-    ck.testCoordinate(lenSqr, expectedLenSqr);
+    ck.testCoordinate(lenSqr, expectedLenSqr, "closest approach has expected length");
+    ck.testCoordinate(approaches[0].detailA.fraction, 1.0, "closest approach has expected fraction on curveA");
+    ck.testCoordinate(approaches[0].detailB.fraction, 0.1, "closest approach has expected fraction on curveB");
     GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLine2");
     expect(ck.getNumErrors()).equals(0);

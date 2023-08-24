@@ -257,12 +257,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
     pair.detailB.setIntervalRole(CurveIntervalRole.isolated);
-    if (reversed) {
-      this._results.push(pair);
-    } else {
+    if (reversed)
       pair.swapDetails();
-      this._results.push(pair);
-    }
+    this._results.push(pair);
   }
   /**
    * Emit recordPoint for multiple pairs (on full curve) if within maxDistance.
@@ -293,9 +290,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   ): void {
     if (detailA && detailB) {
       if (reversed) {
-        this._results.push(CurveLocationDetailPair.createCapture(detailA, detailB));
-      } else {
         this._results.push(CurveLocationDetailPair.createCapture(detailB, detailA));
+      } else {
+        this._results.push(CurveLocationDetailPair.createCapture(detailA, detailB));
       }
     }
   }
@@ -320,10 +317,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           closestApproach = CurveLocationDetailPair.createCapture(
             CurveLocationDetail.create(), CurveLocationDetail.create(),
           );
-        closestApproach.detailA.setFP(fractionA, pointA);
-        closestApproach.detailA.a = distanceSquared;
-        closestApproach.detailB.setFP(fractionB, this._workPointB);
-        closestApproach.detailA.a = distanceSquared;
+        closestApproach.detailA.setFP(fractionA, pointA, undefined, distanceSquared);
+        closestApproach.detailB.setFP(fractionB, this._workPointB, undefined, distanceSquared);
       }
     }
     return closestApproach;
@@ -365,14 +360,18 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     let closestApproach: CurveLocationDetailPair | undefined;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
-    if (hab0 * hab0 < maxDistanceSquared * uu)
+    if (hab0 * hab0 < maxDistanceSquared * uu) {
       closestApproach = this.updatePointToSegmentDistance(
         0, b0, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, maxDistanceSquared, closestApproach,
       );
-    if (hab1 * hab1 < maxDistanceSquared * uu)
+      closestApproach?.swapDetails();
+      }
+    if (hab1 * hab1 < maxDistanceSquared * uu) {
       closestApproach = this.updatePointToSegmentDistance(
         1, b1, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, maxDistanceSquared, closestApproach,
       );
+      closestApproach?.swapDetails();
+    }
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
     if (hba0 * hba0 < maxDistanceSquared * vv)
       closestApproach = this.updatePointToSegmentDistance(

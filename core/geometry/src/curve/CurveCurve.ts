@@ -130,7 +130,7 @@ export class CurveCurve {
    * found among the pairs.
    * @param curveA first curve
    * @param curveB second curve
-   * @return the closest approach pair, undefined if not found
+   * @return detail pair of closest xy-approach, undefined if not found
    */
   public static closestApproachProjectedXYPair(curveA: AnyCurve, curveB: AnyCurve): CurveLocationDetailPair | undefined {
     const range = curveA.range();
