@@ -635,6 +635,13 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
+// @beta
+export interface ChangeInstanceKey {
+    readonly changeType: "inserted" | "updated" | "deleted";
+    readonly classFullName: string;
+    readonly id: Id64String;
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
@@ -836,6 +843,8 @@ export namespace CloudSqlite {
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -5422,6 +5431,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(rootClassFilter: string[], includeUnsavedChanges?: boolean): ChangeInstanceKey[];
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
