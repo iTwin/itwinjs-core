@@ -8,7 +8,7 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CheckpointManager, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -144,6 +144,41 @@ describe("Checkpoints", () => {
     }
   });
 
+  it("should only start one prefetch when same v2 checkpoint is opened twice", async () => {
+    IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
+      "Checkpoints/prefetch": true,
+      "Checkpoints/prefetch/maxBlocks": 5000,
+      "Checkpoints/prefetch/minRequests": 1,
+      "Checkpoints/prefetch/maxRequests": 3,
+    });
+    const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
+    const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
+    const iModel = await SnapshotDb.openCheckpointV2({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      changeset: testChangeSet,
+    });
+    expect(prefetchSpy.callCount).to.equal(1);
+    expect(settingsSpy.callCount).to.equal(1);
+    // stub openFile the second time around, we only need the attach call from openCheckpointV2 to take place to trigger a prefetch.
+    sinon.stub(SnapshotDb, "openFile").callsFake(() => {
+      return {} as SnapshotDb;
+    });
+    sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
+    const iModel2 = await SnapshotDb.openCheckpointV2({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      changeset: testChangeSet,
+    });
+    expect(prefetchSpy.callCount).to.equal(1);
+    expect(settingsSpy.callCount).to.equal(2);
+    iModel.close();
+    sinon.restore();
+    IModelHost.appWorkspace.settings.dropDictionary("prefetch");
+  });
+
   it("should be able to open and read V2 checkpoints without the daemon ", async () => {
     let iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
@@ -218,6 +253,41 @@ describe("Checkpoints", () => {
 
     after(async () => {
       await shutdownDaemon();
+    });
+
+    it("should only start one prefetch when same v2 checkpoint is opened twice", async () => {
+      IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
+        "Checkpoints/prefetch": true,
+        "Checkpoints/prefetch/maxBlocks": 5000,
+        "Checkpoints/prefetch/minRequests": 1,
+        "Checkpoints/prefetch/maxRequests": 3,
+      });
+      const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
+      const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
+      const iModel = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+      expect(prefetchSpy.callCount).to.equal(1);
+      expect(settingsSpy.callCount).to.equal(1);
+      // stub openFile the second time around, we only need the attach call from openCheckpointV2 to take place to trigger a prefetch.
+      sinon.stub(SnapshotDb, "openFile").callsFake(() => {
+        return {} as SnapshotDb;
+      });
+      sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
+      const iModel2 = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+      expect(prefetchSpy.callCount).to.equal(1);
+      expect(settingsSpy.callCount).to.equal(2);
+      iModel.close();
+      sinon.restore();
+      IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
 
     it("should be able to open and read V2 checkpoint with daemon running", async () => {
