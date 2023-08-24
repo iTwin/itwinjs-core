@@ -47,10 +47,12 @@ export class DisplayPerfTestApp {
       iModelApp.tileAdmin = {
         minimumSpatialTolerance: 0,
         cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+        enableFrontendScheduleScripts: true,
       };
     } else {
       iModelApp.tileAdmin.minimumSpatialTolerance = 0;
       iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+      iModelApp.tileAdmin.enableFrontendScheduleScripts = true;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */
