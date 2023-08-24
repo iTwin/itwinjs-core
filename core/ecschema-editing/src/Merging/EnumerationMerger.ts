@@ -8,22 +8,35 @@ import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
 export default async function mergeEnumeration(target: Enumeration, source: Enumeration, changes: EnumerationChanges) {
   const mutableTargetEnumeration = target as MutableEnumeration;
-  console.log(changes.propertyValueChanges[0]);
+  console.log(changes.propertyValueChanges[0].diagnostic.messageArgs);
 
   // Before jumping into this, look for a flag that gives if primitiveType is different
-  for (const _enumeratorChange of changes.enumeratorChanges.values()) {
+  for (const enumeratorChange of changes.enumeratorChanges.values()) {
     
     // Handle each case:
     // If missing, add source enumerator 
-    addEnumeratorToTarget(source, mutableTargetEnumeration, _enumeratorChange)
-
-    // If encounter delta, throw an error
+    if(isEnumeratorMissing(enumeratorChange)){
+      addEnumeratorToTarget(source, mutableTargetEnumeration, enumeratorChange)
+    }
+    
+    // If encounter deltas, throw an error for the time being, it will need to get handle at a later iteration
     // What triggers delta? : Something funky about enumerators we are not so sure about :/ 
   }
 
-  function addEnumeratorToTarget(_source: Enumeration, _mutableEnumeration: MutableEnumeration, _enumeratorChange: EnumeratorChanges){
-    let sourceEnumerator = _source.getEnumeratorByName(_enumeratorChange.ecTypeName)!;
-    mutableTargetEnumeration.addEnumerator(sourceEnumerator)
+  function isEnumeratorMissing(enumeratorChange: EnumeratorChanges){
+    return enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing; 
   }
 
+  function doesEnumeratorDeltasExist(enumeratorChange: EnumeratorChanges){
+    return enumeratorChange.enumeratorDeltas.length > 0;
+  }
+
+  function isEnumerationTypeMissMatch(_enumerationChanges: EnumerationChanges){
+    // Compare the property value diagnostic 
+  }
+
+  function addEnumeratorToTarget(source: Enumeration, mutableEnumeration: MutableEnumeration, enumeratorChange: EnumeratorChanges){
+    let sourceEnumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName)!;
+    mutableEnumeration.addEnumerator(sourceEnumerator)
+  }
 }

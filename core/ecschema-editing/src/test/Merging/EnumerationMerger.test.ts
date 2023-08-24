@@ -49,7 +49,7 @@ describe.only("Enumeration merge tests", () => {
   });
 
   describe("Enumeration missing tests", () => {
-    it("should create a new enumeration item for target schema", async () =>{
+    it.only("should create a new enumeration item for target schema", async () =>{
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -66,7 +66,7 @@ describe.only("Enumeration merge tests", () => {
       expect(mergedEnumeration!.fullName).eq("TargetSchema.TestEnumeration");
     })
 
-    it("should merge missing enumeration item", async () => {
+    it.only("should merge missing enumeration item", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -84,7 +84,7 @@ describe.only("Enumeration merge tests", () => {
       expect(sourceEnumeration!.toJSON()).deep.eq(mergedEnumeration!.toJSON());
     });
 
-    it("should merge different enumerators from source into same enumeration item in target", async () => {
+    it.only("should merge different enumerators from source into same enumeration item in target", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
