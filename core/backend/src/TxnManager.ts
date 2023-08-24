@@ -492,7 +492,7 @@ export class TxnManager {
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
-  /** Query local changes
+  /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
    * @beta
   */
   public queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[] {
