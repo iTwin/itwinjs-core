@@ -226,7 +226,16 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Capture a close approach pair that has point and local fraction but not curve.
-   * Record with fraction mapping.
+   * * Record the pair with curves and global fractions.
+   * * Pair is not recorded if it is a duplicate of the last recorded pair.
+   * @param pair details computed with local fractions
+   * @param cpA curveA
+   * @param fractionA0 global start fraction on curveA
+   * @param fractionA1 global end fraction on curveA
+   * @param cpB curveB
+   * @param fractionB0 global start fraction on curveB
+   * @param fractionB1 global end fraction on curveB
+   * @param reversed whether to reverse the details in the pair
    */
   private capturePairWithLocalFractions(
     pair: CurveLocationDetailPair,
@@ -663,25 +672,20 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this.computeSegmentLineString(segA, lsB, reversed);
   }
   /** Detail computation for segment approaching linestring. */
-  public computeSegmentLineString(segA: LineSegment3d, lsB: LineString3d, reversed: boolean): any {
+  public computeSegmentLineString(segA: LineSegment3d, lsB: LineString3d, reversed: boolean): void {
+    const numB = lsB.numPoints();
+    const deltaFracB = Geometry.safeDivideFraction(1, numB - 1, 0);
+    const pointA0 = segA.point0Ref;
+    const pointA1 = segA.point1Ref;
     const pointB0 = CurveCurveCloseApproachXY._workPointBB0;
     const pointB1 = CurveCurveCloseApproachXY._workPointBB1;
-    const lsSegments: LineSegment3d[] = [];
-    const numB = lsB.numPoints();
-    for (let i = 0; i < numB - 1; i++) {
-      // find consecutive line string vertices to be used as line segment start and end
+    for (let i = 0; i < numB - 1; ++i) {
+      const fB0 = i * deltaFracB; // global linestring fractions
+      const fB1 = (i + 1 === numB - 1) ? 1.0 : (i + 1) * deltaFracB;  // make sure we nail the end fraction
       lsB.packedPoints.getPoint3dAtUncheckedPointIndex(i, pointB0);
       lsB.packedPoints.getPoint3dAtUncheckedPointIndex(i + 1, pointB1);
-      lsSegments.push(LineSegment3d.create(pointB0, pointB1));
+      this.dispatchSegmentSegment(segA, pointA0, 0.0, pointA1, 1.0, lsB, pointB0, fB0, pointB1, fB1, reversed);
     }
-    for (const lsSegment of lsSegments) {
-      this.dispatchSegmentSegment(
-        segA, segA.point0Ref, 0.0, segA.point1Ref, 1.0,
-        lsSegment, lsSegment.point0Ref, 0.0, lsSegment.point1Ref, 1.0,
-        reversed,
-      );
-    }
-    return undefined;
   }
   /** Detail computation for arc approaching linestring. */
   public computeArcLineString(arcA: Arc3d, lsB: LineString3d, reversed: boolean): any {
