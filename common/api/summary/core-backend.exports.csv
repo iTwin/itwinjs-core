@@ -23,6 +23,7 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
+beta;ChangeInstanceKey
 public;ChangesetArg 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 

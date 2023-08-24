@@ -47,6 +47,18 @@ export interface TxnChangedEntities {
   readonly updates: EntityIdAndClassIdIterable;
 }
 
+/** Instance key for a change
+* @beta
+*/
+export interface ChangeInstanceKey {
+  /** ECInstanceId of the instance */
+  readonly id: Id64String;
+  /** Class name of the ECInstanceId */
+  readonly classFullName: string;
+  /** Type of change */
+  readonly changeType: "inserted" | "updated" | "deleted";
+}
+
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
 
 /** Strictly for tests. @internal */
@@ -470,4 +482,14 @@ export class TxnManager {
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
+  /** Query local changes
+   * @param rootClassFilter Filter changes by a set of class and there derived classes.
+   * @param includeUnsavedChanges Include changes that has not saved yet in addition to saved changes.
+   *
+   * @beta
+  */
+  public queryLocalChanges(rootClassFilter: string[], includeUnsavedChanges: boolean = false): ChangeInstanceKey[] {
+    return this._nativeDb.getLocalChanges(rootClassFilter, includeUnsavedChanges);
+  }
 }
+
