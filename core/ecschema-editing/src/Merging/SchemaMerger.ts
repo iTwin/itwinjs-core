@@ -11,6 +11,7 @@ import mergeClasses from "./ClassMerger";
 import mergeEnumeration from "./EnumerationMerger";
 import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
+import mergeSchemaReferences from "./SchemaReferenceMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -61,6 +62,8 @@ export class SchemaMerger {
       sourceSchema,
       editor: new SchemaContextEditor(targetSchema.context),
     };
+
+    await mergeSchemaReferences(mergeContext, schemaChanges);
 
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
 
