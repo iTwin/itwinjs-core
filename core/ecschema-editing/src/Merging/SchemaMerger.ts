@@ -9,7 +9,9 @@ import { SchemaComparer } from "../Validation/SchemaComparer";
 
 import mergeClasses from "./ClassMerger";
 import mergeEnumeration from "./EnumerationMerger";
+import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
+import mergeSchemaReferences from "./SchemaReferenceMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -61,8 +63,12 @@ export class SchemaMerger {
       editor: new SchemaContextEditor(targetSchema.context),
     };
 
+    await mergeSchemaReferences(mergeContext, schemaChanges);
+
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
-    await mergeSchemaItems(mergeContext, filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory));
+
+    const propertyCategoryChanges = filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory);
+    await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
@@ -72,7 +78,6 @@ export class SchemaMerger {
     //       merge into a temporary schema and eventually swap that with the given instance.
     return targetSchema;
   }
-
 }
 
 function filterChangesByItemType(changes: SchemaChanges, type: SchemaItemType): Iterable<SchemaItemChanges> {
