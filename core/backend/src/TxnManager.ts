@@ -47,11 +47,13 @@ export interface TxnChangedEntities {
   readonly updates: EntityIdAndClassIdIterable;
 }
 
-/** @beta */
+/** Arguments supplied to [[TxnManager.queryLocalChanges]].
+ * @beta
+ */
 export interface QueryLocalChangesArgs {
-  /** Restrict changes to set of classes */
+  /** If supplied and non-empty, restricts the results to include only EC instances belonging to the specified classes or subclasses thereof. */
   readonly includedClasses?: string[];
-  /** Include changes that has not saved yet in addition to saved changes */
+  /** If `true`, include changes that have not yet been saved. */
   readonly includeUnsavedChanges?: boolean;
 }
 
