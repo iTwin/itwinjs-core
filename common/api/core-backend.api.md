@@ -4414,6 +4414,12 @@ export interface PushChangesArgs extends TokenArg {
     retainLocks?: true;
 }
 
+// @beta (undocumented)
+export interface QueryLocalChangesArgs {
+    readonly includeUnsavedChanges?: boolean;
+    readonly rootClassFilter?: string[];
+}
+
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -5432,7 +5438,7 @@ export class TxnManager {
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
     // @beta
-    queryLocalChanges(rootClassFilter: string[], includeUnsavedChanges?: boolean): ChangeInstanceKey[];
+    queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[];
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;

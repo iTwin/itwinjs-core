@@ -47,6 +47,14 @@ export interface TxnChangedEntities {
   readonly updates: EntityIdAndClassIdIterable;
 }
 
+/** @beta */
+export interface QueryLocalChangesArgs {
+  /** Filter changes by a set of class and there derived classes. */
+  readonly rootClassFilter?: string[];
+  /** Include changes that has not saved yet in addition to saved changes */
+  readonly includeUnsavedChanges?: boolean;
+}
+
 /** Instance key for a change
 * @beta
 */
@@ -483,13 +491,13 @@ export class TxnManager {
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Query local changes
-   * @param rootClassFilter Filter changes by a set of class and there derived classes.
-   * @param includeUnsavedChanges Include changes that has not saved yet in addition to saved changes.
-   *
    * @beta
   */
-  public queryLocalChanges(rootClassFilter: string[], includeUnsavedChanges: boolean = false): ChangeInstanceKey[] {
-    return this._nativeDb.getLocalChanges(rootClassFilter, includeUnsavedChanges);
+  public queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[] {
+    if (!args) {
+      args = { rootClassFilter: [], includeUnsavedChanges: false };
+    }
+    return this._nativeDb.getLocalChanges(args.rootClassFilter ?? [], args.includeUnsavedChanges ?? false);
   }
 }
 

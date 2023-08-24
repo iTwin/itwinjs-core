@@ -298,6 +298,7 @@ public;ProgressStatus
 beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
+beta;QueryLocalChangesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
