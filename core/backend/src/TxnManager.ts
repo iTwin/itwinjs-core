@@ -49,8 +49,8 @@ export interface TxnChangedEntities {
 
 /** @beta */
 export interface QueryLocalChangesArgs {
-  /** Filter changes by a set of class and there derived classes. */
-  readonly rootClassFilter?: string[];
+  /** Restrict changes to set of classes */
+  readonly includedClasses?: string[];
   /** Include changes that has not saved yet in addition to saved changes */
   readonly includeUnsavedChanges?: boolean;
 }
@@ -495,9 +495,9 @@ export class TxnManager {
   */
   public queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[] {
     if (!args) {
-      args = { rootClassFilter: [], includeUnsavedChanges: false };
+      args = { includedClasses: [], includeUnsavedChanges: false };
     }
-    return this._nativeDb.getLocalChanges(args.rootClassFilter ?? [], args.includeUnsavedChanges ?? false);
+    return this._nativeDb.getLocalChanges(args.includedClasses ?? [], args.includeUnsavedChanges ?? false);
   }
 }
 

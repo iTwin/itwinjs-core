@@ -4416,8 +4416,8 @@ export interface PushChangesArgs extends TokenArg {
 
 // @beta (undocumented)
 export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
-    readonly rootClassFilter?: string[];
 }
 
 // @beta
