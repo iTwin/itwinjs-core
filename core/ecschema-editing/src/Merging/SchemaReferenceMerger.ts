@@ -8,9 +8,9 @@ import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaMergeContext } from "./SchemaMerger";
 
 /**
- *
- * @param mergeContext
- * @param changes
+ * Merges the schema references of two schemas.
+ * @param mergeContext  current merge context
+ * @param changes       schema changes.
  */
 export default async function mergeSchemaReferences(mergeContext: SchemaMergeContext, changes: SchemaChanges) {
   const targetSchema = mergeContext.targetSchema;
@@ -18,7 +18,7 @@ export default async function mergeSchemaReferences(mergeContext: SchemaMergeCon
   // If the target schema does not have a reference to a schema yet, it can be added
   // but should be checked if it's schema references have collisions with existing references.
   for(const missingSchemaReference of changes.missingSchemaReferences) {
-    const [referencedSchema] = missingSchemaReference.diagnostic.messageArgs!;
+    const [referencedSchema] = missingSchemaReference.diagnostic.messageArgs! as [Schema];
     await addSchemaReference(targetSchema, referencedSchema);
   }
 
@@ -29,12 +29,18 @@ export default async function mergeSchemaReferences(mergeContext: SchemaMergeCon
   for(const differentSchemaReference of changes.schemaReferenceDeltas) {
     const [referencedSchema] = differentSchemaReference.diagnostic.messageArgs! as [Schema];
     const existingSchema = (await targetSchema.getReference(referencedSchema.name))!;
-    if(!isCompatible(referencedSchema, existingSchema)) {
+
+    const { latest, isCompatible } = compareSchemas(existingSchema, referencedSchema);
+    if(!isCompatible) {
       throw new Error(`Schemas references of ${referencedSchema.name} have incompatible versions: ${existingSchema.schemaKey.version} and ${referencedSchema.schemaKey.version}`);
+    }
+    if(latest === existingSchema) {
+      continue;
     }
 
     const index = targetSchema.references.findIndex((reference) => reference === existingSchema);
     targetSchema.references.splice(index, 1);
+
     await addSchemaReference(targetSchema, referencedSchema);
   }
 }
@@ -47,6 +53,13 @@ async function addSchemaReference(targetSchema: Schema, referencedSchema: Schema
   await mutableSchema.addReference(referencedSchema);
 }
 
-function isCompatible(left: Schema, right: Schema) {
-  return left.schemaKey.matches(right.schemaKey, SchemaMatchType.LatestWriteCompatible);
+function compareSchemas(left: Schema, right: Schema): { latest: Schema, isCompatible: boolean } {
+  const [older, latest] = left.schemaKey.compareByVersion(right.schemaKey) < 0
+    ? [left, right]
+    : [right, left];
+
+  return {
+    latest,
+    isCompatible: latest.schemaKey.matches(older.schemaKey, SchemaMatchType.LatestWriteCompatible),
+  };
 }
