@@ -9,6 +9,7 @@ import { SchemaItemFactory } from "./SchemaItemFactory";
 import { SchemaMergeContext } from "./SchemaMerger";
 
 type SchemaItemMergeFn<TChange extends SchemaItemChanges, TItem extends SchemaItem> = (target: TItem, source: TItem, change: TChange, context: SchemaMergeContext) => Promise<void>;
+type PropertyChangedFn<TItem extends SchemaItem> = (item: TItem, propertyName: string, propertyValue: any) => void | boolean;
 
 abstract class MutableSchemaItem extends SchemaItem{
   public abstract override setDisplayLabel(displayLabel: string): void;
@@ -16,12 +17,14 @@ abstract class MutableSchemaItem extends SchemaItem{
 }
 
 /**
-   *
-   * @param context
-   * @param schemaItemChanges
-   * @param mergeFn
-   */
-export default async function mergeSchemaItems<TChange extends SchemaItemChanges, TItem extends SchemaItem>(context: SchemaMergeContext, schemaItemChanges: Iterable<TChange>, mergeFn?: SchemaItemMergeFn<TChange, TItem>) {
+ * Merges schema items from the source in the target schema. This method applies for all schema items
+ * and handles the basic processing such as create-if-not-exists or name collisions or base property setting.
+ * @param context           The current merge context
+ * @param schemaItemChanges The schema items to be merged
+ * @param mergeFn           Merge function for complex merging.
+ * @internal
+ */
+export default async function mergeSchemaItems<TChange extends SchemaItemChanges, TItem extends SchemaItem>(context: SchemaMergeContext, schemaItemChanges: Iterable<TChange>, mergeFn: SchemaItemMergeFn<TChange, TItem>) {
   for(const change of schemaItemChanges) {
 
     // Gets the source and the target item. The target item could be undefined at that point.
@@ -39,30 +42,40 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
 
       // TODO: Think about renaming the Schema Item. This could be controlled though a flag.
 
-      const createdItem = await SchemaItemFactory.create(sourceItem, context.targetSchema) as TItem;
+      const createdItem = await SchemaItemFactory.create(context.targetSchema, sourceItem) as TItem;
       (context.targetSchema as MutableSchema).addItem(targetItem = createdItem);
     }
 
+    if(targetItem === undefined) {
+      throw new Error("Invalid state, targetItem must not be undefined at that point.");
+    }
+
     // Sets the Schema items base properties...
-    await mergeSchemaItemProperties(targetItem!, change.propertyValueChanges, (item, propertyName, propertyValue) => {
+    await mergeSchemaItemProperties(targetItem, change.propertyValueChanges, (item, propertyName, propertyValue) => {
       const mutableSchemaItem = item as unknown as MutableSchemaItem;
       switch(propertyName) {
         case "label":
-          return mutableSchemaItem.setDisplayLabel(propertyValue);
+          mutableSchemaItem.setDisplayLabel(propertyValue);
+          return true;
         case "description":
-          return mutableSchemaItem.setDescription(propertyValue);
+          mutableSchemaItem.setDescription(propertyValue);
+          return true;
+        case "schemaItemType":
+          return true;
       }
+      return;
     });
 
-    if(mergeFn) {
-      await mergeFn(targetItem!, sourceItem, change, context);
-    }
+    await mergeFn(targetItem, sourceItem, change, context);
   }
 }
 
-export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem: T, changes: Iterable<PropertyValueChange>, handler: (item: T, propertyName: string, propertyValue: any) => void) {
-  for(const change of changes) {
-    const [propertyName, propertyValue] = change.diagnostic.messageArgs!;
-    handler(targetItem, propertyName, propertyValue);
+export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem: T, changes: PropertyValueChange[], handler: PropertyChangedFn<T>) {
+  for(let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
+    const [propertyName, propertyValue] = changes[index].diagnostic.messageArgs!;
+    if(handler(targetItem, propertyName, propertyValue) === true) {
+      changes.splice(index, 1);
+      stepUp = false;
+    }
   }
 }
