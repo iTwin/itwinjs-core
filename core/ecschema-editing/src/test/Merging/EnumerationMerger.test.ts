@@ -24,14 +24,14 @@ describe("Enumeration merge tests", () => {
   };
 
   describe("Enumeration missing tests", () => {
-    it("should merge missing enumeration item", async () => {
+    it("should merge missing enumeration", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
           TestEnumeration: {
             schemaItemType: "Enumeration",
             type: "int",
-            isStrict: true,
+            isStrict: false,
             enumerators: [{
               name: "FirstValue",
               label: "first value",
@@ -57,24 +57,21 @@ describe("Enumeration merge tests", () => {
       const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
       expect(sourceEnumeration!.toJSON()).deep.eq(mergedEnumeration!.toJSON());
     });
+  });
 
-    it("should merge same Enumerable with different enumerators", async () => {
+  describe("Enumeration delta tests", () => {
+    it("should merge missing enumerators of the same enumeration", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
           TestEnumeration: {
             schemaItemType: "Enumeration",
-            type: "int",
+            type: "string",
             isStrict: true,
             enumerators: [{
               name: "FirstValue",
               label: "first value",
-              value: 0,
-            },
-            {
-              name: "SecondValue",
-              label: "second value",
-              value: 1,
+              value: "F",
             }],
           },
         },
@@ -82,6 +79,43 @@ describe("Enumeration merge tests", () => {
 
       const targetSchema = await Schema.fromJson({
         ...targetJson,
+        items: {
+          TestEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "string",
+            isStrict: true,
+            enumerators: [{
+              name: "AnotherValue",
+              label: "totally different value",
+              value: "T",
+            }],
+          },
+        },
+      }, new SchemaContext());
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
+      expect(mergedEnumeration!.toJSON()).deep.eq({
+        schemaItemType: "Enumeration",
+        type: "string",
+        isStrict: true,
+        enumerators: [{
+          name: "AnotherValue",
+          label: "totally different value",
+          value: "T",
+        },
+        {
+          name: "FirstValue",
+          label: "first value",
+          value: "F",
+        }],
+      });
+    });
+
+    it("should throw an error if merged enumeration types mismatch", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
         items: {
           TestEnumeration: {
             schemaItemType: "Enumeration",
@@ -94,31 +128,26 @@ describe("Enumeration merge tests", () => {
             }],
           },
         },
+      },  new SchemaContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          TestEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "string",
+            isStrict: true,
+            enumerators: [{
+              name: "valueOne",
+              label: "string value one",
+              value: "one",
+            }],
+          },
+        },
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
-      expect(mergedEnumeration!.toJSON()).deep.eq({
-        schemaItemType: "Enumeration",
-        type: "int",
-        isStrict: true,
-        enumerators: [{
-          name: "AnotherValue",
-          label: "totally different value",
-          value: 99,
-        },
-        {
-          name: "FirstValue",
-          label: "first value",
-          value: 0,
-        },
-        {
-          name: "SecondValue",
-          label: "second value",
-          value: 1,
-        }],
-      });
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Merged enumeration TestEnumeration types not equal: string -> int");
     });
 
     it("should throw an error if source type is int and target type is string", async () => {
