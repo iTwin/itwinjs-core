@@ -34,7 +34,7 @@ export namespace AzuriteTest {
     export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
-      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType, accessLevel });
+      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, accessLevel });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
