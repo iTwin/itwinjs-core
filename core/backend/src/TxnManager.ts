@@ -57,16 +57,17 @@ export interface QueryLocalChangesArgs {
   readonly includeUnsavedChanges?: boolean;
 }
 
-/** Instance key for a change
+/** Represents a change (insertion, deletion, or modification) to a single EC instance made in a local [[BriefcaseDb]].
+ * @see [[TxnManager.queryLocalChanges]] to iterate all of the changed instances.
 * @beta
 */
 export interface ChangeInstanceKey {
-  /** ECInstanceId of the instance */
-  readonly id: Id64String;
-  /** Class name of the ECInstanceId */
-  readonly classFullName: string;
-  /** Type of change */
-  readonly changeType: "inserted" | "updated" | "deleted";
+  /** ECInstanceId of the instance. */
+  id: Id64String;
+  /** Fully-qualified class name of the instance. */
+  classFullName: string;
+  /** The type of change. */
+  changeType: "inserted" | "updated" | "deleted";
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
