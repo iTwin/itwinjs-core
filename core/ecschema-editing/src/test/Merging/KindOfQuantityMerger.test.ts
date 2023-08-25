@@ -8,6 +8,6 @@ import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("KindOfQuantity Merger test", ()=>{
+describe("KindOfQuantity Merger test", () => {
     
 })
