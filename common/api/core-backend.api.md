@@ -456,8 +456,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
