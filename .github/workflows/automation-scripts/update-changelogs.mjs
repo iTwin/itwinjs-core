@@ -67,7 +67,8 @@ await $`git commit -m "${commitMessage} Changelogs"`;
 await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
-await $`git push`
+targetBranch.replace("origin/", "");
+await $`git push HEAD:${targetBranch}`
 
 // Read all files in the directory
 function getFilePaths(directoryPath) {
