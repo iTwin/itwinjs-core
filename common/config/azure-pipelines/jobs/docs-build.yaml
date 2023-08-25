@@ -137,7 +137,7 @@ jobs:
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
-        # condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
         # tag the build to trigger the release pipeline
       - powershell: |
