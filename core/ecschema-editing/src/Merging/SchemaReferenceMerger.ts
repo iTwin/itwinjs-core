@@ -51,6 +51,9 @@ async function addSchemaReference(targetSchema: Schema, referencedSchema: Schema
   // TODO: Collision Check
 
   await mutableSchema.addReference(referencedSchema);
+  if(! await targetSchema.context.getSchema(mutableSchema.schemaKey)) {
+    await targetSchema.context.addSchema(referencedSchema);
+  }
 }
 
 function compareSchemas(left: Schema, right: Schema): [Schema, Schema] {
