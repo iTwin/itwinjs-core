@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 
@@ -15,17 +14,16 @@ import mergeSchemaReferences from "./SchemaReferenceMerger";
 
 /**
  * Defines the context of a Schema merging run.
- * @alpha
+ * @internal
  */
 export interface SchemaMergeContext {
   readonly targetSchema: Schema;
   readonly sourceSchema: Schema;
-  readonly editor: SchemaContextEditor;
 }
 
 /**
  * TBD
- * @alpha
+ * @internal
  */
 export class SchemaMerger {
   /**
@@ -60,7 +58,6 @@ export class SchemaMerger {
     const mergeContext: SchemaMergeContext = {
       targetSchema,
       sourceSchema,
-      editor: new SchemaContextEditor(targetSchema.context),
     };
 
     await mergeSchemaReferences(mergeContext, schemaChanges);

@@ -6,7 +6,7 @@ import { EntityClass, Enumeration, PropertyCategory, Schema, SchemaItem, StructC
 
 export namespace SchemaItemFactory {
 
-  export async function create(template: SchemaItem, targetSchema: Schema): Promise<SchemaItem> {
+  export async function create(targetSchema: Schema, template: SchemaItem): Promise<SchemaItem> {
     if (is(template, Enumeration))
       return new Enumeration(targetSchema, template.name, template.type);
     if (is(template, EntityClass))

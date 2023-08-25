@@ -30,9 +30,9 @@ export default async function mergeSchemaReferences(mergeContext: SchemaMergeCon
     const [referencedSchema] = differentSchemaReference.diagnostic.messageArgs! as [Schema];
     const existingSchema = (await targetSchema.getReference(referencedSchema.name))!;
 
-    const { latest, isCompatible } = compareSchemas(existingSchema, referencedSchema);
-    if(!isCompatible) {
-      throw new Error(`Schemas references of ${referencedSchema.name} have incompatible versions: ${existingSchema.schemaKey.version} and ${referencedSchema.schemaKey.version}`);
+    const [older, latest] = compareSchemas(existingSchema, referencedSchema);
+    if(!latest.schemaKey.matches(older.schemaKey, SchemaMatchType.LatestWriteCompatible)) {
+      throw new Error(`Schemas references of ${referencedSchema.name} have incompatible versions: ${older.schemaKey.version} and ${latest.schemaKey.version}`);
     }
     if(latest === existingSchema) {
       continue;
@@ -53,13 +53,8 @@ async function addSchemaReference(targetSchema: Schema, referencedSchema: Schema
   await mutableSchema.addReference(referencedSchema);
 }
 
-function compareSchemas(left: Schema, right: Schema): { latest: Schema, isCompatible: boolean } {
-  const [older, latest] = left.schemaKey.compareByVersion(right.schemaKey) < 0
+function compareSchemas(left: Schema, right: Schema): [Schema, Schema] {
+  return left.schemaKey.compareByVersion(right.schemaKey) < 0
     ? [left, right]
     : [right, left];
-
-  return {
-    latest,
-    isCompatible: latest.schemaKey.matches(older.schemaKey, SchemaMatchType.LatestWriteCompatible),
-  };
 }
