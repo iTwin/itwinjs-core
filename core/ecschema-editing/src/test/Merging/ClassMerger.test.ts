@@ -30,7 +30,7 @@ describe("Class merger tests", () => {
     sourceContext = new SchemaContext();
   });
 
-  describe("EntityClass missing tests", () => {
+  describe("Class missing tests", () => {
     it("should merge missing entity class", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
@@ -61,9 +61,139 @@ describe("Class merger tests", () => {
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
       expect(sourceEntity!.toJSON()).deep.eq(mergedEntity!.toJSON());
     });
+
+    it("should merge missing entity class with base class specified", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          BaseClass: {
+            schemaItemType: "EntityClass",
+          },
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "SourceSchema.BaseClass",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
+      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
+      expect(mergedEntity?.baseClass).not.undefined;
+      expect((await mergedEntity!.baseClass!).fullName).eq("TargetSchema.BaseClass");
+    });
+
+    it("should merge missing entity class with referenced base class", async () => {
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "BisCore",
+        version: "01.00.15",
+        alias: "bis",
+        items: {
+          BaseClass: {
+            schemaItemType: "EntityClass",
+          },
+        },
+      }, sourceContext);
+
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "BisCore",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "BisCore.BaseClass",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
+      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
+      expect(mergedEntity?.baseClass).not.undefined;
+      expect((await mergedEntity!.baseClass!).fullName).eq("BisCore.BaseClass");
+    });
+
+    it("should merge missing struct class", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          TestClass: {
+            schemaItemType: "StructClass",
+            description: "Description for TestClass",
+            label: "TestStruct",
+            properties: [
+              {
+                name: "TestProp",
+                type: "PrimitiveProperty",
+                typeName: "double",
+              },
+            ],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
+      const sourceEntity = await sourceSchema.getItem<EntityClass>("TestClass");
+      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
+      expect(sourceEntity!.toJSON()).deep.eq(mergedEntity!.toJSON());
+    });
+
+    it("should merge missing custom attribute class", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          TestClass: {
+            schemaItemType: "CustomAttributeClass",
+            description: "Description for TestClass",
+            label: "TestCustomAttributeClass",
+            appliesTo: "AnyClass",
+            properties: [
+              {
+                name: "TestProp",
+                type: "PrimitiveProperty",
+                typeName: "boolean",
+              },
+            ],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
+      const sourceEntity = await sourceSchema.getItem<EntityClass>("TestClass");
+      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
+      expect(sourceEntity!.toJSON()).deep.eq(mergedEntity!.toJSON());
+    });
   });
 
-  describe("EntityClass delta tests", () => {
+  describe("Class delta tests", () => {
     it("should merge missing primitive property", async () => {
       const propJson = {
         name: "TestProp",
@@ -141,7 +271,7 @@ describe("Class merger tests", () => {
       expect(properties[0].toJSON()).deep.eq(propJson);
     });
 
-    it("should throw an error when property is not primitive", async () => {
+    it("should throw error when property is not primitive", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
