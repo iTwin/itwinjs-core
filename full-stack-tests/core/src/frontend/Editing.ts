@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
+import { BisCodeSpec, Code, CodeProps, ColorDef, GeometryParams, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { LineSegment3d, LineString3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
@@ -43,6 +43,34 @@ export async function insertLineElement(imodel: BriefcaseConnection, model: Id64
     return Id64.invalid;
 
   const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
+  return basicManipulationIpc.insertGeometricElement(elemProps);
+}
+
+export async function insertLineStringElement(imodel: BriefcaseConnection, lineString: { model: Id64String, category: Id64String, points: Point3d[], color?: ColorDef }): Promise<Id64String> {
+  await startCommand(imodel);
+  const builder = new GeometryStreamBuilder();
+  const origin = lineString.points[0] ?? new Point3d();
+  const angles = new YawPitchRollAngles();
+  builder.setLocalToWorld3d(origin, angles);
+
+  if (lineString.color) {
+    const params = new GeometryParams(lineString.category);
+    params.lineColor = lineString.color;
+    builder.appendGeometryParamsChange(params);
+  }
+
+  if (!builder.appendGeometry(LineString3d.createPoints(lineString.points)))
+    return Id64.invalid;
+
+  const elemProps: PhysicalElementProps = {
+    classFullName: "Generic:PhysicalObject",
+    model: lineString.model,
+    category: lineString.category,
+    code: Code.createEmpty(),
+    placement: { origin, angles },
+    geom: builder.geometryStream,
+  };
+
   return basicManipulationIpc.insertGeometricElement(elemProps);
 }
 

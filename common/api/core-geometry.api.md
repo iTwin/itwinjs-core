@@ -1211,6 +1211,8 @@ export class ClipUtilities {
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     static announcePolylineClip(clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void): void;
     static captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache): void;
+    static clipAnyCurve(curve: AnyCurve, clipper: Clipper): AnyCurve[];
+    static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined;
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     static clipPolygonToClipShapeReturnGrowableXYZArrays(polygon: Point3d[], clipShape: ClipPrimitive): GrowableXYZArray[];
     static clipSegmentBelowPlanesXY(planes: Plane3dByOriginAndUnitNormal[], segment0: XAndY, segment1: XAndY, interval: Range1d, signedAltitude?: number): void;
@@ -6219,7 +6221,6 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]): void;
-    // (undocumented)
     appendPolygonClip(xyz: GrowableXYZArray, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): number;
     clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets;

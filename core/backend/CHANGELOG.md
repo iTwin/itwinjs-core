@@ -1,6 +1,44 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Aug 2023 07:50:06 GMT and should not be manually modified.
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+### Updates
+
+- add `internal` `codeValueBehavior` API 
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Added the ability to convert EC2 XML schemas to EC3.2 XML schemas using the convertEC2SchemasToEC3Schemas method. Also added the ability to convert custom attributes of schemas using the upgradeCustomAttributesToEC3 method.
+- Promote ECSchemaXmlContext to beta
+- Made MetaDataRegistry internal again
+- add auto-refresh tokens for CloudSqlite containers
+- Added unit test to check if retry was triggered when concurrent query faces a timeout
+- Upgrade sinon to 15.0.4
+- add ChannelAdmin.makeChannelRoot
+- Prefetches triggered by attach now have configurable minRequests/maxRequests through ApplicationSettings
+- Promote MetaDataRegistry to beta.
+- Fix RenderMaterialElement using the wrong CodeSpec.
+- Promote Entity methods and constructors to @public; mark constructors protected.
+- Promote ElementAspect constructors to public.
+- add watchForChanges to OpenBriefcaseArgs
+- fix PatternParams.applyTransform to update origin property
+- Add ContainerType
+- Modify BlobContainerStorage Interfaces
+- add ViewStore apis
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+### Updates
+
+- @bentley/imodeljs-native@4.0.14
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
@@ -59,6 +97,16 @@ Mon, 22 May 2023 15:34:14 GMT
 - Fix for timing issue in core tests
 - allow passing a custom schema read context to IModelDb.importSchemas
 - Added test to verify Id serialization to hex for system properties.
+
+## 3.7.13
+Tue, 08 Aug 2023 19:49:18 GMT
+
+_Version update only_
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+_Version update only_
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:21 GMT
