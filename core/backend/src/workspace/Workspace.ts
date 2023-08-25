@@ -740,14 +740,13 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
 
-  /** Update an existing string resource with a new value.
+  /** Update an existing string resource with a new value, or add it if it does not exist.
    * @param rscName The name of the string resource.
    * @param val The new value.
-   * @throws if rscName does not exist
    */
   public updateString(rscName: WorkspaceResource.Name, val: string): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "UPDATE strings SET value=?2 WHERE id=?1", (stmt) => stmt.bindString(2, val));
+    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
   }
 
   /** Remove a string resource. */
@@ -765,14 +764,13 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
 
-  /** Update an existing blob resource with a new value.
+  /** Update an existing blob resource with a new value, or add it if it does not exist.
    * @param rscName The name of the blob resource.
    * @param val The new value.
-   * @throws if rscName does not exist
    */
   public updateBlob(rscName: WorkspaceResource.Name, val: Uint8Array): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "UPDATE blobs SET value=?2 WHERE id=?1", (stmt) => stmt.bindBlob(2, val));
+    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
   }
 
   /** Get a BlobIO writer for a previously-added blob WorkspaceResource.

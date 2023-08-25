@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add BriefcaseTxns events raised when applying external txns.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
