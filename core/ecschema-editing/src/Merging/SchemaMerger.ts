@@ -11,6 +11,7 @@ import mergeEnumeration from "./EnumerationMerger";
 import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
 import mergeSchemaReferences from "./SchemaReferenceMerger";
+import mergeCAClasses from "./CAClassMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -64,12 +65,16 @@ export class SchemaMerger {
 
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
 
-    const propertyCategoryChanges = filterChangesByItemType(schemaChanges, SchemaItemType.PropertyCategory);
+    const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.PropertyCategory]);
     await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
-    await mergeSchemaItems(mergeContext, schemaChanges.classChanges.values(), mergeClasses);
+    const caClassChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.CustomAttributeClass]);
+    await mergeSchemaItems(mergeContext, caClassChanges, mergeCAClasses);
+
+    const classChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.EntityClass, SchemaItemType.StructClass]);
+    await mergeSchemaItems(mergeContext, classChanges, mergeClasses);
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.
@@ -77,10 +82,10 @@ export class SchemaMerger {
   }
 }
 
-function filterChangesByItemType(changes: SchemaChanges, type: SchemaItemType): Iterable<SchemaItemChanges> {
-  const result: SchemaItemChanges[] = [];
-  for(const change of changes.schemaItemChanges.values()) {
-    if(change.schemaItemType === type) {
+function filterChangesByItemType<TChange extends SchemaItemChanges>(changes: Map<string, TChange>, types: SchemaItemType[]): Iterable<TChange> {
+  const result: TChange[] = [];
+  for(const change of changes.values()) {
+    if (types.includes(change.schemaItemType)) {
       result.push(change);
     }
   }
