@@ -285,6 +285,11 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
+  /** @internal */
+  public restartDefaultTxn() {
+    this.nativeDb.restartDefaultTxn();
+  }
+
   public get fontMap(): FontMap {
     return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
   }
@@ -365,7 +370,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async refreshContainerSas(_userAccessToken: AccessToken): Promise<void> { }
+  public async refreshContainer(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -1372,6 +1377,18 @@ export abstract class IModelDb extends IModel {
         }
       }
     });
+  }
+
+  /**
+   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
+   * @public
+   */
+  public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
+    return this.nativeDb.getCodeValueBehavior();
+  }
+
+  public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
+    this.nativeDb.setCodeValueBehavior(newBehavior);
   }
 }
 
@@ -2657,6 +2674,11 @@ class RefreshV2CheckpointSas {
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
+  /** Timer used to restart the default txn on the snapshotdb after some inactivity. This is only used for v2 checkpoints, and is useful because it aids in the process of cachefile management.
+   *  Restarting the default txn lets CloudSQLite know that any blocks that may have been read during the lifetime of that txn can now be safely added to the LRU list that CloudSQLite manages.
+   *  Without restarting the default txn, CloudSQLite is more likely to get into a state where it can not evict any blocks to make space for more blocks.
+   */
+  private _restartDefaultTxnTimer: NodeJS.Timeout | undefined;
   private _createClassViewsOnClose?: boolean;
   public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
@@ -2787,20 +2809,29 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
+    // unref timer, so it doesn't prevent a process from shutting down.
+    snapshot._restartDefaultTxnTimer = setTimeout(() => {
+      snapshot.restartDefaultTxn();
+    }, (10 * 60) * 1000).unref(); // 10 * 60 is 10 minutes in seconds, then converted to milliseconds (* 1000);
     snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the container sasToken using the current user's accessToken
+  /** Used to refresh the container sasToken using the current user's accessToken.
+   * Also restarts the timer which causes the default txn to be restarted on db if the timer activates.
    * @internal
    */
-  public override async refreshContainerSas(userAccessToken: AccessToken): Promise<void> {
+  public override async refreshContainer(userAccessToken: AccessToken): Promise<void> {
+    this._restartDefaultTxnTimer?.refresh();
     return this._refreshSas?.refreshSas(userAccessToken, this);
   }
 
   /** @internal */
   public override beforeClose(): void {
     super.beforeClose();
+
+    if (this._restartDefaultTxnTimer)
+      clearTimeout(this._restartDefaultTxnTimer);
 
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {

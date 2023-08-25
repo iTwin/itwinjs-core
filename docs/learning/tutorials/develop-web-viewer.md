@@ -7,20 +7,23 @@
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code.
 - Follow these steps to obtain a new OIDC client to use in your viewer application:
+
   1. Go to <https://developer.bentley.com>
   2. Click the **Sign In** button and sign-in using your Bentley account credentials
-      - If you have not already registered, click **Register now** and complete the registration process.
+     - If you have not already registered, click **Register now** and complete the registration process.
   3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
-  6. Select the **Visualization** API
-  7. Select application type **SPA** (Single Page Web Application)
-  8. Enter **Redirect URL** `http://localhost:3000/signin-callback`
+  6. Select the **Visualization** API, `imodelaccess:read` scope
+  7. Select the **Digital Twin Management** API, `imodels:read` and `realitydata:read` scope
+  8. Select application type **SPA** (Single Page Web Application)
+  9. Enter **Redirect URL** `http://localhost:3000/signin-callback`
 
-  9. Leave post logout redirect URIs empty.
-  10. Click the **Save** button
+  10. Leave post logout redirect URIs empty.
+  11. Click the **Save** button
+
 - Once your new application is saved and a clientId is generated, add the clientId, list of scopes, and redirect url to the following variables in the .env file within the application's root directory: `IMJS_AUTH_CLIENT_CLIENT_ID`, `IMJS_AUTH_CLIENT_SCOPES`
-`IMJS_AUTH_CLIENT_REDIRECT_URI`.
+  `IMJS_AUTH_CLIENT_REDIRECT_URI`.
 - Add a valid contextId (i.e. Project Id) and iModelId for your user to the `IMJS_CONTEXT_ID` and `IMJS_IMODEL_ID` variables in the .env file within the application's root directory.
   - You can obtain these ids from the "Show Ids" column of your "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
   - This will be used for initial development. The idea is that it would be replaced by a proper model selection process in a production application.

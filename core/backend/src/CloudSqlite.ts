@@ -623,8 +623,10 @@ export namespace CloudSqlite {
  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
     await acquireWriteLock(args);
+    const containerInternal = args.container as CloudContainerInternal;
     try {
-      const containerInternal = args.container as CloudContainerInternal;
+      if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
+        return await operation();
       containerInternal.writeLockHeldBy = args.user;
       containerInternal.writeLockExpires = new Date(Date.now() + 1000 * containerInternal.lockExpireSeconds).toLocaleString();
       // eslint-disable-next-line @typescript-eslint/await-thenable
@@ -635,6 +637,8 @@ export namespace CloudSqlite {
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
+      containerInternal.writeLockHeldBy = undefined;
+      containerInternal.writeLockExpires = undefined;
       throw e;
     }
   }

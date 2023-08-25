@@ -274,6 +274,18 @@ export class TxnManager {
   }
 
   /** @internal */
+  protected _onReplayExternalTxns() {
+    this.onReplayExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayExternalTxns");
+  }
+
+  /** @internal */
+  protected _onReplayedExternalTxns() {
+    this.onReplayedExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
+  }
+
+  /** @internal */
   protected _onChangesApplied() {
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
@@ -339,6 +351,14 @@ export class TxnManager {
    * @param _action The action that was performed.
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayedExternalTxns]] for the event raised after all such changes have been applied.
+   */
+  public readonly onReplayExternalTxns = new BeEvent<() => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
+   */
+  public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /**
    * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed

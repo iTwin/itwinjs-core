@@ -7,17 +7,18 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.1.8
+      '@bentley/imodeljs-native': 4.2.1
       '@itwin/build-tools': workspace:*
-      '@itwin/cloud-agnostic-core': ^2.0.0
+      '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecsql-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/object-storage-azure': ^2.0.0
-      '@itwin/object-storage-core': ^2.0.0
+      '@itwin/object-storage-azure': ^2.1.0
+      '@itwin/object-storage-core': ^2.1.0
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -52,11 +53,11 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.1.8
-      '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@bentley/imodeljs-native': 4.2.1
+      '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-azure': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       form-data: 2.5.1
       fs-extra: 8.1.0
       inversify: 6.0.1
@@ -71,6 +72,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
+      '@itwin/ecsql-common': link:../ecsql/common
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
@@ -136,7 +138,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/object-storage-core': ^2.0.0
+      '@itwin/object-storage-core': ^2.1.0
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
@@ -157,7 +159,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
-      '@itwin/object-storage-core': 2.0.0
+      '@itwin/object-storage-core': 2.1.0
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
@@ -405,6 +407,33 @@ importers:
       rimraf: 3.0.2
       typescript: 5.0.4
 
+  ../../core/ecsql/common:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@types/chai': 4.3.1
+      '@types/mocha': ^8.2.2
+      '@types/node': 18.16.1
+      chai: ^4.1.2
+      eslint: ^8.44.0
+      mocha: ^10.0.0
+      nyc: ^15.1.0
+      rimraf: ^3.0.2
+      typescript: ~5.0.2
+    dependencies:
+      '@itwin/core-bentley': link:../../bentley
+    devDependencies:
+      '@itwin/build-tools': link:../../../tools/build
+      '@types/chai': 4.3.1
+      '@types/mocha': 8.2.3
+      '@types/node': 18.16.1
+      chai: 4.3.7
+      eslint: 8.45.0
+      mocha: 10.2.0
+      nyc: 15.1.0
+      rimraf: 3.0.2
+      typescript: 5.0.4
+
   ../../core/electron:
     specifiers:
       '@itwin/build-tools': workspace:*
@@ -529,7 +558,7 @@ importers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
-      '@itwin/cloud-agnostic-core': ^2.0.0
+      '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
@@ -538,7 +567,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/object-storage-core': ^2.0.0
+      '@itwin/object-storage-core': ^2.1.0
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
@@ -564,10 +593,10 @@ importers:
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0
+      '@itwin/cloud-agnostic-core': 2.1.0
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-core': 2.0.0
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.4.7
       '@loaders.gl/draco': 3.4.7
@@ -1656,6 +1685,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
+      '@itwin/ecsql-common': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -1668,7 +1698,7 @@ importers:
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/object-storage-core': ^2.0.0
+      '@itwin/object-storage-core': ^2.1.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/reality-data-client': 0.9.0
       '@types/chai': 4.3.1
@@ -1722,6 +1752,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
+      '@itwin/ecsql-common': link:../../core/ecsql/common
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
@@ -1745,7 +1776,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@itwin/itwins-client': 1.2.0
-      '@itwin/object-storage-core': 2.0.0
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/oidc-signin-tool': 3.6.1_jgafqqsuly2hjjpibxrcu56zma
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2433,7 +2464,7 @@ importers:
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
       typescript: ~5.0.2
-      vite: ^4.3.9
+      vite: ^4.4.9
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
       webpack: ^5.76.0
@@ -2486,9 +2517,9 @@ importers:
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.0.4
-      vite: 4.4.6_@types+node@18.16.1
+      vite: 4.4.9_@types+node@18.16.1
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_vite@4.4.6
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/display-test-app:
@@ -2523,7 +2554,7 @@ importers:
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
       '@itwin/map-layers-formats': workspace:*
-      '@itwin/object-storage-core': ^2.0.0
+      '@itwin/object-storage-core': ^2.1.0
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
@@ -2555,7 +2586,7 @@ importers:
       ts-node: ^10.8.2
       typescript: ~5.0.2
       vhacd-js: ^0.0.1
-      vite: ^4.3.9
+      vite: ^4.4.9
       vite-plugin-env-compatible: ^1.1.1
       vite-plugin-inspect: ^0.7.28
       webpack: ^5.76.0
@@ -2586,7 +2617,7 @@ importers:
       '@itwin/imodels-client-authoring': 3.1.0
       '@itwin/imodels-client-management': 3.1.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.0.0
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
@@ -2623,9 +2654,9 @@ importers:
       rollup-plugin-webpack-stats: 0.2.0
       ts-node: 10.9.1_typescript@5.0.4
       typescript: 5.0.4
-      vite: 4.4.6
+      vite: 4.4.9
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_vite@4.4.6
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/export-gltf:
@@ -3726,8 +3757,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.1.8:
-    resolution: {integrity: sha512-ASRPdlNCHGbIv56sR3hqB23a5akzvrBvnY+JsQkfdMI9slfUDcswtP4vlU+XZo/OMVIr4cODJKS68xIIeDRCOw==}
+  /@bentley/imodeljs-native/4.2.1:
+    resolution: {integrity: sha512-WVLQn5XwF0CP/nyujWCy/JZ5GSjIOi9MzVC6wDsdHCQg/VYLySjHJ+rKQziVq5YvzCYREEzNGPC0Xs1dGXJ12Q==}
     requiresBuild: true
     dev: false
 
@@ -4159,15 +4190,15 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/cloud-agnostic-core/2.0.0:
-    resolution: {integrity: sha512-rdSvDmEChwQbnZo5qYkpGzPTQFuHTTU99wIf9LjIgTrPfd3QpQY0o80AEmwXSMy4umD43UR2OnDwM+Ja7Dmd8g==}
+  /@itwin/cloud-agnostic-core/2.1.0:
+    resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
     engines: {node: '>=12.20 <19.0.0'}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
 
-  /@itwin/cloud-agnostic-core/2.0.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-rdSvDmEChwQbnZo5qYkpGzPTQFuHTTU99wIf9LjIgTrPfd3QpQY0o80AEmwXSMy4umD43UR2OnDwM+Ja7Dmd8g==}
+  /@itwin/cloud-agnostic-core/2.1.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
     engines: {node: '>=12.20 <19.0.0'}
     peerDependencies:
       inversify: ^6.0.1
@@ -4324,8 +4355,8 @@ packages:
       - encoding
     dev: false
 
-  /@itwin/object-storage-azure/2.0.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-m42htMvXGU53+eAEOjM5ExVwhKA17qNXM/Ko2kaCdaKVMWUWEJUE5SeSbZP1V333UtEh/V+NzGae3O7JeKKMXA==}
+  /@itwin/object-storage-azure/2.1.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-AX5EdNojsdVr5qlNfwGUks5gU0F3h0uByfxN9WWPxDng/9TNzB5DTZCJKQrhBh0nhxdePJwjX9iZsu5s7veC8Q==}
     engines: {node: '>=12.20 <19.0.0'}
     peerDependencies:
       inversify: ^6.0.1
@@ -4333,8 +4364,8 @@ packages:
     dependencies:
       '@azure/core-paging': 1.5.0
       '@azure/storage-blob': 12.13.0
-      '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -4354,26 +4385,26 @@ packages:
       - debug
     dev: false
 
-  /@itwin/object-storage-core/2.0.0:
-    resolution: {integrity: sha512-LC456/G1MRDH/xvK7acGsGH6UEP48BfWZtm4LKI8Vmy19MMqIe6n4dcA4kAJnGhwikzhyj8w9+mG5QhhoYqQuQ==}
+  /@itwin/object-storage-core/2.1.0:
+    resolution: {integrity: sha512-0zapV7KDn3NXeOAMoTUoiSiIuQQXUIn8IuLxLExEMoJ8xiG7JsFRWW1tm0Q9Lj095f/stT3V0TOvl4dw1G8pAA==}
     engines: {node: '>=12.20 <19.0.0'}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0
+      '@itwin/cloud-agnostic-core': 2.1.0
       axios: 0.27.2
     transitivePeerDependencies:
       - debug
 
-  /@itwin/object-storage-core/2.0.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-LC456/G1MRDH/xvK7acGsGH6UEP48BfWZtm4LKI8Vmy19MMqIe6n4dcA4kAJnGhwikzhyj8w9+mG5QhhoYqQuQ==}
+  /@itwin/object-storage-core/2.1.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-0zapV7KDn3NXeOAMoTUoiSiIuQQXUIn8IuLxLExEMoJ8xiG7JsFRWW1tm0Q9Lj095f/stT3V0TOvl4dw1G8pAA==}
     engines: {node: '>=12.20 <19.0.0'}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       axios: 0.27.2
       inversify: 6.0.1
       reflect-metadata: 0.1.13
@@ -10876,8 +10907,8 @@ packages:
       rollup: ^3.0.0
     dev: true
 
-  /rollup/3.26.3:
-    resolution: {integrity: sha512-7Tin0C8l86TkpcMtXvQu6saWH93nhG3dGQ1/+l5V2TDMceTxO7kDiK6GzbfLWNNxqJXm591PcEZUozZm51ogwQ==}
+  /rollup/3.28.0:
+    resolution: {integrity: sha512-d7zhvo1OUY2SXSM6pfNjgD5+d0Nz87CUp4mt8l/GgVP3oBsPwzNvSzyu1me6BSG9JIgWNTVcafIXBIyM8yQ3yw==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
@@ -12175,7 +12206,7 @@ packages:
     resolution: {integrity: sha512-4lqhBWhOzP+SaCPoCVdmpM5cXzjKQV5jgFauxea488oOeElXo/kw6bXkMIooZhrh9q7gclTl8en6N9NmnqUwRQ==}
     dev: true
 
-  /vite-plugin-inspect/0.7.33_vite@4.4.6:
+  /vite-plugin-inspect/0.7.33_vite@4.4.9:
     resolution: {integrity: sha512-cQRLQKa/+Ua++5hN0IZfqNn1JYXBg2eCQOSUatPTwhXMO7nwfSvhhSc45E1nXfBBEhzLLOxgr1OdbDu55PiDDA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -12188,14 +12219,14 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.6_@types+node@18.16.1
+      vite: 4.4.9_@types+node@18.16.1
     transitivePeerDependencies:
       - rollup
       - supports-color
     dev: true
 
-  /vite/4.4.6:
-    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+  /vite/4.4.9:
+    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -12224,13 +12255,13 @@ packages:
     dependencies:
       esbuild: 0.18.15
       postcss: 8.4.27
-      rollup: 3.26.3
+      rollup: 3.28.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
 
-  /vite/4.4.6_@types+node@18.16.1:
-    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+  /vite/4.4.9_@types+node@18.16.1:
+    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -12260,7 +12291,7 @@ packages:
       '@types/node': 18.16.1
       esbuild: 0.18.15
       postcss: 8.4.27
-      rollup: 3.26.3
+      rollup: 3.28.0
     optionalDependencies:
       fsevents: 2.3.2
     dev: true

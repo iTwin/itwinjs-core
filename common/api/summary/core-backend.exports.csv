@@ -376,6 +376,7 @@ public;TextAnnotation3d
 public;Texture 
 beta;TextureCreateProps 
 internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
+beta;TileId
 beta;TileStorage
 public;TitleText 
 public;ToChangesetArgs 
