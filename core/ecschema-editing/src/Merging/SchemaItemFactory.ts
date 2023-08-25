@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, PropertyCategory, Schema, SchemaItem, StructClass } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity, PropertyCategory, Schema, SchemaItem, StructClass } from "@itwin/ecschema-metadata";
 
 export namespace SchemaItemFactory {
 
@@ -15,14 +15,15 @@ export namespace SchemaItemFactory {
       return new StructClass(targetSchema, template.name, template.modifier);
     if (is(template, CustomAttributeClass))
       return new CustomAttributeClass(targetSchema, template.name, template.modifier);
-    if(is(template, PropertyCategory))
+    if (is(template, PropertyCategory))
       return new PropertyCategory(targetSchema, template.name);
-
+    if (is(template, KindOfQuantity))
+      return new KindOfQuantity(targetSchema, template.name);
     throw new Error(`Unsupported Schema Item Type: ${template.constructor.name}`);
 
   }
 
-  function is<T extends SchemaItem>(item: SchemaItem, type: new (...args: any) => T ): item is T {
+  function is<T extends SchemaItem>(item: SchemaItem, type: new (...args: any) => T): item is T {
     return item instanceof type;
   }
 }

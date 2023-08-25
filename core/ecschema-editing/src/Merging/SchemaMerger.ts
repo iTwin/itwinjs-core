@@ -12,6 +12,7 @@ import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
 import mergeSchemaReferences from "./SchemaReferenceMerger";
 import mergeCAClasses from "./CAClassMerger";
+import mergeKindOfQuantity from "./KindOfQuantityMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -64,6 +65,8 @@ export class SchemaMerger {
     await mergeSchemaReferences(mergeContext, schemaChanges);
 
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
+
+    await mergeSchemaItems(mergeContext, schemaChanges.kindOfQuantityChanges.values(), mergeKindOfQuantity);
 
     const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.PropertyCategory]);
     await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
