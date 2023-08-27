@@ -67,6 +67,7 @@ export * from "./ViewStore";
 export * from "./workspace/Settings";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
+export * from "./TextStyle"
 
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.
