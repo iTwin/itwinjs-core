@@ -166,6 +166,7 @@ describe("Checkpoints", () => {
       return {} as SnapshotDb;
     });
     sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const iModel2 = await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
@@ -277,6 +278,7 @@ describe("Checkpoints", () => {
         return {} as SnapshotDb;
       });
       sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const iModel2 = await SnapshotDb.openCheckpointV2({
         accessToken,
         iTwinId: testITwinId,
