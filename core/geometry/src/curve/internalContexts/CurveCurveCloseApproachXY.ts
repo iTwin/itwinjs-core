@@ -226,8 +226,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Capture a close approach pair that has point and local fraction but not curve.
-   * * Record the pair with curves and global fractions.
-   * * Pair is not recorded if it is a duplicate of the last recorded pair.
+   * * Record the pair, each detail modified with global fraction and input curve.
+   * * Pair is neither modified nor recorded if it would be a duplicate of the last recorded pair.
    * @param pair details computed with local fractions
    * @param cpA curveA
    * @param fractionA0 global start fraction on curveA
@@ -264,10 +264,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
-    pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
-    pair.detailB.setIntervalRole(CurveIntervalRole.isolated);
     if (reversed)
       pair.swapDetails();
+    // recompute the points just in case
+    CurveLocationDetail.createCurveEvaluatedFraction(cpA, globalFractionA, pair.detailA);
+    CurveLocationDetail.createCurveEvaluatedFraction(cpB, globalFractionB, pair.detailB);
+    pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
+    pair.detailB.setIntervalRole(CurveIntervalRole.isolated);
     this._results.push(pair);
   }
   /**
@@ -312,25 +315,21 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     pointB1: Point3d,
     fractionB: number,
     maxDistanceSquared: number,
-    closestApproach?: CurveLocationDetailPair,
-  ): CurveLocationDetailPair | undefined {
+    closestApproach: CurveLocationDetailPair,   // modified on return
+  ): boolean {
+    let updated = false;
     if (fractionB < 0)
       fractionB = 0;
     else if (fractionB > 1)
       fractionB = 1;
     this._workPointB = pointB0.interpolate(fractionB, pointB1, this._workPointB);
     const distanceSquared = this._workPointB.distanceSquaredXY(pointA);
-    if (distanceSquared < maxDistanceSquared) {
-      if (closestApproach === undefined || distanceSquared < closestApproach.detailA.a) {
-        if (closestApproach === undefined)
-          closestApproach = CurveLocationDetailPair.createCapture(
-            CurveLocationDetail.create(), CurveLocationDetail.create(),
-          );
-        closestApproach.detailA.setFP(fractionA, pointA, undefined, distanceSquared);
-        closestApproach.detailB.setFP(fractionB, this._workPointB, undefined, distanceSquared);
-      }
+    if (distanceSquared < Math.min(maxDistanceSquared, closestApproach.detailA.a)) {
+      closestApproach.detailA.setFP(fractionA, pointA, undefined, distanceSquared);
+      closestApproach.detailB.setFP(fractionB, this._workPointB, undefined, distanceSquared);
+      updated = true;
     }
-    return closestApproach;
+    return updated;
   }
   /**
    * Return fractions of close approach within maxDistance between two line segments (a0,a1) and (b0,b1).
@@ -367,29 +366,36 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         CurveLocationDetail.createCurveFractionPoint(undefined, fractionB, b0.interpolate(fractionB, b1)),
       );
     }
-    let closestApproach: CurveLocationDetailPair | undefined;
+    // there's no intersection, so find the closest approach within maxDistance from an endpoint
+    const closestApproach = new CurveLocationDetailPair();
+    closestApproach.detailA.a = 2 * maxDistanceSquared; // init to an approach that's too far away
+    let reversed = false;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
     if (hab0 * hab0 < maxDistanceSquared * uu) {
-      closestApproach = this.updatePointToSegmentDistance(
-        0, b0, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, maxDistanceSquared, closestApproach,
-      );
-      closestApproach?.swapDetails();
+      const fractionA = Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu;
+      if (this.updatePointToSegmentDistance(0, b0, a0, a1, fractionA, maxDistanceSquared, closestApproach))
+        reversed = true;
       }
     if (hab1 * hab1 < maxDistanceSquared * uu) {
-      closestApproach = this.updatePointToSegmentDistance(
-        1, b1, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, maxDistanceSquared, closestApproach,
-      );
-      closestApproach?.swapDetails();
+      const fractionA = Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu;
+      if (this.updatePointToSegmentDistance(1, b1, a0, a1, fractionA, maxDistanceSquared, closestApproach))
+        reversed = true;
     }
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
-    if (hba0 * hba0 < maxDistanceSquared * vv)
-      closestApproach = this.updatePointToSegmentDistance(
-        0, a0, b0, b1, -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv, maxDistanceSquared, closestApproach,
-      );
-    if (hba1 * hba1 < maxDistanceSquared * vv)
-      closestApproach = this.updatePointToSegmentDistance(
-        1, a1, b0, b1, -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv, maxDistanceSquared, closestApproach,
-      );
+    if (hba0 * hba0 < maxDistanceSquared * vv) {
+      const fractionB = -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv;
+      if (this.updatePointToSegmentDistance(0, a0, b0, b1, fractionB, maxDistanceSquared, closestApproach))
+        reversed = false;
+    }
+    if (hba1 * hba1 < maxDistanceSquared * vv) {
+      const fractionB = -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv;
+      if (this.updatePointToSegmentDistance(1, a1, b0, b1, fractionB, maxDistanceSquared, closestApproach))
+        reversed = false;
+    }
+    if (closestApproach.detailA.a > maxDistanceSquared)
+      return undefined;
+    if (reversed)
+      closestApproach.swapDetails();
     return closestApproach;
   }
   /**
@@ -466,9 +472,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     fractionB1: number,
     reversed: boolean,
   ): void {
+    // compute a pair with local data (with respect to segments)
     const approach = CurveCurveCloseApproachXY.segmentSegmentBoundedApproach(
       pointA0, pointA1, pointB0, pointB1, this._maxDistanceSquared,
     );
+    // adjust the pair to refer to the global input data
     if (approach)
       this.capturePairWithLocalFractions(approach, cpA, fractionA0, fractionA1, cpB, fractionB0, fractionB1, reversed);
   }
