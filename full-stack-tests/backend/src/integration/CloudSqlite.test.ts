@@ -163,6 +163,24 @@ describe("CloudSqlite", () => {
     db.close();
     container.disconnect({ detach: true });
   });
+  it("Should refresh write lock expiry time if withWriteLock called twice with same user", async () => {
+    const container = testContainers[0];
+    container.connect(caches[1]);
+    let writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
+    expect(writeLockExpiryTimeNoWriteLock).to.equal("");
+    await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+      const firstWriteLockExpiryTime = Date.parse(container.writeLockExpires);
+      await new Promise((resolve) => setTimeout(resolve, 500)); // sleep 500ms so we get a new write lock expiry time.
+      await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+        const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
+        expect(secondWriteLockExpiryTime).to.be.greaterThan(firstWriteLockExpiryTime);
+        // secondWriteLockExpiryTime should only be a couple thousand ms in the future at most, so subtract 2000 ms and make sure its less than first.
+        expect(secondWriteLockExpiryTime - 2000).to.be.lessThan(firstWriteLockExpiryTime);
+      });
+    });
+    writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
+    expect(writeLockExpiryTimeNoWriteLock).to.equal("");
+  });
 
   it("cloud containers", async () => {
     expect(undefined !== caches[0]);

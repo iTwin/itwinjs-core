@@ -47,7 +47,6 @@ export namespace CloudSqlite {
     refreshPromise?: Promise<void>;
     lockExpireSeconds: number;
     writeLockHeldBy?: string;
-    writeLockExpires?: string;
   }
 
   /**
@@ -344,6 +343,10 @@ export namespace CloudSqlite {
     get alias(): string;
     /** The logId. */
     get logId(): string;
+    /** The time that the write lock expires. Of the form 'YYYY-MM-DDTHH:MM:SS.000Z' in UTC.
+     *  Returns empty string if no write lock expiry time.
+     */
+    get writeLockExpires(): string;
     /** true if this CloudContainer is currently connected to a CloudCache via the `connect` method. */
     get isConnected(): boolean;
     /** true if this CloudContainer was created with the `writeable` flag (and its `accessToken` supplies write access). */
@@ -579,7 +582,7 @@ export namespace CloudSqlite {
   /**
     * Attempt to acquire the write lock for a container, with retries.
     * If write lock is held by another user, call busyHandler if supplied. If no busyHandler, or handler returns "stop", throw. Otherwise try again.
-    * @note if write lock is already held, this function does nothing.
+    * @note if write lock is already held by the same user, this function will refresh the write lock's expiry time.
     * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
     * @param container the CloudContainer for which the lock is to be acquired
     * @param busyHandler if present, function called when the write lock is currently held by another user.
@@ -590,9 +593,9 @@ export namespace CloudSqlite {
     while (true) {
       try {
         if (container.hasWriteLock) {
-          if (container.writeLockHeldBy === args.user)
-            return; // current user already has the lock
-
+          if (container.writeLockHeldBy === args.user) {
+            return container.acquireWriteLock(args.user); // refresh the write lock's expiry time.
+          }
           const err = new Error() as any; // lock held by another user within this process
           err.errorNumber = 5;
           err.lockedBy = container.writeLockHeldBy;
@@ -611,7 +614,7 @@ export namespace CloudSqlite {
 
   /**
  * Perform an asynchronous write operation on a CloudContainer with the write lock held.
- * 1. if write lock is already held by the current user, call operation and return.
+ * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
  * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
  * 3. perform the operation
  * 3.a if the operation throws, abandon all changes and re-throw
@@ -630,17 +633,14 @@ export namespace CloudSqlite {
       if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
       containerInternal.writeLockHeldBy = args.user;
-      containerInternal.writeLockExpires = new Date(Date.now() + 1000 * containerInternal.lockExpireSeconds).toLocaleString();
       // eslint-disable-next-line @typescript-eslint/await-thenable
       const val = await operation(); // wait for work to finish or fail
       containerInternal.releaseWriteLock();
       containerInternal.writeLockHeldBy = undefined;
-      containerInternal.writeLockExpires = undefined;
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
       containerInternal.writeLockHeldBy = undefined;
-      containerInternal.writeLockExpires = undefined;
       throw e;
     }
   }
