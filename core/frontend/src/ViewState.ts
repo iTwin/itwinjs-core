@@ -64,8 +64,15 @@ export interface ExtentLimits {
 export interface ModelDisplayTransformProvider {
   /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
    * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
+   * @argument baseTransform is a shallow clone of the transform the returned transform will be multiplied with (BaseTf X ModelTf).  It is intended to be used if you need the transform you return to be the first matrix in the multiplication (ModelTf X BaseTf).  You can achieve this with the following code:
+   * ```typescript
+   * // BaseTf^-1 X ModelFt X BaseTf
+   * let transform = baseTranfrom.inverse()!.multiplyTransformTransform(modelTransform);
+   * transform = transform.multiplyTransformTransform(baseTranfrom);
+   * return transform;
+   * ```
    */
-  getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+  getModelDisplayTransform(modelId: Id64String, baseTransform?: Transform): Transform | undefined;
 }
 
 /** Arguments supplied to [[ViewState.computeDisplayTransform]].
@@ -1272,7 +1279,10 @@ export abstract class ViewState extends ElementState {
    */
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     const elevation = this.getModelElevation(args.modelId);
-    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId);
+
+    const transform = Transform.createIdentity(args.output);
+    transform.origin.z = elevation;
+    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId, transform.clone());
 
     // NB: A ModelTimeline can apply a transform to all elements in the model, but no code exists which actually applies that at display time.
     // So for now we continue to only consider the ElementTimeline transform.
@@ -1287,8 +1297,6 @@ export abstract class ViewState extends ElementState {
     if (0 === elevation && !modelTransform && !scriptTransform)
       return undefined;
 
-    const transform = Transform.createIdentity(args.output);
-    transform.origin.z = elevation;
     if (modelTransform)
       transform.multiplyTransformTransform(modelTransform, transform);
 
