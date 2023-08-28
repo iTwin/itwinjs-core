@@ -166,7 +166,7 @@ describe("Checkpoints", () => {
       return {} as SnapshotDb;
     });
     sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
-    const iModel2 = await SnapshotDb.openCheckpointV2({
+    await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -277,7 +277,7 @@ describe("Checkpoints", () => {
         return {} as SnapshotDb;
       });
       sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => {});
-      const iModel2 = await SnapshotDb.openCheckpointV2({
+      await SnapshotDb.openCheckpointV2({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
