@@ -9476,7 +9476,7 @@ export interface ModalReturn {
 
 // @beta
 export interface ModelDisplayTransformProvider {
-    getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+    getModelDisplayTransform(modelId: Id64String, baseTransform?: Transform): Transform | undefined;
 }
 
 // @internal (undocumented)
