@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "ModelDisplayTransformProvider can now provide the base transform",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
