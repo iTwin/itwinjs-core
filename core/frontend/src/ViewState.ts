@@ -64,9 +64,10 @@ export interface ExtentLimits {
 export interface ModelDisplayTransformProvider {
   /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
    * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
-   * @argument baseTransform is a shallow clone of the transform the returned transform will be multiplied with (BaseTf X ModelTf).  It is intended to be used if you need the transform you return to be the first matrix in the multiplication (ModelTf X BaseTf).  You can achieve this with the following code:
+   * @argument baseTransform is a shallow clone of the transform the returned transform will be multiplied with (BaseTf X ModelTf).  If baseTransform is undefined, an identity matrix can be assumed.  It is intended to be used if you need the transform you return to be the first matrix in the multiplication (ModelTf X BaseTf).  You can achieve this with the following code:
    * ```typescript
    * // BaseTf^-1 X ModelFt X BaseTf
+   * baseTransform = baseTransform ?? Transform.createIdentity();
    * let transform = baseTranfrom.inverse()!.multiplyTransformTransform(modelTransform);
    * transform = transform.multiplyTransformTransform(baseTranfrom);
    * return transform;
