@@ -131,10 +131,10 @@ export class Tracing {
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
     Tracing._tracer = tracer;
     Tracing._openTelemetry = api;
-    Logger.logTrace = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logTrace(category, message, metaData));
-    Logger.logInfo = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logInfo(category, message, metaData));
-    Logger.logWarning = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logWarning(category, message, metaData));
-    Logger.logError = (category, message, metaData) => Tracing.withOpenTelemetry(() => Logger.logError(category, message, metaData));
+    Logger.logTrace = Tracing.withOpenTelemetry(Logger.logTrace.bind(Logger)).bind(Logger);
+    Logger.logInfo = Tracing.withOpenTelemetry(Logger.logInfo.bind(Logger)).bind(Logger);
+    Logger.logWarning = Tracing.withOpenTelemetry(Logger.logWarning.bind(Logger)).bind(Logger);
+    Logger.logError = Tracing.withOpenTelemetry(Logger.logError.bind(Logger)).bind(Logger);
   }
 
   private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
