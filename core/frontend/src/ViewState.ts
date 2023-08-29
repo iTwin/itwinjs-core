@@ -69,7 +69,7 @@ export interface ModelDisplayTransformProvider {
    * // BaseTf^-1 X ModelFt X BaseTf
    * baseTransform = baseTransform ?? Transform.createIdentity();
    * let transform = baseTransform.inverse()!.multiplyTransformTransform(modelTransform);
-   * transform = transform.multiplyTransformTransform(baseTranform);
+   * transform = transform.multiplyTransformTransform(baseTransform);
    * return transform;
    * ```
    */
