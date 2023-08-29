@@ -637,9 +637,9 @@ export class ChangedElementsDb implements IDisposable {
 
 // @beta
 export interface ChangeInstanceKey {
-    readonly changeType: "inserted" | "updated" | "deleted";
-    readonly classFullName: string;
-    readonly id: Id64String;
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
 }
 
 // @public
@@ -4414,7 +4414,7 @@ export interface PushChangesArgs extends TokenArg {
     retainLocks?: true;
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryLocalChangesArgs {
     readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
@@ -5438,7 +5438,7 @@ export class TxnManager {
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
     // @beta
-    queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[];
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
