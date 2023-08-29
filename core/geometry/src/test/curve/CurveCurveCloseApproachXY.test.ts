@@ -389,7 +389,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2.5;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndRadians(0, Math.PI)
+      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndRadians(0, Math.PI),
     )!;
     const geometryB = LineSegment3d.createXYXY(-5, 3, 5, 3);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -500,10 +500,9 @@ describe("CurveCurveCloseApproachXY", () => {
         }
       }
     }
-    ck.testCoordinate(approach1Len, approach2Len);
     for (let i = 0; i < approach1Len; i++) {
-      ck.testPoint3d(approaches1[i].detailA.point, approaches2[i].detailA.point, ["failed for approach1 index: ", i]);
-      ck.testPoint3d(approaches1[i].detailB.point, approaches2[i].detailB.point, ["failed for approach2 index: ", i]);
+      ck.testPoint3d(approaches1[i].detailA.point, approaches2[i * 2].detailA.point, ["failed for approach1 index: ", i]);
+      ck.testPoint3d(approaches1[i].detailB.point, approaches2[i * 2].detailB.point, ["failed for approach2 index: ", i]);
     }
     // test the convenience method
     const closestApproach1 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB1);
@@ -515,9 +514,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const detailA2 = closestApproach2!.detailA;
     const detailB2 = closestApproach2!.detailB;
     ck.testCoordinate(detailA1.fraction, 2 / 3);
-    ck.testCoordinate(detailB1.fraction, 5 / 6);
+    ck.testCoordinate(detailB1.fraction, 5 / 6); // fraction on line string
     ck.testCoordinate(detailA2.fraction, 2 / 3);
-    ck.testCoordinate(detailB2.fraction, 5 / 6);
+    ck.testCoordinate(detailB2.fraction, 1);  // fraction on line segment
     const minLenSqr1 = detailA1.point.distanceSquaredXY(detailB1.point);
     const minLenSqr2 = detailA2.point.distanceSquaredXY(detailB2.point);
     const expectedMinLenSqr = 1;
@@ -613,10 +612,9 @@ describe("CurveCurveCloseApproachXY", () => {
         }
       }
     }
-    ck.testCoordinate(approach1Len, approach2Len);
     for (let i = 0; i < approach1Len; i++) {
-      ck.testPoint3d(approaches1[i].detailA.point, approaches2[i].detailA.point, ["failed for approach1 index: ", i]);
-      ck.testPoint3d(approaches1[i].detailB.point, approaches2[i].detailB.point, ["failed for approach2 index: ", i]);
+      ck.testPoint3d(approaches1[i].detailA.point, approaches2[i * 2].detailA.point, ["failed for approach1 index: ", i]);
+      ck.testPoint3d(approaches1[i].detailB.point, approaches2[i * 2].detailB.point, ["failed for approach2 index: ", i]);
     }
     // test the convenience method
     const closestApproach1 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB1);

@@ -246,7 +246,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   ) {
     const globalFractionA = Geometry.interpolate(fractionA0, pair.detailA.fraction, fractionA1);
     const globalFractionB = Geometry.interpolate(fractionB0, pair.detailB.fraction, fractionB1);
-    // ignore duplicate of most recent point .  ..
+    // ignore duplicate of most recent pair
     const numPrevious = this._results.length;
     if (numPrevious > 0) {
       const oldDetailA = this._results[numPrevious - 1].detailA;
@@ -330,6 +330,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Return fractions of close approach within maxDistance between two line segments (a0,a1) and (b0,b1).
+   * * Math details can be found at docs/learning/geometry/CurveCurve.md
    * @param a0 start point of line a
    * @param a1 end point of line a
    * @param b0 start point of line b
@@ -372,27 +373,23 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     closestApproach.detailA.a = 2 * maxDistanceSquared; // init to an approach that's too far away
     let reversed = false;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
-    // test distance of b0 to u
-    if (hab0 * hab0 < maxDistanceSquared * uu) {
+    if (hab0 * hab0 < maxDistanceSquared * uu) { // test distance of b0 to u
       const fractionA = Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu;
       if (this.updatePointToSegmentDistance(0, b0, a0, a1, fractionA, maxDistanceSquared, closestApproach))
         reversed = true;
-      }
-    // test distance of b1 to u
-    if (hab1 * hab1 < maxDistanceSquared * uu) {
+    }
+    if (hab1 * hab1 < maxDistanceSquared * uu) { // test distance of b1 to u
       const fractionA = Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu;
       if (this.updatePointToSegmentDistance(1, b1, a0, a1, fractionA, maxDistanceSquared, closestApproach))
         reversed = true;
     }
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
-    // test distance of a0 to v
-    if (hba0 * hba0 < maxDistanceSquared * vv) {
+    if (hba0 * hba0 < maxDistanceSquared * vv) { // test distance of a0 to v
       const fractionB = -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv;
       if (this.updatePointToSegmentDistance(0, a0, b0, b1, fractionB, maxDistanceSquared, closestApproach))
         reversed = false;
     }
-    // test distance of a1 to v
-    if (hba1 * hba1 < maxDistanceSquared * vv) {
+    if (hba1 * hba1 < maxDistanceSquared * vv) { // test distance of a1 to v
       const fractionB = -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv;
       if (this.updatePointToSegmentDistance(1, a1, b0, b1, fractionB, maxDistanceSquared, closestApproach))
         reversed = false;

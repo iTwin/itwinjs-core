@@ -55,5 +55,10 @@ Here is the comparison between the visitor pattern and the double dispatch patte
 
 ![>](./figs/CurveCurve/visitorPattern.png)
 
-
 What makes `GeometryHandler` a `double-dispatch` pattern is how it addresses dispatch to a pair of `GeometryQueries`, one in the instance, and the other passed into various dispatch methods.
+
+# `Approach Between 2 Line Segments`
+
+Here is the math details of `CurveCurveCloseApproachXY.segmentSegmentBoundedApproach`
+
+![>](./figs/CurveCurve/segmentSegmentBoundedApproach.png)
