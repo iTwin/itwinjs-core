@@ -221,8 +221,8 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("SingleLineLineString1", () => {
-    const ck = new Checker(true, true);
+  it("SingleLineLineString1", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 5;
     const geometryA = LineSegment3d.createXYZXYZ(5, 4, 3, 7, 4, 5);
@@ -261,8 +261,8 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("SingleLineLineString2", () => {
-    const ck = new Checker(true, true);
+  it("SingleLineLineString2", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 5;
     const geometryA = LineSegment3d.createXYXY(-1, 3, 1, 1);
@@ -439,7 +439,7 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("LinePath2", () => {
+  it("LinePath2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shift = 10;
