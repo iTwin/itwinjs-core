@@ -81,6 +81,8 @@ export interface TxnNotifications {
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
   notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
+  notifyReplayExternalTxns: () => void;
+  notifyReplayedExternalTxns: () => void;
   notifyChangesApplied: () => void;
   notifyBeforeUndoRedo: (isUndo: boolean) => void;
   notifyAfterUndoRedo: (isUndo: boolean) => void;

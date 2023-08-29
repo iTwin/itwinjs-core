@@ -2,6 +2,24 @@
   "name": "@itwin/backend-webpack-tools",
   "entries": [
     {
+      "version": "4.1.1",
+      "tag": "@itwin/backend-webpack-tools_v4.1.1",
+      "date": "Fri, 18 Aug 2023 13:02:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.0",
+      "tag": "@itwin/backend-webpack-tools_v4.1.0",
+      "date": "Mon, 14 Aug 2023 14:36:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.0.7",
+      "tag": "@itwin/backend-webpack-tools_v4.0.7",
+      "date": "Thu, 10 Aug 2023 13:19:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.0.6",
       "tag": "@itwin/backend-webpack-tools_v4.0.6",
       "date": "Mon, 24 Jul 2023 05:07:33 GMT",
@@ -41,6 +59,18 @@
       "version": "4.0.0",
       "tag": "@itwin/backend-webpack-tools_v4.0.0",
       "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.13",
+      "tag": "@itwin/backend-webpack-tools_v3.7.13",
+      "date": "Tue, 08 Aug 2023 19:49:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.12",
+      "tag": "@itwin/backend-webpack-tools_v3.7.12",
+      "date": "Thu, 27 Jul 2023 21:50:57 GMT",
       "comments": {}
     },
     {

@@ -1986,6 +1986,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
+    notifyReplayedExternalTxns(): void;
+    // @internal (undocumented)
+    notifyReplayExternalTxns(): void;
+    // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
@@ -1997,6 +2001,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onReplayedExternalTxns: BeEvent<() => void>;
+    readonly onReplayExternalTxns: BeEvent<() => void>;
     reinstateTxn(): Promise<IModelStatus>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;

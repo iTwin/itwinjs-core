@@ -7,34 +7,32 @@
  * @module Curve
  */
 
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Geometry } from "../Geometry";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import { Arc3d } from "./Arc3d";
-import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
-import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry } from "../../Geometry";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { AnyCurve } from "../CurveChain";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailArrayPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
 
 /**
  * Handler class for XYZ intersections between _geometryB and another geometry.
- * * **NOTE:** GeometryQuery input (_geometryB) should really be AnyCurve.
  * * Instances are initialized and called from CurveCurve.
  * * geometryB is saved for later reference.
  * @internal
  */
 export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   private _extendA: boolean;
-  private _geometryB: GeometryQuery;
+  private _geometryB: AnyCurve;
   private _extendB: boolean;
   private _results!: CurveLocationDetailArrayPair;
 
@@ -52,7 +50,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
    * @param extendB flag for extension of geometryB.
    */
-  public constructor(extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+  public constructor(extendA: boolean, geometryB: AnyCurve, extendB: boolean) {
     super();
     this._extendA = extendA;
     this._geometryB = geometryB;
