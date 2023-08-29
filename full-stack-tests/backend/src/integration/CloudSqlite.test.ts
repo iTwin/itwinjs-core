@@ -174,9 +174,12 @@ describe("CloudSqlite", () => {
       await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
         const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
         expect(secondWriteLockExpiryTime).to.be.greaterThan(firstWriteLockExpiryTime);
-        // secondWriteLockExpiryTime should only be a couple thousand ms in the future at most
-        // subtract 20 seconds (just to be safe) and make sure its less than the first write lock expiry time.
-        expect(secondWriteLockExpiryTime - 20000).to.be.lessThan(firstWriteLockExpiryTime);
+        // subtract 30 minutes and make sure its less than the first write lock expiry time.
+        // This tests that the secondWriteLockExpiryTime is a 'refresh' of the default expiry time of 1 hour.
+        // and not extending the expiry time already present by another hour.
+        // If it were extending the default expiry time of 1 hour, then second writelockexpirytime would be over 1 hour in the future
+        // and the below assert would fail.
+        expect(secondWriteLockExpiryTime - (30 * 60 * 1000)).to.be.lessThan(firstWriteLockExpiryTime);
       });
     });
     writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
