@@ -496,7 +496,7 @@ export class TxnManager {
   /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
    * @beta
   */
-  public queryLocalChanges(args?: QueryLocalChangesArgs): ChangeInstanceKey[] {
+  public queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey> {
     if (!args) {
       args = { includedClasses: [], includeUnsavedChanges: false };
     }

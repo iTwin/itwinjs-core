@@ -855,7 +855,7 @@ describe("TxnManager", () => {
     elements.insertElement(props);
 
     // Should not return any changes
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: false }), []);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), []);
 
     // Should return change that are not saved yet
     const e0: ChangeInstanceKey[] = [
@@ -870,7 +870,7 @@ describe("TxnManager", () => {
         id: "0x3f",
       },
     ];
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: true }), e0);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e0);
 
     // Saved changes cause change propagation
     imodel.saveChanges("2 inserts");
@@ -891,8 +891,8 @@ describe("TxnManager", () => {
         id: "0x3c",
       },
     ];
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: false }), e1);
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: true }), e1);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e1);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e1);
 
     // delete the element.
     elements.deleteElement(el1);
@@ -910,11 +910,11 @@ describe("TxnManager", () => {
         id: "0x3c",
       },
     ];
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: true }), e3);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
 
     // Saved changes
     imodel.saveChanges("1 deleted");
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: false }), e3);
-    assert.deepEqual(txns.queryLocalChanges({ includeUnsavedChanges: true }), e3);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e3);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
   });
 });
