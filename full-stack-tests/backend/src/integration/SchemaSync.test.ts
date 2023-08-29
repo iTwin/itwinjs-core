@@ -9,14 +9,13 @@ import { BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHo
 import { AzuriteTest } from "./AzuriteTest";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
-
 const storageType = "azure" as const;
-const containerProps = { baseUri: AzuriteTest.baseUri, storageType, containerId: "imodel-sync-itwin1", writeable: true };
 
-async function initializeContainer() {
+async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: containerProps.containerId });
-  await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken });
+  const accessToken = await CloudSqlite.requestToken({ ...containerProps, storageType });
+  await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
+  return { ...containerProps, accessToken, storageType };
 }
 
 describe("Schema synchronization", function (this: Suite) {
@@ -25,8 +24,6 @@ describe("Schema synchronization", function (this: Suite) {
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
-
-    await initializeContainer();
   });
 
   after(async () => {
@@ -42,6 +39,8 @@ describe("Schema synchronization", function (this: Suite) {
   };
 
   it("multi user workflow", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1"});
+
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
@@ -139,6 +138,7 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
   it("import same schema from different briefcase", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2"});
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
@@ -159,9 +159,9 @@ describe("Schema synchronization", function (this: Suite) {
     const b2 = await openNewBriefcase(user2AccessToken);
     const b3 = await openNewBriefcase(user3AccessToken);
 
-    SchemaSync.setTestCache(b1, "briefcase1");
-    SchemaSync.setTestCache(b2, "briefcase2");
-    SchemaSync.setTestCache(b3, "briefcase3");
+    SchemaSync.setTestCache(b1, "briefcase1a");
+    SchemaSync.setTestCache(b2, "briefcase2a");
+    SchemaSync.setTestCache(b3, "briefcase3a");
 
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
