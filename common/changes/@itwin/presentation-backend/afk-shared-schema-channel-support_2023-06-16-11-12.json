@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "React to change where iModel.nativeDb is not optional member variable.",
+      "comment": "",
       "type": "none"
     }
   ],
