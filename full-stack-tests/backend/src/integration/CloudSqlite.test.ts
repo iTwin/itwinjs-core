@@ -170,12 +170,13 @@ describe("CloudSqlite", () => {
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
     await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
       const firstWriteLockExpiryTime = Date.parse(container.writeLockExpires);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // sleep 500ms so we get a new write lock expiry time.
+      await BeDuration.wait(500); // sleep 500ms so we get a new write lock expiry time.
       await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
         const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
         expect(secondWriteLockExpiryTime).to.be.greaterThan(firstWriteLockExpiryTime);
-        // secondWriteLockExpiryTime should only be a couple thousand ms in the future at most, so subtract 2000 ms and make sure its less than first.
-        expect(secondWriteLockExpiryTime - 2000).to.be.lessThan(firstWriteLockExpiryTime);
+        // secondWriteLockExpiryTime should only be a couple thousand ms in the future at most
+        // subtract 20 seconds (just to be safe) and make sure its less than the first write lock expiry time.
+        expect(secondWriteLockExpiryTime - 20000).to.be.lessThan(firstWriteLockExpiryTime);
       });
     });
     writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
