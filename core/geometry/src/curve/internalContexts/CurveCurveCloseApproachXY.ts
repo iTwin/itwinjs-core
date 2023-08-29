@@ -168,7 +168,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     fractionB0: number,
     fractionB1: number,
     reversed: boolean,
-    pairIsIntersection: boolean = false,
     intervalDetails?: undefined | CurveLocationDetailPair,
   ): void {
     let globalFractionA, globalFractionB;
@@ -206,15 +205,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const detailB = CurveLocationDetail.createCurveFractionPoint(
       cpB, globalFractionB, cpB.fractionToPoint(globalFractionB),
     );
-    if (!pairIsIntersection) {
-      const d2 = detailA.point.distanceSquaredXY(detailB.point);
-      if (d2 > this._maxDistanceSquared)
-        return;
-    }
     if (isInterval) {
       detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
       detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
     } else {
+      const d2 = detailA.point.distanceSquaredXY(detailB.point);
+      if (d2 > this._maxDistanceSquared)
+        return;
       detailA.setIntervalRole(CurveIntervalRole.isolated);
       detailB.setIntervalRole(CurveIntervalRole.isolated);
     }
@@ -283,7 +280,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (pairs !== undefined) {
       for (const p of pairs) {
         this.recordPointWithLocalFractions(
-          p.detailA.fraction, cpA, 0, 1, p.detailB.fraction, cpB, 0, 1, reversed, false, p,
+          p.detailA.fraction, cpA, 0, 1, p.detailB.fraction, cpB, 0, 1, reversed, p,
         );
       }
     }
@@ -306,8 +303,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private static updatePointToSegmentDistance(
+    cpA: CurvePrimitive,
     fractionA: number,
     pointA: Point3d,
+    cpB: CurvePrimitive,
     pointB0: Point3d,
     pointB1: Point3d,
     fractionB: number,
@@ -326,7 +325,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           closestApproach = CurveLocationDetailPair.createCapture(
             CurveLocationDetail.create(), CurveLocationDetail.create(),
           );
+        closestApproach.detailA.setCurve(cpA);
         closestApproach.detailA.setFP(fractionA, pointA, undefined, distanceSquared);
+        closestApproach.detailB.setCurve(cpB);
         closestApproach.detailB.setFP(fractionB, this._workPointB, undefined, distanceSquared);
       }
     }
@@ -343,7 +344,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * result.y is fraction on line b.
    */
   private static segmentSegmentBoundedApproach(
-    a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, maxDistanceSquared: number,
+    cpA: CurvePrimitive,
+    a0: Point3d,
+    a1: Point3d,
+    cpB: CurvePrimitive,
+    b0: Point3d,
+    b1: Point3d,
+    maxDistanceSquared: number,
   ): CurveLocationDetailPair | undefined {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;
@@ -363,47 +370,51 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       const fractionA = -hba0 / (hba1 - hba0);
       const fractionB = -hab0 / (hab1 - hab0);
       return CurveLocationDetailPair.createCapture(
-        CurveLocationDetail.createCurveFractionPoint(undefined, fractionA, a0.interpolate(fractionA, a1)),
-        CurveLocationDetail.createCurveFractionPoint(undefined, fractionB, b0.interpolate(fractionB, b1)),
+        CurveLocationDetail.createCurveFractionPoint(cpA, fractionA, a0.interpolate(fractionA, a1)),
+        CurveLocationDetail.createCurveFractionPoint(cpB, fractionB, b0.interpolate(fractionB, b1)),
       );
     }
     let closestApproach: CurveLocationDetailPair | undefined;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
+    // length of projection of b0 onto u is less than max distance
     if (hab0 * hab0 < maxDistanceSquared * uu) {
       closestApproach = this.updatePointToSegmentDistance(
-        0, b0, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, maxDistanceSquared, closestApproach,
+        cpB, 0, b0, cpA, a0, a1, Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu, maxDistanceSquared, closestApproach,
       );
       closestApproach?.swapDetails();
-      }
+    }
+    // length of projection of b1 onto u is less than max distance
     if (hab1 * hab1 < maxDistanceSquared * uu) {
       closestApproach = this.updatePointToSegmentDistance(
-        1, b1, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, maxDistanceSquared, closestApproach,
+        cpB, 1, b1, cpA, a0, a1, Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu, maxDistanceSquared, closestApproach,
       );
       closestApproach?.swapDetails();
     }
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
+    // length of projection of a0 onto v is less than max distance
     if (hba0 * hba0 < maxDistanceSquared * vv)
       closestApproach = this.updatePointToSegmentDistance(
-        0, a0, b0, b1, -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv, maxDistanceSquared, closestApproach,
+        cpA, 0, a0, cpB, b0, b1, -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv, maxDistanceSquared, closestApproach,
       );
+    // length of projection of a1 onto v is less than max distance
     if (hba1 * hba1 < maxDistanceSquared * vv)
       closestApproach = this.updatePointToSegmentDistance(
-        1, a1, b0, b1, -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv, maxDistanceSquared, closestApproach,
+        cpA, 1, a1, cpB, b0, b1, -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv, maxDistanceSquared, closestApproach,
       );
     return closestApproach;
   }
   /**
    * Check different combination of fractions on curveA and curveB. If distance between points at 2 fractions
    * is less than maxDistance, record CurveLocationDetailPair which is the approach between the 2 points.
-   * Also find the closest approach between cpA and cpB. Add the approach if it's within the given fractions.
+   * Optionally, record close approaches of one curve's points if they fall between the other curve's points.
    * @param cpA curveA
    * @param fA0 fraction0 on curveA
    * @param fA1 fraction1 on curveA
-   * @param testProjectionOnA
+   * @param testProjectionOnA whether to record projections of the given curveB points onto curveA
    * @param cpB curveB
    * @param fB0 fraction0 on curveB
    * @param fB1 fraction0 on curveB
-   * @param testProjectionOnB
+   * @param testProjectionOnB whether to record projections of the given curveA points onto curveB
    * @param reversed true to have order reversed in final structures.
    */
   private testAndRecordFractionalPairApproach(
@@ -467,7 +478,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     reversed: boolean,
   ): void {
     const approach = CurveCurveCloseApproachXY.segmentSegmentBoundedApproach(
-      pointA0, pointA1, pointB0, pointB1, this._maxDistanceSquared,
+      cpA, pointA0, pointA1, cpB, pointB0, pointB1, this._maxDistanceSquared,
     );
     if (approach)
       this.capturePairWithLocalFractions(approach, cpA, fractionA0, fractionA1, cpB, fractionB0, fractionB1, reversed);
@@ -548,7 +559,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       // only add if the point is within the start and end fractions of both line segment and arc
       if (lineFraction !== undefined && this.acceptFraction(lineFraction) && this.acceptFraction(arcFraction)) {
         this.recordPointWithLocalFractions(
-          lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed, true,
+          lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
         );
       }
     }

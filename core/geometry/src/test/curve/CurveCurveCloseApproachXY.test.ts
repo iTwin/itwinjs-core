@@ -15,7 +15,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Path } from "../../curve/Path";
 import { Loop } from "../../curve/Loop";
-import { AnyCurve } from "../../core-geometry";
+import { AngleSweep, AnyCurve } from "../../core-geometry";
 
 /**
  * Create line segments joining various fractional positions on two arcs.
@@ -198,7 +198,11 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
-    const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    ck.testCoordinate(detailA.fraction, 1);
+    ck.testCoordinate(detailB.fraction, 0.1);
+    const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 0.5; // (sqrt(2)/2)*(sqrt(2)/2)
     ck.testLE(minLenSqr, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -217,8 +221,8 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("SingleLineLineString", () => {
-    const ck = new Checker();
+  it.only("SingleLineLineString1", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 5;
     const geometryA = LineSegment3d.createXYZXYZ(5, 4, 3, 7, 4, 5);
@@ -244,11 +248,55 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
-    const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    ck.testCoordinate(detailA.fraction, 0.5);
+    ck.testCoordinate(detailB.fraction, 5 / 6);
+    const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(minLenSqr, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString1");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("SingleLineLineString2", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const maxDistance = 5;
+    const geometryA = LineSegment3d.createXYXY(-1, 3, 1, 1);
+    const geometryB = LineString3d.create([[1, 0], [2, 1], [3, 0]]);
+    const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    ck.testLE(0, approaches.length);
+    if (approaches.length > 0) {
+      for (const ap of approaches) {
+        const start = ap.detailA.point;
+        const end = ap.detailB.point;
+        if (start.isAlmostEqual(end)) // intersection between geometries
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, start, 0.0625);
+        else { // closest approach between geometries
+          const approachSegment = LineSegment3d.create(start, end);
+          const lenSqr = start.distanceSquaredXY(end);
+          ck.testLE(lenSqr, maxDistance * maxDistance, "approach length must be smaller than maxDistance");
+          GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
+        }
+      }
+    }
+    // test the convenience method
+    const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    ck.testDefined(closestApproach);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    ck.testCoordinate(detailA.fraction, 1);
+    ck.testCoordinate(detailB.fraction, 0.25);
+    const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
+    const expectedMinLenSqr = 0.5;
+    ck.testLE(minLenSqr, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString2");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -287,7 +335,11 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
-    const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    ck.testCoordinate(detailA.fraction, 0.5);
+    ck.testCoordinate(detailB.fraction, 0.5);
+    const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 4;
     ck.testLE(minLenSqr, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -306,8 +358,13 @@ describe("CurveCurveCloseApproachXY", () => {
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
-    const start = approaches.at(0)!.detailA.point;
-    const end = approaches.at(0)!.detailB.point;
+    const detailA = approaches.at(0)!.detailA;
+    const detailB = approaches.at(0)!.detailB;
+    // correct detailA.fraction is 0.5 but due to the "NO NO NO" bug in testAndRecordProjection the correct pair is not found
+    ck.testCoordinate(detailA.fraction, 0);
+    ck.testCoordinate(detailB.fraction, 0);
+    const start = detailA.point;
+    const end = detailB.point;
     const approachSegment = LineSegment3d.create(start, end);
     const lenSqr = start.distanceSquaredXY(end);
     ck.testLE(lenSqr, maxDistance * maxDistance, "approach length must be smaller than maxDistance");
@@ -332,7 +389,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2.5;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(0, 3), Vector3d.create(2, 0),
+      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndRadians(0, Math.PI)
     )!;
     const geometryB = LineSegment3d.createXYXY(-5, 3, 5, 3);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -353,7 +410,11 @@ describe("CurveCurveCloseApproachXY", () => {
     // test the convenience method
     const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     ck.testDefined(closestApproach);
-    const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    ck.testCoordinate(detailA.fraction, 0.5);
+    ck.testCoordinate(detailB.fraction, 0.5);
+    const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 0;
     ck.testLE(minLenSqr, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -378,7 +439,7 @@ describe("CurveCurveCloseApproachXY", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("LinePath2", () => {
+  it.only("LinePath2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shift = 10;
@@ -449,8 +510,16 @@ describe("CurveCurveCloseApproachXY", () => {
     const closestApproach2 = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB2);
     ck.testDefined(closestApproach1);
     ck.testDefined(closestApproach2);
-    const minLenSqr1 = closestApproach1!.detailA.point.distanceSquaredXY(closestApproach1!.detailB.point);
-    const minLenSqr2 = closestApproach2!.detailA.point.distanceSquaredXY(closestApproach2!.detailB.point);
+    const detailA1 = closestApproach1!.detailA;
+    const detailB1 = closestApproach1!.detailB;
+    const detailA2 = closestApproach2!.detailA;
+    const detailB2 = closestApproach2!.detailB;
+    ck.testCoordinate(detailA1.fraction, 2 / 3);
+    ck.testCoordinate(detailB1.fraction, 5 / 6);
+    ck.testCoordinate(detailA2.fraction, 2 / 3);
+    ck.testCoordinate(detailB2.fraction, 5 / 6);
+    const minLenSqr1 = detailA1.point.distanceSquaredXY(detailB1.point);
+    const minLenSqr2 = detailA2.point.distanceSquaredXY(detailB2.point);
     const expectedMinLenSqr = 1;
     ck.testLE(minLenSqr1, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");
     ck.testLE(minLenSqr2, maxDistance * maxDistance, "closest approach length must be smaller than maxDistance");

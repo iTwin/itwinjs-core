@@ -10,7 +10,7 @@
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry } from "../../Geometry";
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -30,7 +30,7 @@ import { LineString3d } from "../LineString3d";
  * * geometryB is saved for later reference.
  * @internal
  */
-export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
+export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   private _extendA: boolean;
   private _geometryB: AnyCurve;
   private _extendB: boolean;
