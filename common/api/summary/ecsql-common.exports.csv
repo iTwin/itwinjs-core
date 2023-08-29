@@ -1,0 +1,80 @@
+sep=;
+Release Tag;API Item
+alpha;AllOrAnyOp = "ONLY" | "ALL"
+alpha;AllOrDistinctOp = "DISTINCT" | "ALL"
+alpha;AssignmentExpr 
+alpha;BetweenExpr 
+alpha;BinaryBooleanExpr 
+alpha;BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "
+alpha;BinaryValueExpr 
+alpha;BinaryValueOp = "&" | "|" | "
+alpha;class BooleanExpr 
+alpha;CastExpr 
+alpha;ClassNameExpr 
+alpha;class ClassRefExpr 
+alpha;CompoundSelectOp = "UNION" | "UNION ALL" | "INTERSECT" | "EXCEPT"
+alpha;class ComputedExpr 
+alpha;CteBlockExpr 
+alpha;CteBlockRefExpr 
+alpha;CteExpr 
+alpha;DeleteStatementExpr 
+alpha;DerivedPropertyExpr 
+alpha;DisqualifyOp = "+"
+alpha;ECSqlOption
+alpha;ECSqlOptionsClauseExpr 
+alpha;ECSqlSupportedOptions = "NoECClassIdFilter" | "ReadonlyPropertiesAreUpdatable"
+alpha;ECSqlWriter
+alpha;ECSqlWriterArgs
+alpha;class Expr
+alpha;ExprFactory
+alpha;ExprType
+alpha;FirstOrLast = "FIRST" | "LAST"
+alpha;FromClauseExpr 
+alpha;FuncCallExpr 
+alpha;GroupByClauseExpr 
+alpha;HavingClauseExpr 
+alpha;IIFExpr 
+alpha;InExpr 
+alpha;InsertStatementExpr 
+alpha;IsNullExpr 
+alpha;IsOfTypeExpr 
+alpha;JoinDirection = "FORWARD" | "BACKWARD"
+alpha;JoinSpec = BooleanExpr | string[] | undefined
+alpha;JoinType
+alpha;Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FIRST" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LAST" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "NULLS" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH"
+alpha;LikeExpr 
+alpha;LimitClauseExpr 
+alpha;LiteralExpr 
+alpha;LiteralValueType
+alpha;MemberFuncCallExpr 
+alpha;NativeECSqlParseNode
+alpha;NativeECSqlParseNodeProvider
+alpha;NextSelect
+alpha;NotExpr 
+alpha;OrderByClauseExpr 
+alpha;OrderBySpecExpr 
+alpha;ParameterExpr 
+alpha;PolymorphicInfo
+alpha;PropertyNameExpr 
+alpha;QualifiedJoinExpr 
+alpha;RecursiveCte = "RECURSIVE"
+alpha;SearchCaseExpr 
+alpha;SelectExpr 
+alpha;SelectionClauseExpr 
+alpha;SelectStatementExpr 
+alpha;SetClauseExpr 
+alpha;SortDirection = "ASC" | "DESC"
+alpha;class StatementExpr 
+alpha;SubqueryExpr 
+alpha;SubqueryRefExpr 
+alpha;SubqueryTestExpr 
+alpha;SubqueryTestOp = "EXISTS"
+alpha;TableValuedFuncExpr 
+alpha;UnaryBooleanOp = "NOT"
+alpha;UnaryValueExpr 
+alpha;UnaryValueOp = "-" | "+" | "~"
+alpha;UpdateStatementExpr 
+alpha;UsingRelationshipJoinExpr 
+alpha;class ValueExpr 
+alpha;WhenThenBlock
+alpha;WhereClauseExp 

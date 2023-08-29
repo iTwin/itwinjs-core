@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add TxnManager events raised when applying external txns.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
