@@ -344,7 +344,7 @@ export namespace CloudSqlite {
     /** The logId. */
     get logId(): string;
     /** The time that the write lock expires. Of the form 'YYYY-MM-DDTHH:MM:SS.000Z' in UTC.
-     *  Returns empty string if no write lock expiry time.
+     *  Returns empty string if write lock is not held.
      */
     get writeLockExpires(): string;
     /** true if this CloudContainer is currently connected to a CloudCache via the `connect` method. */
