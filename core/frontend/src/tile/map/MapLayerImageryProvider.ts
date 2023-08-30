@@ -93,7 +93,10 @@ export abstract class MapLayerImageryProvider {
     this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
   }
 
-  /** @internal */
+  /**
+   * Initialize the provider by loading the first tile at its default maximum zoom level. Called when an [[ImageryTileTree]] is created.
+   * @beta
+   */
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined)
@@ -105,7 +108,12 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
-  /** @internal */
+  /**
+   * Add attribution logo cards for the data supplied by this provider to the [[Viewport]]'s logo div.
+   * @param _cards Logo cards HTML element that may contain custom data attributes.
+   * @param _viewport Viewport to add logo cards to.
+   * @beta
+   */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
 
   /** @internal */
@@ -123,7 +131,13 @@ export abstract class MapLayerImageryProvider {
     return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
   }
 
-  /** @internal */
+  /**
+   * Get child IDs of a tile and generate tiles based on these child IDs.
+   * See [[ImageryTileTree._loadChildren]] for the definition of `resolveChildren` where this function is commonly called.
+   * @param tile Tile to generate child IDs for.
+   * @param resolveChildren Function that creates tiles from child IDs.
+   * @beta
+   */
   protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     resolveChildren(this.getPotentialChildIds(tile));
   }
@@ -137,7 +151,14 @@ export abstract class MapLayerImageryProvider {
     this._generateChildIds(tile, resolveChildren);
   }
 
-  /** @internal */
+  /**
+   * Get tooltip text for a specific quad and cartographic position.
+   * @param strings List of strings to contain tooltip text.
+   * @param quadId Quad ID to get tooltip for.
+   * @param _carto Cartographic that may be used to retrieve and/or format tooltip text.
+   * @param tree Tree associated with the quad to get the tooltip for.
+   * @beta
+   */
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     if (doDebugToolTips) {
       const range = quadId.getLatLongRangeDegrees(tree.tilingScheme);
