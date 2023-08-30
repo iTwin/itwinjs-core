@@ -1008,10 +1008,11 @@ export namespace CloudSqlite {
     }
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     // @internal (undocumented)
-    export interface LockAndOpenArgs {
+    export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
+        openMode?: OpenMode;
         user: string;
     }
     export enum LoggingMask {
@@ -2975,7 +2976,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
+    readonly nativeDb: IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -4601,6 +4602,35 @@ export class Schemas {
     static getRegisteredSchema(schemaName: string): typeof Schema | undefined;
     static registerSchema(schema: typeof Schema): void;
     static unregisterSchema(schemaName: string): boolean;
+}
+
+// @internal (undocumented)
+export namespace SchemaSync {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        // (undocumented)
+        getUri(): string;
+        static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
+    }
+    const // (undocumented)
+    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    const // (undocumented)
+    withLockedAccess: (iModel: TestCacheIModel, args: {
+        operationName: string;
+        openMode?: OpenMode;
+        user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    initializeForIModel: (arg: {
+        iModel: IModelDb;
+        containerProps: CloudSqlite.ContainerProps;
+    }) => Promise<void>;
+    export class SchemaSyncDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        readonly myVersion = "4.0.0";
+    }
 }
 
 // @public
