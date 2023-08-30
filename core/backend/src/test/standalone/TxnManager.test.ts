@@ -10,6 +10,7 @@ import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
 import {
+  ChangeInstanceKey,
   IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
@@ -845,5 +846,75 @@ describe("TxnManager", () => {
     imodel.txns.reverseSingleTxn();
 
     imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+  });
+  it("get local changes", async () => {
+    const elements = imodel.elements;
+    const txns = imodel.txns;
+
+    const el1 = elements.insertElement(props);
+    elements.insertElement(props);
+
+    // Should not return any changes
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), []);
+
+    // Should return change that are not saved yet
+    const e0: ChangeInstanceKey[] = [
+      {
+        changeType: "inserted",
+        classFullName: "TestBim:TestPhysicalObject",
+        id: "0x40",
+      },
+      {
+        changeType: "inserted",
+        classFullName: "TestBim:TestPhysicalObject",
+        id: "0x3f",
+      },
+    ];
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e0);
+
+    // Saved changes cause change propagation
+    imodel.saveChanges("2 inserts");
+    const e1: ChangeInstanceKey[] = [
+      {
+        changeType: "inserted",
+        classFullName: "TestBim:TestPhysicalObject",
+        id: "0x40",
+      },
+      {
+        changeType: "inserted",
+        classFullName: "TestBim:TestPhysicalObject",
+        id: "0x3f",
+      },
+      {
+        changeType: "updated",
+        classFullName: "BisCore:PhysicalModel",
+        id: "0x3c",
+      },
+    ];
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e1);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e1);
+
+    // delete the element.
+    elements.deleteElement(el1);
+
+    // Delete element (0x40) should never show up as it was inserted/deleted locally
+    const e3 = [
+      {
+        changeType: "inserted",
+        classFullName: "TestBim:TestPhysicalObject",
+        id: "0x40",
+      },
+      {
+        changeType: "updated",
+        classFullName: "BisCore:PhysicalModel",
+        id: "0x3c",
+      },
+    ];
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
+
+    // Saved changes
+    imodel.saveChanges("1 deleted");
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e3);
+    assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
   });
 });
