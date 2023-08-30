@@ -635,6 +635,13 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
+// @beta
+export interface ChangeInstanceKey {
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
@@ -836,6 +843,8 @@ export namespace CloudSqlite {
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -4407,6 +4416,12 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
+    readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -5452,6 +5467,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
