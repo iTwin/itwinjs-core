@@ -10,6 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
@@ -232,7 +233,7 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
     return Range1dArray.unionSorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,
@@ -273,7 +274,7 @@ export class BooleanClipNodeParity extends BooleanClipNode {
     return Range1dArray.paritySorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,
@@ -309,7 +310,7 @@ export class BooleanClipNodeIntersection extends BooleanClipNode implements Poly
     return Range1dArray.intersectSorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,

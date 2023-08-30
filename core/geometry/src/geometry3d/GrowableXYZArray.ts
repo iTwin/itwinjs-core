@@ -417,21 +417,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
     return 0;
   }
-
-  /**
-   * Return the first point, or undefined if the array is empty.
-   */
-  public front(result?: Point3d): Point3d | undefined {
-    if (this._xyzInUse === 0) return undefined;
-    return this.getPoint3dAtUncheckedPointIndex(0, result);
-  }
-  /**
-   * Return the last point, or undefined if the array is empty.
-   */
-  public back(result?: Point3d): Point3d | undefined {
-    if (this._xyzInUse < 1) return undefined;
-    return this.getPoint3dAtUncheckedPointIndex(this._xyzInUse - 1, result);
-  }
   /**
    * Set the coordinates of a single point.
    * @param pointIndex index of point to set
