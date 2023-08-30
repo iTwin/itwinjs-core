@@ -166,7 +166,7 @@ describe("Checkpoints", () => {
       return {} as SnapshotDb;
     });
     sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => { });
-    const iModel2 = await SnapshotDb.openCheckpointV2({
+    await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -175,7 +175,6 @@ describe("Checkpoints", () => {
     expect(prefetchSpy.callCount).to.equal(1);
     expect(settingsSpy.callCount).to.equal(2);
     iModel.close();
-    iModel2.close();
     sinon.restore();
     IModelHost.appWorkspace.settings.dropDictionary("prefetch");
   });
@@ -278,7 +277,7 @@ describe("Checkpoints", () => {
         return {} as SnapshotDb;
       });
       sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => { });
-      const iModel2 = await SnapshotDb.openCheckpointV2({
+      await SnapshotDb.openCheckpointV2({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -287,7 +286,6 @@ describe("Checkpoints", () => {
       expect(prefetchSpy.callCount).to.equal(1);
       expect(settingsSpy.callCount).to.equal(2);
       iModel.close();
-      iModel2.close();
       sinon.restore();
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
