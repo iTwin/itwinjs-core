@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add support for schema synchronization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

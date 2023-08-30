@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "fix logging when OpenTelemetry Tracing is enabled",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

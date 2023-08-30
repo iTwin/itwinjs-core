@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.2.1
+      '@bentley/imodeljs-native': 4.2.2
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -15,6 +15,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecsql-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/object-storage-azure': ^2.1.0
       '@itwin/object-storage-core': ^2.1.0
@@ -52,7 +53,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.2.1
+      '@bentley/imodeljs-native': 4.2.2
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -71,6 +72,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
+      '@itwin/ecsql-common': link:../ecsql/common
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
@@ -402,6 +404,33 @@ importers:
       '@itwin/ecschema-rpcinterface-common': link:../common
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       eslint: 8.45.0
+      rimraf: 3.0.2
+      typescript: 5.0.4
+
+  ../../core/ecsql/common:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@types/chai': 4.3.1
+      '@types/mocha': ^8.2.2
+      '@types/node': 18.16.1
+      chai: ^4.1.2
+      eslint: ^8.44.0
+      mocha: ^10.0.0
+      nyc: ^15.1.0
+      rimraf: ^3.0.2
+      typescript: ~5.0.2
+    dependencies:
+      '@itwin/core-bentley': link:../../bentley
+    devDependencies:
+      '@itwin/build-tools': link:../../../tools/build
+      '@types/chai': 4.3.1
+      '@types/mocha': 8.2.3
+      '@types/node': 18.16.1
+      chai: 4.3.7
+      eslint: 8.45.0
+      mocha: 10.2.0
+      nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 5.0.4
 
@@ -1656,6 +1685,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/ecschema-rpcinterface-impl': workspace:*
+      '@itwin/ecsql-common': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -1722,6 +1752,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
+      '@itwin/ecsql-common': link:../../core/ecsql/common
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
@@ -3726,8 +3757,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.2.1:
-    resolution: {integrity: sha512-WVLQn5XwF0CP/nyujWCy/JZ5GSjIOi9MzVC6wDsdHCQg/VYLySjHJ+rKQziVq5YvzCYREEzNGPC0Xs1dGXJ12Q==}
+  /@bentley/imodeljs-native/4.2.2:
+    resolution: {integrity: sha512-a90E0pZnx3GLrqXBCUW5prOSe8ifFVLIGNZQHZjz4pM3a95dUFyEJrrJd/wI86U3U01YkAxg0GSYXNUyZKVOAQ==}
     requiresBuild: true
     dev: false
 

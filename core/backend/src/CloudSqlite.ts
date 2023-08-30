@@ -18,7 +18,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
 
-import type { VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode
 
@@ -242,7 +242,7 @@ export namespace CloudSqlite {
   }
 
   /** @internal */
-  export interface LockAndOpenArgs {
+  export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     user: string;
     /** the name of the database within the container */
@@ -251,6 +251,8 @@ export namespace CloudSqlite {
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
+    /** if present, open mode for Db. Default is ReadWrite */
+    openMode?: OpenMode;
   }
 
   /** Logging categories for `CloudCache.setLogMask` */
@@ -852,7 +854,7 @@ export namespace CloudSqlite {
       let lockObtained = false;
       const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler, openMode: args.openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
