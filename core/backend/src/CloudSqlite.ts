@@ -18,7 +18,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
 
-import type { VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode
 
@@ -139,6 +139,10 @@ export namespace CloudSqlite {
     readonly transactions: boolean;
     /** the state of this database. Indicates whether the database is new or deleted since last upload */
     readonly state: "" | "copied" | "deleted";
+    /** current number of clients that have this database open. */
+    readonly nClient: number;
+    /** current number of ongoing prefetches on this database. */
+    readonly nPrefetch: number;
   }
 
   /** Filter options passed to CloudContainer.queryHttpLog
@@ -238,7 +242,7 @@ export namespace CloudSqlite {
   }
 
   /** @internal */
-  export interface LockAndOpenArgs {
+  export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     user: string;
     /** the name of the database within the container */
@@ -247,6 +251,8 @@ export namespace CloudSqlite {
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
+    /** if present, open mode for Db. Default is ReadWrite */
+    openMode?: OpenMode;
   }
 
   /** Logging categories for `CloudCache.setLogMask` */
@@ -621,8 +627,10 @@ export namespace CloudSqlite {
  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
     await acquireWriteLock(args);
+    const containerInternal = args.container as CloudContainerInternal;
     try {
-      const containerInternal = args.container as CloudContainerInternal;
+      if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
+        return await operation();
       containerInternal.writeLockHeldBy = args.user;
       containerInternal.writeLockExpires = new Date(Date.now() + 1000 * containerInternal.lockExpireSeconds).toLocaleString();
       // eslint-disable-next-line @typescript-eslint/await-thenable
@@ -633,6 +641,8 @@ export namespace CloudSqlite {
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
+      containerInternal.writeLockHeldBy = undefined;
+      containerInternal.writeLockExpires = undefined;
       throw e;
     }
   }
@@ -844,7 +854,7 @@ export namespace CloudSqlite {
       let lockObtained = false;
       const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler, openMode: args.openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();

@@ -9,11 +9,13 @@
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range1d, Range3d } from "./Range";
 import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
@@ -163,6 +165,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return result;
   }
 
+  /** Restructure MultiLineStringDataVariant as array of GrowableXYZArray */
+  public static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined {
+    const collector = new PointStreamGrowableXYZArrayCollector();
+    VariantPointDataStream.streamXYZ(data, collector);
+    return collector.claimArrayOfGrowableXYZArray();
+  }
+
   /** push a point to the end of the array */
   public push(toPush: XYAndZ) {
     this.pushXYZ(toPush.x, toPush.y, toPush.z);
@@ -176,7 +185,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /** Push points from variant sources.
    * Valid inputs are:
    * * Point2d
-   * * point3d
+   * * Point3d
    * * An array of 2 doubles
    * * An array of 3 doubles
    * * A GrowableXYZArray
@@ -202,7 +211,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     else if (Geometry.isNumberArray(p, 2))
       this.pushXYZ(p[0], p[1], 0.0);
     else if (Array.isArray(p)) {
-      // direct recursion re-wraps p and goes infinite.  unroll here .
+      // direct recursion re-wraps p and goes infinite. Unroll here.
       for (const q of p)
         this.pushFrom(q);
     } else if (Point3d.isXYAndZ(p))
@@ -407,21 +416,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return 1;
     }
     return 0;
-  }
-
-  /**
-   * Return the first point, or undefined if the array is empty.
-   */
-  public front(result?: Point3d): Point3d | undefined {
-    if (this._xyzInUse === 0) return undefined;
-    return this.getPoint3dAtUncheckedPointIndex(0, result);
-  }
-  /**
-   * Return the last point, or undefined if the array is empty.
-   */
-  public back(result?: Point3d): Point3d | undefined {
-    if (this._xyzInUse < 1) return undefined;
-    return this.getPoint3dAtUncheckedPointIndex(this._xyzInUse - 1, result);
   }
   /**
    * Set the coordinates of a single point.

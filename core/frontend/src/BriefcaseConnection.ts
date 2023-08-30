@@ -114,6 +114,7 @@ class ModelChangeMonitor {
     };
 
     this._removals.push(briefcase.txns.onCommitted.addListener(maybeProcess));
+    this._removals.push(briefcase.txns.onReplayedExternalTxns.addListener(maybeProcess));
     this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(maybeProcess));
     this._removals.push(briefcase.txns.onChangesPulled.addListener(maybeProcess));
   }

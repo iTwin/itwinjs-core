@@ -10,6 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
@@ -59,7 +60,6 @@ export abstract class BooleanClipNode implements Clipper {
     const json: { [opType: string]: any[] } = {};
     json[s] = data;
     return json;
-
   }
   /** Capture a (reference to a) child node or nodes */
   public captureChild(child: Clipper | Clipper[]) {
@@ -69,7 +69,7 @@ export abstract class BooleanClipNode implements Clipper {
       this._clippers.push(child);
     }
   }
-  /** toggle the "keepInside" behavior.  Return the prior value.  */
+  /** Toggle the "keepInside" behavior.  Return the prior value.  */
   public toggleResult(): boolean {
     return this.selectResult(!this._keepInside);
   }
@@ -79,9 +79,8 @@ export abstract class BooleanClipNode implements Clipper {
     this._keepInside = keepInside;
     return s;
   }
-
   /**
-   * * Conditionally (if a1 > a0 strictly) call announce (a0, a1).
+   * Conditionally (if a1 > a0 strictly) call announce (a0, a1).
    * * Return 0 if not called, 1 if called.
    */
   protected testedAnnounceNN(a0: number, a1: number, announce?: AnnounceNumberNumber): number {
@@ -93,10 +92,12 @@ export abstract class BooleanClipNode implements Clipper {
     return 0;
   }
   /**
-   * * Conditionally (if a1 > a0 strictly) call announce (a0, a1, cp).
+   * Conditionally (if a1 > a0 strictly) call announce (a0, a1, cp).
    * * Return 0 if not called, 1 if called.
    */
-  protected testedAnnounceNNC(a0: number, a1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): number {
+  protected testedAnnounceNNC(
+    a0: number, a1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive,
+  ): number {
     if (a0 < a1) {
       if (announce)
         announce(a0, a1, cp);
@@ -111,10 +112,12 @@ export abstract class BooleanClipNode implements Clipper {
     this._intervalsB = q;
   }
   /**
-   * * announce all "outside intervals" --not masked by intervals
-   * * return true if any intervals announced.
+   * Announce all "outside intervals" --not masked by intervals
+   * * Return true if any intervals announced.
    */
-  protected announcePartsNN(keepInside: boolean, intervals: Range1d[], f0: number, f1: number, announce?: AnnounceNumberNumber): boolean {
+  protected announcePartsNN(
+    keepInside: boolean, intervals: Range1d[], f0: number, f1: number, announce?: AnnounceNumberNumber,
+  ): boolean {
     let numAnnounce = 0;
     if (!keepInside) {
       let lowFraction = f0;
@@ -132,10 +135,12 @@ export abstract class BooleanClipNode implements Clipper {
     return numAnnounce > 0;
   }
   /**
-   * * announce all "outside intervals" --not masked by intervals
-   * * return true if any intervals announced.
+   * Announce all "outside intervals" --not masked by intervals
+   * * Return true if any intervals announced.
    */
-  protected announcePartsNNC(keepInside: boolean, intervals: Range1d[], f0: number, f1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  protected announcePartsNNC(
+    keepInside: boolean, intervals: Range1d[], f0: number, f1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive,
+  ): boolean {
     let numAnnounce = 0;
     if (!keepInside) {
       let lowFraction = f0;
@@ -151,17 +156,16 @@ export abstract class BooleanClipNode implements Clipper {
       }
     }
     return numAnnounce > 0;
-
   }
   /** Invoke callback to test if a point is "in" this clipper */
   public isPointOnOrInside(point: Point3d): boolean {
     const q = this.isPointOnOrInsideChildren(point);
     return this._keepInside ? q : !q;
-
   }
-
-  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
-  public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
+  /** Announce "in" portions of a line segment. See `Clipper.announceClippedSegmentIntervals` */
+  public announceClippedSegmentIntervals(
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
+  ): boolean {
     this._intervalsA.length = 0;
     const announceIntervalB = (a0: number, a1: number) => {
       this._intervalsB.push(Range1d.createXX(a0, a1));
@@ -206,8 +210,8 @@ export abstract class BooleanClipNode implements Clipper {
     }
     return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, arc, announce);
   }
-
 }
+
 /**
  * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
@@ -217,7 +221,7 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
-  /** return true if inside any child clipper */
+  /** Return true if inside any child clipper */
   public isPointOnOrInsideChildren(point: Point3d): boolean {
     for (const clipper of this._clippers) {
       if (clipper.isPointOnOrInside(point))
@@ -229,16 +233,23 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
     return Range1dArray.unionSorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache) {
-    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+    arrayCache: GrowableXYZArrayCache,
+  ) {
+    ClipUtilities.doPolygonClipSequence(
+      xyz,
+      this._clippers,
       this._keepInside ? insideFragments : outsideFragments,
       this._keepInside ? outsideFragments : insideFragments,
       undefined,
-      ClipStepAction.acceptIn, ClipStepAction.passToNextStep, ClipStepAction.acceptOut, arrayCache);
-    }
+      ClipStepAction.acceptIn,
+      ClipStepAction.passToNextStep,
+      ClipStepAction.acceptOut,
+      arrayCache,
+    );
+  }
 }
 
 /**
@@ -250,7 +261,7 @@ export class BooleanClipNodeParity extends BooleanClipNode {
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
-  /** return true if inside an odd number of clippers child clipper */
+  /** Return true if inside an odd number of clippers child clipper */
   public isPointOnOrInsideChildren(point: Point3d): boolean {
     let q = false;
     for (const clipper of this._clippers) {
@@ -263,26 +274,31 @@ export class BooleanClipNodeParity extends BooleanClipNode {
     return Range1dArray.paritySorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache) {
-    ClipUtilities.doPolygonClipParitySequence(xyz, this._clippers,
+    arrayCache: GrowableXYZArrayCache,
+  ) {
+    ClipUtilities.doPolygonClipParitySequence(
+      xyz,
+      this._clippers,
       this._keepInside ? insideFragments : outsideFragments,
       this._keepInside ? outsideFragments : insideFragments,
-    arrayCache);
-    }
+      arrayCache,
+    );
+  }
 }
+
 /**
  * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
-export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper{
+export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper {
   public get operationName(): string { return this._keepInside ? "AND" : "NAND"; }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
-  /** return false if outside of any child clipper */
+  /** Return false if outside of any child clipper */
   public isPointOnOrInsideChildren(point: Point3d): boolean {
     for (const clipper of this._clippers) {
       if (!clipper.isPointOnOrInside(point))
@@ -294,16 +310,22 @@ export class BooleanClipNodeIntersection extends BooleanClipNode implements Poly
     return Range1dArray.intersectSorted(operandA, operandB);
   }
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache) {
+    arrayCache: GrowableXYZArrayCache,
+  ) {
 
-    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+    ClipUtilities.doPolygonClipSequence(
+      xyz,
+      this._clippers,
       this._keepInside ? insideFragments : outsideFragments,
       this._keepInside ? outsideFragments : insideFragments,
       undefined,
-      ClipStepAction.passToNextStep, ClipStepAction.acceptOut, ClipStepAction.acceptIn, arrayCache);
-    }
-
+      ClipStepAction.passToNextStep,
+      ClipStepAction.acceptOut,
+      ClipStepAction.acceptIn,
+      arrayCache,
+    );
+  }
 }

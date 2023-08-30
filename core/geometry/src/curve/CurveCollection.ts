@@ -257,7 +257,7 @@ export abstract class CurveCollection extends GeometryQuery {
 /**
  * Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only CurvePrimitives. No other paths, loops, or regions allowed.
- * * The specific derived classes are `Path` and `Loop`
+ * * The specific derived classes are `Path` and `Loop`.
  * * `CurveChain` is an intermediate class. It is not instantiable on its own.
  * * The related class `CurveChainWithDistanceIndex` is a `CurvePrimitive` whose API presents well-defined mappings
  * from fraction to xyz over the entire chain, but in fact does all the calculations over multiple primitives.
@@ -274,8 +274,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return the array of `CurvePrimitive` */
   public override get children(): CurvePrimitive[] {
-    if (this._curves === undefined)
-      this._curves = [];
     return this._curves;
   }
   /**
@@ -351,7 +349,7 @@ export abstract class CurveChain extends CurveCollection {
   /**
    * Return the index where target is found in the array of children.
    * @param alsoSearchProxies whether to also check proxy curves of the children
-  */
+   */
   public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++) {
       if (this._curves[i] === target)

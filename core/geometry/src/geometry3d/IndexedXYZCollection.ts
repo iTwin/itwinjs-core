@@ -306,6 +306,18 @@ export abstract class IndexedXYZCollection {
       result.push(p);
     return result;
   }
+  /** Return the first point, or undefined if the array is empty. */
+  public front(result?: Point3d): Point3d | undefined {
+    if (this.length === 0)
+      return undefined;
+    return this.getPoint3dAtUncheckedPointIndex(0, result);
+  }
+  /** Return the last point, or undefined if the array is empty. */
+  public back(result?: Point3d): Point3d | undefined {
+    if (this.length === 0)
+      return undefined;
+    return this.getPoint3dAtUncheckedPointIndex(this.length - 1, result);
+  }
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
@@ -323,10 +335,6 @@ export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection
    * @param z z coordinate
    */
   public abstract pushXYZ(x?: number, y?: number, z?: number): void;
-  /** extract the final point */
-  public abstract back(result?: Point3d): Point3d | undefined;
-  /** extract the first point */
-  public abstract front(result?: Point3d): Point3d | undefined;
   /** remove the final point. */
   public abstract pop(): void;
   /**  clear all entries */
