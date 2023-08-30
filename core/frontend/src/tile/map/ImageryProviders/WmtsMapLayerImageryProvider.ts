@@ -8,7 +8,6 @@
 import { assert } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
 import {
-  ImageryMapTile,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   QuadId,
