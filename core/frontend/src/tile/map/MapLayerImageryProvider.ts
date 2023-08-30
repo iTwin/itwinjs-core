@@ -94,7 +94,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /**
-   * Initialize the provider by loading the first tile at its default maximum zoom level. Called when an [[ImageryTileTree]] is created.
+   * Initialize the provider by loading the first tile at its default maximum zoom level.
    * @beta
    */
   public async initialize(): Promise<void> {
