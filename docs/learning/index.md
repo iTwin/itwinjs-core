@@ -1,10 +1,8 @@
 # Getting started with iTwin.js
 
-iTwin.js has a comprehensive set of APIs that can be used anywhere an [iModel](./imodels.md) may be relevant. It's a big library: where you start will depend on what you'd like to build. If you're looking to extend an iTwin viewer's user interface -- perhaps adding a new tool or widget -- [check out the frontend guide](./frontend/index). For higher level React components, you may want to [take a look at AppUI](./ui/appui/index.md).
+Welcome to the documentation site for the iTwin.js open-source JavaScript library. iTwin.js offers a versatile and comprehensive set of APIs that can be utilized across various platforms, including web frontends and backends, web services, and desktop, in any context an [iModel](./imodels.md) is used. As a large library, your starting point will depend on the specific development project you have in mind. If you are interested in extending the user interface of an iTwin viewer by adding a new tool or widget, we recommend consulting [the frontend guide](./frontend/index). For higher-level React components, [AppUI](./ui/appui/index.md) may be of interest to you. If you're working on a service or on the server and want to query an iModel's data, you'll want to head over to our [backend documentation](./backend/index). While we're on the subject of querying data, we have a great [tutorial to get you up to speed on ECSQL](./ECSQLTutorial/index.md).
 
-If you're working on a service and want to query an iModel's data you'll want to [head over to our backend documentation](./backend/index). While we're on the subject of querying data, we have a great [tutorial to get you up to speed on ECSQL](./ECSQLTutorial/index.md).
-
-There's much, much more, so explore the sections to the left and the [helpful articles at the bottom of this page](#helpful-articles).
+There's quite a bit to explore. The sections to the left and the [helpful articles at the bottom of this page](#helpful-articles) can help guide your iTwin.js application development.
 
 In addition, iTwin.js is open source. We love suggestions and feedback on the library, but we love contributions to our codebase even more. If you think you have something to offer, submit a pull request and let's get it merged.
 
