@@ -184,9 +184,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    const childIds = this.getPotentialChildIds(tile);
-    if (tile.quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
+  protected override _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(quadId);
+    if (quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
       resolveChildren(childIds);
       return;
     }

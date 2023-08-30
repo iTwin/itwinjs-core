@@ -126,20 +126,20 @@ export abstract class MapLayerImageryProvider {
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
 
   /** @internal */
-  public getPotentialChildIds(tile: ImageryMapTile): QuadId[] {
-    const childLevel = tile.quadId.level + 1;
-    return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
+  public getPotentialChildIds(quadId: QuadId): QuadId[] {
+    const childLevel = quadId.level + 1;
+    return quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
   }
 
   /**
-   * Get child IDs of a tile and generate tiles based on these child IDs.
+   * Get child IDs of a quad and generate tiles based on these child IDs.
    * See [[ImageryTileTree._loadChildren]] for the definition of `resolveChildren` where this function is commonly called.
-   * @param tile Tile to generate child IDs for.
+   * @param quadId quad to generate child IDs for.
    * @param resolveChildren Function that creates tiles from child IDs.
-   * @beta
+   * @internal
    */
-  protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    resolveChildren(this.getPotentialChildIds(tile));
+  protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
+    resolveChildren(this.getPotentialChildIds(quadId));
   }
 
   /** @internal */
@@ -148,7 +148,7 @@ export abstract class MapLayerImageryProvider {
       tile.setLeaf();
       return;
     }
-    this._generateChildIds(tile, resolveChildren);
+    this._generateChildIds(tile.quadId, resolveChildren);
   }
 
   /**
@@ -157,7 +157,7 @@ export abstract class MapLayerImageryProvider {
    * @param quadId Quad ID to get tooltip for.
    * @param _carto Cartographic that may be used to retrieve and/or format tooltip text.
    * @param tree Tree associated with the quad to get the tooltip for.
-   * @beta
+   * @internal
    */
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     if (doDebugToolTips) {
