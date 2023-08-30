@@ -34,7 +34,7 @@ describe("TxnManager", () => {
     nativeDb.closeIModel();
   };
 
-  before(async () => {
+  beforeEach(async () => {
     IModelTestUtils.registerTestBimSchema();
     // make a unique name for the output file so this test can be run in parallel
     testFileName = IModelTestUtils.prepareOutputFile("TxnManager", `${Guid.createValue()}.bim`);
@@ -66,7 +66,7 @@ describe("TxnManager", () => {
     roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
-  after(() => {
+  afterEach(() => {
     roImodel.close();
     imodel.close();
     IModelJsFs.removeSync(testFileName);
