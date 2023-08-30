@@ -44,8 +44,8 @@ describe("KindOfQuantity Merger test", () => {
         sourceContext = new SchemaContext();
     });
 
-    describe.only("KindOfQuantity missing test", () => {
-        it.only("should merge missing KindOfQuantity item with valid props", async () => {
+    describe("KindOfQuantity missing test", () => {
+        it("should merge missing KindOfQuantity item with valid props", async () => {
             const sourceSchema = await Schema.fromJson({
                 ...sourceJson,
             }, sourceContext);

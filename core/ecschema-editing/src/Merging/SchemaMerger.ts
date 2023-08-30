@@ -13,6 +13,7 @@ import mergeSchemaItems from "./SchemaItemMerger";
 import mergeSchemaReferences from "./SchemaReferenceMerger";
 import mergeCAClasses from "./CAClassMerger";
 import mergeKindOfQuantity from "./KindOfQuantityMerger";
+import mergePhenomenon from "./PhenomenonMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -78,6 +79,9 @@ export class SchemaMerger {
 
     const classChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.EntityClass, SchemaItemType.StructClass]);
     await mergeSchemaItems(mergeContext, classChanges, mergeClasses);
+
+    const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Phenomenon]);
+    await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.
