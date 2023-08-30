@@ -1214,7 +1214,7 @@ export class IndexedXYZCollectionPolygonOps {
    * @param altitudeRange min and max altitudes encountered.
    */
   public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
-    xyz: IndexedReadWriteXYZCollection,
+    xyz: IndexedXYZCollection,
     xyzPositive: IndexedReadWriteXYZCollection,
     xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
     const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;

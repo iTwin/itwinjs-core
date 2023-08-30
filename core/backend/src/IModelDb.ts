@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { join } from "path";
 import * as fs from "fs";
+import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -48,6 +48,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
@@ -239,7 +240,6 @@ export abstract class IModelDb extends IModel {
   private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
 
@@ -322,9 +322,8 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
-  private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public readonly nativeDb: IModelJsNative.DgnDb;
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
@@ -334,7 +333,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this._nativeDb = args.nativeDb;
+    this.nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
@@ -368,7 +367,6 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     this.nativeDb.closeIModel();
-    this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
   /** @internal */
@@ -432,7 +430,7 @@ export abstract class IModelDb extends IModel {
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this.nativeDb; }
+  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
@@ -507,9 +505,9 @@ export abstract class IModelDb extends IModel {
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+    if (!this.nativeDb.isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
-    }
+
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
@@ -721,6 +719,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
+    this._classMetaDataRegistry = undefined;
   }
 
   /** Update the project extents for this iModel.
@@ -822,20 +821,38 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (schemaFileNames.length === 0)
+      return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
-      schemaLockHeld: true,
-      ecSchemaXmlContext: maybeCustomNativeContext,
-    };
+    if (this.nativeDb.schemaSyncEnabled()) {
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-    if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema");
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+        schemaLockHeld: true,
+        ecSchemaXmlContext: maybeCustomNativeContext,
+      };
+
+      if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
+
+      const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
     }
-
     this.clearCaches();
   }
 
@@ -849,13 +866,31 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (serializedXmlSchemas.length === 0)
+      return;
 
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema");
+    if (this.nativeDb.schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
 
+      const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
+    }
     this.clearCaches();
   }
 
