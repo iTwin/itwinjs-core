@@ -136,7 +136,7 @@ export abstract class MapLayerImageryProvider {
    * See [[ImageryTileTree._loadChildren]] for the definition of `resolveChildren` where this function is commonly called.
    * @param quadId quad to generate child IDs for.
    * @param resolveChildren Function that creates tiles from child IDs.
-   * @internal
+   * @beta
    */
   protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
     resolveChildren(this.getPotentialChildIds(quadId));

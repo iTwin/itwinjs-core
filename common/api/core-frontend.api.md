@@ -1336,7 +1336,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
-    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)
@@ -7772,7 +7772,6 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 // @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
-    // @internal (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
@@ -7788,8 +7787,7 @@ export abstract class MapLayerImageryProvider {
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    // @internal (undocumented)
-    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -7815,12 +7813,11 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
-    getPotentialChildIds(tile: ImageryMapTile): QuadId[];
-    // @internal (undocumented)
+    getPotentialChildIds(quadId: QuadId): QuadId[];
+    // @internal
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
-    // @internal (undocumented)
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -17604,7 +17601,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     displayedLayerName: string;
     // (undocumented)
-    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
