@@ -44,8 +44,10 @@ if (targetBranch === `origin/${currentBranch}`) {
 }
 // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
-// # copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
+
+targetBranch = targetBranch.replace("origin/", "");
 await $`git checkout ${targetBranch}`;
+// copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
 const currentFiles = getFilePaths(targetPath);
@@ -67,7 +69,6 @@ await $`rush publish --regenerate-changelogs`;
 // await $`git checkout -b finalize-release-X.X.X`;
 // targetBranch = "finalize-release-X.X.X"
 /*********************************************************************/
-targetBranch = targetBranch.replace("origin/", "");
 await $`git add .`;
 await $`git commit -m "${commitMessage} Changelogs"`;
 await $`rush change --bulk --message "" --bump-type none`;
