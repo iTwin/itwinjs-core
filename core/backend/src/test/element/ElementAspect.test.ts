@@ -220,6 +220,8 @@ describe("ElementAspect", () => {
     const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
     expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
     iModelDb.elements.insertAspect(aspectProps);
+
+    const aspectJson = aspect.toJSON();
     iModelDb.saveChanges();
     iModelDb.close();
     iModelDb = SnapshotDb.openFile(fileName);
@@ -228,7 +230,6 @@ describe("ElementAspect", () => {
     assert.equal(aspects.length, 1);
     expect(aspects[0]).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
-    const aspectJson = aspect.toJSON();
     expect(aspectJson).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
     assert(aspectProps.scope !== undefined);

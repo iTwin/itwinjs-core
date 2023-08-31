@@ -249,7 +249,7 @@ describe("default NativePlatform", () => {
 
   it("throws when fails to find imodel using IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
-    mock.setup((x) => x.nativeDb).returns(() => (undefined as any)).verifiable(moq.Times.atLeastOnce());
+    mock.setup((x) => x.isOpen).returns(() => false).verifiable(moq.Times.atLeastOnce());
     expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(PresentationError);
     mock.verifyAll();
   });

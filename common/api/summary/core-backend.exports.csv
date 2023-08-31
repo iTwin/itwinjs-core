@@ -23,6 +23,7 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
+beta;ChangeInstanceKey
 public;ChangesetArg 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
@@ -42,7 +43,7 @@ public;CloudContainerArgs
 beta;CloudSqlite
 internal;BcvHttpLog
 internal;BcvHttpLogFilterOptions
-internal;LockAndOpenArgs
+internal;LockAndOpenArgs 
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeService
 alpha;CodeService
@@ -297,6 +298,7 @@ public;ProgressStatus
 beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
+beta;QueryLocalChangesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -316,6 +318,7 @@ public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
+internal;SchemaSync
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingLocation 

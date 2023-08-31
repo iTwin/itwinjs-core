@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add ECSqlExpr api",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
