@@ -636,6 +636,13 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
+// @beta
+export interface ChangeInstanceKey {
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
@@ -837,6 +844,8 @@ export namespace CloudSqlite {
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -1000,10 +1009,11 @@ export namespace CloudSqlite {
     }
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     // @internal (undocumented)
-    export interface LockAndOpenArgs {
+    export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
+        openMode?: OpenMode;
         user: string;
     }
     export enum LoggingMask {
@@ -2967,7 +2977,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
+    readonly nativeDb: IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -4407,6 +4417,12 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
+    readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4587,6 +4603,35 @@ export class Schemas {
     static getRegisteredSchema(schemaName: string): typeof Schema | undefined;
     static registerSchema(schema: typeof Schema): void;
     static unregisterSchema(schemaName: string): boolean;
+}
+
+// @internal (undocumented)
+export namespace SchemaSync {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        // (undocumented)
+        getUri(): string;
+        static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
+    }
+    const // (undocumented)
+    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    const // (undocumented)
+    withLockedAccess: (iModel: TestCacheIModel, args: {
+        operationName: string;
+        openMode?: OpenMode;
+        user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    initializeForIModel: (arg: {
+        iModel: IModelDb;
+        containerProps: CloudSqlite.ContainerProps;
+    }) => Promise<void>;
+    export class SchemaSyncDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        readonly myVersion = "4.0.0";
+    }
 }
 
 // @public
@@ -5423,6 +5468,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;

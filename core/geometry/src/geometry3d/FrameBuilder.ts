@@ -47,6 +47,10 @@ export class FrameBuilder {
   private _vector0: undefined | Vector3d;
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
+  private static _workMatrix?: Matrix3d;
+  private static _workVector0?: Vector3d;
+  private static _workVector1?: Vector3d;
+  private static _workPoint?: Point3d;
   // test if both vectors are defined and have significant angle between.
   private areStronglyIndependentVectors(
     vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians,
@@ -72,20 +76,23 @@ export class FrameBuilder {
    * * If allowLeftHanded is false, vector0 and vector1 determine a right handed coordinate system.
    * * if allowLeftHanded is true, the z vector of the right handed system can be flipped to agree with vector2 direction.
    */
-  public getValidatedFrame(allowLeftHanded: boolean = false): Transform | undefined {
+  public getValidatedFrame(allowLeftHanded: boolean = false, result?: Transform): Transform | undefined {
     if (this._origin && this._vector0 && this._vector1) {
+      const createRigidMatrix = (v0: Vector3d, v1: Vector3d): Matrix3d | undefined => {
+        return FrameBuilder._workMatrix = Matrix3d.createRigidFromColumns(v0, v1, AxisOrder.XYZ, FrameBuilder._workMatrix);
+      };
       if (!allowLeftHanded) {
-        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = createRigidMatrix(this._vector0, this._vector1);
         if (matrix)
-          return Transform.createOriginAndMatrix(this._origin, matrix);
+          return Transform.createOriginAndMatrix(this._origin, matrix, result);
         // uh oh -- vector1 was not really independent.  clear everything after vector0.
         this._vector1 = this._vector2 = undefined;
       } else if (this._vector2) {
-        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = createRigidMatrix(this._vector0, this._vector1);
         if (matrix) {
           if (this._vector0.tripleProduct(this._vector1, this._vector2) < 0)
             matrix.scaleColumns(1.0, 1.0, -1.0);
-          return Transform.createOriginAndMatrix(this._origin, matrix);
+          return Transform.createOriginAndMatrix(this._origin, matrix, result);
         }
         // uh oh again -- clear vector1 and vector2, re-announce vector2 as possible vector1??
         const vector2 = this._vector2;
@@ -162,7 +169,10 @@ export class FrameBuilder {
    * for a coordinate system.
    */
   public announce(data: any) {
-    if (this.savedVectorCount() > 1) return;
+    if (this.savedVectorCount() > 1)
+      return;
+    if (data === undefined)
+      return;
     if (data instanceof Point3d)
       this.announcePoint(data);
     else if (data instanceof Vector3d)
@@ -232,34 +242,39 @@ export class FrameBuilder {
    * * origin is at first point.
    * * x axis in direction of first nonzero vector present or implied by the input.
    * * y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
+   * * The calculation favors the first points found. It does not try to get a "best" plane.
+   * @param defaultUpVector optional vector to cross with vector0 to create vector1 when it is unknown
+   * @param params any number of geometric objects to examine in [[announce]] for point/vector data sufficient to construct a frame.
+   * If the last argument is a `Transform`, it is populated with the computed frame and returned.
+   * @returns computed localToWorld frame, or undefined if insufficient data.
    */
   public static createRightHandedFrame(defaultUpVector: Vector3d | undefined, ...params: any[]): Transform | undefined {
+    // if last arg is a Transform, remove it from the array and use for the return value
+    let frame = (params.length > 0 && params[params.length - 1] instanceof Transform) ? params.pop() as Transform : undefined;
     const builder = new FrameBuilder();
     for (const data of params) {
       builder.announce(data);
       builder.applyDefaultUpVector(defaultUpVector);
-      const result = builder.getValidatedFrame(false);
-      if (result !== undefined) {
+      if (frame = builder.getValidatedFrame(false, frame)) {
         if (defaultUpVector) {
-          if (result.matrix.dotColumnZ(defaultUpVector) < 0.0)
-            result.matrix.scaleColumnsInPlace(1, -1, -1);
+          if (frame.matrix.dotColumnZ(defaultUpVector) < 0.0)
+            frame.matrix.scaleColumnsInPlace(1, -1, -1);
         }
-        return result;
+        return frame;
       }
     }
-    const evaluatePrimitiveFrame = (curve: CurvePrimitive): Transform | undefined => {
-      return curve.fractionToFrenetFrame(0.0);
+    const evaluatePrimitiveFrame = (curve: CurvePrimitive, result?: Transform): Transform | undefined => {
+      return curve.fractionToFrenetFrame(0.0, result);
     };
     // try direct evaluation of curve primitives using the above lambda
     for (const data of params) {
       if (data instanceof CurvePrimitive) {
-        return evaluatePrimitiveFrame(data);
+        return evaluatePrimitiveFrame(data, frame);
       } else if (data instanceof CurveCollection) {
         const children = data.collectCurvePrimitives();
         for (const curve of children) {
-          const frenetFrame = evaluatePrimitiveFrame(curve);
-          if (frenetFrame)
-            return frenetFrame;
+          if (frame = evaluatePrimitiveFrame(curve, frame))
+            return frame;
         }
       }
     }
@@ -270,16 +285,12 @@ export class FrameBuilder {
    * * The xy columns of the transform contain the first points or vectors of the data.
    * * The z column is perpendicular to that xy plane.
    * * The calculation favors the first points found. It does not try to get a "best" plane.
+   * @param params any number of geometric objects to examine in [[announce]] for point/vector data sufficient to construct a frame.
+   * If the last argument is a `Transform`, it is populated with the computed frame and returned.
+   * @returns computed localToWorld frame, or undefined if insufficient data.
    */
   public static createRightHandedLocalToWorld(...params: any[]): Transform | undefined {
-    const builder = new FrameBuilder();
-    for (const data of params) {
-      builder.announce(data);
-      const localToWorld = builder.getValidatedFrame(false);
-      if (localToWorld !== undefined)
-        return localToWorld;
-    }
-    return undefined;
+    return this.createRightHandedFrame(undefined, params);
   }
 
   /**
@@ -287,44 +298,48 @@ export class FrameBuilder {
    * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
    * direction is toward the point most distant from that line.
    * @param points array of points
+   * @param result optional pre-allocated Transform to populate and return
+   * @returns localToWorld frame for the points, or undefined if insufficient data
    */
-  public static createFrameToDistantPoints(points: Point3d[]): Transform | undefined {
+  public static createFrameToDistantPoints(points: Point3d[], result?: Transform): Transform | undefined {
     if (points.length > 2) {
-      const origin = points[0].clone();
-      const vector01 = Vector3d.create();
+      const origin = points[0];
+      const vector01 = FrameBuilder._workVector0 ?? Vector3d.create();
       Point3dArray.indexOfMostDistantPoint(points, points[0], vector01);
-      const vector02 = Vector3d.create();
+      const vector02 = FrameBuilder._workVector1 ?? Vector3d.create();
       Point3dArray.indexOfPointWithMaxCrossProductMagnitude(points, origin, vector01, vector02);
-      const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
+      const matrix = FrameBuilder._workMatrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ, FrameBuilder._workMatrix);
       if (matrix)
-        return Transform.createRefs(origin, matrix);
+        return Transform.createOriginAndMatrix(origin, matrix, result);
     }
     return undefined;
   }
   /**
    * Try to create a frame whose xy plane is through points, with the points appearing CCW in the local frame.
-   *
    * * If 3 or more distinct points are present, the x axis is from the first point to the most distant, and y
    * direction is toward the point most distant from that line.
    * @param points array of points
+   * @param result optional pre-allocated Transform to populate and return
+   * @returns localToWorld frame for the points, or undefined if insufficient data
    */
-  public static createFrameWithCCWPolygon(points: Point3d[]): Transform | undefined {
+  public static createFrameWithCCWPolygon(points: Point3d[], result?: Transform): Transform | undefined {
     if (points.length > 2) {
-      const ray = PolygonOps.centroidAreaNormal(points);
-      if (ray) {
-        return ray.toRigidZFrame();
-      }
+      const ray = PolygonOps.centroidAreaNormal(points);  // can't pass pre-allocated ray...
+      if (ray)
+        return ray.toRigidZFrame(result);
     }
     return undefined;
   }
   /**
    * Create the localToWorld transform from a range to axes of its parent coordinate system.
-   * @param range [in] range to inspect
-   * @param fractionX  [in] fractional coordinate of frame origin x
-   * @param fractionY [in] fractional coordinate of frame origin y
-   * @param fractionZ [in] fractional coordinate of frame origin z
-   * @param scaleSelect [in] selects size of localToWorld axes.
-   * @param defaultAxisLength [in] if true and any axis length is 0, that axis vector takes this physical length.
+   * @param range range to inspect
+   * @param scaleSelect selects size of localToWorld axes.
+   * @param fractionX fractional coordinate of frame origin x
+   * @param fractionY fractional coordinate of frame origin y
+   * @param fractionZ fractional coordinate of frame origin z
+   * @param defaultAxisLength if true and any axis length is 0, that axis vector takes this physical length.
+   * @param result optional pre-allocated Transform to populate and return
+   * @returns localToWorld frame for the range
    */
   public static createLocalToWorldTransformInRange(
     range: Range3d,
@@ -332,9 +347,11 @@ export class FrameBuilder {
     fractionX: number = 0,
     fractionY: number = 0,
     fractionZ: number = 0,
-    defaultAxisLength: number = 1.0): Transform {
+    defaultAxisLength: number = 1.0,
+    result?: Transform,
+  ): Transform {
     if (range.isNull)
-      return Transform.createIdentity();
+      return Transform.createIdentity(result);
     let a = 1.0;
     let b = 1.0;
     let c = 1.0;
@@ -345,6 +362,8 @@ export class FrameBuilder {
       b = Geometry.correctSmallMetricDistance(range.yLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionY, 0, 1);
       c = Geometry.correctSmallMetricDistance(range.zLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionZ, 0, 1);
     }
-    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), Matrix3d.createScale(a, b, c));
+    const origin = FrameBuilder._workPoint = range.fractionToPoint(fractionX, fractionY, fractionZ, FrameBuilder._workPoint);
+    const matrix = FrameBuilder._workMatrix = Matrix3d.createScale(a, b, c, FrameBuilder._workMatrix);
+    return Transform.createOriginAndMatrix(origin, matrix, result);
   }
 }
