@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Removes storageType from TokenRequestProps",
+      "comment": "Remove `storageType` from `BlobContainer.RequestTokenProps`.",
       "type": "none"
     }
   ],
