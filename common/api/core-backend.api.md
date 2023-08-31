@@ -430,7 +430,7 @@ export namespace BlobContainer {
     }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<UriAndId>;
+        create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
@@ -438,6 +438,9 @@ export namespace BlobContainer {
         updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
+    export interface CreatedContainerProps extends UriAndId {
+        provider: Provider;
+    }
     export interface CreateNewContainerProps {
         // @internal
         containerId?: ContainerId;
@@ -456,8 +459,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
