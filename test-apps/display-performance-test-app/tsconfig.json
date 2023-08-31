@@ -6,7 +6,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -15,7 +15,8 @@
       "dom",
       "dom.iterable",
       "esnext"
-    ]
+    ],
+    "types": ["vite/client"],
   },
   "include": [
     "./src/**/*.ts"

@@ -1,6 +1,2 @@
 Package.resolved
 .env.local.mobile
-.vite-inspect/
-.static-assets/
-
-stats.html

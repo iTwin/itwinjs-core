@@ -107,7 +107,7 @@ steps:
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration:frontend:ci
+  - script: npm run test:integration:frontend
     workingDirectory: "core/electron"
     env:
       NODE_ENV: development

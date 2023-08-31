@@ -1,0 +1,57 @@
+{
+  "name": "@itwin/ecsql-common",
+  "version": "4.2.0-dev.13",
+  "description": "ECSql component that can be reference on backend and frontend",
+  "main": "lib/cjs/ecsql-common.js",
+  "module": "lib/esm/ecsql-common.js",
+  "typings": "lib/cjs/ecsql-common",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecsql-common/file.json --tsIndexFile=./ecsql-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=ecsql-common",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "mocha",
+    "cover": "nyc npm -s test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/ecsql/common"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "digital-twin",
+    "iTwin",
+    "ecsql"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@itwin/core-bentley": "workspace:*"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@types/chai": "4.3.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "18.16.1",
+    "chai": "^4.1.2",
+    "eslint": "^8.44.0",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~5.0.2"
+  },
+  "nyc": {
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
+    "all": true
+  }
+}

@@ -1,6 +1,50 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Aug 2023 07:50:06 GMT and should not be manually modified.
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+_Version update only_
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Fix decoding of draco-compressed texture coordinates in glTF.
+- Take into account the aspectRatioSkew of the view inside the window area tool.
+- Fixed world decorations disappearing and asserts
+- Fixed black view caused by certain cases of going back down to one viewport.
+- Fix background map layers failing to blend with an opaque solid base layer.
+- avoid unnecessary preflight requests when loading tiles from cloud cache
+- Fix Viewport.isPixelSelectable following signature change of Viewport.mapLayerFromIds
+- Added support for UniqueValue renderer in ArcGIS feature format
+- Two map-layers instances having different formatId or subLayers set should not share the same tile tree.
+- Improved ArcGIS map-layers validation.
+- Revisited Viewport.getMapFeatureInfo, it now return graphics along with records.
+- Added logging to 'MapLayerImageryProvider.createTileTree' and added missing export in MapLayerSources.
+- Upgrade sinon to 15.0.4
+- Fix gaps in certain reprojected tiles.
+- Promoted TentativeOrAccuSnap to public
+- Ensure element Ids are loaded for RenderTimeline element when schedule scripts are applied on the frontend.
+- Promote many rendering-related APIs.
+- Introduce compact encoding scheme for edges in iMdl tiles.
+- Fix assertion when reading glTF containing a normal map.
+- Add more efficient methods for converting multiple points to and from an iModel's spatial coordinate system.
+- Support decoding point clouds from glTF.
+- Split iMdl tile decoding into two phases: parsing and graphics creation.
+- Decode iMdl tile content in a web worker.
+- Treat non-standard mimeType "image/jpg" as "image/jpeg".
+- Support snapping to elements inside of orthogonal view attachments.
+- ViewCreator3d fits to the extents of the viewed models. SpatialViewState.computeFitRange accepts an optional minimal fit range.
+- add ViewStore apis
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
@@ -68,6 +112,19 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.7.13
+Tue, 08 Aug 2023 19:49:18 GMT
+
+_Version update only_
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+### Updates
+
+- Fix decoding of draco-compressed texture coordinates in glTF.
+- Fix a failure to read some glTF data with extra padding bytes.
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:21 GMT

@@ -173,6 +173,15 @@ describe("Descriptor", () => {
             },
           }],
         }],
+        ruleset: {
+          id: "rulesetId",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+            }],
+          }],
+        },
       };
       const descriptor = Descriptor.fromJSON(json);
       validateParentship(descriptor!.fields);
@@ -249,6 +258,15 @@ describe("Descriptor", () => {
             }],
           }],
         },
+        ruleset: {
+          id: "rulesetId",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+            }],
+          }],
+        },
       });
       expect(descriptor.toJSON()).to.matchSnapshot();
     });
@@ -289,6 +307,44 @@ describe("Descriptor", () => {
       });
       const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
       expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
+    });
+
+  });
+
+  describe("getFieldByDescriptor", () => {
+
+    it("returns `undefined` when there are no fields", () => {
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      expect(descriptor.getFieldByDescriptor({ type: FieldDescriptorType.Name, fieldName: "x" })).to.be.undefined;
+    });
+
+    it("returns `undefined` when field is not found", () => {
+      const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField({ name: "x" })] });
+      expect(descriptor.getFieldByDescriptor({ type: FieldDescriptorType.Name, fieldName: "y" })).to.be.undefined;
+    });
+
+    it("returns a field", () => {
+      const field = createTestSimpleContentField({ name: "x" });
+      const descriptor = createTestContentDescriptor({ fields: [field] });
+      expect(descriptor.getFieldByDescriptor({ type: FieldDescriptorType.Name, fieldName: "x" })).to.eq(field);
+    });
+
+    it("returns `undefined` when descriptor contains nested fields but field is not found", () => {
+      const primitiveField = createTestSimpleContentField({ name: "x" });
+      const nestedContentField = createTestNestedContentField({
+        nestedFields: [primitiveField],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
+      expect(descriptor.getFieldByDescriptor({ type: FieldDescriptorType.Name, fieldName: "y" }, true)).to.be.undefined;
+    });
+
+    it("returns a nested field", () => {
+      const primitiveField = createTestSimpleContentField({ name: "x" });
+      const nestedContentField = createTestNestedContentField({
+        nestedFields: [primitiveField],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
+      expect(descriptor.getFieldByDescriptor({ type: FieldDescriptorType.Name, fieldName: "x" }, true)).to.eq(primitiveField);
     });
 
   });

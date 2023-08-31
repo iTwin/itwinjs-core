@@ -1028,7 +1028,7 @@ export class AnalyticRoots {
   /**
    * * Solve the simultaneous equations in variables`c` and`s`:
    *   * A line: `alpha + beta*c + gamma*s = 0`
-   *   * The unit circle 'c*c + s*s = 1`
+   *   * The unit circle `c*c + s*s = 1`
    * * Solution values are returned as 0, 1, or 2(c, s) pairs
    * * Return value indicates one of these solution states:
    *   * -2 -- all coefficients identically 0.   The entire c, s plane-- and therefore the entire unit circle-- is a solution.
@@ -1048,21 +1048,24 @@ export class AnalyticRoots {
    * @param sinValues (caller allocated) array to receive solution `s` values
    * @param radiansValues (caller allocated) array to receive solution radians values.
    */
-  public static appendImplicitLineUnitCircleIntersections(alpha: number, beta: number, gamma: number,
-    cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array, radiansValues: OptionalGrowableFloat64Array,
-    relTol: number = 1.0e-14): number {
-
+  public static appendImplicitLineUnitCircleIntersections(
+    alpha: number,
+    beta: number,
+    gamma: number,
+    cosValues: OptionalGrowableFloat64Array,
+    sinValues: OptionalGrowableFloat64Array,
+    radiansValues: OptionalGrowableFloat64Array,
+    relTol: number = 1.0e-14,
+  ): number {
     let twoTol: number;
     const delta2 = beta * beta + gamma * gamma;
     const alpha2 = alpha * alpha;
     let solutionType = 0;
-
     if (relTol < 0.0) {
       twoTol = 0.0;
     } else {
       twoTol = 2.0 * relTol;
     }
-
     if (delta2 <= 0.0) {
       solutionType = (alpha === 0) ? -2 : -1;
     } else {
@@ -1095,12 +1098,10 @@ export class AnalyticRoots {
   }
 }
 /**
- * manipulations of polynomials with where `coff[i]` multiplies x^i
+ * Manipulations of polynomials with where `coff[i]` multiplies x^i
  * @internal
  */
-
 export class PowerPolynomial {
-
   /** Evaluate a standard basis polynomial at `x`, with `degree` possibly less than `coff.length` */
   public static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number {
     if (degree < 0) {
