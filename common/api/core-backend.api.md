@@ -919,6 +919,7 @@ export namespace CloudSqlite {
         releaseWriteLock(): void;
         get storageType(): string;
         uploadChanges(): Promise<void>;
+        get writeLockExpires(): string;
     }
     // (undocumented)
     export interface CloudHttpProps {
