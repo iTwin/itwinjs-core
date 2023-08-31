@@ -32,6 +32,10 @@ targetBranch = String(targetBranch).replace('\n', '');
 currentBranch = String(currentBranch).replace('\n', '');
 commitMessage = String(commitMessage).replace('\n', '');
 
+console.log(`target branch: ${targetBranch}`);
+console.log(`current branch: ${currentBranch}`);
+console.log(`commit msg: ${commitMessage}`);
+
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
   targetBranch = 'master'
