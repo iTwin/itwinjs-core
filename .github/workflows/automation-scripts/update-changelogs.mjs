@@ -28,9 +28,9 @@ let currentBranch = await $`git branch --show-current`;
 let commitMessage = await $`git log --format=%B -n 1`;
 
 // remove extra null and new line characters from git cmds
-targetBranch = String(targetBranch).replace('\n', '');
-currentBranch = String(currentBranch).replace('\n', '');
-commitMessage = String(commitMessage).replace('\n', '');
+targetBranch = String(targetBranch).replace(/\n/g, '');
+currentBranch = String(currentBranch).replace(/\n/g, '');
+commitMessage = String(commitMessage).replace(/\n/g, '');
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
