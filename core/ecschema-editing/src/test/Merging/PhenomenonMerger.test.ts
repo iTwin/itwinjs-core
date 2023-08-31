@@ -6,7 +6,7 @@ import { Phenomenon, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
-describe.only("Phenomenon merger tests", () => {
+describe("Phenomenon merger tests", () => {
   let targetContext: SchemaContext;
   let sourceContext: SchemaContext;
 
@@ -56,8 +56,10 @@ describe.only("Phenomenon merger tests", () => {
       expect(sourcePhenomenon!.toJSON()).deep.eq(mergedPhenomenon!.toJSON());
 
     });
-  describe("Phenomenon attribute conflict tests", ()=>{
-    it("should throw error for definition conflict",async () => {
+  })
+
+  describe("Phenomenon attribute conflict tests", () => {
+    it("should throw error for definition conflict", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -85,8 +87,7 @@ describe.only("Phenomenon merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error,'definition attribute conflict: Units.LENGTH(2) -> Units.LENGTH(4)');
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, 'definition attribute conflict: Units.LENGTH(2) -> Units.LENGTH(4)');
     })
-  })
   })
 })

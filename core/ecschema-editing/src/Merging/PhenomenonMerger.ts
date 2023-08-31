@@ -18,7 +18,7 @@ export default async function mergePhenomenon(target: Phenomenon, _source: Pheno
                 if (item.definition === "") {
                     item.setDefinition(propertyValue);
 
-                    // throw error if conflict for now 
+                    // throw error if conflict for now, we need a clear way of handling conflicts 
                 } else if (item.definition !== propertyValue) {
                     throw Error(`definition attribute conflict: ${propertyValue} -> ${item.definition}`);
                 }
