@@ -97,7 +97,7 @@ export namespace BlobContainer {
   }
 
   /** Information about a newly created container. */
-  export interface ContainerInfo extends UriAndId {
+  export interface CreatedContainerProps extends UriAndId {
     /** name of the blob storage provider. */
     provider: Provider;
   }
@@ -140,7 +140,7 @@ export namespace BlobContainer {
   /** Methods to create, delete, and access blob containers. */
   export interface ContainerService {
     /**  Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
-    create(props: CreateNewContainerProps): Promise<ContainerInfo>;
+    create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
 
     /**
      * Delete an existing blob container.
