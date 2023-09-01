@@ -7,32 +7,32 @@
  * @module Curve
  */
 
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { BezierCurveBase } from "../bspline/BezierCurveBase";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Geometry } from "../Geometry";
-import { CoincidentGeometryQuery } from "../geometry3d/CoincidentGeometryOps";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { XYAndZ } from "../geometry3d/XYZProps";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { UnivariateBezier } from "../numerics/BezierPolynomials";
-import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
-import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import { Arc3d } from "./Arc3d";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
+import { BezierCurveBase } from "../../bspline/BezierCurveBase";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry } from "../../Geometry";
+import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { UnivariateBezier } from "../../numerics/BezierPolynomials";
+import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
+import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { AnyCurve } from "../CurveChain";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
 
@@ -65,30 +65,14 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
   }
 }
 /**
- * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
- * CurveCurve.ClosestApproach
- * @public
- */
-export class CurveLocationDetailArrayPair {
-  /** First array of details ... */
-  public dataA: CurveLocationDetail[];
-  /** Second array of details ... */
-  public dataB: CurveLocationDetail[];
-  public constructor() {
-    this.dataA = [];
-    this.dataB = [];
-  }
-}
-/**
  * Handler class for XY intersections between _geometryB and another geometry.
- * * **NOTE:** GeometryQuery input (_geometryB) should really be AnyCurve.
  * * Instances are initialized and called from CurveCurve.
  * * geometryB is saved for later reference.
  * @internal
  */
 export class CurveCurveIntersectXY extends NullGeometryHandler {
   private _extendA: boolean;
-  private _geometryB: GeometryQuery | undefined;
+  private _geometryB: AnyCurve | undefined;
   private _extendB: boolean;
   private _results!: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
@@ -126,7 +110,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   public constructor(
     worldToLocal: Matrix4d | undefined,
     extendA: boolean,
-    geometryB: GeometryQuery | undefined,
+    geometryB: AnyCurve | undefined,
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ) {
@@ -145,7 +129,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this.reinitialize();
   }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
-  public resetGeometry(extendA: boolean, geometryB: GeometryQuery, extendB: boolean): void {
+  public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;
@@ -520,7 +504,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     // Line:  contains points A0,A1
     // Arc point colinear with line if det (A0, A1, X) = 0
     // with homogeneous xyw points and vectors.
-    // With equational X:   det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
+    // With equational X:   det (A0, A1, C) + c det (A0, A1, U) + s det (A0, A1, V) = 0.
     // solve for theta.
     // evaluate points.
     // project back to line.

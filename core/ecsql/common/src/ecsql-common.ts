@@ -2,8 +2,4 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-.embedded-console {
-  height: 40vh;
-  width: 60vw;
-}
+export * from "./ECSqlAst";

@@ -506,6 +506,7 @@ export class BarycentricTriangle {
   }
   /**
    * Compute the intersection of a line (parameterized as a ray) with the plane of this triangle.
+   * * This method is slower than `Ray3d.intersectionWithTriangle`.
    * @param ray infinite line to intersect, as a ray
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the line-plane intersection point `d.world`:

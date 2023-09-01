@@ -33,7 +33,6 @@ public;BarycentricTriangle
 public;BeJSONFunctions
 public;BentleyGeometryFlatBuffer
 public;Bezier1dNd
-internal;BezierBezierIntersectionXYRRToRRD 
 internal;class BezierCoffs
 public;BezierCurve3d 
 public;BezierCurve3dH 
@@ -92,8 +91,6 @@ public;class CurveCollection
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
 public;CurveCurve
 public;CurveCurveApproachType
-internal;CurveCurveIntersectXY 
-internal;CurveCurveIntersectXYZ 
 public;CurveExtendMode
 public;CurveExtendOptions
 public;CurveFactory
