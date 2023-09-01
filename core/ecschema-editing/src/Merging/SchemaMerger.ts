@@ -66,16 +66,18 @@ export class SchemaMerger {
 
     await mergeSchemaReferences(mergeContext, schemaChanges);
 
+    const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.PropertyCategory]);
+    await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
+
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
+
+    // TODO: mergeUnitSystem
 
     const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Phenomenon]);
     await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
 
     const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Constant]);
     await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
-
-    const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.PropertyCategory]);
-    await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
@@ -85,7 +87,7 @@ export class SchemaMerger {
     const classChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.EntityClass, SchemaItemType.StructClass]);
     await mergeSchemaItems(mergeContext, classChanges, mergeClasses);
 
-    //await mergeSchemaItems(mergeContext, schemaChanges.kindOfQuantityChanges.values(), mergeKindOfQuantity);
+    await mergeSchemaItems(mergeContext, schemaChanges.kindOfQuantityChanges.values(), mergeKindOfQuantity);
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.

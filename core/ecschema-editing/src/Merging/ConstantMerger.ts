@@ -13,8 +13,9 @@ export default async function mergeConstant(target: Constant, source: Constant, 
 
     // If phenomenon does not exist in target, constant can't exist  
     if (targetPhenomenon === undefined || targetPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
-        // throw error
+        throw Error(`Unable to locate phenomenon ${source.phenomenon!.name} in target schema`);
     }
+
     const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(targetPhenomenon!.key, async () => targetPhenomenon!);
 
     await mergeSchemaItemProperties(mutableConstant, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
@@ -35,7 +36,7 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             case "phenomenon": {
                 if (item.phenomenon === undefined) {
                     // It requires a lazy loaded type
-                    return item.setPhenomenon(lazyTargetPhenomenon)
+                    return item.setPhenomenon(lazyTargetPhenomenon);
                 }
             }
         }
