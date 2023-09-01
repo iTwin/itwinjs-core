@@ -215,7 +215,7 @@ export class V2CheckpointManager {
         const maxRequests = getPrefetchConfig("maxRequests", 6);
         const timeout = getPrefetchConfig("timeout", 100);
         const maxBlocks = getPrefetchConfig("maxBlocks", 500); // default size of 2GB. Assumes a checkpoint block size of 4MB.
-        if (dbStats?.totalBlocks !== undefined && dbStats.totalBlocks <= maxBlocks) {
+        if (dbStats?.totalBlocks !== undefined && dbStats.totalBlocks <= maxBlocks && dbStats.nPrefetch === 0) {
           const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
             const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
             Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
@@ -225,7 +225,7 @@ export class V2CheckpointManager {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
         } else {
-          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits.`, { maxBlocks, totalBlocksInDb: dbStats?.totalBlocks, v2props });
+          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits or ongoing prefetch.`, { maxBlocks, numPrefetches: dbStats?.nPrefetch, totalBlocksInDb: dbStats?.totalBlocks, v2props });
         }
       }
       return { dbName, container };
@@ -307,7 +307,10 @@ export class CheckpointManager {
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
       // first see if there's a V2 checkpoint available.
+      const stopwatch = new StopWatch(`[${request.checkpoint.changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting download of V2 checkpoint with id ${stopwatch.description}`);
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
+      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       if (changesetId !== request.checkpoint.changeset.id)
         Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, { requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
       else
@@ -349,7 +352,10 @@ export class CheckpointManager {
           const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
             (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+          const stopwatch = new StopWatch(`[${checkpoint.changeset.id}]`, true);
+          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
+          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           currentChangeset.index = checkpoint.changeset.index!; // eslint-disable-line @typescript-eslint/no-non-null-assertion

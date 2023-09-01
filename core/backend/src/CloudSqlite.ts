@@ -18,7 +18,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
 
-import type { VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode
 
@@ -63,7 +63,7 @@ export namespace CloudSqlite {
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
-      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, storageType: args.storageType, accessLevel: args.accessLevel };
+      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
       const doRefresh = async () => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
@@ -139,6 +139,10 @@ export namespace CloudSqlite {
     readonly transactions: boolean;
     /** the state of this database. Indicates whether the database is new or deleted since last upload */
     readonly state: "" | "copied" | "deleted";
+    /** current number of clients that have this database open. */
+    readonly nClient: number;
+    /** current number of ongoing prefetches on this database. */
+    readonly nPrefetch: number;
   }
 
   /** Filter options passed to CloudContainer.queryHttpLog
@@ -238,7 +242,7 @@ export namespace CloudSqlite {
   }
 
   /** @internal */
-  export interface LockAndOpenArgs {
+  export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     user: string;
     /** the name of the database within the container */
@@ -247,6 +251,8 @@ export namespace CloudSqlite {
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
+    /** if present, open mode for Db. Default is ReadWrite */
+    openMode?: OpenMode;
   }
 
   /** Logging categories for `CloudCache.setLogMask` */
@@ -848,7 +854,7 @@ export namespace CloudSqlite {
       let lockObtained = false;
       const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler, openMode: args.openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
