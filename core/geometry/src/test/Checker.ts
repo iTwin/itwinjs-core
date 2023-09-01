@@ -285,6 +285,13 @@ export class Checker {
 
     return false;
   }
+  /** Returns true if dataA is less than or almost equal to dataB. */
+  public testLETol(dataA: number, dataB: number, tol: number = Geometry.smallMetricDistance, ...params: any[]): boolean {
+    if (dataA <= dataB || Geometry.isSameCoordinate(dataA, dataB, tol))
+      return this.announceOK();
+    this.announceError("Expect dataA <= dataB + tol", dataA, dataB, params);
+    return false;
+  }
   public testBetween(dataA: number, dataB: number, dataC: number, ...params: any[]): boolean {
     if ((dataB - dataA) * (dataC - dataB) >= 0.0)
       return this.announceOK();
