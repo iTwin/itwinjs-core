@@ -96,6 +96,12 @@ export namespace BlobContainer {
     userToken: UserToken;
   }
 
+  /** Information about a newly created container. */
+  export interface CreatedContainerProps extends UriAndId {
+    /** name of the blob storage provider. */
+    provider: Provider;
+  }
+
   /**
    * Access level to request for token.
    * - `"write"`: request a writeable AccessToken.
@@ -108,7 +114,6 @@ export namespace BlobContainer {
 
   /** Information required to request an access token for a container. */
   export interface RequestTokenProps extends AccessContainerProps {
-    storageType: Provider;
     /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
     accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.
@@ -135,7 +140,7 @@ export namespace BlobContainer {
   /** Methods to create, delete, and access blob containers. */
   export interface ContainerService {
     /**  Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
-    create(props: CreateNewContainerProps): Promise<UriAndId>;
+    create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
 
     /**
      * Delete an existing blob container.

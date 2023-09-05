@@ -2147,18 +2147,21 @@ export namespace ElementGeometry {
     builder.addGeomPartId(fbb, flatbuffers.Long.create(idPair.lower, idPair.upper));
 
     if (undefined !== partToElement && !partToElement.isIdentity) {
+      const result = partToElement.matrix.factorRigidWithSignedScale();
+      if (undefined === result)
+        return undefined;
+
       const originOffset = EGFBAccessors.DPoint3d.createDPoint3d(fbb, partToElement.origin.x, partToElement.origin.y, partToElement.origin.z);
       builder.addOrigin(fbb, originOffset);
 
-      const angles = YawPitchRollAngles.createFromMatrix3d(partToElement.matrix);
+      const angles = YawPitchRollAngles.createFromMatrix3d(result.rigidAxes);
       if (undefined !== angles) {
         builder.addYaw(fbb, angles.yaw.degrees);
         builder.addPitch(fbb, angles.pitch.degrees);
         builder.addRoll(fbb, angles.roll.degrees);
       }
 
-      const result = partToElement.matrix.factorRigidWithSignedScale();
-      if (undefined !== result && result.scale > 0.0)
+      if (result.scale > 0.0)
         builder.addScale(fbb, result.scale);
     }
 
