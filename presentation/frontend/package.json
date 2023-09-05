@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.2.0-dev.12",
+  "version": "4.2.0-dev.15",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -41,12 +41,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.12",
-    "@itwin/core-common": "workspace:^4.2.0-dev.12",
-    "@itwin/core-frontend": "workspace:^4.2.0-dev.12",
-    "@itwin/core-quantity": "workspace:^4.2.0-dev.12",
-    "@itwin/ecschema-metadata": "workspace:^4.2.0-dev.12",
-    "@itwin/presentation-common": "workspace:^4.2.0-dev.12"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.15",
+    "@itwin/core-common": "workspace:^4.2.0-dev.15",
+    "@itwin/core-frontend": "workspace:^4.2.0-dev.15",
+    "@itwin/core-quantity": "workspace:^4.2.0-dev.15",
+    "@itwin/ecschema-metadata": "workspace:^4.2.0-dev.15",
+    "@itwin/presentation-common": "workspace:^4.2.0-dev.15"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

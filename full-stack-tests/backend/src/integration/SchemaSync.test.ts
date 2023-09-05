@@ -13,7 +13,7 @@ const storageType = "azure" as const;
 
 async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
-  const accessToken = await CloudSqlite.requestToken({ ...containerProps, storageType });
+  const accessToken = await CloudSqlite.requestToken({ ...containerProps });
   await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
   return { ...containerProps, accessToken, storageType };
 }
@@ -39,7 +39,7 @@ describe("Schema synchronization", function (this: Suite) {
   };
 
   it("multi user workflow", async () => {
-    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1"});
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
@@ -138,7 +138,7 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
   it("import same schema from different briefcase", async () => {
-    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2"});
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "4.2.0-dev.12",
+  "version": "4.2.0-dev.15",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",

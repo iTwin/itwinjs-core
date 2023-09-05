@@ -47,6 +47,29 @@ export interface TxnChangedEntities {
   readonly updates: EntityIdAndClassIdIterable;
 }
 
+/** Arguments supplied to [[TxnManager.queryLocalChanges]].
+ * @beta
+ */
+export interface QueryLocalChangesArgs {
+  /** If supplied and non-empty, restricts the results to include only EC instances belonging to the specified classes or subclasses thereof. */
+  readonly includedClasses?: string[];
+  /** If `true`, include changes that have not yet been saved. */
+  readonly includeUnsavedChanges?: boolean;
+}
+
+/** Represents a change (insertion, deletion, or modification) to a single EC instance made in a local [[BriefcaseDb]].
+ * @see [[TxnManager.queryLocalChanges]] to iterate all of the changed instances.
+* @beta
+*/
+export interface ChangeInstanceKey {
+  /** ECInstanceId of the instance. */
+  id: Id64String;
+  /** Fully-qualified class name of the instance. */
+  classFullName: string;
+  /** The type of change. */
+  changeType: "inserted" | "updated" | "deleted";
+}
+
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
 
 /** Strictly for tests. @internal */
@@ -470,4 +493,14 @@ export class TxnManager {
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
+  /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
+   * @beta
+  */
+  public queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey> {
+    if (!args) {
+      args = { includedClasses: [], includeUnsavedChanges: false };
+    }
+    return this._nativeDb.getLocalChanges(args.includedClasses ?? [], args.includeUnsavedChanges ?? false);
+  }
 }
+
