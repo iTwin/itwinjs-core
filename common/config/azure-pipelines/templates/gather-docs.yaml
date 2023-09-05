@@ -25,10 +25,6 @@ parameters:
     default: false
 
 steps:
-  # build script exists outside of any project so manually install fs-extra
-  - script: npm install fs-extra
-    displayName: Install fs-extra
-    workingDirectory: ${{ parameters.workingDir }}
   # Call the copying script
   - script: node common/scripts/copyReferenceFilesToStaging.js ${{ parameters.stagingDir }}
     displayName: Copy Reference files to Staging

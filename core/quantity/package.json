@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "4.2.0-dev.12",
+  "version": "4.2.0-dev.15",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -52,7 +52,7 @@
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.12"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.15"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

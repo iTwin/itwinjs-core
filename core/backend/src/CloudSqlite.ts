@@ -63,7 +63,7 @@ export namespace CloudSqlite {
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
-      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, storageType: args.storageType, accessLevel: args.accessLevel };
+      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
       const doRefresh = async () => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
@@ -139,6 +139,10 @@ export namespace CloudSqlite {
     readonly transactions: boolean;
     /** the state of this database. Indicates whether the database is new or deleted since last upload */
     readonly state: "" | "copied" | "deleted";
+    /** current number of clients that have this database open. */
+    readonly nClient: number;
+    /** current number of ongoing prefetches on this database. */
+    readonly nPrefetch: number;
   }
 
   /** Filter options passed to CloudContainer.queryHttpLog

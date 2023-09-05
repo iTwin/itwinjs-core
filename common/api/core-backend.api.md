@@ -430,7 +430,7 @@ export namespace BlobContainer {
     }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<UriAndId>;
+        create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
@@ -438,6 +438,9 @@ export namespace BlobContainer {
         updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
+    export interface CreatedContainerProps extends UriAndId {
+        provider: Provider;
+    }
     export interface CreateNewContainerProps {
         // @internal
         containerId?: ContainerId;
@@ -456,8 +459,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
@@ -633,6 +634,13 @@ export class ChangedElementsDb implements IDisposable {
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+}
+
+// @beta
+export interface ChangeInstanceKey {
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
 }
 
 // @public
@@ -836,6 +844,8 @@ export namespace CloudSqlite {
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -4407,6 +4417,12 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
+    readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -5452,6 +5468,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecsql-common",
-  "version": "4.2.0-dev.12",
+  "version": "4.2.0-dev.15",
   "description": "ECSql component that can be reference on backend and frontend",
   "main": "lib/cjs/ecsql-common.js",
   "module": "lib/esm/ecsql-common.js",

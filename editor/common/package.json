@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-common",
-  "version": "4.2.0-dev.12",
+  "version": "4.2.0-dev.15",
   "description": "iTwin.js editing properties common to frontend and backend",
   "main": "lib/cjs/editor-common.js",
   "module": "lib/esm/editor-common.js",
@@ -34,9 +34,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.12",
-    "@itwin/core-geometry": "workspace:^4.2.0-dev.12",
-    "@itwin/core-common": "workspace:^4.2.0-dev.12"
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.15",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.15",
+    "@itwin/core-common": "workspace:^4.2.0-dev.15"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
