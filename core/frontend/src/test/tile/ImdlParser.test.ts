@@ -125,7 +125,7 @@ describe("acquireImdlParser", () => {
 });
 
 describe("ImdlParser", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ publicPath: `${globalThis.origin  }/` }));
   after(async () => IModelApp.shutdown());
 
   it("produces an error upon invalid tile header", async () => {
