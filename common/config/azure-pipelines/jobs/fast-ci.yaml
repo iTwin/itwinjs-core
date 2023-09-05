@@ -9,14 +9,11 @@ variables:
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - name: win_pool
-    type: string
-    default: 'iModelTechCI'
+    value: 'iModelTechCI'
   - name: linux_pool
-    type: string
-    default: 'iModeljs Linux'
+    value: 'iModeljs Linux'
   - name: mac_pool
-    type: string
-    default: 'iModelTechMacArm'
+    value: 'iModelTechMacArm'
 
 
 pr:
