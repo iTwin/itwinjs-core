@@ -147,7 +147,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
    * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
    *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
    */
-  public scope: RelatedElement;
+  public scope: RelatedElement | undefined;
   /** The identifier of the object in the source repository. */
   public identifier: string;
   /** The kind of object within the source repository. */
