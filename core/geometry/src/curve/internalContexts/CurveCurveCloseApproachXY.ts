@@ -17,13 +17,11 @@ import { Range3d } from "../../geometry3d/Range";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
 import { AnyCurve } from "../CurveChain";
-import { CurveChain } from "../CurveCollection";
+import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { ParityRegion } from "../ParityRegion";
-import { UnionRegion } from "../UnionRegion";
 
 // cspell:word XYRR
 
@@ -539,6 +537,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // solve for theta.
     // evaluate points.
     // project back to line.
+    let intersectionFound = false;
     const data = arc.toTransformedVectors();
     const pointA0Local = pointA0;
     const pointA1Local = pointA1;
@@ -562,8 +561,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         this.recordPointWithLocalFractions(
           lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
         );
+        intersectionFound = true;
       }
     }
+    if (intersectionFound)
+      return;
     // 2) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, fractionA0, fractionA1, true, arc, 0, 1, true, reversed);
     // 3) line parallel to arc tangent.
@@ -716,34 +718,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     return undefined;
   }
-  /** Low level dispatch of curve chain. */
-  private dispatchCurveChain(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+  /** Low level dispatch of curve collection. */
+  private dispatchCurveCollection(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
     const geomB = this._geometryB;  // save
-    if (!geomB || !(geomB instanceof CurveChain))
+    if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
-    for (const child of geomB.children) {
-      this.resetGeometry(child);
-      geomAHandler(geomA);
-    }
-    this._geometryB = geomB;  // restore
-  }
-  /** Low level dispatch of union region. */
-  private dispatchUnionRegion(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
-    const geomB = this._geometryB;  // save
-    if (!geomB || !(geomB instanceof UnionRegion))
-      return;
-    for (const child of geomB.children) {
-      this.resetGeometry(child);
-      geomAHandler(geomA);
-    }
-    this._geometryB = geomB;  // restore
-  }
-  /** Low level dispatch of parity region. */
-  private dispatchParityRegion(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
-    const geomB = this._geometryB;  // save
-    if (!geomB || !(geomB instanceof ParityRegion))
-      return;
-    for (const child of geomB.children) {
+    for (const child of geomB.children as AnyCurve[]) {
       this.resetGeometry(child);
       geomAHandler(geomA);
     }
@@ -764,12 +744,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchSegmentArc(segmentA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._geometryB, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchSegmentBsplineCurve(segmentA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveChain) {
-      this.dispatchCurveChain(segmentA, this.handleLineSegment3d.bind(this));
-    } else if (this._geometryB instanceof UnionRegion) {
-      this.dispatchUnionRegion(segmentA, this.handleLineSegment3d.bind(this));
-    } else if (this._geometryB instanceof ParityRegion) {
-      this.dispatchParityRegion(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     }
     return undefined;
   }
@@ -860,12 +836,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.computeArcLineString(this._geometryB, lsA, true);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchLineStringBSplineCurve(lsA, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveChain) {
-      this.dispatchCurveChain(lsA, this.handleLineString3d.bind(this));
-    } else if (this._geometryB instanceof UnionRegion) {
-      this.dispatchUnionRegion(lsA, this.handleLineString3d.bind(this));
-    } else if (this._geometryB instanceof ParityRegion) {
-      this.dispatchParityRegion(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     }
     return undefined;
   }
@@ -881,12 +853,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcArc(arc0, this._geometryB, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchArcBsplineCurve3d(arc0, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveChain) {
-      this.dispatchCurveChain(arc0, this.handleArc3d.bind(this));
-    } else if (this._geometryB instanceof UnionRegion) {
-      this.dispatchUnionRegion(arc0, this.handleArc3d.bind(this));
-    } else if (this._geometryB instanceof ParityRegion) {
-      this.dispatchParityRegion(arc0, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
     }
     return undefined;
   }
@@ -900,12 +868,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(this._geometryB, curve, true);
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
-    } else if (this._geometryB instanceof CurveChain) {
-      this.dispatchCurveChain(curve, this.handleBSplineCurve3d.bind(this));
-    } else if (this._geometryB instanceof UnionRegion) {
-      this.dispatchUnionRegion(curve, this.handleBSplineCurve3d.bind(this));
-    } else if (this._geometryB instanceof ParityRegion) {
-      this.dispatchParityRegion(curve, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
   }
