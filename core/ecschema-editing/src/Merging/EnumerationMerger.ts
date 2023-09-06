@@ -24,8 +24,8 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
   });
 
   for (const enumeratorChange of changes.enumeratorChanges.values()) {
-    if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
 
+    if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
       const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
       if (enumerator === undefined) {
         throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in class ${source.fullName}`);
@@ -36,12 +36,9 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
       const targetEnumerator = target.getEnumeratorByName(enumeratorChange.ecTypeName);
       await mergeEnumeratorAttributes(targetEnumerator!, enumeratorChange.enumeratorDeltas, (_enumerator, attributeName, deltaChange, _attributeValue) => {
         switch (attributeName) {
-          case "label": {
-            // Is there a need for label?, this is optional 
-          };
           case "value": {
             // A comparison might be needed
-            throw Error(`Enumerator attribute conflict: ${deltaChange}`); 
+            throw Error(`Enumerator attribute conflict: ${deltaChange}`);
           };
         }
       })
