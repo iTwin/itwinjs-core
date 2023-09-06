@@ -29,7 +29,7 @@ describe("Constant merger tests", () => {
     });
 
     describe("Constant missing tests", () => {
-        it.only("should merge missing constant", async () => {
+        it("should merge missing constant", async () => {
             const sourceSchema = await Schema.fromJson({
                 ...sourceJson,
                 items: {

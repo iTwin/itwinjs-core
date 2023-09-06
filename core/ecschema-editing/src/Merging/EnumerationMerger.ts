@@ -23,50 +23,33 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
     }
   });
 
-  // I need something similar to mergeSchemaItemProperties() but for enumeratorChanges 
-  // mergeEnumeratorAttributes(mutableEnumerator, changes.enumeratorChanges.values(), (enumerator, attributeName, attributeValue) => {}) 
-
   for (const enumeratorChange of changes.enumeratorChanges.values()) {
-
-    // Handle each case:
-    // If missing, add source enumerator to target
     if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
 
       const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
       if (enumerator === undefined) {
         throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in class ${source.fullName}`);
       }
-
       const result = mutableEnumeration.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
       mutableEnumeration.addEnumerator(result);
+    } else {
+      const targetEnumerator = target.getEnumeratorByName(enumeratorChange.ecTypeName);
+      await mergeEnumeratorAttributes(targetEnumerator!, enumeratorChange.enumeratorDeltas, (_enumerator, attributeName, deltaChange, _attributeValue) => {
+        switch (attributeName) {
+          case "label": {
+            // Is there a need for label?, this is optional 
+          };
+          case "value": {
+            // A comparison might be needed
+            throw Error(`Enumerator attribute conflict: ${deltaChange}`); 
+          };
+        }
+      })
     }
-
-    //await mergeEnumeratorAttributes()
-    const targetEnumerator = mutableEnumeration.getEnumeratorByName(enumeratorChange.ecTypeName);
-    await mergeEnumeratorAttributes(targetEnumerator!, enumeratorChange.enumeratorDeltas, (enumerator, attributeName, deltaChange, attributeValue) => {
-      switch (attributeName) {
-        case "name": {
-          console.log(enumerator.name);
-          console.log(attributeValue);
-          console.log(deltaChange);
-        };
-        case "label": {
-          console.log(enumerator.label);
-          console.log(attributeValue);
-          console.log(deltaChange);
-        };
-        case "value": {
-          console.log(enumerator.value);
-          console.log(attributeValue);
-          console.log(deltaChange);
-        };
-      }
-    })
-
   }
 }
 
-export async function mergeEnumeratorAttributes<T extends AnyEnumerator>(targetEnumerator: T, changes: EnumeratorDelta[], handler: EnumeratorAttributeChanged<T>) {
+async function mergeEnumeratorAttributes<T extends AnyEnumerator>(targetEnumerator: T, changes: EnumeratorDelta[], handler: EnumeratorAttributeChanged<T>) {
   for (let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
     const deltaChange = changes[index].toString(); // this will be useful for error message.
     const [attributeName, attributeValue] = changes[index].diagnostic.messageArgs!.slice(1); // messageArgs[0] seems to be an object, need to get to the next one, slice to start at index 1 
