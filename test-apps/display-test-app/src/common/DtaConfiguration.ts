@@ -156,7 +156,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
-  configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
+  configuration.noElectronAuth = true; // undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
   configuration.noImdlWorker = undefined !== process.env.IMJS_NO_IMDL_WORKER;
   const gpuMemoryLimit = process.env.IMJS_GPU_MEMORY_LIMIT;
   if (undefined !== gpuMemoryLimit) {
