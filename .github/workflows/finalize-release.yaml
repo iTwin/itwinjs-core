@@ -8,8 +8,10 @@ name: Finalize Release
 on:
   workflow_dispatch:
   push:
-    tags:
+    branches:
     - 'release/*'
+    paths:
+    - '**/CHANGELOG.md'
 
 jobs:
   finalize:
