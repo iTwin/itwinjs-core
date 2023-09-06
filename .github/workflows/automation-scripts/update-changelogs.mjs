@@ -46,7 +46,8 @@ if (targetBranch === `origin/${currentBranch}`) {
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
 targetBranch = targetBranch.replace("origin/", "");
-await $`git checkout ${targetBranch}`;
+// await $`git checkout ${targetBranch}`;
+await $`git checkout master`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
@@ -66,15 +67,16 @@ await $`rush publish --regenerate-changelogs`;
 /*********************************************************************/
 // Uncomment For Manual runs and fix branch name to appropriate version
 // the version should match your incoming branch
-// await $`git checkout -b finalize-release-X.X.X`;
-// targetBranch = "finalize-release-X.X.X"
+await $`git checkout -b finalize-release-Test`;
+targetBranch = "finalize-release-Test"
 /*********************************************************************/
 await $`git add .`;
 await $`git commit -m "${commitMessage} Changelogs"`;
 await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
-await $`git push origin HEAD:${targetBranch}`;
+// await $`git push origin HEAD:${targetBranch}`;
+await $`git push -u origin HEAD:${targetBranch}`;
 
 // Read all files in the directory
 function getFilePaths(directoryPath) {
