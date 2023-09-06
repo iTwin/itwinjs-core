@@ -292,6 +292,66 @@ describe("Checkpoints", () => {
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
 
+    it("should query bcv stat table", async () => {
+      const containerSpy = sinon.spy(V2CheckpointManager, "attach");
+
+      const iModel = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+
+      const container = (await containerSpy.returnValues[0]).container;
+      let stats = container.queryBcvStats({addClientInformation: true});
+      const populatedCacheslots = stats.populatedCacheslots;
+      // Opening the database causes some blocks to be downloaded.
+      expect(stats.populatedCacheslots).to.be.greaterThan(0);
+      // Only one database and this db has a default txn open so all it's local blocks should be locked.
+      expect(stats.populatedCacheslots).to.equal(stats.lockedCacheslots);
+      // 10 GB (comes from daemonProps at the top of this test file) / 4 mb (imodel block size) should give us the number of total available entries in the cache.
+      expect(stats.totalCacheslots).to.equal((10 * 1024 * 1024 * 1024) / (4 * 1024 * 1024));
+      expect(stats.activeClients).to.equal(1);
+      expect(stats.attachedContainers).to.equal(1);
+      expect(stats.totalClients).to.equal(1);
+      iModel.restartDefaultTxn();
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.populatedCacheslots).to.equal(populatedCacheslots);
+      expect(stats.lockedCacheslots).to.equal(0);
+      expect(stats.activeClients).to.equal(0);
+      expect(stats.totalClients).to.equal(1);
+      const prefetch = CloudSqlite.startCloudPrefetch(container, `${testChangeSet.id}.bim`);
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.ongoingPrefetches).to.equal(1);
+      prefetch.cancel();
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.ongoingPrefetches).to.equal(0);
+
+      // Open multiple imodels from same container
+      const iModel2 = await SnapshotDb.openCheckpointV2({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSetFirstVersion,
+      });
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.totalClients).to.equal(2);
+      expect(stats.activeClients).to.equal(1);
+      expect(stats.attachedContainers).to.equal(1);
+      iModel2.restartDefaultTxn();
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.activeClients).to.equal(0);
+      expect(stats.totalClients).to.equal(2);
+
+      iModel.close();
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.totalClients).to.equal(1);
+
+      iModel2.close();
+      stats = container.queryBcvStats({addClientInformation: true});
+      expect(stats.totalClients).to.equal(0);
+    });
+
     it("should be able to open and read V2 checkpoint with daemon running", async () => {
       let iModel = await SnapshotDb.openCheckpointV2({
         accessToken,
