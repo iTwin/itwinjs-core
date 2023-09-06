@@ -69,15 +69,15 @@ export async function openIModel(props: OpenIModelProps): Promise<IModelConnecti
   }
 }
 
-async function openIModelFile(fileName: string, writable: boolean): Promise<IModelConnection> {
-  try {
-    return await BriefcaseConnection.openFile({ fileName, readonly: !writable, key: fileName });
-  } catch (err) {
-    if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
-      return SnapshotConnection.openFile(fileName);
-    else
-      throw err;
-  }
+async function openIModelFile(fileName: string, _writable: boolean): Promise<IModelConnection> {
+  // try {
+    return await BriefcaseConnection.openFile({ fileName, readonly: true, watchForChanges: true, key: fileName });
+  // } catch (err) {
+  //   if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
+  //     return SnapshotConnection.openFile(fileName);
+  //   else
+  //     throw err;
+  // }
 }
 
 async function openHubIModel(iModelId: GuidString, iTwinId: GuidString, writable: boolean): Promise<IModelConnection> {
