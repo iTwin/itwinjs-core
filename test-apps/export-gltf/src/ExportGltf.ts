@@ -40,6 +40,7 @@ function processCommand(cmd: string, db: BriefcaseDb): void {
 
   elem.placement.origin = elem.placement.origin.plus(o);
   elem.update();
+  db.saveChanges(cmd);
 }
 
 (async () => {
@@ -50,7 +51,6 @@ function processCommand(cmd: string, db: BriefcaseDb): void {
   const db = await BriefcaseDb.open({
     fileName: exportGltfArgs.input,
     readonly: false,
-    watchForChanges: true,
   });
 
   fs.watch(`${exportGltfArgs.input}-wal`, { persistent: false }, () => {
