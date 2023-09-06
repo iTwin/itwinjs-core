@@ -2480,7 +2480,7 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return false; // !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
