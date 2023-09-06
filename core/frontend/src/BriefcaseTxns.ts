@@ -233,26 +233,31 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** @internal */
   public notifyCommit() {
+    console.log("notifyCommit");
     this.onCommit.raiseEvent();
   }
 
   /** @internal */
   public notifyCommitted(hasPendingTxns: boolean, time: number) {
+    console.log("notifyCommitted");
     this.onCommitted.raiseEvent(hasPendingTxns, time);
   }
 
   /** @internal */
   public notifyReplayExternalTxns() {
+    console.log("notifyReplay");
     this.onReplayExternalTxns.raiseEvent();
   }
 
   /** @internal */
   public notifyReplayedExternalTxns() {
+    console.log("notifyReplayed");
     this.onReplayedExternalTxns.raiseEvent();
   }
 
   /** @internal */
   public notifyChangesApplied() {
+    console.log("notifyChangesApplied");
     this.onChangesApplied.raiseEvent();
   }
 
@@ -288,6 +293,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** @internal */
   public notifyProjectExtentsChanged(range: Range3dProps) {
+    console.log("notifyProjectExtents");
     this._iModel.projectExtents = Range3d.fromJSON(range);
   }
 
