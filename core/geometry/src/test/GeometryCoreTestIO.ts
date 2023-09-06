@@ -96,8 +96,17 @@ export class GeometryCoreTestIO {
       }
     }
   }
-  /** Append the geometry to the collection, e.g., for output by saveGeometry. */
-  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  /**
+   * Append the geometry to the collection, e.g., for output by saveGeometry.
+   * Also try to move the geometry by dx,dy,dz.
+   */
+  public static captureGeometry(
+    collection: GeometryQuery[],
+    newGeometry: GeometryQuery | GeometryQuery[] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {
@@ -133,8 +142,17 @@ export class GeometryCoreTestIO {
     for (const loop of points)
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
-  /** Clone the geometry and append to collection, e.g., for output by saveGeometry. */
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  /**
+   * Clone the geometry and append to collection, e.g., for output by saveGeometry.
+   * Also try to move the geometry by dx,dy,dz.
+   */
+  public static captureCloneGeometry(
+    collection: GeometryQuery[],
+    newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {

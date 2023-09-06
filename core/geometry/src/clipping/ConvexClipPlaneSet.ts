@@ -13,6 +13,7 @@ import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -474,7 +475,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @return the surviving inside part (if any)
    */
   public clipInsidePushOutside(
-    xyz: GrowableXYZArray, outsideFragments: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache,
+    xyz: IndexedXYZCollection, outsideFragments: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache,
   ): GrowableXYZArray | undefined {
     const perpendicularRange = Range1d.createNull();
     let newInside = arrayCache.grabFromCache();
@@ -768,7 +769,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param arrayCache cache for reusable GrowableXYZArray.
    */
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,
