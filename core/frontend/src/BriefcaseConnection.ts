@@ -85,6 +85,7 @@ class ModelChangeMonitor {
 
     // Buffer updated geometry guids.
     this._removals.push(briefcase.txns.onModelGeometryChanged.addListener((changes) => {
+      console.log("mcm modelGeom");
       for (const change of changes) {
         this._deletedModels.delete(change.id);
         this._modelIdToGuid.set(change.id, change.guid);
@@ -93,6 +94,7 @@ class ModelChangeMonitor {
 
     // Buffer deletions of models.
     this._removals.push(briefcase.txns.onModelsChanged.addListener((changes) => {
+      console.log("mcm models");
       if (changes.deleted) {
         for (const id of CompressedId64Set.iterable(changes.deleted)) {
           this._modelIdToGuid.delete(id);
@@ -103,6 +105,7 @@ class ModelChangeMonitor {
 
     // Outside of an editing scope, we want to update viewport contents after commit, undo/redo, or merging changes.
     const maybeProcess = async () => {
+      console.log("mcm maybeProcess");
       if (this.editingScope)
         return;
 
@@ -160,6 +163,7 @@ class ModelChangeMonitor {
   }
 
   private processBuffered(): void {
+    console.log("mcm processBuffered");
     const models = this._briefcase.models;
     for (const [id, guid] of this._modelIdToGuid) {
       const model = models.getLoaded(id)?.asGeometricModel;
