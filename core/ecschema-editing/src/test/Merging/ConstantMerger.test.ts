@@ -83,38 +83,5 @@ describe("Constant merger tests", () => {
             expect(mergedConstantToJSON).deep.eq(testConstant);
 
         })
-
-        it("should throw an error for unable to locate phenomenon", async () => {
-            const sourceSchema = await Schema.fromJson({
-                ...sourceJson,
-                items: {
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
-                    testConstant: {
-                        schemaItemType: "Constant",
-                        label: "Test Constant",
-                        description: "testing a constant",
-                        phenomenon: "SourceSchema.testPhenomenon",
-                        definition: "PI",
-                        numerator: 5.5,
-                        denominator: 5.1,
-                    }
-                },
-            }, sourceContext);
-
-            const targetSchema = await Schema.fromJson({
-                ...targetJson,
-            }, targetContext);
-
-            const merger = new SchemaMerger();
-            // This test will not fail since a phenomenon is merged or created before hand, but just in case
-            //await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Unable to locate phenomenon testPhenomenon in target schema");
-
-        })
     })
 })

@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, DelayedPromiseWithProps, LazyLoadedPhenomenon, Phenomenon, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Constant, DelayedPromiseWithProps, LazyLoadedPhenomenon, Phenomenon, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaItemChanges } from "../ecschema-editing";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 import { MutableConstant } from "../Editing/Mutable/MutableConstant";
 
 export default async function mergeConstant(target: Constant, source: Constant, changes: SchemaItemChanges) {
     const mutableConstant = target as MutableConstant;
-    const targetPhenomenon = await target.schema.getItem<Phenomenon>(source.phenomenon!.name);
-
+    
     await mergeSchemaItemProperties(mutableConstant, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
         switch (propertyName) {
             case "definition": {
@@ -18,7 +17,6 @@ export default async function mergeConstant(target: Constant, source: Constant, 
                     return item.setDefinition(propertyValue);
             }
             case "numerator": {
-                // if it's missing
                 if (!item.hasNumerator)
                     return item.setNumerator(propertyValue);
             }
@@ -28,12 +26,11 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             }
             case "phenomenon": {
                 if (item.phenomenon === undefined) {
-                    // It requires a lazy loaded type
-                    // If phenomenon does not exist in target, create one
-                    if (targetPhenomenon === undefined || targetPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
-                        throw Error(`Unable to locate phenomenon ${source.phenomenon!.name} in target schema`);
-                    }
-                    const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(targetPhenomenon.key, async () => targetPhenomenon!);
+                    // It assumes that phenomenon item is not undefined in target schema
+                    // In this case, propertyValue references the phenomenon in source schema, this is incompatible with target schema
+                    // A lazy loaded phenomenon that references the phenomenon in target schema is needed 
+                    const key = new SchemaItemKey(source.phenomenon!.name, target.schema.schemaKey);
+                    const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(key, async () => (await target.schema.context.getSchemaItem<Phenomenon>(key))!);
                     return item.setPhenomenon(lazyTargetPhenomenon);
                 }
             }
