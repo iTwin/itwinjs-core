@@ -274,36 +274,42 @@ export class TxnManager {
 
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
+    console.log("onGeom");
     this.onGeometryChanged.raiseEvent(modelProps);
     IpcHost.notifyEditingScope(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
   }
 
   /** @internal */
   protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void {
+    console.log("onGeomGuids");
     this.onModelGeometryChanged.raiseEvent(changes);
     IpcHost.notifyTxns(this._iModel, "notifyGeometryGuidsChanged", changes);
   }
 
   /** @internal */
   protected _onCommit() {
+    console.log("onCommit");
     this.onCommit.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommit");
   }
 
   /** @internal */
   protected _onCommitted() {
+    console.log("onCommitted");
     this.onCommitted.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
 
   /** @internal */
   protected _onReplayExternalTxns() {
+    console.log("onReplay");
     this.onReplayExternalTxns.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReplayExternalTxns");
   }
 
   /** @internal */
   protected _onReplayedExternalTxns() {
+    console.log("onReplayed");
     this.onReplayedExternalTxns.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
   }
