@@ -9,20 +9,26 @@ import { MutableConstant } from "../Editing/Mutable/MutableConstant";
 
 export default async function mergeConstant(target: Constant, source: Constant, changes: SchemaItemChanges) {
     const mutableConstant = target as MutableConstant;
-    
+
     await mergeSchemaItemProperties(mutableConstant, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
         switch (propertyName) {
             case "definition": {
                 if (item.definition === "")
                     return item.setDefinition(propertyValue);
+                if (item.definition !== propertyValue)
+                    throw Error(`Failed to merged, constant definition conflict: ${propertyValue} -> ${item.definition}`);
             }
             case "numerator": {
                 if (!item.hasNumerator)
                     return item.setNumerator(propertyValue);
+                if (item.hasNumerator && item.numerator !== propertyValue)
+                    throw Error(`Failed to merged, constant numerator conflict: ${propertyValue} -> ${item.numerator}`);
             }
             case "denominator": {
                 if (!item.hasDenominator)
                     return item.setDenominator(propertyValue);
+                if (item.hasDenominator && item.denominator !== propertyValue)
+                    throw Error(`Failed to merged, constant denominator conflict: ${propertyValue} -> ${item.denominator}`);
             }
             case "phenomenon": {
                 if (item.phenomenon === undefined) {
