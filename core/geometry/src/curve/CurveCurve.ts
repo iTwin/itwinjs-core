@@ -14,7 +14,7 @@ import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY"
 import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
 import { CurveLocationDetailArrayPair, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
