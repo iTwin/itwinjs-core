@@ -417,10 +417,8 @@ export interface IStrokeHandler {
    * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
   */
   announceIntervalForUniformStepStrokes(
-    cp: CurvePrimitive,
-    numStrokes: number,
-    fraction0: number,
-    fraction1: number): void;
+    cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
+  ): void;
   /**
    * OPTIONAL method for a handler to indicate that it wants primary geometry (e.g. spirals) rather than strokes.
    * @returns true if primary geometry should be passed (rather than stroked or otherwise simplified)
