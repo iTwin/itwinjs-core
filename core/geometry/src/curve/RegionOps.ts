@@ -22,8 +22,8 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
-import { AnyCurve, AnyRegion } from "./CurveChain";
-import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, CurveCollection } from "./CurveCollection";
+import { AnyCurve, AnyRegion } from "./CurveTypes";
+import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveOps } from "./CurveOps";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -771,4 +771,19 @@ function pushToInOnOutArrays(
     arrayNegative.push(curve);
   else
     array0.push(curve);
+}
+
+/**
+ * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
+ * @public
+ */
+export class ConsolidateAdjacentCurvePrimitivesOptions {
+  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
+  public consolidateLinearGeometry: boolean = true;
+  /** True to consolidate contiguous arcs */
+  public consolidateCompatibleArcs: boolean = true;
+  /** Tolerance for collapsing identical points */
+  public duplicatePointTolerance = Geometry.smallMetricDistance;
+  /** Tolerance for removing interior colinear points. */
+  public colinearPointTolerance = Geometry.smallMetricDistance;
 }

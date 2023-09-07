@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AnyRegion } from "../curve/CurveChain";
+import { AnyRegion } from "../curve/CurveTypes";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";

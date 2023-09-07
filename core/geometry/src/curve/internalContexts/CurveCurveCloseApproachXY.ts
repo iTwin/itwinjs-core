@@ -16,7 +16,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveChain";
+import { AnyCurve } from "../CurveTypes";
 import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
