@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 30 Aug 2023 15:35:27 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Sep 2023 18:26:02 GMT and should not be manually modified.
+
+## 4.1.4
+Thu, 07 Sep 2023 18:26:02 GMT
+
+### Updates
+
+- restart default txn after 10 minutes inactivity on v2 checkpoints
 
 ## 4.1.3
 Wed, 30 Aug 2023 15:35:27 GMT
