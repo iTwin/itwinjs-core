@@ -836,6 +836,8 @@ export namespace CloudSqlite {
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
