@@ -8,17 +8,20 @@ name: Finalize Release
 on:
   workflow_dispatch:
   push:
-    tags:
+    branches:
     - 'release/*'
+    paths:
+    - '**/CHANGELOG.md'
 
 jobs:
   finalize:
     name: Cherry-pick Changelogs to master
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          ref: master
+          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
           fetch-depth: 0
       - name: Set Git Config
         run: |
@@ -26,36 +29,9 @@ jobs:
           git config --local user.name imodeljs-admin
       - name: Cherry-pick changelogs
         run: |
-          git cherry-pick $commitid
-
-          # Clean up files that we don't want to cherry-pick changes back
-          for i in **/package.json; do git checkout --ours $i; done
-          git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
-
-          # Stage explicit files;
-          #   - Files resolved due to taking master's version
-          #   - All changelogs to remove duplicates from master
-          #     - They would be duplicated if the same PR is backported to the release branch
-          git add **/package.json **/version-policies.json common/changes docs/changehistory/NextVersion.md
-
-          commitMessage=$(git log --format=%B -n 1 $commitid)
-          git commit -m "$commitMessage Changelogs"
-
-          exitCode=$?
-          if [ $exitCode -ne 0 ]
-          then
-            echo Failed to cherry-pick changelogs for $commitMessage. Commit id is $commitid
-            exit $exitCode
-          fi
-
-          rush change --bulk --message "" --bump-type none
-          git add .
-          git commit --amend --no-edit
-
-          exit $?
-        env:
-          commitid: ${{ github.sha }}
-        # turn off the default behavior to fail fast. The script has its own error handling
+          npm i -g zx
+          npm install -g @microsoft/rush
+          zx ./.github/workflows/automation-scripts/update-changelogs.mjs
         shell: bash {0}
       - name: Push to master
         run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
