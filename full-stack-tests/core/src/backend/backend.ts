@@ -88,8 +88,8 @@ async function init() {
     exposeBackendCallbacks();
     const authClient = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
+      redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
+      scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
     await authClient.signInSilent();
     iModelHost.authorizationClient = authClient;

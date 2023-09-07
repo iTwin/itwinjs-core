@@ -311,6 +311,9 @@ describe("ViewStore", function (this: Suite) {
     expect(v1.name).equals("view1");
 
     const g1 = await vs1locker.addViewGroup({ name: "group1" });
+    const foundViewGroups = await vs1reader.getViewGroups({});
+    expect(foundViewGroups.length).eq(1);
+    expect(foundViewGroups[0].id).eq(g1);
 
     const standardView = StandardViewIndex.Iso;
     const rotation = Matrix3d.createStandardWorldToView(standardView);

@@ -1,6 +1,37 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Mon, 24 Jul 2023 12:35:20 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Sep 2023 20:04:30 GMT and should not be manually modified.
+
+## 4.1.3
+Wed, 30 Aug 2023 15:35:27 GMT
+
+_Version update only_
+
+## 4.1.2
+Wed, 23 Aug 2023 15:25:30 GMT
+
+_Version update only_
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+_Version update only_
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Upgrade sinon to 15.0.4
+- New attributes on calculated properties: `renderer`, `editor`, `categoryId`
+- New `createClassCategory` attribute on Id category identifier
+- With hierarchy level descriptor return the ruleset that was used to create that descriptor.
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
 
 ## 4.0.6
 Mon, 24 Jul 2023 05:07:33 GMT
@@ -54,6 +85,16 @@ Mon, 22 May 2023 15:34:14 GMT
 - Removed unused Update related types
 - Added `ContentPropertyValuesFormatter` for content values' formatting on either frontend or backend
 - Fix `@deprecated` messages
+
+## 3.7.13
+Tue, 08 Aug 2023 19:49:18 GMT
+
+_Version update only_
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+_Version update only_
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:22 GMT

@@ -16,7 +16,8 @@ import { Geometry } from "../../Geometry";
 import { Polyface } from "../Polyface";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 export class SweepLineStringToFacetContext {
   private _spacePoints: GrowableXYZArray;
@@ -105,7 +106,7 @@ export class SweepLineStringToFacetContext {
  * Context for sweeping a line segment onto a convex polygon.
  * @internal
  */
-class EdgeClipData {
+export class EdgeClipData {
   /** Plane containing the edge and sweep vector */
   public edgePlane: ClipPlane;
   /** Two clip planes facing each other at each end of the edge */
@@ -137,10 +138,13 @@ class EdgeClipData {
     return undefined;
   }
 
-  public processPolygon(polygon: Point3d[], announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
+  /** Intersect this edge plane with the given convex polygon and announce the intersection segment to the callback. */
+  public processPolygon(polygon: Point3d[] | GrowableXYZArray, announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
     this._crossingPoints.length = 0;
-    Point3dArrayPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
-    // process a convex polygon (or non-convex if lucky)
+    if (Array.isArray(polygon))
+      Point3dArrayPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
+    else
+      IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
     if (this._crossingPoints.length === 2) {
       // use the end planes to clip the [0,1] swept edge to [f0,f1]
       this.clip.announceClippedSegmentIntervals(0, 1, this._crossingPoints[0], this._crossingPoints[1],
@@ -158,8 +162,16 @@ class EdgeClipData {
  */
 export class ClipSweptLineStringContext {
   private _edgeClippers: EdgeClipData[];
-  private constructor(edgeData: EdgeClipData[]) {
+  private _localToWorld?: Transform;
+  private _worldToLocal?: Transform;
+  private _localRange?: Range3d;
+  private constructor(edgeData: EdgeClipData[], localData: undefined | { localToWorld: Transform, worldToLocal: Transform, localRange: Range3d }) {
     this._edgeClippers = edgeData;
+    if (localData !== undefined) {
+      this._localToWorld = localData.localToWorld;
+      this._worldToLocal = localData.worldToLocal;
+      this._localRange = localData.localRange;
+    }
   }
   public static create(xyz: GrowableXYZArray, sweepVector: Vector3d | undefined): ClipSweptLineStringContext | undefined {
     if (sweepVector === undefined)
@@ -169,6 +181,13 @@ export class ClipSweptLineStringContext {
       const newPoint = Point3d.createZero();
       const edgeData: EdgeClipData[] = [];
       xyz.getPoint3dAtUncheckedPointIndex(0, point);
+
+      let localToWorldMatrix = Matrix3d.createRigidHeadsUp(sweepVector);
+      if (localToWorldMatrix === undefined)
+        localToWorldMatrix = Matrix3d.createIdentity();
+      const localToWorld = Transform.createOriginAndMatrix(point, localToWorldMatrix);
+      const worldToLocal = localToWorld.inverse()!;
+      const localRange = xyz.getRange(worldToLocal);
       for (let i = 1; i < xyz.length; i++) {
         xyz.getPoint3dAtUncheckedPointIndex(i, newPoint);
         const clipper = EdgeClipData.createPointPointSweep(point, newPoint, sweepVector);
@@ -177,11 +196,20 @@ export class ClipSweptLineStringContext {
           edgeData.push(clipper);
         }
       }
-      return new ClipSweptLineStringContext(edgeData);
+      return new ClipSweptLineStringContext(edgeData, { localToWorld, worldToLocal, localRange });
     }
     return undefined;
   }
+  /**
+   * Intersect a polygon with each of the edgeClippers.
+   * * If transforms and local range are defined, test the polygon's local range to see if it offers a quick exit.
+   */
   public processPolygon(polygon: Point3d[], announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
+    if (this._worldToLocal !== undefined && this._localRange !== undefined) {
+      const polygonRange = Range3d.createTransformedArray(this._worldToLocal, polygon);
+      if (!polygonRange.intersectsRangeXY(this._localRange))
+        return;
+    }
     for (const clipper of this._edgeClippers) {
       clipper.processPolygon(polygon, announceEdge);
     }

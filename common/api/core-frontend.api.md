@@ -1986,6 +1986,10 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
+    notifyReplayedExternalTxns(): void;
+    // @internal (undocumented)
+    notifyReplayExternalTxns(): void;
+    // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
@@ -1997,6 +2001,8 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
+    readonly onReplayedExternalTxns: BeEvent<() => void>;
+    readonly onReplayExternalTxns: BeEvent<() => void>;
     reinstateTxn(): Promise<IModelStatus>;
     restartTxnSession(): Promise<void>;
     reverseAll(): Promise<IModelStatus>;
@@ -6779,7 +6785,6 @@ export abstract class IModelConnection extends IModel {
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
@@ -6931,6 +6936,7 @@ export namespace IModelConnection {
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: ViewIdString): Promise<ViewState>;
+        // @deprecated
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
         // (undocumented)
@@ -7939,6 +7945,15 @@ export class MapLayerSource {
     userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+}
+
+// @public
+export interface MapLayerSourceProps {
+    baseMap?: boolean;
+    formatId?: string;
+    name: string;
+    transparentBackground?: boolean;
+    url: string;
 }
 
 // @beta

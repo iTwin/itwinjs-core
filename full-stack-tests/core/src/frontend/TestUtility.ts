@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client";
+import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
@@ -48,8 +48,8 @@ export class TestUtility {
 
   public static iTwinPlatformEnv: ITwinPlatformAbstraction;
 
-  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
-    return getAccessTokenFromBackend(user);
+  public static async getAccessToken(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
+    return getAccessTokenFromBackend(user, oidcConfig);
   }
 
   /** The initialize methods wraps creating and setting up all of the clients needed to perform integrations tests. If a user is provided,
@@ -66,7 +66,9 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new ElectronRendererAuthorization();
+      authorizationClient = new ElectronRendererAuthorization(
+        {clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!},
+      );
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
@@ -124,7 +126,7 @@ export class TestUtility {
     };
   }
 
-  private static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
+  public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
   private static createDefaultRenderSystem() { return new MockRender.System(); }
 
   /** Helper around the different startup workflows for different app types.

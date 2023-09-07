@@ -9,7 +9,7 @@
 import {
   CustomAttribute,
   CustomAttributeContainerProps,
-  ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
+  ECClass, ECName, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
   PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
@@ -283,6 +283,80 @@ export class ECClasses {
     return {};
   }
 
+  /**
+   * Renames the property on the specified class. The rename will fail if the new
+   * name causes a conflict with a base or derived property. All derived classes
+   * containing a property override will be renamed, as well.
+   * @param classKey  The SchemaItemKey identifying the class.
+   * @param existingPropertyName The name of the property.
+   * @param newPropertyName The new property name.
+   */
+  public async setPropertyName(classKey: SchemaItemKey, existingPropertyName: string, newPropertyName: string): Promise<PropertyEditResults> {
+    const newName = new ECName(newPropertyName);
+
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    const existingProperty = await mutableClass.getProperty(existingPropertyName) as MutableProperty;
+    if (!existingProperty) {
+      return { errorMessage: `An ECProperty with the name ${existingPropertyName} could not be found in the class ${classKey.fullName}.` };
+    }
+
+    const baseProperty = await mutableClass.getProperty(newPropertyName, true) as MutableProperty;
+    if (baseProperty)
+      return { errorMessage: `An ECProperty with the name ${newPropertyName} already exists in the class ${baseProperty.class.name}.` };
+
+    // Handle derived classes
+    const derivedProperties: Array<MutableProperty> = [];
+    const derivedClasses = await this.findDerivedClasses(mutableClass);
+    for (const derivedClass of derivedClasses) {
+      if (await derivedClass.getProperty(newPropertyName))
+        return { errorMessage: `An ECProperty with the name ${newPropertyName} already exists in the class ${derivedClass.fullName}.` };
+
+      const propertyOverride = await derivedClass.getProperty(existingPropertyName) as MutableProperty;
+      // If found the property is overridden in the derived class.
+      if (propertyOverride)
+        derivedProperties.push(propertyOverride);
+    }
+
+    // Re-name the overridden property in all derived classes
+    derivedProperties.forEach((prop: MutableProperty) => {
+      prop.setName(newName);
+    });
+
+    existingProperty.setName(newName);
+
+    return { itemKey: classKey, propertyName: newName.name };
+  }
+
+  /**
+   * Sets the name of the ECClass.
+   * @param classKey The SchemaItemKey of the class.
+   * @param name The new name of the class.
+   * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
+   */
+  public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemEditResults> {
+    let mutableClass: MutableClass;
+
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    const ecClass = await schema.getItem<MutableClass>(name);
+    if (ecClass !== undefined)
+      return { errorMessage: `An EC Class with the name ${name} already exists within the schema ${schema.name}` };
+
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+    mutableClass.setName(name);
+
+    return {};
+  }
+
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     const ecClass = await schema.getItem<MutableClass>(classKey.name);
@@ -307,6 +381,22 @@ export class ECClasses {
     assert(container.customAttributes !== undefined);
     const map = container.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);
+  }
+
+  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
+    const derivedClasses: Array<MutableClass> = [];
+    const schemaItems = this._schemaEditor.schemaContext.getSchemaItems();
+    let { value, done } = schemaItems.next();
+    while (!done) {
+      if (await value.is(mutableClass)) {
+        if (!mutableClass.key.matches(value.key)) {
+          derivedClasses.push(value);
+        }
+      }
+      ({ value, done } = schemaItems.next());
+    }
+
+    return derivedClasses;
   }
 }
 

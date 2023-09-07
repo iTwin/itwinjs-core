@@ -1,7 +1,7 @@
 # Triggered on a new release git tag pushed, starts the final steps of a release.
 #
 # Steps currently include
-#   1. Cherry-pick changelogs, change history, and other doc updates to master
+#   1. Updating master changelogs using JS script
 
 name: Finalize Release
 
@@ -13,49 +13,20 @@ on:
 
 jobs:
   finalize:
-    name: Cherry-pick Changelogs to master
+    name: Cherry-pick Changelogs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master
           fetch-depth: 0
       - name: Set Git Config
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - name: Cherry-pick changelogs
+      - name: Run update-changelogs.mjs
         run: |
-          git cherry-pick $commitid
-
-          # Clean up files that we don't want to cherry-pick changes back
-          for i in **/package.json; do git checkout --ours $i; done
-          git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
-
-          # Stage explicit files;
-          #   - Files resolved due to taking master's version
-          #   - All changelogs to remove duplicates from master
-          #     - They would be duplicated if the same PR is backported to the release branch
-          git add **/package.json **/version-policies.json common/changes docs/changehistory/NextVersion.md
-
-          commitMessage=$(git log --format=%B -n 1 $commitid)
-          git commit -m "$commitMessage Changelogs"
-
-          exitCode=$?
-          if [ $exitCode -ne 0 ]
-          then
-            echo Failed to cherry-pick changelogs for $commitMessage. Commit id is $commitid
-            exit $exitCode
-          fi
-
-          rush change --bulk --message "" --bump-type none
-          git add .
-          git commit --amend --no-edit
-
-          exit $?
-        env:
-          commitid: ${{ github.sha }}
+          npm i -g zx
+          npm install -g @microsoft/rush
+          zx ./.github/workflows/automation-scripts/update-changelogs.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
-      - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
