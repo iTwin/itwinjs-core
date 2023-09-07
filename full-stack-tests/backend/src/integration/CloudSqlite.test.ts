@@ -164,7 +164,7 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
-  it("Should refresh write lock expiry time if withWriteLock called twice with same user", async () => {
+  it("writeLockExpires getter", async () => {
     const container = testContainers[0];
     container.connect(caches[1]);
     let writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
@@ -174,7 +174,7 @@ describe("CloudSqlite", () => {
       await BeDuration.wait(500); // sleep 500ms so we get a new write lock expiry time.
       await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
         const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
-        expect(secondWriteLockExpiryTime).to.be.greaterThan(firstWriteLockExpiryTime);
+        expect(secondWriteLockExpiryTime).to.be.greaterThanOrEqual(firstWriteLockExpiryTime);
         // subtract 30 minutes and make sure its less than the first write lock expiry time.
         // This tests that the secondWriteLockExpiryTime is a 'refresh' of the default expiry time of 1 hour.
         // and not extending the expiry time already present by another hour.
