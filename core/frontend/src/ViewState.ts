@@ -55,6 +55,13 @@ export interface ExtentLimits {
   max: number;
 }
 
+/** A [Transform]($core-geometry) supplied by a [[ModelDisplayTransformProvider]] to be applied to a model when displaying it in a [[Viewport]].
+ * By default, the display transform is post-multiplied with (i.e., applied after) the model's base transform.
+ * If `premultiply` is `true`, the display transform will instead be pre-multiplied with (i.e., applied before) the base transform.
+ * @beta
+ */
+export type ModelDisplayTransform = Transform & { premultiply?: boolean };
+
 /** Interface adopted by an object that wants to apply per-model display transforms.
  * A model's display transform is applied when rendering the model in a [[Viewport]].
  * @see [[ViewState.modelDisplayTransformProvider]] to get or set the transform provider for a view.
@@ -65,7 +72,7 @@ export interface ModelDisplayTransformProvider {
   /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
    * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
    */
-  getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+  getModelDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined;
 }
 
 /** Arguments supplied to [[ViewState.computeDisplayTransform]].
@@ -1288,8 +1295,11 @@ export abstract class ViewState extends ElementState {
       return undefined;
 
     const transform = Transform.createIdentity(args.output);
+    if (modelTransform?.premultiply)
+      modelTransform.multiplyTransformTransform(transform, transform);
+
     transform.origin.z = elevation;
-    if (modelTransform)
+    if (modelTransform && !modelTransform.premultiply)
       transform.multiplyTransformTransform(modelTransform, transform);
 
     if (scriptTransform)
