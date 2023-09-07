@@ -98,6 +98,7 @@ export class ViewList extends SortedArray<ViewSpec> {
 
     if (Id64.isInvalid(this._defaultViewId) && 0 < this._array.length) {
       this._defaultViewId = this._array[0].id;
+      // eslint-disable-next-line deprecation/deprecation
       const defaultViewId = await iModel.views.queryDefaultViewId();
       for (const spec of this) {
         if (spec.id === defaultViewId) {

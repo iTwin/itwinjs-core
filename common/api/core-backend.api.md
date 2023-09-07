@@ -3162,6 +3162,7 @@ export namespace IModelDb {
         // @beta (undocumented)
         saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
+        // @deprecated
         setDefaultViewId(viewId: Id64String): void;
         // @beta (undocumented)
         get viewStore(): ViewStore.CloudAccess;
