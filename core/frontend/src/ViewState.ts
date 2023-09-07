@@ -70,7 +70,6 @@ export type ModelDisplayTransform = Transform & { premultiply?: boolean };
  */
 export interface ModelDisplayTransformProvider {
   /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
-   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
    */
   getModelDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined;
 }

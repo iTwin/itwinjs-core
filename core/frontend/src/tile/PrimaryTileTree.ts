@@ -260,7 +260,7 @@ class PrimaryTreeReference extends TileTreeReference {
     if (!displayTf)
       return baseTf;
 
-    return displayTf.premultiply ? displayTf.multiplyTransformTransform(baseTf, displayTf) : baseTf.multiplyTransformTransform(displayTf, displayTf);
+    return displayTf.premultiply ? displayTf.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf);
   }
 }
 
