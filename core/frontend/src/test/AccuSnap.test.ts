@@ -147,8 +147,8 @@ describe("AccuSnap", () => {
     class Transformer {
       public constructor(public readonly transform: Transform) { }
 
-      public getModelDisplayTransform(): Transform {
-        return this.transform.clone();
+      public getModelDisplayTransform() {
+        return { transform: this.transform };
       }
     }
 

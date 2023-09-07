@@ -38,11 +38,8 @@ export class ApplyModelTransformTool extends Tool {
     if (scale)
       mat.scale(scale, mat);
 
-    const tf: ModelDisplayTransform = Transform.createRefs(origin, mat);
-    if (premultiply)
-      tf.premultiply = true;
-
-    vp.setModelDisplayTransformProvider(new TransformProvider(models, tf));
+    const transform = Transform.createRefs(origin, mat);
+    vp.setModelDisplayTransformProvider(new TransformProvider(models, { transform, premultiply }));
     return true;
   }
 

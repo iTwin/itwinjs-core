@@ -60,7 +60,10 @@ export interface ExtentLimits {
  * If `premultiply` is `true`, the display transform will instead be pre-multiplied with (i.e., applied before) the base transform.
  * @beta
  */
-export type ModelDisplayTransform = Transform & { premultiply?: boolean };
+export interface ModelDisplayTransform {
+  transform: Transform;
+  premultiply?: boolean;
+}
 
 /** Interface adopted by an object that wants to apply per-model display transforms.
  * A model's display transform is applied when rendering the model in a [[Viewport]].
@@ -1295,11 +1298,11 @@ export abstract class ViewState extends ElementState {
 
     const transform = Transform.createIdentity(args.output);
     if (modelTransform?.premultiply)
-      modelTransform.multiplyTransformTransform(transform, transform);
+      modelTransform.transform.multiplyTransformTransform(transform, transform);
 
     transform.origin.z = elevation;
     if (modelTransform && !modelTransform.premultiply)
-      transform.multiplyTransformTransform(modelTransform, transform);
+      transform.multiplyTransformTransform(modelTransform.transform, transform);
 
     if (scriptTransform)
       transform.multiplyTransformTransform(scriptTransform as Transform, transform);
