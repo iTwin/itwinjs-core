@@ -1238,9 +1238,11 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Query the Id of the default [ViewDefinition]($backend), if any, stored in this iModel's property table.
      * The default view is typically chosen by the application (such as a connector) that created the iModel.
-     * There is no guarantee that this view will be suitable for the purposes of any other application. Most applications should ignore the default view and
-     * instead create views that fit their own requirements, using APIs like [[ViewCreator3d]].
+     * There is no guarantee that this view will be suitable for the purposes of any other applications.
+     * Most applications should ignore the default view and instead create a [[ViewState]] that fits their own requirements using APIs like [[ViewCreator3d]].
      * @returns the Id of the default view as defined in the iModel's property table, or an invalid ID if no default view is defined.
+     * @deprecated in 4.2. Create a ViewState to your own specifications.
+     * @see [IModelDb.setDefaultViewId]($backend) to set this property.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
