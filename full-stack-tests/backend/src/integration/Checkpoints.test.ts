@@ -194,7 +194,7 @@ describe("Checkpoints", () => {
     let numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
-    await iModel.refreshContainerSas(accessToken);
+    await iModel.refreshContainer(accessToken);
     numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
@@ -306,7 +306,7 @@ describe("Checkpoints", () => {
       let numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
-      await iModel.refreshContainerSas(accessToken);
+      await iModel.refreshContainer(accessToken);
       numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
