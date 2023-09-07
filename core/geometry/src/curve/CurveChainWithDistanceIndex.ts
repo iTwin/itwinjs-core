@@ -43,7 +43,7 @@ export class PathFragment {
   public childFraction0: number;
   /** Fractional position of this fragment end within its curve primitive.. */
   public childFraction1: number;
-  /** Curve primitive of this fragment, as presented in stroker.  Note that this might have become a proxy. */
+  /** Curve primitive of this fragment, as presented in stroker. Note that this might have become a proxy. */
   public childCurve: CurvePrimitive;
   /** Optional range */
   public range?: Range3d;
@@ -63,14 +63,11 @@ export class PathFragment {
     this.range = range;
     this.a = 0;
   }
-  /**
-   * Return true if the distance is within the distance limits of this fragment.
-   * @param distance
-   */
+  /** Return true if the distance is within the distance limits of this fragment. */
   public containsChainDistance(distance: number): boolean {
     return distance >= this.chainDistance0 && distance <= this.chainDistance1;
   }
-  /** Return a quick distance to the curve.  This may be SMALLER than true distance but may not be larger */
+  /** Return a quick distance to the curve. This may be SMALLER than true distance but may not be larger */
   public quickMinDistanceToChildCurve(spacePoint: Point3d): number {
     if (this.range) {
       return this.range.distanceToPoint(spacePoint);
@@ -94,10 +91,7 @@ export class PathFragment {
     sortedFragments.sort((a: PathFragment, b: PathFragment) => a.a - b.a);
     return sortedFragments;
   }
-  /**
-   * Return true if this fragment addresses `curve` and brackets `fraction`
-   * @param distance
-   */
+  /** Return true if this fragment addresses `curve` and brackets `fraction` */
   public containsChildCurveAndChildFraction(curve: CurvePrimitive, fraction: number): boolean {
     return this.childCurve === curve && fraction >= this.childFraction0 && fraction <= this.childFraction1;
   }
@@ -208,7 +202,9 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
       this._fragments.push(new PathFragment(f0, f1, d0, this._accumulatedDistance, cp, range));
     }
   }
-  public needPrimaryGeometryForStrokes?(): boolean { return true; }
+  public needPrimaryGeometryForStrokes?(): boolean {
+    return true;
+  }
   public static createPathFragmentIndex(path: CurveChain, options?: StrokeOptions): PathFragment[] {
     const handler = new DistanceIndexConstructionContext();
     for (const curve of path.children) {
@@ -223,8 +219,7 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
  * distance along a CurveChain.
  * * For example if the total length of the chain is `L`, then the distance along the chain from parameters `t0`
  * to `t1` is easily computed as `L*(t1-t0)`.
- * * The curve chain can be any type derived from CurveChain.
- * * * i.e. either a `Path` or a `Loop`
+ * * The curve chain can be any type derived from `CurveChain`, i.e., either a `Path` or a `Loop`.
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
@@ -233,7 +228,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   private readonly _path: CurveChain;
   private readonly _fragments: PathFragment[];
   private readonly _totalLength: number; // matches final fragment distance1.
-  /** Test if other is a `CurveChainWithDistanceIndex` */
+  /** Test if `other` is a `CurveChainWithDistanceIndex` */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof CurveChainWithDistanceIndex;
   }
@@ -256,7 +251,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /**
    * Reference to the contained path.
-   * * Do not modify the path.  The distance index will be wrong.
+   * * Do not modify the path. The distance index will be wrong.
    */
   public get path(): CurveChain {
     return this._path;
@@ -300,7 +295,6 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return undefined;
     const childFractionA = fragmentA.chainDistanceToAccurateChildFraction(chainDistanceA, true);
     const childFractionB = fragmentB.chainDistanceToAccurateChildFraction(chainDistanceB, true);
-
     // add a (possibly reversed) partial clone to newPath
     const newPath = Path.create();
     const addPartialChild = (
@@ -352,7 +346,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     return true;
   }
-  /** Return the start point of the primitive.  The default implementation returns fractionToPoint (0.0) */
+  /** Return the start point of the primitive. The default implementation returns fractionToPoint (0.0) */
   public override startPoint(result?: Point3d): Point3d {
     const c = this._path.cyclicCurvePrimitive(0);
     if (c)

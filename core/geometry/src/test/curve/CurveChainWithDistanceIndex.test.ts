@@ -17,6 +17,8 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { LineString3d } from "../../curve/LineString3d";
+import { CurveCurve } from "../../curve/CurveCurve";
 
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
 
@@ -186,6 +188,49 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcC, arcDerivC, arcDeriv2C]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [indexedC, pathDerivC, pathDeriv2C], 0, 0, 10);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "fractionToCurvature");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("closestApproach", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        LineString3d.create(
+          Point3d.create(-1, -1),
+          Point3d.create(0, 0),
+          Point3d.create(-4, 4),
+        )
+      ),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // test global fractions
+    let fractionalPoint, expectedPoint: Point3d;
+    fractionalPoint = geometryA.fractionToPoint(0.2);
+    expectedPoint = Point3d.create(0, 0);
+    ck.testPoint3d(fractionalPoint, expectedPoint);
+    fractionalPoint = geometryA.fractionToPoint(0.4);
+    expectedPoint = Point3d.create(-1, 1);
+    ck.testPoint3d(fractionalPoint, expectedPoint);
+    fractionalPoint = geometryA.fractionToPoint(0.6);
+    expectedPoint = Point3d.create(-2, 2);
+    ck.testPoint3d(fractionalPoint, expectedPoint);
+    fractionalPoint = geometryA.fractionToPoint(0.8);
+    expectedPoint = Point3d.create(-3, 3);
+    ck.testPoint3d(fractionalPoint, expectedPoint);
+    // test closest approach global fractions
+    const geometryB = LineSegment3d.createXYXY(3, 0, 5, 2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    ck.testDefined(closestApproach);
+    const detailA = closestApproach!.detailA;
+    const detailB = closestApproach!.detailB;
+    const closestApproachSegment = LineSegment3d.create(detailA.point, detailB.point);
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegment);
+    ck.testExactNumber(detailA.fraction, 0);
+    ck.testExactNumber(detailB.fraction, 0.2);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproach");
     expect(ck.getNumErrors()).equals(0);
   });
 });
