@@ -2288,7 +2288,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @see [IModelConnection.queryDefaultViewId]($frontend) to query this property from the front-end.
      * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
