@@ -190,7 +190,6 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "fractionToCurvature");
     expect(ck.getNumErrors()).equals(0);
   });
-
   it("closestApproachChainSegment", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
