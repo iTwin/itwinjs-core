@@ -123,10 +123,6 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
-      "name": "@bentley/react-scripts",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
     },
@@ -223,6 +219,10 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "@itwin/ecql-common",
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
@@ -241,6 +241,10 @@
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecsql-common",
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -299,6 +303,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/itwins-client",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/linear-referencing-common",
       "allowedCategories": [ "backend" ]
     },
@@ -308,7 +316,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -411,6 +419,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "browserslist-to-esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "buffer",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -437,10 +449,6 @@
     {
       "name": "chai-jest-snapshot",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "chai-spies",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "chai-string",
@@ -473,10 +481,6 @@
     {
       "name": "copy-webpack-plugin",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "coverage",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "cpx2",
@@ -520,6 +524,10 @@
     },
     {
       "name": "esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "esbuild-plugin-external-global",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -604,7 +612,7 @@
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "js-base64",
@@ -629,54 +637,6 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "karma",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-babel-preprocessor",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-chai-plugins",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-chrome-launcher",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-coverage",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-coverage-istanbul-instrumenter",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-coverage-istanbul-reporter",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-jasmine",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-junit-reporter",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-mocha",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-sourcemap-loader",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "karma-webpack",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",
@@ -751,10 +711,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "puppeteer",
-      "allowedCategories": [ "integration-testing", "tools" ]
-    },
-    {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
     },
@@ -764,7 +720,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "resolve",
@@ -773,6 +729,22 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "rollup-plugin-copy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-ignore",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-visualizer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-webpack-stats",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sanitize-filename",
@@ -824,7 +796,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "typedoc",
@@ -859,6 +831,18 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "vite",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-env-compatible",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-inspect",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "webpack",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -877,10 +861,6 @@
     {
       "name": "wtfnode",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "xmlhttprequest",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "yargonaut",

@@ -55,6 +55,7 @@ describe("ECSqlStatement", () => {
   const outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
+  const abbreviatedBlobVal = `{"bytes":${ blobVal.byteLength }}`;
 
   it("check asynchronous step and stepForInsert methods", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
@@ -1987,7 +1988,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([id]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, id);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, blobVal.slice(0, 1));
+        assert.deepEqual(row.bl, abbreviatedBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([id]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2103,6 +2104,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const singleBlobVal = blobVal.slice(0, 1);
+      const abbreviatedSingleBlobVal = `{"bytes":${ singleBlobVal.byteLength }}`;
       const emptyBlobVal = new Uint8Array();
 
       const fullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
@@ -2136,7 +2138,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([fullId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, fullId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, singleBlobVal);
+        assert.deepEqual(row.bl, abbreviatedBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([fullId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2154,7 +2156,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([singleId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, singleId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, singleBlobVal);
+        assert.deepEqual(row.bl, abbreviatedSingleBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([singleId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2172,7 +2174,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([emptyId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, emptyId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl.length, 0);
+        assert.deepEqual(row.bl, "{\"bytes\":0}");
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([emptyId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
+import { CurveLocationDetailArrayPair } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";

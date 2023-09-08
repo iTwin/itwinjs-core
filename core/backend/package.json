@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.1.0-dev.69",
+  "version": "4.2.0-dev.17",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -41,9 +41,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.69",
-    "@itwin/core-common": "workspace:^4.1.0-dev.69",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.69",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.17",
+    "@itwin/core-common": "workspace:^4.2.0-dev.17",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.17",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -61,6 +61,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
+    "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
@@ -90,11 +91,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.1.5",
-    "@itwin/cloud-agnostic-core": "^2.0.0",
+    "@bentley/imodeljs-native": "4.2.3",
+    "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
-    "@itwin/object-storage-azure": "^2.0.0",
-    "@itwin/object-storage-core": "^2.0.0",
+    "@itwin/object-storage-azure": "^2.1.0",
+    "@itwin/object-storage-core": "^2.1.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",

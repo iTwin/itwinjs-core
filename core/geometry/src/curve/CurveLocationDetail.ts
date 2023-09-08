@@ -205,7 +205,7 @@ export class CurveLocationDetail {
     result.curve = curve;
     return result;
   }
-  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
+  /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
     curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
   ): CurveLocationDetail {
@@ -470,5 +470,20 @@ export class CurveLocationDetailPair {
     const q = this.detailA;
     this.detailA = this.detailB;
     this.detailB = q;
+  }
+}
+
+/**
+ * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by [[CurveCurve.intersectionXYZ]].
+ * @public
+ */
+export class CurveLocationDetailArrayPair {
+  /** First array of details ... */
+  public dataA: CurveLocationDetail[];
+  /** Second array of details ... */
+  public dataB: CurveLocationDetail[];
+  public constructor() {
+    this.dataA = [];
+    this.dataB = [];
   }
 }

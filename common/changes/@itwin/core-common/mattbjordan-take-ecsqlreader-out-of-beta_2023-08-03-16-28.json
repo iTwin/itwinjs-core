@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "ECSqlReader.formatCurrentRow and ECSqlReader.getRowInternal are now internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -1,6 +1,48 @@
 # Change Log - @itwin/editor-backend
 
-This log was last generated on Tue, 18 Jul 2023 13:47:06 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Sep 2023 13:39:03 GMT and should not be manually modified.
+
+## 4.1.5
+Fri, 08 Sep 2023 13:37:23 GMT
+
+_Version update only_
+
+## 4.1.4
+Thu, 07 Sep 2023 18:26:02 GMT
+
+_Version update only_
+
+## 4.1.3
+Wed, 30 Aug 2023 15:35:27 GMT
+
+_Version update only_
+
+## 4.1.2
+Wed, 23 Aug 2023 15:25:29 GMT
+
+_Version update only_
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+_Version update only_
+
+## 4.1.0
+Mon, 14 Aug 2023 14:36:34 GMT
+
+### Updates
+
+- Switch to ESLint new flat config system
+
+## 4.0.7
+Thu, 10 Aug 2023 13:19:24 GMT
+
+_Version update only_
+
+## 4.0.6
+Mon, 24 Jul 2023 05:07:33 GMT
+
+_Version update only_
 
 ## 4.0.5
 Tue, 18 Jul 2023 12:21:56 GMT
@@ -35,6 +77,16 @@ Mon, 22 May 2023 15:34:14 GMT
 - Update to eslint@8
 - Drop Node 12 and Node 14.
 - Drop Node 16 support.
+
+## 3.7.13
+Tue, 08 Aug 2023 19:49:18 GMT
+
+_Version update only_
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+_Version update only_
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:22 GMT

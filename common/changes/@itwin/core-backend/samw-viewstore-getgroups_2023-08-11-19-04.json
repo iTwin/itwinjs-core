@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

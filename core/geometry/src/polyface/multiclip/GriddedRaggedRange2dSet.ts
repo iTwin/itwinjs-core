@@ -9,32 +9,37 @@
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
+import { Range2dSearchInterface } from "./Range2dSearchInterface";
 
-export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
 /**
- * A GriddedRaggedRange2dSet is
- * * A doubly dimensioned array of LinearSearchRange2dArray
- * * Each entry represents a block in a uniform grid within the master range of the GriddedRaggedRange2dSet.
+ * Type abbreviation to allow undefined as a Range2dSearchInterface parameter.
+ * @internal
+ */
+export type OptionalRange2dSearchInterface<T> = Range2dSearchInterface<T> | undefined;
+
+/**
+ * A GriddedRaggedRange2dSet is:
+ * * A doubly dimensioned array of Range2dSearchInterface.
+ * * Each entry represents a block in a uniform grid within the master range.
  * * Member ranges are noted in the grid block containing the range's lower left corner.
  * * Member ranges larger than twice the grid size are rejected by the insert method.
  * * Hence a search involving a point in grid block (i,j) must examine ranges in grid blocks left and below, i.e. (i-1,j-1), (i-1,j), (i,j-1)
- * @internal
+ * @public
  */
-export class GriddedRaggedRange2dSet<T> {
+export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
   private _range: Range2d;
   private _numXEdge: number;
   private _numYEdge: number;
-  /** Each grid block is a simple linear search set
-   *
-   */
-  private _rangesInBlock: Array<Array<OptionalLinearSearchRange2dArray<T>>>;
+  /** Each grid block is a simple linear search set */
+  private _rangesInBlock: Array<Array<OptionalRange2dSearchInterface<T>>>;
+  private static _workRange?: Range2d;
   private constructor(range: Range2d, numXEdge: number, numYEdge: number) {
     this._range = range;
     this._numXEdge = numXEdge;
     this._numYEdge = numYEdge;
     this._rangesInBlock = [];
     for (let j = 0; j < this._numYEdge; j++) {
-      const thisRow: Array<OptionalLinearSearchRange2dArray<T>> = [];
+      const thisRow: Array<OptionalRange2dSearchInterface<T>> = [];
       for (let i = 0; i < this._numXEdge; i++) {
         thisRow.push(undefined);
       }
@@ -43,9 +48,9 @@ export class GriddedRaggedRange2dSet<T> {
   }
   /**
    * Create an (empty) set of ranges.
-   * @param range
-   * @param numXEdge
-   * @param numYEdge
+   * @param range master range
+   * @param numXEdge size of grid in x direction
+   * @param numYEdge size of grid in y direction
    */
   public static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined {
     if (numXEdge < 1 || numYEdge < 1 || range.isNull || range.isSinglePoint)
@@ -60,7 +65,7 @@ export class GriddedRaggedRange2dSet<T> {
     const fraction = (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
     return Math.floor(fraction * this._numXEdge);
   }
-  private getBlock(i: number, j: number): LinearSearchRange2dArray<T> | undefined {
+  private getBlock(i: number, j: number): OptionalRange2dSearchInterface<T> {
     if (i >= 0 && i < this._numXEdge && j >= 0 && j < this._numYEdge) {
       if (!this._rangesInBlock[j][i])
         this._rangesInBlock[j][i] = new LinearSearchRange2dArray();
@@ -69,13 +74,13 @@ export class GriddedRaggedRange2dSet<T> {
     return undefined;
   }
   /** If possible, insert a range into the set.
-   * * Decline to insert (and return false) if
-   *   * range is null
-   *   * range is not completely contained in the overall range of this set.
-   *   * range x or y extent is larger than 2 grid blocks.
+   * * Decline to insert (and return false) if:
+   *    * range is null
+   *    * range is not completely contained in the overall range of this set
+   *    * range x or y extent is larger than 2 grid blocks
    */
-  public conditionalInsert(range: Range2d | Range3d, tag: T): boolean {
-    if (range.isNull)
+  public conditionalInsert(range: Range2d | Range3d | LowAndHighXY, tag: T): boolean {
+    if (Range2d.isNull(range))
       return false;
     if (!this._range.containsRange(range))
       return false;
@@ -93,6 +98,10 @@ export class GriddedRaggedRange2dSet<T> {
       return true;
     }
     return false;
+  }
+  /** Add a range to the search set. */
+  public addRange(range: LowAndHighXY, tag: T): void {
+    this.conditionalInsert(range, tag);
   }
   /**
    * * Search a single block
@@ -159,7 +168,20 @@ export class GriddedRaggedRange2dSet<T> {
     }
     return true;
   }
-  public visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void) {
+  /** Return the overall range of all members. */
+  public totalRange(result?: Range2d): Range2d {
+    if (result)
+      result.setNull();
+    else
+      result = Range2d.createNull();
+    this.visitChildren(0, (_depth, child) => {
+      const childRange = GriddedRaggedRange2dSet._workRange = child.totalRange(GriddedRaggedRange2dSet._workRange);
+      result!.extendRange(childRange);
+    });
+    return result;
+  }
+  /** Call the handler on each defined block in the grid. */
+  public visitChildren(initialDepth: number, handler: (depth: number, child: Range2dSearchInterface<T>) => void) {
     for (const row of this._rangesInBlock) {
       for (const block of row) {
         if (block)

@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { join } from "path";
 import * as fs from "fs";
+import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -48,6 +48,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
@@ -239,7 +240,6 @@ export abstract class IModelDb extends IModel {
   private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
 
@@ -285,6 +285,11 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
+  /** @internal */
+  public restartDefaultTxn() {
+    this.nativeDb.restartDefaultTxn();
+  }
+
   public get fontMap(): FontMap {
     return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
   }
@@ -317,9 +322,8 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
-  private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public readonly nativeDb: IModelJsNative.DgnDb;
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
@@ -329,7 +333,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this._nativeDb = args.nativeDb;
+    this.nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
@@ -363,11 +367,10 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     this.nativeDb.closeIModel();
-    this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
   /** @internal */
-  public async refreshContainerSas(_userAccessToken: AccessToken): Promise<void> { }
+  public async refreshContainer(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -427,7 +430,7 @@ export abstract class IModelDb extends IModel {
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this.nativeDb; }
+  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
@@ -499,12 +502,12 @@ export abstract class IModelDb extends IModel {
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * @beta
+   * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+    if (!this.nativeDb.isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
-    }
+
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
@@ -716,6 +719,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
+    this._classMetaDataRegistry = undefined;
   }
 
   /** Update the project extents for this iModel.
@@ -817,20 +821,38 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (schemaFileNames.length === 0)
+      return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
-      schemaLockHeld: true,
-      ecSchemaXmlContext: maybeCustomNativeContext,
-    };
+    if (this.nativeDb.schemaSyncEnabled()) {
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-    if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema");
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+        schemaLockHeld: true,
+        ecSchemaXmlContext: maybeCustomNativeContext,
+      };
+
+      if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
+
+      const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
     }
-
     this.clearCaches();
   }
 
@@ -844,13 +866,31 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (serializedXmlSchemas.length === 0)
+      return;
 
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema");
+    if (this.nativeDb.schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
 
+      const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
+    }
     this.clearCaches();
   }
 
@@ -958,7 +998,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** The registry of entity metadata for this iModel.
-   * @beta
+   * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
@@ -1337,6 +1377,18 @@ export abstract class IModelDb extends IModel {
         }
       }
     });
+  }
+
+  /**
+   * Controls how [Code]($common)s are copied from this iModel into another iModel, to work around problems with iModels created by older connectors. The [imodel-transformer](https://github.com/iTwin/imodel-transformer) sets this appropriately on your behalf - you should never need to set or interrogate this property yourself.
+   * @public
+   */
+  public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
+    return this.nativeDb.getCodeValueBehavior();
+  }
+
+  public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
+    this.nativeDb.setCodeValueBehavior(newBehavior);
   }
 }
 
@@ -2234,8 +2286,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return 0;
     }
 
-    /** Set the default view property the iModel
+    /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
+     * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
@@ -2622,6 +2676,11 @@ class RefreshV2CheckpointSas {
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
+  /** Timer used to restart the default txn on the snapshotdb after some inactivity. This is only used for v2 checkpoints, and is useful because it aids in the process of cachefile management.
+   *  Restarting the default txn lets CloudSQLite know that any blocks that may have been read during the lifetime of that txn can now be safely added to the LRU list that CloudSQLite manages.
+   *  Without restarting the default txn, CloudSQLite is more likely to get into a state where it can not evict any blocks to make space for more blocks.
+   */
+  private _restartDefaultTxnTimer: NodeJS.Timeout | undefined;
   private _createClassViewsOnClose?: boolean;
   public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
@@ -2752,20 +2811,29 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
+    // unref timer, so it doesn't prevent a process from shutting down.
+    snapshot._restartDefaultTxnTimer = setTimeout(() => {
+      snapshot.restartDefaultTxn();
+    }, (10 * 60) * 1000).unref(); // 10 * 60 is 10 minutes in seconds, then converted to milliseconds (* 1000);
     snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the container sasToken using the current user's accessToken
+  /** Used to refresh the container sasToken using the current user's accessToken.
+   * Also restarts the timer which causes the default txn to be restarted on db if the timer activates.
    * @internal
    */
-  public override async refreshContainerSas(userAccessToken: AccessToken): Promise<void> {
+  public override async refreshContainer(userAccessToken: AccessToken): Promise<void> {
+    this._restartDefaultTxnTimer?.refresh();
     return this._refreshSas?.refreshSas(userAccessToken, this);
   }
 
   /** @internal */
   public override beforeClose(): void {
     super.beforeClose();
+
+    if (this._restartDefaultTxnTimer)
+      clearTimeout(this._restartDefaultTxnTimer);
 
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
