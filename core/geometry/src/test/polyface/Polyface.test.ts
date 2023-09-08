@@ -1629,7 +1629,7 @@ it.only("edgeMatesI", () => {
   builder.addPolygon([points[0], points[2], points[5]]); numInteriorEdges++;
 
   const polyface = builder.claimPolyface();
-  polyface.buildIndicesToAdjacentFacets();
+  polyface.buildEdgeMateIndices();
   verifyEdgeMates(ck, polyface);
   const s1 = "Edge mate pairing";
   let numMatched = 0;
@@ -1878,16 +1878,16 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
     const k0 = polyface.facetIndex0(facetIndex);
     const k1 = polyface.facetIndex1(facetIndex);
     for (let k = k0; k < k1; k++) {
-      const kNextAroundFacet = polyface.readIndexToFacetSuccessor(k);
+      const kNextAroundFacet = polyface.readIndexToSuccessorAroundFacet(k);
       if (ck.testTrue(kNextAroundFacet !== undefined) && kNextAroundFacet !== undefined) {
         ck.testTrue(kNextAroundFacet >= k0 && kNextAroundFacet < k1 && kNextAroundFacet !== k, "nextAroundFacet");
-        ck.testTrue(k === polyface.readIndexToFacetPredecessor(kNextAroundFacet));
+        ck.testTrue(k === polyface.readIndexToPredecessorAroundFacet(kNextAroundFacet));
         const kMate = polyface.readIndexToEdgeMate(k);
         if (kMate !== undefined) {
-          const kVertexPredecessor = polyface.readIndexToVertexPredecessor(k);
+          const kVertexPredecessor = polyface.readIndexToPredecessorAroundVertex(k);
           if (ck.testDefined(kVertexPredecessor) && kVertexPredecessor !== undefined) {
-            ck.testTrue(polyface.readIndexToFacetSuccessor(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
-            ck.testTrue(polyface.readIndexToVertexSuccessor(kVertexPredecessor) === k, "mate.fs.fs === k");
+            ck.testTrue(polyface.readIndexToSuccessorAroundFacet(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
+            ck.testTrue(polyface.readIndexToSuccessorAroundVertex(kVertexPredecessor) === k, "mate.fs.fs === k");
           }
         }
       }
