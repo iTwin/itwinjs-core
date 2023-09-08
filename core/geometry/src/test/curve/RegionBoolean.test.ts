@@ -8,7 +8,7 @@ import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
@@ -749,8 +749,8 @@ describe("RegionBoolean", () => {
 
     // data for creating pairs of concentric arcs that intersect
     const center = Point3d.createZero();
-    const vector0 = Vector3d.create(5,2);
-    const vector90 = Vector3d.create(2,-5);
+    const vector0 = Vector3d.create(5, 2);
+    const vector90 = Vector3d.create(2, -5);
     const testCases = [ // numOverlap is number of non-trivial coincident intervals
       { sweepStartA: 90, sweepEndA: 0, sweepStartB: 90, sweepEndB: 360, reverseB: false, numLoop: 1, numOverlap: 0 },
       { sweepStartA: 0, sweepEndA: 90, sweepStartB: 90, sweepEndB: 360, reverseB: false, numLoop: 1, numOverlap: 0 },

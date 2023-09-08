@@ -12,7 +12,7 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyRegion } from "../curve/CurveChain";
+import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
@@ -32,18 +32,18 @@ import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
-  /**
-   * carrier for a point array with an index into UnionOfConvexClipPlaneSets
-   * @private
-   */
-   class ClipCandidate {
-    public nextConvexSetIndex: number;
-    public points: GrowableXYZArray;
-    public constructor(points: GrowableXYZArray, nextConvexSetIndex: number) {
-      this.nextConvexSetIndex = nextConvexSetIndex;
-      this.points = points;
-    }
+/**
+ * carrier for a point array with an index into UnionOfConvexClipPlaneSets
+ * @private
+ */
+class ClipCandidate {
+  public nextConvexSetIndex: number;
+  public points: GrowableXYZArray;
+  public constructor(points: GrowableXYZArray, nextConvexSetIndex: number) {
+    this.nextConvexSetIndex = nextConvexSetIndex;
+    this.points = points;
   }
+}
 
 /**
  * A pair of PolyfaceBuilder objects, for use by clippers that emit inside and outside parts.
@@ -140,7 +140,7 @@ export class PolyfaceClip {
     const outsideShards: GrowableXYZArray[] = [];
     const residualPolygons: ClipCandidate[] = [];
     let candidate: ClipCandidate | undefined;
-    const  outsideParts: GrowableXYZArray[] = [];
+    const outsideParts: GrowableXYZArray[] = [];
 
     const numConvexSet = allClippers.convexSets.length;
     for (visitor.reset(); visitor.moveToNextFacet();) {
@@ -161,7 +161,7 @@ export class PolyfaceClip {
             // Keep outside parts active for clip by later facets . . .
             for (const outsidePolygon of outsideParts) {
               residualPolygons.push(new ClipCandidate(outsidePolygon, convexSetIndex + 1));
-              }
+            }
           } else {
             // Nothing was insidePart.  The outside parts might be split by intermediate steps -- but all the pieces are there.
             candidate.nextConvexSetIndex++;
@@ -171,7 +171,7 @@ export class PolyfaceClip {
         }
       }
       if (outsideShards.length === 0) {
-          builderA?.addPolygonGrowableXYZArray(visitor.point);
+        builderA?.addPolygonGrowableXYZArray(visitor.point);
       } else if (insideShards.length === 0) {
         // the facet spanned clippers but is intact outside
         builderB?.addPolygonGrowableXYZArray(visitor.point);
@@ -184,8 +184,8 @@ export class PolyfaceClip {
 
           this.cleanupAndAddRegion(builderB, outsideShards, worldToLocal, localToWorld);
         } else {
-        for (const shard of insideShards)
-          this.addPolygonToBuilderAndDropToCache(shard, builderA, cache);
+          for (const shard of insideShards)
+            this.addPolygonToBuilderAndDropToCache(shard, builderA, cache);
           for (const shard of outsideShards)
             this.addPolygonToBuilderAndDropToCache(shard, builderB, cache);
         }
@@ -212,16 +212,16 @@ export class PolyfaceClip {
   }
   // WARNING: shards are transformed into local system, not reverted!!!
   private static cleanupAndAddRegion(builder: PolyfaceBuilder | undefined, shards: GrowableXYZArray[],
-  worldToLocal: Transform | undefined, localToWorld: Transform | undefined) {
+    worldToLocal: Transform | undefined, localToWorld: Transform | undefined) {
     if (builder !== undefined && shards.length > 0) {
       if (worldToLocal)
         GrowableXYZArray.multiplyTransformInPlace(worldToLocal, shards);
       const outsidePieces = RegionOps.polygonBooleanXYToLoops(shards, RegionBinaryOpType.Union, []);
-      if (outsidePieces && outsidePieces.children.length > 0){
+      if (outsidePieces && outsidePieces.children.length > 0) {
         if (localToWorld)
           outsidePieces.tryTransformInPlace(localToWorld);
         RegionOps.consolidateAdjacentPrimitives(outsidePieces);
-          this.addRegion(builder, outsidePieces);
+        this.addRegion(builder, outsidePieces);
       }
     }
   }

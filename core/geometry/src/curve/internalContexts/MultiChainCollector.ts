@@ -12,7 +12,7 @@ import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveChain";
+import { AnyCurve } from "../CurveTypes";
 import { BagOfCurves, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { CurvePrimitive } from "../CurvePrimitive";
