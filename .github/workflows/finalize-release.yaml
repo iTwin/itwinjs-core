@@ -8,16 +8,20 @@ name: Finalize Release
 on:
   workflow_dispatch:
   push:
-    tags:
+    branches:
     - 'release/*'
+    paths:
+    - '**/CHANGELOG.md'
 
 jobs:
   finalize:
     name: Cherry-pick Changelogs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
+          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
           fetch-depth: 0
       - name: Set Git Config
         run: |
