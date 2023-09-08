@@ -1120,6 +1120,23 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("DrapeRegion", () => {
+    /*
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const samples: Point3d[] = [];
+    // TODO: sample Franke's function: https://www.sfu.ca/~ssurjano/franke2d.html
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
+    const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(samples, options);
+    // TODO: create regions:
+    // * CW and CCW loops
+    // * punctured split washer parity region (CCW outer loop contains a bridged hole, CW isolated hole) to cover failsafe triangulation method, and force a Boolean difference (to verify that we don't need to reverse holes)
+    // * parity region with no outer loop
+    // TODO: drape
+    // TODO: how verify numerically?
+    */
+  });
 });
 /** Estimate a volume for a mesh that may be missing side faces.
  * * Compute volume "between" the mesh facets and the bottom plane of the mesh range

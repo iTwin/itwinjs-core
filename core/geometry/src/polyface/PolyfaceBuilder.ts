@@ -1827,10 +1827,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Triangulate the points as viewed in xy.
    * @param points
    */
-  public static pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined {
+  public static pointsToTriangulatedPolyface(points: Point3d[], options?: StrokeOptions): IndexedPolyface | undefined {
     const graph = Triangulator.createTriangulatedGraphFromPoints(points);
     if (graph)
-      return PolyfaceBuilder.graphToPolyface(graph);
+      return PolyfaceBuilder.graphToPolyface(graph, options);
     return undefined;
   }
   /** Create (and add to the builder) triangles that bridge the gap between two linestrings.
