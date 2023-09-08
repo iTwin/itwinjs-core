@@ -251,6 +251,7 @@ export class TxnManager {
    */
   private touchWatchFile(): void {
     // This is an async call. We don't have any reason to await it.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     touch(this._iModel.watchFilePathName, { nocreate: true });
   }
 
