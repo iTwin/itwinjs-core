@@ -642,10 +642,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const uy = this._matrix.at(1, 0);
     const vx = this._matrix.at(0, 1);
     const vy = this._matrix.at(1, 1);
-    const axx = Geometry.dotProductXYXY(ux, uy, ux, uy);
-    const ayy = Geometry.dotProductXYXY(vx, vy, vx, vy);
-    const axy = Geometry.dotProductXYXY(ux, uy, vx, vy);
-    if (Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy))
+    const dotUU = Geometry.dotProductXYXY(ux, uy, ux, uy);
+    const dotVV = Geometry.dotProductXYXY(vx, vy, vx, vy);
+    const dotUV = Geometry.dotProductXYXY(ux, uy, vx, vy);
+    if (Angle.isPerpendicularDotSet(dotUU, dotVV, dotUV) && Geometry.isSameCoordinateSquared(dotUU, dotVV))
       return Geometry.hypotenuseXY(ux, uy);
     return undefined;
   }

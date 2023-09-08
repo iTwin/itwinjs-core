@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix schedule script symbology issue",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

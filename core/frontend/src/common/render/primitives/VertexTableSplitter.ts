@@ -673,7 +673,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
 
   const mat = args.params.surface.material;
   const atlasOffset = undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
-  const atlasInfo = atlasOffset ? { offset: atlasOffset, createMaterial: args.createMaterial } : undefined;
+  const atlasInfo = undefined !== atlasOffset ? { offset: atlasOffset, createMaterial: args.createMaterial } : undefined;
 
   const nodes = VertexTableSplitter.split({
     indices: args.params.surface.indices,

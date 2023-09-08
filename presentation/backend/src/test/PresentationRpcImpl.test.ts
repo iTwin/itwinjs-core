@@ -22,9 +22,9 @@ import {
   VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  configureForPromiseResult,
-  createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinition, createRandomNodePathElement,
-  createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode, createTestSelectClassInfo, ResolvablePromise,
+  configureForPromiseResult, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinition,
+  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode,
+  createTestSelectClassInfo, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -309,6 +309,31 @@ describe("PresentationRpcImpl", () => {
 
         expect((await actualResultPromise1).result).to.eq(111);
         expect((await actualResultPromise2).result).to.eq(222);
+      });
+
+      it("should reuse request promise when request is repeated multiple times and iModel takes long to find", async () => {
+        const refreshIModelContainerPromise = new ResolvablePromise<void>();
+        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainer(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
+
+        const rpcOptions: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+        };
+        const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: undefined,
+          cancelEvent: new BeEvent<() => void>(),
+        };
+        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions)).returns(async () => 0).verifiable(moq.Times.once());
+        const pResult1 = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const pResult2 = impl.getNodesCount(testData.imodelToken, rpcOptions);
+
+        await refreshIModelContainerPromise.resolve();
+
+        const [result1, result2] = await Promise.all([pResult1, pResult2]);
+        expect(result2).to.eq(result1);
+        presentationManagerMock.verifyAll();
       });
 
       it("should forward ruleset variables to manager", async () => {

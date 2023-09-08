@@ -164,6 +164,82 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
+  it("writeLockExpires getter", async () => {
+    const container = testContainers[0];
+    container.connect(caches[1]);
+    let writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
+    expect(writeLockExpiryTimeNoWriteLock).to.equal("");
+    await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+      const firstWriteLockExpiryTime = Date.parse(container.writeLockExpires);
+      await BeDuration.wait(500); // sleep 500ms so we get a new write lock expiry time.
+      await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+        const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
+        expect(secondWriteLockExpiryTime).to.be.greaterThanOrEqual(firstWriteLockExpiryTime);
+        // subtract 30 minutes and make sure its less than the first write lock expiry time.
+        // This tests that the secondWriteLockExpiryTime is a 'refresh' of the default expiry time of 1 hour.
+        // and not extending the expiry time already present by another hour.
+        // If it were extending the default expiry time of 1 hour, then second writelockexpirytime would be over 1 hour in the future
+        // and the below assert would fail.
+        expect(secondWriteLockExpiryTime - (30 * 60 * 1000)).to.be.lessThan(firstWriteLockExpiryTime);
+      });
+    });
+    writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
+    expect(writeLockExpiryTimeNoWriteLock).to.equal("");
+    container.disconnect({detach: true});
+  });
+
+  it("should query bcv stat table", async () => {
+    const cache = azSqlite.makeCache("bcv-stat-cache");
+    const container = testContainers[0];
+    container.connect(cache);
+
+    const checkOptionalReturnValues = (bcvStats: CloudSqlite.BcvStats, expectDefined: boolean) => {
+      if (expectDefined) {
+        expect(bcvStats.activeClients).to.not.be.undefined;
+        expect(bcvStats.attachedContainers).to.not.be.undefined;
+        expect(bcvStats.ongoingPrefetches).to.not.be.undefined;
+        expect(bcvStats.totalClients).to.not.be.undefined;
+      } else {
+        expect(bcvStats.activeClients).to.be.undefined;
+        expect(bcvStats.attachedContainers).to.be.undefined;
+        expect(bcvStats.ongoingPrefetches).to.be.undefined;
+        expect(bcvStats.totalClients).to.be.undefined;
+      }
+    };
+    let stats = container.queryBcvStats();
+    checkOptionalReturnValues(stats, false);
+    stats = container.queryBcvStats({addClientInformation: false});
+    checkOptionalReturnValues(stats, false);
+    expect(cache.isDaemon).to.be.false;
+    // daemonless is always 0 locked blocks.
+    expect(stats.lockedCacheslots).to.equal(0);
+    // we haven't opened any databases yet, so have 0 entries in the cache.
+    expect(stats.populatedCacheslots).to.equal(0);
+    // 10 gb in bytes, current cache size defined by this test suite.
+    const tenGb = 10 * (1024 * 1024 * 1024);
+    // 64 kb, current block size defined by this test suite.
+    const blockSize = 64 * 1024;
+    // totalCacheslots is the number of entries allowed in the cachefile.
+    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+
+    const dbs = container.queryDatabases();
+    expect(dbs.length).to.be.greaterThanOrEqual(1);
+    let db = container.queryDatabase(dbs[0]);
+    expect(db !== undefined).to.be.true;
+    expect(db!.localBlocks).to.equal(0);
+    const prefetch = CloudSqlite.startCloudPrefetch(container, dbs[0]);
+    await prefetch.promise;
+    // Check bcv stats again after prefetching a database.
+    db = container.queryDatabase(dbs[0]);
+    expect(db!.localBlocks).to.equal(db!.totalBlocks);
+    stats = container.queryBcvStats({addClientInformation: true});
+    checkOptionalReturnValues(stats, true);
+    expect(stats.lockedCacheslots).to.equal(0);
+    expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
+    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    container.disconnect({detach: true});
+  });
+
   it("cloud containers", async () => {
     expect(undefined !== caches[0]);
 
