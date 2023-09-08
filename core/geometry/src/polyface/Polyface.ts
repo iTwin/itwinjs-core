@@ -185,7 +185,7 @@ export class IndexedPolyface extends Polyface {
    * * return the readIndex of its successor around its facet.
    * * this is `k+1 for all but the last of its index block, which wraps back to readIndexToFacetStartIndex.
    */
-  public readIndexToFacetSuccessor(k: number): number | undefined {
+  public readIndexToSuccessorAroundFacet(k: number): number | undefined {
     const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
     if (facetIndex === undefined)
       return undefined;
@@ -199,7 +199,7 @@ export class IndexedPolyface extends Polyface {
    * * return the readIndex of its predecessor around its facet.
    * * this is `k-1 for all but the last of its index block, which wraps forward to the last of its block.
    */
-  public readIndexToFacetPredecessor(k: number): number | undefined {
+  public readIndexToPredecessorAroundFacet(k: number): number | undefined {
     const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
     if (facetIndex === undefined)
       return undefined;
@@ -212,10 +212,10 @@ export class IndexedPolyface extends Polyface {
    * * if the PolyfaceData has a edgeMateReadIndex array, that array gives this value directly.
    * * If that array is missing, return undefined.
    */
-  public readIndexToVertexSuccessor(k: number): number | undefined {
+  public readIndexToSuccessorAroundVertex(k: number): number | undefined {
     let k1: number | undefined;
     if (this.data.edgeMateReadIndex !== undefined && k < this.data.edgeMateReadIndex.length
-      && undefined !== (k1 = this.readIndexToFacetPredecessor(k)))
+      && undefined !== (k1 = this.readIndexToPredecessorAroundFacet(k)))
       return this.data.edgeMateReadIndex[k1];
     return undefined;
   }
@@ -235,10 +235,10 @@ export class IndexedPolyface extends Polyface {
    * * return the readIndex of the place on the adjacent facet moving "backwards" around the vertex loop.
    * * If that array is missing, return undefined.
    */
-  public readIndexToVertexPredecessor(k: number): number | undefined {
+  public readIndexToPredecessorAroundVertex(k: number): number | undefined {
     let k1: number | undefined;
     if (undefined !== (k1 = this.readIndexToEdgeMate(k)))
-      return this.readIndexToFacetSuccessor(k1);
+      return this.readIndexToSuccessorAroundFacet(k1);
     return undefined;
   }
 
@@ -249,8 +249,29 @@ export class IndexedPolyface extends Polyface {
   public readIndexToFacetIndex(k: number): number | undefined {
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
-
-  public buildIndicesToAdjacentFacets() {
+  /**
+   * In the PolyfaceData object, build the edgeMate data array.
+   * After this method:
+   * * The array data.edgeMateReadIndex will be present with the same length as the other index arrays.
+   * * For each facet edge with a unique "edge mate", the query polyface.readIndexToEdgeMate will navigate to the edge mate on the an adjacent facet.
+   * * The conditions for edgeMate matching are:
+   *    * pointIndices pointIndex[kA] and pointIndex[kB] are at "read index" kA and kB in the pointIndexArray, with
+   *       kA and kB being consecutive indices "around the facet" (either kB===kA+1 or kA is the highest read index for the facet and kB is "wrapped" to the first of the facet)
+   *    * there is another facet in which pointIndex[kC] and pointIndex[kD] are an edge with pointIndex value in reversed order, i.e.
+   *       * pointIndex[kA] = pointIndex[kD]
+   *       * pointIndex[kB] = pointIndex[kC]
+   * * All pointIndex values that do not have this matching property are undefined.  This includes
+   *    * "boundary" edges that have no mates at all
+   *    * "non manifold" edges that have more than one mate, or a single mate that is in the wrong direction.
+   * * These conditions are "just" the usual convention that each edge in a mesh has at most one partner with opposite orientation.
+   * * Following this setup step, this polyface will support the queries to reach the various neighbors of any given readIndex k into the pointIndex array.
+   *   * polyface.readIndexToEdgeMate = (possibly undefined) readIndex of the edge mate
+   *   * polyface.readIndexToSuccessorAroundFacet = readIndex of the next vertex around the facet.
+   *   * polyface.readIndexToPredecessorAroundFacet = readIndex of the previous vertex around the facet
+   *   * polyface.readIndexToSuccessorAroundVertex = (possibly undefined) readIndex of the next vertex around the facet.
+   *   * polyface.readIndexToPredecessorAroundVertex = (possibly undefined) readIndex of the previous vertex around the facet
+   */
+  public buildEdgeMateIndices() {
     const matcher = new IndexedEdgeMatcher();
     for (let facetIndex = 0; facetIndex + 1 < this._facetStart.length; facetIndex++) {
       const kStart = this._facetStart[facetIndex];
