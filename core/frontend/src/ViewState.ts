@@ -1296,11 +1296,10 @@ export abstract class ViewState extends ElementState {
     if (0 === elevation && !modelTransform && !scriptTransform)
       return undefined;
 
-    const transform = Transform.createIdentity(args.output);
+    const transform = Transform.createTranslationXYZ(0, 0, elevation);
     if (modelTransform?.premultiply)
       modelTransform.transform.multiplyTransformTransform(transform, transform);
 
-    transform.origin.z = elevation;
     if (modelTransform && !modelTransform.premultiply)
       transform.multiplyTransformTransform(modelTransform.transform, transform);
 
