@@ -62,7 +62,7 @@ export interface ModelDisplayTransform {
   /** The transform to be applied to the model. */
   transform: Transform;
   /** If `true`, [[transform]] is pre-multiplied with (i.e., appled before) the model's base transform.
-   * Otherwise, the display transform will instead be pre-multiplied with (i.e., applied after) the base transform.
+   * Otherwise, the display transform will instead be post-multiplied with (i.e., applied after) the base transform.
    */
   premultiply?: boolean;
 }
