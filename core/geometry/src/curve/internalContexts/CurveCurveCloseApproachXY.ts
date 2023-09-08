@@ -616,7 +616,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
-  /** Find the fractional point (if any) on the `arc` in the direction of `radialVector`. */
+  /** Find the fractional point (if any) on the circular `arc` in the direction of `radialVector`. */
   private resolveDirectionToArcXYFraction(
     arc: Arc3d, radialVector: Vector3d, scale: number,
   ): CurveLocationDetail | undefined {
