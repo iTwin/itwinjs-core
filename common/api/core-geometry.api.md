@@ -2939,8 +2939,7 @@ export class IndexedPolyface extends Polyface {
     addPoint(point: Point3d, priorIndex?: number): number;
     addPointIndex(index: number, visible?: boolean): void;
     addPointXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
-    buildIndicesToAdjacentFacets(): void;
+    buildEdgeMateIndices(): void;
     cleanupOpenFacet(): void;
     clone(): IndexedPolyface;
     cloneTransformed(transform: Transform): IndexedPolyface;
@@ -2967,11 +2966,11 @@ export class IndexedPolyface extends Polyface {
     range(transform?: Transform, result?: Range3d): Range3d;
     readIndexToEdgeMate(k: number): number | undefined;
     readIndexToFacetIndex(k: number): number | undefined;
-    readIndexToFacetPredecessor(k: number): number | undefined;
-    readIndexToFacetSuccessor(k: number): number | undefined;
+    readIndexToPredecessorAroundFacet(k: number): number | undefined;
+    readIndexToPredecessorAroundVertex(k: number): number | undefined;
     readIndexToStartIndex(k: number): number | undefined;
-    readIndexToVertexPredecessor(k: number): number | undefined;
-    readIndexToVertexSuccessor(k: number): number | undefined;
+    readIndexToSuccessorAroundFacet(k: number): number | undefined;
+    readIndexToSuccessorAroundVertex(k: number): number | undefined;
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
