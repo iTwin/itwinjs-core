@@ -2546,8 +2546,8 @@ export class BriefcaseDb extends IModelDb {
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
-      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => {
-        console.log("wal changed");
+      const watcher = fs.watch(`${file.path}-watch`, { persistent: false }, () => {
+        console.log("watchfile changed");
         nativeDb.restartDefaultTxn();
       });
       briefcaseDb.onBeforeClose.addOnce(() => {

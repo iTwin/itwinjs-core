@@ -6,6 +6,7 @@
  * @module iModels
  */
 
+import * as fs from "fs";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
@@ -296,6 +297,16 @@ export class TxnManager {
   /** @internal */
   protected _onCommitted() {
     console.log("onCommitted");
+    const filename = "e:\\bim\\ViewSyncBriefcase.bim-watch";
+    const time = new Date();
+    try {
+      fs.utimesSync(filename, time, time);
+    } catch (e: any) {
+      console.log(`err: ${e.toString()}`);
+      const fd = fs.openSync(filename, 'a');
+      fs.closeSync(fd);
+    }
+
     this.onCommitted.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
