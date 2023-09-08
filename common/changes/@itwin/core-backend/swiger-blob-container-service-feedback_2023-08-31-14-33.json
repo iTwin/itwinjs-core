@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add 'provider' to 'BlobContainer.CreatedContainerProps' ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

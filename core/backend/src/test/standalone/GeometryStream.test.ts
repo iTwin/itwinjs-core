@@ -1593,26 +1593,46 @@ describe("ElementGeometry", () => {
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const newEntries: ElementGeometryDataEntry[] = [];
+    const partToElement = Transform.createIdentity();
 
     const entryPI = ElementGeometry.fromGeometryPart(partId);
     assert.exists(entryPI);
+    ElementGeometry.toGeometryPart(entryPI!, partToElement);
+    assert.isTrue(partToElement.isIdentity);
     newEntries.push(entryPI!);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPI });
 
-    const entryPT = ElementGeometry.fromGeometryPart(partId, Transform.createTranslation(Point3d.create(5, 5, 0)));
+    const transPT = Transform.createTranslation(Point3d.create(5, 5, 0));
+    const entryPT = ElementGeometry.fromGeometryPart(partId, transPT);
     assert.exists(entryPT);
+    ElementGeometry.toGeometryPart(entryPT!, partToElement);
+    assert.isTrue(partToElement.isAlmostEqual(transPT));
     newEntries.push(entryPT!);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPT });
 
-    const entryPR = ElementGeometry.fromGeometryPart(partId, Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d()));
+    const transPR = Transform.createOriginAndMatrix(testOrigin, testAngles.toMatrix3d());
+    const entryPR = ElementGeometry.fromGeometryPart(partId, transPR);
     assert.exists(entryPR);
+    ElementGeometry.toGeometryPart(entryPR!, partToElement);
+    assert.isTrue(partToElement.isAlmostEqual(transPR));
     newEntries.push(entryPR!);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPR });
 
-    const entryPS = ElementGeometry.fromGeometryPart(partId, Transform.createScaleAboutPoint(testOrigin, 2));
+    const transPS = Transform.createScaleAboutPoint(testOrigin, 2);
+    const entryPS = ElementGeometry.fromGeometryPart(partId, transPS);
     assert.exists(entryPS);
+    ElementGeometry.toGeometryPart(entryPS!, partToElement);
+    assert.isTrue(partToElement.isAlmostEqual(transPS));
     newEntries.push(entryPS!);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPS });
+
+    const transPA = transPR.multiplyTransformTransform(transPS);
+    const entryPA = ElementGeometry.fromGeometryPart(partId, transPA);
+    assert.exists(entryPA);
+    ElementGeometry.toGeometryPart(entryPA!, partToElement);
+    assert.isTrue(partToElement.isAlmostEqual(transPA));
+    newEntries.push(entryPA!);
+    expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPA });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
     const newId = imodel.elements.insertElement(elementProps);

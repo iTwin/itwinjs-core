@@ -11,7 +11,7 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { AnyRegion } from "../CurveChain";
+import { AnyRegion } from "../CurveTypes";
 import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { Loop } from "../Loop";

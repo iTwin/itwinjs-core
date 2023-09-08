@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Adds logging for checkpoint application and V2 checkpoint downloads",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

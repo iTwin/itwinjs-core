@@ -55,17 +55,26 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** Interface adopted by an object that wants to apply per-model display transforms.
- * A model's display transform is applied when rendering the model in a [[Viewport]].
+/** A [Transform]($core-geometry) supplied by a [[ModelDisplayTransformProvider]] to be applied to a model when displaying it in a [[Viewport]].
+ * @beta
+ */
+export interface ModelDisplayTransform {
+  /** The transform to be applied to the model. */
+  transform: Transform;
+  /** If `true`, [[transform]] is pre-multiplied with (i.e., appled before) the model's base transform.
+   * Otherwise, the display transform will instead be post-multiplied with (i.e., applied after) the base transform.
+   */
+  premultiply?: boolean;
+}
+
+/** Interface adopted by an object that wants to apply a [[ModelDisplayTransform]] to one or more models within a [[Viewport]].
  * @see [[ViewState.modelDisplayTransformProvider]] to get or set the transform provider for a view.
  * @see [[ViewState.computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by a ModelDisplayTransformProvider.
  * @beta
  */
 export interface ModelDisplayTransformProvider {
-  /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
-   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
-   */
-  getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+  /** Return the transform to be applied to the specified model, if any. */
+  getModelDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined;
 }
 
 /** Arguments supplied to [[ViewState.computeDisplayTransform]].
@@ -1287,10 +1296,12 @@ export abstract class ViewState extends ElementState {
     if (0 === elevation && !modelTransform && !scriptTransform)
       return undefined;
 
-    const transform = Transform.createIdentity(args.output);
-    transform.origin.z = elevation;
-    if (modelTransform)
-      transform.multiplyTransformTransform(modelTransform, transform);
+    const transform = Transform.createTranslationXYZ(0, 0, elevation);
+    if (modelTransform?.premultiply)
+      modelTransform.transform.multiplyTransformTransform(transform, transform);
+
+    if (modelTransform && !modelTransform.premultiply)
+      transform.multiplyTransformTransform(modelTransform.transform, transform);
 
     if (scriptTransform)
       transform.multiplyTransformTransform(scriptTransform as Transform, transform);

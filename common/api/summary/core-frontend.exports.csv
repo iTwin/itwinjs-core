@@ -562,6 +562,7 @@ internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutpu
 internal;MockRender
 public;ModalOptions
 public;ModalReturn
+beta;ModelDisplayTransform
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 

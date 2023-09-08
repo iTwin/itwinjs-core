@@ -229,7 +229,7 @@ export class TileDrawArgs {
 
   private computePixelSizeScaleFactor(): number {
     // Check to see if a model display transform with non-uniform scaling is being used.
-    const mat = this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.tree.modelId)?.matrix;
+    const mat = this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.tree.modelId)?.transform.matrix;
     if (!mat)
       return 1;
 
