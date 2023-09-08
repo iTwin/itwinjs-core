@@ -29,7 +29,7 @@ import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
 
-/** Note: CurveChain and BagOfCurves classed are located in this file to prevent circular dependency. */
+/** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
 /**
  * Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be

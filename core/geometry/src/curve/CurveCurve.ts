@@ -109,7 +109,8 @@ export class CurveCurve {
    * as seen in the top view, or as measured between their projections onto the xy-plane.
    * * If more than one approach is returned, one of them is the closest approach.
    * * If an input curve is a `CurveCollection`, then close approaches are computed to each `CurvePrimitive` child.
-   * This can lead to many returned pairs, especially when both inputs are `CurveCollection`s.
+   * This can lead to many returned pairs, especially when both inputs are `CurveCollection`s. If an input curve is
+   * an AnyRegion then close approaches are computed only to the boundary curves, not to the interior.
    * @param curveA first curve
    * @param curveB second curve
    * @param maxDistance maximum xy-distance to consider between the curves.
