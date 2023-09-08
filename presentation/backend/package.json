@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -39,12 +39,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.1.4",
-    "@itwin/core-bentley": "workspace:^4.1.4",
-    "@itwin/core-common": "workspace:^4.1.4",
-    "@itwin/core-quantity": "workspace:^4.1.4",
-    "@itwin/ecschema-metadata": "workspace:^4.1.4",
-    "@itwin/presentation-common": "workspace:^4.1.4"
+    "@itwin/core-backend": "workspace:^4.1.5",
+    "@itwin/core-bentley": "workspace:^4.1.5",
+    "@itwin/core-common": "workspace:^4.1.5",
+    "@itwin/core-quantity": "workspace:^4.1.5",
+    "@itwin/ecschema-metadata": "workspace:^4.1.5",
+    "@itwin/presentation-common": "workspace:^4.1.5"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
