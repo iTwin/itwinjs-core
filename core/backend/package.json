@@ -101,6 +101,7 @@
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "multiparty": "^4.2.1",
+    "touch": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.5",
     "ws": "^7.5.3"
