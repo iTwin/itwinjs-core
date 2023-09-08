@@ -131,8 +131,6 @@ export class CurveCurve {
    * isolated intersections, or close approaches within tolerance of each other. This method makes no attempt to
    * distinguish among them, and returns a pair whose `detail.point` values are separated by the smallest xy distance
    * found among the pairs.
-   * * If input curves are curve collection, then closest approach is only computed between each pair of CurvePrimitives
-   * that input curves contain.
    * @param curveA first curve
    * @param curveB second curve
    * @return detail pair of closest xy-approach, undefined if not found
