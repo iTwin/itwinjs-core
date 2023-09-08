@@ -108,8 +108,8 @@ export class CurveCurve {
    * * Close approach xy-distances are measured without regard to z. This is equivalent to their separation distance
    * as seen in the top view, or as measured between their projections onto the xy-plane.
    * * If more than one approach is returned, one of them is the closest approach.
-   * * If input curves are curve collection, then close approaches are only computed between each pair of CurvePrimitives
-   * that input curves contain.
+   * * If an input curve is a `CurveCollection`, then close approaches are computed to each `CurvePrimitive` child.
+   * This can lead to many returned pairs, especially when both inputs are `CurveCollection`s.
    * @param curveA first curve
    * @param curveB second curve
    * @param maxDistance maximum xy-distance to consider between the curves.
@@ -130,8 +130,6 @@ export class CurveCurve {
    * isolated intersections, or close approaches within tolerance of each other. This method makes no attempt to
    * distinguish among them, and returns a pair whose `detail.point` values are separated by the smallest xy distance
    * found among the pairs.
-   * * If input curves are curve collection, then closest approach is only computed between each pair of CurvePrimitives
-   * that input curves contain.
    * @param curveA first curve
    * @param curveB second curve
    * @return detail pair of closest xy-approach, undefined if not found

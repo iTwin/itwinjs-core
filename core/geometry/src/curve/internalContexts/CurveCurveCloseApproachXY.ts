@@ -567,7 +567,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (intersectionFound)
       return;
     // 2) endpoints to endpoints or endpoints projection to the other curve
-    this.testAndRecordFractionalPairApproach(cpA, fractionA0, fractionA1, true, arc, 0, 1, true, reversed);
+    this.testAndRecordFractionalPairApproach(cpA, fractionA0, fractionA1, true, arc, 0, 1, false, reversed);
     // 3) line parallel to arc tangent.
     // If line does not intersect the arc, then the closest (and/or the furthest) point on arc to the line is a
     // point where the tangent line on arc at that point is parallel to the line.
@@ -594,12 +594,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const e = this._maxDistanceToAccept !== undefined ? this._maxDistanceToAccept : Geometry.smallMetricDistance;
     if (c > radiusA + radiusB + e) // distance between circles is more than max distance
       return;
-    // 1) intersection between circular arcs
-    // TODO
+    // TODO: 1) intersection between arcs
     // 2) endpoints to endpoints
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, false, cpB, 0, 1, false, reversed);
-    // 3) line from one circular arc to the other in the direction of vector
-    // from one circular arc center to the other circular arc center
+    // 3) line from one arc to another (perpendicular to arc tangents along center-center line)
     if (!Geometry.isSmallMetricDistance(c)) {
       const vectorAB = Vector3d.createStartEnd(cpA.center, cpB.center);
       vectorAB.scaleInPlace(1.0 / c);
@@ -618,7 +616,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
-  /** Find the fractional point (if any) on the circular `arc` in the direction of `radialVector`. */
+  /** Find the fractional point (if any) on the `arc` in the direction of `radialVector`. */
   private resolveDirectionToArcXYFraction(
     arc: Arc3d, radialVector: Vector3d, scale: number,
   ): CurveLocationDetail | undefined {
