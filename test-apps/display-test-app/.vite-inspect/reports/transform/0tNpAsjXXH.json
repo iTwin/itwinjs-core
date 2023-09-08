@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/createClass.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import toPropertyKey from \"./toPropertyKey.js\";\nfunction _defineProperties(target, props) {\n  for (var i = 0; i < props.length; i++) {\n    var descriptor = props[i];\n    descriptor.enumerable = descriptor.enumerable || false;\n    descriptor.configurable = true;\n    if (\"value\" in descriptor) descriptor.writable = true;\n    Object.defineProperty(target, toPropertyKey(descriptor.key), descriptor);\n  }\n}\nexport default function _createClass(Constructor, protoProps, staticProps) {\n  if (protoProps) _defineProperties(Constructor.prototype, protoProps);\n  if (staticProps) _defineProperties(Constructor, staticProps);\n  Object.defineProperty(Constructor, \"prototype\", {\n    writable: false\n  });\n  return Constructor;\n}",
+      "start": 1693508126290,
+      "end": 1693508126394,
+      "sourcemaps": null
+    }
+  ]
+}

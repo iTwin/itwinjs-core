@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/NestedMenu.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Controls\n */\nimport { createButton } from \"./Button\";\n/** @alpha */\nexport function createNestedMenu(props) {\n    const div = document.createElement(\"div\");\n    const body = undefined !== props.body ? props.body : document.createElement(\"div\");\n    const header = document.createElement(\"div\");\n    div.appendChild(header);\n    div.appendChild(body);\n    header.style.width = \"100%\";\n    const label = document.createElement(\"label\");\n    label.innerText = undefined !== props.label ? props.label : \"\";\n    header.appendChild(label);\n    let isExpanded = undefined !== props.expand ? props.expand : false;\n    body.style.display = isExpanded ? \"block\" : \"none\";\n    const toggleMenuButton = createButton({\n        parent: header,\n        inline: true,\n        value: isExpanded ? \"-\" : \"+\",\n        handler: () => undefined,\n    });\n    header.onclick = () => {\n        isExpanded = !isExpanded;\n        body.style.display = isExpanded ? \"block\" : \"none\";\n        toggleMenuButton.button.value = isExpanded ? \"-\" : \"+\";\n        if (undefined !== props.handler)\n            props.handler(isExpanded);\n    };\n    toggleMenuButton.div.style.cssFloat = \"right\";\n    header.appendChild(document.createElement(\"hr\"));\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    if (undefined !== props.id)\n        div.id = props.id;\n    return { body, label, div };\n}\n//# sourceMappingURL=NestedMenu.js.map",
+      "start": 1693508122788,
+      "end": 1693508122888,
+      "sourcemaps": null
+    }
+  ]
+}

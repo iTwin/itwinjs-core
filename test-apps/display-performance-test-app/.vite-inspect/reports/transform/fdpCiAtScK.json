@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/ChangesetInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Possible Changeset states. */\r\nexport var ChangesetState;\r\n(function (ChangesetState) {\r\n    /** Changeset instance is created but file is not uploaded. The Changeset creation is not complete. */\r\n    ChangesetState[\"WaitingForFile\"] = \"waitingForFile\";\r\n    /** The Changeset file is uploaded and creation is complete. */\r\n    ChangesetState[\"FileUploaded\"] = \"fileUploaded\";\r\n})(ChangesetState || (ChangesetState = {}));\r\n/** Flags that describe Changeset contents. */\r\nexport var ContainingChanges;\r\n(function (ContainingChanges) {\r\n    ContainingChanges[ContainingChanges[\"Regular\"] = 0] = \"Regular\";\r\n    ContainingChanges[ContainingChanges[\"Schema\"] = 1] = \"Schema\";\r\n    ContainingChanges[ContainingChanges[\"Definition\"] = 2] = \"Definition\";\r\n    ContainingChanges[ContainingChanges[\"SpatialData\"] = 4] = \"SpatialData\";\r\n    ContainingChanges[ContainingChanges[\"SheetsAndDrawings\"] = 8] = \"SheetsAndDrawings\";\r\n    ContainingChanges[ContainingChanges[\"ViewsAndModels\"] = 16] = \"ViewsAndModels\";\r\n    ContainingChanges[ContainingChanges[\"GlobalProperties\"] = 32] = \"GlobalProperties\";\r\n})(ContainingChanges || (ContainingChanges = {}));\r\n//# sourceMappingURL=ChangesetInterfaces.js.map",
+      "start": 1693508122148,
+      "end": 1693508122223,
+      "sourcemaps": null
+    }
+  ]
+}

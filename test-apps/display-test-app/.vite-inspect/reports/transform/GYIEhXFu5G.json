@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/optional/memory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { registerMethods } from '../../utils/methods.js'\r\n\r\n// Remember arbitrary data\r\nexport function remember (k, v) {\r\n  // remember every item in an object individually\r\n  if (typeof arguments[0] === 'object') {\r\n    for (var key in k) {\r\n      this.remember(key, k[key])\r\n    }\r\n  } else if (arguments.length === 1) {\r\n    // retrieve memory\r\n    return this.memory()[k]\r\n  } else {\r\n    // store memory\r\n    this.memory()[k] = v\r\n  }\r\n\r\n  return this\r\n}\r\n\r\n// Erase a given memory\r\nexport function forget () {\r\n  if (arguments.length === 0) {\r\n    this._memory = {}\r\n  } else {\r\n    for (var i = arguments.length - 1; i >= 0; i--) {\r\n      delete this.memory()[arguments[i]]\r\n    }\r\n  }\r\n  return this\r\n}\r\n\r\n// This triggers creation of a new hidden class which is not performant\r\n// However, this function is not rarely used so it will not happen frequently\r\n// Return local memory object\r\nexport function memory () {\r\n  return (this._memory = this._memory || {})\r\n}\r\n\r\nregisterMethods('Dom', { remember, forget, memory })\r\n",
+      "start": 1693508126733,
+      "end": 1693508127016,
+      "sourcemaps": null
+    }
+  ]
+}

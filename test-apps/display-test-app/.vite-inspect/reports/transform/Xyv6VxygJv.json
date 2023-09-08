@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/format/opc/FileAccess.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class FileAccess provides thread-safe random-access to a file.\n *\n * @version 1.0 January 2014\n */\n/** @internal */\nexport class FileAccess {\n    /**\n     * Create a new file access.\n     * @param fileName the name of the file.\n     * @param fileLength the length of the file.\n     */\n    constructor(fileStorage, fileName, fileLength) {\n        this._fileStorage = fileStorage;\n        this._fileName = fileName;\n        this._fileLength = fileLength;\n    }\n    /**\n     * Close the file access.\n     */\n    close() {\n    }\n    /**\n     * Get the name of the file.\n     * @return the name of the file.\n     */\n    getFileName() {\n        return this._fileName;\n    }\n    /**\n     * Get the length of the file.\n     * @return the length of the file.\n     */\n    getFileLength() {\n        return this._fileLength;\n    }\n}\n//# sourceMappingURL=FileAccess.js.map",
+      "start": 1693508127327,
+      "end": 1693508127378,
+      "sourcemaps": null
+    }
+  ]
+}

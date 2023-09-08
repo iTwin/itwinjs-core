@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/user-permission/UserPermissionOperations.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nimport { OperationsBase } from \"../../base/internal\";\r\nexport class UserPermissionOperations extends OperationsBase {\r\n    /**\r\n     * Retrieves Permissions the current user has for the specified iModel. The current user is determined based on\r\n     * passed authorization information. Wraps the\r\n     * {@link https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-user-permissions/ Get iModel User Permissions}\r\n     * operation from iModels API. iModels Permissions may be configured on a iTwin level or an iModel level.\r\n     * This operation will return Permissions configured for this specific iModel or iTwin Permissions if iModel\r\n     * Permissions are not configured.\r\n     * @param {GetUserPermissionsParams} params parameters for this operation. See {@link GetUserPermissionsParams}.\r\n     * @returns {Promise<UserPermissions>} User Permissions. See {@link UserPermissions}.\r\n     */\r\n    async get(params) {\r\n        const response = await this.sendGetRequest({\r\n            authorization: params.authorization,\r\n            url: this._options.urlFormatter.getUserPermissionsUrl({ iModelId: params.iModelId })\r\n        });\r\n        return response;\r\n    }\r\n}\r\n//# sourceMappingURL=UserPermissionOperations.js.map",
+      "start": 1693508126658,
+      "end": 1693508126717,
+      "sourcemaps": null
+    }
+  ]
+}

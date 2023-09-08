@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/RenderGraphic.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** Abstract representation of an object which can be rendered by a [[RenderSystem]].\n * Two broad classes of graphics exist:\n *  - \"Scene\" graphics generated on the back-end to represent the contents of the models displayed in a [[Viewport]]; and\n *  - [[Decorations]] created on the front-end to be rendered along with the scene.\n * The latter are produced using a [[GraphicBuilder]].\n * @public\n * @extensions\n */\nexport class RenderGraphic {\n}\n/** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.\n * Use a GraphicOwner to prevent disposal of a graphic that you want to reuse. The graphic owner can be added to decorations and list of dynamics just like any other graphic, but the graphic it owns\n * will never be automatically disposed of. Instead, you assume responsibility for disposing of the owned graphic by calling [[disposeGraphic]] when the owned graphic is no longer in use. Failure\n * to do so will result in leaks of graphics memory or other webgl resources.\n * @public\n * @extensions\n */\nexport class RenderGraphicOwner extends RenderGraphic {\n    /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */\n    dispose() { }\n    /** Disposes of the owned graphic. */\n    disposeGraphic() { this.graphic.dispose(); }\n    /** @internal */\n    collectStatistics(stats) { this.graphic.collectStatistics(stats); }\n}\n//# sourceMappingURL=RenderGraphic.js.map",
+      "start": 1693508119879,
+      "end": 1693508119956,
+      "sourcemaps": null
+    }
+  ]
+}

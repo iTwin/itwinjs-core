@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/format/opc/AttributeMask.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { AList } from \"../../../system/collection/AList\";\n/**\n * Class AttributeMask defines a mask of attributes to read.\n *\n * @version 1.0 January 2014\n */\n/** @internal */\nexport class AttributeMask {\n    /**\n     * Create a new mask.\n     * @param readers the list of attribute readers (can be null).\n     */\n    constructor(readers) {\n        /* Clear */\n        this.attributes = null;\n        this.readers = null;\n        /* Do we have a list of readers? */\n        if (readers != null) {\n            this.attributes = new Array(readers.size());\n            for (let i = 0; i < this.attributes.length; i++)\n                this.attributes[i] = readers.get(i).getAttribute();\n            this.readers = readers;\n        }\n    }\n    /**\n     * Read all embedded attributes of a file.\n     * @param fileReader the file reader.\n     * @return the mask.\n     */\n    static readAllEmbedded(fileReader) {\n        let readers = new AList();\n        for (let reader of fileReader.getStaticAttributeReaders())\n            readers.add(reader);\n        return new AttributeMask(readers);\n    }\n}\n//# sourceMappingURL=AttributeMask.js.map",
+      "start": 1693508125338,
+      "end": 1693508125393,
+      "sourcemaps": null
+    }
+  ]
+}

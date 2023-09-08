@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/MaterialProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** Describes the units in which a [[TextureMapProps]]' scale is expressed.\n * @public\n * @extensions\n */\nexport var TextureMapUnits;\n(function (TextureMapUnits) {\n    /** Indicates the scale has no units. */\n    TextureMapUnits[TextureMapUnits[\"Relative\"] = 0] = \"Relative\";\n    TextureMapUnits[TextureMapUnits[\"Meters\"] = 3] = \"Meters\";\n    TextureMapUnits[TextureMapUnits[\"Millimeters\"] = 4] = \"Millimeters\";\n    TextureMapUnits[TextureMapUnits[\"Feet\"] = 5] = \"Feet\";\n    TextureMapUnits[TextureMapUnits[\"Inches\"] = 6] = \"Inches\";\n})(TextureMapUnits || (TextureMapUnits = {}));\n/** Flags applied to a [[NormalMapProps]]. The enum values can be combined using bitwise operators.\n * @public\n */\nexport var NormalMapFlags;\n(function (NormalMapFlags) {\n    /** No special flags. */\n    NormalMapFlags[NormalMapFlags[\"None\"] = 0] = \"None\";\n    /** Indicates that the Y component of each vector - stored in the texture's green channel - points upward along the positive Y axis and should\n     * be negated. By default it points downward.\n     */\n    NormalMapFlags[NormalMapFlags[\"GreenUp\"] = 1] = \"GreenUp\";\n    /** If true, override the mapping mode with constant LOD mapping for the normal map. */\n    NormalMapFlags[NormalMapFlags[\"UseConstantLod\"] = 2] = \"UseConstantLod\";\n})(NormalMapFlags || (NormalMapFlags = {}));\n//# sourceMappingURL=MaterialProps.js.map",
+      "start": 1693508120704,
+      "end": 1693508120753,
+      "sourcemaps": null
+    }
+  ]
+}

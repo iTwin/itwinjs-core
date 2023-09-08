@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/hypermodeling/lib/esm/hypermodeling-frontend.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./HyperModeling\";\nexport * from \"./HyperModelingConfig\";\nexport * from \"./HyperModelingDecorator\";\nexport * from \"./SectionMarkerHandler\";\nexport * from \"./SectionDrawingLocationState\";\nexport * from \"./SectionGraphicsProvider\";\nexport * from \"./SectionMarkers\";\n/** @docs-package-description\n * The hypermodeling package enables visualization of section drawings in a spatial context.\n */\n/** @docs-group-description HyperModeling\n * APIs for controlling visualization of section drawings in a spatial context.\n */\n//# sourceMappingURL=hypermodeling-frontend.js.map",
+      "start": 1693508121167,
+      "end": 1693508121239,
+      "sourcemaps": null
+    }
+  ]
+}

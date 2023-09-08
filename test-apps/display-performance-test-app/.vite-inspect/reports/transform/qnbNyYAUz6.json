@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/user/UserOperationParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export {};\r\n//# sourceMappingURL=UserOperationParams.js.map",
+      "start": 1693508122224,
+      "end": 1693508122303,
+      "sourcemaps": null
+    }
+  ]
+}

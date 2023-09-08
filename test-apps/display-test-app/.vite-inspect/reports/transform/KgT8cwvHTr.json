@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/ObservableSet.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Collections\n */\nimport { BeEvent } from \"./BeEvent\";\n/** A standard [Set<T>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents change.\n * @public\n */\nexport class ObservableSet extends Set {\n    /** Construct a new ObservableSet.\n     * @param elements Optional elements with which to populate the new set.\n     */\n    constructor(elements) {\n        // NB: Set constructor will invoke add(). Do not override until initialized.\n        super(elements);\n        /** Emitted after `item` is added to this set. */\n        this.onAdded = new BeEvent();\n        /** Emitted after `item` is deleted from this set. */\n        this.onDeleted = new BeEvent();\n        /** Emitted after this set's contents are cleared. */\n        this.onCleared = new BeEvent();\n        this.add = (item) => {\n            const prevSize = this.size;\n            const ret = super.add(item);\n            if (this.size !== prevSize)\n                this.onAdded.raiseEvent(item);\n            return ret;\n        };\n    }\n    /** @internal */\n    delete(item) {\n        const ret = super.delete(item);\n        if (ret)\n            this.onDeleted.raiseEvent(item);\n        return ret;\n    }\n    /** @internal */\n    clear() {\n        if (0 !== this.size) {\n            super.clear();\n            this.onCleared.raiseEvent();\n        }\n    }\n}\n//# sourceMappingURL=ObservableSet.js.map",
+      "start": 1693508120593,
+      "end": 1693508120669,
+      "sourcemaps": null
+    }
+  ]
+}

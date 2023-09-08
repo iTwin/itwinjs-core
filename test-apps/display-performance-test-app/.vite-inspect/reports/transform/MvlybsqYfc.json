@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { VERSION } from './lib/env-utils/version';\nexport { assert } from './lib/env-utils/assert';\nexport { isBrowser, isWorker } from './lib/env-utils/globals';\nexport { default as WorkerJob } from './lib/worker-farm/worker-job';\nexport { default as WorkerThread } from './lib/worker-farm/worker-thread';\nexport { default as WorkerFarm } from './lib/worker-farm/worker-farm';\nexport { default as WorkerPool } from './lib/worker-farm/worker-pool';\nexport { default as WorkerBody } from './lib/worker-farm/worker-body';\nexport { processOnWorker, canProcessOnWorker } from './lib/worker-api/process-on-worker';\nexport { createWorker } from './lib/worker-api/create-worker';\nexport { getWorkerURL } from './lib/worker-api/get-worker-url';\nexport { validateWorkerVersion } from './lib/worker-api/validate-worker-version';\nexport { getTransferList, getTransferListForWriter } from './lib/worker-utils/get-transfer-list';\nexport { getLibraryUrl, loadLibrary } from './lib/library-utils/library-utils';\nexport { default as AsyncQueue } from './lib/async-queue/async-queue';\nexport { default as ChildProcessProxy } from './lib/process-utils/child-process-proxy';\nexport const NullWorker = {\n  id: 'null',\n  name: 'null',\n  module: 'worker-utils',\n  version: VERSION,\n  options: {\n    null: {}\n  }\n};\n//# sourceMappingURL=index.js.map",
+      "start": 1693508123356,
+      "end": 1693508123527,
+      "sourcemaps": null
+    }
+  ]
+}

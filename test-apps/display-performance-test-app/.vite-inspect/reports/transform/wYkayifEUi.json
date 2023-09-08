@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/Compare.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\n/**\n * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.\n * @public\n */\nexport function compareWithTolerance(a, b, tolerance = 0.1) {\n    if (a < b - tolerance)\n        return -1;\n    else if (a > b + tolerance)\n        return 1;\n    else\n        return 0;\n}\n/** @public */\nexport function compareNumbers(a, b) {\n    return a - b;\n}\n/** @public */\nexport function compareBooleans(a, b) {\n    return a !== b ? (a < b ? -1 : 1) : 0;\n}\n/** @public */\nexport function compareStrings(a, b) {\n    return a === b ? 0 : (a < b ? -1 : 1);\n}\n/** @public */\nexport function comparePossiblyUndefined(compareDefined, lhs, rhs) {\n    if (undefined === lhs)\n        return undefined === rhs ? 0 : -1;\n    else if (undefined === rhs)\n        return 1;\n    else\n        return compareDefined(lhs, rhs);\n}\n/** @public */\nexport function compareStringsOrUndefined(lhs, rhs) {\n    return comparePossiblyUndefined(compareStrings, lhs, rhs);\n}\n/** @public */\nexport function compareNumbersOrUndefined(lhs, rhs) {\n    return comparePossiblyUndefined(compareNumbers, lhs, rhs);\n}\n/** @public */\nexport function compareBooleansOrUndefined(lhs, rhs) {\n    return comparePossiblyUndefined(compareBooleans, lhs, rhs);\n}\n/** Compare two possibly-undefined values for equality. If both are undefined, the comparison is performed by the supplied `areEqual` function.\n * @public\n */\nexport function areEqualPossiblyUndefined(t, u, areEqual) {\n    if (undefined === t)\n        return undefined === u;\n    else if (undefined === u)\n        return false;\n    else\n        return areEqual(t, u);\n}\n//# sourceMappingURL=Compare.js.map",
+      "start": 1693508120191,
+      "end": 1693508120432,
+      "sourcemaps": null
+    }
+  ]
+}

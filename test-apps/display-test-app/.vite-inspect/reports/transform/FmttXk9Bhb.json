@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/imodel/IModelOperationParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/**\r\n * iModel entity properties that are supported in $orderBy url parameter which specifies by what property\r\n * entities are ordered in a collection.\r\n */\r\nexport var IModelOrderByProperty;\r\n(function (IModelOrderByProperty) {\r\n    IModelOrderByProperty[\"Name\"] = \"name\";\r\n})(IModelOrderByProperty || (IModelOrderByProperty = {}));\r\n//# sourceMappingURL=IModelOperationParams.js.map",
+      "start": 1693508125029,
+      "end": 1693508125115,
+      "sourcemaps": null
+    }
+  ]
+}

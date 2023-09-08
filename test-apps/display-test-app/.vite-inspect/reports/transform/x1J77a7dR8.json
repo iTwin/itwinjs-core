@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/properties/StandardEditorNames.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\n/**\n * Standard Editor Names for property editors.\n * @public\n */\nexport var StandardEditorNames;\n(function (StandardEditorNames) {\n    StandardEditorNames[\"ColorPicker\"] = \"color-picker\";\n    StandardEditorNames[\"LongDate\"] = \"long-date-picker\";\n    StandardEditorNames[\"ShortDate\"] = \"short-date-picker\";\n    StandardEditorNames[\"EnumButtonGroup\"] = \"enum-buttongroup\";\n    StandardEditorNames[\"IconPicker\"] = \"icon-picker\";\n    StandardEditorNames[\"MultiLine\"] = \"multi-line\";\n    StandardEditorNames[\"NumberCustom\"] = \"number-custom\";\n    StandardEditorNames[\"NumericInput\"] = \"numeric-input\";\n    StandardEditorNames[\"Slider\"] = \"slider\";\n    StandardEditorNames[\"Toggle\"] = \"toggle\";\n    StandardEditorNames[\"WeightPicker\"] = \"weight-picker\";\n    StandardEditorNames[\"ImageCheckBox\"] = \"image-check-box\";\n    StandardEditorNames[\"ThemedEnum\"] = \"themed-enum\";\n})(StandardEditorNames || (StandardEditorNames = {}));\n//# sourceMappingURL=StandardEditorNames.js.map",
+      "start": 1693508124467,
+      "end": 1693508124504,
+      "sourcemaps": null
+    }
+  ]
+}

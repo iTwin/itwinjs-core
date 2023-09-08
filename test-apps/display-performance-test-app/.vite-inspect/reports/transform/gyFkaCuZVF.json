@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/CloneWithExpandedLineStrings.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { LineSegment3d } from \"../LineSegment3d\";\nimport { LineString3d } from \"../LineString3d\";\nimport { CloneCurvesContext } from \"./CloneCurvesContext\";\n/**\n * Algorithmic class for cloning with linestrings expanded to line segments\n * @internal\n */\nexport class CloneWithExpandedLineStrings extends CloneCurvesContext {\n    constructor() {\n        // we have no transform ....\n        super(undefined);\n    }\n    // We know we have no transform !!!\n    doClone(primitive) {\n        if (primitive instanceof LineString3d && primitive.numPoints() > 1) {\n            const packedPoints = primitive.packedPoints;\n            const n = packedPoints.length;\n            const segments = [];\n            for (let i = 0; i + 1 < n; i++) {\n                segments.push(LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)));\n            }\n            return segments;\n        }\n        return primitive.clone();\n    }\n    static clone(target) {\n        const context = new CloneWithExpandedLineStrings();\n        target.announceToCurveProcessor(context);\n        return context._result;\n    }\n}\n//# sourceMappingURL=CloneWithExpandedLineStrings.js.map",
+      "start": 1693508124114,
+      "end": 1693508124209,
+      "sourcemaps": null
+    }
+  ]
+}

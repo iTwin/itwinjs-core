@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileAppChannel.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.mobileAppStrings = void 0;\n/** @internal */\nexports.mobileAppStrings = {\n    mobileAppChannel: \"itwinjs-core/mobileApp\",\n    mobileAppNotify: \"itwinjs-core/mobileApp-notify\",\n};\n//# sourceMappingURL=MobileAppChannel.js.map",
+      "start": 1693508125109,
+      "end": 1693508125158,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as MobileAppChannel } from \"\\u0000D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileAppChannel.js?commonjs-exports\";\n\n\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nObject.defineProperty(MobileAppChannel, \"__esModule\", { value: true });\nvar mobileAppStrings = MobileAppChannel.mobileAppStrings = void 0;\n/** @internal */\nmobileAppStrings = MobileAppChannel.mobileAppStrings = {\n    mobileAppChannel: \"itwinjs-core/mobileApp\",\n    mobileAppNotify: \"itwinjs-core/mobileApp-notify\",\n};\n//# sourceMappingURL=MobileAppChannel.js.map\n\nexport { MobileAppChannel as __moduleExports, mobileAppStrings, MobileAppChannel as default };",
+      "start": 1693508125158,
+      "end": 1693508125159,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA;AACA;AACA;AACA,MAAM,CAAC,cAAc,CAAC,gBAAO,EAAE,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;AAC9D,wDAAwB,GAAG,KAAK,CAAC,CAAC;AAClC;AACA,oDAAwB,GAAG;AAC3B,IAAI,gBAAgB,EAAE,wBAAwB;AAC9C,IAAI,eAAe,EAAE,+BAA+B;AACpD,CAAC,CAAC;AACF"
+      }
+    }
+  ]
+}

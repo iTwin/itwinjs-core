@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/notification/MessagePresenter.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Notification\n */\n/** Describes the type and behavior of a display message.\n * @public\n */\nexport var DisplayMessageType;\n(function (DisplayMessageType) {\n    /** Temporary message that displays at the bottom of the screen. */\n    DisplayMessageType[DisplayMessageType[\"Toast\"] = 0] = \"Toast\";\n    /** Message with a close button that displays at the bottom of the screen. */\n    DisplayMessageType[DisplayMessageType[\"Sticky\"] = 2] = \"Sticky\";\n    /** Message that displays near a specified HTML element. */\n    DisplayMessageType[DisplayMessageType[\"InputField\"] = 3] = \"InputField\";\n    /** Modal message box. */\n    DisplayMessageType[DisplayMessageType[\"Alert\"] = 4] = \"Alert\";\n})(DisplayMessageType || (DisplayMessageType = {}));\n//# sourceMappingURL=MessagePresenter.js.map",
+      "start": 1693508123582,
+      "end": 1693508123611,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ChangedEntities.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module NativeApp\n */\nexport {};\n//# sourceMappingURL=ChangedEntities.js.map",
+      "start": 1693508120479,
+      "end": 1693508120520,
+      "sourcemaps": null
+    }
+  ]
+}

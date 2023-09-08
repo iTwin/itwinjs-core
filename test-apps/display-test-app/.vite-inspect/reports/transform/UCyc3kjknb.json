@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/textable.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { globals } from '../../utils/window.js'\r\n\r\n// Create plain text node\r\nexport function plain (text) {\r\n  // clear if build mode is disabled\r\n  if (this._build === false) {\r\n    this.clear()\r\n  }\r\n\r\n  // create text node\r\n  this.node.appendChild(globals.document.createTextNode(text))\r\n\r\n  return this\r\n}\r\n\r\n// Get length of text element\r\nexport function length () {\r\n  return this.node.getComputedTextLength()\r\n}\r\n",
+      "start": 1693508127295,
+      "end": 1693508127370,
+      "sourcemaps": null
+    }
+  ]
+}

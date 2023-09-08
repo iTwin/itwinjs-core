@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/ColorInput.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Controls\n */\nimport { RgbColor } from \"@itwin/core-common\";\n/** @alpha */\nexport function convertHexToRgb(hex) {\n    // Parse a hex color string formatted as \"#FFFFFF\"\n    const result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);\n    return result ? new RgbColor(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) : undefined;\n}\n/** @alpha */\nexport function createColorInput(props) {\n    const inputDiv = document.createElement(\"div\");\n    const colorInput = document.createElement(\"input\");\n    colorInput.type = \"color\";\n    colorInput.value = props.value;\n    colorInput.onchange = () => {\n        try {\n            const value = colorInput.value;\n            props.handler(value);\n        }\n        catch (_ex) {\n            //\n        }\n    };\n    let colorLabel;\n    if (undefined !== props.label) {\n        colorLabel = document.createElement(\"label\");\n        colorLabel.innerText = `${props.label} `;\n        inputDiv.appendChild(colorLabel);\n    }\n    inputDiv.appendChild(colorInput);\n    if (undefined !== props.display)\n        inputDiv.style.display = props.display;\n    if (undefined !== props.id)\n        colorInput.id = props.id;\n    if (undefined !== props.tooltip)\n        colorInput.title = props.tooltip;\n    if (undefined !== props.disabled)\n        colorInput.disabled = props.disabled;\n    if (undefined !== props.parent)\n        props.parent.appendChild(inputDiv);\n    return undefined !== colorLabel ? { div: inputDiv, input: colorInput, label: colorLabel } : { div: inputDiv, input: colorInput };\n}\n//# sourceMappingURL=ColorInput.js.map",
+      "start": 1693508122770,
+      "end": 1693508122859,
+      "sourcemaps": null
+    }
+  ]
+}

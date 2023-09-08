@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+reality-data-client@0.9.0_mdtbcqczpmeuv6yjzfaigjndwi/node_modules/@itwin/reality-data-client/lib/esm/reality-data-client.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./RealityDataClient\";\nexport * from \"./RealityData\";\nexport * from \"./Projects\";\n/** @docs-package-description\n * The reality-data-client package contains client wrappers for sending requests to the Reality Data API.\n */\n/**\n * @docs-group-description RealityData\n * Classes for interacting with reality data.\n */\n//# sourceMappingURL=reality-data-client.js.map",
+      "start": 1693508121154,
+      "end": 1693508121233,
+      "sourcemaps": null
+    }
+  ]
+}

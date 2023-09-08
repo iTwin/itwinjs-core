@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/Point.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import Matrix from './Matrix.js'\r\n\r\nexport default class Point {\r\n  // Initialize\r\n  constructor (...args) {\r\n    this.init(...args)\r\n  }\r\n\r\n  init (x, y) {\r\n    let source\r\n    let base = { x: 0, y: 0 }\r\n\r\n    // ensure source as object\r\n    source = Array.isArray(x) ? { x: x[0], y: x[1] }\r\n      : typeof x === 'object' ? { x: x.x, y: x.y }\r\n      : { x: x, y: y }\r\n\r\n    // merge source\r\n    this.x = source.x == null ? base.x : source.x\r\n    this.y = source.y == null ? base.y : source.y\r\n\r\n    return this\r\n  }\r\n\r\n  // Clone point\r\n  clone () {\r\n    return new Point(this)\r\n  }\r\n\r\n  transform (m) {\r\n    return this.clone().transformO(m)\r\n  }\r\n\r\n  // Transform point with matrix\r\n  transformO (m) {\r\n    if (!Matrix.isMatrixLike(m)) {\r\n      m = new Matrix(m)\r\n    }\r\n\r\n    let { x, y } = this\r\n\r\n    // Perform the matrix multiplication\r\n    this.x = m.a * x + m.c * y + m.e\r\n    this.y = m.b * x + m.d * y + m.f\r\n\r\n    return this\r\n  }\r\n\r\n  toArray () {\r\n    return [ this.x, this.y ]\r\n  }\r\n}\r\n\r\nexport function point (x, y) {\r\n  return new Point(x, y).transform(this.screenCTM().inverse())\r\n}\r\n",
+      "start": 1693508127148,
+      "end": 1693508127189,
+      "sourcemaps": null
+    }
+  ]
+}

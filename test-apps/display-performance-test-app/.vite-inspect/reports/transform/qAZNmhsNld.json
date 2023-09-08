@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/RenderClipVolume.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** An opaque representation of a clip volume applied to geometry within a [[Viewport]].\n * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.\n * @see [[RenderSystem.createClipVolume]] to create a clip volume.\n * @public\n * @extensions\n */\nexport class RenderClipVolume {\n    constructor(clipVector) {\n        this.clipVector = clipVector;\n    }\n}\n//# sourceMappingURL=RenderClipVolume.js.map",
+      "start": 1693508119590,
+      "end": 1693508119671,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/EmphasizeElementsProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** Options for overriding element appearance.\n * @see [EmphasizeElements]($frontend)\n * @see [[AppearanceOverrideProps]]\n * @public\n * @extensions\n */\nexport var FeatureOverrideType;\n(function (FeatureOverrideType) {\n    /** Override color only. */\n    FeatureOverrideType[FeatureOverrideType[\"ColorOnly\"] = 0] = \"ColorOnly\";\n    /** Override alpha only. */\n    FeatureOverrideType[FeatureOverrideType[\"AlphaOnly\"] = 1] = \"AlphaOnly\";\n    /** Override both color and alpha. */\n    FeatureOverrideType[FeatureOverrideType[\"ColorAndAlpha\"] = 2] = \"ColorAndAlpha\";\n})(FeatureOverrideType || (FeatureOverrideType = {}));\n//# sourceMappingURL=EmphasizeElementsProps.js.map",
+      "start": 1693508120510,
+      "end": 1693508120573,
+      "sourcemaps": null
+    }
+  ]
+}

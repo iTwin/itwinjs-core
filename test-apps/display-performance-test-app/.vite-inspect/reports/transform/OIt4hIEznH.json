@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/buffer/Uint16Buffer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { LittleEndian } from \"./LittleEndian\";\n/**\n * Define an unsigned 16-bit integer typed buffer.\n */\n/** @internal */\nclass Uint16Buffer {\n    /**\n     * Create a new typed buffer.\n     */\n    constructor(buffer, offset, size) {\n        this._buffer = buffer;\n        this._offset = offset;\n        this._count = size;\n    }\n    /**\n     * Wrap a raw buffer.\n     */\n    static wrap(buffer) {\n        return new Uint16Buffer(buffer, 0, buffer.size());\n    }\n    /**\n     * Return the content as a native buffer\n     */\n    toNativeBuffer() {\n        return new Uint16Array(this._buffer.toNativeBuffer(), this._offset, this._count);\n    }\n    /**\n     * Get the underlying buffer.\n     * @return the underlying buffer.\n     */\n    getBuffer() {\n        return this._buffer;\n    }\n    /**\n     * Get the length.\n     */\n    size() {\n        return this._count;\n    }\n    /**\n     * Get an element.\n     */\n    get(index) {\n        return LittleEndian.readBufferShort(this._buffer, this._offset + 2 * index);\n    }\n    /**\n     * Set an element.\n     */\n    set(index, value) {\n        LittleEndian.writeBufferShort(this._buffer, this._offset + 2 * index, value);\n    }\n}\n/** The number of bytes per element */\nUint16Buffer.BYTES_PER_ELEMENT = 2;\nexport { Uint16Buffer };\n//# sourceMappingURL=Uint16Buffer.js.map",
+      "start": 1693508125607,
+      "end": 1693508125644,
+      "sourcemaps": null
+    }
+  ]
+}

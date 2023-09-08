@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Shape.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { register } from '../utils/adopter.js'\r\nimport Element from './Element.js'\r\n\r\nexport default class Shape extends Element {}\r\n\r\nregister(Shape, 'Shape')\r\n",
+      "start": 1693508127062,
+      "end": 1693508127154,
+      "sourcemaps": null
+    }
+  ]
+}

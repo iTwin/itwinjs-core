@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/namespaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "// Default namespaces\r\nexport let ns = 'http://www.w3.org/2000/svg'\r\nexport let xmlns = 'http://www.w3.org/2000/xmlns/'\r\nexport let xlink = 'http://www.w3.org/1999/xlink'\r\nexport let svgjs = 'http://svgjs.com/svgjs'\r\n",
+      "start": 1693508127089,
+      "end": 1693508127173,
+      "sourcemaps": null
+    }
+  ]
+}

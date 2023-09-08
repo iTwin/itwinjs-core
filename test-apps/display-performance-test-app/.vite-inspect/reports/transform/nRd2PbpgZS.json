@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/HSLColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Symbology\n */\nimport { ColorDef } from \"./ColorDef\";\n/** An immutable color defined by Hue, Saturation, and Lightness.\n * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV\n * @public\n */\nexport class HSLColor {\n    constructor(hue = 0, saturation = 0, lightness = 0) {\n        this.h = hue;\n        this.s = saturation;\n        this.l = lightness;\n    }\n    clone(hue, saturation, lightness) {\n        return new HSLColor(hue ?? this.h, saturation ?? this.s, lightness ?? this.l);\n    }\n    toColorDef(transparency = 0) {\n        return ColorDef.fromHSL(this.h, this.s, this.l, transparency);\n    }\n    static fromColorDef(val) {\n        return val.toHSL();\n    }\n}\n//# sourceMappingURL=HSLColor.js.map",
+      "start": 1693508120623,
+      "end": 1693508120711,
+      "sourcemaps": null
+    }
+  ]
+}

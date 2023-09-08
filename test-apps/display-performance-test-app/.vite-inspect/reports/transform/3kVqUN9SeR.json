@@ -1,0 +1,27 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-performance-test-app/index.html?html-proxy&inline-css&index=0.css",
+  "transforms": [
+    {
+      "name": "vite:html-inline-proxy",
+      "result": "\n    html,\n    body {\n      height: 100%;\n      min-height: 100%;\n      width: 100%;\n      margin: 0px;\n    }\n\n    .root {\n      position: relative;\n      height: 100%;\n      width: 100%;\n      top: 0;\n      left: 0;\n    }\n\n    .topdiv {\n      display: none;\n      position: relative;\n      top: 0;\n      left: 0;\n    }\n\n    .imodel-viewport {\n      position: relative;\n      top: auto;\n      left: auto;\n      bottom: auto;\n      display: block;\n      height: 1000px;\n      width: auto;\n    }\n  ",
+      "start": 1693508118108,
+      "end": 1693508118109
+    },
+    {
+      "name": "vite:css",
+      "result": "\n    html,\n    body {\n      height: 100%;\n      min-height: 100%;\n      width: 100%;\n      margin: 0px;\n    }\n\n    .root {\n      position: relative;\n      height: 100%;\n      width: 100%;\n      top: 0;\n      left: 0;\n    }\n\n    .topdiv {\n      display: none;\n      position: relative;\n      top: 0;\n      left: 0;\n    }\n\n    .imodel-viewport {\n      position: relative;\n      top: auto;\n      left: auto;\n      bottom: auto;\n      display: block;\n      height: 1000px;\n      width: auto;\n    }\n  ",
+      "start": 1693508118109,
+      "end": 1693508118110,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "result": "export default ''",
+      "start": 1693508118112,
+      "end": 1693508118112,
+      "order": "normal",
+      "sourcemaps": null
+    }
+  ]
+}

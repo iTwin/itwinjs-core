@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/parseArgs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** Given a list of arguments, parse the arguments into name-value pairs.\n * Each input string is expected to be of the format \"name=value\".\n * Argument names are converted to lower-case; values are left untouched.\n * @beta\n */\nexport function parseArgs(args) {\n    const map = new Map();\n    for (const arg of args) {\n        const parts = arg.split(\"=\");\n        if (2 === parts.length)\n            map.set(parts[0].toLowerCase(), parts[1]);\n    }\n    const findArgValue = (name) => {\n        name = name.toLowerCase();\n        for (const key of map.keys())\n            if (key.startsWith(name))\n                return map.get(key);\n        return undefined;\n    };\n    return {\n        get: (name) => findArgValue(name),\n        getBoolean: (name) => {\n            const val = findArgValue(name);\n            if (undefined !== val && (val === \"0\" || val === \"1\"))\n                return val === \"1\";\n            return undefined;\n        },\n        getInteger: (name) => {\n            const val = findArgValue(name);\n            if (undefined === val)\n                return undefined;\n            const num = Number.parseInt(val, 10);\n            return Number.isNaN(num) ? undefined : num;\n        },\n        getFloat: (name) => {\n            const val = findArgValue(name);\n            if (undefined === val)\n                return undefined;\n            const num = Number.parseFloat(val);\n            return Number.isNaN(num) ? undefined : num;\n        },\n    };\n}\n//# sourceMappingURL=parseArgs.js.map",
+      "start": 1693508122678,
+      "end": 1693508122769,
+      "sourcemaps": null
+    }
+  ]
+}

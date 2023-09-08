@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/imdl/ImdlSchema.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\n/** As part of [[ImdlCompactEdges]], describes the visibility of an edge of a triangle.\n * @internal\n */\nexport var ImdlEdgeVisibility;\n(function (ImdlEdgeVisibility) {\n    /** The edge is never visible. */\n    ImdlEdgeVisibility[ImdlEdgeVisibility[\"Hidden\"] = 0] = \"Hidden\";\n    /** The edge is shared between two adjacent triangles. It is visible only if one triangle is facing away from the viewer and the other is facing toward the viewer. */\n    ImdlEdgeVisibility[ImdlEdgeVisibility[\"Silhouette\"] = 1] = \"Silhouette\";\n    /** The edge is always visible. */\n    ImdlEdgeVisibility[ImdlEdgeVisibility[\"Visible\"] = 2] = \"Visible\";\n})(ImdlEdgeVisibility || (ImdlEdgeVisibility = {}));\n//# sourceMappingURL=ImdlSchema.js.map",
+      "start": 1693508118462,
+      "end": 1693508118783,
+      "sourcemaps": null
+    }
+  ]
+}

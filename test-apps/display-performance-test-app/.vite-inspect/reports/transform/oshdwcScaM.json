@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/JsonSchema.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Json\n */\nexport {};\n//# sourceMappingURL=JsonSchema.js.map",
+      "start": 1693508120311,
+      "end": 1693508120452,
+      "sourcemaps": null
+    }
+  ]
+}

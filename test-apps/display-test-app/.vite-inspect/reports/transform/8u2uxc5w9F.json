@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/CountLinearPartsSearchContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { RecursiveCurveProcessorWithStack } from \"../CurveProcessor\";\nimport { LineSegment3d } from \"../LineSegment3d\";\nimport { LineString3d } from \"../LineString3d\";\n/** Algorithmic class: Count LineSegment3d and LineString3d primitives.\n * @internal\n */\nexport class CountLinearPartsSearchContext extends RecursiveCurveProcessorWithStack {\n    constructor() {\n        super();\n        this.numLineSegment = 0;\n        this.numLineString = 0;\n        this.numOther = 0;\n    }\n    static hasNonLinearPrimitives(target) {\n        const context = new CountLinearPartsSearchContext();\n        target.announceToCurveProcessor(context);\n        return context.numOther > 0;\n    }\n    announceCurvePrimitive(curve, _indexInParent) {\n        if (curve instanceof LineSegment3d)\n            this.numLineSegment++;\n        else if (curve instanceof LineString3d)\n            this.numLineString++;\n        else\n            this.numOther++;\n    }\n}\n//# sourceMappingURL=CountLinearPartsSearchContext.js.map",
+      "start": 1693508125200,
+      "end": 1693508125379,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/topology/SignedDataSummary.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Topology\n */\n/**\n * Class to accumulate statistics about a stream of signed numbers with tag items.\n * * All sums, counts, extrema, and item values are initialized to zero in the constructor.\n * * Each call to `announceItem (item, value)` updates the various sums, counts, and extrema.\n */\nexport class SignedDataSummary {\n    /** setup with zero sums and optional arrays */\n    constructor(createArrays) {\n        this.positiveSum = this.negativeSum = 0.0;\n        this.numPositive = this.numNegative = this.numZero = 0.0;\n        this.largestPositiveValue = this.largestNegativeValue = 0.0;\n        if (createArrays) {\n            this.negativeItemArray = [];\n            this.positiveItemArray = [];\n            this.zeroItemArray = [];\n        }\n    }\n    /** update with an item and its data value. */\n    announceItem(item, data) {\n        if (data < 0) {\n            this.numNegative++;\n            this.negativeSum += data;\n            if (this.negativeItemArray)\n                this.negativeItemArray.push(item);\n            if (data < this.largestNegativeValue) {\n                this.largestNegativeValue = data;\n                this.largestNegativeItem = item;\n            }\n        }\n        else if (data > 0) {\n            this.numPositive++;\n            this.positiveSum += data;\n            if (this.positiveItemArray)\n                this.positiveItemArray.push(item);\n            if (data > this.largestPositiveValue) {\n                this.largestPositiveValue = data;\n                this.largestPositiveItem = item;\n            }\n        }\n        else {\n            this.numZero++;\n            if (this.zeroItemArray)\n                this.zeroItemArray.push(item);\n        }\n    }\n}\n//# sourceMappingURL=SignedDataSummary.js.map",
+      "start": 1693508124963,
+      "end": 1693508125037,
+      "sourcemaps": null
+    }
+  ]
+}

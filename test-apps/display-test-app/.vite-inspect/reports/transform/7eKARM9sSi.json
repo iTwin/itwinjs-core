@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/cancel/Cancel.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\n/**\n * A `Cancel` is an object that is thrown when an operation is canceled.\n *\n * @class\n * @param {string=} message The message.\n */\nfunction Cancel(message) {\n  this.message = message;\n}\n\nCancel.prototype.toString = function toString() {\n  return 'Cancel' + (this.message ? ': ' + this.message : '');\n};\n\nCancel.prototype.__CANCEL__ = true;\n\nmodule.exports = Cancel;\n",
+      "start": 1693508126686,
+      "end": 1693508126735,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nvar Cancel_1;\nvar hasRequiredCancel;\n\nfunction requireCancel () {\n\tif (hasRequiredCancel) return Cancel_1;\n\thasRequiredCancel = 1;\n\t'use strict';\n\n\t/**\n\t * A `Cancel` is an object that is thrown when an operation is canceled.\n\t *\n\t * @class\n\t * @param {string=} message The message.\n\t */\n\tfunction Cancel(message) {\n\t  this.message = message;\n\t}\n\n\tCancel.prototype.toString = function toString() {\n\t  return 'Cancel' + (this.message ? ': ' + this.message : '');\n\t};\n\n\tCancel.prototype.__CANCEL__ = true;\n\n\tCancel_1 = Cancel;\n\treturn Cancel_1;\n}\n\nexport { requireCancel as __require };",
+      "start": 1693508126735,
+      "end": 1693508126736,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;CAAA,YAAY,CAAC;AACb;CACA;CACA;CACA;CACA;CACA;CACA;CACA,SAAS,MAAM,CAAC,OAAO,EAAE;CACzB,EAAE,IAAI,CAAC,OAAO,GAAG,OAAO,CAAC;CACzB,CAAC;AACD;CACA,MAAM,CAAC,SAAS,CAAC,QAAQ,GAAG,SAAS,QAAQ,GAAG;CAChD,EAAE,OAAO,QAAQ,IAAI,IAAI,CAAC,OAAO,GAAG,IAAI,GAAG,IAAI,CAAC,OAAO,GAAG,EAAE,CAAC,CAAC;CAC9D,CAAC,CAAC;AACF;CACA,MAAM,CAAC,SAAS,CAAC,UAAU,GAAG,IAAI,CAAC;AACnC;AACA,SAAc,GAAG,MAAM"
+      }
+    }
+  ]
+}

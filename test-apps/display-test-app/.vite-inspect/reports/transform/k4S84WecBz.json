@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/optional/data.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { registerMethods } from '../../utils/methods.js'\r\n\r\n// Store data values on svg nodes\r\nexport function data (a, v, r) {\r\n  if (typeof a === 'object') {\r\n    for (v in a) {\r\n      this.data(v, a[v])\r\n    }\r\n  } else if (arguments.length < 2) {\r\n    try {\r\n      return JSON.parse(this.attr('data-' + a))\r\n    } catch (e) {\r\n      return this.attr('data-' + a)\r\n    }\r\n  } else {\r\n    this.attr('data-' + a,\r\n      v === null ? null\r\n      : r === true || typeof v === 'string' || typeof v === 'number' ? v\r\n      : JSON.stringify(v)\r\n    )\r\n  }\r\n\r\n  return this\r\n}\r\n\r\nregisterMethods('Dom', { data })\r\n",
+      "start": 1693508126732,
+      "end": 1693508127018,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileAppProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.BatteryState = exports.Orientation = void 0;\n/** @beta */\nvar Orientation;\n(function (Orientation) {\n    Orientation[Orientation[\"Unknown\"] = 0] = \"Unknown\";\n    Orientation[Orientation[\"Portrait\"] = 1] = \"Portrait\";\n    Orientation[Orientation[\"PortraitUpsideDown\"] = 2] = \"PortraitUpsideDown\";\n    Orientation[Orientation[\"LandscapeLeft\"] = 4] = \"LandscapeLeft\";\n    Orientation[Orientation[\"LandscapeRight\"] = 8] = \"LandscapeRight\";\n    Orientation[Orientation[\"FaceUp\"] = 16] = \"FaceUp\";\n    Orientation[Orientation[\"FaceDown\"] = 32] = \"FaceDown\";\n})(Orientation = exports.Orientation || (exports.Orientation = {}));\n/** @beta */\nvar BatteryState;\n(function (BatteryState) {\n    BatteryState[BatteryState[\"Unknown\"] = 0] = \"Unknown\";\n    BatteryState[BatteryState[\"Unplugged\"] = 1] = \"Unplugged\";\n    BatteryState[BatteryState[\"Charging\"] = 2] = \"Charging\";\n    BatteryState[BatteryState[\"Full\"] = 3] = \"Full\";\n})(BatteryState = exports.BatteryState || (exports.BatteryState = {}));\n//# sourceMappingURL=MobileAppProps.js.map",
+      "start": 1693508122514,
+      "end": 1693508122633,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as MobileAppProps } from \"\\u0000D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileAppProps.js?commonjs-exports\";\n\n(function (exports) {\n\t\"use strict\";\n\t/*---------------------------------------------------------------------------------------------\n\t* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n\t* See LICENSE.md in the project root for license terms and full copyright notice.\n\t*--------------------------------------------------------------------------------------------*/\n\tObject.defineProperty(exports, \"__esModule\", { value: true });\n\texports.BatteryState = exports.Orientation = void 0;\n\t/** @beta */\n\tvar Orientation;\n\t(function (Orientation) {\n\t    Orientation[Orientation[\"Unknown\"] = 0] = \"Unknown\";\n\t    Orientation[Orientation[\"Portrait\"] = 1] = \"Portrait\";\n\t    Orientation[Orientation[\"PortraitUpsideDown\"] = 2] = \"PortraitUpsideDown\";\n\t    Orientation[Orientation[\"LandscapeLeft\"] = 4] = \"LandscapeLeft\";\n\t    Orientation[Orientation[\"LandscapeRight\"] = 8] = \"LandscapeRight\";\n\t    Orientation[Orientation[\"FaceUp\"] = 16] = \"FaceUp\";\n\t    Orientation[Orientation[\"FaceDown\"] = 32] = \"FaceDown\";\n\t})(Orientation = exports.Orientation || (exports.Orientation = {}));\n\t/** @beta */\n\tvar BatteryState;\n\t(function (BatteryState) {\n\t    BatteryState[BatteryState[\"Unknown\"] = 0] = \"Unknown\";\n\t    BatteryState[BatteryState[\"Unplugged\"] = 1] = \"Unplugged\";\n\t    BatteryState[BatteryState[\"Charging\"] = 2] = \"Charging\";\n\t    BatteryState[BatteryState[\"Full\"] = 3] = \"Full\";\n\t})(BatteryState = exports.BatteryState || (exports.BatteryState = {}));\n\t//# sourceMappingURL=MobileAppProps.js.map \n} (MobileAppProps));\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(MobileAppProps);\nexport { MobileAppProps as __moduleExports };",
+      "start": 1693508122633,
+      "end": 1693508122638,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;CAAA,YAAY,CAAC;CACb;CACA;CACA;CACA;CACA,MAAM,CAAC,cAAc,UAAU,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;CAC9D,uBAAuB,sBAAsB,KAAK,CAAC,CAAC;CACpD;CACA,IAAI,WAAW,CAAC;CAChB,CAAC,UAAU,WAAW,EAAE;CACxB,IAAI,WAAW,CAAC,WAAW,CAAC,SAAS,CAAC,GAAG,CAAC,CAAC,GAAG,SAAS,CAAC;CACxD,IAAI,WAAW,CAAC,WAAW,CAAC,UAAU,CAAC,GAAG,CAAC,CAAC,GAAG,UAAU,CAAC;CAC1D,IAAI,WAAW,CAAC,WAAW,CAAC,oBAAoB,CAAC,GAAG,CAAC,CAAC,GAAG,oBAAoB,CAAC;CAC9E,IAAI,WAAW,CAAC,WAAW,CAAC,eAAe,CAAC,GAAG,CAAC,CAAC,GAAG,eAAe,CAAC;CACpE,IAAI,WAAW,CAAC,WAAW,CAAC,gBAAgB,CAAC,GAAG,CAAC,CAAC,GAAG,gBAAgB,CAAC;CACtE,IAAI,WAAW,CAAC,WAAW,CAAC,QAAQ,CAAC,GAAG,EAAE,CAAC,GAAG,QAAQ,CAAC;CACvD,IAAI,WAAW,CAAC,WAAW,CAAC,UAAU,CAAC,GAAG,EAAE,CAAC,GAAG,UAAU,CAAC;CAC3D,CAAC,EAAE,WAAW,GAAG,OAAO,CAAC,WAAW,KAAK,sBAAsB,EAAE,CAAC,CAAC,CAAC;CACpE;CACA,IAAI,YAAY,CAAC;CACjB,CAAC,UAAU,YAAY,EAAE;CACzB,IAAI,YAAY,CAAC,YAAY,CAAC,SAAS,CAAC,GAAG,CAAC,CAAC,GAAG,SAAS,CAAC;CAC1D,IAAI,YAAY,CAAC,YAAY,CAAC,WAAW,CAAC,GAAG,CAAC,CAAC,GAAG,WAAW,CAAC;CAC9D,IAAI,YAAY,CAAC,YAAY,CAAC,UAAU,CAAC,GAAG,CAAC,CAAC,GAAG,UAAU,CAAC;CAC5D,IAAI,YAAY,CAAC,YAAY,CAAC,MAAM,CAAC,GAAG,CAAC,CAAC,GAAG,MAAM,CAAC;CACpD,CAAC,EAAE,YAAY,GAAG,OAAO,CAAC,YAAY,KAAK,uBAAuB,EAAE,CAAC,CAAC,CAAC;CACvE"
+      }
+    }
+  ]
+}

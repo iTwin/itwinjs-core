@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/parseBoolean.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utilities\n */\n/** Parses a string case-insensitively returning true for \"ON\" or \"TRUE\", false for \"OFF\" or \"FALSE\" and undefined otherwise.\n * Used by various tools which take such arguments.\n * @beta\n */\nexport function parseBoolean(arg) {\n    if (undefined === arg)\n        return undefined;\n    switch (arg.toLowerCase()) {\n        case \"on\": return true;\n        case \"true\": return true;\n        case \"off\": return false;\n        case \"false\": return false;\n        default: return undefined;\n    }\n}\n//# sourceMappingURL=parseBoolean.js.map",
+      "start": 1693508122679,
+      "end": 1693508122768,
+      "sourcemaps": null
+    }
+  ]
+}

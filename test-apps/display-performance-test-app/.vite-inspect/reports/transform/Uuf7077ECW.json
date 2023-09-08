@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/node/worker_threads-browser.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export class Worker {\n  terminate() {}\n}\nexport { Worker as NodeWorker };\nexport { Worker as NodeWorkerType };\nexport const parentPort = null;\n//# sourceMappingURL=worker_threads-browser.js.map",
+      "start": 1693508125052,
+      "end": 1693508125169,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/YieldManager.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\nconst defaultYieldManagerOptions = {\n    iterationsBeforeYield: 1000,\n};\n/** Provides a mechanism by which a loop can be made to periodically yield control back to the browser/node environment.\n * This can alleviate [performance and memory consumption issues](https://github.com/nodejs/node-addon-api/issues/1140).\n * It maintains a count of the number of iterations that have occurred since the last yield.\n * The constructor specifies how many iterations of the loop are permitted before yielding.\n * The loop should `await` [[allowYield]] on each iteration.\n * [[allowYield]] will yield (and reset the iteration counter) if the counter exceeds the specified maximum.\n * @public\n */\nexport class YieldManager {\n    /** Constructor.\n     * @param options Options customizing the yield behavior. Omitted properties are assigned their default values.\n     */\n    constructor(options = {}) {\n        this._counter = 0;\n        this.options = { ...defaultYieldManagerOptions, ...options };\n    }\n    /** Increment the iteration counter, yielding control and resetting the counter if [[options.iterationsBeforeYield]] is exceeded. */\n    async allowYield() {\n        this._counter = (this._counter + 1) % this.options.iterationsBeforeYield;\n        if (this._counter === 0) {\n            await this.actualYield();\n        }\n    }\n    /** @internal */\n    async actualYield() {\n        await new Promise((r) => setTimeout(r, 0));\n    }\n}\n//# sourceMappingURL=YieldManager.js.map",
+      "start": 1693508120452,
+      "end": 1693508120502,
+      "sourcemaps": null
+    }
+  ]
+}

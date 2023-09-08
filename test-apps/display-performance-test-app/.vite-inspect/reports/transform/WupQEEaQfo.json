@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/collection/IntMap.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class IntMap defines a map of elements in which the keys are integer numbers.\n */\n/** @internal */\nexport class IntMap {\n    constructor() {\n        this._map = new Map();\n    }\n    size() {\n        return this._map.size;\n    }\n    contains(key) {\n        return this._map.has(key);\n    }\n    get(key) {\n        return this._map.get(key);\n    }\n    set(key, value) {\n        this._map.set(key, value);\n    }\n    clear() {\n        this._map.clear();\n    }\n}\n//# sourceMappingURL=IntMap.js.map",
+      "start": 1693508125461,
+      "end": 1693508125511,
+      "sourcemaps": null
+    }
+  ]
+}

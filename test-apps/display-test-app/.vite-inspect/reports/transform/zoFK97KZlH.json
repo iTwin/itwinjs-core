@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/worker-api/validate-worker-version.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { assert } from '../env-utils/assert';\nimport { VERSION } from '../env-utils/version';\nexport function validateWorkerVersion(worker) {\n  let coreVersion = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : VERSION;\n  assert(worker, 'no worker provided');\n  const workerVersion = worker.version;\n  if (!coreVersion || !workerVersion) {\n    return false;\n  }\n  return true;\n}\nfunction parseVersion(version) {\n  const parts = version.split('.').map(Number);\n  return {\n    major: parts[0],\n    minor: parts[1]\n  };\n}\n//# sourceMappingURL=validate-worker-version.js.map",
+      "start": 1693508125763,
+      "end": 1693508125840,
+      "sourcemaps": null
+    }
+  ]
+}

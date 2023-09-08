@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+draco@3.4.7/node_modules/@loaders.gl/draco/dist/esm/draco-loader.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { isBrowser } from '@loaders.gl/worker-utils';\nimport { VERSION } from './lib/utils/version';\nconst DEFAULT_DRACO_OPTIONS = {\n  draco: {\n    decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js',\n    libraryPath: 'libs/',\n    extraAttributes: {},\n    attributeNameEntry: undefined\n  }\n};\nexport const DracoLoader = {\n  name: 'Draco',\n  id: isBrowser ? 'draco' : 'draco-nodejs',\n  module: 'draco',\n  shapes: ['mesh'],\n  version: VERSION,\n  worker: true,\n  extensions: ['drc'],\n  mimeTypes: ['application/octet-stream'],\n  binary: true,\n  tests: ['DRACO'],\n  options: DEFAULT_DRACO_OPTIONS\n};\nexport const _TypecheckDracoLoader = DracoLoader;\n//# sourceMappingURL=draco-loader.js.map",
+      "start": 1693508123328,
+      "end": 1693508123515,
+      "sourcemaps": null
+    }
+  ]
+}

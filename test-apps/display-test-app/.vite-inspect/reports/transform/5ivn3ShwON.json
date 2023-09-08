@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/Wiremesh.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\n// Vertex shader produces barycentric coordinate for corner of triangle to be smoothly interpolated over face of triangle.\n// This requires WebGL 2 because gl_VertexID.\n// It also requires that we are drawing non-indexed vertices, or using an index buffer in which each set of 3 consecutive indices correspond to one triangle -\n// otherwise gl_VertexID will not correlate to triangle corners.\nconst computeBarycentric = `\r\n  int vertIndex = gl_VertexID % 3;\r\n  v_barycentric = vec3(float(0 == vertIndex), float(1 == vertIndex), float(2 == vertIndex));\r\n`;\n// Fragment shader draws in the line color for fragments close to the edge of the triangle.\n// Vertex shader requires WebGL 2 which includes the functionality of the GL_OES_standard_derivatives extension.\nconst applyWiremesh = `\r\n  const float lineWidth = 1.0;\r\n  const vec3 lineColor = vec3(0.0);\r\n  vec3 delta = fwidth(v_barycentric);\r\n  vec3 factor = smoothstep(vec3(0.0), delta * lineWidth, v_barycentric);\r\n  vec3 color = mix(lineColor, baseColor.rgb, min(min(factor.x, factor.y), factor.z));\r\n  return vec4(color, baseColor.a);\r\n`;\n/** Adds to a mesh shader logic to produce an overlaid wiremesh.\n * @internal\n */\nexport function addWiremesh(builder) {\n    builder.addInlineComputedVarying(\"v_barycentric\", 4 /* VariableType.Vec3 */, computeBarycentric);\n    builder.frag.set(14 /* FragmentShaderComponent.ApplyWiremesh */, applyWiremesh);\n}\n//# sourceMappingURL=Wiremesh.js.map",
+      "start": 1693508126522,
+      "end": 1693508126614,
+      "sourcemaps": null
+    }
+  ]
+}

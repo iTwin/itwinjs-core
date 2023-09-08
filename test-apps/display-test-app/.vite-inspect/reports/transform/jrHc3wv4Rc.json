@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/TerrainProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { getCesiumTerrainProvider } from \"../internal\";\n/** A registry of [[TerrainProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.terrainProviderRegistry]].\n * It always includes the built-in provider named \"CesiumWorldTerrain\", which obtains terrain meshes from [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). That provider requires a valid [[TileAdmin.Props.cesiumIonKey]] to be supplied to [[IModelApp.startup]].\n * Any number of additional providers can be [[register]]ed.\n *\n * When terrain is enabled for a [[Viewport]], the display system will attempt to look up the [[TerrainProvider]] corresponding to the [TerrainSettings.providerName]($common) specified by the [[Viewport]]'s [DisplayStyleSettings]($common). If a provider by that name is registered, it will be used to obtain terrain meshes; otherwise, the display system will produce flat terrain meshes.\n * @public\n */\nexport class TerrainProviderRegistry {\n    /** @internal */\n    constructor() {\n        this._providers = new Map();\n        this.register(\"CesiumWorldTerrain\", {\n            createTerrainMeshProvider: async (options) => getCesiumTerrainProvider(options),\n        });\n    }\n    /** Register a new [[TerrainProvider]].\n     * @param name The name of the provider. It must be unique among all providers.\n     * @param provider The provider to register.\n     * @see [[find]] to later retrieve the provider by name.\n     */\n    register(name, provider) {\n        this._providers.set(name, provider);\n    }\n    /** Look up a [[register]]ed [[TerrainProvider]] by its name. */\n    find(name) {\n        return this._providers.get(name);\n    }\n}\n//# sourceMappingURL=TerrainProvider.js.map",
+      "start": 1693508121992,
+      "end": 1693508122111,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/rpc/TestRpcManager.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nimport { RpcConfiguration, RpcDefaultConfiguration } from \"./core/RpcConfiguration\";\n/* eslint-disable deprecation/deprecation */\n/** An RpcManager that uses RpcDefaultConfiguration/RpcDirectProtocol to make client stubs invoke\n * registered server impls as direct method calls within the same JavaScript context. In other words,\n * TestRpcManager sets up a protocol that uses our remoting mechanism but cuts out the communication\n * part of it. (No IPC or XHR is used or required.)\n * Nevertheless, all of the rest of the call marshalling and operation monitoring mechanism is used.\n * That makes TestRpcManager a way to write simple, single-process integration tests for frontends\n * and backends that actually use RpcInterfaces. Note that to write such a single-process integration\n * test, you must make *both* client and server use TestRpcManager to configure their RpcInterfaces.\n * It will not work if one side uses TestRpcManager and the other uses some other protocol (say, cloud).\n * That means that you must actually program the backend to know when it is running in direct test\n * mode and to employ TestRpcManager in that case.\n * @internal\n */\nexport class TestRpcManager {\n    static initialize(interfaces) {\n        const config = class extends RpcDefaultConfiguration {\n            constructor() {\n                super(...arguments);\n                this.interfaces = () => interfaces;\n            }\n        };\n        for (const def of interfaces)\n            RpcConfiguration.assign(def, () => RpcDefaultConfiguration);\n        const instance = RpcConfiguration.obtain(config);\n        RpcConfiguration.initializeInterfaces(instance);\n    }\n}\n//# sourceMappingURL=TestRpcManager.js.map",
+      "start": 1693508120853,
+      "end": 1693508120922,
+      "sourcemaps": null
+    }
+  ]
+}

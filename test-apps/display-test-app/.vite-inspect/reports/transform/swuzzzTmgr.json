@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+browser-authorization@1.0.1_67wltvhdskk2oee2c3z2o4tfly/node_modules/@itwin/browser-authorization/lib/esm/types.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** @packageDocumentation\r\n * @module Authorization\r\n */\r\nexport {};\r\n//# sourceMappingURL=types.js.map",
+      "start": 1693508122417,
+      "end": 1693508122604,
+      "sourcemaps": null
+    }
+  ]
+}

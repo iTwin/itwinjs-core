@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/core/settle.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar createError = require('./createError');\n\n/**\n * Resolve or reject a Promise based on response status.\n *\n * @param {Function} resolve A function that resolves the promise.\n * @param {Function} reject A function that rejects the promise.\n * @param {object} response The response.\n */\nmodule.exports = function settle(resolve, reject, response) {\n  var validateStatus = response.config.validateStatus;\n  if (!response.status || !validateStatus || validateStatus(response.status)) {\n    resolve(response);\n  } else {\n    reject(createError(\n      'Request failed with status code ' + response.status,\n      response.config,\n      null,\n      response.request,\n      response\n    ));\n  }\n};\n",
+      "start": 1693508125661,
+      "end": 1693508125718,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __require as require$$0 } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/core/createError.js?commonjs-wrapped\";\n\nvar settle;\nvar hasRequiredSettle;\n\nfunction requireSettle () {\n\tif (hasRequiredSettle) return settle;\n\thasRequiredSettle = 1;\n\t'use strict';\n\n\tvar createError = require$$0();\n\n\t/**\n\t * Resolve or reject a Promise based on response status.\n\t *\n\t * @param {Function} resolve A function that resolves the promise.\n\t * @param {Function} reject A function that rejects the promise.\n\t * @param {object} response The response.\n\t */\n\tsettle = function settle(resolve, reject, response) {\n\t  var validateStatus = response.config.validateStatus;\n\t  if (!response.status || !validateStatus || validateStatus(response.status)) {\n\t    resolve(response);\n\t  } else {\n\t    reject(createError(\n\t      'Request failed with status code ' + response.status,\n\t      response.config,\n\t      null,\n\t      response.request,\n\t      response\n\t    ));\n\t  }\n\t};\n\treturn settle;\n}\n\nexport { requireSettle as __require };",
+      "start": 1693508125718,
+      "end": 1693508125740,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,WAAW,GAAG,YAAwB,CAAC;AAC3C;CACA;CACA;CACA;CACA;CACA;CACA;CACA;AACA,OAAc,GAAG,SAAS,MAAM,CAAC,OAAO,EAAE,MAAM,EAAE,QAAQ,EAAE;CAC5D,EAAE,IAAI,cAAc,GAAG,QAAQ,CAAC,MAAM,CAAC,cAAc,CAAC;CACtD,EAAE,IAAI,CAAC,QAAQ,CAAC,MAAM,IAAI,CAAC,cAAc,IAAI,cAAc,CAAC,QAAQ,CAAC,MAAM,CAAC,EAAE;CAC9E,IAAI,OAAO,CAAC,QAAQ,CAAC,CAAC;CACtB,GAAG,MAAM;CACT,IAAI,MAAM,CAAC,WAAW;CACtB,MAAM,kCAAkC,GAAG,QAAQ,CAAC,MAAM;CAC1D,MAAM,QAAQ,CAAC,MAAM;CACrB,MAAM,IAAI;CACV,MAAM,QAAQ,CAAC,OAAO;CACtB,MAAM,QAAQ;CACd,KAAK,CAAC,CAAC;CACP,GAAG;CACH,CAAC"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg height="144.407" id="svg1" inkscape:version="0.40" sodipodi:docbase="/mnt/donnees/09-Mes_images/Travaux/Travaux vectoriel/pictogrammes/s  cu SVG/Avertissement" sodipodi:docname="MatieresToxiques.svg" sodipodi:version="0.32" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <metadata>
+    <rdf:RDF xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <cc:Work rdf:about="">
+        <dc:title>advertising</dc:title>
+        <dc:description></dc:description>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li></rdf:li>
+            <rdf:li>caution</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>warning</rdf:li>
+            <rdf:li>signs_and_symbols</rdf:li>
+            <rdf:li>sign</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://www.openclipart.org">
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date></dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://web.resource.org/cc/PublicDomain"/>
+        <dc:language>en</dc:language>
+      </cc:Work>
+      <cc:License rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="svg1" inkscape:cx="62.504797" inkscape:cy="57.762799" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1121" inkscape:window-width="1590" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="8.1626931" pagecolor="#ffffff"/>
+  <defs id="defs2">
+    <marker id="ArrowEnd" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="0" refY="5" viewBox="0 0 10 10">
+      <path d="M 0 0 L 10 5 L 0 10 z" id="path4"/>
+    </marker>
+    <marker id="ArrowStart" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="10" refY="5" viewBox="0 0 10 10">
+      <path d="M 10 0 L 0 5 L 10 10 z" id="path6"/>
+    </marker>
+  </defs>
+  <g id="g7">
+    <path d="M 12.473000,121.08200 C 11.492258,122.80712 10.481800,124.49000 10.481700,126.42300 L 10.496833,127.03524 C 10.496833,131.20724 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.76435,130.57107 145.76435,126.39907 L 145.78000,125.81500 C 145.78000,123.88200 144.75508,122.20699 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path8" sodipodi:nodetypes="cccccccsccs" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
+    <path d="M 78.703 16.2915L 15.2797 128.128L 76.4667 128.128L 79.3188 128.128L 139.826 128.128L 79.5155 16.2915L 78.703 16.2915z" id="path9" style="stroke:#000000; stroke-width:4.8516000000000004; stroke-linejoin:round; stroke-linecap:round; fill:#ffcc00"/>
+  </g>
+  <g id="g10">
+    <path d="M 94.521 71.4044C 98.6033 78.7672 89.7826 83.7972 92.0424 91.3786C 91.605 93.6385 88.2517 95.5338 89.5639 97.6479C 93.7191 95.8254 98.093 94.6591 101.155 90.2851C 102.175 90.1393 102.977 90.5767 103.56 91.3786C 100.717 94.9506 107.716 96.4815 104.289 99.3974C 98.8949 96.3357 93.792 100.564 88.5433 101.147L 87.5227 103.626C 91.3134 105.448 96.1247 107.343 100.426 106.031L 102.54 106.396C 103.925 109.166 100.426 111.134 98.6762 112.665C 95.906 113.977 95.25 110.041 93.063 109.895C 88.3975 109.457 83.5862 103.771 79.431 109.53C 76.3692 110.186 74.6926 107.198 72.0682 106.76C 68.0588 108.218 63.9036 109.166 60.5502 112.373C 57.6343 113.394 56.5408 109.457 54.5726 108.874C 55.01 103.042 61.7895 108.291 65.07 105.667C 66.5279 104.573 71.0476 105.448 69.2981 102.168C 64.4868 100.199 58.8007 97.2105 53.552 99.3974C 52.823 99.033 51.9482 98.8143 51.4379 98.0124C 55.3016 96.1899 49.3239 89.3375 55.666 90.6496C 58.8736 94.2216 63.1746 95.1693 67.184 96.9189C 66.8195 93.8572 63.2475 90.358 65.07 86.786C 63.1746 81.756 59.6755 74.7578 64.0494 69.6549C 69.2981 63.6772 77.5356 62.7295 85.0442 64.4062C 88.6162 65.6454 92.5527 67.6137 94.521 71.4044z" id="path11" style="stroke:none; fill:#000000"/>
+    <path d="M 93.792 72.425C 95.177 76.5802 92.9172 80.8812 91.6779 84.672C 88.6162 82.0476 93.5004 76.7989 88.9078 74.539C 88.1059 75.3409 89.3452 76.2157 89.5639 77.0176C 88.3975 82.6308 91.8966 86.7131 91.0218 91.6702C 89.3452 93.6385 85.9189 94.7319 84.3152 97.6479C 78.8478 98.0853 72.214 99.033 68.5691 93.7843C 66.6008 92.9824 65.4345 91.5244 65.4345 89.2646C 67.6943 85.328 66.8195 80.1522 67.5485 75.6325L 67.184 75.268C 64.4868 77.0176 66.6008 81.3186 65.4345 84.0159C 63.4662 80.8812 62.3727 76.7989 63.3204 72.7895C 65.5073 67.9782 70.5374 65.6454 75.2757 64.7707C 82.7114 64.3333 90.0013 65.4267 93.792 72.425z" id="path12" style="stroke:none; fill:#ffcc00"/>
+    <path d="M 77.0253 82.6308C 77.1711 84.4533 76.8066 86.1299 75.9318 87.515C 74.401 88.3898 73.3075 90.358 71.0476 89.6291C 69.8084 87.8795 69.1523 85.9112 69.2981 83.6514C 71.4121 82.2663 74.4739 81.9018 77.0253 82.6308z" id="path13" style="stroke:none; fill:#000000"/>
+    <path d="M 87.5227 84.3804C 87.3769 86.5673 87.9601 89.6291 85.7731 90.2851C 83.4404 89.2646 79.9413 88.1711 79.7955 85.0364L 80.16 82.6308C 82.7843 82.7037 85.9919 82.1934 87.5227 84.3804z" id="path14" style="stroke:none; fill:#000000"/>
+    <path d="M 79.7955 95.5338C 79.0665 95.6067 78.6291 94.1488 78.0459 95.1693L 78.0459 95.5338L 77.3169 95.5338C 76.8066 93.6385 77.6814 91.4515 78.4104 89.6291C 79.8684 90.7954 79.9413 93.7114 79.7955 95.5338z" id="path15" style="stroke:none; fill:#000000"/>
+    <path d="M 103.925 96.9189L 103.925 97.6479C 102.394 98.9601 101.301 96.7731 99.7697 96.9189C 95.9789 97.2834 92.7714 98.9601 89.2723 99.7619L 89.2723 99.033C 93.6462 96.846 98.8949 95.388 101.811 91.3786C 103.706 92.545 101.228 94.1488 102.54 95.5338L 103.925 96.9189z" id="path16" style="stroke:none; fill:#ffcc00"/>
+    <path d="M 68.2775 99.7619C 63.3204 99.689 58.8736 95.4609 54.281 98.0124C 53.8436 97.9395 53.1146 98.2311 52.823 97.6479C 53.6249 96.0441 54.3539 94.1488 53.552 92.3992C 56.1763 90.6496 57.9259 95.1693 60.5502 95.5338C 63.2475 96.6273 66.6008 97.6479 68.2775 99.7619z" id="path17" style="stroke:none; fill:#ffcc00"/>
+    <path d="M 86.0647 103.917C 82.3469 104.792 78.9207 111.936 74.9113 106.76C 69.0065 105.958 70.756 99.5433 68.9336 95.8983C 73.1617 97.2105 70.5374 103.188 75.2757 104.282C 78.4833 104.573 83.3675 105.813 85.0442 101.876C 86.0647 99.7619 85.5544 96.7002 88.1788 95.5338L 86.0647 103.917z" id="path18" style="stroke:none; fill:#ffcc00"/>
+    <path d="M 70.3187 105.667C 67.4756 108.072 62.883 107.854 60.1858 111.28C 58.3633 111.134 57.124 109.457 55.666 108.51C 57.1969 105.958 61.3521 108.291 64.0494 107.125C 66.1634 106.687 68.2775 105.084 70.3187 105.667z" id="path19" style="stroke:none; fill:#ffcc00"/>
+    <path d="M 101.519 107.125C 102.175 108.947 99.4052 110.186 98.3117 111.644C 96.0518 112.155 95.3957 109.02 93.4275 108.874C 90.8031 108.218 88.5433 107.125 86.0647 106.031L 86.7937 105.375C 91.8966 105.448 96.1247 109.603 101.519 107.125z" id="path20" style="stroke:none; fill:#ffcc00"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/toArray.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import arrayWithHoles from \"./arrayWithHoles.js\";\nimport iterableToArray from \"./iterableToArray.js\";\nimport unsupportedIterableToArray from \"./unsupportedIterableToArray.js\";\nimport nonIterableRest from \"./nonIterableRest.js\";\nexport default function _toArray(arr) {\n  return arrayWithHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableRest();\n}",
+      "start": 1693508125455,
+      "end": 1693508125510,
+      "sourcemaps": null
+    }
+  ]
+}

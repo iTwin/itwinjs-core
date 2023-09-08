@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/OperationExports.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nexport * from \"./imodel/IModelOperations\";\r\nexport * from \"./briefcase/BriefcaseOperations\";\r\nexport * from \"./changeset/ChangesetOperations\";\r\nexport * from \"./named-version/NamedVersionOperations\";\r\nexport * from \"./checkpoint/CheckpointOperations\";\r\nexport * from \"./thumbnail/ThumbnailOperations\";\r\nexport * from \"./user/UserOperations\";\r\nexport * from \"./user-permission/UserPermissionOperations\";\r\n//# sourceMappingURL=OperationExports.js.map",
+      "start": 1693508124027,
+      "end": 1693508124114,
+      "sourcemaps": null
+    }
+  ]
+}

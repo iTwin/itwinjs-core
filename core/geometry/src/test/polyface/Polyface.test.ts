@@ -381,33 +381,41 @@ describe("Polyface.Box", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     interface TestCase {
-      data: {localRange: Range3d, localToWorld: Transform}[];
+      data: { localRange: Range3d, localToWorld: Transform }[];
       expectedClash: boolean; // each entry is a set of mutually clashing or non-clashing local ranges from iModel
     }
     const testCases: TestCase[] = [
-      { data: [
+      {
+        data: [
           { localRange: Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722), localToWorld: Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()) },
           { localRange: Range3d.createXYZXYZ(-0.024019658687571166, -0.020559836132079568, -0.047579717945438915, 0.10484869637410554, 0.09055983613204432, 0.0975797179454645), localToWorld: Transform.createRefs(Point3d.create(-95.29966304738043, 66.6762028551563, 72.28348554781851), YawPitchRollAngles.createDegrees(42.04343086998508, -4.9775680764904035e-11, 74.99999999999397).toMatrix3d()) },
-          { localRange: Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074), localToWorld: Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d())},
+          { localRange: Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074), localToWorld: Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d()) },
         ],
-        expectedClash: true},
-      { data: [
+        expectedClash: true,
+      },
+      {
+        data: [
           { localRange: Range3d.createXYZXYZ(1.1546319456101628e-14, -1.4328815911568427e-14, -5.1535165024318985e-14, 11.999999999999943, 0.03199999999999116, 0.031999999999948535), localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()) },
           { localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14), localToWorld: Transform.createRefs(Point3d.create(-107.5899903512084, 42.11371219204531, 71.59835123713896), YawPitchRollAngles.createDegrees(173.55196028882585, -14.99999999999978, 2.0579703138818464e-16).toMatrix3d()) },
           { localRange: Range3d.createXYZXYZ(-0.02213513258379224, -0.018579865396888717, -0.19678412188787828, 0.5721351325838432, 0.5685798653970273, 0.22178412188785057), localToWorld: Transform.createRefs(Point3d.create(-107.61315829094143, 42.393081259141205, 71.29907515904608), YawPitchRollAngles.createDegrees(173.5519602888134, 74.99999999996545, 5.981534282323202e-12).toMatrix3d()) },
         ],
-        expectedClash: true},
-      { data: [
-          { localRange: Range3d.createXYZXYZ(-5,-5,-5,5,5,5), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3,-6,-9), Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(33)))},
-          { localRange: Range3d.createXYZXYZ(-2,-2,-2,2,2,2), localToWorld: Transform.createOriginAndMatrix(Point3d.create(5,5,5), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,-1), Angle.createDegrees(-115)))},
-          { localRange: Range3d.createXYZXYZ(-1,-1,-1,1,1,1), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10,4,3), Matrix3d.createRotationAroundVector(Vector3d.create(0,1,-1), Angle.createDegrees(245)))},
+        expectedClash: true,
+      },
+      {
+        data: [
+          { localRange: Range3d.createXYZXYZ(-5, -5, -5, 5, 5, 5), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3, -6, -9), Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 1), Angle.createDegrees(33))) },
+          { localRange: Range3d.createXYZXYZ(-2, -2, -2, 2, 2, 2), localToWorld: Transform.createOriginAndMatrix(Point3d.create(5, 5, 5), Matrix3d.createRotationAroundVector(Vector3d.create(-1, 1, -1), Angle.createDegrees(-115))) },
+          { localRange: Range3d.createXYZXYZ(-1, -1, -1, 1, 1, 1), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10, 4, 3), Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, -1), Angle.createDegrees(245))) },
         ],
-        expectedClash: false},
-      { data: [
-          { localRange: Range3d.createXYZXYZ(7.993605777301127e-15, 1.1483869410966463e-15, -8.895661984809067e-15, 11.999999999999961, 0.03200000000001247, 0.03200000000001958), localToWorld: Transform.createRefs(Point3d.create(-118.75022305842617, 45.954529463039, 68.47641991136159), YawPitchRollAngles.createDegrees(-9.408029798593397, 15.000000000007361, 2.455595252575587).toMatrix3d())},
-          { localRange: Range3d.createXYZXYZ(-0.03474118660066772, -3.3591167872492598, -1.714177531529474, 11.744741186600766, 3.4591167872486275, 1.8141775315289306), localToWorld: Transform.createRefs(Point3d.create(-118.82046236854137, 46.0485514387863, 68.44465610136753), YawPitchRollAngles.createDegrees(-9.40802979863332, 15.000000000003949, 113.91380925648686).toMatrix3d())},
+        expectedClash: false,
+      },
+      {
+        data: [
+          { localRange: Range3d.createXYZXYZ(7.993605777301127e-15, 1.1483869410966463e-15, -8.895661984809067e-15, 11.999999999999961, 0.03200000000001247, 0.03200000000001958), localToWorld: Transform.createRefs(Point3d.create(-118.75022305842617, 45.954529463039, 68.47641991136159), YawPitchRollAngles.createDegrees(-9.408029798593397, 15.000000000007361, 2.455595252575587).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.03474118660066772, -3.3591167872492598, -1.714177531529474, 11.744741186600766, 3.4591167872486275, 1.8141775315289306), localToWorld: Transform.createRefs(Point3d.create(-118.82046236854137, 46.0485514387863, 68.44465610136753), YawPitchRollAngles.createDegrees(-9.40802979863332, 15.000000000003949, 113.91380925648686).toMatrix3d()) },
         ],
-        expectedClash: true},
+        expectedClash: true,
+      },
     ];
     let z = 0;
     for (const testCase of testCases) {
@@ -434,7 +442,7 @@ describe("Polyface.Box", () => {
           const isClash = ClipUtilities.doLocalRangesIntersect(testCase.data[index0].localRange, testCase.data[index0].localToWorld, testCase.data[index1].localRange, testCase.data[index1].localToWorld);
           ck.testBoolean(isClash, testCase.expectedClash, `ranges clash as expected: i=${index0} j=${index1}`);
           return isClash;
-          };
+        };
         const clashIJ = clashDetect(i, j);
         y += delta10;
         const clashJI = clashDetect(j, i);
@@ -1585,6 +1593,60 @@ it("SmallSynchroMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it.only("readIndexToFacet", () => {
+  const ck = new Checker();
+  const triIndices = [0, 3, 6, 9, 12, 15, 18];
+  verifyMonotoneArraySearch(ck, triIndices, "triangles");
+  const quadIndices = [];
+  for (let q = 0; q < 5; q++)
+    quadIndices.push(4 * q);
+  verifyMonotoneArraySearch(ck, triIndices, "triangles");
+  verifyMonotoneArraySearch(ck, quadIndices, "quads");
+  const mixedIndices = [0, 4, 12, 14, 20, 23, 30, 40, 43, 46, 49];
+  verifyMonotoneArraySearch(ck, mixedIndices, "mixed");
+  expect(ck.getNumErrors()).equals(0);
+
+});
+
+it.only("edgeMatesI", () => {
+  const ck = new Checker();
+  //
+  //    5     2   4
+  //    0    1   3
+  const builder = PolyfaceBuilder.create();
+  const points: Point3d[] = [
+    Point3d.create(0, 0, 0),
+    Point3d.create(1, 0, 0),
+    Point3d.create(1, 1, 0),
+    Point3d.create(2, 0, 0),
+    Point3d.create(2, 1, 0),
+    Point3d.create(0, 1, 0),
+  ];
+  let numInteriorEdges = 0;
+  builder.addPolygon([points[0], points[1], points[2]]);
+  builder.addPolygon([points[1], points[4], points[2]]); numInteriorEdges++;
+  builder.addPolygon([points[1], points[3], points[4]]); numInteriorEdges++;
+  builder.addPolygon([points[0], points[2], points[5]]); numInteriorEdges++;
+
+  const polyface = builder.claimPolyface();
+  polyface.buildIndicesToAdjacentFacets();
+  verifyEdgeMates(ck, polyface);
+  const s1 = "Edge mate pairing";
+  let numMatched = 0;
+  for (let k = 0; k < polyface.data.pointIndex.length; k++) {
+    const v = polyface.data.pointIndex[k];
+    const k1 = polyface.readIndexToEdgeMate(k);
+    if (k1 !== undefined)
+      numMatched++;
+    // eslint-disable-next-line no-console
+    console.log({ k, v, k1 });
+    ck.testTrue(k1 === undefined || polyface.readIndexToEdgeMate(k1) === k, { s1, k, k1 });
+  }
+  ck.testExactNumber(numMatched, 2 * numInteriorEdges);
+  expect(ck.getNumErrors()).equals(0);
+
+});
+
 it("synchroPolyface", () => {
   const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
 
@@ -1799,4 +1861,37 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
   // }
 
   return polyface;
+}
+function verifyMonotoneArraySearch(ck: Checker, data: number[], name: String) {
+  for (let i0 = 0; i0 + 1 < data.length; i0++) {
+    for (let k = data[i0]; k < data[i0 + 1]; k++) {
+      const i = IndexedPolyface.searchMonotoneNumbers(data, k);
+      if (ck.testDefined(i, "undefined from searchMonotone") && i !== undefined)
+        ck.testExactNumber(i0, i, { name, i0, k, i });
+    }
+  }
+}
+function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
+  const numFacets = polyface.facetCount;
+  let facetIndex;
+  for (facetIndex = 0; polyface.isValidFacetIndex(facetIndex); facetIndex++) {
+    const k0 = polyface.facetIndex0(facetIndex);
+    const k1 = polyface.facetIndex1(facetIndex);
+    for (let k = k0; k < k1; k++) {
+      const kNextAroundFacet = polyface.readIndexToFacetSuccessor(k);
+      if (ck.testTrue(kNextAroundFacet !== undefined) && kNextAroundFacet !== undefined) {
+        ck.testTrue(kNextAroundFacet >= k0 && kNextAroundFacet < k1 && kNextAroundFacet !== k, "nextAroundFacet");
+        ck.testTrue(k === polyface.readIndexToFacetPredecessor(kNextAroundFacet));
+        const kMate = polyface.readIndexToEdgeMate(k);
+        if (kMate !== undefined) {
+          const kVertexPredecessor = polyface.readIndexToVertexPredecessor(k);
+          if (ck.testDefined(kVertexPredecessor) && kVertexPredecessor !== undefined) {
+            ck.testTrue(polyface.readIndexToFacetSuccessor(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
+            ck.testTrue(polyface.readIndexToVertexSuccessor(kVertexPredecessor) === k, "mate.fs.fs === k");
+          }
+        }
+      }
+    }
+  }
+  ck.testExactNumber(numFacets, facetIndex, "confirm facet count");
 }

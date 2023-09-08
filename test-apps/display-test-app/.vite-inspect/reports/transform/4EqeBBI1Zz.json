@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/editor/common/lib/esm/editor-common.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./EditorIpc\";\nexport * from \"./EditorBuiltInIpc\";\n/** @docs-package-description\n * The editor-common package contains common functionality for editing iModels.\n */\n/**\n * @docs-group-description Editing\n * Classes containing functionality for Editing iModels common to the front and backends, including IPC.\n */\n//# sourceMappingURL=editor-common.js.map",
+      "start": 1693508124062,
+      "end": 1693508124359,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/render/primitives/EdgeParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** @internal */\nexport function calculateEdgeTableParams(numSegmentEdges, numSilhouettes, maxSize) {\n    // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.\n    // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.\n    let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);\n    const silhouetteStartByteIndex = numSegmentEdges * 6;\n    let silhouettePadding = 0;\n    let width = nRgbaRequired;\n    let height = 1;\n    if (nRgbaRequired >= maxSize) {\n        // Make roughly square to reduce unused space in last row.\n        width = Math.ceil(Math.sqrt(nRgbaRequired));\n        // Each entry's data must fit on the same row. 15 RGBA = 60 bytes = lowest common multiple of 6, 10, and 4.\n        const remainder = width % 15;\n        if (0 !== remainder)\n            width += 15 - remainder;\n        // If the table contains both segments and silhouettes, there may be one row containing a mix of the two where padding\n        // is required between them.\n        if (numSilhouettes > 0 && numSegmentEdges > 0) {\n            const silOffset = silhouetteStartByteIndex % 60; // some multiple of 6.\n            silhouettePadding = (60 - silOffset) % 10;\n            nRgbaRequired += Math.ceil(silhouettePadding / 4);\n        }\n        height = Math.ceil(nRgbaRequired / width);\n        if (width * height < nRgbaRequired)\n            height++;\n    }\n    return {\n        width,\n        height,\n        silhouettePadding,\n        silhouetteStartByteIndex,\n    };\n}\n//# sourceMappingURL=EdgeParams.js.map",
+      "start": 1693508118974,
+      "end": 1693508119272,
+      "sourcemaps": null
+    }
+  ]
+}

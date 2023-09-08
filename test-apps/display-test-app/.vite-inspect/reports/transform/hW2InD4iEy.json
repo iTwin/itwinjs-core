@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/env-utils/version.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "const DEFAULT_VERSION = 'latest';\nexport const VERSION = typeof \"3.4.7\" !== 'undefined' ? \"3.4.7\" : DEFAULT_VERSION;\nif (typeof \"3.4.7\" === 'undefined') {\n  console.error('loaders.gl: The __VERSION__ variable is not injected using babel plugin. Latest unstable workers would be fetched from the CDN.');\n}\n//# sourceMappingURL=version.js.map",
+      "start": 1693508125634,
+      "end": 1693508125806,
+      "sourcemaps": null
+    }
+  ]
+}

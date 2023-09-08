@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/poly.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { proportionalSize } from '../../utils/utils.js'\r\nimport PointArray from '../../types/PointArray.js'\r\n\r\n// Get array\r\nexport function array () {\r\n  return this._array || (this._array = new PointArray(this.attr('points')))\r\n}\r\n\r\n// Plot new path\r\nexport function plot (p) {\r\n  return (p == null) ? this.array()\r\n    : this.clear().attr('points', typeof p === 'string' ? p\r\n    : (this._array = new PointArray(p)))\r\n}\r\n\r\n// Clear array cache\r\nexport function clear () {\r\n  delete this._array\r\n  return this\r\n}\r\n\r\n// Move by left top corner\r\nexport function move (x, y) {\r\n  return this.attr('points', this.array().move(x, y))\r\n}\r\n\r\n// Set element size to given width and height\r\nexport function size (width, height) {\r\n  let p = proportionalSize(this, width, height)\r\n  return this.attr('points', this.array().size(p.width, p.height))\r\n}\r\n",
+      "start": 1693508127291,
+      "end": 1693508127368,
+      "sourcemaps": null
+    }
+  ]
+}

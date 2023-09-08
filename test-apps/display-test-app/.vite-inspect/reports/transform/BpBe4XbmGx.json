@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/editor/frontend/lib/esm/editor-frontend.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./CreateElementTool\";\nexport * from \"./DeleteElementsTool\";\nexport * from \"./EditTool\";\nexport * from \"./ElementGeometryTool\";\nexport * from \"./EditToolIpc\";\nexport * from \"./ModifyCurveTools\";\nexport * from \"./ModifyElementTool\";\nexport * from \"./ProjectLocation/ProjectExtentsDecoration\";\nexport * from \"./ProjectLocation/ProjectGeolocation\";\nexport * from \"./SketchTools\";\nexport * from \"./SolidModelingTools\";\nexport * from \"./SolidPrimitiveTools\";\nexport * from \"./TransformElementsTool\";\nexport * from \"./UndoRedoTool\";\n/** @docs-package-description\n * The editor-frontend package contains frontend capabilities for editing iModels.\n */\n/**\n * @docs-group-description Editing\n * Classes containing functionality for editing iModels on the frontend.\n */\n//# sourceMappingURL=editor-frontend.js.map",
+      "start": 1693508121169,
+      "end": 1693508121247,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Pattern.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Box from '../types/Box.js'\r\nimport Container from './Container.js'\r\nimport baseFind from '../modules/core/selector.js'\r\n\r\nexport default class Pattern extends Container {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('pattern', node), node)\r\n  }\r\n\r\n  // Return the fill id\r\n  url () {\r\n    return 'url(#' + this.id() + ')'\r\n  }\r\n\r\n  // Update pattern by rebuilding\r\n  update (block) {\r\n    // remove content\r\n    this.clear()\r\n\r\n    // invoke passed block\r\n    if (typeof block === 'function') {\r\n      block.call(this, this)\r\n    }\r\n\r\n    return this\r\n  }\r\n\r\n  // Alias string convertion to fill\r\n  toString () {\r\n    return this.url()\r\n  }\r\n\r\n  // custom attr to handle transform\r\n  attr (a, b, c) {\r\n    if (a === 'transform') a = 'patternTransform'\r\n    return super.attr(a, b, c)\r\n  }\r\n\r\n  targets () {\r\n    return baseFind('svg [fill*=\"' + this.id() + '\"]')\r\n  }\r\n\r\n  bbox () {\r\n    return new Box()\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create pattern element in defs\r\n    pattern (...args) {\r\n      return this.defs().pattern(...args)\r\n    }\r\n  },\r\n  Defs: {\r\n    pattern: wrapWithAttrCheck(function (width, height, block) {\r\n      return this.put(new Pattern()).update(block).attr({\r\n        x: 0,\r\n        y: 0,\r\n        width: width,\r\n        height: height,\r\n        patternUnits: 'userSpaceOnUse'\r\n      })\r\n    })\r\n  }\r\n})\r\n\r\nregister(Pattern, 'Pattern')\r\n",
+      "start": 1693508127030,
+      "end": 1693508127116,
+      "sourcemaps": null
+    }
+  ]
+}

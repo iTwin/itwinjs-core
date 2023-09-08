@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileEventLoop.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.MobileEventLoop = void 0;\n/** @internal */\nclass MobileEventLoop {\n    static addTask() {\n        ++this._activeTasks;\n        if (this._idleCallback === null) {\n            this._idleCallback = setInterval(() => this._idleHandler());\n        }\n    }\n    static removeTask() {\n        --this._activeTasks;\n        if (this._activeTasks === 0 && this._idleCallback !== null) {\n            clearInterval(this._idleCallback);\n            this._idleCallback = null;\n        }\n    }\n    static _idleHandler() { }\n}\nMobileEventLoop._activeTasks = 0;\nMobileEventLoop._idleCallback = null;\nexports.MobileEventLoop = MobileEventLoop;\n//# sourceMappingURL=MobileEventLoop.js.map",
+      "start": 1693508125106,
+      "end": 1693508125131,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as MobileEventLoop_1 } from \"\\u0000D:/hub2023A/itwinjs-core/core/mobile/lib/cjs/common/MobileEventLoop.js?commonjs-exports\";\n\n\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nObject.defineProperty(MobileEventLoop_1, \"__esModule\", { value: true });\nvar MobileEventLoop_2 = MobileEventLoop_1.MobileEventLoop = void 0;\n/** @internal */\nclass MobileEventLoop {\n    static addTask() {\n        ++this._activeTasks;\n        if (this._idleCallback === null) {\n            this._idleCallback = setInterval(() => this._idleHandler());\n        }\n    }\n    static removeTask() {\n        --this._activeTasks;\n        if (this._activeTasks === 0 && this._idleCallback !== null) {\n            clearInterval(this._idleCallback);\n            this._idleCallback = null;\n        }\n    }\n    static _idleHandler() { }\n}\nMobileEventLoop._activeTasks = 0;\nMobileEventLoop._idleCallback = null;\nMobileEventLoop_2 = MobileEventLoop_1.MobileEventLoop = MobileEventLoop;\n//# sourceMappingURL=MobileEventLoop.js.map\n\nexport { MobileEventLoop_1 as __moduleExports, MobileEventLoop_2 as MobileEventLoop, MobileEventLoop_1 as default };",
+      "start": 1693508125131,
+      "end": 1693508125132,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA;AACA;AACA;AACA;AACA;AACA;AACA,MAAM,CAAC,cAAc,CAAC,iBAAO,EAAE,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;AAC9D,yDAAuB,GAAG,KAAK,CAAC,CAAC;AACjC;AACA,MAAM,eAAe,CAAC;AACtB,IAAI,OAAO,OAAO,GAAG;AACrB,QAAQ,EAAE,IAAI,CAAC,YAAY,CAAC;AAC5B,QAAQ,IAAI,IAAI,CAAC,aAAa,KAAK,IAAI,EAAE;AACzC,YAAY,IAAI,CAAC,aAAa,GAAG,WAAW,CAAC,MAAM,IAAI,CAAC,YAAY,EAAE,CAAC,CAAC;AACxE,SAAS;AACT,KAAK;AACL,IAAI,OAAO,UAAU,GAAG;AACxB,QAAQ,EAAE,IAAI,CAAC,YAAY,CAAC;AAC5B,QAAQ,IAAI,IAAI,CAAC,YAAY,KAAK,CAAC,IAAI,IAAI,CAAC,aAAa,KAAK,IAAI,EAAE;AACpE,YAAY,aAAa,CAAC,IAAI,CAAC,aAAa,CAAC,CAAC;AAC9C,YAAY,IAAI,CAAC,aAAa,GAAG,IAAI,CAAC;AACtC,SAAS;AACT,KAAK;AACL,IAAI,OAAO,YAAY,GAAG,GAAG;AAC7B,CAAC;AACD,eAAe,CAAC,YAAY,GAAG,CAAC,CAAC;AACjC,eAAe,CAAC,aAAa,GAAG,IAAI,CAAC;AACrC,qDAAuB,GAAG,eAAe,CAAC;AAC1C"
+      }
+    }
+  ]
+}

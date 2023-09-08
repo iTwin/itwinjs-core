@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/tile/I3dmTileIO.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tile\n */\nimport { utf8ToString } from \"@itwin/core-bentley\";\nimport { TileFormat, TileHeader } from \"./TileIO\";\n/** Header preceding tile content in [i3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel) format.\n * @internal\n */\nexport class I3dmHeader extends TileHeader {\n    get isValid() { return TileFormat.I3dm === this.format; }\n    constructor(stream) {\n        super(stream);\n        this.length = stream.readUint32();\n        this.featureTableJsonLength = stream.readUint32();\n        this.featureTableBinaryLength = stream.readUint32();\n        this.batchTableJsonLength = stream.readUint32();\n        this.batchTableBinaryLength = stream.readUint32();\n        this.gltfVersion = stream.readUint32();\n        this.featureTableJsonPosition = stream.curPos;\n        stream.advance(this.featureTableJsonLength);\n        stream.advance(this.featureTableBinaryLength);\n        if (0 !== this.batchTableJsonLength) {\n            const batchStrData = stream.nextBytes(this.batchTableJsonLength);\n            const batchStr = utf8ToString(batchStrData);\n            if (batchStr)\n                this.batchTableJson = JSON.parse(batchStr);\n        }\n        stream.advance(this.batchTableBinaryLength);\n        if (stream.isPastTheEnd)\n            this.invalidate();\n    }\n}\n//# sourceMappingURL=I3dmTileIO.js.map",
+      "start": 1693508120907,
+      "end": 1693508120980,
+      "sourcemaps": null
+    }
+  ]
+}

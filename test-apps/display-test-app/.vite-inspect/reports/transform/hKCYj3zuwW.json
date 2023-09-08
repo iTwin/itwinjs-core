@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/batches/base-table-batch-aggregator.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import _defineProperty from \"@babel/runtime/helpers/esm/defineProperty\";\nconst DEFAULT_ROW_COUNT = 100;\nexport default class RowTableBatchAggregator {\n  constructor(schema, options) {\n    _defineProperty(this, \"schema\", void 0);\n    _defineProperty(this, \"options\", void 0);\n    _defineProperty(this, \"length\", 0);\n    _defineProperty(this, \"rows\", null);\n    _defineProperty(this, \"cursor\", 0);\n    _defineProperty(this, \"_headers\", []);\n    this.options = options;\n    this.schema = schema;\n    if (!Array.isArray(schema)) {\n      this._headers = [];\n      for (const key in schema) {\n        this._headers[schema[key].index] = schema[key].name;\n      }\n    }\n  }\n  rowCount() {\n    return this.length;\n  }\n  addArrayRow(row, cursor) {\n    if (Number.isFinite(cursor)) {\n      this.cursor = cursor;\n    }\n    this.rows = this.rows || new Array(DEFAULT_ROW_COUNT);\n    this.rows[this.length] = row;\n    this.length++;\n  }\n  addObjectRow(row, cursor) {\n    if (Number.isFinite(cursor)) {\n      this.cursor = cursor;\n    }\n    this.rows = this.rows || new Array(DEFAULT_ROW_COUNT);\n    this.rows[this.length] = row;\n    this.length++;\n  }\n  getBatch() {\n    let rows = this.rows;\n    if (!rows) {\n      return null;\n    }\n    rows = rows.slice(0, this.length);\n    this.rows = null;\n    const batch = {\n      shape: this.options.shape,\n      batchType: 'data',\n      data: rows,\n      length: this.length,\n      schema: this.schema,\n      cursor: this.cursor\n    };\n    return batch;\n  }\n}\n//# sourceMappingURL=base-table-batch-aggregator.js.map",
+      "start": 1693508126723,
+      "end": 1693508127009,
+      "sourcemaps": null
+    }
+  ]
+}

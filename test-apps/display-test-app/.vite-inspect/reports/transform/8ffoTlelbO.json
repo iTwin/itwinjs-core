@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Rect.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport { rx, ry } from '../modules/core/circled.js'\r\nimport Shape from './Shape.js'\r\n\r\nexport default class Rect extends Shape {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('rect', node), node)\r\n  }\r\n}\r\n\r\nextend(Rect, { rx, ry })\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create a rect element\r\n    rect: wrapWithAttrCheck(function (width, height) {\r\n      return this.put(new Rect()).size(width, height)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Rect, 'Rect')\r\n",
+      "start": 1693508127045,
+      "end": 1693508127148,
+      "sourcemaps": null
+    }
+  ]
+}

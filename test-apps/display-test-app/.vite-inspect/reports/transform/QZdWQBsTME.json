@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Stop.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register } from '../utils/adopter.js'\r\nimport Element from './Element.js'\r\nimport SVGNumber from '../types/SVGNumber.js'\r\n\r\nexport default class Stop extends Element {\r\n  constructor (node) {\r\n    super(nodeOrNew('stop', node), node)\r\n  }\r\n\r\n  // add color stops\r\n  update (o) {\r\n    if (typeof o === 'number' || o instanceof SVGNumber) {\r\n      o = {\r\n        offset: arguments[0],\r\n        color: arguments[1],\r\n        opacity: arguments[2]\r\n      }\r\n    }\r\n\r\n    // set attributes\r\n    if (o.opacity != null) this.attr('stop-opacity', o.opacity)\r\n    if (o.color != null) this.attr('stop-color', o.color)\r\n    if (o.offset != null) this.attr('offset', new SVGNumber(o.offset))\r\n\r\n    return this\r\n  }\r\n}\r\n\r\nregister(Stop, 'Stop')\r\n",
+      "start": 1693508127160,
+      "end": 1693508127207,
+      "sourcemaps": null
+    }
+  ]
+}

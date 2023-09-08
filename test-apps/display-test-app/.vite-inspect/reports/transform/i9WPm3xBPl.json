@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/ColorInfo.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { assert } from \"@itwin/core-bentley\";\nimport { FloatRgba } from \"./FloatRGBA\";\n/* Describes a primitive's basic color properties\n * @internal\n */\nclass ColorInfo {\n    constructor(hasTranslucency, uniform) {\n        this.hasTranslucency = hasTranslucency;\n        this._uniform = uniform;\n    }\n    static createUniform(color) { return new ColorInfo(color.hasTranslucency, color); }\n    static createNonUniform(hasTranslucency) { return hasTranslucency ? this._nonUniformTranslucent : this._nonUniformOpaque; }\n    static createFromColorDef(color) { return this.createUniform(FloatRgba.fromColorDef(color)); }\n    static createFromColorIndex(colorIndex) {\n        return undefined !== colorIndex.uniform ? this.createFromColorDef(colorIndex.uniform) : this.createNonUniform(colorIndex.hasAlpha);\n    }\n    static createFromVertexTable(vt) {\n        return undefined !== vt.uniformColor ? this.createFromColorDef(vt.uniformColor) : this.createNonUniform(vt.hasTranslucency);\n    }\n    get isUniform() { return undefined !== this._uniform; }\n    get isNonUniform() { return !this.isUniform; }\n    get uniform() {\n        assert(this.isUniform);\n        return this._uniform;\n    }\n}\nColorInfo._nonUniformTranslucent = new ColorInfo(true);\nColorInfo._nonUniformOpaque = new ColorInfo(false);\nexport { ColorInfo };\n//# sourceMappingURL=ColorInfo.js.map",
+      "start": 1693508122172,
+      "end": 1693508122323,
+      "sourcemaps": null
+    }
+  ]
+}

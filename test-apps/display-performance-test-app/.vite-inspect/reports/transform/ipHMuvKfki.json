@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/arrow/arrow-like-type-utils.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { Float32, Float64, Int16, Int32, Int8, Uint16, Uint32, Uint8 } from '../schema/schema';\nexport function getArrowTypeFromTypedArray(array) {\n  switch (array.constructor) {\n    case Int8Array:\n      return new Int8();\n    case Uint8Array:\n      return new Uint8();\n    case Int16Array:\n      return new Int16();\n    case Uint16Array:\n      return new Uint16();\n    case Int32Array:\n      return new Int32();\n    case Uint32Array:\n      return new Uint32();\n    case Float32Array:\n      return new Float32();\n    case Float64Array:\n      return new Float64();\n    default:\n      throw new Error('array type not supported');\n  }\n}\n//# sourceMappingURL=arrow-like-type-utils.js.map",
+      "start": 1693508125038,
+      "end": 1693508125158,
+      "sourcemaps": null
+    }
+  ]
+}

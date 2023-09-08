@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/IpcAppProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module NativeApp\n */\n/** Get IPC channel name used for reporting progress of pulling changes into iModel.\n * @internal\n */\nexport const getPullChangesIpcChannel = (iModelId) => `${ipcAppChannels.functions}/pullChanges/${iModelId}`;\n/** @internal */\nexport const ipcAppChannels = {\n    functions: \"itwinjs-core/ipc-app\",\n    appNotify: \"itwinjs-core/ipcApp-notify\",\n    txns: \"itwinjs-core/txns\",\n    editingScope: \"itwinjs-core/editing-scope\",\n};\n//# sourceMappingURL=IpcAppProps.js.map",
+      "start": 1693508120887,
+      "end": 1693508120936,
+      "sourcemaps": null
+    }
+  ]
+}

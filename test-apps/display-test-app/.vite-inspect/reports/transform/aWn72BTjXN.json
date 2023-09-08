@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/TileLoadIndicator.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { IModelApp } from \"@itwin/core-frontend\";\r\n\r\nexport class TileLoadIndicator {\r\n  private readonly _progress: HTMLProgressElement;\r\n\r\n  public constructor(parent: HTMLElement) {\r\n    this._progress = document.createElement(\"progress\");\r\n    parent.appendChild(this._progress);\r\n\r\n    IModelApp.viewManager.onFinishRender.addListener(() => this.update());\r\n  }\r\n\r\n  private update(): void {\r\n    let ready = 0;\r\n    let total = 0;\r\n    for (const vp of IModelApp.viewManager) {\r\n      ready += vp.numReadyTiles;\r\n      total += vp.numReadyTiles + vp.numRequestedTiles;\r\n    }\r\n\r\n    const pctComplete = (total > 0) ? (ready / total) : 1.0;\r\n    this._progress.value = pctComplete;\r\n  }\r\n}\r\n",
+      "start": 1693508121256,
+      "end": 1693508121433,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nimport { IModelApp } from \"@itwin/core-frontend\";\nexport class TileLoadIndicator {\n  constructor(parent) {\n    this._progress = document.createElement(\"progress\");\n    parent.appendChild(this._progress);\n    IModelApp.viewManager.onFinishRender.addListener(() => this.update());\n  }\n  update() {\n    let ready = 0;\n    let total = 0;\n    for (const vp of IModelApp.viewManager) {\n      ready += vp.numReadyTiles;\n      total += vp.numReadyTiles + vp.numRequestedTiles;\n    }\n    const pctComplete = total > 0 ? ready / total : 1;\n    this._progress.value = pctComplete;\n  }\n}\n",
+      "start": 1693508121433,
+      "end": 1693508121720,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/TileLoadIndicator.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { IModelApp } from \"@itwin/core-frontend\";\r\n\r\nexport class TileLoadIndicator {\r\n  private readonly _progress: HTMLProgressElement;\r\n\r\n  public constructor(parent: HTMLElement) {\r\n    this._progress = document.createElement(\"progress\");\r\n    parent.appendChild(this._progress);\r\n\r\n    IModelApp.viewManager.onFinishRender.addListener(() => this.update());\r\n  }\r\n\r\n  private update(): void {\r\n    let ready = 0;\r\n    let total = 0;\r\n    for (const vp of IModelApp.viewManager) {\r\n      ready += vp.numReadyTiles;\r\n      total += vp.numReadyTiles + vp.numRequestedTiles;\r\n    }\r\n\r\n    const pctComplete = (total > 0) ? (ready / total) : 1.0;\r\n    this._progress.value = pctComplete;\r\n  }\r\n}\r\n"
+        ],
+        "mappings": ";AAKA,SAAS,iBAAiB;AAEnB,aAAM,kBAAkB;AAAA,EAGtB,YAAY,QAAqB;AACtC,SAAK,YAAY,SAAS,cAAc,UAAU;AAClD,WAAO,YAAY,KAAK,SAAS;AAEjC,cAAU,YAAY,eAAe,YAAY,MAAM,KAAK,OAAO,CAAC;AAAA,EACtE;AAAA,EAEQ,SAAe;AACrB,QAAI,QAAQ;AACZ,QAAI,QAAQ;AACZ,eAAW,MAAM,UAAU,aAAa;AACtC,eAAS,GAAG;AACZ,eAAS,GAAG,gBAAgB,GAAG;AAAA,IACjC;AAEA,UAAM,cAAe,QAAQ,IAAM,QAAQ,QAAS;AACpD,SAAK,UAAU,QAAQ;AAAA,EACzB;AACF;",
+        "names": []
+      }
+    }
+  ]
+}

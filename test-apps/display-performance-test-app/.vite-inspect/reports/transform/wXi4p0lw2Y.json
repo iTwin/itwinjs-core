@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/schema-utils/deduce-column-type.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export function deduceTypeFromColumn(value) {\n  if (value instanceof Date) {\n    return Date;\n  } else if (value instanceof Number) {\n    return Float32Array;\n  } else if (typeof value === 'string') {\n    return String;\n  }\n  return null;\n}\nexport function deduceTypeFromValue(value) {\n  if (value instanceof Date) {\n    return Date;\n  } else if (value instanceof Number) {\n    return Float32Array;\n  } else if (typeof value === 'string') {\n    return String;\n  }\n  return null;\n}\n//# sourceMappingURL=deduce-column-type.js.map",
+      "start": 1693508125036,
+      "end": 1693508125157,
+      "sourcemaps": null
+    }
+  ]
+}

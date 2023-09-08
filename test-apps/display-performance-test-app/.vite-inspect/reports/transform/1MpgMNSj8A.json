@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/primitives/PointStringParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\nimport { assert } from \"@itwin/core-bentley\";\nimport { VertexTableBuilder } from \"./VertexTableBuilder\";\nimport { VertexIndices } from \"../../common/render/primitives/VertexIndices\";\nimport { IModelApp } from \"../../IModelApp\";\n/** @internal */\nexport function createPointStringParams(args) {\n    if (!args.flags.isDisjoint)\n        return undefined;\n    const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);\n    if (undefined === vertices)\n        return undefined;\n    const polylines = args.polylines;\n    let vertIndices = polylines[0];\n    if (1 < polylines.length) {\n        // We used to assert this wouldn't happen - apparently it does...\n        vertIndices = [];\n        for (const polyline of polylines)\n            for (const vertIndex of polyline)\n                vertIndices.push(vertIndex);\n    }\n    const vertexIndices = VertexIndices.fromArray(vertIndices);\n    assert(vertexIndices.length === vertIndices.length);\n    return {\n        vertices,\n        indices: vertexIndices,\n        weight: args.width,\n    };\n}\n//# sourceMappingURL=PointStringParams.js.map",
+      "start": 1693508119636,
+      "end": 1693508119721,
+      "sourcemaps": null
+    }
+  ]
+}

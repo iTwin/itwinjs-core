@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/runtime/ASystem.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class ASystem defines low level capabilities of the runtime platform.\n */\n/** @internal */\nclass ASystem {\n    constructor() {\n    }\n    static assert0(condition, message) {\n        if (condition == false)\n            throw new Error(\"Assert failed: \" + message);\n    }\n    static assertNot(condition, message) {\n        if (condition)\n            throw new Error(\"AssertNot failed: \" + message);\n    }\n    static time() {\n        return (new Date().getTime() - ASystem.TIME0) / 1000.0; // time in seconds\n    }\n}\nASystem.TIME0 = new Date().getTime();\nexport { ASystem };\n//# sourceMappingURL=ASystem.js.map",
+      "start": 1693508126532,
+      "end": 1693508126624,
+      "sourcemaps": null
+    }
+  ]
+}

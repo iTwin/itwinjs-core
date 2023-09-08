@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/editor/frontend/lib/esm/UndoRedoTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Editing\n */\nimport { IModelApp, IpcApp, Tool } from \"@itwin/core-frontend\";\n/** Undo all element changes\n * @beta\n */\nclass UndoAllTool extends Tool {\n    async run() {\n        const imodel = IModelApp.viewManager.selectedView?.view.iModel;\n        if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)\n            return true;\n        await IpcApp.appFunctionIpc.reverseAllTxn(imodel.key);\n        // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...\n        if (undefined !== IModelApp.toolAdmin.primitiveTool)\n            await IModelApp.toolAdmin.primitiveTool.onRestartTool();\n        return true;\n    }\n}\nUndoAllTool.toolId = \"UndoAll\";\nexport { UndoAllTool };\n/** Undo active tool steps, or element changes\n * @beta\n */\nclass UndoTool extends Tool {\n    async run() {\n        await IModelApp.toolAdmin.doUndoOperation();\n        return true;\n    }\n}\nUndoTool.toolId = \"Undo\";\nexport { UndoTool };\n/** Redo active tool steps, or element changes\n * @beta\n */\nclass RedoTool extends Tool {\n    async run() {\n        await IModelApp.toolAdmin.doRedoOperation();\n        return true;\n    }\n}\nRedoTool.toolId = \"Redo\";\nexport { RedoTool };\n//# sourceMappingURL=UndoRedoTool.js.map",
+      "start": 1693508122956,
+      "end": 1693508123150,
+      "sourcemaps": null
+    }
+  ]
+}

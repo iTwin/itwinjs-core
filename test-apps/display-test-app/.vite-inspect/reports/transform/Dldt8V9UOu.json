@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/map-layers-formats.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./mapLayersFormats\";\nexport * from \"./ArcGisFeature/ArcGisFeatureProvider\";\nexport * from \"./Tools/MapFeatureInfoTool\";\n/** @docs-package-description\n * This package provides support for additional map layer formats that are not included in the @itwin/core-frontend package.\n */\n/** @docs-group-description MapLayersFormats\n * APIs for working with the map layer formats provided by this package.\n */\n//# sourceMappingURL=map-layers-formats.js.map",
+      "start": 1693508121255,
+      "end": 1693508121321,
+      "sourcemaps": null
+    }
+  ]
+}

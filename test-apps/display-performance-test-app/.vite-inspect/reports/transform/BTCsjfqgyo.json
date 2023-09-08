@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/changeset/ChangesetOperationParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/**\r\n * Changeset entity properties that are supported in $orderBy url parameter which specifies by what property\r\n * entities are ordered in a collection.\r\n */\r\nexport var ChangesetOrderByProperty;\r\n(function (ChangesetOrderByProperty) {\r\n    ChangesetOrderByProperty[\"Index\"] = \"index\";\r\n})(ChangesetOrderByProperty || (ChangesetOrderByProperty = {}));\r\n//# sourceMappingURL=ChangesetOperationParams.js.map",
+      "start": 1693508122209,
+      "end": 1693508122301,
+      "sourcemaps": null
+    }
+  ]
+}

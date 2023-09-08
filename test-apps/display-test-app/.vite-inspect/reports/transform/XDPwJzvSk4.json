@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/quantity/lib/esm/Exception.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Quantity\n */\nimport { assert, BentleyError } from \"@itwin/core-bentley\";\n/**\n * Status codes used during Quantity parsing and formatting processing.\n * @beta\n */\nexport var QuantityStatus;\n(function (QuantityStatus) {\n    QuantityStatus[QuantityStatus[\"QUANTITY_ERROR_BASE\"] = 35039] = \"QUANTITY_ERROR_BASE\";\n    QuantityStatus[QuantityStatus[\"Success\"] = 0] = \"Success\";\n    QuantityStatus[QuantityStatus[\"InvalidJson\"] = 35040] = \"InvalidJson\";\n    QuantityStatus[QuantityStatus[\"InvalidCompositeFormat\"] = 35041] = \"InvalidCompositeFormat\";\n    QuantityStatus[QuantityStatus[\"UnableToGenerateParseTokens\"] = 35042] = \"UnableToGenerateParseTokens\";\n    QuantityStatus[QuantityStatus[\"NoValueOrUnitFoundInString\"] = 35043] = \"NoValueOrUnitFoundInString\";\n    QuantityStatus[QuantityStatus[\"UnitLabelSuppliedButNotMatched\"] = 35044] = \"UnitLabelSuppliedButNotMatched\";\n    QuantityStatus[QuantityStatus[\"UnknownUnit\"] = 35045] = \"UnknownUnit\";\n    QuantityStatus[QuantityStatus[\"UnableToConvertParseTokensToQuantity\"] = 35046] = \"UnableToConvertParseTokensToQuantity\";\n})(QuantityStatus || (QuantityStatus = {}));\n/** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.\n * @beta\n */\nexport class QuantityError extends BentleyError {\n    constructor(errorNumber, message) {\n        super(errorNumber, message);\n        this.errorNumber = errorNumber;\n        assert(errorNumber !== QuantityStatus.Success, message);\n    }\n}\n//# sourceMappingURL=Exception.js.map",
+      "start": 1693508124071,
+      "end": 1693508124361,
+      "sourcemaps": null
+    }
+  ]
+}

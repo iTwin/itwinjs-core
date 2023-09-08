@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/CopyColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { TextureUnit } from \"../RenderFlags\";\nimport { Texture2DHandle } from \"../Texture\";\nimport { assignFragColor } from \"./Fragment\";\nimport { createViewportQuadBuilder } from \"./ViewportQuad\";\nconst computeColor = \"return TEXTURE(u_color, v_texCoord);\";\n// Transparent background color will not have premultiplied alpha - multiply it when copying.\n// Set all other pixels opaque.\nconst computeColorNoAlpha = `\r\n  vec4 color = TEXTURE(u_color, v_texCoord);\r\n  if (color == u_bgColor)\r\n    return vec4(color.rgb * color.a, color.a);\r\n  else\r\n    return vec4(color.rgb, 1.0);\r\n`;\n/** @internal */\nexport function createCopyColorProgram(context, copyAlpha = true) {\n    const builder = createViewportQuadBuilder(true);\n    const frag = builder.frag;\n    frag.set(1 /* FragmentShaderComponent.ComputeBaseColor */, copyAlpha ? computeColor : computeColorNoAlpha);\n    frag.set(16 /* FragmentShaderComponent.AssignFragData */, assignFragColor);\n    frag.addUniform(\"u_color\", 8 /* VariableType.Sampler2D */, (prog) => {\n        prog.addGraphicUniform(\"u_color\", (uniform, params) => {\n            const geom = params.geometry;\n            Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);\n        });\n    });\n    if (!copyAlpha) {\n        frag.addUniform(\"u_bgColor\", 5 /* VariableType.Vec4 */, (prog) => {\n            prog.addProgramUniform(\"u_bgColor\", (uniform, params) => {\n                params.target.uniforms.style.bindBackgroundRgba(uniform);\n            });\n        });\n    }\n    const flagString = (copyAlpha ? \"-CopyAlpha\" : \"-NoAlpha\");\n    builder.vert.headerComment = `//!V! CopyColor${flagString}`;\n    builder.frag.headerComment = `//!F! CopyColor${flagString}`;\n    return builder.buildProgram(context);\n}\n//# sourceMappingURL=CopyColor.js.map",
+      "start": 1693508125852,
+      "end": 1693508125945,
+      "sourcemaps": null
+    }
+  ]
+}

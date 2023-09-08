@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/selector.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { adopt } from '../../utils/adopter.js'\r\nimport { globals } from '../../utils/window.js'\r\nimport { map } from '../../utils/utils.js'\r\nimport List from '../../types/List.js'\r\n\r\nexport default function baseFind (query, parent) {\r\n  return new List(map((parent || globals.document).querySelectorAll(query), function (node) {\r\n    return adopt(node)\r\n  }))\r\n}\r\n\r\n// Scoped find method\r\nexport function find (query) {\r\n  return baseFind(query, this.node)\r\n}\r\n\r\nexport function findOne (query) {\r\n  return adopt(this.node.querySelector(query))\r\n}\r\n",
+      "start": 1693508127108,
+      "end": 1693508127177,
+      "sourcemaps": null
+    }
+  ]
+}

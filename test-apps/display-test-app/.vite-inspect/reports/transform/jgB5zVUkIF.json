@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/AnimationIntervalTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tools\n */\nimport { BeDuration } from \"@itwin/core-bentley\";\nimport { IModelApp, Tool } from \"@itwin/core-frontend\";\n/** Changes the [IModelApp.animationInterval]($frontend). Specify the interval in integer milliseconds; or pass any string not parseable as an integer to disable the animation interval callback.\n * @beta\n */\nclass AnimationIntervalTool extends Tool {\n    static get minArgs() { return 1; }\n    static get maxArgs() { return 1; }\n    async run(interval) {\n        IModelApp.animationInterval = interval;\n        return true;\n    }\n    async parseAndRun(...args) {\n        const millis = Number.parseInt(args[0], 10);\n        const interval = !Number.isNaN(millis) ? BeDuration.fromMilliseconds(millis) : undefined;\n        return this.run(interval);\n    }\n}\nAnimationIntervalTool.toolId = \"AnimationInterval\";\nexport { AnimationIntervalTool };\n//# sourceMappingURL=AnimationIntervalTool.js.map",
+      "start": 1693508122614,
+      "end": 1693508122715,
+      "sourcemaps": null
+    }
+  ]
+}

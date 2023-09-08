@@ -1,0 +1,27 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/index.html?html-proxy&inline-css&index=0.css",
+  "transforms": [
+    {
+      "name": "vite:html-inline-proxy",
+      "result": "\n    html,\n    body {\n      height: 100%;\n      width: 100%;\n      margin: 0;\n      position: relative;\n      overflow: hidden;\n    }\n\n    #root {\n      height: 100%;\n    }\n  ",
+      "start": 1693508118291,
+      "end": 1693508118291
+    },
+    {
+      "name": "vite:css",
+      "result": "\n    html,\n    body {\n      height: 100%;\n      width: 100%;\n      margin: 0;\n      position: relative;\n      overflow: hidden;\n    }\n\n    #root {\n      height: 100%;\n    }\n  ",
+      "start": 1693508118292,
+      "end": 1693508118293,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "result": "export default ''",
+      "start": 1693508118296,
+      "end": 1693508118296,
+      "order": "normal",
+      "sourcemaps": null
+    }
+  ]
+}

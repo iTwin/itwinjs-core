@@ -1,0 +1,19 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/index.html",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n  <meta charset=\"utf-8\" />\r\n\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">\r\n  <meta name=\"theme-color\" content=\"#000000\" />\r\n  <link rel=\"shortcut icon\" href=\"/favicon.ico\" />\r\n  <title>Display Test App</title>\r\n  <style>\r\n    html,\r\n    body {\r\n      height: 100%;\r\n      width: 100%;\r\n      margin: 0;\r\n      position: relative;\r\n      overflow: hidden;\r\n    }\r\n\r\n    #root {\r\n      height: 100%;\r\n    }\r\n  </style>\r\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"index.css\">\r\n\r\n  <script type=\"module\" src=\"/scripts/checkbrowser.js\"></script>\r\n</head>\r\n\r\n<body>\r\n  <noscript>\r\n    You need to enable JavaScript to run this app.\r\n  </noscript>\r\n  <div id=\"root\">\r\n    <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->\r\n    <input type=\"file\" id=\"browserFileSelector\" />\r\n    <div class=status-bar id=\"status-bar\">\r\n      <span id=\"keyin-entry\" class=\"keyin-entry\"></span>\r\n      <span id=\"fps-container\">\r\n        <input type=\"checkbox\" id=\"fps-checkbox\">\r\n        <label for=\"fps-checkbox\" id=\"fps-label\">FPS</label>\r\n        <span id=\"fps-output\"></span>\r\n      </span>\r\n      <span id=\"tileLoadIndicatorContainer\"></span>\r\n      <span id=\"snapModesContainer\"></span>\r\n    </div>\r\n    <div class=topdiv id=\"toolBar\"></div>\r\n    <div id=\"spinner\" class=\"bim-spinner-container\">\r\n      <div class=\"bim-spinner\"></div>\r\n    </div>\r\n    <div class=\"app-surface\" id=\"app-surface\">\r\n    </div>\r\n    <div class=\"bottomdiv\">\r\n      <span class=\"statusspan\" id=\"showstatus\"></span>\r\n      <span class=\"statusspan\" id=\"showerror\"></span>\r\n    </div>\r\n  </div>\r\n  <script type=\"module\" src=\"/src/index.ts\"></script>\r\n</body>\r\n\r\n</html>\r\n",
+      "start": 1693508118237,
+      "end": 1693508118238,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:build-html",
+      "result": "import \"vite/modulepreload-polyfill\";\n\nimport \"D:/hub2023A/itwinjs-core/test-apps/display-test-app/index.html?html-proxy&inline-css&index=0.css\"\nimport \"/src/index.ts\"",
+      "start": 1693508118241,
+      "end": 1693508118281,
+      "order": "normal"
+    }
+  ]
+}

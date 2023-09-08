@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/worker-utils/get-loadable-worker-url.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { assert } from '../env-utils/assert';\nconst workerURLCache = new Map();\nexport function getLoadableWorkerURL(props) {\n  assert(props.source && !props.url || !props.source && props.url);\n  let workerURL = workerURLCache.get(props.source || props.url);\n  if (!workerURL) {\n    if (props.url) {\n      workerURL = getLoadableWorkerURLFromURL(props.url);\n      workerURLCache.set(props.url, workerURL);\n    }\n    if (props.source) {\n      workerURL = getLoadableWorkerURLFromSource(props.source);\n      workerURLCache.set(props.source, workerURL);\n    }\n  }\n  assert(workerURL);\n  return workerURL;\n}\nfunction getLoadableWorkerURLFromURL(url) {\n  if (!url.startsWith('http')) {\n    return url;\n  }\n  const workerSource = buildScriptSource(url);\n  return getLoadableWorkerURLFromSource(workerSource);\n}\nfunction getLoadableWorkerURLFromSource(workerSource) {\n  const blob = new Blob([workerSource], {\n    type: 'application/javascript'\n  });\n  return URL.createObjectURL(blob);\n}\nfunction buildScriptSource(workerUrl) {\n  return \"try {\\n  importScripts('\".concat(workerUrl, \"');\\n} catch (error) {\\n  console.error(error);\\n  throw error;\\n}\");\n}\n//# sourceMappingURL=get-loadable-worker-url.js.map",
+      "start": 1693508125056,
+      "end": 1693508125170,
+      "sourcemaps": null
+    }
+  ]
+}

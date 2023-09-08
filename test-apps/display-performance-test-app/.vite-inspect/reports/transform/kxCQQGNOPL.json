@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/CesiumAssetProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * This class provide methods used to interpret url to a cesiumIon asset (RealityDataProvider.CesiumIonAsset)\n * @internal\n */\nclass CesiumIonAssetProvider {\n    /** Return true if this is a supported url to this service provider */\n    static isProviderUrl(url) {\n        return url.includes(\"$CesiumIonAsset=\");\n    }\n    // TBD - Allow an object to override the URL and provide its own authentication.\n    static parseCesiumUrl(url) {\n        const cesiumSuffix = \"$CesiumIonAsset=\";\n        const cesiumIndex = url.indexOf(cesiumSuffix);\n        if (cesiumIndex < 0)\n            return undefined;\n        const cesiumIonString = url.slice(cesiumIndex + cesiumSuffix.length);\n        const cesiumParts = cesiumIonString.split(\":\");\n        if (cesiumParts.length !== 2)\n            return undefined;\n        const id = parseInt(cesiumParts[0], 10);\n        if (id === undefined)\n            return undefined;\n        return { id, key: cesiumParts[1] };\n    }\n}\nCesiumIonAssetProvider.osmBuildingId = \"OSMBuildings\";\nexport { CesiumIonAssetProvider };\n//# sourceMappingURL=CesiumAssetProvider.js.map",
+      "start": 1693508121961,
+      "end": 1693508122151,
+      "sourcemaps": null
+    }
+  ]
+}

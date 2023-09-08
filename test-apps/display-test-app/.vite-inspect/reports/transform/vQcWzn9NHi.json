@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/items/StageUsage.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Item\n */\n/** Standard stage uses. Allows extension to target ui item to include on a stage without\n * knowing the stage name defined in the host application.\n * @deprecated in 3.6. Use [StageUsage]($appui-react) instead.\n * @public\n */\nexport var StageUsage;\n(function (StageUsage) {\n    StageUsage[\"Private\"] = \"Private\";\n    StageUsage[\"General\"] = \"General\";\n    StageUsage[\"Redline\"] = \"Redline\";\n    StageUsage[\"ViewOnly\"] = \"ViewOnly\";\n    StageUsage[\"Edit\"] = \"Edit\";\n    StageUsage[\"Settings\"] = \"Settings\";\n})(StageUsage || (StageUsage = {}));\n//# sourceMappingURL=StageUsage.js.map",
+      "start": 1693508124438,
+      "end": 1693508124491,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/topology/MaskManager.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Topology\n */\n/**\n * Methods to \"grab and drop\" mask bits.\n * * Caller code (e.g. HalfEdgeGraph) initializes with a block of bits to be managed.\n * * Callers borrow and return masks with \"grabMask\" and \"dropMask\"\n * * Callers must exercise grab/drop balance discipline.\n * @internal\n */\nexport class MaskManager {\n    /**\n     * @param freeMasks caller-defined block of bits that are to be managed.\n     */\n    constructor(freeMasks, firstFreeMask) {\n        this._originalFreeMasks = freeMasks;\n        this._freeMasks = freeMasks;\n        this._firstFreeMask = firstFreeMask;\n    }\n    /** Create a MaskManager.\n     * Typical use:   MaskManager.create (0xFFFF0000)\n     * * This makes bits 16 through 31 available to be borrowed, with lower bits available for fixed usage.\n     */\n    static create(freeMasks) {\n        // look for first bit up to bit 31\n        let firstFree = 0;\n        let testBit = 0x01;\n        for (let i = 0; i < 32; i++) {\n            if ((testBit & freeMasks) !== 0) {\n                firstFree = testBit;\n                break;\n            }\n            testBit = (testBit << 1);\n        }\n        if (firstFree === 0)\n            return undefined;\n        return new MaskManager(freeMasks, firstFree);\n    }\n    /**\n     * Find a mask bit that is not \"in use\".\n     */\n    grabMask() {\n        let mask = this._firstFreeMask;\n        if (this._freeMasks === 0)\n            return 0;\n        while (!(mask & this._freeMasks))\n            mask = mask << 1;\n        this._freeMasks &= ~mask;\n        return mask;\n    }\n    /**\n     * Find a mask bit that is not \"in use\".\n     */\n    dropMask(mask) {\n        mask &= this._originalFreeMasks; // prevent \"drop\" of mask not in the pool.\n        this._freeMasks |= mask;\n    }\n}\n//# sourceMappingURL=MaskManager.js.map",
+      "start": 1693508125541,
+      "end": 1693508125638,
+      "sourcemaps": null
+    }
+  ]
+}

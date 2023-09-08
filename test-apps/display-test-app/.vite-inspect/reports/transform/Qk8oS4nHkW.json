@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/Slider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @alpha */\nexport function createSlider(props) {\n    const div = document.createElement(\"div\");\n    div.style.display = \"block\";\n    if (props.verticalAlign)\n        div.style.verticalAlign = props.verticalAlign;\n    if (props.textAlign)\n        div.style.textAlign = props.textAlign;\n    const label = document.createElement(\"label\");\n    label.htmlFor = props.id;\n    label.innerText = props.name;\n    div.appendChild(label);\n    const readout = document.createElement(\"label\");\n    const slider = document.createElement(\"input\");\n    slider.type = \"range\";\n    slider.className = \"slider\";\n    slider.id = props.id;\n    slider.min = props.min;\n    slider.max = props.max;\n    slider.step = props.step;\n    slider.value = props.value;\n    slider.addEventListener(\"input\", () => {\n        props.handler(slider);\n        readout.innerText = slider.value;\n    });\n    div.appendChild(slider);\n    if (props.readout === \"right\") {\n        readout.innerText = slider.value;\n        div.appendChild(readout);\n    }\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    return { label, slider, div, readout };\n}\n//# sourceMappingURL=Slider.js.map",
+      "start": 1693508122812,
+      "end": 1693508122879,
+      "sourcemaps": null
+    }
+  ]
+}

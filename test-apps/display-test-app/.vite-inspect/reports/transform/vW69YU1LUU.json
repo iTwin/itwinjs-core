@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/Fonts.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Symbology\n */\n/** The type of a font.\n * @public\n * @extensions\n */\nexport var FontType;\n(function (FontType) {\n    FontType[FontType[\"TrueType\"] = 1] = \"TrueType\";\n    FontType[FontType[\"Rsc\"] = 2] = \"Rsc\";\n    FontType[FontType[\"Shx\"] = 3] = \"Shx\";\n})(FontType || (FontType = {}));\n/**\n * A FontMap holds the set of font names available in an iModel.\n * Within the GeometryStream of an Element, a specific font is referenced by its FontId that is local to the iModel.\n * This class maps FontIds to FontProps.\n * @note The font map is generally established when the iModel is first created to specify the set of fonts available\n * for editors. Adding new entries requires that the schema lock be held.\n * @public\n */\nexport class FontMap {\n    constructor(props) {\n        this.fonts = new Map();\n        if (undefined !== props)\n            this.addFonts(props.fonts);\n    }\n    addFonts(fonts) {\n        fonts.forEach((font) => this.fonts.set(font.id, font));\n    }\n    toJSON() {\n        const fonts = [];\n        this.fonts.forEach((font) => fonts.push(font));\n        return { fonts };\n    }\n    /** look up a font by name or number and return its FontProps */\n    getFont(arg) {\n        if (typeof arg === \"number\")\n            return this.fonts.get(arg);\n        for (const font of this.fonts.values())\n            if (font.name === arg)\n                return font;\n        return undefined;\n    }\n}\n//# sourceMappingURL=Fonts.js.map",
+      "start": 1693508120729,
+      "end": 1693508120785,
+      "sourcemaps": null
+    }
+  ]
+}

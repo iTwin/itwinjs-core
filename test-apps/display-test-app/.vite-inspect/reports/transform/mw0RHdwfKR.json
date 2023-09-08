@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/DataList.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nfunction _appendDataListEntry(list, entry) {\n    const option = document.createElement(\"option\");\n    if (undefined !== entry.value)\n        option.value = entry.value.toString();\n    list.appendChild(option);\n}\n/** @alpha */\nexport function appendDataListEntries(dl, entries) {\n    for (const entry of entries) {\n        _appendDataListEntry(dl.list, entry);\n    }\n}\n/** @alpha */\nexport function createDataList(props) {\n    const list = document.createElement(\"datalist\");\n    list.id = props.id;\n    for (const entry of props.entries) {\n        _appendDataListEntry(list, entry);\n    }\n    const handler = props.handler;\n    if (undefined !== handler)\n        list.onselect = () => handler(list);\n    const div = document.createElement(\"div\");\n    if (props.inline)\n        div.style.display = \"inline\";\n    div.appendChild(list);\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    return { div, list };\n}\n//# sourceMappingURL=DataList.js.map",
+      "start": 1693508122782,
+      "end": 1693508122871,
+      "sourcemaps": null
+    }
+  ]
+}

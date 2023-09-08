@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/request/Request.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** Error object that's thrown if the status is *not* in the range of 200-299 (inclusive).\n * @internal\n */\nexport class HttpResponseError extends Error {\n    constructor(status, responseText) {\n        let message = `HTTP response status code: ${status}.`;\n        if (responseText)\n            message += ` Response body: ${responseText}`;\n        super(message);\n        this.status = status;\n        this.responseText = responseText;\n    }\n}\n/** @internal */\nexport async function request(url, responseType, options) {\n    const headers = {\n        ...options?.headers,\n    };\n    if (options?.auth)\n        headers.authorization = `Basic ${window.btoa(`${options.auth.user}:${options.auth.password}`)}`;\n    const controller = new AbortController();\n    if (options?.timeout)\n        setTimeout(() => controller.abort(), options.timeout);\n    const fetchOptions = {\n        headers,\n        signal: controller.signal,\n    };\n    const fetchFunc = async () => fetch(url, fetchOptions);\n    const response = await fetchWithRetry(fetchFunc, options?.retryCount ?? 4);\n    if (!response.ok)\n        throw new HttpResponseError(response.status, await response.text());\n    switch (responseType) {\n        case \"arraybuffer\":\n            return response.arrayBuffer();\n        case \"json\":\n            return response.json();\n        case \"text\":\n            return response.text();\n    }\n}\nasync function fetchWithRetry(fetchFunc, remainingRetries) {\n    try {\n        return await fetchFunc();\n    }\n    catch (error) {\n        if (error instanceof Error && error.name === \"AbortError\")\n            throw error;\n        if (remainingRetries === 0)\n            throw error;\n        return fetchWithRetry(fetchFunc, --remainingRetries);\n    }\n}\n//# sourceMappingURL=Request.js.map",
+      "start": 1693508121315,
+      "end": 1693508121498,
+      "sourcemaps": null
+    }
+  ]
+}

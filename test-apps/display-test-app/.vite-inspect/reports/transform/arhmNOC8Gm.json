@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/ClipPath.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Container from './Container.js'\r\nimport baseFind from '../modules/core/selector.js'\r\n\r\nexport default class ClipPath extends Container {\r\n  constructor (node) {\r\n    super(nodeOrNew('clipPath', node), node)\r\n  }\r\n\r\n  // Unclip all clipped elements and remove itself\r\n  remove () {\r\n    // unclip all targets\r\n    this.targets().forEach(function (el) {\r\n      el.unclip()\r\n    })\r\n\r\n    // remove clipPath from parent\r\n    return super.remove()\r\n  }\r\n\r\n  targets () {\r\n    return baseFind('svg [clip-path*=\"' + this.id() + '\"]')\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create clipping element\r\n    clip: wrapWithAttrCheck(function () {\r\n      return this.defs().put(new ClipPath())\r\n    })\r\n  },\r\n  Element: {\r\n    // Distribute clipPath to svg element\r\n    clipWith (element) {\r\n      // use given clip or create a new one\r\n      let clipper = element instanceof ClipPath\r\n        ? element\r\n        : this.parent().clip().add(element)\r\n\r\n      // apply mask\r\n      return this.attr('clip-path', 'url(\"#' + clipper.id() + '\")')\r\n    },\r\n\r\n    // Unclip element\r\n    unclip () {\r\n      return this.attr('clip-path', null)\r\n    },\r\n\r\n    clipper () {\r\n      return this.reference('clip-path')\r\n    }\r\n  }\r\n})\r\n\r\nregister(ClipPath, 'ClipPath')\r\n",
+      "start": 1693508127150,
+      "end": 1693508127197,
+      "sourcemaps": null
+    }
+  ]
+}

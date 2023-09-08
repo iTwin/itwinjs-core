@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/rpc/web/RpcMultipart.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nimport { BentleyStatus, IModelError } from \"../../IModelError\";\n/** Support for transporting RPC values using the HTTP multipart content type.\n * @internal\n */\nclass RpcMultipart {\n    /** Creates a multipart form object for an RPC value. */\n    static createForm(value) {\n        const form = new FormData();\n        RpcMultipart.writeValueToForm(form, value);\n        return form;\n    }\n    /** Creates a multipart stream for an RPC value. */\n    static createStream(value) {\n        return this.platform.createStream(value);\n    }\n    /** Obtains the RPC value from a multipart HTTP request. */\n    static async parseRequest(req) {\n        return this.platform.parseRequest(req);\n    }\n    /** @internal */\n    static writeValueToForm(form, value) {\n        form.append(\"objects\", value.objects);\n        for (let i = 0; i !== value.data.length; ++i) {\n            this.platform.appendToForm(i, form, value);\n        }\n    }\n}\n/** @internal */\nRpcMultipart.platform = {\n    createStream(_value) {\n        throw new IModelError(BentleyStatus.ERROR, \"Not bound.\");\n    },\n    async parseRequest(_req) {\n        throw new IModelError(BentleyStatus.ERROR, \"Not bound.\");\n    },\n    appendToForm(i, form, value) {\n        form.append(`data-${i}`, new Blob([value.data[i]], { type: \"application/octet-stream\" }));\n    },\n};\nexport { RpcMultipart };\n//# sourceMappingURL=RpcMultipart.js.map",
+      "start": 1693508120874,
+      "end": 1693508120952,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/env-utils/globals.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "const globals = {\n  self: typeof self !== 'undefined' && self,\n  window: typeof window !== 'undefined' && window,\n  global: typeof global !== 'undefined' && global,\n  document: typeof document !== 'undefined' && document\n};\nconst self_ = globals.self || globals.window || globals.global || {};\nconst window_ = globals.window || globals.self || globals.global || {};\nconst global_ = globals.global || globals.self || globals.window || {};\nconst document_ = globals.document || {};\nexport { self_ as self, window_ as window, global_ as global, document_ as document };\nexport const isBrowser = typeof process !== 'object' || String(process) !== '[object process]' || process.browser;\nexport const isWorker = typeof importScripts === 'function';\nexport const isMobile = typeof window !== 'undefined' && typeof window.orientation !== 'undefined';\nconst matches = typeof process !== 'undefined' && process.version && /v([0-9]*)/.exec(process.version);\nexport const nodeVersion = matches && parseFloat(matches[1]) || 0;\n//# sourceMappingURL=globals.js.map",
+      "start": 1693508124417,
+      "end": 1693508124573,
+      "sourcemaps": null
+    }
+  ]
+}

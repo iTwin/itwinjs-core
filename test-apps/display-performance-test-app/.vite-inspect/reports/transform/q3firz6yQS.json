@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/io/ABufferInStream.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { InStream } from \"./InStream\";\n/**\n * Class ABufferInStream defines a stream on top of a buffer.\n */\n/** @internal */\nexport class ABufferInStream extends InStream {\n    /**\n       * Create a new stream.\n       */\n    constructor(buffer, offset, size) {\n        super();\n        this._buffer = buffer;\n        this._offset = offset;\n        this._size = size;\n        this._position = this._offset;\n        this._extent = this._offset + size;\n    }\n    getOffset() {\n        return this._offset;\n    }\n    getSize() {\n        return this._size;\n    }\n    getPosition() {\n        return this._position;\n    }\n    /**\n       * InStream method override\n       */\n    read() {\n        if (this._position >= this._extent)\n            return -1;\n        return this._buffer.get(this._position++);\n    }\n}\n//# sourceMappingURL=ABufferInStream.js.map",
+      "start": 1693508125598,
+      "end": 1693508125630,
+      "sourcemaps": null
+    }
+  ]
+}

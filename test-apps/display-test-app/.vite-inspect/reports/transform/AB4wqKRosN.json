@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/NativeAppProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module NativeApp\n */\n/** @internal */\nexport const nativeAppIpcStrings = {\n    channelName: \"itwinjs-core/nativeApp\",\n    notifyChannel: \"itwinjs-core/nativeApp-notify\",\n};\n/** Indicates whether or not the computer is currently connected to the internet.\n * @beta\n */\nexport var InternetConnectivityStatus;\n(function (InternetConnectivityStatus) {\n    InternetConnectivityStatus[InternetConnectivityStatus[\"Online\"] = 0] = \"Online\";\n    InternetConnectivityStatus[InternetConnectivityStatus[\"Offline\"] = 1] = \"Offline\";\n})(InternetConnectivityStatus || (InternetConnectivityStatus = {}));\n/** Describes whether the user or the browser overrode the internet connectivity status.\n * @beta\n */\nexport var OverriddenBy;\n(function (OverriddenBy) {\n    OverriddenBy[OverriddenBy[\"Browser\"] = 0] = \"Browser\";\n    OverriddenBy[OverriddenBy[\"User\"] = 1] = \"User\";\n})(OverriddenBy || (OverriddenBy = {}));\n//# sourceMappingURL=NativeAppProps.js.map",
+      "start": 1693508120918,
+      "end": 1693508120962,
+      "sourcemaps": null
+    }
+  ]
+}

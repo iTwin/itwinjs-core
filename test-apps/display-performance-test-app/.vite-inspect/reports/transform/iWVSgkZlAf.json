@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/render/primitives/SurfaceParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** @internal */\nexport var SurfaceType;\n(function (SurfaceType) {\n    SurfaceType[SurfaceType[\"Unlit\"] = 0] = \"Unlit\";\n    SurfaceType[SurfaceType[\"Lit\"] = 1] = \"Lit\";\n    SurfaceType[SurfaceType[\"Textured\"] = 2] = \"Textured\";\n    SurfaceType[SurfaceType[\"TexturedLit\"] = 3] = \"TexturedLit\";\n    SurfaceType[SurfaceType[\"VolumeClassifier\"] = 4] = \"VolumeClassifier\";\n})(SurfaceType || (SurfaceType = {}));\n/** @internal */\nexport function isValidSurfaceType(value) {\n    switch (value) {\n        case SurfaceType.Unlit:\n        case SurfaceType.Lit:\n        case SurfaceType.Textured:\n        case SurfaceType.TexturedLit:\n        case SurfaceType.VolumeClassifier:\n            return true;\n        default:\n            return false;\n    }\n}\n/** @internal */\nexport function createSurfaceMaterial(source) {\n    if (undefined === source)\n        return undefined;\n    else\n        return { isAtlas: false, material: source };\n}\n//# sourceMappingURL=SurfaceParams.js.map",
+      "start": 1693508118720,
+      "end": 1693508118949,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/RestClient.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/**\r\n * Content-Type header values that are used with for iModels API.\r\n */\r\nexport var ContentType;\r\n(function (ContentType) {\r\n    ContentType[\"Json\"] = \"application/json\";\r\n    ContentType[\"Png\"] = \"image/png\";\r\n    ContentType[\"Jpeg\"] = \"image/jpeg\";\r\n})(ContentType || (ContentType = {}));\r\n//# sourceMappingURL=RestClient.js.map",
+      "start": 1693508125016,
+      "end": 1693508125108,
+      "sourcemaps": null
+    }
+  ]
+}

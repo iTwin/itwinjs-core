@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/named-version/NamedVersionOperationParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/**\r\n * Named Versions entity properties that are supported in $orderBy url parameter which specifies by what property\r\n * entities are ordered in a collection.\r\n */\r\nexport var NamedVersionOrderByProperty;\r\n(function (NamedVersionOrderByProperty) {\r\n    NamedVersionOrderByProperty[\"ChangesetIndex\"] = \"changesetIndex\";\r\n})(NamedVersionOrderByProperty || (NamedVersionOrderByProperty = {}));\r\n//# sourceMappingURL=NamedVersionOperationParams.js.map",
+      "start": 1693508122210,
+      "end": 1693508122302,
+      "sourcemaps": null
+    }
+  ]
+}

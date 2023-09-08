@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/quantity/BaseQuantityDescription.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\nimport { PropertyEditorParamTypes } from \"../properties/EditorParams\";\nimport { StandardTypeNames } from \"../properties/StandardTypeNames\";\nimport { StandardEditorNames } from \"../properties/StandardEditorNames\";\n/**\n * Base Quantity Property Description\n * @beta\n */\nexport class BaseQuantityDescription {\n    constructor(name, displayLabel, iconSpec) {\n        this.format = (numberValue) => {\n            return this.formatValue(numberValue);\n        };\n        this.parse = (userInput) => {\n            return this.parseString(userInput);\n        };\n        this.name = name;\n        this.displayLabel = displayLabel;\n        this.typename = StandardTypeNames.Number;\n        this.editor = {\n            name: StandardEditorNames.NumberCustom,\n            params: [{\n                    type: PropertyEditorParamTypes.CustomFormattedNumber,\n                    formatFunction: this.format,\n                    parseFunction: this.parse,\n                },\n            ],\n        };\n        // istanbul ignore else\n        if (iconSpec) {\n            const params = {\n                type: PropertyEditorParamTypes.Icon,\n                definition: { iconSpec },\n            };\n            this.editor.params.push(params);\n        }\n    }\n}\n//# sourceMappingURL=BaseQuantityDescription.js.map",
+      "start": 1693508123600,
+      "end": 1693508123623,
+      "sourcemaps": null
+    }
+  ]
+}

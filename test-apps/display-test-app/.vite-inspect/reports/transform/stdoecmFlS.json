@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/ReportWebGLCompatibilityTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tools\n */\nimport { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from \"@itwin/core-frontend\";\n/** Queries the client's level of compatibility with the rendering system and outputs it to NotificationManager.\n * @beta\n */\nclass ReportWebGLCompatibilityTool extends Tool {\n    async run(_args) {\n        const info = IModelApp.queryRenderCompatibility();\n        const statuses = [\"OK\", \"Missing Optional Features\", \"Major Performance Caveat\", \"Missing Required Features\", \"Failed to Create Context\"];\n        const status = info.status < statuses.length ? statuses[info.status] : \"UNKNOWN\";\n        const json = JSON.stringify(info, null, 2); // prettify JSON output\n        const msg = `Compatibility: ${status}\\n${json}`;\n        const html = document.createElement(\"div\");\n        html.style.whiteSpace = \"pre-wrap\";\n        html.appendChild(document.createTextNode(msg));\n        await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, html, MessageBoxIconType.Information);\n        return true;\n    }\n}\nReportWebGLCompatibilityTool.toolId = \"ReportWebGLCompatibility\";\nexport { ReportWebGLCompatibilityTool };\n//# sourceMappingURL=ReportWebGLCompatibilityTool.js.map",
+      "start": 1693508122716,
+      "end": 1693508122820,
+      "sourcemaps": null
+    }
+  ]
+}

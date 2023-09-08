@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/BatchedTileIdMap.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { assert } from \"@itwin/core-bentley\";\n/**\n * Mapping between transient IDs assigned to 3D tiles \"features\" and batch table properties (and visa versa).\n * these properties may be present in batched tile sets.\n * @internal\n */\nexport class BatchedTileIdMap {\n    constructor(iModel) {\n        this._iModel = iModel;\n    }\n    /** Obtains or allocates the Id64String corresponding to the supplied set of JSON properties. */\n    getBatchId(properties) {\n        if (undefined === this._featureMap || undefined === this._idMap) {\n            assert(undefined === this._featureMap && undefined === this._idMap);\n            this._featureMap = new Map();\n            this._idMap = new Map();\n        }\n        const key = JSON.stringify(properties);\n        let entry = this._featureMap.get(key);\n        if (undefined === entry) {\n            const id = this._iModel.transientIds.getNext();\n            entry = { id, properties };\n            this._featureMap.set(key, entry);\n            this._idMap.set(id, properties);\n        }\n        return entry.id;\n    }\n    /** Obtain the JSON properties associated with the specified Id64String, or undefined if none exist. */\n    getBatchProperties(id) {\n        return undefined !== this._idMap ? this._idMap.get(id) : undefined;\n    }\n}\n//# sourceMappingURL=BatchedTileIdMap.js.map",
+      "start": 1693508121506,
+      "end": 1693508121761,
+      "sourcemaps": null
+    }
+  ]
+}

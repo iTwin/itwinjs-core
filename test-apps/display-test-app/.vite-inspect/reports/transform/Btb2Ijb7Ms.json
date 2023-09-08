@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/quantity-formatting/QuantityTypesEditorSpecs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module QuantityFormatting\n */\n/** CheckboxFormatPropEditorSpec type guard.\n * @public\n */\nexport const isCheckboxFormatPropEditorSpec = (item) => {\n    return item.editorType === \"checkbox\";\n};\n/** TextInputFormatPropEditorSpec type guard.\n * @public\n */\nexport const isTextInputFormatPropEditorSpec = (item) => {\n    return item.editorType === \"text\";\n};\n/** TextSelectFormatPropEditorSpec type guard.\n * @public\n */\nexport const isTextSelectFormatPropEditorSpec = (item) => {\n    return item.editorType === \"select\";\n};\n//# sourceMappingURL=QuantityTypesEditorSpecs.js.map",
+      "start": 1693508119683,
+      "end": 1693508119895,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/ClassUtils.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\n/** Check if class `subclass` is a different class from `superclass` but extends from `superclass`\n * @param subclass the class that may be a subclass of `superclass`\n * @param superclass the class that may be a base class of `subclass`\n * @note The constructors of all types must be `public`.\n * @returns whether `subclass` is a proper subclass of `superclass`\n * @public\n */\nexport function isProperSubclassOf(subclass, superclass) {\n    return subclass.prototype instanceof superclass;\n}\n/** Check if class `subclass` is `superclass` or extends from `superclass`\n * @param subclass the class that may be a subclass of `superclass`.\n * @param superclass the class that may be a base class of `subclass`.\n * @note The constructors of all types must be `public`.\n * @returns whether `subclass` is a subclass of `superclass`\n * @public\n */\nexport function isSubclassOf(subclass, superclass) {\n    return subclass === superclass || isProperSubclassOf(subclass, superclass);\n}\n//# sourceMappingURL=ClassUtils.js.map",
+      "start": 1693508120352,
+      "end": 1693508120624,
+      "sourcemaps": null
+    }
+  ]
+}

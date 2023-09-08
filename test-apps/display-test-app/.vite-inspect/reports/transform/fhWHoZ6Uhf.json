@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/ArcGisFeature/ArcGisFeatureFormat.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ArcGisUtilities, ImageryMapLayerFormat, MapLayerSourceStatus } from \"@itwin/core-frontend\";\nimport { ArcGisFeatureProvider } from \"./ArcGisFeatureProvider\";\n/** @internal */\nclass ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {\n    static createImageryProvider(settings) { return new ArcGisFeatureProvider(settings); }\n    static async validateSource(url, userName, password, ignoreCache) {\n        const urlValidation = ArcGisUtilities.validateUrl(url, \"FeatureServer\");\n        if (urlValidation !== MapLayerSourceStatus.Valid)\n            return { status: urlValidation };\n        return ArcGisUtilities.validateSource(url, this.formatId, [\"query\"], userName, password, ignoreCache);\n    }\n}\nArcGisFeatureMapLayerFormat.formatId = \"ArcGISFeature\";\nexport { ArcGisFeatureMapLayerFormat };\n//# sourceMappingURL=ArcGisFeatureFormat.js.map",
+      "start": 1693508125118,
+      "end": 1693508125185,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/worker-farm/worker-farm.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import _defineProperty from \"@babel/runtime/helpers/esm/defineProperty\";\nimport WorkerPool from './worker-pool';\nimport WorkerThread from './worker-thread';\nconst DEFAULT_PROPS = {\n  maxConcurrency: 3,\n  maxMobileConcurrency: 1,\n  reuseWorkers: true,\n  onDebug: () => {}\n};\nexport default class WorkerFarm {\n  static isSupported() {\n    return WorkerThread.isSupported();\n  }\n  static getWorkerFarm() {\n    let props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};\n    WorkerFarm._workerFarm = WorkerFarm._workerFarm || new WorkerFarm({});\n    WorkerFarm._workerFarm.setProps(props);\n    return WorkerFarm._workerFarm;\n  }\n  constructor(props) {\n    _defineProperty(this, \"props\", void 0);\n    _defineProperty(this, \"workerPools\", new Map());\n    this.props = {\n      ...DEFAULT_PROPS\n    };\n    this.setProps(props);\n    this.workerPools = new Map();\n  }\n  destroy() {\n    for (const workerPool of this.workerPools.values()) {\n      workerPool.destroy();\n    }\n    this.workerPools = new Map();\n  }\n  setProps(props) {\n    this.props = {\n      ...this.props,\n      ...props\n    };\n    for (const workerPool of this.workerPools.values()) {\n      workerPool.setProps(this._getWorkerPoolProps());\n    }\n  }\n  getWorkerPool(options) {\n    const {\n      name,\n      source,\n      url\n    } = options;\n    let workerPool = this.workerPools.get(name);\n    if (!workerPool) {\n      workerPool = new WorkerPool({\n        name,\n        source,\n        url\n      });\n      workerPool.setProps(this._getWorkerPoolProps());\n      this.workerPools.set(name, workerPool);\n    }\n    return workerPool;\n  }\n  _getWorkerPoolProps() {\n    return {\n      maxConcurrency: this.props.maxConcurrency,\n      maxMobileConcurrency: this.props.maxMobileConcurrency,\n      reuseWorkers: this.props.reuseWorkers,\n      onDebug: this.props.onDebug\n    };\n  }\n}\n_defineProperty(WorkerFarm, \"_workerFarm\", void 0);\n//# sourceMappingURL=worker-farm.js.map",
+      "start": 1693508125684,
+      "end": 1693508125824,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/runtime/Downloader.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class Downloader defines a platform independant download tool.\n */\n/** @internal */\nclass Downloader {\n    // create a new downloader\n    //\n    constructor() {\n    }\n    // download a byte array\n    //\n    async downloadBytes(method, requestURL, requestHeaders, postText, postData, responseHeaders) {\n        return null;\n    }\n    // download a text\n    //\n    async downloadText(method, requestURL, requestHeaders, postText, postData, responseHeaders) {\n        return null;\n    }\n    // download a text without request options\n    //\n    async downloadText2(requestURL) {\n        return null;\n    }\n}\n/** The default instance of this tool for this runtime. This needs to be set by the host application on startup. */\nDownloader.INSTANCE = null;\nexport { Downloader };\n//# sourceMappingURL=Downloader.js.map",
+      "start": 1693508126083,
+      "end": 1693508126239,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/TileProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tile\n */\n/**\n * @internal\n */\nexport var TileContentSource;\n(function (TileContentSource) {\n    TileContentSource[TileContentSource[\"Backend\"] = 0] = \"Backend\";\n    TileContentSource[TileContentSource[\"ExternalCache\"] = 1] = \"ExternalCache\";\n})(TileContentSource || (TileContentSource = {}));\n/**\n * @internal\n */\nexport function getTileObjectReference(iModelId, changesetId, treeId, contentId, guid) {\n    return {\n        baseDirectory: iModelId,\n        relativeDirectory: `tiles/${treeId}/${guid ?? changesetId}`,\n        objectName: contentId,\n    };\n}\n//# sourceMappingURL=TileProps.js.map",
+      "start": 1693508120784,
+      "end": 1693508120835,
+      "sourcemaps": null
+    }
+  ]
+}

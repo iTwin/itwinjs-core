@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/WmsUtilities.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\n/** @internal */\nexport class WmsUtilities {\n    static getBaseUrl(url) {\n        const lastIndex = url.lastIndexOf(\"?\");\n        return lastIndex > 0 ? url.slice(0, lastIndex) : url;\n    }\n}\n//# sourceMappingURL=WmsUtilities.js.map",
+      "start": 1693508121794,
+      "end": 1693508121988,
+      "sourcemaps": null
+    }
+  ]
+}

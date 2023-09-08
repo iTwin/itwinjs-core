@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/ForeignObject.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\nimport { registerMethods } from '../utils/methods.js'\nimport Element from './Element.js'\n\nexport default class ForeignObject extends Element {\r\n  constructor (node) {\r\n    super(nodeOrNew('foreignObject', node), node)\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    foreignObject: wrapWithAttrCheck(function (width, height) {\r\n      return this.put(new ForeignObject()).size(width, height)\r\n    })\r\n  }\r\n})\r\n\r\nregister(ForeignObject, 'ForeignObject')\r\n",
+      "start": 1693508127152,
+      "end": 1693508127199,
+      "sourcemaps": null
+    }
+  ]
+}

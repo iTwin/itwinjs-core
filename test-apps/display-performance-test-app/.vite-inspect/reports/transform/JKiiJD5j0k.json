@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/CopyPickBuffers.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { TextureUnit } from \"../RenderFlags\";\nimport { Texture2DHandle } from \"../Texture\";\nimport { createViewportQuadBuilder } from \"./ViewportQuad\";\nconst computeBaseColor = \"return vec4(1.0);\";\nconst assignFragData = `\r\n  FragColor0 = TEXTURE(u_pickFeatureId, v_texCoord);\r\n  FragColor1 = TEXTURE(u_pickDepthAndOrder, v_texCoord);\r\n`;\n/** @internal */\nexport function createCopyPickBuffersProgram(context) {\n    const builder = createViewportQuadBuilder(true);\n    const frag = builder.frag;\n    frag.set(1 /* FragmentShaderComponent.ComputeBaseColor */, computeBaseColor);\n    frag.addUniform(\"u_pickFeatureId\", 8 /* VariableType.Sampler2D */, (prog) => {\n        prog.addGraphicUniform(\"u_pickFeatureId\", (uniform, params) => {\n            Texture2DHandle.bindSampler(uniform, params.geometry.featureId, TextureUnit.Zero);\n        });\n    }, 3 /* VariablePrecision.High */);\n    frag.addUniform(\"u_pickDepthAndOrder\", 8 /* VariableType.Sampler2D */, (prog) => {\n        prog.addGraphicUniform(\"u_pickDepthAndOrder\", (uniform, params) => {\n            Texture2DHandle.bindSampler(uniform, params.geometry.depthAndOrder, TextureUnit.One);\n        });\n    }, 3 /* VariablePrecision.High */);\n    frag.addDrawBuffersExtension(2);\n    frag.set(16 /* FragmentShaderComponent.AssignFragData */, assignFragData);\n    builder.vert.headerComment = \"//!V! CopyPickBuffers\";\n    builder.frag.headerComment = \"//!F! CopyPickBuffers\";\n    return builder.buildProgram(context);\n}\n//# sourceMappingURL=CopyPickBuffers.js.map",
+      "start": 1693508124639,
+      "end": 1693508124771,
+      "sourcemaps": null
+    }
+  ]
+}

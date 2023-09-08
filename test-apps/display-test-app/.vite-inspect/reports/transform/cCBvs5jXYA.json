@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/defaults.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\r\nexport function noop () {}\r\n\r\n// Default animation values\r\nexport let timeline = {\r\n  duration: 400,\r\n  ease: '>',\r\n  delay: 0\r\n}\r\n\r\n// Default attribute values\r\nexport let attrs = {\r\n\r\n  // fill and stroke\r\n  'fill-opacity': 1,\r\n  'stroke-opacity': 1,\r\n  'stroke-width': 0,\r\n  'stroke-linejoin': 'miter',\r\n  'stroke-linecap': 'butt',\r\n  fill: '#000000',\r\n  stroke: '#000000',\r\n  opacity: 1,\r\n\r\n  // position\r\n  x: 0,\r\n  y: 0,\r\n  cx: 0,\r\n  cy: 0,\r\n\r\n  // size\r\n  width: 0,\r\n  height: 0,\r\n\r\n  // radius\r\n  r: 0,\r\n  rx: 0,\r\n  ry: 0,\r\n\r\n  // gradient\r\n  offset: 0,\r\n  'stop-opacity': 1,\r\n  'stop-color': '#000000',\r\n\r\n  // text\r\n  'text-anchor': 'start'\r\n}\r\n",
+      "start": 1693508127084,
+      "end": 1693508127170,
+      "sourcemaps": null
+    }
+  ]
+}

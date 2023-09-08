@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/ArrayPolyfill.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/* eslint no-new-func: \"off\" */\r\nexport const subClassArray = (function () {\r\n  try {\r\n    // try es6 subclassing\r\n    return Function('name', 'baseClass', '_constructor', [\r\n      'baseClass = baseClass || Array',\r\n      'return {',\r\n      '  [name]: class extends baseClass {',\r\n      '    constructor (...args) {',\r\n      '      super(...args)',\r\n      '      _constructor && _constructor.apply(this, args)',\r\n      '    }',\r\n      '  }',\r\n      '}[name]'\r\n    ].join('\\n'))\r\n  } catch (e) {\r\n    // Use es5 approach\r\n    return (name, baseClass = Array, _constructor) => {\r\n      const Arr = function () {\r\n        baseClass.apply(this, arguments)\r\n        _constructor && _constructor.apply(this, arguments)\r\n      }\r\n\r\n      Arr.prototype = Object.create(baseClass.prototype)\r\n      Arr.prototype.constructor = Arr\r\n\r\n      Arr.prototype.map = function (fn) {\r\n        const arr = new Arr()\r\n        arr.push.apply(arr, Array.prototype.map.call(this, fn))\r\n        return arr\r\n      }\r\n\r\n      return Arr\r\n    }\r\n  }\r\n})()\r\n",
+      "start": 1693508127277,
+      "end": 1693508127367,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/TxnAction.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module iModels\n */\n/** Describes the types of actions associated with [Txns]($docs/learning/InteractiveEditing.md).\n * @public\n * @extensions\n */\nexport var TxnAction;\n(function (TxnAction) {\n    /** Not currently processing anything. */\n    TxnAction[TxnAction[\"None\"] = 0] = \"None\";\n    /** Processing a commit initiated by a call to [IModelDb.saveChanges]($backend) or [BriefcaseConnection.saveChanges]($frontend). */\n    TxnAction[TxnAction[\"Commit\"] = 1] = \"Commit\";\n    /** Abandoning the current Txn, e.g., via [IModelDb.abandonChanges]($backend). */\n    TxnAction[TxnAction[\"Abandon\"] = 2] = \"Abandon\";\n    /** Reversing a previously-committed changeset, e.g., via [TxnManager.reverseTxns]($backend) [BriefcaseTxns.reverseTxns]($frontend). */\n    TxnAction[TxnAction[\"Reverse\"] = 3] = \"Reverse\";\n    /** Reinstating a previously reversed changeset, e.g., via [TxnManager.reinstateTxn]($backend) or [BriefcaseTxns.reinstateTxn]($frontend). */\n    TxnAction[TxnAction[\"Reinstate\"] = 4] = \"Reinstate\";\n    /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullChanges]($backend). */\n    TxnAction[TxnAction[\"Merge\"] = 5] = \"Merge\";\n})(TxnAction || (TxnAction = {}));\n//# sourceMappingURL=TxnAction.js.map",
+      "start": 1693508120787,
+      "end": 1693508120850,
+      "sourcemaps": null
+    }
+  ]
+}

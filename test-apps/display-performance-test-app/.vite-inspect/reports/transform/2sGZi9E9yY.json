@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/LogarithmicDepthBuffer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { assert } from \"@itwin/core-bentley\";\nimport { System } from \"../System\";\nimport { addEyeSpace } from \"./Common\";\n// Based on http://tulrich.com/geekstuff/log_depth_buffer.txt\n// Previously attempted to adjust z in vertex shader along the lines of https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html\n// - but interpolation along triangles intersecting the near plane was far too wonky.\nconst finalizeDepth = \"return 0.0 == u_logZ.x ? -v_eyeSpace.z / u_logZ.y : log(-v_eyeSpace.z * u_logZ.x) / u_logZ.y;\";\n/** @internal */\nexport function addLogDepth(builder) {\n    assert(System.instance.supportsLogZBuffer);\n    addEyeSpace(builder);\n    const frag = builder.frag;\n    frag.addUniform(\"u_logZ\", 3 /* VariableType.Vec2 */, (prog) => {\n        prog.addProgramUniform(\"u_logZ\", (uniform, params) => {\n            uniform.setUniform2fv(params.target.uniforms.frustum.logZ);\n        });\n    });\n    frag.set(18 /* FragmentShaderComponent.FinalizeDepth */, finalizeDepth);\n}\n//# sourceMappingURL=LogarithmicDepthBuffer.js.map",
+      "start": 1693508124680,
+      "end": 1693508124791,
+      "sourcemaps": null
+    }
+  ]
+}

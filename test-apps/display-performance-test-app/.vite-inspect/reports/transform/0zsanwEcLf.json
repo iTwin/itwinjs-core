@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/jwt-decode@3.1.2/node_modules/jwt-decode/build/jwt-decode.esm.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "function e(e){this.message=e}e.prototype=new Error,e.prototype.name=\"InvalidCharacterError\";var r=\"undefined\"!=typeof window&&window.atob&&window.atob.bind(window)||function(r){var t=String(r).replace(/=+$/,\"\");if(t.length%4==1)throw new e(\"'atob' failed: The string to be decoded is not correctly encoded.\");for(var n,o,a=0,i=0,c=\"\";o=t.charAt(i++);~o&&(n=a%4?64*n+o:o,a++%4)?c+=String.fromCharCode(255&n>>(-2*a&6)):0)o=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\".indexOf(o);return c};function t(e){var t=e.replace(/-/g,\"+\").replace(/_/g,\"/\");switch(t.length%4){case 0:break;case 2:t+=\"==\";break;case 3:t+=\"=\";break;default:throw\"Illegal base64url string!\"}try{return function(e){return decodeURIComponent(r(e).replace(/(.)/g,(function(e,r){var t=r.charCodeAt(0).toString(16).toUpperCase();return t.length<2&&(t=\"0\"+t),\"%\"+t})))}(t)}catch(e){return r(t)}}function n(e){this.message=e}function o(e,r){if(\"string\"!=typeof e)throw new n(\"Invalid token specified\");var o=!0===(r=r||{}).header?0:1;try{return JSON.parse(t(e.split(\".\")[o]))}catch(e){throw new n(\"Invalid token specified: \"+e.message)}}n.prototype=new Error,n.prototype.name=\"InvalidTokenError\";export default o;export{n as InvalidTokenError};\n//# sourceMappingURL=jwt-decode.esm.js.map\n",
+      "start": 1693508122077,
+      "end": 1693508122207,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nfunction e(e){this.message=e}e.prototype=new Error,e.prototype.name=\"InvalidCharacterError\";var r=\"undefined\"!=typeof window&&window.atob&&window.atob.bind(window)||function(r){var t=String(r).replace(/=+$/,\"\");if(t.length%4==1)throw new e(\"'atob' failed: The string to be decoded is not correctly encoded.\");for(var n,o,a=0,i=0,c=\"\";o=t.charAt(i++);~o&&(n=a%4?64*n+o:o,a++%4)?c+=String.fromCharCode(255&n>>(-2*a&6)):0)o=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\".indexOf(o);return c};function t(e){var t=e.replace(/-/g,\"+\").replace(/_/g,\"/\");switch(t.length%4){case 0:break;case 2:t+=\"==\";break;case 3:t+=\"=\";break;default:throw\"Illegal base64url string!\"}try{return function(e){return decodeURIComponent(r(e).replace(/(.)/g,(function(e,r){var t=r.charCodeAt(0).toString(16).toUpperCase();return t.length<2&&(t=\"0\"+t),\"%\"+t})))}(t)}catch(e){return r(t)}}function n(e){this.message=e}function o(e,r){if(\"string\"!=typeof e)throw new n(\"Invalid token specified\");var o=!0===(r=r||{}).header?0:1;try{return JSON.parse(t(e.split(\".\")[o]))}catch(e){throw new n(\"Invalid token specified: \"+e.message)}}n.prototype=new Error,n.prototype.name=\"InvalidTokenError\";export default o;export{n as InvalidTokenError};\n//# sourceMappingURL=jwt-decode.esm.js.map",
+      "start": 1693508122207,
+      "end": 1693508122209,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": "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"
+      }
+    }
+  ]
+}

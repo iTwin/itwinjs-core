@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/telemetry/lib/esm/TelemetryClientLoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Logging\n */\n/** Logger categories used by this package\n * @note All logger categories in this package start with the `telemetry-client` prefix.\n * @see [Logger]($bentley)\n * @internal\n */\nexport var TelemetryClientLoggerCategory;\n(function (TelemetryClientLoggerCategory) {\n    /** The logger category used for Telemetry */\n    TelemetryClientLoggerCategory[\"Telemetry\"] = \"telemetry-client.Telemetry\";\n})(TelemetryClientLoggerCategory || (TelemetryClientLoggerCategory = {}));\n//# sourceMappingURL=TelemetryClientLoggerCategory.js.map",
+      "start": 1693508125797,
+      "end": 1693508125851,
+      "sourcemaps": null
+    }
+  ]
+}

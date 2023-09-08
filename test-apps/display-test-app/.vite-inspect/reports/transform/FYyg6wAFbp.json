@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/editor/frontend/lib/esm/DeleteElementsTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Editing\n */\nimport { BentleyError, IModelStatus } from \"@itwin/core-bentley\";\nimport { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from \"@itwin/core-frontend\";\nimport { editorBuiltInCmdIds } from \"@itwin/editor-common\";\nimport { EditTools } from \"./EditTool\";\nimport { basicManipulationIpc } from \"./EditToolIpc\";\n/** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */\nclass DeleteElementsTool extends ElementSetTool {\n    get allowSelectionSet() { return true; }\n    get allowGroups() { return true; }\n    get allowDragSelect() { return true; }\n    get controlKeyContinuesSelection() { return true; }\n    get requireAcceptForSelectionSetOperation() { return false; }\n    async processAgendaImmediate() {\n        try {\n            await EditTools.startCommand({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });\n            if (IModelStatus.Success === await basicManipulationIpc.deleteElements(this.agenda.compressIds()))\n                await this.saveChanges();\n        }\n        catch (err) {\n            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || \"An unknown error occurred.\"));\n        }\n    }\n    async onRestartTool() {\n        const tool = new DeleteElementsTool();\n        if (!await tool.run())\n            return this.exitTool();\n    }\n}\nDeleteElementsTool.toolId = \"DeleteElements\";\nDeleteElementsTool.iconSpec = \"icon-delete\";\nexport { DeleteElementsTool };\n//# sourceMappingURL=DeleteElementsTool.js.map",
+      "start": 1693508122882,
+      "end": 1693508122984,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/io/InStream.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class InStream defines a stream of bytes to read from.\n */\n/** @internal */\nexport class InStream {\n    /**\n     * Create a new stream.\n     */\n    constructor() {\n    }\n    /**\n     * Read the next byte (range 0..255, or -1 at the end of the stream).\n     */\n    read() {\n        /* Override in subclasses */\n        return -1;\n    }\n    /**\n     * Close the stream\n     */\n    close() {\n    }\n}\n//# sourceMappingURL=InStream.js.map",
+      "start": 1693508125684,
+      "end": 1693508125743,
+      "sourcemaps": null
+    }
+  ]
+}

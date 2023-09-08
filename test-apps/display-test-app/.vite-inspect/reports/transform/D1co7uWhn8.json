@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/ComboBox.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nfunction _appendComboBoxEntry(select, entry) {\n    const option = document.createElement(\"option\");\n    option.innerText = entry.name;\n    if (undefined !== entry.value)\n        option.value = entry.value.toString();\n    select.appendChild(option);\n}\n/** @alpha */\nexport function createComboBox(props) {\n    const div = document.createElement(\"div\");\n    let label;\n    if (undefined !== props.name) {\n        label = document.createElement(\"label\");\n        label.htmlFor = props.id;\n        label.innerText = props.name;\n        div.appendChild(label);\n    }\n    const select = document.createElement(\"select\");\n    select.id = props.id;\n    for (const entry of props.entries) {\n        _appendComboBoxEntry(select, entry);\n    }\n    if (undefined !== props.value)\n        select.value = props.value.toString();\n    const handler = props.handler;\n    if (undefined !== handler)\n        select.onchange = () => handler(select);\n    if (undefined !== props.tooltip)\n        div.title = props.tooltip;\n    div.appendChild(select);\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    return { div, label, select };\n}\n//# sourceMappingURL=ComboBox.js.map",
+      "start": 1693508122772,
+      "end": 1693508122869,
+      "sourcemaps": null
+    }
+  ]
+}

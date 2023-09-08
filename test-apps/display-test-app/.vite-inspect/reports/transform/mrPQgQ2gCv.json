@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/items/RelativePosition.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Item\n */\n/** Relative Position for popups\n * @public\n */\nexport var RelativePosition;\n(function (RelativePosition) {\n    RelativePosition[RelativePosition[\"Left\"] = 0] = \"Left\";\n    RelativePosition[RelativePosition[\"Top\"] = 1] = \"Top\";\n    RelativePosition[RelativePosition[\"Right\"] = 2] = \"Right\";\n    RelativePosition[RelativePosition[\"Bottom\"] = 3] = \"Bottom\";\n    RelativePosition[RelativePosition[\"TopLeft\"] = 4] = \"TopLeft\";\n    RelativePosition[RelativePosition[\"TopRight\"] = 5] = \"TopRight\";\n    RelativePosition[RelativePosition[\"BottomLeft\"] = 6] = \"BottomLeft\";\n    RelativePosition[RelativePosition[\"BottomRight\"] = 7] = \"BottomRight\";\n    RelativePosition[RelativePosition[\"RightTop\"] = 8] = \"RightTop\";\n    RelativePosition[RelativePosition[\"LeftTop\"] = 9] = \"LeftTop\";\n})(RelativePosition || (RelativePosition = {}));\n//# sourceMappingURL=RelativePosition.js.map",
+      "start": 1693508124437,
+      "end": 1693508124492,
+      "sourcemaps": null
+    }
+  ]
+}

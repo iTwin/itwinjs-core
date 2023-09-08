@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/core/transformData.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar utils = require('./../utils');\nvar defaults = require('./../defaults');\n\n/**\n * Transform the data for a request or a response\n *\n * @param {Object|String} data The data to be transformed\n * @param {Array} headers The headers for the request or response\n * @param {Array|Function} fns A single function or Array of functions\n * @returns {*} The resulting transformed data\n */\nmodule.exports = function transformData(data, headers, fns) {\n  var context = this || defaults;\n  /*eslint no-param-reassign:0*/\n  utils.forEach(fns, function transform(fn) {\n    data = fn.call(context, data, headers);\n  });\n\n  return data;\n};\n",
+      "start": 1693508125707,
+      "end": 1693508125749,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/utils.js?commonjs-proxy\";\nimport require$$1 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/defaults.js?commonjs-proxy\";\n\n'use strict';\n\nvar utils = require$$0;\nvar defaults = require$$1;\n\n/**\n * Transform the data for a request or a response\n *\n * @param {Object|String} data The data to be transformed\n * @param {Array} headers The headers for the request or response\n * @param {Array|Function} fns A single function or Array of functions\n * @returns {*} The resulting transformed data\n */\nvar transformData = function transformData(data, headers, fns) {\n  var context = this || defaults;\n  /*eslint no-param-reassign:0*/\n  utils.forEach(fns, function transform(fn) {\n    data = fn.call(context, data, headers);\n  });\n\n  return data;\n};\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(transformData);\nexport { transformData as __moduleExports };",
+      "start": 1693508125749,
+      "end": 1693508125789,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;AAAA,YAAY,CAAC;AACb;AACA,IAAI,KAAK,GAAG,UAAqB,CAAC;AAClC,IAAI,QAAQ,GAAG,UAAwB,CAAC;AACxC;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;IACA,aAAc,GAAG,SAAS,aAAa,CAAC,IAAI,EAAE,OAAO,EAAE,GAAG,EAAE;AAC5D,EAAE,IAAI,OAAO,GAAG,IAAI,IAAI,QAAQ,CAAC;AACjC;AACA,EAAE,KAAK,CAAC,OAAO,CAAC,GAAG,EAAE,SAAS,SAAS,CAAC,EAAE,EAAE;AAC5C,IAAI,IAAI,GAAG,EAAE,CAAC,IAAI,CAAC,OAAO,EAAE,IAAI,EAAE,OAAO,CAAC,CAAC;AAC3C,GAAG,CAAC,CAAC;AACL;AACA,EAAE,OAAO,IAAI,CAAC;AACd,CAAC"
+      }
+    }
+  ]
+}

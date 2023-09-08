@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/category/mesh/mesh-utils.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export function getMeshSize(attributes) {\n  let size = 0;\n  for (const attributeName in attributes) {\n    const attribute = attributes[attributeName];\n    if (ArrayBuffer.isView(attribute)) {\n      size += attribute.byteLength * attribute.BYTES_PER_ELEMENT;\n    }\n  }\n  return size;\n}\nexport function getMeshBoundingBox(attributes) {\n  let minX = Infinity;\n  let minY = Infinity;\n  let minZ = Infinity;\n  let maxX = -Infinity;\n  let maxY = -Infinity;\n  let maxZ = -Infinity;\n  const positions = attributes.POSITION ? attributes.POSITION.value : [];\n  const len = positions && positions.length;\n  for (let i = 0; i < len; i += 3) {\n    const x = positions[i];\n    const y = positions[i + 1];\n    const z = positions[i + 2];\n    minX = x < minX ? x : minX;\n    minY = y < minY ? y : minY;\n    minZ = z < minZ ? z : minZ;\n    maxX = x > maxX ? x : maxX;\n    maxY = y > maxY ? y : maxY;\n    maxZ = z > maxZ ? z : maxZ;\n  }\n  return [[minX, minY, minZ], [maxX, maxY, maxZ]];\n}\n//# sourceMappingURL=mesh-utils.js.map",
+      "start": 1693508126398,
+      "end": 1693508126516,
+      "sourcemaps": null
+    }
+  ]
+}

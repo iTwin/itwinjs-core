@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/NumericInput.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @alpha */\nexport function createNumericInput(props, useFloat = false) {\n    const input = document.createElement(\"input\");\n    input.type = \"number\";\n    input.value = props.value.toString();\n    input.onchange = () => {\n        try {\n            const value = useFloat ? parseFloat(input.value) : parseInt(input.value, 10);\n            if (!Number.isNaN(value))\n                props.handler(value, input);\n        }\n        catch (_ex) {\n            //\n        }\n    };\n    if (undefined !== props.id)\n        input.id = props.id;\n    if (undefined !== props.display)\n        input.style.display = props.display;\n    if (undefined !== props.min)\n        input.min = props.min.toString();\n    if (undefined !== props.max)\n        input.max = props.max.toString();\n    if (undefined !== props.step)\n        input.step = props.step.toString();\n    if (undefined !== props.tooltip)\n        input.title = props.tooltip;\n    if (undefined !== props.disabled)\n        input.disabled = props.disabled;\n    if (undefined !== props.parent)\n        props.parent.appendChild(input);\n    return input;\n}\n/** @alpha */\nexport function createLabeledNumericInput(props) {\n    const div = document.createElement(\"div\");\n    if (props.divDisplay)\n        div.style.display = props.divDisplay;\n    const label = document.createElement(\"label\");\n    label.htmlFor = props.id;\n    label.innerText = props.name;\n    div.appendChild(label);\n    const inputProps = { ...props };\n    inputProps.parent = div;\n    inputProps.display = \"inline\";\n    const input = createNumericInput(inputProps, true === props.parseAsFloat);\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    if (undefined !== props.tooltip)\n        div.title = props.tooltip;\n    return { label, div, input };\n}\n//# sourceMappingURL=NumericInput.js.map",
+      "start": 1693508122797,
+      "end": 1693508122912,
+      "sourcemaps": null
+    }
+  ]
+}

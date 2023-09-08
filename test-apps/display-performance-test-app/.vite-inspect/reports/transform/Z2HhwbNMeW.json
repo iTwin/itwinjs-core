@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/spatial/ecrs/OperationMethod.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { Strings } from \"../../system/runtime/Strings\";\n/**\n * Class OperationMethod defines a general method for transforming coordinates.\n *\n * @version 1.0 July 2005\n */\n/** @internal */\nexport class OperationMethod {\n    /**\n     * Create a new method.\n     * @param code the code.\n     * @param name the name.\n     */\n    constructor(code, name, parameters) {\n        this._code = code;\n        this._name = name;\n        this._parameters = parameters;\n    }\n    /**\n     * Get the code.\n     * @return the code.\n     */\n    getCode() {\n        return this._code;\n    }\n    /**\n     * Get the name.\n     * @return the name.\n     */\n    getName() {\n        return this._name;\n    }\n    /**\n     * Get the parameter list.\n     * @return the parameter list.\n     */\n    getParameterList() {\n        return this._parameters;\n    }\n    /**\n     * Check if another method is compatible with this one.\n     * @param other the other method.\n     * @return true if compatible.\n     */\n    isCompatible(other) {\n        //        if (other.getClass()!=this.getClass()) return false;\n        if (Strings.equals(other.getName(), this.getName()) == false)\n            return false;\n        if (other._parameters == null)\n            return false;\n        if (this._parameters == null)\n            return false;\n        if (other._parameters.isCompatible(this._parameters) == false)\n            return false;\n        return true;\n    }\n    /**\n     * Initialize the method before making forward and reverse transforms.\n     * @param operation the operation that is using this method.\n     */\n    initialize(operation) {\n        /* Override when necessary */\n    }\n}\n//# sourceMappingURL=OperationMethod.js.map",
+      "start": 1693508125689,
+      "end": 1693508125750,
+      "sourcemaps": null
+    }
+  ]
+}

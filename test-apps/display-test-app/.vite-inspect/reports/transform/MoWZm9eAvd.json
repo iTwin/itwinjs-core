@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/common/DtaIpcInterface.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nexport const dtaChannel = \"display-test-app/dta\";\r\n\r\nexport interface DtaIpcInterface {\r\n  sayHello: () => Promise<string>;\r\n}\r\n",
+      "start": 1693508121169,
+      "end": 1693508121252,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nexport const dtaChannel = \"display-test-app/dta\";\n",
+      "start": 1693508121252,
+      "end": 1693508121257,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/common/DtaIpcInterface.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nexport const dtaChannel = \"display-test-app/dta\";\r\n\r\nexport interface DtaIpcInterface {\r\n  sayHello: () => Promise<string>;\r\n}\r\n"
+        ],
+        "mappings": ";AAKO,aAAM,aAAa;",
+        "names": []
+      }
+    }
+  ]
+}

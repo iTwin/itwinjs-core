@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/core/createError.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar enhanceError = require('./enhanceError');\n\n/**\n * Create an Error with the specified message, config, error code, request and response.\n *\n * @param {string} message The error message.\n * @param {Object} config The config.\n * @param {string} [code] The error code (for example, 'ECONNABORTED').\n * @param {Object} [request] The request.\n * @param {Object} [response] The response.\n * @returns {Error} The created error.\n */\nmodule.exports = function createError(message, config, code, request, response) {\n  var error = new Error(message);\n  return enhanceError(error, config, code, request, response);\n};\n",
+      "start": 1693508127530,
+      "end": 1693508127572,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/core/enhanceError.js?commonjs-proxy\";\n\nvar createError;\nvar hasRequiredCreateError;\n\nfunction requireCreateError () {\n\tif (hasRequiredCreateError) return createError;\n\thasRequiredCreateError = 1;\n\t'use strict';\n\n\tvar enhanceError = require$$0;\n\n\t/**\n\t * Create an Error with the specified message, config, error code, request and response.\n\t *\n\t * @param {string} message The error message.\n\t * @param {Object} config The config.\n\t * @param {string} [code] The error code (for example, 'ECONNABORTED').\n\t * @param {Object} [request] The request.\n\t * @param {Object} [response] The response.\n\t * @returns {Error} The created error.\n\t */\n\tcreateError = function createError(message, config, code, request, response) {\n\t  var error = new Error(message);\n\t  return enhanceError(error, config, code, request, response);\n\t};\n\treturn createError;\n}\n\nexport { requireCreateError as __require };",
+      "start": 1693508127572,
+      "end": 1693508127573,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,YAAY,GAAG,UAAyB,CAAC;AAC7C;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;AACA,YAAc,GAAG,SAAS,WAAW,CAAC,OAAO,EAAE,MAAM,EAAE,IAAI,EAAE,OAAO,EAAE,QAAQ,EAAE;CAChF,EAAE,IAAI,KAAK,GAAG,IAAI,KAAK,CAAC,OAAO,CAAC,CAAC;CACjC,EAAE,OAAO,YAAY,CAAC,KAAK,EAAE,MAAM,EAAE,IAAI,EAAE,OAAO,EAAE,QAAQ,CAAC,CAAC;CAC9D,CAAC"
+      }
+    }
+  ]
+}

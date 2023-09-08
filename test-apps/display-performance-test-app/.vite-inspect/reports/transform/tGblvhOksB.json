@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export { default as TableBatchBuilder } from './lib/batches/table-batch-builder';\nexport { default as RowTableBatchAggregator } from './lib/batches/row-table-batch-aggregator';\nexport { default as ColumnarTableBatchAggregator } from './lib/batches/columnar-table-batch-aggregator';\nexport { convertToObjectRow, convertToArrayRow } from './lib/utils/row-utils';\nexport { getMeshSize, getMeshBoundingBox } from './category/mesh/mesh-utils';\nexport { deduceMeshSchema, deduceMeshField, makeMeshAttributeMetadata } from './category/mesh/deduce-mesh-schema';\nexport { Schema, Field, DataType, Null, Binary, Bool, Int, Int8, Int16, Int32, Int64, Uint8, Uint16, Uint32, Uint64, Float, Float16, Float32, Float64, Utf8, Date, DateDay, DateMillisecond, Time, TimeMillisecond, TimeSecond, Timestamp, TimestampSecond, TimestampMillisecond, TimestampMicrosecond, TimestampNanosecond, Interval, IntervalDayTime, IntervalYearMonth, FixedSizeList, Struct } from './lib/schema/schema';\nexport { deduceTypeFromColumn, deduceTypeFromValue } from './lib/schema-utils/deduce-column-type';\nexport { getTypeInfo } from './lib/arrow/get-type-info';\nexport { getArrowTypeFromTypedArray } from './lib/arrow/arrow-like-type-utils';\nexport { default as AsyncQueue } from './lib/utils/async-queue';\n//# sourceMappingURL=index.js.map",
+      "start": 1693508124392,
+      "end": 1693508124554,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/serialization/BentleyGeometryFlatBuffer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { BGFBReader } from \"./BGFBReader\";\nimport { BGFBWriter } from \"./BGFBWriter\";\n/**\n * Top level entries to convert between GeometryQuery types and FlatBuffer Bytes.\n * @public\n */\nexport class BentleyGeometryFlatBuffer {\n    constructor() { }\n    /**\n     * Serialize bytes to a flatbuffer.\n     * @public\n     */\n    static geometryToBytes(data, addVersionSignature = false) {\n        return BGFBWriter.geometryToBytes(data, addVersionSignature ? signatureBytes : undefined);\n    }\n    /**\n     * Deserialize bytes from a flatbuffer.\n     *  @public\n     * @param justTheBytes FlatBuffer bytes as created by BGFBWriter.createFlatBuffer (g);\n     */\n    static bytesToGeometry(justTheBytes, hasVersionSignature = false) {\n        return BGFBReader.bytesToGeometry(justTheBytes, hasVersionSignature ? signatureBytes : undefined);\n    }\n}\nconst signatureBytes = new Uint8Array([98, 103, 48, 48, 48, 49, 102, 98]);\n//# sourceMappingURL=BentleyGeometryFlatBuffer.js.map",
+      "start": 1693508124051,
+      "end": 1693508124346,
+      "sourcemaps": null
+    }
+  ]
+}

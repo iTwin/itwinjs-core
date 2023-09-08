@@ -68,6 +68,12 @@ export class PolyfaceData {
   public auxData: PolyfaceAuxData | undefined;
   /** Tagged geometry data */
   public taggedNumericData: TaggedNumericData | undefined;
+  /** OPTIONAL index for moving "across an edge" to an adjacent facet.
+   * * IF PRESENT, k1 = readIndexAroundVertex[k]
+   *   * is an index into this and other index arrays.
+   *   * pointIndex[k1] is a point index in the next facet at the opposite end of the edge starting at pointIndex[k]
+   */
+  public edgeMateReadIndex?: Array<number | undefined>;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
@@ -120,7 +126,7 @@ export class PolyfaceData {
       result.colorIndex = this.colorIndex.slice();
     if (this.auxData)
       result.auxData = this.auxData.clone();
-    if (this.taggedNumericData){
+    if (this.taggedNumericData) {
       result.taggedNumericData = this.taggedNumericData.clone();
     }
     return result;

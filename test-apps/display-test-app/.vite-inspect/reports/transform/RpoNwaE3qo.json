@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/utils/window.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export const globals = {\r\n  window: typeof window === 'undefined' ? null : window,\r\n  document: typeof document === 'undefined' ? null : document\r\n}\r\n\r\nexport function registerWindow (win = null, doc = null) {\r\n  globals.window = win\r\n  globals.document = doc\r\n}\r\n\r\nconst save = {}\r\n\r\nexport function saveWindow () {\r\n  save.window = globals.window\r\n  save.document = globals.document\r\n}\r\n\r\nexport function restoreWindow () {\r\n  globals.window = save.window\r\n  globals.document = save.document\r\n}\r\n\r\nexport function withWindow (win, fn) {\r\n  saveWindow()\r\n  registerWindow(win, win.document)\r\n  fn(win, win.document)\r\n  restoreWindow()\r\n}\r\n\r\nexport function getWindow () {\r\n  return globals.window\r\n}\r\n",
+      "start": 1693508127116,
+      "end": 1693508127183,
+      "sourcemaps": null
+    }
+  ]
+}

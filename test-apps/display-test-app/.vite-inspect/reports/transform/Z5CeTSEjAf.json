@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/env/data.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "module.exports = {\n  \"version\": \"0.25.0\"\n};",
+      "start": 1693508126692,
+      "end": 1693508126739,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nvar data;\nvar hasRequiredData;\n\nfunction requireData () {\n\tif (hasRequiredData) return data;\n\thasRequiredData = 1;\n\tdata = {\n\t  \"version\": \"0.25.0\"\n\t};\n\treturn data;\n}\n\nexport { requireData as __require };",
+      "start": 1693508126739,
+      "end": 1693508126739,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;AAAA,KAAc,GAAG;CACjB,EAAE,SAAS,EAAE,QAAQ;CACrB,CAAC"
+      }
+    }
+  ]
+}

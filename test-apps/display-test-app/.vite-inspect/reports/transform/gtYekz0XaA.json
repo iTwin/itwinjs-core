@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/FetchCloudStorage.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** @internal */\nexport class FetchCloudStorage {\n    async download(input) {\n        if (input.transferType === \"stream\")\n            throw new Error(\"Method not implemented.\");\n        if (this.isUrlInput(input)) {\n            return (await fetch(input.url)).arrayBuffer();\n        }\n        if (!(\"authentication\" in input.transferConfig))\n            throw new Error(\"authentication missing in transferConfig\");\n        const url = `${input.transferConfig.baseUrl}/${this.buildObjectKey(input.reference)}?${input.transferConfig.authentication}`;\n        const resp = await fetch(url);\n        if (!resp.ok)\n            throw new Error(resp.statusText);\n        return resp.arrayBuffer();\n    }\n    buildObjectKey(ref) {\n        const relative = ref.relativeDirectory ? `/${ref.relativeDirectory}` : \"\";\n        return `${ref.baseDirectory}${relative}/${ref.objectName}`;\n    }\n    isUrlInput(input) {\n        return \"url\" in input;\n    }\n    async upload(_input) {\n        throw new Error(\"Method not implemented.\");\n    }\n    async uploadInMultipleParts(_input) {\n        throw new Error(\"Method not implemented.\");\n    }\n}\n//# sourceMappingURL=FetchCloudStorage.js.map",
+      "start": 1693508122153,
+      "end": 1693508122318,
+      "sourcemaps": null
+    }
+  ]
+}

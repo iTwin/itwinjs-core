@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/helpers/normalizeHeaderName.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar utils = require('../utils');\n\nmodule.exports = function normalizeHeaderName(headers, normalizedName) {\n  utils.forEach(headers, function processHeader(value, name) {\n    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {\n      headers[normalizedName] = value;\n      delete headers[name];\n    }\n  });\n};\n",
+      "start": 1693508127236,
+      "end": 1693508127334,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/utils.js?commonjs-proxy\";\n\n'use strict';\n\nvar utils = require$$0;\n\nvar normalizeHeaderName = function normalizeHeaderName(headers, normalizedName) {\n  utils.forEach(headers, function processHeader(value, name) {\n    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {\n      headers[normalizedName] = value;\n      delete headers[name];\n    }\n  });\n};\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(normalizeHeaderName);\nexport { normalizeHeaderName as __moduleExports };",
+      "start": 1693508127334,
+      "end": 1693508127335,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA,IAAI,KAAK,GAAG,UAAmB,CAAC;AAChC;IACA,mBAAc,GAAG,SAAS,mBAAmB,CAAC,OAAO,EAAE,cAAc,EAAE;AACvE,EAAE,KAAK,CAAC,OAAO,CAAC,OAAO,EAAE,SAAS,aAAa,CAAC,KAAK,EAAE,IAAI,EAAE;AAC7D,IAAI,IAAI,IAAI,KAAK,cAAc,IAAI,IAAI,CAAC,WAAW,EAAE,KAAK,cAAc,CAAC,WAAW,EAAE,EAAE;AACxF,MAAM,OAAO,CAAC,cAAc,CAAC,GAAG,KAAK,CAAC;AACtC,MAAM,OAAO,OAAO,CAAC,IAAI,CAAC,CAAC;AAC3B,KAAK;AACL,GAAG,CAAC,CAAC;AACL,CAAC"
+      }
+    }
+  ]
+}

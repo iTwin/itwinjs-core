@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Ellipse.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { proportionalSize } from '../utils/utils.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport SVGNumber from '../types/SVGNumber.js'\r\nimport Shape from './Shape.js'\r\nimport * as circled from '../modules/core/circled.js'\r\n\r\nexport default class Ellipse extends Shape {\r\n  constructor (node) {\r\n    super(nodeOrNew('ellipse', node), node)\r\n  }\r\n\r\n  size (width, height) {\r\n    var p = proportionalSize(this, width, height)\r\n\r\n    return this\r\n      .rx(new SVGNumber(p.width).divide(2))\r\n      .ry(new SVGNumber(p.height).divide(2))\r\n  }\r\n}\r\n\r\nextend(Ellipse, circled)\r\n\r\nregisterMethods('Container', {\r\n  // Create an ellipse\r\n  ellipse: wrapWithAttrCheck(function (width = 0, height = width) {\r\n    return this.put(new Ellipse()).size(width, height).move(0, 0)\r\n  })\r\n})\r\n\r\nregister(Ellipse, 'Ellipse')\r\n",
+      "start": 1693508127003,
+      "end": 1693508127061,
+      "sourcemaps": null
+    }
+  ]
+}

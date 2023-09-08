@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/mapLayersFormats.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module MapLayersFormats\n */\nimport { assert } from \"@itwin/core-bentley\";\nimport { IModelApp } from \"@itwin/core-frontend\";\nimport { ArcGisFeatureMapLayerFormat } from \"./ArcGisFeature/ArcGisFeatureFormat\";\nimport { MapFeatureInfoTool } from \"./Tools/MapFeatureInfoTool\";\n/** The primary API for the `@itwin/map-layers-formats` package. It allows the package's features to be [[initialize]]d.\n * @beta\n */\nclass MapLayersFormats {\n    /** Registers the [MapLayerFormat]($frontend)s provided by this package for use with [IModelApp]($frontend).\n     * Typically, an application will call `MapLayersFormats.initialize` immediately after [IModelApp.startup]($frontend).\n     * This function has no effect if called **before** [IModelApp.startup]($frontend) or **after** [IModelApp.shutdown]($frontend).\n     */\n    static async initialize(config) {\n        assert(IModelApp.initialized, \"MapLayersFormats.initialize must be called after IModelApp.startup and before IModelApp.shutdown\");\n        if (IModelApp.initialized)\n            IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);\n        // register namespace containing localized strings for this package\n        MapLayersFormats.localization = config?.localization ?? IModelApp.localization;\n        await MapLayersFormats.localization.registerNamespace(MapLayersFormats.localizationNamespace);\n        MapFeatureInfoTool.register(MapLayersFormats.localizationNamespace);\n    }\n    /** The internationalization service namespace. */\n    static get localizationNamespace() {\n        return MapLayersFormats._defaultNs;\n    }\n}\nMapLayersFormats._defaultNs = \"mapLayersFormats\";\nexport { MapLayersFormats };\n//# sourceMappingURL=mapLayersFormats.js.map",
+      "start": 1693508122957,
+      "end": 1693508123146,
+      "sourcemaps": null
+    }
+  ]
+}

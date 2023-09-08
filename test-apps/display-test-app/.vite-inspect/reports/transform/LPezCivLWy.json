@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Symbol.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Container from './Container.js'\r\n\r\nexport default class Symbol extends Container {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('symbol', node), node)\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    symbol: wrapWithAttrCheck(function () {\r\n      return this.put(new Symbol())\r\n    })\r\n  }\r\n})\r\n\r\nregister(Symbol, 'Symbol')\r\n",
+      "start": 1693508127075,
+      "end": 1693508127158,
+      "sourcemaps": null
+    }
+  ]
+}

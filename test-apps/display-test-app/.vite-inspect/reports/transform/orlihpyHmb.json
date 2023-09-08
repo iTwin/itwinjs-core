@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/animation/Queue.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export default class Queue {\r\n  constructor () {\r\n    this._first = null\r\n    this._last = null\r\n  }\r\n\r\n  push (value) {\r\n    // An item stores an id and the provided value\r\n    var item = value.next ? value : { value: value, next: null, prev: null }\r\n\r\n    // Deal with the queue being empty or populated\r\n    if (this._last) {\r\n      item.prev = this._last\r\n      this._last.next = item\r\n      this._last = item\r\n    } else {\r\n      this._last = item\r\n      this._first = item\r\n    }\r\n\r\n    // Return the current item\r\n    return item\r\n  }\r\n\r\n  shift () {\r\n    // Check if we have a value\r\n    var remove = this._first\r\n    if (!remove) return null\r\n\r\n    // If we do, remove it and relink things\r\n    this._first = remove.next\r\n    if (this._first) this._first.prev = null\r\n    this._last = this._first ? this._last : null\r\n    return remove.value\r\n  }\r\n\r\n  // Shows us the first item in the list\r\n  first () {\r\n    return this._first && this._first.value\r\n  }\r\n\r\n  // Shows us the last item in the list\r\n  last () {\r\n    return this._last && this._last.value\r\n  }\r\n\r\n  // Removes the item that was returned from the push\r\n  remove (item) {\r\n    // Relink the previous item\r\n    if (item.prev) item.prev.next = item.next\r\n    if (item.next) item.next.prev = item.prev\r\n    if (item === this._last) this._last = item.prev\r\n    if (item === this._first) this._first = item.next\r\n\r\n    // Invalidate item\r\n    item.prev = null\r\n    item.next = null\r\n  }\r\n}\r\n",
+      "start": 1693508127128,
+      "end": 1693508127184,
+      "sourcemaps": null
+    }
+  ]
+}

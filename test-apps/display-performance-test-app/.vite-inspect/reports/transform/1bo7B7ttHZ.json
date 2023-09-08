@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/helpers/bind.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nmodule.exports = function bind(fn, thisArg) {\n  return function wrap() {\n    var args = new Array(arguments.length);\n    for (var i = 0; i < args.length; i++) {\n      args[i] = arguments[i];\n    }\n    return fn.apply(thisArg, args);\n  };\n};\n",
+      "start": 1693508125403,
+      "end": 1693508125461,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\n'use strict';\n\nvar bind = function bind(fn, thisArg) {\n  return function wrap() {\n    var args = new Array(arguments.length);\n    for (var i = 0; i < args.length; i++) {\n      args[i] = arguments[i];\n    }\n    return fn.apply(thisArg, args);\n  };\n};\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(bind);\nexport { bind as __moduleExports };",
+      "start": 1693508125462,
+      "end": 1693508125462,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;AAAA,YAAY,CAAC;AACb;IACA,IAAc,GAAG,SAAS,IAAI,CAAC,EAAE,EAAE,OAAO,EAAE;AAC5C,EAAE,OAAO,SAAS,IAAI,GAAG;AACzB,IAAI,IAAI,IAAI,GAAG,IAAI,KAAK,CAAC,SAAS,CAAC,MAAM,CAAC,CAAC;AAC3C,IAAI,KAAK,IAAI,CAAC,GAAG,CAAC,EAAE,CAAC,GAAG,IAAI,CAAC,MAAM,EAAE,CAAC,EAAE,EAAE;AAC1C,MAAM,IAAI,CAAC,CAAC,CAAC,GAAG,SAAS,CAAC,CAAC,CAAC,CAAC;AAC7B,KAAK;AACL,IAAI,OAAO,EAAE,CAAC,KAAK,CAAC,OAAO,EAAE,IAAI,CAAC,CAAC;AACnC,GAAG,CAAC;AACJ,CAAC"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/render/primitives/VertexTable.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\nimport { assert } from \"@itwin/core-bentley\";\n/** @internal */\nexport function computeDimensions(nEntries, nRgbaPerEntry, nExtraRgba, maxSize) {\n    const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;\n    if (nRgba < maxSize)\n        return { width: nRgba, height: 1 };\n    // Make roughly square to reduce unused space in last row\n    let width = Math.ceil(Math.sqrt(nRgba));\n    // Ensure a given entry's RGBA values all fit on the same row.\n    const remainder = width % nRgbaPerEntry;\n    if (0 !== remainder) {\n        width += nRgbaPerEntry - remainder;\n    }\n    // Compute height\n    let height = Math.ceil(nRgba / width);\n    if (width * height < nRgba)\n        ++height;\n    assert(height <= maxSize);\n    assert(width <= maxSize);\n    assert(width * height >= nRgba);\n    assert(Math.floor(height) === height);\n    assert(Math.floor(width) === width);\n    // Row padding should never be necessary...\n    assert(0 === width % nRgbaPerEntry);\n    return { width, height };\n}\n//# sourceMappingURL=VertexTable.js.map",
+      "start": 1693508118737,
+      "end": 1693508118950,
+      "sourcemaps": null
+    }
+  ]
+}

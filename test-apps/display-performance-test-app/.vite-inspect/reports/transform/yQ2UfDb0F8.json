@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/WhiteOnWhiteReversalSettings.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module DisplayStyles\n */\n/** As part of a [[DisplayStyleSettings]], controls how white-on-white reversal is applied to make white geometry more\n * visible in the view.\n * By default, pure white geometry is displayed as black instead if the [[DisplayStyleSettings.backgroundColor]] is also pure white.\n * These settings are only applied if the display style's [[ViewFlags.whiteOnWhiteReversal]] flag is enabled.\n * @see [[DisplayStyleSettings.whiteOnWhiteReversal]] to change these settings for a display style.\n * @public\n */\nclass WhiteOnWhiteReversalSettings {\n    constructor(ignoreBackground) {\n        this.ignoreBackgroundColor = ignoreBackground;\n    }\n    /** Create from JSON representation. */\n    static fromJSON(props) {\n        return props?.ignoreBackgroundColor ? this._noIgnore : this._ignore;\n    }\n    /** Convert to JSON representation. The JSON representation is `undefined` if these settings match the defaults. */\n    toJSON() {\n        return this.ignoreBackgroundColor ? { ignoreBackgroundColor: true } : undefined;\n    }\n    /** Returns true if `this` is equivalent to `other`. */\n    equals(other) {\n        return this === other;\n    }\n}\nWhiteOnWhiteReversalSettings._noIgnore = new WhiteOnWhiteReversalSettings(true);\nWhiteOnWhiteReversalSettings._ignore = new WhiteOnWhiteReversalSettings(false);\nexport { WhiteOnWhiteReversalSettings };\n//# sourceMappingURL=WhiteOnWhiteReversalSettings.js.map",
+      "start": 1693508120924,
+      "end": 1693508121002,
+      "sourcemaps": null
+    }
+  ]
+}

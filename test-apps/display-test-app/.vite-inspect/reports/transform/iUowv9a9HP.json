@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/ChangeUnitsTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tools\n */\nimport { IModelApp, Tool } from \"@itwin/core-frontend\";\nimport { parseToggle } from \"./parseToggle\";\n// CSpell: ignore fmtr\n/** Controls whether quantities are formatted using imperial or metric units.\n * Such formatting is used in many places; one example is the output of the MeasureTool.\n * @beta\n */\nclass ChangeUnitsTool extends Tool {\n    static get minArgs() { return 0; }\n    static get maxArgs() { return 1; }\n    // support boolean for backwards compatibility\n    async run(useMetric) {\n        const fmtr = IModelApp.quantityFormatter;\n        // if no arg then toggle to metric from any non-metric unit system\n        const useImperial = undefined !== useMetric ? !useMetric : fmtr.activeUnitSystem === \"metric\";\n        const unitSystem = useImperial ? \"imperial\" : \"metric\";\n        if (unitSystem !== fmtr.activeUnitSystem) {\n            await fmtr.setActiveUnitSystem(unitSystem);\n            await IModelApp.toolAdmin.startDefaultTool();\n        }\n        return true;\n    }\n    async parseAndRun(...args) {\n        const enable = parseToggle(args[0]);\n        if (typeof enable !== \"string\")\n            await this.run(enable);\n        return true;\n    }\n}\nChangeUnitsTool.toolId = \"ChangeUnits\";\nexport { ChangeUnitsTool };\n//# sourceMappingURL=ChangeUnitsTool.js.map",
+      "start": 1693508122619,
+      "end": 1693508122717,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/properties/FormattedQuantityDescription.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\nimport { Parser } from \"@itwin/core-quantity\";\nimport { BaseQuantityDescription } from \"@itwin/appui-abstract\";\nimport { IModelApp } from \"../IModelApp\";\n/**\n * Base Quantity Property Description\n * @beta\n */\nexport class FormattedQuantityDescription extends BaseQuantityDescription {\n    constructor(name, displayLabel, iconSpec) {\n        super(name, displayLabel, iconSpec);\n    }\n    formatValue(numberValue) {\n        if (this.formatterSpec) {\n            return IModelApp.quantityFormatter.formatQuantity(numberValue, this.formatterSpec);\n        }\n        return numberValue.toFixed(2);\n    }\n    parseString(userInput) {\n        if (this.parserSpec) {\n            const parseResult = IModelApp.quantityFormatter.parseToQuantityValue(userInput, this.parserSpec);\n            if (Parser.isParsedQuantity(parseResult)) {\n                return { value: parseResult.value };\n            }\n            else {\n                return { parseError: this.parseError };\n            }\n        }\n        return { parseError: \"no parser defined\" };\n    }\n    get formatterSpec() {\n        if (this._formatterSpec)\n            return this._formatterSpec;\n        const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(this.formatterQuantityType);\n        if (formatterSpec) {\n            this._formatterSpec = formatterSpec;\n            return formatterSpec;\n        }\n        return undefined;\n    }\n    get parserSpec() {\n        if (this._parserSpec)\n            return this._parserSpec;\n        const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(this.formatterQuantityType);\n        if (parserSpec) {\n            this._parserSpec = parserSpec;\n            return parserSpec;\n        }\n        return undefined;\n    }\n}\n//# sourceMappingURL=FormattedQuantityDescription.js.map",
+      "start": 1693508119661,
+      "end": 1693508119869,
+      "sourcemaps": null
+    }
+  ]
+}

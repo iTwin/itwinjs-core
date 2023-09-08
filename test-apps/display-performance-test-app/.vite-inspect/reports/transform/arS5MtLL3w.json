@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/category/mesh/deduce-mesh-schema.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { Schema, Field, FixedSizeList } from '../../lib/schema/schema';\nimport { getArrowTypeFromTypedArray } from '../../lib/arrow/arrow-like-type-utils';\nexport function deduceMeshSchema(attributes, metadata) {\n  const fields = deduceMeshFields(attributes);\n  return new Schema(fields, metadata);\n}\nexport function deduceMeshField(attributeName, attribute, optionalMetadata) {\n  const type = getArrowTypeFromTypedArray(attribute.value);\n  const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);\n  const field = new Field(attributeName, new FixedSizeList(attribute.size, new Field('value', type)), false, metadata);\n  return field;\n}\nfunction deduceMeshFields(attributes) {\n  const fields = [];\n  for (const attributeName in attributes) {\n    const attribute = attributes[attributeName];\n    fields.push(deduceMeshField(attributeName, attribute));\n  }\n  return fields;\n}\nexport function makeMeshAttributeMetadata(attribute) {\n  const result = new Map();\n  if ('byteOffset' in attribute) {\n    result.set('byteOffset', attribute.byteOffset.toString(10));\n  }\n  if ('byteStride' in attribute) {\n    result.set('byteStride', attribute.byteStride.toString(10));\n  }\n  if ('normalized' in attribute) {\n    result.set('normalized', attribute.normalized.toString());\n  }\n  return result;\n}\n//# sourceMappingURL=deduce-mesh-schema.js.map",
+      "start": 1693508125022,
+      "end": 1693508125153,
+      "sourcemaps": null
+    }
+  ]
+}

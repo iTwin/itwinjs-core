@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+draco@3.4.7/node_modules/@loaders.gl/draco/dist/esm/lib/utils/get-draco-schema.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { deduceMeshField } from '@loaders.gl/schema';\nimport { Schema } from '@loaders.gl/schema';\nexport function getDracoSchema(attributes, loaderData, indices) {\n  const metadataMap = makeMetadata(loaderData.metadata);\n  const fields = [];\n  const namedLoaderDataAttributes = transformAttributesLoaderData(loaderData.attributes);\n  for (const attributeName in attributes) {\n    const attribute = attributes[attributeName];\n    const field = getArrowFieldFromAttribute(attributeName, attribute, namedLoaderDataAttributes[attributeName]);\n    fields.push(field);\n  }\n  if (indices) {\n    const indicesField = getArrowFieldFromAttribute('indices', indices);\n    fields.push(indicesField);\n  }\n  return new Schema(fields, metadataMap);\n}\nfunction transformAttributesLoaderData(loaderData) {\n  const result = {};\n  for (const key in loaderData) {\n    const dracoAttribute = loaderData[key];\n    result[dracoAttribute.name || 'undefined'] = dracoAttribute;\n  }\n  return result;\n}\nfunction getArrowFieldFromAttribute(attributeName, attribute, loaderData) {\n  const metadataMap = loaderData ? makeMetadata(loaderData.metadata) : undefined;\n  const field = deduceMeshField(attributeName, attribute, metadataMap);\n  return field;\n}\nfunction makeMetadata(metadata) {\n  const metadataMap = new Map();\n  for (const key in metadata) {\n    metadataMap.set(\"\".concat(key, \".string\"), JSON.stringify(metadata[key]));\n  }\n  return metadataMap;\n}\n//# sourceMappingURL=get-draco-schema.js.map",
+      "start": 1693508125632,
+      "end": 1693508125804,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/properties/AngleDescription.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\nimport { IModelApp } from \"../IModelApp\";\nimport { QuantityType } from \"../quantity-formatting/QuantityFormatter\";\nimport { FormattedQuantityDescription } from \"./FormattedQuantityDescription\";\n/**\n * Angle Property Description\n * @beta\n */\nexport class AngleDescription extends FormattedQuantityDescription {\n    constructor(name, displayLabel, iconSpec) {\n        const defaultName = \"angle\";\n        super(name ? name : defaultName, displayLabel ? displayLabel : IModelApp.localization.getLocalizedString(\"iModelJs:Properties.Angle\"), iconSpec);\n    }\n    get formatterQuantityType() { return QuantityType.Angle; }\n    get quantityType() { return \"Angle\"; }\n    get parseError() { return IModelApp.localization.getLocalizedString(\"iModelJs:Properties.UnableToParseAngle\"); }\n}\n//# sourceMappingURL=AngleDescription.js.map",
+      "start": 1693508119356,
+      "end": 1693508119587,
+      "sourcemaps": null
+    }
+  ]
+}

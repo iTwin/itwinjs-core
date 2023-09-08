@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/storage/CachedItem.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class CachedItem stores a single entry in a cache of items.\n */\n/** @internal */\nexport class CachedItem {\n    /**\n     * Create a new item.\n     */\n    constructor(key, element, accessTime) {\n        this.key = key;\n        this.element = element;\n        this.accessTime = accessTime;\n    }\n}\n//# sourceMappingURL=CachedItem.js.map",
+      "start": 1693508127214,
+      "end": 1693508127295,
+      "sourcemaps": null
+    }
+  ]
+}

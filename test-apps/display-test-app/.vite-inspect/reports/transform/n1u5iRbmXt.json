@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/List.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { extend } from '../utils/adopter.js'\r\nimport { subClassArray } from './ArrayPolyfill.js'\r\n\r\nconst List = subClassArray('List', Array, function (arr = []) {\r\n  // This catches the case, that native map tries to create an array with new Array(1)\r\n  if (typeof arr === 'number') return this\r\n  this.length = 0\r\n  this.push(...arr)\r\n})\r\n\r\nexport default List\r\n\r\nextend(List, {\r\n  each (fnOrMethodName, ...args) {\r\n    if (typeof fnOrMethodName === 'function') {\r\n      return this.map((el) => {\r\n        return fnOrMethodName.call(el, el)\r\n      })\r\n    } else {\r\n      return this.map(el => {\r\n        return el[fnOrMethodName](...args)\r\n      })\r\n    }\r\n  },\r\n\r\n  toArray () {\r\n    return Array.prototype.concat.apply([], this)\r\n  }\r\n})\r\n\r\nconst reserved = ['toArray', 'constructor', 'each']\r\n\r\nList.extend = function (methods) {\r\n  methods = methods.reduce((obj, name) => {\r\n    // Don't overwrite own methods\r\n    if (reserved.includes(name)) return obj\r\n\r\n    // Don't add private methods\r\n    if (name[0] === '_') return obj\r\n\r\n    // Relay every call to each()\r\n    obj[name] = function (...attrs) {\r\n      return this.each(name, ...attrs)\r\n    }\r\n    return obj\r\n  }, {})\r\n\r\n  extend(List, methods)\r\n}\r\n",
+      "start": 1693508127013,
+      "end": 1693508127084,
+      "sourcemaps": null
+    }
+  ]
+}

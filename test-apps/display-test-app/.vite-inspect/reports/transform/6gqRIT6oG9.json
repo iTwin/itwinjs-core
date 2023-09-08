@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/EventTarget.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { dispatch, off, on } from '../modules/core/event.js'\nimport { register } from '../utils/adopter.js'\nimport Base from './Base.js'\n\r\nexport default class EventTarget extends Base {\r\n  constructor ({ events = {} } = {}) {\r\n    super()\r\n    this.events = events\r\n  }\r\n\r\n  addEventListener () {}\r\n\r\n  dispatch (event, data) {\r\n    return dispatch(this, event, data)\r\n  }\r\n\r\n  dispatchEvent (event) {\r\n    const bag = this.getEventHolder().events\r\n    if (!bag) return true\r\n\r\n    const events = bag[event.type]\r\n\r\n    for (let i in events) {\r\n      for (let j in events[i]) {\r\n        events[i][j](event)\r\n      }\r\n    }\r\n\r\n    return !event.defaultPrevented\r\n  }\r\n\r\n  // Fire given event\r\n  fire (event, data) {\r\n    this.dispatch(event, data)\r\n    return this\r\n  }\r\n\r\n  getEventHolder () {\r\n    return this\r\n  }\r\n\r\n  getEventTarget () {\r\n    return this\r\n  }\r\n\r\n  // Unbind event from listener\r\n  off (event, listener) {\r\n    off(this, event, listener)\r\n    return this\r\n  }\r\n\r\n  // Bind given event to listener\r\n  on (event, listener, binding, options) {\r\n    on(this, event, listener, binding, options)\r\n    return this\r\n  }\r\n\r\n  removeEventListener () {}\r\n}\r\n\r\nregister(EventTarget, 'EventTarget')\r\n",
+      "start": 1693508127004,
+      "end": 1693508127074,
+      "sourcemaps": null
+    }
+  ]
+}

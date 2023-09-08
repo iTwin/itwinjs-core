@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/primitives/Strokes.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** @internal */\nexport class StrokesPrimitivePointList {\n    constructor(points = []) { this.points = [...points]; }\n}\n/** @internal */\nexport class StrokesPrimitivePointLists extends Array {\n    constructor(...args) {\n        super(...args);\n    }\n}\n/** @internal */\nexport class StrokesPrimitive {\n    static create(params, isDisjoint, isPlanar) {\n        return new StrokesPrimitive(params, isDisjoint, isPlanar);\n    }\n    constructor(params, isDisjoint, isPlanar) {\n        this.displayParams = params;\n        this.strokes = new StrokesPrimitivePointLists();\n        this.isDisjoint = isDisjoint;\n        this.isPlanar = isPlanar;\n    }\n    transform(trans) {\n        for (const strk of this.strokes) {\n            trans.multiplyPoint3dArrayInPlace(strk.points);\n        }\n    }\n}\n/** @internal */\nexport class StrokesPrimitiveList extends Array {\n    constructor(...args) {\n        super(...args);\n    }\n}\n//# sourceMappingURL=Strokes.js.map",
+      "start": 1693508119944,
+      "end": 1693508120024,
+      "sourcemaps": null
+    }
+  ]
+}

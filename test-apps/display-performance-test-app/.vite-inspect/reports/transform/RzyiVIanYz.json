@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/geometry3d/XYZProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module CartesianGeometry\n */\nimport { Geometry } from \"../Geometry\";\n/** @public */\nexport var XYAndZ;\n(function (XYAndZ) {\n    /**\n     * Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.\n     * @param a The first XYAndZ to compare\n     * @param b The second XYAndZ to compare\n     * @param The tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.\n     * @returns true if the difference in each coordinate of `a` and `b` is smaller than `tol`.\n     */\n    function almostEqual(a, b, tol) {\n        return Geometry.isSameCoordinate(a.x, b.x, tol)\n            && Geometry.isSameCoordinate(a.y, b.y, tol)\n            && Geometry.isSameCoordinate(a.z, b.z, tol);\n    }\n    XYAndZ.almostEqual = almostEqual;\n})(XYAndZ || (XYAndZ = {}));\n//# sourceMappingURL=XYZProps.js.map",
+      "start": 1693508122421,
+      "end": 1693508122605,
+      "sourcemaps": null
+    }
+  ]
+}

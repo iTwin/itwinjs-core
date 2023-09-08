@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/IModelError.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module iModels\n */\nimport { BentleyError, IModelStatus, RepositoryStatus, } from \"@itwin/core-bentley\";\nexport { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, DbResult, ChangeSetStatus, } from \"@itwin/core-bentley\";\n/** The error type thrown by this module.\n * @see [[IModelErrorNumber]] for commonly-used error codes.\n * @public\n */\nexport class IModelError extends BentleyError {\n    constructor(errorNumber, message, getMetaData) {\n        super(errorNumber, message, getMetaData);\n    }\n}\n/** @public */\nexport class ServerError extends IModelError {\n    constructor(errorNumber, message) {\n        super(errorNumber, message);\n        this.name = `Server error (${errorNumber})`;\n    }\n}\n/** @public */\nexport class ServerTimeoutError extends ServerError {\n    constructor(message) {\n        super(IModelStatus.ServerTimeout, message);\n        this.name = \"Server timeout error\";\n    }\n}\n/** @public */\nexport class BackendError extends IModelError {\n    constructor(errorNumber, name, message, getMetaData) {\n        super(errorNumber, message, getMetaData);\n        this.name = name;\n    }\n}\n/**\n * Channel constraint error\n * @alpha\n */\nexport class ChannelConstraintError extends IModelError {\n    constructor(message, getMetaData) {\n        super(RepositoryStatus.ChannelConstraintViolation, message, getMetaData);\n    }\n}\n/** Intended for API \"no content\" semantics where the error case should not trigger application failure monitoring systems.\n * @public\n */\nexport class NoContentError extends IModelError {\n    constructor() {\n        super(IModelStatus.NoContent, \"No Content\");\n    }\n}\n//# sourceMappingURL=IModelError.js.map",
+      "start": 1693508120660,
+      "end": 1693508120719,
+      "sourcemaps": null
+    }
+  ]
+}

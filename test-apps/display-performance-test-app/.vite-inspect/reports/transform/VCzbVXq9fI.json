@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/MassProperties.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Geometry\n */\n/** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.\n * @public\n * @extensions\n */\nexport var MassPropertiesOperation;\n(function (MassPropertiesOperation) {\n    /** Return lengths for open paths and planar regions. */\n    MassPropertiesOperation[MassPropertiesOperation[\"AccumulateLengths\"] = 0] = \"AccumulateLengths\";\n    /** Return areas and perimeters for solid and surface geometry. */\n    MassPropertiesOperation[MassPropertiesOperation[\"AccumulateAreas\"] = 1] = \"AccumulateAreas\";\n    /** Return volumes and areas for solid geometry. */\n    MassPropertiesOperation[MassPropertiesOperation[\"AccumulateVolumes\"] = 2] = \"AccumulateVolumes\";\n})(MassPropertiesOperation || (MassPropertiesOperation = {}));\n//# sourceMappingURL=MassProperties.js.map",
+      "start": 1693508120703,
+      "end": 1693508120752,
+      "sourcemaps": null
+    }
+  ]
+}

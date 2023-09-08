@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/helpers/combineURLs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\n/**\n * Creates a new URL by combining the specified URLs\n *\n * @param {string} baseURL The base URL\n * @param {string} relativeURL The relative URL\n * @returns {string} The combined URL\n */\nmodule.exports = function combineURLs(baseURL, relativeURL) {\n  return relativeURL\n    ? baseURL.replace(/\\/+$/, '') + '/' + relativeURL.replace(/^\\/+/, '')\n    : baseURL;\n};\n",
+      "start": 1693508125756,
+      "end": 1693508125784,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nvar combineURLs;\nvar hasRequiredCombineURLs;\n\nfunction requireCombineURLs () {\n\tif (hasRequiredCombineURLs) return combineURLs;\n\thasRequiredCombineURLs = 1;\n\t'use strict';\n\n\t/**\n\t * Creates a new URL by combining the specified URLs\n\t *\n\t * @param {string} baseURL The base URL\n\t * @param {string} relativeURL The relative URL\n\t * @returns {string} The combined URL\n\t */\n\tcombineURLs = function combineURLs(baseURL, relativeURL) {\n\t  return relativeURL\n\t    ? baseURL.replace(/\\/+$/, '') + '/' + relativeURL.replace(/^\\/+/, '')\n\t    : baseURL;\n\t};\n\treturn combineURLs;\n}\n\nexport { requireCombineURLs as __require };",
+      "start": 1693508125784,
+      "end": 1693508125784,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;CAAA,YAAY,CAAC;AACb;CACA;CACA;CACA;CACA;CACA;CACA;CACA;AACA,YAAc,GAAG,SAAS,WAAW,CAAC,OAAO,EAAE,WAAW,EAAE;CAC5D,EAAE,OAAO,WAAW;CACpB,MAAM,OAAO,CAAC,OAAO,CAAC,MAAM,EAAE,EAAE,CAAC,GAAG,GAAG,GAAG,WAAW,CAAC,OAAO,CAAC,MAAM,EAAE,EAAE,CAAC;CACzE,MAAM,OAAO,CAAC;CACd,CAAC"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/cancel/isCancel.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nmodule.exports = function isCancel(value) {\n  return !!(value && value.__CANCEL__);\n};\n",
+      "start": 1693508125517,
+      "end": 1693508125602,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nvar isCancel;\nvar hasRequiredIsCancel;\n\nfunction requireIsCancel () {\n\tif (hasRequiredIsCancel) return isCancel;\n\thasRequiredIsCancel = 1;\n\t'use strict';\n\n\tisCancel = function isCancel(value) {\n\t  return !!(value && value.__CANCEL__);\n\t};\n\treturn isCancel;\n}\n\nexport { requireIsCancel as __require };",
+      "start": 1693508125602,
+      "end": 1693508125603,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;CAAA,YAAY,CAAC;AACb;AACA,SAAc,GAAG,SAAS,QAAQ,CAAC,KAAK,EAAE;CAC1C,EAAE,OAAO,CAAC,EAAE,KAAK,IAAI,KAAK,CAAC,UAAU,CAAC,CAAC;CACvC,CAAC"
+      }
+    }
+  ]
+}

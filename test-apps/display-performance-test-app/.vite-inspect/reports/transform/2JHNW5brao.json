@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/MapLayerAuthentication.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module MapLayers\n */\nexport {};\n//# sourceMappingURL=MapLayerAuthentication.js.map",
+      "start": 1693508121659,
+      "end": 1693508121821,
+      "sourcemaps": null
+    }
+  ]
+}

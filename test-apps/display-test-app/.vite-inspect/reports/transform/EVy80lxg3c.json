@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ChangesetProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * @packageDocumentation\n * @module iModels\n */\n/** Value to indicate whether a changeset contains schema changes or not\n * @public\n * @extensions\n */\nexport var ChangesetType;\n(function (ChangesetType) {\n    /** changeset does *not* contain schema changes. */\n    ChangesetType[ChangesetType[\"Regular\"] = 0] = \"Regular\";\n    /** changeset *does* contain schema changes. */\n    ChangesetType[ChangesetType[\"Schema\"] = 1] = \"Schema\";\n})(ChangesetType || (ChangesetType = {}));\n//# sourceMappingURL=ChangesetProps.js.map",
+      "start": 1693508120681,
+      "end": 1693508120728,
+      "sourcemaps": null
+    }
+  ]
+}

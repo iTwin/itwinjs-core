@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/storage/FileRange.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class FileRange defines a content range in a file.\n */\n/** @internal */\nexport class FileRange {\n    /**\n     * Create a new content range.\n     */\n    constructor(offset, size) {\n        this.offset = offset;\n        this.size = size;\n    }\n}\n//# sourceMappingURL=FileRange.js.map",
+      "start": 1693508125370,
+      "end": 1693508125424,
+      "sourcemaps": null
+    }
+  ]
+}

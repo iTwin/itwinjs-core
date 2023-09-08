@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ClipboardUtilities.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utilities\n */\n/** Copy the input string to the system clipboard.\n * Obtained from https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/\n * @beta\n */\nexport function copyStringToClipboard(str) {\n    const el = document.createElement(\"textarea\");\n    el.value = str;\n    el.setAttribute(\"readonly\", \"\");\n    el.style.position = \"absolute\";\n    el.style.left = \"-9999px\";\n    document.body.appendChild(el);\n    el.select();\n    document.execCommand(\"copy\"); // eslint-disable-line deprecation/deprecation\n    document.body.removeChild(el);\n}\n//# sourceMappingURL=ClipboardUtilities.js.map",
+      "start": 1693508122537,
+      "end": 1693508122677,
+      "sourcemaps": null
+    }
+  ]
+}

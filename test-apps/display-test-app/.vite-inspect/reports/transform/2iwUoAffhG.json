@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Polyline.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport PointArray from '../types/PointArray.js'\r\nimport Shape from './Shape.js'\r\nimport * as pointed from '../modules/core/pointed.js'\r\nimport * as poly from '../modules/core/poly.js'\r\n\r\nexport default class Polyline extends Shape {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('polyline', node), node)\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create a wrapped polygon element\r\n    polyline: wrapWithAttrCheck(function (p) {\r\n      // make sure plot is called as a setter\r\n      return this.put(new Polyline()).plot(p || new PointArray())\r\n    })\r\n  }\r\n})\r\n\r\nextend(Polyline, pointed)\r\nextend(Polyline, poly)\r\nregister(Polyline, 'Polyline')\r\n",
+      "start": 1693508127040,
+      "end": 1693508127128,
+      "sourcemaps": null
+    }
+  ]
+}

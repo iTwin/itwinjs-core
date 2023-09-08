@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/gradiented.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import SVGNumber from '../../types/SVGNumber.js'\r\n\r\nexport function from (x, y) {\r\n  return (this._element || this).type === 'radialGradient'\r\n    ? this.attr({ fx: new SVGNumber(x), fy: new SVGNumber(y) })\r\n    : this.attr({ x1: new SVGNumber(x), y1: new SVGNumber(y) })\r\n}\r\n\r\nexport function to (x, y) {\r\n  return (this._element || this).type === 'radialGradient'\r\n    ? this.attr({ cx: new SVGNumber(x), cy: new SVGNumber(y) })\r\n    : this.attr({ x2: new SVGNumber(x), y2: new SVGNumber(y) })\r\n}\r\n",
+      "start": 1693508127272,
+      "end": 1693508127356,
+      "sourcemaps": null
+    }
+  ]
+}

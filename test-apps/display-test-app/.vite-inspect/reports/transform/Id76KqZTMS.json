@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/IModelInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Possible iModel states. */\r\nexport var IModelState;\r\n(function (IModelState) {\r\n    /**\r\n     * Not initialized iModel. iModel is not yet initialized and the server-side background initialization\r\n     * process is still running. Initialization could take several minutes.\r\n     */\r\n    IModelState[\"NotInitialized\"] = \"notInitialized\";\r\n    /** Initialized iModel. It means that iModel initialization has completed and iModel is ready to use. */\r\n    IModelState[\"Initialized\"] = \"initialized\";\r\n})(IModelState || (IModelState = {}));\r\n//# sourceMappingURL=IModelInterfaces.js.map",
+      "start": 1693508124962,
+      "end": 1693508125099,
+      "sourcemaps": null
+    }
+  ]
+}

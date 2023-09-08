@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/helpers/cookies.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar utils = require('./../utils');\n\nmodule.exports = (\n  utils.isStandardBrowserEnv() ?\n\n  // Standard browser envs support document.cookie\n    (function standardBrowserEnv() {\n      return {\n        write: function write(name, value, expires, path, domain, secure) {\n          var cookie = [];\n          cookie.push(name + '=' + encodeURIComponent(value));\n\n          if (utils.isNumber(expires)) {\n            cookie.push('expires=' + new Date(expires).toGMTString());\n          }\n\n          if (utils.isString(path)) {\n            cookie.push('path=' + path);\n          }\n\n          if (utils.isString(domain)) {\n            cookie.push('domain=' + domain);\n          }\n\n          if (secure === true) {\n            cookie.push('secure');\n          }\n\n          document.cookie = cookie.join('; ');\n        },\n\n        read: function read(name) {\n          var match = document.cookie.match(new RegExp('(^|;\\\\s*)(' + name + ')=([^;]*)'));\n          return (match ? decodeURIComponent(match[3]) : null);\n        },\n\n        remove: function remove(name) {\n          this.write(name, '', Date.now() - 86400000);\n        }\n      };\n    })() :\n\n  // Non standard browser env (web workers, react-native) lack needed support.\n    (function nonStandardBrowserEnv() {\n      return {\n        write: function write() {},\n        read: function read() { return null; },\n        remove: function remove() {}\n      };\n    })()\n);\n",
+      "start": 1693508125712,
+      "end": 1693508125756,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/utils.js?commonjs-proxy\";\n\nvar cookies;\nvar hasRequiredCookies;\n\nfunction requireCookies () {\n\tif (hasRequiredCookies) return cookies;\n\thasRequiredCookies = 1;\n\t'use strict';\n\n\tvar utils = require$$0;\n\n\tcookies = (\n\t  utils.isStandardBrowserEnv() ?\n\n\t  // Standard browser envs support document.cookie\n\t    (function standardBrowserEnv() {\n\t      return {\n\t        write: function write(name, value, expires, path, domain, secure) {\n\t          var cookie = [];\n\t          cookie.push(name + '=' + encodeURIComponent(value));\n\n\t          if (utils.isNumber(expires)) {\n\t            cookie.push('expires=' + new Date(expires).toGMTString());\n\t          }\n\n\t          if (utils.isString(path)) {\n\t            cookie.push('path=' + path);\n\t          }\n\n\t          if (utils.isString(domain)) {\n\t            cookie.push('domain=' + domain);\n\t          }\n\n\t          if (secure === true) {\n\t            cookie.push('secure');\n\t          }\n\n\t          document.cookie = cookie.join('; ');\n\t        },\n\n\t        read: function read(name) {\n\t          var match = document.cookie.match(new RegExp('(^|;\\\\s*)(' + name + ')=([^;]*)'));\n\t          return (match ? decodeURIComponent(match[3]) : null);\n\t        },\n\n\t        remove: function remove(name) {\n\t          this.write(name, '', Date.now() - 86400000);\n\t        }\n\t      };\n\t    })() :\n\n\t  // Non standard browser env (web workers, react-native) lack needed support.\n\t    (function nonStandardBrowserEnv() {\n\t      return {\n\t        write: function write() {},\n\t        read: function read() { return null; },\n\t        remove: function remove() {}\n\t      };\n\t    })()\n\t);\n\treturn cookies;\n}\n\nexport { requireCookies as __require };",
+      "start": 1693508125756,
+      "end": 1693508125757,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,KAAK,GAAG,UAAqB,CAAC;AAClC;AACA,QAAc;CACd,EAAE,KAAK,CAAC,oBAAoB,EAAE;AAC9B;CACA;CACA,IAAI,CAAC,SAAS,kBAAkB,GAAG;CACnC,MAAM,OAAO;CACb,QAAQ,KAAK,EAAE,SAAS,KAAK,CAAC,IAAI,EAAE,KAAK,EAAE,OAAO,EAAE,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE;CAC1E,UAAU,IAAI,MAAM,GAAG,EAAE,CAAC;CAC1B,UAAU,MAAM,CAAC,IAAI,CAAC,IAAI,GAAG,GAAG,GAAG,kBAAkB,CAAC,KAAK,CAAC,CAAC,CAAC;AAC9D;CACA,UAAU,IAAI,KAAK,CAAC,QAAQ,CAAC,OAAO,CAAC,EAAE;CACvC,YAAY,MAAM,CAAC,IAAI,CAAC,UAAU,GAAG,IAAI,IAAI,CAAC,OAAO,CAAC,CAAC,WAAW,EAAE,CAAC,CAAC;CACtE,WAAW;AACX;CACA,UAAU,IAAI,KAAK,CAAC,QAAQ,CAAC,IAAI,CAAC,EAAE;CACpC,YAAY,MAAM,CAAC,IAAI,CAAC,OAAO,GAAG,IAAI,CAAC,CAAC;CACxC,WAAW;AACX;CACA,UAAU,IAAI,KAAK,CAAC,QAAQ,CAAC,MAAM,CAAC,EAAE;CACtC,YAAY,MAAM,CAAC,IAAI,CAAC,SAAS,GAAG,MAAM,CAAC,CAAC;CAC5C,WAAW;AACX;CACA,UAAU,IAAI,MAAM,KAAK,IAAI,EAAE;CAC/B,YAAY,MAAM,CAAC,IAAI,CAAC,QAAQ,CAAC,CAAC;CAClC,WAAW;AACX;CACA,UAAU,QAAQ,CAAC,MAAM,GAAG,MAAM,CAAC,IAAI,CAAC,IAAI,CAAC,CAAC;CAC9C,SAAS;AACT;CACA,QAAQ,IAAI,EAAE,SAAS,IAAI,CAAC,IAAI,EAAE;CAClC,UAAU,IAAI,KAAK,GAAG,QAAQ,CAAC,MAAM,CAAC,KAAK,CAAC,IAAI,MAAM,CAAC,YAAY,GAAG,IAAI,GAAG,WAAW,CAAC,CAAC,CAAC;CAC3F,UAAU,QAAQ,KAAK,GAAG,kBAAkB,CAAC,KAAK,CAAC,CAAC,CAAC,CAAC,GAAG,IAAI,EAAE;CAC/D,SAAS;AACT;CACA,QAAQ,MAAM,EAAE,SAAS,MAAM,CAAC,IAAI,EAAE;CACtC,UAAU,IAAI,CAAC,KAAK,CAAC,IAAI,EAAE,EAAE,EAAE,IAAI,CAAC,GAAG,EAAE,GAAG,QAAQ,CAAC,CAAC;CACtD,SAAS;CACT,OAAO,CAAC;CACR,KAAK,GAAG;AACR;CACA;CACA,IAAI,CAAC,SAAS,qBAAqB,GAAG;CACtC,MAAM,OAAO;CACb,QAAQ,KAAK,EAAE,SAAS,KAAK,GAAG,EAAE;CAClC,QAAQ,IAAI,EAAE,SAAS,IAAI,GAAG,EAAE,OAAO,IAAI,CAAC,EAAE;CAC9C,QAAQ,MAAM,EAAE,SAAS,MAAM,GAAG,EAAE;CACpC,OAAO,CAAC;CACR,KAAK,GAAG;CACR,CAAC"
+      }
+    }
+  ]
+}

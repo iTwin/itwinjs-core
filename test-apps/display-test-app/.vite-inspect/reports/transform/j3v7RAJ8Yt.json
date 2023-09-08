@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Container.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { register } from '../utils/adopter.js'\r\nimport Element from './Element.js'\r\n\r\nexport default class Container extends Element {\r\n  flatten (parent) {\r\n    this.each(function () {\r\n      if (this instanceof Container) return this.flatten(parent).ungroup(parent)\r\n      return this.toParent(parent)\r\n    })\r\n\r\n    // we need this so that the root does not get removed\r\n    this.node.firstElementChild || this.remove()\r\n\r\n    return this\r\n  }\r\n\r\n  ungroup (parent) {\r\n    parent = parent || this.parent()\r\n\r\n    this.each(function () {\r\n      return this.toParent(parent)\r\n    })\r\n\r\n    this.remove()\r\n\r\n    return this\r\n  }\r\n}\r\n\r\nregister(Container, 'Container')\r\n",
+      "start": 1693508126755,
+      "end": 1693508127040,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/worker-farm/worker-job.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import _defineProperty from \"@babel/runtime/helpers/esm/defineProperty\";\nimport { assert } from '../env-utils/assert';\nexport default class WorkerJob {\n  constructor(jobName, workerThread) {\n    _defineProperty(this, \"name\", void 0);\n    _defineProperty(this, \"workerThread\", void 0);\n    _defineProperty(this, \"isRunning\", true);\n    _defineProperty(this, \"result\", void 0);\n    _defineProperty(this, \"_resolve\", () => {});\n    _defineProperty(this, \"_reject\", () => {});\n    this.name = jobName;\n    this.workerThread = workerThread;\n    this.result = new Promise((resolve, reject) => {\n      this._resolve = resolve;\n      this._reject = reject;\n    });\n  }\n  postMessage(type, payload) {\n    this.workerThread.postMessage({\n      source: 'loaders.gl',\n      type,\n      payload\n    });\n  }\n  done(value) {\n    assert(this.isRunning);\n    this.isRunning = false;\n    this._resolve(value);\n  }\n  error(error) {\n    assert(this.isRunning);\n    this.isRunning = false;\n    this._reject(error);\n  }\n}\n//# sourceMappingURL=worker-job.js.map",
+      "start": 1693508124420,
+      "end": 1693508124569,
+      "sourcemaps": null
+    }
+  ]
+}

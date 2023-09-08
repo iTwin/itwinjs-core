@@ -1,0 +1,19 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-performance-test-app/index.html",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "<!doctype html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">\r\n  <title>Display Performance Test App</title>\r\n  <style>\r\n    html,\r\n    body {\r\n      height: 100%;\r\n      min-height: 100%;\r\n      width: 100%;\r\n      margin: 0px;\r\n    }\r\n\r\n    .root {\r\n      position: relative;\r\n      height: 100%;\r\n      width: 100%;\r\n      top: 0;\r\n      left: 0;\r\n    }\r\n\r\n    .topdiv {\r\n      display: none;\r\n      position: relative;\r\n      top: 0;\r\n      left: 0;\r\n    }\r\n\r\n    .imodel-viewport {\r\n      position: relative;\r\n      top: auto;\r\n      left: auto;\r\n      bottom: auto;\r\n      display: block;\r\n      height: 1000px;\r\n      width: auto;\r\n    }\r\n  </style>\r\n\r\n  <script type=\"module\" src=\"/scripts/checkbrowser.js\"></script>\r\n</head>\r\n\r\n<body>\r\n  <div class=\"root\" id=\"root\">\r\n    <div class=topdiv id=\"topdiv\">\r\n    </div>\r\n    <div class=\"imodel-viewport\" id=\"imodel-viewport\">\r\n    </div>\r\n  </div>\r\n  <script type=\"module\" src=\"/src/index.ts\"></script>\r\n</body>\r\n\r\n</html>",
+      "start": 1693508118070,
+      "end": 1693508118071,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:build-html",
+      "result": "import \"vite/modulepreload-polyfill\";\n\nimport \"D:/hub2023A/itwinjs-core/test-apps/display-performance-test-app/index.html?html-proxy&inline-css&index=0.css\"\nimport \"/src/index.ts\"",
+      "start": 1693508118074,
+      "end": 1693508118098,
+      "order": "normal"
+    }
+  ]
+}

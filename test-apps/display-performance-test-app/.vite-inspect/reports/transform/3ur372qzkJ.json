@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/checkpoint/CheckpointOperations.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nimport { OperationsBase } from \"../../base/internal\";\r\nexport class CheckpointOperations extends OperationsBase {\r\n    /**\r\n     * Gets a single Checkpoint generated either on a specific Changeset or for a specific Named Version. This method\r\n     * returns a Checkpoint in its full representation. Wraps\r\n     * {@link https://developer.bentley.com/apis/imodels-v2/operations/get-changeset-checkpoint/ Get Changeset Checkpoint}\r\n     * and {@link https://developer.bentley.com/apis/imodels-v2/operations/get-named-version-checkpoint/\r\n     * Get Named Version Checkpoint} operations from iModels API.\r\n     * @param {GetSingleCheckpointParams} params parameters for this operation. See {@link GetSingleCheckpointParams}.\r\n     * @returns {Promise<Checkpoint>} a Checkpoint for the specified parent entity. See {@link Checkpoint}.\r\n     */\r\n    async getSingle(params) {\r\n        const { authorization, iModelId, ...parentEntityId } = params;\r\n        const response = await this.sendGetRequest({\r\n            authorization,\r\n            url: this._options.urlFormatter.getCheckpointUrl({ iModelId, ...parentEntityId })\r\n        });\r\n        return response.checkpoint;\r\n    }\r\n}\r\n//# sourceMappingURL=CheckpointOperations.js.map",
+      "start": 1693508122280,
+      "end": 1693508122308,
+      "sourcemaps": null
+    }
+  ]
+}

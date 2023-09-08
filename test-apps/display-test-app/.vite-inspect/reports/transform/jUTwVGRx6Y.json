@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/ViewFlagOverrides.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { RenderMode, ViewFlags } from \"@itwin/core-common\";\n/** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).\n * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.\n * @internal\n */\nexport function createDefaultViewFlagOverrides(options) {\n    const noLights = undefined !== options.lighting ? !options.lighting : undefined;\n    const viewflags = ViewFlags.fromJSON({\n        renderMode: RenderMode.SmoothShade,\n        noCameraLights: noLights,\n        noSourceLights: noLights,\n        noSolarLight: noLights,\n        clipVol: options.clipVolume,\n        shadows: options.shadows,\n        noWhiteOnWhiteReversal: true,\n        thematicDisplay: false,\n    });\n    const ovrs = { ...viewflags };\n    if (undefined === options.clipVolume)\n        ovrs.clipVolume = undefined;\n    if (undefined === options.shadows)\n        ovrs.shadows = undefined;\n    if (undefined === options.lighting)\n        ovrs.lighting = undefined;\n    if (undefined === options.thematic)\n        ovrs.thematicDisplay = undefined;\n    return ovrs;\n}\n//# sourceMappingURL=ViewFlagOverrides.js.map",
+      "start": 1693508121326,
+      "end": 1693508121641,
+      "sourcemaps": null
+    }
+  ]
+}

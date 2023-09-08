@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/cancel/CancelToken.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar Cancel = require('./Cancel');\n\n/**\n * A `CancelToken` is an object that can be used to request cancellation of an operation.\n *\n * @class\n * @param {Function} executor The executor function.\n */\nfunction CancelToken(executor) {\n  if (typeof executor !== 'function') {\n    throw new TypeError('executor must be a function.');\n  }\n\n  var resolvePromise;\n  this.promise = new Promise(function promiseExecutor(resolve) {\n    resolvePromise = resolve;\n  });\n\n  var token = this;\n  executor(function cancel(message) {\n    if (token.reason) {\n      // Cancellation has already been requested\n      return;\n    }\n\n    token.reason = new Cancel(message);\n    resolvePromise(token.reason);\n  });\n}\n\n/**\n * Throws a `Cancel` if cancellation has been requested.\n */\nCancelToken.prototype.throwIfRequested = function throwIfRequested() {\n  if (this.reason) {\n    throw this.reason;\n  }\n};\n\n/**\n * Returns an object that contains a new `CancelToken` and a function that, when called,\n * cancels the `CancelToken`.\n */\nCancelToken.source = function source() {\n  var cancel;\n  var token = new CancelToken(function executor(c) {\n    cancel = c;\n  });\n  return {\n    token: token,\n    cancel: cancel\n  };\n};\n\nmodule.exports = CancelToken;\n",
+      "start": 1693508127402,
+      "end": 1693508127483,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __require as require$$0 } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/cancel/Cancel.js?commonjs-wrapped\";\n\nvar CancelToken_1;\nvar hasRequiredCancelToken;\n\nfunction requireCancelToken () {\n\tif (hasRequiredCancelToken) return CancelToken_1;\n\thasRequiredCancelToken = 1;\n\t'use strict';\n\n\tvar Cancel = require$$0();\n\n\t/**\n\t * A `CancelToken` is an object that can be used to request cancellation of an operation.\n\t *\n\t * @class\n\t * @param {Function} executor The executor function.\n\t */\n\tfunction CancelToken(executor) {\n\t  if (typeof executor !== 'function') {\n\t    throw new TypeError('executor must be a function.');\n\t  }\n\n\t  var resolvePromise;\n\t  this.promise = new Promise(function promiseExecutor(resolve) {\n\t    resolvePromise = resolve;\n\t  });\n\n\t  var token = this;\n\t  executor(function cancel(message) {\n\t    if (token.reason) {\n\t      // Cancellation has already been requested\n\t      return;\n\t    }\n\n\t    token.reason = new Cancel(message);\n\t    resolvePromise(token.reason);\n\t  });\n\t}\n\n\t/**\n\t * Throws a `Cancel` if cancellation has been requested.\n\t */\n\tCancelToken.prototype.throwIfRequested = function throwIfRequested() {\n\t  if (this.reason) {\n\t    throw this.reason;\n\t  }\n\t};\n\n\t/**\n\t * Returns an object that contains a new `CancelToken` and a function that, when called,\n\t * cancels the `CancelToken`.\n\t */\n\tCancelToken.source = function source() {\n\t  var cancel;\n\t  var token = new CancelToken(function executor(c) {\n\t    cancel = c;\n\t  });\n\t  return {\n\t    token: token,\n\t    cancel: cancel\n\t  };\n\t};\n\n\tCancelToken_1 = CancelToken;\n\treturn CancelToken_1;\n}\n\nexport { requireCancelToken as __require };",
+      "start": 1693508127483,
+      "end": 1693508127484,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,MAAM,GAAG,YAAmB,CAAC;AACjC;CACA;CACA;CACA;CACA;CACA;CACA;CACA,SAAS,WAAW,CAAC,QAAQ,EAAE;CAC/B,EAAE,IAAI,OAAO,QAAQ,KAAK,UAAU,EAAE;CACtC,IAAI,MAAM,IAAI,SAAS,CAAC,8BAA8B,CAAC,CAAC;CACxD,GAAG;AACH;CACA,EAAE,IAAI,cAAc,CAAC;CACrB,EAAE,IAAI,CAAC,OAAO,GAAG,IAAI,OAAO,CAAC,SAAS,eAAe,CAAC,OAAO,EAAE;CAC/D,IAAI,cAAc,GAAG,OAAO,CAAC;CAC7B,GAAG,CAAC,CAAC;AACL;CACA,EAAE,IAAI,KAAK,GAAG,IAAI,CAAC;CACnB,EAAE,QAAQ,CAAC,SAAS,MAAM,CAAC,OAAO,EAAE;CACpC,IAAI,IAAI,KAAK,CAAC,MAAM,EAAE;CACtB;CACA,MAAM,OAAO;CACb,KAAK;AACL;CACA,IAAI,KAAK,CAAC,MAAM,GAAG,IAAI,MAAM,CAAC,OAAO,CAAC,CAAC;CACvC,IAAI,cAAc,CAAC,KAAK,CAAC,MAAM,CAAC,CAAC;CACjC,GAAG,CAAC,CAAC;CACL,CAAC;AACD;CACA;CACA;CACA;CACA,WAAW,CAAC,SAAS,CAAC,gBAAgB,GAAG,SAAS,gBAAgB,GAAG;CACrE,EAAE,IAAI,IAAI,CAAC,MAAM,EAAE;CACnB,IAAI,MAAM,IAAI,CAAC,MAAM,CAAC;CACtB,GAAG;CACH,CAAC,CAAC;AACF;CACA;CACA;CACA;CACA;CACA,WAAW,CAAC,MAAM,GAAG,SAAS,MAAM,GAAG;CACvC,EAAE,IAAI,MAAM,CAAC;CACb,EAAE,IAAI,KAAK,GAAG,IAAI,WAAW,CAAC,SAAS,QAAQ,CAAC,CAAC,EAAE;CACnD,IAAI,MAAM,GAAG,CAAC,CAAC;CACf,GAAG,CAAC,CAAC;CACL,EAAE,OAAO;CACT,IAAI,KAAK,EAAE,KAAK;CAChB,IAAI,MAAM,EAAE,MAAM;CAClB,GAAG,CAAC;CACJ,CAAC,CAAC;AACF;AACA,cAAc,GAAG,WAAW"
+      }
+    }
+  ]
+}

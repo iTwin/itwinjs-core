@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/runtime/Message.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class Message prints debug, information, warning and error messages to the console.\n */\n/** @internal */\nclass Message {\n    constructor() {\n    }\n    static log(message) {\n        if (Message.DISPLAY)\n            console.log(message);\n    }\n    static print(module, message) {\n        if (Message.DISPLAY)\n            console.log(module + \" : \" + message);\n    }\n    static printWarning(module, message) {\n        if (Message.DISPLAY)\n            console.log(\"WARNING: \" + module + \" : \" + message);\n    }\n    static printError(module, exception, message) {\n        if (Message.DISPLAY)\n            console.log(\"ERROR: \" + module + \" : \" + message);\n        if ((Message.DISPLAY) && (exception != null))\n            console.log(\"\" + exception);\n    }\n}\n/** Disabled by default, enable to see all messages */\nMessage.DISPLAY = false;\nexport { Message };\n//# sourceMappingURL=Message.js.map",
+      "start": 1693508126534,
+      "end": 1693508126625,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/Localization.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Localization\n */\n/** An empty [[Localization]] used if one is not provided to [IModelApp]($frontend). Does not perform localizations (merely returns the key.)\n * @public\n */\nexport class EmptyLocalization {\n    async initialize() { }\n    getLocalizedString(key) {\n        if (typeof (key) !== \"string\") {\n            key = key[0];\n        }\n        // Simulate correct and simple usage of i18next's translation function\n        // Namely, remove the leading namespace substring if there is one\n        return key.split(\":\", 2).pop();\n    }\n    getLocalizedStringWithNamespace(_namespace, key) { return this.getLocalizedString(key); }\n    getEnglishString(_namespace, key) { return this.getLocalizedString(key); }\n    getLocalizedKeys(inputString) { return inputString; }\n    async registerNamespace() { }\n    unregisterNamespace() { }\n    getNamespacePromise() { return undefined; }\n    getLanguageList() { return []; }\n    async changeLanguage() { }\n}\n//# sourceMappingURL=Localization.js.map",
+      "start": 1693508120895,
+      "end": 1693508120943,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/widgets/FpsTracker.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Widgets\n */\nimport { PerformanceMetrics } from \"@itwin/core-frontend\";\nimport { createCheckBox } from \"../ui/CheckBox\";\n/** Displays average frames-per-second.\n * NOTE: Enabling fps tracking causes a new frame to render on every tick of the render loop, which may negatively impact battery life.\n * @beta\n */\nexport class FpsTracker {\n    constructor(parent, viewport) {\n        this._vp = viewport;\n        this._label = createCheckBox({\n            parent,\n            name: \"Track FPS\",\n            id: \"fpsTracker_toggle\",\n            handler: (cb) => this.toggle(cb.checked),\n        }).label;\n    }\n    dispose() {\n        this.toggle(false);\n    }\n    clearInterval() {\n        if (undefined !== this._curIntervalId) {\n            clearInterval(this._curIntervalId);\n            this._curIntervalId = undefined;\n        }\n    }\n    toggle(enabled) {\n        this._vp.continuousRendering = enabled;\n        if (enabled) {\n            this._metrics = new PerformanceMetrics(false, true);\n            this._curIntervalId = setInterval(() => this.updateFPS(), 500);\n            this._label.innerText = \"Tracking FPS...\";\n        }\n        else {\n            this._metrics = undefined;\n            this.clearInterval();\n            this._label.innerText = \"Track FPS\";\n        }\n        this._vp.target.performanceMetrics = this._metrics;\n    }\n    updateFPS() {\n        const metrics = this._metrics;\n        const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);\n        this._label.innerText = `FPS: ${fps}`;\n    }\n}\n//# sourceMappingURL=FpsTracker.js.map",
+      "start": 1693508122824,
+      "end": 1693508122876,
+      "sourcemaps": null
+    }
+  ]
+}

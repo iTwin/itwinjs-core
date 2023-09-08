@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/schema/impl/field.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import _defineProperty from \"@babel/runtime/helpers/esm/defineProperty\";\nexport default class Field {\n  constructor(name, type) {\n    let nullable = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;\n    let metadata = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : new Map();\n    _defineProperty(this, \"name\", void 0);\n    _defineProperty(this, \"type\", void 0);\n    _defineProperty(this, \"nullable\", void 0);\n    _defineProperty(this, \"metadata\", void 0);\n    this.name = name;\n    this.type = type;\n    this.nullable = nullable;\n    this.metadata = metadata;\n  }\n  get typeId() {\n    return this.type && this.type.typeId;\n  }\n  clone() {\n    return new Field(this.name, this.type, this.nullable, this.metadata);\n  }\n  compareTo(other) {\n    return this.name === other.name && this.type === other.type && this.nullable === other.nullable && this.metadata === other.metadata;\n  }\n  toString() {\n    return \"\".concat(this.type).concat(this.nullable ? ', nullable' : '').concat(this.metadata ? \", metadata: \".concat(this.metadata) : '');\n  }\n}\n//# sourceMappingURL=field.js.map",
+      "start": 1693508125393,
+      "end": 1693508125450,
+      "sourcemaps": null
+    }
+  ]
+}

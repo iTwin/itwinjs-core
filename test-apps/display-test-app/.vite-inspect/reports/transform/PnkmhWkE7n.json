@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/regex.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "// Parse unit value\r\nexport let numberAndUnit = /^([+-]?(\\d+(\\.\\d*)?|\\.\\d+)(e[+-]?\\d+)?)([a-z%]*)$/i\r\n\r\n// Parse hex value\r\nexport let hex = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i\r\n\r\n// Parse rgb value\r\nexport let rgb = /rgb\\((\\d+),(\\d+),(\\d+)\\)/\r\n\r\n// Parse reference id\r\nexport let reference = /(#[a-z0-9\\-_]+)/i\r\n\r\n// splits a transformation chain\r\nexport let transforms = /\\)\\s*,?\\s*/\r\n\r\n// Whitespace\r\nexport let whitespace = /\\s/g\r\n\r\n// Test hex value\r\nexport let isHex = /^#[a-f0-9]{3,6}$/i\r\n\r\n// Test rgb value\r\nexport let isRgb = /^rgb\\(/\r\n\r\n// Test css declaration\r\nexport let isCss = /[^:]+:[^;]+;?/\r\n\r\n// Test for blank string\r\nexport let isBlank = /^(\\s+)?$/\r\n\r\n// Test for numeric string\r\nexport let isNumber = /^[+-]?(\\d+(\\.\\d*)?|\\.\\d+)(e[+-]?\\d+)?$/i\r\n\r\n// Test for percent value\r\nexport let isPercent = /^-?[\\d.]+%$/\r\n\r\n// Test for image url\r\nexport let isImage = /\\.(jpg|jpeg|png|gif|svg)(\\?[^=]+.*)?/i\r\n\r\n// split at whitespace and comma\r\nexport let delimiter = /[\\s,]+/\r\n\r\n// The following regex are used to parse the d attribute of a path\r\n\r\n// Matches all hyphens which are not after an exponent\r\nexport let hyphen = /([^e])-/gi\r\n\r\n// Replaces and tests for all path letters\r\nexport let pathLetters = /[MLHVCSQTAZ]/gi\r\n\r\n// yes we need this one, too\r\nexport let isPathLetter = /[MLHVCSQTAZ]/i\r\n\r\n// matches 0.154.23.45\r\nexport let numbersWithDots = /((\\d?\\.\\d+(?:e[+-]?\\d+)?)((?:\\.\\d+(?:e[+-]?\\d+)?)+))+/gi\r\n\r\n// matches .\r\nexport let dots = /\\./g\r\n",
+      "start": 1693508127093,
+      "end": 1693508127174,
+      "sourcemaps": null
+    }
+  ]
+}

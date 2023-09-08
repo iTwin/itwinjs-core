@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/ImageryProviders/MapBoxLayerImageryProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { IModelApp } from \"../../../IModelApp\";\nimport { MapLayerImageryProvider } from \"../../internal\";\n/** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].\n * @internal\n */\nexport class MapBoxLayerImageryProvider extends MapLayerImageryProvider {\n    constructor(settings) {\n        super(settings, true);\n        this._baseUrl = settings.url;\n        this._zoomMin = 1;\n        this._zoomMax = 20;\n    }\n    get tileWidth() { return 256; }\n    get tileHeight() { return 256; }\n    get minimumZoomLevel() { return this._zoomMin; }\n    get maximumZoomLevel() { return this._zoomMax; }\n    // construct the Url from the desired Tile\n    async constructUrl(row, column, zoomLevel) {\n        if (!this._settings.accessKey) {\n            return \"\";\n        }\n        // from the template url, construct the tile url.\n        // format: {baseUrl}/{tileSize}/{level}/{column}/{row}?access_token={token}\n        let url = this._baseUrl.concat(this.tileWidth.toString());\n        url = url.concat(`/${zoomLevel.toString()}/${column.toString()}/${row.toString()}`);\n        url = url.concat(`?${this._settings.accessKey.key}=${this._settings.accessKey.value}`);\n        return url;\n    }\n    addLogoCards(cards) {\n        if (!cards.dataset.mapboxLogoCard) {\n            cards.dataset.mapboxLogoCard = \"true\";\n            cards.appendChild(IModelApp.makeLogoCard({ heading: \"Mapbox\", notice: IModelApp.localization.getLocalizedString(\"iModelJs:BackgroundMap.MapBoxCopyright\") }));\n        }\n    }\n    // no initialization needed for MapBoxImageryProvider.\n    async initialize() { }\n}\n//# sourceMappingURL=MapBoxLayerImageryProvider.js.map",
+      "start": 1693508121802,
+      "end": 1693508121904,
+      "sourcemaps": null
+    }
+  ]
+}

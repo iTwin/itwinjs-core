@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Tspan.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { globals } from '../utils/window.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport SVGNumber from '../types/SVGNumber.js'\r\nimport Text from './Text.js'\r\nimport * as textable from '../modules/core/textable.js'\r\n\r\nexport default class Tspan extends Text {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('tspan', node), node)\r\n  }\r\n\r\n  // Set text content\r\n  text (text) {\r\n    if (text == null) return this.node.textContent + (this.dom.newLined ? '\\n' : '')\r\n\r\n    typeof text === 'function' ? text.call(this, this) : this.plain(text)\r\n\r\n    return this\r\n  }\r\n\r\n  // Shortcut dx\r\n  dx (dx) {\r\n    return this.attr('dx', dx)\r\n  }\r\n\r\n  // Shortcut dy\r\n  dy (dy) {\r\n    return this.attr('dy', dy)\r\n  }\r\n\r\n  x (x) {\r\n    return this.attr('x', x)\r\n  }\r\n\r\n  y (y) {\r\n    return this.attr('x', y)\r\n  }\r\n\r\n  move (x, y) {\r\n    return this.x(x).y(y)\r\n  }\r\n\r\n  // Create new line\r\n  newLine () {\r\n    // fetch text parent\r\n    var t = this.parent(Text)\r\n\r\n    // mark new line\r\n    this.dom.newLined = true\r\n\r\n    var fontSize = globals.window.getComputedStyle(this.node)\r\n      .getPropertyValue('font-size')\r\n    var dy = t.dom.leading * new SVGNumber(fontSize)\r\n\r\n    // apply new position\r\n    return this.dy(dy).attr('x', t.x())\r\n  }\r\n}\r\n\r\nextend(Tspan, textable)\r\n\r\nregisterMethods({\r\n  Tspan: {\r\n    tspan: wrapWithAttrCheck(function (text) {\r\n      var tspan = new Tspan()\r\n\r\n      // clear if build mode is disabled\r\n      if (!this._build) {\r\n        this.clear()\r\n      }\r\n\r\n      // add new tspan\r\n      this.node.appendChild(tspan.node)\r\n\r\n      return tspan.text(text)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Tspan, 'Tspan')\r\n",
+      "start": 1693508127080,
+      "end": 1693508127164,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/ClippingProgram.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { dispose } from \"@itwin/core-bentley\";\nimport { System } from \"./System\";\nimport { addClipping } from \"./glsl/Clipping\";\nfunction createClippingBuilder(src) {\n    const builder = src.clone();\n    builder.vert.headerComment += \"-Clip\";\n    builder.frag.headerComment += \"-Clip\";\n    addClipping(builder);\n    return builder;\n}\n/** @internal */\nexport class ClippingProgram {\n    compile() {\n        return undefined === this._program || 0 /* CompileStatus.Success */ === this._program.compile();\n    }\n    constructor(src) {\n        const builder = createClippingBuilder(src);\n        this._program = builder.buildProgram(System.instance.context);\n    }\n    getProgram(numPlanes) {\n        return numPlanes > 0 ? this._program : undefined;\n    }\n    dispose() {\n        this._program = dispose(this._program);\n    }\n}\n/** @internal */\nexport function createClippingProgram(builder) {\n    return new ClippingProgram(builder);\n}\n//# sourceMappingURL=ClippingProgram.js.map",
+      "start": 1693508124597,
+      "end": 1693508124693,
+      "sourcemaps": null
+    }
+  ]
+}

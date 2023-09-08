@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/primitives/geometry/GeometryList.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\nimport { Range3d } from \"@itwin/core-geometry\";\nimport { QParams3d } from \"@itwin/core-common\";\n/** @internal */\nexport class GeometryList {\n    constructor() {\n        this._list = [];\n    }\n    get first() { return this._list[0]; }\n    get isEmpty() { return this._list.length === 0; }\n    get length() { return this._list.length; }\n    push(geom) {\n        return this._list.push(geom);\n    }\n    append(src) {\n        this._list.push(...src._list);\n        return this;\n    }\n    clear() { this._list.length = 0; }\n    computeRange() {\n        const range = Range3d.createNull();\n        const extendRange = (geom) => range.extendRange(geom.tileRange);\n        this._list.forEach(extendRange);\n        return range;\n    }\n    computeQuantizationParams() { return QParams3d.fromRange(this.computeRange()); }\n    [Symbol.iterator]() {\n        return this._list[Symbol.iterator]();\n    }\n}\n//# sourceMappingURL=GeometryList.js.map",
+      "start": 1693508119672,
+      "end": 1693508119770,
+      "sourcemaps": null
+    }
+  ]
+}

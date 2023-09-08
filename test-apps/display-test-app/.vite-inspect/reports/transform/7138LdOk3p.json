@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/CheckpointInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Possible Checkpoint states. */\r\nexport var CheckpointState;\r\n(function (CheckpointState) {\r\n    /** Checkpoint generation completed successfully. */\r\n    CheckpointState[\"Successful\"] = \"successful\";\r\n    /** Checkpoint generation is not yet complete, the background job is scheduled. */\r\n    CheckpointState[\"Scheduled\"] = \"scheduled\";\r\n    /** Checkpoint generation failed. */\r\n    CheckpointState[\"Failed\"] = \"failed\";\r\n    /** Checkpoint is not generated and the background job is not scheduled. */\r\n    CheckpointState[\"NotGenerated\"] = \"notGenerated\";\r\n})(CheckpointState || (CheckpointState = {}));\r\n//# sourceMappingURL=CheckpointInterfaces.js.map",
+      "start": 1693508124987,
+      "end": 1693508125104,
+      "sourcemaps": null
+    }
+  ]
+}

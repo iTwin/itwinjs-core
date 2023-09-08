@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/properties/Value.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\n/**\n * Enumeration for Format of the property value.\n * @public\n */\nexport var PropertyValueFormat;\n(function (PropertyValueFormat) {\n    PropertyValueFormat[PropertyValueFormat[\"Primitive\"] = 0] = \"Primitive\";\n    PropertyValueFormat[PropertyValueFormat[\"Array\"] = 1] = \"Array\";\n    PropertyValueFormat[PropertyValueFormat[\"Struct\"] = 2] = \"Struct\";\n})(PropertyValueFormat || (PropertyValueFormat = {}));\n//# sourceMappingURL=Value.js.map",
+      "start": 1693508123599,
+      "end": 1693508123622,
+      "sourcemaps": null
+    }
+  ]
+}

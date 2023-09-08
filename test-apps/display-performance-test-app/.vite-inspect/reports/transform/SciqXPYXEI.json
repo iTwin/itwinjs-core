@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/format/opc/AttributeReader.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class AttributeReader reads attribute data.\n *\n * @version 1.0 January 2014\n */\n/** @internal */\nexport class AttributeReader {\n    /**\n     * Create a new reader.\n     */\n    constructor() {\n    }\n}\n//# sourceMappingURL=AttributeReader.js.map",
+      "start": 1693508125610,
+      "end": 1693508125646,
+      "sourcemaps": null
+    }
+  ]
+}

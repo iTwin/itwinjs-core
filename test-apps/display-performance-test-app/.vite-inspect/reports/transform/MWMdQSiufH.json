@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/spatial/ecrs/ParameterValue.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class ParameterValue defines the value of a parameter of a certain method.\n *\n * @version 1.0 January 2007\n */\n/** @internal */\nexport class ParameterValue {\n    /**\n     * Create a new value.\n     * @param parameterCode the identification code of the parameter.\n     * @param parameterValue the value of the parameter.\n     * @param unit the unit of measure.\n     */\n    constructor(parameterCode, parameterValue, unit) {\n        this._parameterCode = parameterCode;\n        this._parameterValue = parameterValue;\n        this._unit = unit;\n    }\n    /**\n     * Get the identification code of the parameter.\n     * @return the code.\n     */\n    getParameterCode() {\n        return this._parameterCode;\n    }\n    /**\n     * Get the value of the parameter.\n     * @return the value.\n     */\n    getParameterValue() {\n        return this._parameterValue;\n    }\n    /**\n     * Get the unit of measure.\n     * @return the unit.\n     */\n    getUnit() {\n        return this._unit;\n    }\n    /**\n     * Check if another parameter value is compatible with this one.\n     * @param other the other parameter value.\n     * @return true if compatible.\n     */\n    isCompatible(other) {\n        if (other._parameterCode != this._parameterCode)\n            return false;\n        if (other._parameterValue != this._parameterValue)\n            return false;\n        if (other._unit.isCompatible(this._unit) == false)\n            return false;\n        return true;\n    }\n}\n//# sourceMappingURL=ParameterValue.js.map",
+      "start": 1693508125618,
+      "end": 1693508125657,
+      "sourcemaps": null
+    }
+  ]
+}

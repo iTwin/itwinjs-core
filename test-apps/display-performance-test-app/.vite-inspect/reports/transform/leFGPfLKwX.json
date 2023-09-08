@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nexport * from \"./apiEntities/IModelInterfaces\";\r\nexport * from \"./apiEntities/BriefcaseInterfaces\";\r\nexport * from \"./apiEntities/ChangesetInterfaces\";\r\nexport * from \"./apiEntities/NamedVersionInterfaces\";\r\nexport * from \"./apiEntities/CheckpointInterfaces\";\r\nexport * from \"./apiEntities/ThumbnailInterfaces\";\r\nexport * from \"./apiEntities/UserInterfaces\";\r\nexport * from \"./apiEntities/UserPermissionInterfaces\";\r\nexport * from \"./iterators/EntityListIterator\";\r\nexport * from \"./iterators/IteratorUtilFunctions\";\r\nexport * from \"./RestClient\";\r\nexport * from \"./CommonInterfaces\";\r\nexport * from \"./UtilityTypes\";\r\nexport * from \"./IModelsErrorInterfaces\";\r\n//# sourceMappingURL=index.js.map",
+      "start": 1693508120938,
+      "end": 1693508121013,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/widget/WidgetState.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Widget\n */\n/** Widget state enum.\n * @deprecated in 3.6. Use [WidgetState]($appui-react) instead.\n * @public\n */\nexport var WidgetState;\n(function (WidgetState) {\n    /** Widget tab is visible and active and its contents are visible */\n    WidgetState[WidgetState[\"Open\"] = 0] = \"Open\";\n    /** Widget tab is visible but its contents are not visible */\n    WidgetState[WidgetState[\"Closed\"] = 1] = \"Closed\";\n    /** Widget tab nor its contents are visible */\n    WidgetState[WidgetState[\"Hidden\"] = 2] = \"Hidden\";\n    /** Widget tab is in a 'floating' state and is not docked in zone's tab stack */\n    WidgetState[WidgetState[\"Floating\"] = 3] = \"Floating\";\n    /** Widget tab is visible but its contents are not loaded */\n    WidgetState[WidgetState[\"Unloaded\"] = 4] = \"Unloaded\";\n})(WidgetState || (WidgetState = {}));\n//# sourceMappingURL=WidgetState.js.map",
+      "start": 1693508123622,
+      "end": 1693508123660,
+      "sourcemaps": null
+    }
+  ]
+}

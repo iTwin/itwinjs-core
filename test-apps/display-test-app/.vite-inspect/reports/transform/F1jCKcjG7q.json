@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/ScratchDrawParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { DrawParams, ShaderProgramParams } from \"./DrawCommand\";\nlet progParams;\nlet drawParams;\n/** @internal */\nexport function getDrawParams(target, geometry) {\n    if (undefined === progParams) {\n        progParams = new ShaderProgramParams();\n        drawParams = new DrawParams();\n    }\n    progParams.init(target);\n    drawParams.init(progParams, geometry);\n    return drawParams;\n}\n/** @internal */\nexport function freeDrawParams() {\n    progParams = undefined;\n    drawParams = undefined;\n}\n//# sourceMappingURL=ScratchDrawParams.js.map",
+      "start": 1693508122268,
+      "end": 1693508122417,
+      "sourcemaps": null
+    }
+  ]
+}

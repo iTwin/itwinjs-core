@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/pointed.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import PointArray from '../../types/PointArray.js'\r\n\r\nexport let MorphArray = PointArray\r\n\r\n// Move by left top corner over x-axis\r\nexport function x (x) {\r\n  return x == null ? this.bbox().x : this.move(x, this.bbox().y)\r\n}\r\n\r\n// Move by left top corner over y-axis\r\nexport function y (y) {\r\n  return y == null ? this.bbox().y : this.move(this.bbox().x, y)\r\n}\r\n\r\n// Set width of element\r\nexport function width (width) {\r\n  let b = this.bbox()\r\n  return width == null ? b.width : this.size(width, b.height)\r\n}\r\n\r\n// Set height of element\r\nexport function height (height) {\r\n  let b = this.bbox()\r\n  return height == null ? b.height : this.size(b.width, height)\r\n}\r\n",
+      "start": 1693508127289,
+      "end": 1693508127365,
+      "sourcemaps": null
+    }
+  ]
+}

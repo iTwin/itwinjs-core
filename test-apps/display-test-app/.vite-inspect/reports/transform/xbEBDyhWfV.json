@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/polyface/RangeLengthData.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RangeSearch\n */\nimport { Range3d } from \"../geometry3d/Range\";\nimport { UsageSums } from \"../numerics/UsageSums\";\n/**\n * Accumulated data for x,y,z length statistics in ranges.\n * * Usage pattern:\n *   * create a enw RangeLengthData:\n *      * `myData = new RangeLengthData ();`\n *   * announce ranges to be accumulated:\n *     * (many times)  `myData.accumulateRowableXYZArrayRange (points);\n *   * access data in public members:\n *     * `myData.range` -- the composite range.\n *     * `myData.xLength`, `myData.yLength`, `myData.zLength` -- mean, minMax, count, and standardDeviation of range lengths in x,y,z directions.\n * @public\n */\nexport class RangeLengthData {\n    constructor() {\n        this.range = Range3d.createNull();\n        this.xSums = new UsageSums();\n        this.ySums = new UsageSums();\n        this.zSums = new UsageSums();\n        this._workRange = Range3d.createNull();\n    }\n    /** Extend the range and length sums by the range of points in an array. */\n    accumulateGrowableXYZArrayRange(points) {\n        points.setRange(this._workRange);\n        this.range.extendRange(this._workRange);\n        this.xSums.accumulate(this._workRange.xLength());\n        this.ySums.accumulate(this._workRange.yLength());\n        this.zSums.accumulate(this._workRange.zLength());\n    }\n}\n//# sourceMappingURL=RangeLengthData.js.map",
+      "start": 1693508125539,
+      "end": 1693508125632,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/ViewportQuad.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { AttributeMap } from \"../AttributeMap\";\nimport { ProgramBuilder } from \"../ShaderBuilder\";\n// Positions are in NDC [-1..1]. Compute UV params in [0..1]\nconst computeTexCoord = \"v_texCoord = (rawPosition.xy + 1.0) * 0.5;\";\nconst computePosition = \"return rawPos;\";\nfunction addTexture(prog) {\n    prog.addInlineComputedVarying(\"v_texCoord\", 3 /* VariableType.Vec2 */, computeTexCoord);\n}\n/** @internal */\nexport function createViewportQuadBuilder(textured, attrMapOverride) {\n    const attrMap = undefined !== attrMapOverride ? attrMapOverride : AttributeMap.findAttributeMap(undefined, false);\n    const prog = new ProgramBuilder(attrMap);\n    prog.vert.set(10 /* VertexShaderComponent.ComputePosition */, computePosition);\n    if (textured) {\n        addTexture(prog);\n    }\n    return prog;\n}\n//# sourceMappingURL=ViewportQuad.js.map",
+      "start": 1693508125143,
+      "end": 1693508125335,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/core/InterceptorManager.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar utils = require('./../utils');\n\nfunction InterceptorManager() {\n  this.handlers = [];\n}\n\n/**\n * Add a new interceptor to the stack\n *\n * @param {Function} fulfilled The function to handle `then` for a `Promise`\n * @param {Function} rejected The function to handle `reject` for a `Promise`\n *\n * @return {Number} An ID used to remove interceptor later\n */\nInterceptorManager.prototype.use = function use(fulfilled, rejected, options) {\n  this.handlers.push({\n    fulfilled: fulfilled,\n    rejected: rejected,\n    synchronous: options ? options.synchronous : false,\n    runWhen: options ? options.runWhen : null\n  });\n  return this.handlers.length - 1;\n};\n\n/**\n * Remove an interceptor from the stack\n *\n * @param {Number} id The ID that was returned by `use`\n */\nInterceptorManager.prototype.eject = function eject(id) {\n  if (this.handlers[id]) {\n    this.handlers[id] = null;\n  }\n};\n\n/**\n * Iterate over all the registered interceptors\n *\n * This method is particularly useful for skipping over any\n * interceptors that may have become `null` calling `eject`.\n *\n * @param {Function} fn The function to call for each interceptor\n */\nInterceptorManager.prototype.forEach = function forEach(fn) {\n  utils.forEach(this.handlers, function forEachHandler(h) {\n    if (h !== null) {\n      fn(h);\n    }\n  });\n};\n\nmodule.exports = InterceptorManager;\n",
+      "start": 1693508125646,
+      "end": 1693508125698,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/utils.js?commonjs-proxy\";\n\n'use strict';\n\nvar utils = require$$0;\n\nfunction InterceptorManager() {\n  this.handlers = [];\n}\n\n/**\n * Add a new interceptor to the stack\n *\n * @param {Function} fulfilled The function to handle `then` for a `Promise`\n * @param {Function} rejected The function to handle `reject` for a `Promise`\n *\n * @return {Number} An ID used to remove interceptor later\n */\nInterceptorManager.prototype.use = function use(fulfilled, rejected, options) {\n  this.handlers.push({\n    fulfilled: fulfilled,\n    rejected: rejected,\n    synchronous: options ? options.synchronous : false,\n    runWhen: options ? options.runWhen : null\n  });\n  return this.handlers.length - 1;\n};\n\n/**\n * Remove an interceptor from the stack\n *\n * @param {Number} id The ID that was returned by `use`\n */\nInterceptorManager.prototype.eject = function eject(id) {\n  if (this.handlers[id]) {\n    this.handlers[id] = null;\n  }\n};\n\n/**\n * Iterate over all the registered interceptors\n *\n * This method is particularly useful for skipping over any\n * interceptors that may have become `null` calling `eject`.\n *\n * @param {Function} fn The function to call for each interceptor\n */\nInterceptorManager.prototype.forEach = function forEach(fn) {\n  utils.forEach(this.handlers, function forEachHandler(h) {\n    if (h !== null) {\n      fn(h);\n    }\n  });\n};\n\nvar InterceptorManager_1 = InterceptorManager;\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(InterceptorManager_1);\nexport { InterceptorManager_1 as __moduleExports };",
+      "start": 1693508125699,
+      "end": 1693508125700,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA,IAAI,KAAK,GAAG,UAAqB,CAAC;AAClC;AACA,SAAS,kBAAkB,GAAG;AAC9B,EAAE,IAAI,CAAC,QAAQ,GAAG,EAAE,CAAC;AACrB,CAAC;AACD;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA,kBAAkB,CAAC,SAAS,CAAC,GAAG,GAAG,SAAS,GAAG,CAAC,SAAS,EAAE,QAAQ,EAAE,OAAO,EAAE;AAC9E,EAAE,IAAI,CAAC,QAAQ,CAAC,IAAI,CAAC;AACrB,IAAI,SAAS,EAAE,SAAS;AACxB,IAAI,QAAQ,EAAE,QAAQ;AACtB,IAAI,WAAW,EAAE,OAAO,GAAG,OAAO,CAAC,WAAW,GAAG,KAAK;AACtD,IAAI,OAAO,EAAE,OAAO,GAAG,OAAO,CAAC,OAAO,GAAG,IAAI;AAC7C,GAAG,CAAC,CAAC;AACL,EAAE,OAAO,IAAI,CAAC,QAAQ,CAAC,MAAM,GAAG,CAAC,CAAC;AAClC,CAAC,CAAC;AACF;AACA;AACA;AACA;AACA;AACA;AACA,kBAAkB,CAAC,SAAS,CAAC,KAAK,GAAG,SAAS,KAAK,CAAC,EAAE,EAAE;AACxD,EAAE,IAAI,IAAI,CAAC,QAAQ,CAAC,EAAE,CAAC,EAAE;AACzB,IAAI,IAAI,CAAC,QAAQ,CAAC,EAAE,CAAC,GAAG,IAAI,CAAC;AAC7B,GAAG;AACH,CAAC,CAAC;AACF;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA,kBAAkB,CAAC,SAAS,CAAC,OAAO,GAAG,SAAS,OAAO,CAAC,EAAE,EAAE;AAC5D,EAAE,KAAK,CAAC,OAAO,CAAC,IAAI,CAAC,QAAQ,EAAE,SAAS,cAAc,CAAC,CAAC,EAAE;AAC1D,IAAI,IAAI,CAAC,KAAK,IAAI,EAAE;AACpB,MAAM,EAAE,CAAC,CAAC,CAAC,CAAC;AACZ,KAAK;AACL,GAAG,CAAC,CAAC;AACL,CAAC,CAAC;AACF;IACA,oBAAc,GAAG,kBAAkB"
+      }
+    }
+  ]
+}

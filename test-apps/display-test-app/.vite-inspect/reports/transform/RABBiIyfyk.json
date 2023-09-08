@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/arrow/get-type-info.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { Type } from '../schema/schema';\nexport function getTypeInfo(arrowTypeLike) {\n  return {\n    typeId: arrowTypeLike.typeId,\n    ArrayType: arrowTypeLike.ArrayType,\n    typeName: arrowTypeLike.toString(),\n    typeEnumName: getTypeKey(arrowTypeLike.typeId),\n    precision: arrowTypeLike.precision\n  };\n}\nlet ReverseType = null;\nfunction getTypeKey(typeKey) {\n  if (!ReverseType) {\n    ReverseType = {};\n    for (const key in Type) {\n      ReverseType[Type[key]] = key;\n    }\n  }\n  return ReverseType[typeKey];\n}\n//# sourceMappingURL=get-type-info.js.map",
+      "start": 1693508126413,
+      "end": 1693508126521,
+      "sourcemaps": null
+    }
+  ]
+}

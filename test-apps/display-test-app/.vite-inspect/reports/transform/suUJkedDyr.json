@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/extension/providers/ExtensionLoadScript.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * Imports and executes a bundled javascript (esm) module.\n * Used by remote and service Extensions.\n * Throws an error if no function is found to execute.\n * Looks for a function in the following order:\n * - the module itself.\n * - the module's main export.\n * - the module's default export.\n * @internal\n */\nexport async function loadScript(jsUrl) {\n    // const module = await import(/* webpackIgnore: true */jsUrl);\n    // Webpack gives a warning:\n    // \"Critical dependency: the request of a dependency is an expression\"\n    // Because tsc transpiles \"await import\" to \"require\" (when compiled to is CommonJS).\n    // So use FunctionConstructor to avoid tsc.\n    const module = await Function(\"x\", \"return import(x)\")(jsUrl);\n    return execute(module);\n}\n/** attempts to execute an extension module */\nfunction execute(m) {\n    if (typeof m === \"function\")\n        return m();\n    if (m.main && typeof m.main === \"function\")\n        return m.main();\n    if (m.default && typeof m.default === \"function\")\n        return m.default();\n    throw new Error(`Failed to execute extension. No default function was found to execute.`);\n}\n//# sourceMappingURL=ExtensionLoadScript.js.map",
+      "start": 1693508121325,
+      "end": 1693508121630,
+      "sourcemaps": null
+    }
+  ]
+}

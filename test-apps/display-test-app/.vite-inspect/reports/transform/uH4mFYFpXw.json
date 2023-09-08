@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/Constant.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module CartesianGeometry\n */\n/** Commonly used constant values.\n * @alpha\n */\nclass Constant {\n}\n/** symbolic name for 1 millimeter:  0.001 meter */\nConstant.oneMillimeter = 0.001;\n/** symbolic name for 1 centimeter:  0.01 meter */\nConstant.oneCentimeter = 0.01;\n/** symbolic name for 1 meter:  1.0 meter */\nConstant.oneMeter = 1.0;\n/** symbolic name for 1 kilometer: 1000 meter */\nConstant.oneKilometer = 1000.0;\n/** Diameter of the earth in kilometers. */\nConstant.diameterOfEarth = 12742.0 * Constant.oneKilometer;\n/** circumference of the earth in meters. */\nConstant.circumferenceOfEarth = 40075.0 * Constant.oneKilometer;\n/** radius of the earth using WGS-84 ellipsoid, in meters */\nConstant.earthRadiusWGS84 = {\n    polar: 6356752.3142,\n    equator: 6378137.0,\n};\nexport { Constant };\n//# sourceMappingURL=Constant.js.map",
+      "start": 1693508123300,
+      "end": 1693508123487,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "tools": {
+    "DrawingAidTest": {
+      "Points": {
+        "keyin": "dta drawing aid points"
+      }
+    },
+    "Fence": {
+      "ClassifySelected": {
+        "keyin": "dta classifyclip selected"
+      }
+    },
+    "GridSettings": {
+      "keyin": "dta grid settings"
+    },
+    "Markup": {
+      "keyin": "dta markup",
+      "TestSelect": {
+        "keyin": "dta markupselect"
+      }
+    },
+    "SVTSelect": {
+      "keyin": "dta select"
+    },
+    "ResizeWindow": {
+      "keyin": "win resize"
+    },
+    "RefreshTiles": {
+      "keyin": "dta refresh tiles"
+    },
+    "CreateWindow": {
+      "keyin": "win create"
+    },
+    "CloneViewport": {
+      "keyin": "vp clone"
+    },
+    "FocusWindow": {
+      "keyin": "win focus"
+    },
+    "MaximizeWindow": {
+      "keyin": "win max"
+    },
+    "RestoreWindow": {
+      "keyin": "win restore"
+    },
+    "CloseWindow": {
+      "keyin": "win close"
+    },
+    "DockWindow": {
+      "keyin": "win dock"
+    },
+    "VersionComparison": {
+      "keyin": "dta version compare"
+    },
+    "SaveImage": {
+      "keyin": "dta save image"
+    },
+    "OutputShaders": {
+      "keyin": "dta output shaders"
+    },
+    "ZoomToSelectedElements": {
+      "keyin": "dta zoom selected"
+    },
+    "ToggleIncidentMarkers": {
+      "keyin": "dta incident markers"
+    },
+    "TogglePathDecoration": {
+      "keyin": "dta path decoration"
+    },
+    "AddGltfDecoration": {
+      "keyin": "dta gltf"
+    },
+    "ShutDown": {
+      "keyin": "dta shutdown"
+    },
+    "Exit": {
+      "keyin": "dta exit"
+    },
+    "SignIn": {
+      "keyin": "dta signin"
+    },
+    "SignOut": {
+      "keyin": "dta signout"
+    },
+    "PushChanges": {
+      "keyin": "dta push"
+    },
+    "PullChanges": {
+      "keyin": "dta pull"
+    },
+    "ToggleShadowMapTiles": {
+      "keyin": "dta shadow tiles"
+    },
+    "FrameStats": {
+      "keyin": "dta framestats"
+    },
+    "PurgeTileTrees": {
+      "keyin": "dta purge tiletrees"
+    },
+    "OpenIModel": {
+      "keyin": "dta file open"
+    },
+    "CloseIModel": {
+      "keyin": "dta file close"
+    },
+    "ReopenIModel": {
+      "keyin": "dta file reopen"
+    },
+    "RecordFps": {
+      "keyin": "dta record fps"
+    },
+    "AttachView": {
+      "keyin": "dta attach view"
+    },
+    "DetachViews": {
+      "keyin": "dta detach views"
+    },
+    "ModelClip": {
+      "keyin": "dta model clip"
+    },
+    "LoadHypermodeling": {
+      "keyin": "dta hypermodeling"
+    },
+    "ToggleTimePointComparison": {
+      "keyin": "dta timepoint comparison"
+    },
+    "ToggleAspectRatioSkewDecorator": {
+      "keyin": "dta aspect skew decorator"
+    },
+    "ApplyModelTransform": {
+      "keyin": "dta model transform"
+    },
+    "ApplyModelDisplayScale": {
+      "keyin": "dta model scale"
+    },
+    "EditingSession": {
+      "keyin": "dta edit"
+    },
+    "PlaceLineString": {
+      "keyin": "dta place line string"
+    },
+    "SyncViewports": {
+      "keyin": "dta viewport sync"
+    },
+    "SyncFrusta": {
+      "keyin": "dta frustum sync"
+    },
+    "GenerateTileContent": {
+      "keyin": "dta gen tile"
+    },
+    "GenerateElementGraphics": {
+      "keyin": "dta gen graphics"
+    },
+    "Macro": {
+      "keyin": "dta macro"
+    },
+    "RecordTileSizes": {
+      "keyin": "dta record tilesize"
+    },
+    "TerrainDrape": {
+      "keyin": "dta drape terrain",
+      "Prompts": {
+        "EnterDrapePoint": "Enter drape terrain point",
+        "SelectDrapeRealityModel": "Select reality model or map (with terrain) to drape"
+      }
+    },
+    "OpenRealityModelSettings": {
+      "keyin": "dta reality model settings"
+    },
+    "AttachCustomRealityData": {
+      "keyin": "dta attach reality"
+    },
+    "DtaClipByElementGeometry": {
+      "keyin": "dta clip element geometry"
+    }
+  }
+}

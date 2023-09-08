@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/core-orbitgt.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport { BlockIndex as OrbitGtBlockIndex } from \"./pointcloud/model/BlockIndex\";\nexport { PointData as OrbitGtPointData } from \"./pointcloud/model/PointData\";\nexport { TileIndex as OrbitGtTileIndex } from \"./pointcloud/model/TileIndex\";\nexport { AViewRequest as OrbitGtIViewRequest } from \"./pointcloud/render/AViewRequest\";\nexport { DataManager as OrbitGtDataManager } from \"./pointcloud/render/DataManager\";\nexport { FrameData as OrbitGtFrameData } from \"./pointcloud/render/FrameData\";\nexport { Level as OrbitGtLevel } from \"./pointcloud/render/Level\";\nexport { ViewTree as OrbitGtViewTree } from \"./pointcloud/render/ViewTree\";\nexport { TileLoadSorter as OrbitGtTileLoadSorter } from \"./pointcloud/render/TileLoadSorter\";\nexport { Bounds as OrbitGtBounds } from \"./spatial/geom/Bounds\";\nexport { Coordinate as OrbitGtCoordinate } from \"./spatial/geom/Coordinate\";\nexport { Line as OrbitGtLine } from \"./spatial/geom/Line\";\nexport { Transform as OrbitGtTransform } from \"./spatial/geom/Transform\";\nexport { AList as OrbitGtAList } from \"./system/collection/AList\";\nexport * from \"./pointcloud/format/opc/OPCReader\";\nexport * from \"./pointcloud/model/PointCloudReader\";\nexport * from \"./pointcloud/model/PointDataRaw\";\nexport * from \"./spatial/crs/CRSManager\";\nexport * from \"./spatial/ecrs/OnlineEngine\";\nexport * from \"./system/runtime/ALong\";\nexport * from \"./system/runtime/Downloader\";\n// Do not export the Node specific functionality from the barrel.  It will cause\n// polyfills on the frontend.\n// export * from \"./system/runtime/DownloaderNode\";\nexport * from \"./system/runtime/DownloaderXhr\";\nexport * from \"./system/storage/PageCachedFile\";\nexport * from \"./system/storage/UrlFS\";\n//# sourceMappingURL=core-orbitgt.js.map",
+      "start": 1693508124633,
+      "end": 1693508124742,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/worker-utils/get-transfer-list.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export function getTransferList(object) {\n  let recursive = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;\n  let transfers = arguments.length > 2 ? arguments[2] : undefined;\n  const transfersSet = transfers || new Set();\n  if (!object) {} else if (isTransferable(object)) {\n    transfersSet.add(object);\n  } else if (isTransferable(object.buffer)) {\n    transfersSet.add(object.buffer);\n  } else if (ArrayBuffer.isView(object)) {} else if (recursive && typeof object === 'object') {\n    for (const key in object) {\n      getTransferList(object[key], recursive, transfersSet);\n    }\n  }\n  return transfers === undefined ? Array.from(transfersSet) : [];\n}\nfunction isTransferable(object) {\n  if (!object) {\n    return false;\n  }\n  if (object instanceof ArrayBuffer) {\n    return true;\n  }\n  if (typeof MessagePort !== 'undefined' && object instanceof MessagePort) {\n    return true;\n  }\n  if (typeof ImageBitmap !== 'undefined' && object instanceof ImageBitmap) {\n    return true;\n  }\n  if (typeof OffscreenCanvas !== 'undefined' && object instanceof OffscreenCanvas) {\n    return true;\n  }\n  return false;\n}\nexport function getTransferListForWriter(object) {\n  if (object === null) {\n    return {};\n  }\n  const clone = Object.assign({}, object);\n  Object.keys(clone).forEach(key => {\n    if (typeof object[key] === 'object' && !ArrayBuffer.isView(object[key]) && !(object[key] instanceof Array)) {\n      clone[key] = getTransferListForWriter(object[key]);\n    } else if (typeof clone[key] === 'function' || clone[key] instanceof RegExp) {\n      clone[key] = {};\n    } else {\n      clone[key] = object[key];\n    }\n  });\n  return clone;\n}\n//# sourceMappingURL=get-transfer-list.js.map",
+      "start": 1693508124480,
+      "end": 1693508124603,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "module.exports = require('./lib/axios');",
+      "start": 1693508125116,
+      "end": 1693508125189,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/axios.js?commonjs-proxy\";\n\nvar axios = require$$0;\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(axios);\nexport { axios as __moduleExports };",
+      "start": 1693508125189,
+      "end": 1693508127551,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;IAAA,KAAc,GAAG,UAAsB"
+      }
+    }
+  ]
+}

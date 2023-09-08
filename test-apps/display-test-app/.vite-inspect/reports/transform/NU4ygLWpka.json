@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/FrontendLoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Logging\n */\n/** Logger categories used by this package\n * @note All logger categories in this package start with the `core-frontend` prefix.\n * @see [Logger]($bentley)\n * @public\n * @extensions\n */\nexport var FrontendLoggerCategory;\n(function (FrontendLoggerCategory) {\n    FrontendLoggerCategory[\"Package\"] = \"core-frontend\";\n    /** The logger category used by the [[IModelConnection]] class and other related classes. */\n    FrontendLoggerCategory[\"IModelConnection\"] = \"core-frontend.IModelConnection\";\n    /** The logger category used for NativeApp */\n    FrontendLoggerCategory[\"NativeApp\"] = \"core-frontend.NativeApp\";\n    /** The logger category used for making network requests. */\n    FrontendLoggerCategory[\"Request\"] = \"core-frontend.Request\";\n    /**\n     * The logger category used by FeatureTrackingManager\n     * @alpha\n     */\n    FrontendLoggerCategory[\"FeatureTracking\"] = \"core-frontend.FeatureTracking\";\n    /**\n     * The logger category used by RealityData\n     * @alpha\n     */\n    FrontendLoggerCategory[\"RealityData\"] = \"core-frontend.RealityData\";\n    /** The logger category used for creating and displaying graphics. */\n    FrontendLoggerCategory[\"Render\"] = \"core-frontend.Render\";\n    /** The logger category used for loading and executing Extensions\n     * @alpha\n     */\n    FrontendLoggerCategory[\"Extensions\"] = \"core-frontend.Extensions\";\n})(FrontendLoggerCategory || (FrontendLoggerCategory = {}));\n//# sourceMappingURL=FrontendLoggerCategory.js.map",
+      "start": 1693508118552,
+      "end": 1693508119094,
+      "sourcemaps": null
+    }
+  ]
+}

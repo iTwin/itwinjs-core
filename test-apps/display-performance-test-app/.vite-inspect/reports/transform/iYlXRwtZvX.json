@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/TextureDrape.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { dispose } from \"@itwin/core-bentley\";\nimport { Matrix4d } from \"@itwin/core-geometry\";\nexport class TextureDrape {\n    constructor() {\n        this._projectionMatrix = Matrix4d.createIdentity();\n    }\n    get texture() { return this._texture; }\n    get projectionMatrix() { return this._projectionMatrix; }\n    get isReady() { return this._texture !== undefined; }\n    collectStatistics(stats) {\n        if (undefined !== this._texture)\n            stats.addPlanarClassifier(this._texture.bytesUsed);\n    }\n    get isDisposed() { return undefined === this.texture; }\n    dispose() {\n        this._texture = dispose(this._texture);\n    }\n    getParams(params) {\n        params[0] = 5.0; // Inside, pure texture.\n        params[1] = 0.0; // Outside, off.\n    }\n}\n//# sourceMappingURL=TextureDrape.js.map",
+      "start": 1693508123722,
+      "end": 1693508123967,
+      "sourcemaps": null
+    }
+  ]
+}

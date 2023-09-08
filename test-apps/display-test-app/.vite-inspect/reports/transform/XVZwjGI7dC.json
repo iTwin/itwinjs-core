@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/circled.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import SVGNumber from '../../types/SVGNumber.js'\r\n\r\n// Radius x value\r\nexport function rx (rx) {\r\n  return this.attr('rx', rx)\r\n}\r\n\r\n// Radius y value\r\nexport function ry (ry) {\r\n  return this.attr('ry', ry)\r\n}\r\n\r\n// Move over x-axis\r\nexport function x (x) {\r\n  return x == null\r\n    ? this.cx() - this.rx()\r\n    : this.cx(x + this.rx())\r\n}\r\n\r\n// Move over y-axis\r\nexport function y (y) {\r\n  return y == null\r\n    ? this.cy() - this.ry()\r\n    : this.cy(y + this.ry())\r\n}\r\n\r\n// Move by center over x-axis\r\nexport function cx (x) {\r\n  return x == null\r\n    ? this.attr('cx')\r\n    : this.attr('cx', x)\r\n}\r\n\r\n// Move by center over y-axis\r\nexport function cy (y) {\r\n  return y == null\r\n    ? this.attr('cy')\r\n    : this.attr('cy', y)\r\n}\r\n\r\n// Set width of element\r\nexport function width (width) {\r\n  return width == null\r\n    ? this.rx() * 2\r\n    : this.rx(new SVGNumber(width).divide(2))\r\n}\r\n\r\n// Set height of element\r\nexport function height (height) {\r\n  return height == null\r\n    ? this.ry() * 2\r\n    : this.ry(new SVGNumber(height).divide(2))\r\n}\r\n",
+      "start": 1693508127263,
+      "end": 1693508127354,
+      "sourcemaps": null
+    }
+  ]
+}

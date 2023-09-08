@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/BackendTypes.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\nexport {};\n//# sourceMappingURL=BackendTypes.js.map",
+      "start": 1693508120930,
+      "end": 1693508120978,
+      "sourcemaps": null
+    }
+  ]
+}

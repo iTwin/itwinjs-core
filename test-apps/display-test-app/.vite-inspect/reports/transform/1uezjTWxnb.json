@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/ArcGisFeature/ArcGisFeatureResponse.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { esriPBuffer } from \"./esriPBuffer.gen\";\n/** @internal */\nexport class ArcGisFeatureResponse {\n    constructor(format, response, envelope) {\n        this.format = format;\n        this._response = response;\n        this.envelope = envelope;\n    }\n    async getResponseData() {\n        let data;\n        try {\n            const tileResponse = await this._response;\n            if (tileResponse === undefined || tileResponse.status !== 200)\n                return undefined;\n            if (this.format === \"PBF\") {\n                const byteArray = new Uint8Array(await tileResponse.arrayBuffer());\n                if (!byteArray || (byteArray.length === 0))\n                    return undefined;\n                data = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);\n                const collection = data;\n                return { data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit };\n            }\n            else {\n                data = await tileResponse.json();\n                if (data === undefined || data == null)\n                    return undefined;\n                return { data, exceedTransferLimit: data.exceededTransferLimit };\n            }\n        }\n        catch (_e) {\n            return undefined;\n        }\n    }\n}\n//# sourceMappingURL=ArcGisFeatureResponse.js.map",
+      "start": 1693508125120,
+      "end": 1693508125201,
+      "sourcemaps": null
+    }
+  ]
+}

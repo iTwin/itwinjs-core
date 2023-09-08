@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/extension/providers/RemoteExtensionProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { request } from \"../../request/Request\";\nimport { loadScript } from \"./ExtensionLoadScript\";\n/**\n * Implements a \"remote\" extension.\n * Remote extensions are hosted on an external server.\n * The execute() and getManifest() methods are used by the ExtensionAdmin to load and execute the extension.\n * @alpha\n */\nexport class RemoteExtensionProvider {\n    constructor(_props) {\n        this._props = _props;\n        this.hostname = new URL(this._props.jsUrl).hostname.replace(\"www\", \"\");\n    }\n    /**\n     * Attempts to execute an extension.\n     * Throws an error if the provided jsUrl is not accessible.\n     */\n    async execute() {\n        return loadScript(this._props.jsUrl);\n    }\n    /**\n     * Attempts to fetch an extension's manifest (package.json) file.\n     * Throws an error if the provided manifestUrl is not accessible.\n     */\n    async getManifest() {\n        return request(this._props.manifestUrl, \"json\");\n    }\n}\n//# sourceMappingURL=RemoteExtensionProvider.js.map",
+      "start": 1693508119646,
+      "end": 1693508119864,
+      "sourcemaps": null
+    }
+  ]
+}

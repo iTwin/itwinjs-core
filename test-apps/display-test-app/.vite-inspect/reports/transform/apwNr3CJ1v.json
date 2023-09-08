@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/defineProperty.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import toPropertyKey from \"./toPropertyKey.js\";\nexport default function _defineProperty(obj, key, value) {\n  key = toPropertyKey(key);\n  if (key in obj) {\n    Object.defineProperty(obj, key, {\n      value: value,\n      enumerable: true,\n      configurable: true,\n      writable: true\n    });\n  } else {\n    obj[key] = value;\n  }\n  return obj;\n}",
+      "start": 1693508125610,
+      "end": 1693508125802,
+      "sourcemaps": null
+    }
+  ]
+}

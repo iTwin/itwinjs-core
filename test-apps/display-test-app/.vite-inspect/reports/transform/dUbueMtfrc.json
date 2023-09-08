@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/extension/providers/LocalExtensionProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/**\n * Implements a \"local\" extension via LocalExtensionProps.\n * An extension is not loaded until it is added to the ExtensionAdmin.\n * The execute() and getManifest() methods are used by the ExtensionAdmin.\n * @alpha\n */\nexport class LocalExtensionProvider {\n    constructor(_props) {\n        this._props = _props;\n    }\n    /** returns the manifest (package.json) of a local extension */\n    async getManifest() {\n        return this._props.manifestPromise;\n    }\n    /** executes the javascript main file / bundle (index.js) of a local extension */\n    async execute() {\n        return this._props.main();\n    }\n}\n//# sourceMappingURL=LocalExtensionProvider.js.map",
+      "start": 1693508119642,
+      "end": 1693508119866,
+      "sourcemaps": null
+    }
+  ]
+}

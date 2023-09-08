@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/properties/StandardTypeNames.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Properties\n */\n// cSpell:ignore shortdate\n/**\n * Standard Type Names for converters and editors.\n * @public\n */\nexport var StandardTypeNames;\n(function (StandardTypeNames) {\n    StandardTypeNames[\"Text\"] = \"text\";\n    StandardTypeNames[\"String\"] = \"string\";\n    StandardTypeNames[\"DateTime\"] = \"dateTime\";\n    StandardTypeNames[\"ShortDate\"] = \"shortdate\";\n    StandardTypeNames[\"Boolean\"] = \"boolean\";\n    StandardTypeNames[\"Bool\"] = \"bool\";\n    StandardTypeNames[\"Float\"] = \"float\";\n    StandardTypeNames[\"Double\"] = \"double\";\n    StandardTypeNames[\"Int\"] = \"int\";\n    StandardTypeNames[\"Integer\"] = \"integer\";\n    StandardTypeNames[\"Number\"] = \"number\";\n    StandardTypeNames[\"Hexadecimal\"] = \"hexadecimal\";\n    StandardTypeNames[\"Hex\"] = \"hex\";\n    StandardTypeNames[\"Enum\"] = \"enum\";\n    StandardTypeNames[\"Point2d\"] = \"point2d\";\n    StandardTypeNames[\"Point3d\"] = \"point3d\";\n    StandardTypeNames[\"Navigation\"] = \"navigation\";\n    StandardTypeNames[\"Composite\"] = \"composite\";\n    StandardTypeNames[\"Array\"] = \"array\";\n    StandardTypeNames[\"Struct\"] = \"struct\";\n    StandardTypeNames[\"URL\"] = \"url\";\n})(StandardTypeNames || (StandardTypeNames = {}));\n//# sourceMappingURL=StandardTypeNames.js.map",
+      "start": 1693508124467,
+      "end": 1693508124509,
+      "sourcemaps": null
+    }
+  ]
+}

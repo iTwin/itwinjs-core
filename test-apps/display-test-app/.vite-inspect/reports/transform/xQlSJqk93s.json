@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+draco@3.4.7/node_modules/@loaders.gl/draco/dist/esm/lib/utils/version.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export const VERSION = typeof \"3.4.7\" !== 'undefined' ? \"3.4.7\" : 'latest';\n//# sourceMappingURL=version.js.map",
+      "start": 1693508124286,
+      "end": 1693508124417,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/frontend-tiles/lib/esm/BatchedTileTree.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { BeTimePoint } from \"@itwin/core-bentley\";\nimport { BatchType, RenderMode } from \"@itwin/core-common\";\nimport { acquireImdlDecoder, IModelApp, TileTree, } from \"@itwin/core-frontend\";\nimport { BatchedTile } from \"./BatchedTile\";\nconst viewFlagOverrides = {\n    renderMode: RenderMode.SmoothShade,\n    visibleEdges: false,\n};\n/** @internal */\nexport class BatchedTileTree extends TileTree {\n    constructor(params) {\n        super(params);\n        this._rootTile = new BatchedTile(params.rootTile, this);\n        this.reader = params.reader;\n        this.scheduleScript = params.script;\n        this.decoder = acquireImdlDecoder({\n            type: BatchType.Primary,\n            timeline: this.scheduleScript,\n            iModel: this.iModel,\n            batchModelId: this.modelId,\n            is3d: true,\n            containsTransformNodes: false,\n            noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,\n        });\n    }\n    dispose() {\n        this.decoder.release();\n        super.dispose();\n    }\n    get rootTile() {\n        return this._rootTile;\n    }\n    get is3d() {\n        return true;\n    }\n    get maxDepth() {\n        return undefined;\n    }\n    get viewFlagOverrides() {\n        return viewFlagOverrides;\n    }\n    // eslint-disable-next-line @typescript-eslint/naming-convention\n    _selectTiles(args) {\n        const selected = new Set();\n        this.rootTile.selectTiles(selected, args, undefined);\n        return Array.from(selected);\n    }\n    draw(args) {\n        const tiles = this.selectTiles(args);\n        for (const tile of tiles)\n            tile.drawGraphics(args);\n        args.drawGraphics();\n    }\n    prune() {\n        const olderThan = BeTimePoint.now().minus(this.expirationTime);\n        this.rootTile.prune(olderThan);\n    }\n}\n//# sourceMappingURL=BatchedTileTree.js.map",
+      "start": 1693508124946,
+      "end": 1693508125017,
+      "sourcemaps": null
+    }
+  ]
+}

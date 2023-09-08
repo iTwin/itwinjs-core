@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/core/parser.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { globals } from '../../utils/window.js'\r\nimport { makeInstance } from '../../utils/adopter.js'\r\n\r\nexport default function parser () {\r\n  // Reuse cached element if possible\r\n  if (!parser.nodes) {\r\n    let svg = makeInstance().size(2, 0)\r\n    svg.node.style.cssText = [\r\n      'opacity: 0',\r\n      'position: absolute',\r\n      'left: -100%',\r\n      'top: -100%',\r\n      'overflow: hidden'\r\n    ].join(';')\r\n\r\n    svg.attr('focusable', 'false')\r\n\r\n    let path = svg.path().node\r\n\r\n    parser.nodes = { svg, path }\r\n  }\r\n\r\n  if (!parser.nodes.svg.node.parentNode) {\r\n    let b = globals.document.body || globals.document.documentElement\r\n    parser.nodes.svg.addTo(b)\r\n  }\r\n\r\n  return parser.nodes\r\n}\r\n",
+      "start": 1693508127100,
+      "end": 1693508127175,
+      "sourcemaps": null
+    }
+  ]
+}

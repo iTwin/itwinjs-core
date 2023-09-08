@@ -1,0 +1,450 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+#root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.simpleicon {
+  position:relative;
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding: 3px;
+  margin: 3px;
+  width: 35px;
+  height: 35px;
+  cursor:pointer;
+}
+
+.app-surface {
+  position: absolute;
+  top: 75px;
+  bottom: 20px;
+  width: 100%;
+  overflow: auto;
+  z-index: 5;
+  background-color: #778899;
+  overflow: hidden;
+}
+
+.console-output {
+  width: 100%;
+  background-color: gray;
+  overflow: hidden;
+  border: none;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  font-family: monospace, monospace;
+  resize: none;
+}
+
+#notifications-window {
+  overflow: auto;
+}
+
+.floating-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  vertical-align: middle;
+  background-color: gray;
+  z-index: 10;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.floating-window-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 100px;
+  left: 100px;
+  width: 640px;
+  height: 480px;
+  background-color: gray;
+  z-index: 100;
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.keyin-entry {
+  float: left;
+  display: inline;
+  margin-left: 5px;
+  width: 350px;
+  height: 25px;
+}
+
+.keyin-entry-textbox {
+  display: inline;
+  width: 350px;
+  font-family: monospace, monospace;
+}
+
+#fps-container {
+  font-family: monospace, monospace;
+  margin-left: 15px;
+  margin-right: 5px;
+}
+
+#fps-checkbox {
+  vertical-align: middle;
+}
+
+.floating-window-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left:2.5px;
+  padding-right:2.5px;
+  height: 25px;
+  background-color: #a0a0a0;
+  cursor: move;
+  border-bottom: 2px solid black;
+  position: relative;
+  overflow: hidden;
+}
+
+.window-focused {
+  border: 2px solid white;
+}
+
+.window-header-focused {
+  border-bottom: 2px solid white;
+  background-color: #eeeeee;
+}
+
+.window-header-selected {
+  border-bottom: 2px solid GoldenRod;
+}
+
+.viewport-header-focused {
+  background-color: #eeeeee;
+}
+
+.viewport-selected {
+  border: 2px solid GoldenRod;
+}
+
+.floating-window-header-resize {
+  width: 0;
+  height: 0;
+  border-top: 25px solid #444444;
+  border-left: 25px solid transparent;
+  position: absolute;
+  cursor: nesw-resize;
+  right: 0px;
+  background-color: #cccccc;
+}
+
+.floating-window-header-resize-pinned {
+  border-top: 25px solid #44ff44;
+}
+
+.floating-window-header-close {
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 20px;
+  height: 25px;
+  opacity: 0.5;
+  cursor: default;
+}
+.floating-window-header-close:hover {
+  opacity: 1;
+}
+.floating-window-header-close:before, .floating-window-header-close:after {
+  position: absolute;
+  left: 9px;
+  content: ' ';
+  height: 24px;
+  width: 2px;
+  background-color: #333;
+}
+.floating-window-header-close:before {
+  transform: rotate(36deg);
+}
+.floating-window-header-close:after {
+  transform: rotate(-36deg);
+}
+
+.window-pinned {
+  border-top-color: crimson;
+}
+
+.topdiv {
+  display: flex;
+  align-items: center;
+  padding-left:2.5px;
+  padding-right:2.5px;
+  height: 50px;
+}
+
+.popup-toolbar {
+  display: flex;
+  align-items: center;
+  height: fit-content;
+  width: fit-content;
+  top: 0px;
+  left: 0px;
+  vertical-align: middle;
+}
+
+.popup-toolbar-button {
+  position:relative;
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding: 1px;
+  margin: 1px;
+  margin-top: 3px;
+  width: 35px;
+  height: 35px;
+  cursor:pointer;
+  vertical-align: middle;
+}
+
+.status-bar {
+  width: 100%;
+  height: 25px;
+  /*position: fixed;
+  top: 50px;*/
+  vertical-align: middle;
+}
+
+.bottomdiv {
+  width: 100%;
+  height: 20px;
+  position: fixed;
+  bottom: 0;
+  vertical-align: middle;
+}
+
+#tileLoadIndicatorContainer {
+  float: right;
+  display: inline;
+  margin-right: 5px;
+}
+
+#snapModesContainer {
+  float: right;
+  margin-right: 5px;
+  display: inline;
+}
+
+#snapModesContainer {
+  float: right;
+  margin-right: 5px;
+}
+
+.statusspan {
+  margin-left: 5px;
+  display: inline;
+}
+
+.bim-spinner-container {
+  position:absolute;
+  z-index:9999999;
+  height:100%;
+  width:100%;
+  background-color:rgba(255, 255, 255, 0.5);
+  top:0;
+  left:0;
+}
+
+.bim-spinner {
+  position:absolute;
+  display:block;
+  top:calc(50% - 45px);
+  left:calc(50% - 45px);
+  width: 90px;
+  height:90px;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid  #008be1; /* Blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.tile-load-spinner {
+  position: relative;
+  float:right;
+  margin:10px;
+  width: 33px;
+  height:33px;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid  #008be1; /* Blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.viewList {
+  padding: 12px;
+  margin: 5px;
+  cursor:pointer;
+  min-width:200px;
+  max-width:300px;
+}
+
+@font-face {
+  font-family: 'Display-Test-App-Icons';
+  src: url('Fonts/Display-Test-App-Icons.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.toolMenu {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:none;
+  width:210px;
+  padding-left: 3px;
+  padding-top: 3px;
+  z-index: 999;
+  top: 45px;
+  right: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.scrollingToolMenu {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:none;
+  width:220px;
+  padding: 3px;
+  z-index: 999;
+  top: 45px;
+  right: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  float:right;
+  overflow-y: auto;
+  height: 400px;
+}
+
+.debugPanel {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:block;
+  width:480px;
+  padding: 3px;
+  z-index: 999;
+  top: 45px;
+  left: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.overlay-tooltip {
+  overflow: hidden;
+}
+
+.tooltip {
+  background: rgb(255, 252, 216);
+  color: black;
+  font-family:  'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.8em;
+  font-weight: normal;
+  line-height: 110%;
+  text-decoration: none;
+  text-align: left;
+  padding: 3px 3px;
+  border-radius: 4px;
+  transition: opacity 1.4s;
+  white-space: nowrap;
+  box-shadow: 0 0.5rem 1rem -0.5rem black;
+  z-index: 1000;
+  opacity: 0.95;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.notification-messagebox {
+  display: block;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  width: fit-content;
+  height: fit-content;
+  border-color: black;
+  border-style: solid;
+  border-width: 2px;
+  margin: auto;
+  background-color: lightgray;
+}
+
+.notification-messageboxtext {
+  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: left;
+  padding: 0.6em 0.5em;
+}
+
+.notification-messageboxbutton {
+  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 0.9em;
+  font-weight: normal;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 10px;
+  margin-left: 30px;
+  width: 100px;
+}
+
+.slider {
+  width:200px;
+  display:inline;
+}
+
+#standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {
+  float:left;
+}
+#animationSlider {
+  width:250px;
+  display:block;
+}
+#animationState {
+  text-align:right;
+}
+#renderModeToggle {
+  width: 100%;
+  height: 100%;
+}
+#browserFileSelector {
+  position: absolute;
+  display: none;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 2px 0;
+  padding: 0;
+}
+
+.inputDiv {
+  padding: 5px;
+  display: flex;
+  justify-content: flex-end;
+}

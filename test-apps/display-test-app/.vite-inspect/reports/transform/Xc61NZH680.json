@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/Title.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { OpenMode } from \"@itwin/core-bentley\";\r\nimport { IModelConnection } from \"@itwin/core-frontend\";\r\n\r\nexport function setTitle(imodel: IModelConnection) {\r\n  let prefix = \"\";\r\n  if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())\r\n    prefix = imodel.editingScope ? \"[ EDIT ] \" : \"[ R/W ] \";\r\n\r\n  document.title = `${prefix}${imodel.key} - Display Test App`;\r\n}\r\n",
+      "start": 1693508118379,
+      "end": 1693508118561,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nimport { OpenMode } from \"@itwin/core-bentley\";\nexport function setTitle(imodel) {\n  let prefix = \"\";\n  if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())\n    prefix = imodel.editingScope ? \"[ EDIT ] \" : \"[ R/W ] \";\n  document.title = `${prefix}${imodel.key} - Display Test App`;\n}\n",
+      "start": 1693508118561,
+      "end": 1693508118676,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/Title.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { OpenMode } from \"@itwin/core-bentley\";\r\nimport { IModelConnection } from \"@itwin/core-frontend\";\r\n\r\nexport function setTitle(imodel: IModelConnection) {\r\n  let prefix = \"\";\r\n  if (OpenMode.ReadWrite === imodel.openMode && imodel.isBriefcaseConnection())\r\n    prefix = imodel.editingScope ? \"[ EDIT ] \" : \"[ R/W ] \";\r\n\r\n  document.title = `${prefix}${imodel.key} - Display Test App`;\r\n}\r\n"
+        ],
+        "mappings": ";AAKA,SAAS,gBAAgB;AAGlB,gBAAS,SAAS,QAA0B;AACjD,MAAI,SAAS;AACb,MAAI,SAAS,cAAc,OAAO,YAAY,OAAO,sBAAsB;AACzE,aAAS,OAAO,eAAe,cAAc;AAE/C,WAAS,QAAQ,GAAG,MAAM,GAAG,OAAO,GAAG;AACzC;",
+        "names": []
+      }
+    }
+  ]
+}

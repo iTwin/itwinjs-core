@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/TileUser.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { Viewport } from \"../Viewport\";\nlet nextUserId = 1;\n/** @public */\nexport var TileUser;\n(function (TileUser) {\n    function generateId() {\n        return nextUserId++;\n    }\n    TileUser.generateId = generateId;\n    /** Iterate the subset of `users` that are [[Viewport]]s. */\n    function* viewportsFromUsers(users) {\n        for (const user of users)\n            if (user instanceof Viewport)\n                yield user;\n    }\n    TileUser.viewportsFromUsers = viewportsFromUsers;\n})(TileUser || (TileUser = {}));\n//# sourceMappingURL=TileUser.js.map",
+      "start": 1693508121750,
+      "end": 1693508121827,
+      "sourcemaps": null
+    }
+  ]
+}

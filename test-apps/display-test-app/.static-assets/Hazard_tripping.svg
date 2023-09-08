@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg height="144.407" id="svg1669" inkscape:version="0.40" sodipodi:docbase="/mnt/donnees/09-Mes_images/Travaux/Travaux vectoriel/pictogrammes/s  cu SVG/Avertissement" sodipodi:docname="Trebuchement.svg" sodipodi:version="0.32" width="156.262" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <metadata>
+    <rdf:RDF xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <cc:Work rdf:about="">
+        <dc:title>advertising</dc:title>
+        <dc:description></dc:description>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li></rdf:li>
+            <rdf:li>caution</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>warning</rdf:li>
+            <rdf:li>signs_and_symbols</rdf:li>
+            <rdf:li>sign</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://www.openclipart.org">
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>yves GUILLOU</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date></dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://web.resource.org/cc/PublicDomain"/>
+        <dc:language>en</dc:language>
+      </cc:Work>
+      <cc:License rdf:about="http://web.resource.org/cc/PublicDomain">
+        <cc:permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="svg1669" inkscape:cx="62.504797" inkscape:cy="57.762799" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1121" inkscape:window-width="1590" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="8.1626931" pagecolor="#ffffff"/>
+  <defs id="defs1670">
+    <marker id="ArrowEnd" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="0" refY="5" viewBox="0 0 10 10">
+      <path d="M 0 0 L 10 5 L 0 10 z" id="path1672"/>
+    </marker>
+    <marker id="ArrowStart" markerHeight="3" markerUnits="strokeWidth" markerWidth="4" orient="auto" refX="10" refY="5" viewBox="0 0 10 10">
+      <path d="M 10 0 L 0 5 L 10 10 z" id="path1674"/>
+    </marker>
+  </defs>
+  <g id="g1675">
+    <path d="M 12.473000,121.08200 C 11.492258,122.80712 10.481800,124.49000 10.481700,126.42300 L 10.483696,126.90798 C 10.483696,131.07998 13.756600,133.92500 17.511300,133.92500 L 138.83100,133.92500 C 142.58600,133.92500 145.78214,130.52486 145.78214,126.35286 L 145.78000,125.81500 C 145.78000,123.88200 144.75508,122.20699 143.78900,120.47400 L 83.705600,12.693800 C 81.051000,9.7442300 76.747300,9.7442300 74.092300,12.694200 L 12.473000,121.08200 z " id="path1676" sodipodi:nodetypes="cccccccsccs" style="stroke:#000000; stroke-width:2; fill:#ffffff"/>
+    <path d="M 78.703 16.2915L 15.2797 128.128L 76.4667 128.128L 79.3188 128.128L 139.826 128.128L 79.5155 16.2915L 78.703 16.2915z" id="path1677" style="stroke:#000000; stroke-width:4.8516000000000004; stroke-linejoin:round; stroke-linecap:round; fill:#ffcc00"/>
+  </g>
+  <g id="g1678">
+    <path d="M 97.9889 81.2671C 101.073 81.2671 103.573 78.7669 103.573 75.6828C 103.573 72.5987 101.073 70.0985 97.9889 70.0985C 94.9048 70.0985 92.4046 72.5987 92.4046 75.6828C 92.4046 78.7669 94.9048 81.2671 97.9889 81.2671z" id="path1679" style="stroke:none; fill:#000000"/>
+    <path d="M 65.9609 117.144L 65.9609 114.731L 73.8582 114.731L 73.8582 110.782L 83.5105 110.782L 83.5105 114.731L 92.5047 114.731L 92.5047 117.144L 65.9609 117.144z" id="path1680" style="stroke:none; fill:#000000"/>
+    <path d="M 69.4708 74.8053L 68.0083 71.0029L 80.878 66.323L 89.9453 72.7579C 89.9453 72.7579 90.5303 80.0702 92.8703 81.5327L 89.0678 91.4775L 94.9177 97.0349L 93.4553 99.9598L 82.3405 92.94L 87.6054 86.2126L 87.0204 85.0426L 75.3206 88.845L 77.3681 99.0823L 69.7633 111.367L 65.0834 111.367L 72.6882 98.4973L 70.6407 90.015L 68.8858 87.6751L 63.0359 95.5724L 48.9962 87.6751L 52.5061 84.7501L 60.9885 89.43L 66.2533 81.2402L 84.973 76.2678L 85.8504 74.2203L 81.1706 71.0029L 69.4708 74.8053z" id="path1681" style="stroke:none; fill:#000000"/>
+  </g>
+</svg>

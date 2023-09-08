@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/ImageryProviders/TileUrlImageryProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { MapLayerImageryProvider, MapLayerSourceStatus } from \"../../internal\";\nconst levelToken = \"{level}\";\nconst rowToken = \"{row}\";\nconst columnToken = \"{column}\";\n/**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png\n* @internal\n*/\nexport class TileUrlImageryProvider extends MapLayerImageryProvider {\n    constructor(settings) {\n        super(settings, true);\n    }\n    static validateUrlTemplate(template) {\n        return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };\n    }\n    // construct the Url from the desired Tile\n    async constructUrl(row, column, level) {\n        let url = this._settings.url;\n        if (TileUrlImageryProvider.validateUrlTemplate(url).status !== MapLayerSourceStatus.Valid) {\n            if (url.lastIndexOf(\"/\") !== url.length - 1)\n                url = `${url}/`;\n            url = `${url}{level}/{column}/{row}.png`;\n        }\n        return url.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());\n    }\n}\n//# sourceMappingURL=TileUrlImageryProvider.js.map",
+      "start": 1693508121810,
+      "end": 1693508121903,
+      "sourcemaps": null
+    }
+  ]
+}

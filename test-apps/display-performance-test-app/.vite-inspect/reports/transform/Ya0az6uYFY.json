@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/NamedVersionInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Possible Named Version states. */\r\nexport var NamedVersionState;\r\n(function (NamedVersionState) {\r\n    /** Visible. Named Version should be present in displayed Named Version lists. */\r\n    NamedVersionState[\"Visible\"] = \"visible\";\r\n    /** Hidden. Named Version is intended to be hidden in displayed Named Version lists. */\r\n    NamedVersionState[\"Hidden\"] = \"hidden\";\r\n})(NamedVersionState || (NamedVersionState = {}));\r\n//# sourceMappingURL=NamedVersionInterfaces.js.map",
+      "start": 1693508122152,
+      "end": 1693508122278,
+      "sourcemaps": null
+    }
+  ]
+}

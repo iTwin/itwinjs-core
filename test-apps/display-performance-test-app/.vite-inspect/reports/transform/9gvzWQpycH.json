@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/ScreenSpaceEffectBuilder.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** The underlying data types that can be used for uniform variables in screen-space effect shaders.\n * @see [[ScreenSpaceEffectBuilder.addUniform]] to define a uniform variable.\n * @see [[Uniform]] to set the value of a uniform variable.\n * @public\n * @extensions\n */\nexport var UniformType;\n(function (UniformType) {\n    /** GLSL `bool`. */\n    UniformType[UniformType[\"Bool\"] = 0] = \"Bool\";\n    /** GLSL `int`. */\n    UniformType[UniformType[\"Int\"] = 1] = \"Int\";\n    /** GLSL `float`. */\n    UniformType[UniformType[\"Float\"] = 2] = \"Float\";\n    /** GLSL `vec2`. */\n    UniformType[UniformType[\"Vec2\"] = 3] = \"Vec2\";\n    /** GLSL `vec3`. */\n    UniformType[UniformType[\"Vec3\"] = 4] = \"Vec3\";\n    /** GLSL `vec4`. */\n    UniformType[UniformType[\"Vec4\"] = 5] = \"Vec4\";\n})(UniformType || (UniformType = {}));\n/** The underlying data types that can be used for varying variables in screen-space effect shaders.\n * @see [[ScreenSpaceEffectBuilder.addVarying]] to define a varying variable.\n * @public\n * @extensions\n */\nexport var VaryingType;\n(function (VaryingType) {\n    /** GLSL `float`. */\n    VaryingType[VaryingType[\"Float\"] = 0] = \"Float\";\n    /** GLSL `vec2`. */\n    VaryingType[VaryingType[\"Vec2\"] = 1] = \"Vec2\";\n    /** GLSL `vec3`. */\n    VaryingType[VaryingType[\"Vec3\"] = 2] = \"Vec3\";\n    /** GLSL `vec4`. */\n    VaryingType[VaryingType[\"Vec4\"] = 3] = \"Vec4\";\n})(VaryingType || (VaryingType = {}));\n//# sourceMappingURL=ScreenSpaceEffectBuilder.js.map",
+      "start": 1693508119625,
+      "end": 1693508119713,
+      "sourcemaps": null
+    }
+  ]
+}

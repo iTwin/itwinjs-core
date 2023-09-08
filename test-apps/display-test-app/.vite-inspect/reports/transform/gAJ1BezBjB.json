@@ -1,0 +1,12 @@
+{
+  "resolvedId": "__vite-browser-external",
+  "transforms": [
+    {
+      "name": "vite:resolve",
+      "result": "export default new Proxy({}, {\n  get(_, key) {\n    throw new Error(`Module \"\" has been externalized for browser compatibility. Cannot access \".${key}\" in client code.  See http://vitejs.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.`)\n  }\n})",
+      "start": 1693508125794,
+      "end": 1693508125794,
+      "sourcemaps": null
+    }
+  ]
+}

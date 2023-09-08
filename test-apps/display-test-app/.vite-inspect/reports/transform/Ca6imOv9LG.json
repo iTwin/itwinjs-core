@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/ArcGisFeature/ArcGisFeatureReader.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { StandardTypeNames } from \"@itwin/appui-abstract\";\n/** Internal implementation of [[ArcGisFeatureReader]]\n * @internal\n */\nexport class ArcGisBaseFeatureReader {\n    constructor(settings, layerMetadata) {\n        // Force display value of date to ISO 8601 format.\n        // Turning this ON, will disable display value in end-user's locale\n        this.forceDateDisplayValueToIso = false;\n        this.toFixedWithoutPadding = (value) => {\n            return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));\n        };\n        this.getDisplayValue = (typename, value) => {\n            if (value === undefined) {\n                return \"\";\n            }\n            else if (typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {\n                return value.toISOString();\n            }\n            else {\n                return `${value}`;\n            }\n        };\n        this._settings = settings;\n        this._layerMetadata = layerMetadata;\n    }\n}\n//# sourceMappingURL=ArcGisFeatureReader.js.map",
+      "start": 1693508126276,
+      "end": 1693508126362,
+      "sourcemaps": null
+    }
+  ]
+}

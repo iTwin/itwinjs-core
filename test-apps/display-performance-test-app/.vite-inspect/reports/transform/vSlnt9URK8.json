@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/quantity/lib/esm/Quantity.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Quantity\n */\n/** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly\n * returned as the result of parsing a string that represents a quantity.\n * @beta\n */\nexport class Quantity {\n    get unit() { return this._unit; }\n    get magnitude() { return this._magnitude; }\n    get isValid() { return this._isValid; }\n    /** Constructor. The Quantity will only be set as valid if a unit is specified.\n     *  @param unit     Defines the quantity's unit.\n     *  @param magnitude   Defines the magnitude of the quantity.\n     */\n    constructor(unit, magnitude) {\n        this._magnitude = 0.0;\n        this._isValid = false;\n        if (undefined !== unit) {\n            this._unit = unit;\n            this._isValid = true;\n        }\n        else {\n            this._unit = { name: \"unknown\", label: \"unknown\", phenomenon: \"unknown\", isValid: false, system: \"unknown\" };\n        }\n        if (undefined !== magnitude)\n            this._magnitude = magnitude;\n    }\n    /** Convert a Quantity to the specified unit given the UnitConversion.\n     *  @param toUnit   The new unit for the quantity.\n     *  @param conversion  Defines the information needed to convert the Quantity's magnitude from the current unit to another unit. This conversion info is usually\n     *                     returned from the UnitsProvider.\n     */\n    convertTo(toUnit, conversion) {\n        const newMagnitude = (this.magnitude * conversion.factor) + conversion.offset;\n        return new Quantity(toUnit, newMagnitude);\n    }\n}\n//# sourceMappingURL=Quantity.js.map",
+      "start": 1693508123231,
+      "end": 1693508123482,
+      "sourcemaps": null
+    }
+  ]
+}

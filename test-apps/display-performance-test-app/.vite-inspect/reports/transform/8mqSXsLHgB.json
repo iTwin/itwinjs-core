@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/storage/FileContent.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class FileContent holds partial content (a single range) of a file.\n */\n/** @internal */\nexport class FileContent {\n    /**\n     * Create a new content holder.\n     */\n    constructor(offset, content) {\n        this.offset = offset;\n        this.content = content;\n    }\n}\n//# sourceMappingURL=FileContent.js.map",
+      "start": 1693508125368,
+      "end": 1693508125419,
+      "sourcemaps": null
+    }
+  ]
+}

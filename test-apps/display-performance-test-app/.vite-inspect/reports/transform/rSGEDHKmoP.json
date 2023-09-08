@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/RealityTileDrawArgs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { TileDrawArgs } from \"./internal\";\n/** @internal */\nexport class RealityTileDrawArgs extends TileDrawArgs {\n    get worldToViewMap() { return this._worldToViewMap; }\n    get secondaryClassifiers() { return this._secondaryClassifiers; }\n    constructor(args, worldToViewMap, frustumPlanes, maxSelectionCount, _secondaryClassifiers) {\n        super({ ...args, viewFlagOverrides: args.viewFlagOverrides, symbologyOverrides: args.symbologyOverrides, parentsAndChildrenExclusive: false });\n        this.maxSelectionCount = maxSelectionCount;\n        this._secondaryClassifiers = _secondaryClassifiers;\n        this._worldToViewMap = worldToViewMap;\n        this._frustumPlanes = frustumPlanes;\n    }\n}\n//# sourceMappingURL=RealityTileDrawArgs.js.map",
+      "start": 1693508121415,
+      "end": 1693508121609,
+      "sourcemaps": null
+    }
+  ]
+}

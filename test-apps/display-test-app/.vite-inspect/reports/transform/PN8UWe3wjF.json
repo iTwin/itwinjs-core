@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/Frustum2d.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Views\n */\nimport { Range1d } from \"@itwin/core-geometry\";\n/** Constants and functions for working with two-dimensions [Frustum]($common)s.\n * A 2d view is rendered using an orthographic frustum with depth. 2d elements have no meaningful placement in Z, but they can have a display priority\n * that controls which elements draw in front of others. Usable priority values range from -500 (behind everything else) to 500 (in front of everything else).\n * Priority values are mapped to Z coordinates in [-1, 1] meters. Therefore a 2d view always has *at least* that same depth range.\n * Sometimes, 3d views are displayed in the context of 2d views. Because 3d views can have arbitrarily large depths, the 2d view's extents are expanded\n * in Z to accommodate the 3d geometry. Expanding the frustum depth does *not* affect the mapping of display priorities to depth values.\n * @public\n */\nexport var Frustum2d;\n(function (Frustum2d) {\n    /** The minimum distance in positive or negative Z for a 2d frustum, in meters. */\n    Frustum2d.minimumZDistance = 1;\n    /** The minimum total z extents for a 2d frustum, in meters. */\n    Frustum2d.minimumZExtents = Range1d.createXX(-Frustum2d.minimumZDistance, Frustum2d.minimumZDistance);\n    const maxPriorityAbs = 500;\n    const priorityToZDistanceRatio = Frustum2d.minimumZDistance / maxPriorityAbs;\n    /** Convert display priority to Z. */\n    function depthFromDisplayPriority(priority) {\n        priority = Math.max(-maxPriorityAbs, Math.min(maxPriorityAbs, priority));\n        return priority * priorityToZDistanceRatio;\n    }\n    Frustum2d.depthFromDisplayPriority = depthFromDisplayPriority;\n})(Frustum2d || (Frustum2d = {}));\n//# sourceMappingURL=Frustum2d.js.map",
+      "start": 1693508119280,
+      "end": 1693508119436,
+      "sourcemaps": null
+    }
+  ]
+}

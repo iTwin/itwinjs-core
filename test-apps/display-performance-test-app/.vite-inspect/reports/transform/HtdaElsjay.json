@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/TileUsageMarker.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { BeTimePoint } from \"@itwin/core-bentley\";\nimport { IModelApp } from \"../IModelApp\";\n/** A marker associated with a [[Tile]] to track usage of that tile by any number of [[TileUser]]s.\n * The marker tracks:\n *  - the set of [[TileUser]]s by which the tile is in use for some purpose (displayed, preloaded, requested, selected for shadow map, etc); and\n *  - the most recent time at which any tile user declared its use of the tile.\n * The marker is used to allow tiles to be discarded after they become disused by any tile user, via [[Tile.prune]].\n * @see [[Tile.usageMarker]].\n * @public\n * @extensions\n */\nexport class TileUsageMarker {\n    /** Constructs a usage marker with its timepoint set to the current time and its set of [[TileUser]]s empty. */\n    constructor() {\n        this._timePoint = BeTimePoint.now();\n    }\n    /** Returns true if this tile is currently in use by no [[TileUser]]s and its timestamp pre-dates `expirationTime`. */\n    isExpired(expirationTime) {\n        return this.isTimestampExpired(expirationTime) && !this.getIsTileInUse();\n    }\n    /** Returns true if this tile is currently in use by any [[TileUser]]. */\n    getIsTileInUse() {\n        return IModelApp.tileAdmin.isTileInUse(this);\n    }\n    /** Returns true if this tile's timestamp pre-dates `expirationTime`, without checking if it is in use. */\n    isTimestampExpired(expirationTime) {\n        return this._timePoint.before(expirationTime);\n    }\n    /** Updates the timestamp to the specified time and marks the tile as being in use by the specified [[TileUser]]. */\n    mark(user, time) {\n        this._timePoint = time;\n        IModelApp.tileAdmin.markTileUsed(this, user);\n    }\n}\n//# sourceMappingURL=TileUsageMarker.js.map",
+      "start": 1693508121602,
+      "end": 1693508121734,
+      "sourcemaps": null
+    }
+  ]
+}

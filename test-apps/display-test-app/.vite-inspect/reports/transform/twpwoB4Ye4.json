@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/CheckBox.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @alpha */\nexport function createCheckBox(props) {\n    const div = document.createElement(\"div\");\n    const checkbox = document.createElement(\"input\");\n    checkbox.type = props.typeOverride ? props.typeOverride : \"checkbox\";\n    checkbox.id = props.id;\n    checkbox.checked = !!props.isChecked;\n    checkbox.addEventListener(\"click\", () => props.handler(checkbox));\n    div.appendChild(checkbox);\n    const label = document.createElement(\"label\");\n    label.htmlFor = props.id;\n    label.innerText = props.name;\n    div.appendChild(label);\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    if (undefined !== props.tooltip)\n        div.title = props.tooltip;\n    return { label, checkbox, div };\n}\n//# sourceMappingURL=CheckBox.js.map",
+      "start": 1693508122769,
+      "end": 1693508122854,
+      "sourcemaps": null
+    }
+  ]
+}

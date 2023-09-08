@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/collection/AList.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class AList defines a typed list of elements.\n */\n/** @internal */\nexport class AList {\n    constructor(capacity = 10) {\n        this._elements = [];\n    }\n    size() {\n        return this._elements.length;\n    }\n    add(element) {\n        this._elements.push(element);\n    }\n    addAt(index, element) {\n        this._elements.splice(index, 0, element);\n    }\n    remove(index) {\n        this._elements.splice(index, 1);\n    }\n    get(index) {\n        return this._elements[index];\n    }\n    indexOf(element) {\n        for (let i = 0; i < this._elements.length; i++)\n            if (this._elements[i] === element)\n                return i;\n        return -1;\n    }\n    contains(element) {\n        return (this.indexOf(element) >= 0);\n    }\n    clear() {\n        this._elements.splice(0, this._elements.length);\n    }\n    sort(comparator) {\n        this._elements.sort(function (o1, o2) { return comparator.compare(o1, o2); });\n    }\n    toArray(holder) {\n        return this._elements;\n    }\n    /**\n     * Get an iterator to use in \"for of\" loops.\n     */\n    [Symbol.iterator]() {\n        let iteratorList = this._elements;\n        let index = 0;\n        return {\n            next() {\n                if (index < iteratorList.length) {\n                    return { done: false, value: iteratorList[index++] };\n                }\n                else {\n                    return { done: true, value: null };\n                }\n            }\n        };\n    }\n}\n//# sourceMappingURL=AList.js.map",
+      "start": 1693508124832,
+      "end": 1693508124957,
+      "sourcemaps": null
+    }
+  ]
+}

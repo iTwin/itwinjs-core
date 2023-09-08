@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/core/buildFullPath.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar isAbsoluteURL = require('../helpers/isAbsoluteURL');\nvar combineURLs = require('../helpers/combineURLs');\n\n/**\n * Creates a new URL by combining the baseURL with the requestedURL,\n * only when the requestedURL is not already an absolute URL.\n * If the requestURL is absolute, this function returns the requestedURL untouched.\n *\n * @param {string} baseURL The base URL\n * @param {string} requestedURL Absolute or relative URL to combine\n * @returns {string} The combined full path\n */\nmodule.exports = function buildFullPath(baseURL, requestedURL) {\n  if (baseURL && !isAbsoluteURL(requestedURL)) {\n    return combineURLs(baseURL, requestedURL);\n  }\n  return requestedURL;\n};\n",
+      "start": 1693508125712,
+      "end": 1693508125755,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __require as require$$0 } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/helpers/isAbsoluteURL.js?commonjs-wrapped\";\nimport { __require as require$$1 } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.21.4/node_modules/axios/lib/helpers/combineURLs.js?commonjs-wrapped\";\n\nvar buildFullPath;\nvar hasRequiredBuildFullPath;\n\nfunction requireBuildFullPath () {\n\tif (hasRequiredBuildFullPath) return buildFullPath;\n\thasRequiredBuildFullPath = 1;\n\t'use strict';\n\n\tvar isAbsoluteURL = require$$0();\n\tvar combineURLs = require$$1();\n\n\t/**\n\t * Creates a new URL by combining the baseURL with the requestedURL,\n\t * only when the requestedURL is not already an absolute URL.\n\t * If the requestURL is absolute, this function returns the requestedURL untouched.\n\t *\n\t * @param {string} baseURL The base URL\n\t * @param {string} requestedURL Absolute or relative URL to combine\n\t * @returns {string} The combined full path\n\t */\n\tbuildFullPath = function buildFullPath(baseURL, requestedURL) {\n\t  if (baseURL && !isAbsoluteURL(requestedURL)) {\n\t    return combineURLs(baseURL, requestedURL);\n\t  }\n\t  return requestedURL;\n\t};\n\treturn buildFullPath;\n}\n\nexport { requireBuildFullPath as __require };",
+      "start": 1693508125755,
+      "end": 1693508125785,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,aAAa,GAAG,YAAmC,CAAC;CACxD,IAAI,WAAW,GAAG,YAAiC,CAAC;AACpD;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;AACA,cAAc,GAAG,SAAS,aAAa,CAAC,OAAO,EAAE,YAAY,EAAE;CAC/D,EAAE,IAAI,OAAO,IAAI,CAAC,aAAa,CAAC,YAAY,CAAC,EAAE;CAC/C,IAAI,OAAO,WAAW,CAAC,OAAO,EAAE,YAAY,CAAC,CAAC;CAC9C,GAAG;CACH,EAAE,OAAO,YAAY,CAAC;CACtB,CAAC"
+      }
+    }
+  ]
+}

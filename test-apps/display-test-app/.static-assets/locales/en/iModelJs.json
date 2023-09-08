@@ -1,0 +1,171 @@
+{
+  "ViewUndo": {
+    "NoPreviousViewOps": "No previous viewing operations",
+    "NoPreviousUndos": "Only valid after 'View Previous'"
+  },
+  "Viewing": {
+    "InvalidWindow": "Invalid window",
+    "MinWindow": "Minimum window",
+    "MaxWindow": "Maximum window",
+    "MaxZoom": "Maximum Zoom",
+    "InvalidTargetPoint": "Too close to target",
+    "NotDuringMarkup": "Cannot change view during markup"
+  },
+  "ElementUndo": {
+    "NothingToUndo": "No actions to undo",
+    "NothingToRedo": "Nothing has been undone",
+    "UndoAll": "Do you really want to undo all changes?"
+  },
+  "LocateFailure": {
+    "NoElements": "No Elements Found",
+    "ByApp": "Element not valid for tool",
+    "Transient": "Decoration is not valid for this tool",
+    "RealityModel": "Reality model is not valid for this tool",
+    "Map": "Map is not valid for this tool",
+    "NotSnappable": "Not snappable with current snap mode(s)",
+    "NotLocatable": "Element is not locatable",
+    "ExternalIModel": "iModel is not locatable",
+    "RealityModelSnapMode": "Reality models restricted to nearest snap",
+    "NotSnappableSubCategory": "SubCategory has snapping turned off",
+    "NotLocatableSubCategory": "SubCategory has locate turned off"
+  },
+  "Element": {
+    "Id": "Id",
+    "Model": "Model",
+    "Category": "Category",
+    "Type": "Class"
+  },
+  "BackgroundMap": {
+    "MapBoxCopyright": "© Mapbox, © OpenStreetMap contributors",
+    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia",
+    "OpenStreetMapContributors": "contributors",
+    "CannotObtainTerrain": "Terrain is unavailable",
+    "MissingCesiumToken": "The application must be configured with a valid Cesium ION access key to obtain 3d terrain data."
+  },
+  "ExtensionErrors": {
+    "Success": "Extension '{{extensionName}}' loaded",
+    "CantFind": "Cannot find Extension '{{extensionName}}'",
+    "UnableToLoad": "Unable to load Extension '{{extensionName}}'"
+  },
+  "DbResult": {
+    "BE_SQLITE_ERROR_AlreadyOpen": "Database already open",
+    "BE_SQLITE_ERROR_FileExists": "Database already exists",
+    "BE_SQLITE_ERROR_FileNotFound": "File not found"
+  },
+  "BentleyStatus": {
+    "SUCCESS": "Success",
+    "ERROR": "Error"
+  },
+  "IModelStatus": {
+    "AlreadyOpen": "Already open",
+    "BadElement": "Bad element",
+    "BadExtension": "Bad file extension",
+    "BadModel": "Bad model",
+    "BadRequest": "Bad request",
+    "BadSchema": "Bad schema",
+    "CannotUndo": "Can not Undo",
+    "DuplicateCode": "Duplicate code",
+    "DuplicateName": "Duplicate name",
+    "FileAlreadyExists": "File already exists",
+    "FileNotFound": "File not found",
+    "IdExists": "Id exists",
+    "InvalidCategory": "Invalid category",
+    "InvalidCode": "Invalid code",
+    "InvalidCodeSpec": "Invalid CodeSpec",
+    "InvalidId": "Invalid Id",
+    "InvalidName": "Invalid name",
+    "InvalidParent": "Invalid parent",
+    "LockNotHeld": "Lock not held",
+    "NothingToRedo": "Nothing to redo",
+    "NothingToUndo": "Nothing to undo",
+    "ParentBlockedChange": "Parent blocked change",
+    "ReadError": "Read error",
+    "TransactionActive": "Transaction active",
+    "UnitsMissing": "Units missing",
+    "UnknownError": "Unknown error from backend",
+    "UpgradeFailed": "Upgrade failed",
+    "UploadError": "Failed to upload file",
+    "ValidationFailed": "Validation failed",
+    "VersionTooNew": "Version too new",
+    "VersionTooOld": "Version too old",
+    "ViewNotFound": "View not found",
+    "WriteError": "Write error",
+    "WrongClass": "Wrong class",
+    "WrongElement": "Wrong element",
+    "WrongHandler": "Wrong handler",
+    "WrongIModel": "Wrong iModel",
+    "WrongModel": "Wrong model"
+  },
+  "Errors": {
+    "Status": "Status: {{status}}",
+    "IllegalValue": "Illegal value",
+    "Details": "In case you're interested in the details:",
+    "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
+    "WebGLContextLost": "The WebGL rendering context was lost, most likely as a result of running out of graphics memory.\nSee <a target=\"_blank\" href=\"https://connect-imodeljscompatibility.bentley.com/\">the WebGL compatibility checker</a> for more information.\nClosing other browser tabs before reloading the page may help."
+  },
+  "Properties": {
+    "Angle": "Angle",
+    "Length": "Length",
+    "UnableToParseAngle": "Unable to parse angle value",
+    "UnableToParseLength": "Unable to parse length value"
+  },
+  "Notices": {
+    "PoweredBy": "Powered by"
+  },
+  "RealityModelTypes": {
+    "OrbitGTPointCloud": "Web Ready Point Cloud",
+    "RealityMesh3DTiles": "Web Ready 3D Scalable Mesh",
+    "Terrain3DTiles": "Web Ready Terrain Scalable Mesh",
+    "Cesium3DTiles": "Cesium 3D Tiles"
+  },
+  "RealityModelNames": {
+    "OSMBuildings": "OpenStreetMap Buildings"
+  },
+  "QuantityType": {
+    "Length": {
+      "label": "Architectural Length",
+      "description": "Architectural Lengths"
+    },
+    "LengthEngineering": {
+      "label": "Engineering Length",
+      "description": "Engineering Lengths"
+    },
+    "Coordinate": {
+      "label": "Coordinate Value",
+      "description": "Coordinate Values"
+    },
+    "Stationing": {
+      "label": "Stationing",
+      "description": "Stationing Values"
+    },
+    "LengthSurvey": {
+      "label": "Survey Length",
+      "description": "Survey Length Values"
+    },
+    "Angle": {
+      "label": "Angle",
+      "description": "Angle Values"
+    },
+    "LatLong": {
+      "label": "Lat/Long",
+      "description": "Latitude/Longitude Values"
+    },
+    "Area": {
+      "label": "Area",
+      "description": "Area Values"
+    },
+    "Volume": {
+      "label": "Volume",
+      "description": "Volume Values"
+    }
+  },
+  "MapLayers": {
+    "Messages": {
+      "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
+      "FetchTooltipTokenError": "An authentication error occurred for layer: '{{layerName}}. Please login again.'"
+    }
+  },
+  "TooltipInfo": {
+    "Name": "Name:"
+  }
+}

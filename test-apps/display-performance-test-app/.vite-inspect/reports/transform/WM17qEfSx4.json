@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/SumLengthsContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { RecursiveCurveProcessor } from \"../CurveProcessor\";\n/**\n * Algorithmic class: Sum lengths of curves\n * @internal\n */\nexport class SumLengthsContext extends RecursiveCurveProcessor {\n    constructor() {\n        super();\n        this._sum = 0.0;\n    }\n    static sumLengths(target) {\n        const context = new SumLengthsContext();\n        target.announceToCurveProcessor(context);\n        return context._sum;\n    }\n    announceCurvePrimitive(curvePrimitive, _indexInParent) {\n        this._sum += curvePrimitive.curveLength();\n    }\n}\n//# sourceMappingURL=SumLengthsContext.js.map",
+      "start": 1693508124121,
+      "end": 1693508124213,
+      "sourcemaps": null
+    }
+  ]
+}

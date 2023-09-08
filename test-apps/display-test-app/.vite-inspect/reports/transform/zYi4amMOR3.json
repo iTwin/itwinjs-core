@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/HSVColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Symbology\n */\nimport { ColorDef } from \"./ColorDef\";\n/**\n * @public\n * @extensions\n */\nexport var HSVConstants;\n(function (HSVConstants) {\n    HSVConstants[HSVConstants[\"VISIBILITY_GOAL\"] = 40] = \"VISIBILITY_GOAL\";\n    HSVConstants[HSVConstants[\"HSV_SATURATION_WEIGHT\"] = 4] = \"HSV_SATURATION_WEIGHT\";\n    HSVConstants[HSVConstants[\"HSV_VALUE_WEIGHT\"] = 2] = \"HSV_VALUE_WEIGHT\";\n})(HSVConstants || (HSVConstants = {}));\n/** An immutable color defined by Hue, Saturation, and Value\n * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV\n * @public\n */\nexport class HSVColor {\n    constructor(hue = 0, saturation = 0, value = 0) {\n        this.h = hue;\n        this.s = saturation;\n        this.v = value;\n    }\n    clone(hue, saturation, value) {\n        return new HSVColor(hue ?? this.h, saturation ?? this.s, value ?? this.v);\n    }\n    toColorDef(transparency = 0) {\n        return ColorDef.fromHSV(this, transparency);\n    }\n    static fromColorDef(val) {\n        return val.toHSV();\n    }\n    adjusted(darkenColor, delta) {\n        let weightedDelta;\n        if (darkenColor) {\n            weightedDelta = delta * HSVConstants.HSV_VALUE_WEIGHT;\n            if (this.v >= weightedDelta)\n                return new HSVColor(this.h, this.s, this.v - weightedDelta);\n            weightedDelta -= this.v;\n            const s = Math.min(this.s + weightedDelta, 100);\n            return new HSVColor(this.h, s, 0);\n        }\n        weightedDelta = delta * HSVConstants.HSV_SATURATION_WEIGHT;\n        if (this.s >= weightedDelta)\n            return new HSVColor(this.h, this.s - weightedDelta, this.v);\n        weightedDelta -= this.s;\n        const v = Math.min(this.v + weightedDelta, 100);\n        return new HSVColor(this.h, 0, v);\n    }\n}\n//# sourceMappingURL=HSVColor.js.map",
+      "start": 1693508120827,
+      "end": 1693508120919,
+      "sourcemaps": null
+    }
+  ]
+}

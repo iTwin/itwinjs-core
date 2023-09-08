@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/utils/methods.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "const methods = {}\r\nconst names = []\r\n\r\nexport function registerMethods (name, m) {\r\n  if (Array.isArray(name)) {\r\n    for (let _name of name) {\r\n      registerMethods(_name, m)\r\n    }\r\n    return\r\n  }\r\n\r\n  if (typeof name === 'object') {\r\n    for (let _name in name) {\r\n      registerMethods(_name, name[_name])\r\n    }\r\n    return\r\n  }\r\n\r\n  addMethodNames(Object.getOwnPropertyNames(m))\r\n  methods[name] = Object.assign(methods[name] || {}, m)\r\n}\r\n\r\nexport function getMethodsFor (name) {\r\n  return methods[name] || {}\r\n}\r\n\r\nexport function getMethodNames () {\r\n  return [ ...new Set(names) ]\r\n}\r\n\r\nexport function addMethodNames (_names) {\r\n  names.push(..._names)\r\n}\r\n",
+      "start": 1693508126740,
+      "end": 1693508127034,
+      "sourcemaps": null
+    }
+  ]
+}

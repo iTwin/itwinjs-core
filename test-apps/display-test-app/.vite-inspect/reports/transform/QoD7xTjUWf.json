@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/render/AViewRequest.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class AViewRequest defines a abstract request the render a view.\n *\n * @version 1.0 November 2015\n */\n/** @internal */\nexport class AViewRequest {\n    /**\n     * Make a new request.\n     */\n    constructor() {\n    }\n}\n//# sourceMappingURL=AViewRequest.js.map",
+      "start": 1693508125956,
+      "end": 1693508126094,
+      "sourcemaps": null
+    }
+  ]
+}

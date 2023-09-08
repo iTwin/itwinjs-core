@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/Monochrome.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { MonochromeMode } from \"@itwin/core-common\";\nconst applyUnlitMonochromeColor = `\r\n  vec4 monoColor = vec4(u_monoRgb, baseColor.a);\r\n  return u_shaderFlags[kShaderBit_Monochrome] ? monoColor : baseColor;\r\n`;\nconst applySurfaceMonochromeColor = `\r\n  vec4 monoColor = vec4(u_monoRgb, baseColor.a);\r\n  if (1.0 == u_mixMonoColor) {\r\n    vec3 rgb = baseColor.rgb;\r\n    rgb = vec3(dot(rgb, vec3(.222, .707, .071)));\r\n    rgb *= u_monoRgb;\r\n    monoColor.rgb = rgb;\r\n  }\r\n\r\n  return u_shaderFlags[kShaderBit_Monochrome] ? monoColor : baseColor;\r\n`;\nfunction addMonoRgb(frag) {\n    frag.addUniform(\"u_monoRgb\", 4 /* VariableType.Vec3 */, (prog) => {\n        prog.addProgramUniform(\"u_monoRgb\", (uniform, params) => {\n            params.target.uniforms.style.bindMonochromeRgb(uniform);\n        });\n    });\n}\n/** @internal */\nexport function addUnlitMonochrome(frag) {\n    addMonoRgb(frag);\n    frag.set(6 /* FragmentShaderComponent.ApplyMonochrome */, applyUnlitMonochromeColor);\n}\n/** @internal */\nexport function addSurfaceMonochrome(frag) {\n    addMonoRgb(frag);\n    frag.addUniform(\"u_mixMonoColor\", 2 /* VariableType.Float */, (prog) => {\n        prog.addGraphicUniform(\"u_mixMonoColor\", (uniform, params) => {\n            uniform.setUniform1f(MonochromeMode.Scaled === params.target.plan.monochromeMode && params.geometry.wantMixMonochromeColor(params.target) ? 1.0 : 0.0);\n        });\n    });\n    frag.set(6 /* FragmentShaderComponent.ApplyMonochrome */, applySurfaceMonochromeColor);\n}\n//# sourceMappingURL=Monochrome.js.map",
+      "start": 1693508125898,
+      "end": 1693508126016,
+      "sourcemaps": null
+    }
+  ]
+}

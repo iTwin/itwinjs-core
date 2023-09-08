@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/helpers/parseHeaders.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\nvar utils = require('./../utils');\n\n// Headers whose duplicates are ignored by node\n// c.f. https://nodejs.org/api/http.html#http_message_headers\nvar ignoreDuplicateOf = [\n  'age', 'authorization', 'content-length', 'content-type', 'etag',\n  'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since',\n  'last-modified', 'location', 'max-forwards', 'proxy-authorization',\n  'referer', 'retry-after', 'user-agent'\n];\n\n/**\n * Parse headers into an object\n *\n * ```\n * Date: Wed, 27 Aug 2014 08:58:49 GMT\n * Content-Type: application/json\n * Connection: keep-alive\n * Transfer-Encoding: chunked\n * ```\n *\n * @param {String} headers Headers needing to be parsed\n * @returns {Object} Headers parsed into an object\n */\nmodule.exports = function parseHeaders(headers) {\n  var parsed = {};\n  var key;\n  var val;\n  var i;\n\n  if (!headers) { return parsed; }\n\n  utils.forEach(headers.split('\\n'), function parser(line) {\n    i = line.indexOf(':');\n    key = utils.trim(line.substr(0, i)).toLowerCase();\n    val = utils.trim(line.substr(i + 1));\n\n    if (key) {\n      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {\n        return;\n      }\n      if (key === 'set-cookie') {\n        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);\n      } else {\n        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;\n      }\n    }\n  });\n\n  return parsed;\n};\n",
+      "start": 1693508127430,
+      "end": 1693508127494,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/utils.js?commonjs-proxy\";\n\nvar parseHeaders;\nvar hasRequiredParseHeaders;\n\nfunction requireParseHeaders () {\n\tif (hasRequiredParseHeaders) return parseHeaders;\n\thasRequiredParseHeaders = 1;\n\t'use strict';\n\n\tvar utils = require$$0;\n\n\t// Headers whose duplicates are ignored by node\n\t// c.f. https://nodejs.org/api/http.html#http_message_headers\n\tvar ignoreDuplicateOf = [\n\t  'age', 'authorization', 'content-length', 'content-type', 'etag',\n\t  'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since',\n\t  'last-modified', 'location', 'max-forwards', 'proxy-authorization',\n\t  'referer', 'retry-after', 'user-agent'\n\t];\n\n\t/**\n\t * Parse headers into an object\n\t *\n\t * ```\n\t * Date: Wed, 27 Aug 2014 08:58:49 GMT\n\t * Content-Type: application/json\n\t * Connection: keep-alive\n\t * Transfer-Encoding: chunked\n\t * ```\n\t *\n\t * @param {String} headers Headers needing to be parsed\n\t * @returns {Object} Headers parsed into an object\n\t */\n\tparseHeaders = function parseHeaders(headers) {\n\t  var parsed = {};\n\t  var key;\n\t  var val;\n\t  var i;\n\n\t  if (!headers) { return parsed; }\n\n\t  utils.forEach(headers.split('\\n'), function parser(line) {\n\t    i = line.indexOf(':');\n\t    key = utils.trim(line.substr(0, i)).toLowerCase();\n\t    val = utils.trim(line.substr(i + 1));\n\n\t    if (key) {\n\t      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {\n\t        return;\n\t      }\n\t      if (key === 'set-cookie') {\n\t        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);\n\t      } else {\n\t        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;\n\t      }\n\t    }\n\t  });\n\n\t  return parsed;\n\t};\n\treturn parseHeaders;\n}\n\nexport { requireParseHeaders as __require };",
+      "start": 1693508127494,
+      "end": 1693508127496,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;;CAAA,YAAY,CAAC;AACb;CACA,IAAI,KAAK,GAAG,UAAqB,CAAC;AAClC;CACA;CACA;CACA,IAAI,iBAAiB,GAAG;CACxB,EAAE,KAAK,EAAE,eAAe,EAAE,gBAAgB,EAAE,cAAc,EAAE,MAAM;CAClE,EAAE,SAAS,EAAE,MAAM,EAAE,MAAM,EAAE,mBAAmB,EAAE,qBAAqB;CACvE,EAAE,eAAe,EAAE,UAAU,EAAE,cAAc,EAAE,qBAAqB;CACpE,EAAE,SAAS,EAAE,aAAa,EAAE,YAAY;CACxC,CAAC,CAAC;AACF;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;CACA;AACA,aAAc,GAAG,SAAS,YAAY,CAAC,OAAO,EAAE;CAChD,EAAE,IAAI,MAAM,GAAG,EAAE,CAAC;CAClB,EAAE,IAAI,GAAG,CAAC;CACV,EAAE,IAAI,GAAG,CAAC;CACV,EAAE,IAAI,CAAC,CAAC;AACR;CACA,EAAE,IAAI,CAAC,OAAO,EAAE,EAAE,OAAO,MAAM,CAAC,EAAE;AAClC;CACA,EAAE,KAAK,CAAC,OAAO,CAAC,OAAO,CAAC,KAAK,CAAC,IAAI,CAAC,EAAE,SAAS,MAAM,CAAC,IAAI,EAAE;CAC3D,IAAI,CAAC,GAAG,IAAI,CAAC,OAAO,CAAC,GAAG,CAAC,CAAC;CAC1B,IAAI,GAAG,GAAG,KAAK,CAAC,IAAI,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,WAAW,EAAE,CAAC;CACtD,IAAI,GAAG,GAAG,KAAK,CAAC,IAAI,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC;AACzC;CACA,IAAI,IAAI,GAAG,EAAE;CACb,MAAM,IAAI,MAAM,CAAC,GAAG,CAAC,IAAI,iBAAiB,CAAC,OAAO,CAAC,GAAG,CAAC,IAAI,CAAC,EAAE;CAC9D,QAAQ,OAAO;CACf,OAAO;CACP,MAAM,IAAI,GAAG,KAAK,YAAY,EAAE;CAChC,QAAQ,MAAM,CAAC,GAAG,CAAC,GAAG,CAAC,MAAM,CAAC,GAAG,CAAC,GAAG,MAAM,CAAC,GAAG,CAAC,GAAG,EAAE,EAAE,MAAM,CAAC,CAAC,GAAG,CAAC,CAAC,CAAC;CACrE,OAAO,MAAM;CACb,QAAQ,MAAM,CAAC,GAAG,CAAC,GAAG,MAAM,CAAC,GAAG,CAAC,GAAG,MAAM,CAAC,GAAG,CAAC,GAAG,IAAI,GAAG,GAAG,GAAG,GAAG,CAAC;CACnE,OAAO;CACP,KAAK;CACL,GAAG,CAAC,CAAC;AACL;CACA,EAAE,OAAO,MAAM,CAAC;CAChB,CAAC"
+      }
+    }
+  ]
+}

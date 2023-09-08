@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/CoordSystem.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Views\n */\n/** Coordinate system types\n * @public\n * @extensions\n */\nexport var CoordSystem;\n(function (CoordSystem) {\n    /** Coordinates are relative to the origin of the viewing rectangle.\n     * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.\n     */\n    CoordSystem[CoordSystem[\"View\"] = 0] = \"View\";\n    /** Coordinates are in [Normalized Plane Coordinates]($docs/learning/glossary.md#npc). NPC is a coordinate system\n     * for frustums in which each dimension [x,y,z] is normalized to hold values between 0.0 and 1.0.\n     * [0,0,0] corresponds to the left-bottom-rear and [1,1,1] to the right-top-front of the frustum.\n     */\n    CoordSystem[CoordSystem[\"Npc\"] = 1] = \"Npc\";\n    /** Coordinates are in the coordinate system of the models in the view. For SpatialViews, this is the iModel's spatial coordinate system.\n     * For 2d views, it is the coordinate system of the GeometricModel2d that the view shows.\n     */\n    CoordSystem[CoordSystem[\"World\"] = 2] = \"World\";\n})(CoordSystem || (CoordSystem = {}));\n//# sourceMappingURL=CoordSystem.js.map",
+      "start": 1693508119172,
+      "end": 1693508119336,
+      "sourcemaps": null
+    }
+  ]
+}

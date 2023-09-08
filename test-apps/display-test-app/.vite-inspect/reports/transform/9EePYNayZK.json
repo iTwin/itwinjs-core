@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/Base.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export default class Base {\r\n  // constructor (node/*, {extensions = []} */) {\r\n  //   // this.tags = []\r\n  //   //\r\n  //   // for (let extension of extensions) {\r\n  //   //   extension.setup.call(this, node)\r\n  //   //   this.tags.push(extension.name)\r\n  //   // }\r\n  // }\r\n}\r\n",
+      "start": 1693508127259,
+      "end": 1693508127354,
+      "sourcemaps": null
+    }
+  ]
+}

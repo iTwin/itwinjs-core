@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/ImageryProviders/WebMercator.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { Angle, Constant } from \"@itwin/core-geometry\";\n/** @internal */\nexport class WebMercator {\n    // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857\n    static getEPSG4326Lon(x3857) {\n        return Angle.radiansToDegrees(x3857 / Constant.earthRadiusWGS84.equator);\n    }\n    // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857\n    static getEPSG4326Lat(y3857) {\n        const y = 2 * Math.atan(Math.exp(y3857 / Constant.earthRadiusWGS84.equator)) - (Math.PI / 2);\n        return Angle.radiansToDegrees(y);\n    }\n}\n//# sourceMappingURL=WebMercator.js.map",
+      "start": 1693508121731,
+      "end": 1693508121860,
+      "sourcemaps": null
+    }
+  ]
+}

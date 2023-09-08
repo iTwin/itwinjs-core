@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/i18n/lib/esm/core-i18n.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./ITwinLocalization\";\n/** @docs-package-description\n * The core-i18n package contains classes related to internationalization and localization.\n */\n/** @docs-group-description Localization\n * Classes for internationalization and localization of your app.\n */\n//# sourceMappingURL=core-i18n.js.map",
+      "start": 1693508121255,
+      "end": 1693508121325,
+      "sourcemaps": null
+    }
+  ]
+}

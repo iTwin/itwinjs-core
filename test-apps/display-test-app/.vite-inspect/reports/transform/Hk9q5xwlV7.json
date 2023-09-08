@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/ui/Button.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** Creates a Button as specified by the ButtonProps.\n * @alpha\n */\nexport function createButton(props) {\n    const div = document.createElement(props.inline ? \"span\" : \"div\");\n    const button = document.createElement(\"input\");\n    button.type = \"button\";\n    button.value = props.value;\n    button.addEventListener(\"click\", () => props.handler(button));\n    div.appendChild(button);\n    if (undefined !== props.id)\n        button.id = props.id;\n    if (undefined !== props.tooltip)\n        div.title = props.tooltip;\n    if (undefined !== props.parent)\n        props.parent.appendChild(div);\n    return { button, div };\n}\n//# sourceMappingURL=Button.js.map",
+      "start": 1693508122768,
+      "end": 1693508122858,
+      "sourcemaps": null
+    }
+  ]
+}

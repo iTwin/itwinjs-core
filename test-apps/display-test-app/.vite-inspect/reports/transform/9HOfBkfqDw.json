@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Marker.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Container from './Container.js'\r\n\r\nexport default class Marker extends Container {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('marker', node), node)\r\n  }\r\n\r\n  // Set width of element\r\n  width (width) {\r\n    return this.attr('markerWidth', width)\r\n  }\r\n\r\n  // Set height of element\r\n  height (height) {\r\n    return this.attr('markerHeight', height)\r\n  }\r\n\r\n  // Set marker refX and refY\r\n  ref (x, y) {\r\n    return this.attr('refX', x).attr('refY', y)\r\n  }\r\n\r\n  // Update marker\r\n  update (block) {\r\n    // remove all content\r\n    this.clear()\r\n\r\n    // invoke passed block\r\n    if (typeof block === 'function') {\r\n      block.call(this, this)\r\n    }\r\n\r\n    return this\r\n  }\r\n\r\n  // Return the fill id\r\n  toString () {\r\n    return 'url(#' + this.id() + ')'\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    marker (...args) {\r\n      // Create marker element in defs\r\n      return this.defs().marker(...args)\r\n    }\r\n  },\r\n  Defs: {\r\n    // Create marker\r\n    marker: wrapWithAttrCheck(function (width, height, block) {\r\n      // Set default viewbox to match the width and height, set ref to cx and cy and set orient to auto\r\n      return this.put(new Marker())\r\n        .size(width, height)\r\n        .ref(width / 2, height / 2)\r\n        .viewbox(0, 0, width, height)\r\n        .attr('orient', 'auto')\r\n        .update(block)\r\n    })\r\n  },\r\n  marker: {\r\n    // Create and attach markers\r\n    marker (marker, width, height, block) {\r\n      var attr = [ 'marker' ]\r\n\r\n      // Build attribute name\r\n      if (marker !== 'all') attr.push(marker)\r\n      attr = attr.join('-')\r\n\r\n      // Set marker attribute\r\n      marker = arguments[1] instanceof Marker\r\n        ? arguments[1]\r\n        : this.defs().marker(width, height, block)\r\n\r\n      return this.attr(attr, marker)\r\n    }\r\n  }\r\n})\r\n\r\nregister(Marker, 'Marker')\r\n",
+      "start": 1693508127015,
+      "end": 1693508127089,
+      "sourcemaps": null
+    }
+  ]
+}

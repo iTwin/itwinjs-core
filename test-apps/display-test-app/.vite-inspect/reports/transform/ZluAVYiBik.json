@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Style.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport { unCamelCase } from '../utils/utils.js'\r\nimport Element from './Element.js'\r\n\r\nfunction cssRule (selector, rule) {\r\n  if (!selector) return ''\r\n  if (!rule) return selector\r\n\r\n  var ret = selector + '{'\r\n\r\n  for (var i in rule) {\r\n    ret += unCamelCase(i) + ':' + rule[i] + ';'\r\n  }\r\n\r\n  ret += '}'\r\n\r\n  return ret\r\n}\r\n\r\nexport default class Style extends Element {\r\n  constructor (node) {\r\n    super(nodeOrNew('style', node), node)\r\n  }\r\n\r\n  addText (w = '') {\r\n    this.node.textContent += w\r\n    return this\r\n  }\r\n\r\n  font (name, src, params = {}) {\r\n    return this.rule('@font-face', {\r\n      fontFamily: name,\r\n      src: src,\r\n      ...params\r\n    })\r\n  }\r\n\r\n  rule (selector, obj) {\r\n    return this.addText(cssRule(selector, obj))\r\n  }\r\n}\r\n\r\nregisterMethods('Dom', {\r\n  style: wrapWithAttrCheck(function (selector, obj) {\r\n    return this.put(new Style()).rule(selector, obj)\r\n  }),\r\n  fontface: wrapWithAttrCheck(function (name, src, params) {\r\n    return this.put(new Style()).font(name, src, params)\r\n  })\r\n})\r\n\r\nregister(Style, 'Style')\r\n",
+      "start": 1693508127164,
+      "end": 1693508127209,
+      "sourcemaps": null
+    }
+  ]
+}

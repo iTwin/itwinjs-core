@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/notification/MessageSeverity.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Notification\n */\n/** Message Severity enum for display messages.\n  * @public\n  */\nexport var MessageSeverity;\n(function (MessageSeverity) {\n    MessageSeverity[MessageSeverity[\"None\"] = 0] = \"None\";\n    MessageSeverity[MessageSeverity[\"Information\"] = 1] = \"Information\";\n    MessageSeverity[MessageSeverity[\"Question\"] = 2] = \"Question\";\n    MessageSeverity[MessageSeverity[\"Warning\"] = 3] = \"Warning\";\n    MessageSeverity[MessageSeverity[\"Error\"] = 4] = \"Error\";\n    MessageSeverity[MessageSeverity[\"Fatal\"] = 5] = \"Fatal\";\n    MessageSeverity[MessageSeverity[\"Success\"] = 6] = \"Success\";\n})(MessageSeverity || (MessageSeverity = {}));\n//# sourceMappingURL=MessageSeverity.js.map",
+      "start": 1693508123586,
+      "end": 1693508123612,
+      "sourcemaps": null
+    }
+  ]
+}

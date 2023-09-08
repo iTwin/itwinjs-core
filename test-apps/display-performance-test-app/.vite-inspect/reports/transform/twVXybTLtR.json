@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/Sync.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\n/** Returns true if the target and observer are already synchronized.\n * @internal\n */\nexport function isSynchronized(target, observer) {\n    const token = observer.syncToken;\n    return undefined !== token && token.target === target && token.syncKey === target.syncKey;\n}\n/** If the observer is already synchronized with the target, returns true.\n * Otherwise, synchronizes the observer's [[SyncToken]] with the target and returns false.\n * This is used, for example, to associate uniform variable state with shader programs such that the program can trivially detect if the state has changed since the last time\n * the variable's value was set.\n * @internal\n */\nexport function sync(target, observer) {\n    const syncKey = target.syncKey;\n    const token = observer.syncToken;\n    if (undefined === token) {\n        observer.syncToken = { target, syncKey };\n        return false;\n    }\n    if (token.syncKey === syncKey && token.target === target)\n        return true;\n    token.syncKey = syncKey;\n    token.target = target;\n    return false;\n}\n/** Mark the [[SyncTarget]] as having changed in a way that affects associated [[SyncObserver]]s.\n * The next time [[sync]] is used, all [[SyncToken]] objects associated with the target will be recognized as out of sync.\n * @internal\n */\nexport function desync(target) {\n    // Let's make the relatively safe assumption that we will never roll over, and the even safer assumption that if we do, no outstanding SyncTokens holding a very small value will exist at that time.\n    if (target.syncKey < Number.MAX_SAFE_INTEGER)\n        ++target.syncKey;\n    else\n        target.syncKey = Number.MIN_SAFE_INTEGER;\n}\n//# sourceMappingURL=Sync.js.map",
+      "start": 1693508121197,
+      "end": 1693508121556,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/core/enhanceError.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\n/**\n * Update an Error with the specified config, error code, and response.\n *\n * @param {Error} error The error to update.\n * @param {Object} config The config.\n * @param {string} [code] The error code (for example, 'ECONNABORTED').\n * @param {Object} [request] The request.\n * @param {Object} [response] The response.\n * @returns {Error} The error.\n */\nmodule.exports = function enhanceError(error, config, code, request, response) {\n  error.config = config;\n  if (code) {\n    error.code = code;\n  }\n\n  error.request = request;\n  error.response = response;\n  error.isAxiosError = true;\n\n  error.toJSON = function toJSON() {\n    return {\n      // Standard\n      message: this.message,\n      name: this.name,\n      // Microsoft\n      description: this.description,\n      number: this.number,\n      // Mozilla\n      fileName: this.fileName,\n      lineNumber: this.lineNumber,\n      columnNumber: this.columnNumber,\n      stack: this.stack,\n      // Axios\n      config: this.config,\n      code: this.code,\n      status: this.response && this.response.status ? this.response.status : null\n    };\n  };\n  return error;\n};\n",
+      "start": 1693508125569,
+      "end": 1693508125616,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\n'use strict';\n\n/**\n * Update an Error with the specified config, error code, and response.\n *\n * @param {Error} error The error to update.\n * @param {Object} config The config.\n * @param {string} [code] The error code (for example, 'ECONNABORTED').\n * @param {Object} [request] The request.\n * @param {Object} [response] The response.\n * @returns {Error} The error.\n */\nvar enhanceError = function enhanceError(error, config, code, request, response) {\n  error.config = config;\n  if (code) {\n    error.code = code;\n  }\n\n  error.request = request;\n  error.response = response;\n  error.isAxiosError = true;\n\n  error.toJSON = function toJSON() {\n    return {\n      // Standard\n      message: this.message,\n      name: this.name,\n      // Microsoft\n      description: this.description,\n      number: this.number,\n      // Mozilla\n      fileName: this.fileName,\n      lineNumber: this.lineNumber,\n      columnNumber: this.columnNumber,\n      stack: this.stack,\n      // Axios\n      config: this.config,\n      code: this.code,\n      status: this.response && this.response.status ? this.response.status : null\n    };\n  };\n  return error;\n};\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(enhanceError);\nexport { enhanceError as __moduleExports };",
+      "start": 1693508125616,
+      "end": 1693508125616,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;AAAA,YAAY,CAAC;AACb;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;IACA,YAAc,GAAG,SAAS,YAAY,CAAC,KAAK,EAAE,MAAM,EAAE,IAAI,EAAE,OAAO,EAAE,QAAQ,EAAE;AAC/E,EAAE,KAAK,CAAC,MAAM,GAAG,MAAM,CAAC;AACxB,EAAE,IAAI,IAAI,EAAE;AACZ,IAAI,KAAK,CAAC,IAAI,GAAG,IAAI,CAAC;AACtB,GAAG;AACH;AACA,EAAE,KAAK,CAAC,OAAO,GAAG,OAAO,CAAC;AAC1B,EAAE,KAAK,CAAC,QAAQ,GAAG,QAAQ,CAAC;AAC5B,EAAE,KAAK,CAAC,YAAY,GAAG,IAAI,CAAC;AAC5B;AACA,EAAE,KAAK,CAAC,MAAM,GAAG,SAAS,MAAM,GAAG;AACnC,IAAI,OAAO;AACX;AACA,MAAM,OAAO,EAAE,IAAI,CAAC,OAAO;AAC3B,MAAM,IAAI,EAAE,IAAI,CAAC,IAAI;AACrB;AACA,MAAM,WAAW,EAAE,IAAI,CAAC,WAAW;AACnC,MAAM,MAAM,EAAE,IAAI,CAAC,MAAM;AACzB;AACA,MAAM,QAAQ,EAAE,IAAI,CAAC,QAAQ;AAC7B,MAAM,UAAU,EAAE,IAAI,CAAC,UAAU;AACjC,MAAM,YAAY,EAAE,IAAI,CAAC,YAAY;AACrC,MAAM,KAAK,EAAE,IAAI,CAAC,KAAK;AACvB;AACA,MAAM,MAAM,EAAE,IAAI,CAAC,MAAM;AACzB,MAAM,IAAI,EAAE,IAAI,CAAC,IAAI;AACrB,MAAM,MAAM,EAAE,IAAI,CAAC,QAAQ,IAAI,IAAI,CAAC,QAAQ,CAAC,MAAM,GAAG,IAAI,CAAC,QAAQ,CAAC,MAAM,GAAG,IAAI;AACjF,KAAK,CAAC;AACN,GAAG,CAAC;AACJ,EAAE,OAAO,KAAK,CAAC;AACf,CAAC"
+      }
+    }
+  ]
+}

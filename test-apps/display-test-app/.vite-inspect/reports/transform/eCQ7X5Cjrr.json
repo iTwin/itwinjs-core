@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/markup/lib/esm/core-markup.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./Markup\";\nexport * from \"./MarkupTool\";\nexport * from \"./RedlineTool\";\nexport * from \"./SelectTool\";\nexport * from \"./TextEdit\";\nexport * from \"./Undo\";\nexport * from \"./SvgJsExt\";\n/** @docs-package-description\n * The core-markup package supplies tools for creating, editing, and saving SVG-based markups of Viewports.\n */\n/**\n * @docs-group-description MarkupApp\n * Classes for configuring and administering the markup system.\n */\n/**\n * @docs-group-description MarkupTools\n * Classes for supplying interactive tools for creating and editing markup elements.\n */\n//# sourceMappingURL=core-markup.js.map",
+      "start": 1693508124057,
+      "end": 1693508124348,
+      "sourcemaps": null
+    }
+  ]
+}

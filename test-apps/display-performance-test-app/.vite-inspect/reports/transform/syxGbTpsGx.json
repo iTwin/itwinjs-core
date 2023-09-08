@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/collection/StringMap.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { AList } from \"./AList\";\n/**\n * Class StringMap defines a map of elements in which the keys are strings.\n */\n/** @internal */\nexport class StringMap {\n    constructor() {\n        this._map = new Map();\n    }\n    size() {\n        return this._map.size;\n    }\n    contains(key) {\n        return this._map.has(key);\n    }\n    containsKey(key) {\n        return this._map.has(key);\n    }\n    get(key) {\n        return this._map.get(key);\n    }\n    set(key, value) {\n        this._map.set(key, value);\n    }\n    put(key, value) {\n        this._map.set(key, value);\n    }\n    remove(key) {\n        this._map.delete(key);\n    }\n    clear() {\n        this._map.clear();\n    }\n    keysArray() {\n        return Array.from(this._map.keys());\n    }\n    keys() {\n        let keys = new AList();\n        for (let key of this._map.keys())\n            keys.add(key);\n        return keys;\n    }\n    valuesArray() {\n        return Array.from(this._map.values());\n    }\n    values() {\n        let values = new AList();\n        for (let value of this._map.values())\n            values.add(value);\n        return values;\n    }\n}\n//# sourceMappingURL=StringMap.js.map",
+      "start": 1693508125179,
+      "end": 1693508125365,
+      "sourcemaps": null
+    }
+  ]
+}

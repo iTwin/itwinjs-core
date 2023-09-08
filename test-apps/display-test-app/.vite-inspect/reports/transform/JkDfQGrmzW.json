@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/tile/CompositeTileIO.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tile\n */\nimport { TileFormat, TileHeader } from \"./TileIO\";\n/** Header preceding tile content in [composite](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Composite) format, containing any number of tiles in other standard 3D tile formats.\n * @internal\n */\nexport class CompositeTileHeader extends TileHeader {\n    get isValid() { return TileFormat.Cmpt === this.format; }\n    constructor(stream) {\n        super(stream);\n        this.length = stream.readUint32();\n        this.tileCount = stream.readUint32();\n        this.tilePosition = stream.curPos;\n        if (stream.isPastTheEnd)\n            this.invalidate();\n    }\n}\n//# sourceMappingURL=CompositeTileIO.js.map",
+      "start": 1693508121090,
+      "end": 1693508121167,
+      "sourcemaps": null
+    }
+  ]
+}

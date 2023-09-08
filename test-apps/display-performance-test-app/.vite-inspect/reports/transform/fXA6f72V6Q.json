@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/operations/briefcase/BriefcaseOperationParams.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Special value to indicate the id of current user who is making the request. */\r\nexport const SPECIAL_VALUES_ME = \"me\";\r\n//# sourceMappingURL=BriefcaseOperationParams.js.map",
+      "start": 1693508122203,
+      "end": 1693508122301,
+      "sourcemaps": null
+    }
+  ]
+}

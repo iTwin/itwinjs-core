@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/toPropertyKey.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import _typeof from \"./typeof.js\";\nimport toPrimitive from \"./toPrimitive.js\";\nexport default function _toPropertyKey(arg) {\n  var key = toPrimitive(arg, \"string\");\n  return _typeof(key) === \"symbol\" ? key : String(key);\n}",
+      "start": 1693508126421,
+      "end": 1693508126530,
+      "sourcemaps": null
+    }
+  ]
+}

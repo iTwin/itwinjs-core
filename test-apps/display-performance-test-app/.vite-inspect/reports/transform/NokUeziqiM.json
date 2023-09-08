@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/Constants.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nexport class Constants {\r\n}\r\nConstants.api = {\r\n    baseUrl: \"https://api.bentley.com/imodels\",\r\n    version: \"itwin-platform.v2\"\r\n};\r\nConstants.headers = {\r\n    accept: \"Accept\",\r\n    authorization: \"Authorization\",\r\n    contentType: \"Content-Type\",\r\n    prefer: \"Prefer\"\r\n};\r\nConstants.time = {\r\n    sleepPeriodInMs: 1000,\r\n    iModelInitiazationTimeOutInMs: 5 * 60 * 1000\r\n};\r\n//# sourceMappingURL=Constants.js.map",
+      "start": 1693508122278,
+      "end": 1693508122312,
+      "sourcemaps": null
+    }
+  ]
+}

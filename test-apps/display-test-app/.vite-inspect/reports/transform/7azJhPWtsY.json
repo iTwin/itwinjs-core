@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/buffer/Uint8Buffer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { LittleEndian } from \"./LittleEndian\";\n/**\n * Define an unsigned 8-bit integer typed buffer.\n */\n/** @internal */\nclass Uint8Buffer {\n    /**\n     * Create a new typed buffer.\n     */\n    constructor(buffer, offset, size) {\n        this._buffer = buffer;\n        this._offset = offset;\n        this._count = size;\n    }\n    /**\n     * Wrap a raw buffer.\n     */\n    static wrap(buffer) {\n        return new Uint8Buffer(buffer, 0, buffer.size());\n    }\n    /**\n     * Return the content as a native buffer\n     */\n    toNativeBuffer() {\n        return new Uint8Array(this._buffer.toNativeBuffer(), this._offset, this._count);\n    }\n    /**\n     * Get the underlying buffer.\n     * @return the underlying buffer.\n     */\n    getBuffer() {\n        return this._buffer;\n    }\n    /**\n     * Get the length.\n     */\n    size() {\n        return this._count;\n    }\n    /**\n     * Get an element.\n     */\n    get(index) {\n        return LittleEndian.readBufferByte(this._buffer, this._offset + index);\n    }\n    /**\n     * Set an element.\n     */\n    set(index, value) {\n        LittleEndian.writeBufferByte(this._buffer, this._offset + index, value);\n    }\n}\n/** The number of bytes per element */\nUint8Buffer.BYTES_PER_ELEMENT = 1;\nexport { Uint8Buffer };\n//# sourceMappingURL=Uint8Buffer.js.map",
+      "start": 1693508126550,
+      "end": 1693508126634,
+      "sourcemaps": null
+    }
+  ]
+}

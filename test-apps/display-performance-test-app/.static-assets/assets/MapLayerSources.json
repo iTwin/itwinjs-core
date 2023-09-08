@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+    "name": "Bing Maps: Aerial Imagery",
+    "formatId": "BingMaps",
+    "transparentBackground": false
+  },
+  {
+    "url": "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/AerialWithLabels?o=json&incl=ImageryProviders&key={bingKey}",
+    "name": "Bing Maps: Aerial Imagery with labels",
+    "formatId": "BingMaps",
+    "transparentBackground": false
+  },
+  {
+    "url": "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Road?o=json&incl=ImageryProviders&key={bingKey}",
+    "name": "Bing Maps: Streets",
+    "formatId": "BingMaps",
+    "transparentBackground": false
+  },
+  {
+    "url": "https://b.tile.openstreetmap.org/{level}/{column}/{row}.png",
+    "name": "Open Street Map (Tile Server)",
+    "formatId": "TileURL",
+    "transparentBackground": true
+  }
+]

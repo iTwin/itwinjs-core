@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+draco@3.4.7/node_modules/@loaders.gl/draco/dist/esm/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { DracoLoader as DracoWorkerLoader } from './draco-loader';\nimport DracoParser from './lib/draco-parser';\nimport { loadDracoDecoderModule } from './lib/draco-module-loader';\nimport { VERSION } from './lib/utils/version';\nimport { isBrowser } from '@loaders.gl/worker-utils';\nexport { DracoWriter } from './draco-writer';\nexport const DracoWriterWorker = {\n  id: isBrowser ? 'draco-writer' : 'draco-writer-nodejs',\n  name: 'Draco compressed geometry writer',\n  module: 'draco',\n  version: VERSION,\n  worker: true,\n  options: {\n    draco: {},\n    source: null\n  }\n};\nexport { DracoWorkerLoader };\nexport const DracoLoader = {\n  ...DracoWorkerLoader,\n  parse\n};\nasync function parse(arrayBuffer, options) {\n  const {\n    draco\n  } = await loadDracoDecoderModule(options);\n  const dracoParser = new DracoParser(draco);\n  try {\n    return dracoParser.parseSync(arrayBuffer, options === null || options === void 0 ? void 0 : options.draco);\n  } finally {\n    dracoParser.destroy();\n  }\n}\nexport const _TypecheckDracoLoader = DracoLoader;\n//# sourceMappingURL=index.js.map",
+      "start": 1693508121004,
+      "end": 1693508121150,
+      "sourcemaps": null
+    }
+  ]
+}

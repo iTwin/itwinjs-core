@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/render/AnimationNodeId.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** Special values of [[GraphicBranch.animationNodeId]].\n * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.\n * @internal\n */\nexport var AnimationNodeId;\n(function (AnimationNodeId) {\n    AnimationNodeId[AnimationNodeId[\"Untransformed\"] = 4294967295] = \"Untransformed\";\n})(AnimationNodeId || (AnimationNodeId = {}));\n//# sourceMappingURL=AnimationNodeId.js.map",
+      "start": 1693508118469,
+      "end": 1693508118896,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/TextureProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Entities\n */\n/** Describes the type of transparency in the pixels of a [TextureImage]($frontend).\n * Each pixel can be classified as either opaque or translucent.\n * The transparency of the image as a whole is based on the combination of pixel transparencies.\n * If this information is known, it should be supplied when creating a texture for more efficient rendering.\n * @see [TextureImage.transparency]($frontend).\n * @public\n */\nexport var TextureTransparency;\n(function (TextureTransparency) {\n    /** The image contains only opaque pixels. It should not blend with other objects in the scene. */\n    TextureTransparency[TextureTransparency[\"Opaque\"] = 0] = \"Opaque\";\n    /** The image contains only translucent pixels. It should blend with other objects in the scene. */\n    TextureTransparency[TextureTransparency[\"Translucent\"] = 1] = \"Translucent\";\n    /** The image contains both opaque and translucent pixels. The translucent pixels should blend with other objects in the scene, while\n     * the opaque pixels should not. Rendering this type of transparency is somewhat more expensive.\n     */\n    TextureTransparency[TextureTransparency[\"Mixed\"] = 2] = \"Mixed\";\n})(TextureTransparency || (TextureTransparency = {}));\n//# sourceMappingURL=TextureProps.js.map",
+      "start": 1693508120978,
+      "end": 1693508121039,
+      "sourcemaps": null
+    }
+  ]
+}

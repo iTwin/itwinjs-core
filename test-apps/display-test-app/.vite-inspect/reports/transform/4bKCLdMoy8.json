@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/Utils.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// cspell:ignore showstatus showerror\r\n\r\n// show status in the output HTML\r\nexport function showStatus(string1: string, string2?: string) {\r\n  let outString: string = string1;\r\n  if (string2)\r\n    outString = outString.concat(\" \", string2);\r\n  const showstatus = document.getElementById(\"showstatus\");\r\n  if (showstatus)\r\n    showstatus.innerHTML = outString;\r\n}\r\n\r\nexport function showError(string1: HTMLElement | string, string2?: string) {\r\n  const span = document.createElement(\"span\");\r\n\r\n  if (typeof string1 === \"string\") {\r\n    const textNode = document.createTextNode(string1);\r\n    span.appendChild(textNode);\r\n  } else {\r\n    span.appendChild(string1);\r\n  }\r\n\r\n  if (string2) {\r\n    const textNode = document.createTextNode(` ${string2}`);\r\n    span.appendChild(textNode);\r\n  }\r\n\r\n  const showerror = document.getElementById(\"showerror\");\r\n  if (showerror) {\r\n    while (showerror.firstChild) {\r\n      showerror.removeChild(showerror.firstChild);\r\n    }\r\n    showerror.appendChild(span);\r\n  }\r\n}\r\n",
+      "start": 1693508118379,
+      "end": 1693508118560,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nexport function showStatus(string1, string2) {\n  let outString = string1;\n  if (string2)\n    outString = outString.concat(\" \", string2);\n  const showstatus = document.getElementById(\"showstatus\");\n  if (showstatus)\n    showstatus.innerHTML = outString;\n}\nexport function showError(string1, string2) {\n  const span = document.createElement(\"span\");\n  if (typeof string1 === \"string\") {\n    const textNode = document.createTextNode(string1);\n    span.appendChild(textNode);\n  } else {\n    span.appendChild(string1);\n  }\n  if (string2) {\n    const textNode = document.createTextNode(` ${string2}`);\n    span.appendChild(textNode);\n  }\n  const showerror = document.getElementById(\"showerror\");\n  if (showerror) {\n    while (showerror.firstChild) {\n      showerror.removeChild(showerror.firstChild);\n    }\n    showerror.appendChild(span);\n  }\n}\n",
+      "start": 1693508118560,
+      "end": 1693508118676,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/Utils.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// cspell:ignore showstatus showerror\r\n\r\n// show status in the output HTML\r\nexport function showStatus(string1: string, string2?: string) {\r\n  let outString: string = string1;\r\n  if (string2)\r\n    outString = outString.concat(\" \", string2);\r\n  const showstatus = document.getElementById(\"showstatus\");\r\n  if (showstatus)\r\n    showstatus.innerHTML = outString;\r\n}\r\n\r\nexport function showError(string1: HTMLElement | string, string2?: string) {\r\n  const span = document.createElement(\"span\");\r\n\r\n  if (typeof string1 === \"string\") {\r\n    const textNode = document.createTextNode(string1);\r\n    span.appendChild(textNode);\r\n  } else {\r\n    span.appendChild(string1);\r\n  }\r\n\r\n  if (string2) {\r\n    const textNode = document.createTextNode(` ${string2}`);\r\n    span.appendChild(textNode);\r\n  }\r\n\r\n  const showerror = document.getElementById(\"showerror\");\r\n  if (showerror) {\r\n    while (showerror.firstChild) {\r\n      showerror.removeChild(showerror.firstChild);\r\n    }\r\n    showerror.appendChild(span);\r\n  }\r\n}\r\n"
+        ],
+        "mappings": ";AAQO,gBAAS,WAAW,SAAiB,SAAkB;AAC5D,MAAI,YAAoB;AACxB,MAAI;AACF,gBAAY,UAAU,OAAO,KAAK,OAAO;AAC3C,QAAM,aAAa,SAAS,eAAe,YAAY;AACvD,MAAI;AACF,eAAW,YAAY;AAC3B;AAEO,gBAAS,UAAU,SAA+B,SAAkB;AACzE,QAAM,OAAO,SAAS,cAAc,MAAM;AAE1C,MAAI,OAAO,YAAY,UAAU;AAC/B,UAAM,WAAW,SAAS,eAAe,OAAO;AAChD,SAAK,YAAY,QAAQ;AAAA,EAC3B,OAAO;AACL,SAAK,YAAY,OAAO;AAAA,EAC1B;AAEA,MAAI,SAAS;AACX,UAAM,WAAW,SAAS,eAAe,IAAI,OAAO,EAAE;AACtD,SAAK,YAAY,QAAQ;AAAA,EAC3B;AAEA,QAAM,YAAY,SAAS,eAAe,WAAW;AACrD,MAAI,WAAW;AACb,WAAO,UAAU,YAAY;AAC3B,gBAAU,YAAY,UAAU,UAAU;AAAA,IAC5C;AACA,cAAU,YAAY,IAAI;AAAA,EAC5B;AACF;",
+        "names": []
+      }
+    }
+  ]
+}

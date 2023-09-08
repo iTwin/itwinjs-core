@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/optional/css.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { camelCase } from '../../utils/utils.js'\r\nimport { isBlank } from '../core/regex.js'\r\nimport { registerMethods } from '../../utils/methods.js'\r\n\r\n// Dynamic style generator\r\nexport function css (style, val) {\r\n  let ret = {}\r\n  if (arguments.length === 0) {\r\n    // get full style as object\r\n    this.node.style.cssText.split(/\\s*;\\s*/)\r\n      .filter(function (el) {\r\n        return !!el.length\r\n      })\r\n      .forEach(function (el) {\r\n        let t = el.split(/\\s*:\\s*/)\r\n        ret[t[0]] = t[1]\r\n      })\r\n    return ret\r\n  }\r\n\r\n  if (arguments.length < 2) {\r\n    // get style properties in the array\r\n    if (Array.isArray(style)) {\r\n      for (let name of style) {\r\n        let cased = camelCase(name)\r\n        ret[cased] = this.node.style[cased]\r\n      }\r\n      return ret\r\n    }\r\n\r\n    // get style for property\r\n    if (typeof style === 'string') {\r\n      return this.node.style[camelCase(style)]\r\n    }\r\n\r\n    // set styles in object\r\n    if (typeof style === 'object') {\r\n      for (let name in style) {\r\n        // set empty string if null/undefined/'' was given\r\n        this.node.style[camelCase(name)]\r\n          = (style[name] == null || isBlank.test(style[name])) ? '' : style[name]\r\n      }\r\n    }\r\n  }\r\n\r\n  // set style for property\r\n  if (arguments.length === 2) {\r\n    this.node.style[camelCase(style)]\r\n      = (val == null || isBlank.test(val)) ? '' : val\r\n  }\r\n\r\n  return this\r\n}\r\n\r\n// Show element\r\nexport function show () {\r\n  return this.css('display', '')\r\n}\r\n\r\n// Hide element\r\nexport function hide () {\r\n  return this.css('display', 'none')\r\n}\r\n\r\n// Is element visible?\r\nexport function visible () {\r\n  return this.css('display') !== 'none'\r\n}\r\n\r\nregisterMethods('Dom', {\r\n  css, show, hide, visible\r\n})\r\n",
+      "start": 1693508126731,
+      "end": 1693508127014,
+      "sourcemaps": null
+    }
+  ]
+}

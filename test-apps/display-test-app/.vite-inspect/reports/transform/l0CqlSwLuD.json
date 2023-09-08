@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Use.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport { xlink } from '../modules/core/namespaces.js'\r\nimport Shape from './Shape.js'\r\n\r\nexport default class Use extends Shape {\r\n  constructor (node) {\r\n    super(nodeOrNew('use', node), node)\r\n  }\r\n\r\n  // Use element as a reference\r\n  element (element, file) {\r\n    // Set lined element\r\n    return this.attr('href', (file || '') + '#' + element, xlink)\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create a use element\r\n    use: wrapWithAttrCheck(function (element, file) {\r\n      return this.put(new Use()).element(element, file)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Use, 'Use')\r\n",
+      "start": 1693508127172,
+      "end": 1693508127217,
+      "sourcemaps": null
+    }
+  ]
+}

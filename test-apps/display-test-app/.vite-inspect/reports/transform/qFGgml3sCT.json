@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/TargetGraphics.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { dispose, disposeArray } from \"@itwin/core-bentley\";\n/** The various graphics associated with a [[Target]].\n * @internal\n */\nexport class TargetGraphics {\n    constructor() {\n        this.foreground = [];\n        this.background = [];\n        this.overlays = [];\n    }\n    dispose() {\n        this.foreground.length = this.background.length = this.overlays.length = 0;\n        this._dynamics = disposeArray(this._dynamics);\n        this._decorations = dispose(this._decorations);\n    }\n    get isDisposed() {\n        return 0 === this.foreground.length && 0 === this.background.length && 0 === this.overlays.length\n            && undefined === this._dynamics && undefined === this._decorations;\n    }\n    changeScene(scene) {\n        this.foreground = scene.foreground;\n        this.background = scene.background;\n        this.overlays = scene.overlay;\n    }\n    get dynamics() { return this._dynamics; }\n    set dynamics(dynamics) {\n        disposeArray(this._dynamics);\n        this._dynamics = dynamics;\n    }\n    get decorations() { return this._decorations; }\n    set decorations(decorations) {\n        dispose(this._decorations);\n        this._decorations = decorations;\n    }\n    get canvasDecorations() {\n        return this._decorations?.canvasDecorations;\n    }\n}\n//# sourceMappingURL=TargetGraphics.js.map",
+      "start": 1693508122304,
+      "end": 1693508122508,
+      "sourcemaps": null
+    }
+  ]
+}

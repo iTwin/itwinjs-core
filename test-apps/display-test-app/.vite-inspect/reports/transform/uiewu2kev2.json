@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/electron/lib/cjs/common/ElectronIpcInterface.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.electronIpcStrings = void 0;\n/** @internal */\nexports.electronIpcStrings = {\n    dialogChannel: \"itwinjs-electron/dialog\",\n};\n//# sourceMappingURL=ElectronIpcInterface.js.map",
+      "start": 1693508124950,
+      "end": 1693508125035,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as ElectronIpcInterface } from \"\\u0000D:/hub2023A/itwinjs-core/core/electron/lib/cjs/common/ElectronIpcInterface.js?commonjs-exports\";\n\n\"use strict\";\n/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\nObject.defineProperty(ElectronIpcInterface, \"__esModule\", { value: true });\nvar electronIpcStrings = ElectronIpcInterface.electronIpcStrings = void 0;\n/** @internal */\nelectronIpcStrings = ElectronIpcInterface.electronIpcStrings = {\n    dialogChannel: \"itwinjs-electron/dialog\",\n};\n//# sourceMappingURL=ElectronIpcInterface.js.map\n\nexport { ElectronIpcInterface as __moduleExports, electronIpcStrings, ElectronIpcInterface as default };",
+      "start": 1693508125035,
+      "end": 1693508125036,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA;AACA;AACA;AACA;AACA;AACA;AACA,MAAM,CAAC,cAAc,CAAC,oBAAO,EAAE,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;AAC9D,gEAA0B,GAAG,KAAK,CAAC,CAAC;AACpC;AACA,4DAA0B,GAAG;AAC7B,IAAI,aAAa,EAAE,yBAAyB;AAC5C,CAAC,CAAC;AACF"
+      }
+    }
+  ]
+}

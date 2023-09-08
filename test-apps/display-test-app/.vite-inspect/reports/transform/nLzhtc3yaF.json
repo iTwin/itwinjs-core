@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/tools/SetGpuMemoryLimitTool.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tools\n */\nimport { IModelApp, Tool } from \"@itwin/core-frontend\";\n/** Adjust the value of [TileAdmin.gpuMemoryLimit]($frontend). This controls how much GPU memory is allowed to be consumed\n * by tile graphics before the system starts discarding the graphics for the least recently drawn tiles.\n * @beta\n */\nclass SetGpuMemoryLimitTool extends Tool {\n    static get minArgs() { return 1; }\n    static get maxArgs() { return 1; }\n    async run(limit) {\n        if (undefined !== limit) {\n            IModelApp.tileAdmin.gpuMemoryLimit = limit;\n            IModelApp.requestNextAnimation();\n        }\n        return true;\n    }\n    async parseAndRun(...args) {\n        const maxBytes = Number.parseInt(args[0], 10);\n        const limit = Number.isNaN(maxBytes) ? args[0] : maxBytes;\n        return this.run(limit);\n    }\n}\nSetGpuMemoryLimitTool.toolId = \"SetGpuMemoryLimit\";\nexport { SetGpuMemoryLimitTool };\n//# sourceMappingURL=SetGpuMemoryLimitTool.js.map",
+      "start": 1693508122736,
+      "end": 1693508122843,
+      "sourcemaps": null
+    }
+  ]
+}

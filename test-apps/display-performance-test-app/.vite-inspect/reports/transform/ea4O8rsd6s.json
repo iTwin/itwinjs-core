@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/system/storage/FileStorage.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { ALong } from \"../runtime/ALong\";\n/**\n * Class FileStorage defines access methods to file content in a certain file storage account.\n */\n/** @internal */\nexport class FileStorage {\n    /**\n     * Create new storage.\n     */\n    constructor() {\n    }\n    /**\n     * Close the storage.\n     */\n    close() {\n        /* Override if needed */\n    }\n    /**\n     * Print (and optionally clear) file access statistics.\n     */\n    printStatistics(clear) {\n        /* Override if needed */\n    }\n    /**\n     * Get the length of a file (returns -1 if the file is not found).\n     */\n    async getFileLength(fileName) {\n        /* Override this method */\n        return ALong.MINUS_ONE;\n    }\n    /**\n     * Read some parts of a file.\n     */\n    async readFileParts(fileName, ranges) {\n        /* Override this method */\n        return null;\n    }\n    /**\n     * Read a part of a file.\n     */\n    async readFilePart(fileName, offset, size) {\n        /* Override this method */\n        return null;\n    }\n    /**\n     * Write a file.\n     */\n    async writeFile(fileName, fileContent) {\n        /* Override this method */\n    }\n}\n//# sourceMappingURL=FileStorage.js.map",
+      "start": 1693508125371,
+      "end": 1693508125432,
+      "sourcemaps": null
+    }
+  ]
+}

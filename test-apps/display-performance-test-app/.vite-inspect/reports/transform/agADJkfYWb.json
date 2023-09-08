@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+reality-data-client@0.9.0_mdtbcqczpmeuv6yjzfaigjndwi/node_modules/@itwin/reality-data-client/lib/esm/Projects.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * Contains information on a project that is associated to a RealityData. More details about a project can be requested from the Projects API.\n */\nexport class Project {\n    constructor(project) {\n        this.id = project.id;\n        this.projectDetailsLink = project._links.self.href;\n    }\n}\n//# sourceMappingURL=Projects.js.map",
+      "start": 1693508123418,
+      "end": 1693508123555,
+      "sourcemaps": null
+    }
+  ]
+}

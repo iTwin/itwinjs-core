@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Circle.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { cx, cy, height, width, x, y } from '../modules/core/circled.js'\r\nimport {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport SVGNumber from '../types/SVGNumber.js'\r\nimport Shape from './Shape.js'\r\n\r\nexport default class Circle extends Shape {\r\n  constructor (node) {\r\n    super(nodeOrNew('circle', node), node)\r\n  }\r\n\r\n  radius (r) {\r\n    return this.attr('r', r)\r\n  }\r\n\r\n  // Radius x value\r\n  rx (rx) {\r\n    return this.attr('r', rx)\r\n  }\r\n\r\n  // Alias radius x value\r\n  ry (ry) {\r\n    return this.rx(ry)\r\n  }\r\n\r\n  size (size) {\r\n    return this.radius(new SVGNumber(size).divide(2))\r\n  }\r\n}\r\n\r\nextend(Circle, { x, y, cx, cy, width, height })\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create circle element\r\n    circle: wrapWithAttrCheck(function (size) {\r\n      return this.put(new Circle())\r\n        .size(size)\r\n        .move(0, 0)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Circle, 'Circle')\r\n",
+      "start": 1693508126742,
+      "end": 1693508127052,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "tools": {
+    "HyperModeling": {
+      "keyin": "hypermodeling",
+      "Graphics": {
+        "Config": {
+          "keyin": "hypermodeling graphics config"
+        }
+      },
+      "Marker": {
+        "Config": {
+          "keyin": "hypermodeling marker config"
+        },
+        "Default": {
+          "Config": {
+            "keyin": "hypermodeling marker default config"
+          }
+        }
+      }
+    }
+  },
+  "Message": {
+    "SectionCallout": "Section Callout",
+    "DetailCallout": "Detail Callout",
+    "ElevationCallout": "Elevation Callout",
+    "PlanCallout": "Plan Callout",
+    "ApplySection": "Apply Section",
+    "OpenSection": "Open Section View",
+    "OpenSheet": "Open Sheet View",
+    "ApplyView": "Apply Spatial View"
+  }
+}

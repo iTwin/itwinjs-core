@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/LinePlaneIntersect.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\n/** @internal */\nexport function linePlaneIntersect(outP, linePt, lineNormal, planePt, planeNormal, perpendicular) {\n    let dot = 0;\n    if (lineNormal)\n        dot = lineNormal.dotProduct(planeNormal);\n    else\n        perpendicular = true;\n    let temp;\n    if (perpendicular || Math.abs(dot) < .001) {\n        const t = linePt.vectorTo(planePt).dotProduct(planeNormal);\n        temp = planeNormal.scale(t);\n    }\n    else {\n        const t = (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;\n        temp = lineNormal.scale(t);\n    }\n    outP.setFrom(temp.plus(linePt));\n}\n//# sourceMappingURL=LinePlaneIntersect.js.map",
+      "start": 1693508119017,
+      "end": 1693508119255,
+      "sourcemaps": null
+    }
+  ]
+}

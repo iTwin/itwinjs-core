@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/utils/row-utils.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export function convertToObjectRow(arrayRow, headers) {\n  if (!arrayRow) {\n    throw new Error('null row');\n  }\n  if (!headers) {\n    throw new Error('no headers');\n  }\n  const objectRow = {};\n  for (let i = 0; i < headers.length; i++) {\n    objectRow[headers[i]] = arrayRow[i];\n  }\n  return objectRow;\n}\nexport function convertToArrayRow(objectRow, headers) {\n  if (!objectRow) {\n    throw new Error('null row');\n  }\n  if (!headers) {\n    throw new Error('no headers');\n  }\n  const arrayRow = new Array(headers.length);\n  for (let i = 0; i < headers.length; i++) {\n    arrayRow[i] = objectRow[headers[i]];\n  }\n  return arrayRow;\n}\n//# sourceMappingURL=row-utils.js.map",
+      "start": 1693508125017,
+      "end": 1693508125145,
+      "sourcemaps": null
+    }
+  ]
+}

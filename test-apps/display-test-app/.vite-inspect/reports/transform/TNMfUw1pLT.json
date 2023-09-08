@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/editor/frontend/lib/esm/EditToolIpc.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Editing\n */\nimport { IpcApp } from \"@itwin/core-frontend\";\nimport { editorIpcStrings } from \"@itwin/editor-common\";\n/**\n * Create a type safe Proxy object to make IPC calls from [[EditTools]] to methods of an `EditCommandIpc` interface of the current `EditCommand`.\n * @beta\n */\nexport function makeEditToolIpc() {\n    return IpcApp.makeIpcFunctionProxy(editorIpcStrings.channel, \"callMethod\");\n}\n/** Proxy for calling methods in `BasicManipulationCommandIpc`\n * @internal\n */\nexport const basicManipulationIpc = makeEditToolIpc();\n/** Proxy for calling methods in `SolidModelingCommandIpc`\n* @internal\n*/\nexport const solidModelingIpc = makeEditToolIpc();\n//# sourceMappingURL=EditToolIpc.js.map",
+      "start": 1693508122903,
+      "end": 1693508123010,
+      "sourcemaps": null
+    }
+  ]
+}

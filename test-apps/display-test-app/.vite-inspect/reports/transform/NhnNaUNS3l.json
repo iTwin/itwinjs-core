@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend-devtools/lib/esm/effects/Random.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Effects\n */\nimport { Point3d } from \"@itwin/core-geometry\";\n/** Generate integer in [min, max].\n * @beta\n */\nexport function randomInteger(min, max) {\n    return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n/** Generate random integer in [range.low, range.high].\n * @beta\n */\nexport function randomIntegerInRange(range) {\n    return Math.floor(Math.random() * (range.high - range.low + 1)) + range.low;\n}\n/** Generate random floating-point number in [min, max).\n * @beta\n */\nexport function randomFloat(min, max) {\n    return Math.random() * (max - min) + min;\n}\n/** Generate random floating-point number in [range.low, range.high).\n * @beta\n */\nexport function randomFloatInRange(range) {\n    return randomFloat(range.low, range.high);\n}\n/** Generate a random position in the specified range.\n * @beta\n */\nexport function randomPositionInRange(range) {\n    const x = randomFloat(range.low.x, range.high.x);\n    const y = randomFloat(range.low.y, range.high.y);\n    const z = randomFloat(range.low.z, range.high.z);\n    return new Point3d(x, y, z);\n}\n//# sourceMappingURL=Random.js.map",
+      "start": 1693508122604,
+      "end": 1693508122702,
+      "sourcemaps": null
+    }
+  ]
+}

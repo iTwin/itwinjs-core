@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/frontend-tiles/lib/esm/BatchedTileTreeSupplier.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { comparePossiblyUndefined, compareStrings, Logger } from \"@itwin/core-bentley\";\nimport { loggerCategory } from \"./LoggerCategory\";\nimport { BatchedTilesetReader } from \"./BatchedTilesetReader\";\nimport { BatchedTileTree } from \"./BatchedTileTree\";\nclass BatchedTileTreeSupplier {\n    compareTileTreeIds(lhs, rhs) {\n        return compareStrings(lhs.toString(), rhs.toString())\n            || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.script, rhs.script);\n    }\n    async createTileTree(treeId, iModel) {\n        const baseUrl = treeId.baseUrl;\n        const url = new URL(\"tileset.json\", baseUrl);\n        url.search = baseUrl.search;\n        try {\n            const response = await fetch(url.toString());\n            const json = await response.json();\n            const reader = new BatchedTilesetReader(json, iModel, baseUrl);\n            const params = await reader.readTileTreeParams();\n            params.script = treeId.script;\n            return new BatchedTileTree(params);\n        }\n        catch (err) {\n            Logger.logException(loggerCategory, err);\n            return undefined;\n        }\n    }\n}\nconst batchedTileTreeSupplier = new BatchedTileTreeSupplier();\n/** @internal */\nexport function getBatchedTileTreeOwner(iModel, treeId) {\n    return iModel.tiles.getTileTreeOwner(treeId, batchedTileTreeSupplier);\n}\n//# sourceMappingURL=BatchedTileTreeSupplier.js.map",
+      "start": 1693508124875,
+      "end": 1693508125021,
+      "sourcemaps": null
+    }
+  ]
+}

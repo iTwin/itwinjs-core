@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+electron-authorization@0.14.1_vfbcftczlx5fy7lxoa3opanwwu/node_modules/@itwin/electron-authorization/lib/cjs/common/IpcChannelNames.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\r\n/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\nObject.defineProperty(exports, \"__esModule\", { value: true });\r\nexports.getIpcChannelNames = void 0;\r\n/**\r\n * Construct an instance of {@link IpcChannelNames} with unique channel names per given clientId.\r\n * @param clientId OIDC Client Id.\r\n * @internal\r\n */\r\nfunction getIpcChannelNames(clientId) {\r\n    return {\r\n        signIn: `itwin.electron.auth.signIn-${clientId}`,\r\n        signOut: `itwin.electron.auth.signOut-${clientId}`,\r\n        getAccessToken: `itwin.electron.auth.getAccessToken-${clientId}`,\r\n        onAccessTokenChanged: `itwin.electron.auth.onAccessTokenChanged-${clientId}`,\r\n        onAccessTokenExpirationChanged: `itwin.electron.auth.onAccessTokenExpirationChanged-${clientId}`,\r\n        signInSilent: `itwin.electron.auth.signInSilent-${clientId}`,\r\n    };\r\n}\r\nexports.getIpcChannelNames = getIpcChannelNames;\r\n//# sourceMappingURL=IpcChannelNames.js.map",
+      "start": 1693508124885,
+      "end": 1693508125024,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as IpcChannelNames } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+electron-authorization@0.14.1_vfbcftczlx5fy7lxoa3opanwwu/node_modules/@itwin/electron-authorization/lib/cjs/common/IpcChannelNames.js?commonjs-exports\";\n\n\"use strict\";\r\n/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\nObject.defineProperty(IpcChannelNames, \"__esModule\", { value: true });\r\nvar getIpcChannelNames_1 = IpcChannelNames.getIpcChannelNames = void 0;\r\n/**\r\n * Construct an instance of {@link IpcChannelNames} with unique channel names per given clientId.\r\n * @param clientId OIDC Client Id.\r\n * @internal\r\n */\r\nfunction getIpcChannelNames(clientId) {\r\n    return {\r\n        signIn: `itwin.electron.auth.signIn-${clientId}`,\r\n        signOut: `itwin.electron.auth.signOut-${clientId}`,\r\n        getAccessToken: `itwin.electron.auth.getAccessToken-${clientId}`,\r\n        onAccessTokenChanged: `itwin.electron.auth.onAccessTokenChanged-${clientId}`,\r\n        onAccessTokenExpirationChanged: `itwin.electron.auth.onAccessTokenExpirationChanged-${clientId}`,\r\n        signInSilent: `itwin.electron.auth.signInSilent-${clientId}`,\r\n    };\r\n}\r\ngetIpcChannelNames_1 = IpcChannelNames.getIpcChannelNames = getIpcChannelNames;\r\n//# sourceMappingURL=IpcChannelNames.js.map\n\nexport { IpcChannelNames as __moduleExports, getIpcChannelNames_1 as getIpcChannelNames, IpcChannelNames as default };",
+      "start": 1693508125024,
+      "end": 1693508125024,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;AAAA,YAAY,CAAC;AACb;AACA;AACA;AACA;AACA,MAAM,CAAC,cAAc,CAAC,eAAO,EAAE,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;AAC9D,6DAA0B,GAAG,KAAK,CAAC,CAAC;AACpC;AACA;AACA;AACA;AACA;AACA,SAAS,kBAAkB,CAAC,QAAQ,EAAE;AACtC,IAAI,OAAO;AACX,QAAQ,MAAM,EAAE,CAAC,2BAA2B,EAAE,QAAQ,CAAC,CAAC;AACxD,QAAQ,OAAO,EAAE,CAAC,4BAA4B,EAAE,QAAQ,CAAC,CAAC;AAC1D,QAAQ,cAAc,EAAE,CAAC,mCAAmC,EAAE,QAAQ,CAAC,CAAC;AACxE,QAAQ,oBAAoB,EAAE,CAAC,yCAAyC,EAAE,QAAQ,CAAC,CAAC;AACpF,QAAQ,8BAA8B,EAAE,CAAC,mDAAmD,EAAE,QAAQ,CAAC,CAAC;AACxG,QAAQ,YAAY,EAAE,CAAC,iCAAiC,EAAE,QAAQ,CAAC,CAAC;AACpE,KAAK,CAAC;AACN,CAAC;AACD,yDAA0B,GAAG,kBAAkB,CAAC;AAChD"
+      }
+    }
+  ]
+}

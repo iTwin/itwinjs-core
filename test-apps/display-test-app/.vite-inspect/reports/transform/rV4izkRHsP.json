@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/TransformInPlaceContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { RecursiveCurveProcessor } from \"../CurveProcessor\";\n/** Algorithmic class: Transform curves in place.\n * @internal\n */\nexport class TransformInPlaceContext extends RecursiveCurveProcessor {\n    constructor(transform) { super(); this.numFail = 0; this.numOK = 0; this.transform = transform; }\n    static tryTransformInPlace(target, transform) {\n        const context = new TransformInPlaceContext(transform);\n        target.announceToCurveProcessor(context);\n        return context.numFail === 0;\n    }\n    announceCurvePrimitive(curvePrimitive, _indexInParent) {\n        if (!curvePrimitive.tryTransformInPlace(this.transform))\n            this.numFail++;\n        else\n            this.numOK++;\n    }\n}\n//# sourceMappingURL=TransformInPlaceContext.js.map",
+      "start": 1693508125205,
+      "end": 1693508125384,
+      "sourcemaps": null
+    }
+  ]
+}

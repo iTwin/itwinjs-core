@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/quantity/lib/esm/core-quantity.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./Constants\";\nexport * from \"./Exception\";\nexport * from \"./Interfaces\";\nexport * from \"./Parser\";\nexport * from \"./ParserSpec\";\nexport * from \"./Quantity\";\nexport * from \"./Unit\";\nexport * from \"./Formatter/Format\";\nexport * from \"./Formatter/FormatterSpec\";\nexport * from \"./Formatter/FormatEnums\";\nexport * from \"./Formatter/Formatter\";\nexport * from \"./Formatter/Interfaces\";\n/** @docs-package-description\n * The core-quantity package always runs in a web browser. It contains classes, interfaces, and definitions for formatting and parsing quantity values.\n */\n/**\n * @docs-group-description Quantity\n * Classes, Interfaces, and definitions used to format and parse quantity values.\n */\n//# sourceMappingURL=core-quantity.js.map",
+      "start": 1693508121314,
+      "end": 1693508121486,
+      "sourcemaps": null
+    }
+  ]
+}

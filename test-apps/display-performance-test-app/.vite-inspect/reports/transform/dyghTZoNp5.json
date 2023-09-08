@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/internal/iterators/EntityListIteratorImpl.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nimport { flatten } from \"../../types\";\r\nimport { EntityPageListIterator } from \"./EntityPageListIterator\";\r\nexport class EntityListIteratorImpl {\r\n    constructor(pageQueryFunc) {\r\n        this._entityPages = new EntityPageListIterator(pageQueryFunc);\r\n        this._entities = flatten(this._entityPages);\r\n    }\r\n    [Symbol.asyncIterator]() {\r\n        return this;\r\n    }\r\n    async next() {\r\n        return this._entities.next();\r\n    }\r\n    byPage() {\r\n        return this._entityPages;\r\n    }\r\n}\r\n//# sourceMappingURL=EntityListIteratorImpl.js.map",
+      "start": 1693508123870,
+      "end": 1693508124092,
+      "sourcemaps": null
+    }
+  ]
+}

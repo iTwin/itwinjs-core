@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/rpc/core/RpcRoutingToken.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module RpcInterface\n */\n/* eslint-disable deprecation/deprecation */\n/** @beta */\nclass RpcRoutingToken {\n    static generate(debugLabel = \"\") {\n        return new RpcRoutingToken(++this._next, debugLabel);\n    }\n    constructor(id, debugLabel) {\n        this.id = id;\n        this.debugLabel = debugLabel;\n    }\n}\nRpcRoutingToken._next = -1;\nRpcRoutingToken.default = RpcRoutingToken.generate(\"default\");\nexport { RpcRoutingToken };\n//# sourceMappingURL=RpcRoutingToken.js.map",
+      "start": 1693508121032,
+      "end": 1693508121090,
+      "sourcemaps": null
+    }
+  ]
+}

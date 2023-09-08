@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/utils/misc.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utilities\n */\n/** Gets the class name for an object.\n * @internal\n */\nexport const getClassName = (obj) => {\n    let className = \"\";\n    if (obj) {\n        if (obj.name)\n            className = obj.name;\n        else {\n            // istanbul ignore else\n            if (obj.constructor && obj.constructor.name)\n                className = obj.constructor.name;\n        }\n    }\n    return className;\n};\n/** Gets category to use for adding Log entries\n *  @internal\n */\nexport const loggerCategory = (obj) => {\n    const className = getClassName(obj);\n    const category = `appui-abstract${(className ? `.${className}` : \"\")}`;\n    return category;\n};\n//# sourceMappingURL=misc.js.map",
+      "start": 1693508123607,
+      "end": 1693508123642,
+      "sourcemaps": null
+    }
+  ]
+}

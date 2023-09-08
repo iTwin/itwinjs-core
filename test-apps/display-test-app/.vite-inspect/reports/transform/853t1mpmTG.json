@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/quantity/lib/esm/Unit.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Quantity\n */\n/** This class provides basic implementation of UnitProps interface.\n * @beta\n */\nexport class BasicUnit {\n    constructor(name, label, phenomenon, system) {\n        this.name = \"\";\n        this.label = \"\";\n        this.phenomenon = \"\";\n        this.isValid = false;\n        this.system = \"unknown\";\n        if (name && name.length > 0 && label && label.length > 0 && phenomenon && phenomenon.length > 0) {\n            this.name = name;\n            this.label = label;\n            this.phenomenon = phenomenon;\n            this.isValid = true;\n            if (system)\n                this.system = system;\n        }\n    }\n}\n/** This class is a convenience class that can be returned when a valid Unit cannot be determined.\n * @beta\n */\nexport class BadUnit {\n    constructor() {\n        this.name = \"\";\n        this.label = \"\";\n        this.phenomenon = \"\";\n        this.isValid = false;\n        this.system = \"unknown\";\n    }\n}\n//# sourceMappingURL=Unit.js.map",
+      "start": 1693508124105,
+      "end": 1693508124384,
+      "sourcemaps": null
+    }
+  ]
+}

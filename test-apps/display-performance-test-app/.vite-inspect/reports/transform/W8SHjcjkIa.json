@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/geometry/BoundingSphere.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Geometry\n */\nimport { Point3d } from \"@itwin/core-geometry\";\n/** Describes a spherical volume of space as an approximation of the shape of some more complex geometric entity fully contained within that volume.\n * When performing tests for intersection or containment, the approximation can be used as a first, quick check.\n * @see [[FrustumPlanes.computeContainment]], for example.\n * @public\n */\nexport class BoundingSphere {\n    /** Create a new bounding sphere with the specified center and radius. */\n    constructor(center = Point3d.createZero(), radius = 0) {\n        this.center = center;\n        this.radius = radius;\n    }\n    /** Change the center and radius of the sphere. */\n    init(center, radius) {\n        this.center = center;\n        this.radius = radius;\n    }\n    /** Applies the specified transformation matrix to produce a new bounding sphere.\n     * @param transform The transformation matrix to apply.\n     * @param result An optional preallocated object to hold the result, to avoid allocating a new object. May be the same object as `this`.\n     * @returns A bounding sphere equivalent to `this` with the specified transform applied.\n     */\n    transformBy(transform, result) {\n        result = result ?? new BoundingSphere();\n        transform.multiplyPoint3d(this.center, result.center);\n        result.radius = this.radius * Math.max(transform.matrix.columnXMagnitude(), Math.max(transform.matrix.columnYMagnitude(), (transform.matrix.columnZMagnitude())));\n        return result;\n    }\n    /** Apply the specified transform to this bounding sphere. */\n    transformInPlace(transform) {\n        this.transformBy(transform, this);\n    }\n}\n//# sourceMappingURL=BoundingSphere.js.map",
+      "start": 1693508120541,
+      "end": 1693508120621,
+      "sourcemaps": null
+    }
+  ]
+}

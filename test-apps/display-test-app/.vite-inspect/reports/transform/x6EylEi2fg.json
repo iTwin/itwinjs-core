@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Line.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { proportionalSize } from '../utils/utils.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport PointArray from '../types/PointArray.js'\r\nimport Shape from './Shape.js'\r\nimport * as pointed from '../modules/core/pointed.js'\r\n\r\nexport default class Line extends Shape {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('line', node), node)\r\n  }\r\n\r\n  // Get array\r\n  array () {\r\n    return new PointArray([\r\n      [ this.attr('x1'), this.attr('y1') ],\r\n      [ this.attr('x2'), this.attr('y2') ]\r\n    ])\r\n  }\r\n\r\n  // Overwrite native plot() method\r\n  plot (x1, y1, x2, y2) {\r\n    if (x1 == null) {\r\n      return this.array()\r\n    } else if (typeof y1 !== 'undefined') {\r\n      x1 = { x1: x1, y1: y1, x2: x2, y2: y2 }\r\n    } else {\r\n      x1 = new PointArray(x1).toLine()\r\n    }\r\n\r\n    return this.attr(x1)\r\n  }\r\n\r\n  // Move by left top corner\r\n  move (x, y) {\r\n    return this.attr(this.array().move(x, y).toLine())\r\n  }\r\n\r\n  // Set element size to given width and height\r\n  size (width, height) {\r\n    var p = proportionalSize(this, width, height)\r\n    return this.attr(this.array().size(p.width, p.height).toLine())\r\n  }\r\n}\r\n\r\nextend(Line, pointed)\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create a line element\r\n    line: wrapWithAttrCheck(function (...args) {\r\n      // make sure plot is called as a setter\r\n      // x1 is not necessarily a number, it can also be an array, a string and a PointArray\r\n      return Line.prototype.plot.apply(\r\n        this.put(new Line())\r\n        , args[0] != null ? args : [ 0, 0, 0, 0 ]\r\n      )\r\n    })\r\n  }\r\n})\r\n\r\nregister(Line, 'Line')\r\n",
+      "start": 1693508127011,
+      "end": 1693508127086,
+      "sourcemaps": null
+    }
+  ]
+}

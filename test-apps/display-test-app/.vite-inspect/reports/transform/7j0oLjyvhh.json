@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/map-layers-formats/lib/esm/ArcGisFeature/ArcGisCanvasRenderer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { ArcGisGeometryBaseRenderer } from \"@itwin/core-frontend\";\n/** @internal */\nexport class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {\n    get attributeSymbology() {\n        return this._symbol.isAttributeDriven() ? this._symbol : undefined;\n    }\n    constructor(context, symbol, world2PixelTransform) {\n        super(world2PixelTransform);\n        this._symbol = symbol;\n        this._context = context;\n    }\n    beginPath() {\n        this._context.beginPath();\n    }\n    closePath() {\n        this._context.closePath();\n    }\n    lineTo(x, y) {\n        this._context.lineTo(x, y);\n    }\n    moveTo(x, y) {\n        this._context.moveTo(x, y);\n    }\n    async fill() {\n        this._symbol.applyFillStyle(this._context);\n        this._context.fill();\n    }\n    async stroke() {\n        this._symbol.applyStrokeStyle(this._context);\n        this._context.stroke();\n    }\n    async finishPoints() {\n    }\n    async drawPoint(x, y) {\n        this._symbol.drawPoint(this._context, x, y);\n    }\n}\n//# sourceMappingURL=ArcGisCanvasRenderer.js.map",
+      "start": 1693508125123,
+      "end": 1693508125200,
+      "sourcemaps": null
+    }
+  ]
+}

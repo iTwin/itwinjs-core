@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Mask.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Container from './Container.js'\r\nimport baseFind from '../modules/core/selector.js'\r\n\r\nexport default class Mask extends Container {\r\n  // Initialize node\r\n  constructor (node) {\r\n    super(nodeOrNew('mask', node), node)\r\n  }\r\n\r\n  // Unmask all masked elements and remove itself\r\n  remove () {\r\n    // unmask all targets\r\n    this.targets().forEach(function (el) {\r\n      el.unmask()\r\n    })\r\n\r\n    // remove mask from parent\r\n    return super.remove()\r\n  }\r\n\r\n  targets () {\r\n    return baseFind('svg [mask*=\"' + this.id() + '\"]')\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    mask: wrapWithAttrCheck(function () {\r\n      return this.defs().put(new Mask())\r\n    })\r\n  },\r\n  Element: {\r\n    // Distribute mask to svg element\r\n    maskWith (element) {\r\n      // use given mask or create a new one\r\n      var masker = element instanceof Mask\r\n        ? element\r\n        : this.parent().mask().add(element)\r\n\r\n      // apply mask\r\n      return this.attr('mask', 'url(\"#' + masker.id() + '\")')\r\n    },\r\n\r\n    // Unmask element\r\n    unmask () {\r\n      return this.attr('mask', null)\r\n    },\r\n\r\n    masker () {\r\n      return this.reference('mask')\r\n    }\r\n  }\r\n})\r\n\r\nregister(Mask, 'Mask')\r\n",
+      "start": 1693508127158,
+      "end": 1693508127205,
+      "sourcemaps": null
+    }
+  ]
+}

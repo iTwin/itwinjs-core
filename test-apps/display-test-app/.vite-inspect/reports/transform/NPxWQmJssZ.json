@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/ThumbnailInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/** Thumbnail size. */\r\nexport var ThumbnailSize;\r\n(function (ThumbnailSize) {\r\n    /** A small Thumbnail is a 400x250 PNG image. */\r\n    ThumbnailSize[\"Small\"] = \"small\";\r\n    /** A large thumbnail is a 800x500 PNG image. */\r\n    ThumbnailSize[\"Large\"] = \"large\";\r\n})(ThumbnailSize || (ThumbnailSize = {}));\r\n//# sourceMappingURL=ThumbnailInterfaces.js.map",
+      "start": 1693508124991,
+      "end": 1693508125103,
+      "sourcemaps": null
+    }
+  ]
+}

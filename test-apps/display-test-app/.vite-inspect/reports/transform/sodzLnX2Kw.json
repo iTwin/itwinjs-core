@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/solid/SolidPrimitive.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { GeometryQuery } from \"../curve/GeometryQuery\";\n/**\n * Base class for SolidPrimitive variants.\n *\n * * The base class holds capped flag for all derived classes.\n * @public\n */\nexport class SolidPrimitive extends GeometryQuery {\n    constructor(capped) {\n        super();\n        /** String name for schema properties */\n        this.geometryCategory = \"solid\";\n        this._capped = capped;\n    }\n    /** Whether this is a capped solid */\n    get capped() { return this._capped; }\n    set capped(capped) { this._capped = capped; }\n}\n//# sourceMappingURL=SolidPrimitive.js.map",
+      "start": 1693508123780,
+      "end": 1693508123909,
+      "sourcemaps": null
+    }
+  ]
+}

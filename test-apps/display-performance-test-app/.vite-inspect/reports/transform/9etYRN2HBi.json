@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/bspline/SurfaceLocationDetail.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { Point2d } from \"../geometry3d/Point2dVector2d\";\nimport { Point3d } from \"../geometry3d/Point3dVector3d\";\n/**\n * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.\n * * These are returned by a variety of queries.\n * * Particular contents can vary among the queries.\n * @public\n */\nexport class UVSurfaceLocationDetail {\n    /** Construct with empty data. */\n    constructor(surface, uv, point) {\n        this.surface = surface;\n        this.point = point ? point : Point3d.createZero();\n        this.uv = uv ? uv : Point2d.createZero();\n        this.a = 0.0;\n    }\n    /**\n     * Create a new detail structure.\n     * @param surface\n     * @param uv coordinates to copy (not capture) into the `detail.uv`\n     * @param point coordinates to copy (not capture) into the `detail.point`\n     */\n    static createSurfaceUVPoint(surface, uv, point) {\n        const detail = new UVSurfaceLocationDetail(surface);\n        if (uv)\n            detail.uv.setFrom(uv);\n        detail.point.setFromPoint3d(point);\n        return detail;\n    }\n    /**\n     * Create a new detail structure.\n     * @param surface\n     * @param uv coordinates to copy (not capture) into the `detail.uv`\n     * @param point coordinates to copy (not capture) into the `detail.point`\n     */\n    static createSurfaceUVNumbersPoint(surface, u, v, point) {\n        const detail = new UVSurfaceLocationDetail(surface);\n        detail.uv.x = u;\n        detail.uv.y = v;\n        detail.point.setFromPoint3d(point);\n        return detail;\n    }\n}\n/**\n * Carrier for both curve and surface data, e.g. from intersection calculations.\n * @public\n */\nexport class CurveAndSurfaceLocationDetail {\n    /** CAPTURE both details . . */\n    constructor(curveDetail, surfaceDetail) {\n        this.curveDetail = curveDetail;\n        this.surfaceDetail = surfaceDetail;\n    }\n}\n//# sourceMappingURL=SurfaceLocationDetail.js.map",
+      "start": 1693508124062,
+      "end": 1693508124140,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/FrameStatsTool.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { FrameStats, IModelApp, Tool } from \"@itwin/core-frontend\";\r\n\r\n/** Enable or disable (toggle) frame statistics reporting for all viewports. */\r\nexport class FrameStatsTool extends Tool {\r\n  public static override toolId = \"FrameStats\";\r\n  public static override get minArgs() { return 0; }\r\n  public static override get maxArgs() { return 0; }\r\n\r\n  public override async run(): Promise<boolean> {\r\n    for (const vp of IModelApp.viewManager) {\r\n      if (vp.onFrameStats.numberOfListeners > 0)\r\n        vp.onFrameStats.clear();\r\n      else\r\n        vp.onFrameStats.addListener((stats: Readonly<FrameStats>) => {\r\n          console.log(`frame stats (vp=${vp.viewportId}) = ${JSON.stringify(stats)}`); // eslint-disable-line no-console\r\n        });\r\n    }\r\n    return true;\r\n  }\r\n\r\n  public override async parseAndRun(...args: string[]): Promise<boolean> {\r\n    switch (args.length) {\r\n      case 0:\r\n        return this.run();\r\n    }\r\n    return true;\r\n  }\r\n}\r\n",
+      "start": 1693508121201,
+      "end": 1693508121255,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nimport { IModelApp, Tool } from \"@itwin/core-frontend\";\nexport class FrameStatsTool extends Tool {\n  static get minArgs() {\n    return 0;\n  }\n  static get maxArgs() {\n    return 0;\n  }\n  async run() {\n    for (const vp of IModelApp.viewManager) {\n      if (vp.onFrameStats.numberOfListeners > 0)\n        vp.onFrameStats.clear();\n      else\n        vp.onFrameStats.addListener((stats) => {\n          console.log(`frame stats (vp=${vp.viewportId}) = ${JSON.stringify(stats)}`);\n        });\n    }\n    return true;\n  }\n  async parseAndRun(...args) {\n    switch (args.length) {\n      case 0:\n        return this.run();\n    }\n    return true;\n  }\n}\nFrameStatsTool.toolId = \"FrameStats\";\n",
+      "start": 1693508121255,
+      "end": 1693508121398,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/frontend/FrameStatsTool.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\nimport { FrameStats, IModelApp, Tool } from \"@itwin/core-frontend\";\r\n\r\n/** Enable or disable (toggle) frame statistics reporting for all viewports. */\r\nexport class FrameStatsTool extends Tool {\r\n  public static override toolId = \"FrameStats\";\r\n  public static override get minArgs() { return 0; }\r\n  public static override get maxArgs() { return 0; }\r\n\r\n  public override async run(): Promise<boolean> {\r\n    for (const vp of IModelApp.viewManager) {\r\n      if (vp.onFrameStats.numberOfListeners > 0)\r\n        vp.onFrameStats.clear();\r\n      else\r\n        vp.onFrameStats.addListener((stats: Readonly<FrameStats>) => {\r\n          console.log(`frame stats (vp=${vp.viewportId}) = ${JSON.stringify(stats)}`); // eslint-disable-line no-console\r\n        });\r\n    }\r\n    return true;\r\n  }\r\n\r\n  public override async parseAndRun(...args: string[]): Promise<boolean> {\r\n    switch (args.length) {\r\n      case 0:\r\n        return this.run();\r\n    }\r\n    return true;\r\n  }\r\n}\r\n"
+        ],
+        "mappings": ";AAKA,SAAqB,WAAW,YAAY;AAGrC,aAAM,uBAAuB,KAAK;AAAA,EAEvC,WAA2B,UAAU;AAAE,WAAO;AAAA,EAAG;AAAA,EACjD,WAA2B,UAAU;AAAE,WAAO;AAAA,EAAG;AAAA,EAEjD,MAAsB,MAAwB;AAC5C,eAAW,MAAM,UAAU,aAAa;AACtC,UAAI,GAAG,aAAa,oBAAoB;AACtC,WAAG,aAAa,MAAM;AAAA;AAEtB,WAAG,aAAa,YAAY,CAAC,UAAgC;AAC3D,kBAAQ,IAAI,mBAAmB,GAAG,UAAU,OAAO,KAAK,UAAU,KAAK,CAAC,EAAE;AAAA,QAC5E,CAAC;AAAA,IACL;AACA,WAAO;AAAA,EACT;AAAA,EAEA,MAAsB,eAAe,MAAkC;AACrE,YAAQ,KAAK,QAAQ;AAAA,MACnB,KAAK;AACH,eAAO,KAAK,IAAI;AAAA,IACpB;AACA,WAAO;AAAA,EACT;AACF;AAxBa,eACY,SAAS;",
+        "names": []
+      }
+    }
+  ]
+}

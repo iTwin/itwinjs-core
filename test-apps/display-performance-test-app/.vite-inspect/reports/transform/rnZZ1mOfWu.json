@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/model/BlockIndex.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class BlockIndex defines a block index in a pointcloud file.\n *\n * @version 1.0 January 2014\n */\n/** @internal */\nexport class BlockIndex {\n    /**\n     * Create a new index.\n     */\n    constructor(level, index, gridIndex, tileIndex, tileCount, pointIndex, pointCount) {\n        this.level = level;\n        this.index = index;\n        this.gridIndex = gridIndex;\n        this.tileIndex = tileIndex;\n        this.tileCount = tileCount;\n        this.pointIndex = pointIndex;\n        this.pointCount = pointCount;\n        this.accessTime = 0.0;\n        this.key = (\"L\" + this.level + \",B:\" + this.index);\n    }\n    /**\n     * Check if two indexes are the same.\n     * @param other another index.\n     * @return true if same.\n     */\n    same(other) {\n        return (other.level == this.level) && (other.index == this.index);\n    }\n    /**\n     * Get the unique key of the block in the pointcloud file.\n     * @return the unique key (combines level and grid index).\n     */\n    getKey() {\n        return \"B\" + this.level + \"/\" + this.gridIndex.x + \"/\" + this.gridIndex.y + \"/\" + this.gridIndex.z;\n    }\n}\n//# sourceMappingURL=BlockIndex.js.map",
+      "start": 1693508124752,
+      "end": 1693508124904,
+      "sourcemaps": null
+    }
+  ]
+}

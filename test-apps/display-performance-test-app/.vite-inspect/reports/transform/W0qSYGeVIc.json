@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/GraphicsCollector.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { TileDrawArgs } from \"./internal\";\n/** @internal */\nexport class GraphicsCollectorDrawArgs extends TileDrawArgs {\n    constructor(planes, worldToViewMap, collector, args) {\n        super(args);\n        this._planes = planes;\n        this._worldToViewMap = worldToViewMap;\n        this._collector = collector;\n    }\n    get frustumPlanes() { return this._planes; }\n    get worldToViewMap() { return this._worldToViewMap; }\n    drawGraphicsWithType(_graphicType, graphics) {\n        this._collector.addGraphic(this.context.createBranch(graphics, this.location));\n    }\n    drawGraphics() {\n        if (!this.graphics.isEmpty)\n            this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));\n    }\n    static create(context, collector, ref, planes, worldToViewMap) {\n        const args = ref.createDrawArgs(context);\n        if (undefined === args)\n            return undefined;\n        return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, args);\n    }\n}\n//# sourceMappingURL=GraphicsCollector.js.map",
+      "start": 1693508121426,
+      "end": 1693508121615,
+      "sourcemaps": null
+    }
+  ]
+}

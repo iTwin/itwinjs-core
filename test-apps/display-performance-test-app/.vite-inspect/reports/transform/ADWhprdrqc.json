@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/extensions/frontend-tiles/lib/esm/BatchedModels.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nimport { Id64 } from \"@itwin/core-bentley\";\nimport { Range3d } from \"@itwin/core-geometry\";\nexport class BatchedModels {\n    constructor(view) {\n        this._viewedModelIdPairs = new Id64.Uint32Set();\n        this._modelRanges = new Map();\n        this._iModel = view.iModel;\n        this.setViewedModels(view.modelSelector.models);\n    }\n    setViewedModels(models) {\n        this._viewedModels = models;\n        this._viewedModelIdPairs.clear();\n        this._viewedModelIdPairs.addIds(models);\n        this._modelRangePromise = undefined;\n        const modelIds = Array.from(models).filter((modelId) => !this._modelRanges.has(modelId));\n        if (modelIds.length === 0)\n            return;\n        const modelRangePromise = this._modelRangePromise = this._iModel.models.queryExtents(modelIds).then((extents) => {\n            if (modelRangePromise !== this._modelRangePromise)\n                return;\n            this._modelRangePromise = undefined;\n            for (const extent of extents)\n                this._modelRanges.set(extent.id, Range3d.fromJSON(extent.extents));\n        }).catch(() => { });\n    }\n    views(modelId) {\n        return this._viewedModels.has(modelId);\n    }\n    isViewed(modelIdLo, modelIdHi) {\n        return this._viewedModelIdPairs.has(modelIdLo, modelIdHi);\n    }\n    unionRange(range) {\n        for (const id of this._viewedModels) {\n            const extent = this._modelRanges.get(id);\n            if (extent)\n                range.extendRange(extent);\n        }\n    }\n}\n//# sourceMappingURL=BatchedModels.js.map",
+      "start": 1693508124050,
+      "end": 1693508124124,
+      "sourcemaps": null
+    }
+  ]
+}

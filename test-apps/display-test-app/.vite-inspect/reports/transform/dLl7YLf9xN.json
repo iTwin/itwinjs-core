@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/rpc/core/RpcRequestContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export {};\n//# sourceMappingURL=RpcRequestContext.js.map",
+      "start": 1693508121032,
+      "end": 1693508121100,
+      "sourcemaps": null
+    }
+  ]
+}

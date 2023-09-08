@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ViewProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Views\n */\n/**\n * Access to a ViewStore from the frontend.\n * @beta\n */\nexport var ViewStoreRpc;\n(function (ViewStoreRpc) {\n    /**\n     * Version of the Rpc interface. If any methods or interfaces of this API change, this number should\n     * be incremented according to the rules of semantic versioning. See .\\rpc\\README-RpcInterfaceVersioning.md for more information.\n     *  @internal\n     */\n    ViewStoreRpc.version = \"4.0.0\";\n    /** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading \"@\") */\n    ViewStoreRpc.isViewStoreId = (id) => true === id?.startsWith(\"@\");\n})(ViewStoreRpc || (ViewStoreRpc = {}));\n//# sourceMappingURL=ViewProps.js.map",
+      "start": 1693508120801,
+      "end": 1693508120853,
+      "sourcemaps": null
+    }
+  ]
+}

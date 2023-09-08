@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+browser-authorization@1.0.1_67wltvhdskk2oee2c3z2o4tfly/node_modules/@itwin/browser-authorization/lib/esm/LoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n/** @packageDocumentation\r\n * @module Logging\r\n */\r\n/** Logger categories used by this package\r\n * @note All logger categories in this package start with the `browser-authorization` prefix.\r\n * @see [Logger]($bentley)\r\n * @beta\r\n */\r\nexport var BrowserAuthorizationLoggerCategory;\r\n(function (BrowserAuthorizationLoggerCategory) {\r\n    /** The logger category used by base clients */\r\n    BrowserAuthorizationLoggerCategory[\"Authorization\"] = \"browser-authorization.Authorization\";\r\n})(BrowserAuthorizationLoggerCategory || (BrowserAuthorizationLoggerCategory = {}));\r\n//# sourceMappingURL=LoggerCategory.js.map",
+      "start": 1693508122409,
+      "end": 1693508122605,
+      "sourcemaps": null
+    }
+  ]
+}

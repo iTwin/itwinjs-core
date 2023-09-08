@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+browser-authorization@1.0.1_67wltvhdskk2oee2c3z2o4tfly/node_modules/@itwin/browser-authorization/lib/cjs/LoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\r\n/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n/** @packageDocumentation\r\n * @module Logging\r\n */\r\nObject.defineProperty(exports, \"__esModule\", { value: true });\r\nexports.BrowserAuthorizationLoggerCategory = void 0;\r\n/** Logger categories used by this package\r\n * @note All logger categories in this package start with the `browser-authorization` prefix.\r\n * @see [Logger]($bentley)\r\n * @beta\r\n */\r\nvar BrowserAuthorizationLoggerCategory;\r\n(function (BrowserAuthorizationLoggerCategory) {\r\n    /** The logger category used by base clients */\r\n    BrowserAuthorizationLoggerCategory[\"Authorization\"] = \"browser-authorization.Authorization\";\r\n})(BrowserAuthorizationLoggerCategory = exports.BrowserAuthorizationLoggerCategory || (exports.BrowserAuthorizationLoggerCategory = {}));\r\n//# sourceMappingURL=LoggerCategory.js.map",
+      "start": 1693508119931,
+      "end": 1693508120318,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as LoggerCategory } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+browser-authorization@1.0.1_67wltvhdskk2oee2c3z2o4tfly/node_modules/@itwin/browser-authorization/lib/cjs/LoggerCategory.js?commonjs-exports\";\n\n(function (exports) {\n\t\"use strict\";\r\n\t/*---------------------------------------------------------------------------------------------\r\n\t* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n\t* See LICENSE.md in the project root for license terms and full copyright notice.\r\n\t*--------------------------------------------------------------------------------------------*/\r\n\t/** @packageDocumentation\r\n\t * @module Logging\r\n\t */\r\n\tObject.defineProperty(exports, \"__esModule\", { value: true });\r\n\texports.BrowserAuthorizationLoggerCategory = void 0;\r\n\t/** Logger categories used by this package\r\n\t * @note All logger categories in this package start with the `browser-authorization` prefix.\r\n\t * @see [Logger]($bentley)\r\n\t * @beta\r\n\t */\r\n\tvar BrowserAuthorizationLoggerCategory;\r\n\t(function (BrowserAuthorizationLoggerCategory) {\r\n\t    /** The logger category used by base clients */\r\n\t    BrowserAuthorizationLoggerCategory[\"Authorization\"] = \"browser-authorization.Authorization\";\r\n\t})(BrowserAuthorizationLoggerCategory = exports.BrowserAuthorizationLoggerCategory || (exports.BrowserAuthorizationLoggerCategory = {}));\r\n\t//# sourceMappingURL=LoggerCategory.js.map \n} (LoggerCategory));\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(LoggerCategory);\nexport { LoggerCategory as __moduleExports };",
+      "start": 1693508120318,
+      "end": 1693508120321,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;CAAA,YAAY,CAAC;CACb;CACA;CACA;CACA;CACA;CACA;CACA;CACA,MAAM,CAAC,cAAc,UAAU,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;CAC9D,6CAA6C,KAAK,CAAC,CAAC;CACpD;CACA;CACA;CACA;CACA;CACA,IAAI,kCAAkC,CAAC;CACvC,CAAC,UAAU,kCAAkC,EAAE;CAC/C;CACA,IAAI,kCAAkC,CAAC,eAAe,CAAC,GAAG,qCAAqC,CAAC;CAChG,CAAC,EAAE,kCAAkC,GAAG,OAAO,CAAC,kCAAkC,KAAK,6CAA6C,EAAE,CAAC,CAAC,CAAC;CACzI"
+      }
+    }
+  ]
+}

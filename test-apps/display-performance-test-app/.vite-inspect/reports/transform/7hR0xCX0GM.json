@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/ImdlDecoder.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { acquireImdlParser, readImdlContent } from \"./internal\";\n/** Acquire shared ownership of an [[ImdlDecoder]].\n * Decoders are reference-counted, because they make use of reference-counted [[ImdlParser]]s internally.\n * The caller of this function increments the reference count of the decoder and is responsible\n * for decrementing it by calling [[ImdlDecoder.release]] when it is no longer needed. Typically, a decoder's lifetime is tied to the\n * lifetime of some [IDisposable]($bentley) object like a [[TileTree]] - acquired in the constructor, and released in the `dispose` method.\n * @internal\n */\nexport function acquireImdlDecoder(args) {\n    const parser = acquireImdlParser(args);\n    return {\n        release: () => parser.release(),\n        decode: async (decodeArgs) => {\n            return readImdlContent({\n                ...args,\n                ...decodeArgs,\n                modelId: args.batchModelId,\n                loadEdges: !args.omitEdges,\n                parseDocument: async (parserOpts) => parser.parse(parserOpts),\n            });\n        },\n    };\n}\n//# sourceMappingURL=ImdlDecoder.js.map",
+      "start": 1693508121628,
+      "end": 1693508121797,
+      "sourcemaps": null
+    }
+  ]
+}

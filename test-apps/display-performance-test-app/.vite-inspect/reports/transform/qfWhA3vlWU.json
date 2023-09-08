@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/Diagnostics.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { GL } from \"./GL\";\nimport { System } from \"./System\";\n/** Provides facilities for conditionally executing diagnostic/debug code. By default, all facilities are disabled - they must be explicitly enabled.\n * @internal\n */\nclass Debug {\n    /** If [[Debug.printEnabled]] is true, outputs a message using `console.log`.\n     * @param message A function which returns a string. If [[Debug.printEnabled]] is false, the function is never evaluated.\n     */\n    static print(message) {\n        if (this.printEnabled)\n            console.log(message()); // eslint-disable-line no-console\n    }\n    /** If [[Debug.evaluate]] is true, executes the supplied function and returns its result; otherwise returns the supplied default value.\n     * @param evaluate The function to execute\n     * @param defaultValue The value to return if [[Debug.evaluate]] is false\n     * @returns The return value of `evaluate` if [[Debug.evaluate]] is true; otherwise, the `defaultValue`.\n     */\n    static evaluate(evaluate, defaultValue) {\n        return this.evaluateEnabled ? evaluate() : defaultValue;\n    }\n    /** If [[Debug.evaluateEnabled]] is true, returns whether the currently-bound framebuffer is complete. */\n    static get isValidFrameBuffer() { return GL.FrameBuffer.Status.Complete === this.checkFrameBufferStatus(); }\n    /** If [[Debug.evaluateEnabled]] is true, returns the status of the currently-bound framebuffer. */\n    static checkFrameBufferStatus() {\n        return this.evaluate(() => System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET), GL.FrameBuffer.Status.Complete);\n    }\n}\n/** Whether [[Debug.print]] will actually produce output. */\nDebug.printEnabled = false;\n/** Whether [[Debug.evaluate]] will actually evaluate an expression. */\nDebug.evaluateEnabled = false;\nexport { Debug };\n//# sourceMappingURL=Diagnostics.js.map",
+      "start": 1693508123631,
+      "end": 1693508123684,
+      "sourcemaps": null
+    }
+  ]
+}

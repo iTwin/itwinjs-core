@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/CommonLoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Logging\n */\n/** Logger categories used by this package\n * @see [Logger]($bentley)\n * @public\n * @extensions\n */\nexport var CommonLoggerCategory;\n(function (CommonLoggerCategory) {\n    /** The logger category used by common classes relating to ElementProps. */\n    CommonLoggerCategory[\"ElementProps\"] = \"core-common.ElementProps\";\n    /** The logger category used by common classes relating to Geometry. */\n    CommonLoggerCategory[\"Geometry\"] = \"core-common.Geometry\";\n    /** The logger category used by the portions of the RpcInterface framework that run on the backend. */\n    CommonLoggerCategory[\"RpcInterfaceBackend\"] = \"core-backend.RpcInterface\";\n    /** The logger category used by the portions of the RpcInterface framework that run on the frontend. */\n    CommonLoggerCategory[\"RpcInterfaceFrontend\"] = \"core-frontend.RpcInterface\";\n})(CommonLoggerCategory || (CommonLoggerCategory = {}));\n//# sourceMappingURL=CommonLoggerCategory.js.map",
+      "start": 1693508120495,
+      "end": 1693508120539,
+      "sourcemaps": null
+    }
+  ]
+}

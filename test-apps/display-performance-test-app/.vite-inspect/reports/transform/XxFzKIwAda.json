@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/RealityDataAccessProps.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * All of the currently supported Reality Data types\n * @beta\n */\nexport var DefaultSupportedTypes;\n(function (DefaultSupportedTypes) {\n    DefaultSupportedTypes[\"RealityMesh3dTiles\"] = \"RealityMesh3DTiles\";\n    DefaultSupportedTypes[\"OPC\"] = \"OPC\";\n    DefaultSupportedTypes[\"Terrain3dTiles\"] = \"Terrain3DTiles\";\n    DefaultSupportedTypes[\"OMR\"] = \"OMR\";\n    DefaultSupportedTypes[\"Cesium3dTiles\"] = \"Cesium3DTiles\"; // Cesium 3D Tiles\n})(DefaultSupportedTypes || (DefaultSupportedTypes = {}));\n//# sourceMappingURL=RealityDataAccessProps.js.map",
+      "start": 1693508120733,
+      "end": 1693508120783,
+      "sourcemaps": null
+    }
+  ]
+}

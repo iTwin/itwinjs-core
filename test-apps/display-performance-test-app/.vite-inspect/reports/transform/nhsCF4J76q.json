@@ -1,0 +1,33 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+electron-authorization@0.14.1_vfbcftczlx5fy7lxoa3opanwwu/node_modules/@itwin/electron-authorization/lib/cjs/ElectronRenderer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\"use strict\";\r\n/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nvar __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {\r\n    if (k2 === undefined) k2 = k;\r\n    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });\r\n}) : (function(o, m, k, k2) {\r\n    if (k2 === undefined) k2 = k;\r\n    o[k2] = m[k];\r\n}));\r\nvar __exportStar = (this && this.__exportStar) || function(m, exports) {\r\n    for (var p in m) if (p !== \"default\" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);\r\n};\r\nObject.defineProperty(exports, \"__esModule\", { value: true });\r\n__exportStar(require(\"./renderer/Client\"), exports);\r\n//# sourceMappingURL=ElectronRenderer.js.map",
+      "start": 1693508118232,
+      "end": 1693508118458,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __exports as ElectronRenderer } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+electron-authorization@0.14.1_vfbcftczlx5fy7lxoa3opanwwu/node_modules/@itwin/electron-authorization/lib/cjs/ElectronRenderer.js?commonjs-exports\";\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+electron-authorization@0.14.1_vfbcftczlx5fy7lxoa3opanwwu/node_modules/@itwin/electron-authorization/lib/cjs/renderer/Client.js?commonjs-proxy\";\n\n(function (exports) {\n\t\"use strict\";\r\n\t/*---------------------------------------------------------------------------------------------\r\n\t * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n\t * See LICENSE.md in the project root for license terms and full copyright notice.\r\n\t *--------------------------------------------------------------------------------------------*/\r\n\tvar __createBinding = (commonjsHelpers.commonjsGlobal && commonjsHelpers.commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {\r\n\t    if (k2 === undefined) k2 = k;\r\n\t    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });\r\n\t}) : (function(o, m, k, k2) {\r\n\t    if (k2 === undefined) k2 = k;\r\n\t    o[k2] = m[k];\r\n\t}));\r\n\tvar __exportStar = (commonjsHelpers.commonjsGlobal && commonjsHelpers.commonjsGlobal.__exportStar) || function(m, exports) {\r\n\t    for (var p in m) if (p !== \"default\" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);\r\n\t};\r\n\tObject.defineProperty(exports, \"__esModule\", { value: true });\r\n\t__exportStar(require$$0, exports);\r\n\t//# sourceMappingURL=ElectronRenderer.js.map \n} (ElectronRenderer));\n\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(ElectronRenderer);\nexport { ElectronRenderer as __moduleExports };",
+      "start": 1693508118458,
+      "end": 1693508122326,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [
+          "this"
+        ],
+        "mappings": ";;;;;CAAA,YAAY,CAAC;CACb;CACA;CACA;CACA;CACA,IAAI,eAAe,GAAG,CAACA,8BAAI,IAAIA,8BAAI,CAAC,eAAe,MAAM,MAAM,CAAC,MAAM,IAAI,SAAS,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE,EAAE,EAAE;CAChG,IAAI,IAAI,EAAE,KAAK,SAAS,EAAE,EAAE,GAAG,CAAC,CAAC;CACjC,IAAI,MAAM,CAAC,cAAc,CAAC,CAAC,EAAE,EAAE,EAAE,EAAE,UAAU,EAAE,IAAI,EAAE,GAAG,EAAE,WAAW,EAAE,OAAO,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,EAAE,CAAC,CAAC;CACzF,CAAC,KAAK,SAAS,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE,EAAE,EAAE;CAC5B,IAAI,IAAI,EAAE,KAAK,SAAS,EAAE,EAAE,GAAG,CAAC,CAAC;CACjC,IAAI,CAAC,CAAC,EAAE,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,CAAC;CACjB,CAAC,CAAC,CAAC,CAAC;CACJ,IAAI,YAAY,GAAG,CAACA,8BAAI,IAAIA,8BAAI,CAAC,YAAY,KAAK,SAAS,CAAC,EAAE,OAAO,EAAE;CACvE,IAAI,KAAK,IAAI,CAAC,IAAI,CAAC,EAAE,IAAI,CAAC,KAAK,SAAS,IAAI,CAAC,MAAM,CAAC,SAAS,CAAC,cAAc,CAAC,IAAI,CAAC,OAAO,EAAE,CAAC,CAAC,EAAE,eAAe,CAAC,OAAO,EAAE,CAAC,EAAE,CAAC,CAAC,CAAC;CAC9H,CAAC,CAAC;CACF,MAAM,CAAC,cAAc,UAAU,YAAY,EAAE,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAC;CAC9D,YAAY,CAAC,UAA4B,EAAE,OAAO,CAAC,CAAC;CACpD"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/primitives/Polyface.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** @internal */\nexport class PolyfacePrimitive {\n    get indexedPolyface() { return this._polyface; }\n    static create(params, pf, displayEdges = true, isPlanar = false) {\n        return new PolyfacePrimitive(params, pf, displayEdges, isPlanar);\n    }\n    constructor(params, pf, displayEdges, isPlanar) {\n        this.displayParams = params;\n        this._polyface = pf;\n        this.displayEdges = displayEdges;\n        this.isPlanar = isPlanar;\n    }\n    clone() { return new PolyfacePrimitive(this.displayParams, this._polyface.clone(), this.displayEdges, this.isPlanar); }\n    transform(trans) { return this._polyface.tryTransformInPlace(trans); }\n}\n/** @internal */\nexport class PolyfacePrimitiveList extends Array {\n    constructor(...args) {\n        super(...args);\n    }\n}\n//# sourceMappingURL=Polyface.js.map",
+      "start": 1693508119923,
+      "end": 1693508120005,
+      "sourcemaps": null
+    }
+  ]
+}

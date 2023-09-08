@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/render/primitives/MeshPrimitive.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Rendering\n */\n/** @internal */\nexport var MeshPrimitiveType;\n(function (MeshPrimitiveType) {\n    MeshPrimitiveType[MeshPrimitiveType[\"Mesh\"] = 0] = \"Mesh\";\n    MeshPrimitiveType[MeshPrimitiveType[\"Polyline\"] = 1] = \"Polyline\";\n    MeshPrimitiveType[MeshPrimitiveType[\"Point\"] = 2] = \"Point\";\n})(MeshPrimitiveType || (MeshPrimitiveType = {}));\n//# sourceMappingURL=MeshPrimitive.js.map",
+      "start": 1693508118702,
+      "end": 1693508118945,
+      "sourcemaps": null
+    }
+  ]
+}

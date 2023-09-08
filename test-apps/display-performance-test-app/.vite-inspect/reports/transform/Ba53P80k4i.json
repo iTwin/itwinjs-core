@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/IModelRoutingContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module IModelConnection\n */\nimport { BentleyStatus, IModelError, RpcRoutingToken } from \"@itwin/core-common\";\n/**\n * Controls the RPC routing for an iModel connection.\n * @public\n */\nclass IModelRoutingContext {\n    static for(token) {\n        return new IModelRoutingContext(token);\n    }\n    static get current() {\n        return this._current;\n    }\n    get active() { return IModelRoutingContext.current === this; }\n    constructor(token) {\n        this.token = token;\n    }\n    route(handler) {\n        if (IModelRoutingContext.current) {\n            throw new IModelError(BentleyStatus.ERROR, \"Concurrent use is not supported.\");\n        }\n        IModelRoutingContext._current = this;\n        const value = handler();\n        IModelRoutingContext._current = undefined;\n        return value;\n    }\n}\nIModelRoutingContext.default = new IModelRoutingContext(RpcRoutingToken.default);\nexport { IModelRoutingContext };\n//# sourceMappingURL=IModelRoutingContext.js.map",
+      "start": 1693508119000,
+      "end": 1693508119253,
+      "sourcemaps": null
+    }
+  ]
+}

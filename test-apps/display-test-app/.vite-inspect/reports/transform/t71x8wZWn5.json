@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/NewtonRtoRStrokeHandler.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Curve\n */\nimport { NewtonEvaluatorRtoR } from \"../../numerics/Newton\";\n/** Intermediate class for managing the parentCurve announcements from an IStrokeHandler.\n * @internal\n */\nexport class NewtonRtoRStrokeHandler extends NewtonEvaluatorRtoR {\n    constructor() {\n        super();\n        this._parentCurvePrimitive = undefined;\n    }\n    /** retain the parentCurvePrimitive.\n     * * Calling this method tells the handler that the parent curve is to be used for detail searches.\n     * * Example: Transition spiral search is based on linestring first, then the exact spiral.\n     * * Example: CurveChainWithDistanceIndex does NOT do this announcement -- the constituents act independently.\n     */\n    startParentCurvePrimitive(curve) {\n        this._parentCurvePrimitive = curve;\n    }\n    /** Forget the parentCurvePrimitive */\n    endParentCurvePrimitive(_curve) {\n        this._parentCurvePrimitive = undefined;\n    }\n}\n//# sourceMappingURL=NewtonRtoRStrokeHandler.js.map",
+      "start": 1693508126315,
+      "end": 1693508126413,
+      "sourcemaps": null
+    }
+  ]
+}

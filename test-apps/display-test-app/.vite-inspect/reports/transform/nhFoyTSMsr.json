@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/render/FrameData.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\nimport { AList } from \"../../system/collection/AList\";\n/**\n * Class FrameData bundles the data needed to render a certain view, some data is available, some data needs to be loaded.\n */\n/** @internal */\nexport class FrameData {\n    /**\n     * Create a new frame data holder.\n     */\n    constructor() {\n        this.tilesToRender = new AList();\n        this.levelsToLoad = new AList();\n        this.blocksToLoad = new AList();\n        this.tilesToLoad = new AList();\n    }\n    /**\n     * Is frame data missing? (so a data load is needed).\n     */\n    hasMissingData() {\n        if (this.levelsToLoad.size() > 0)\n            return true;\n        if (this.blocksToLoad.size() > 0)\n            return true;\n        if (this.tilesToLoad.size() > 0)\n            return true;\n        return false;\n    }\n}\n//# sourceMappingURL=FrameData.js.map",
+      "start": 1693508125969,
+      "end": 1693508126103,
+      "sourcemaps": null
+    }
+  ]
+}

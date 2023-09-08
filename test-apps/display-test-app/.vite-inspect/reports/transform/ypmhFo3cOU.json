@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ElementMesh.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Geometry\n */\nimport { ByteStream } from \"@itwin/core-bentley\";\nimport { BentleyGeometryFlatBuffer, IndexedPolyface } from \"@itwin/core-geometry\";\nfunction nextChunk(stream) {\n    if (stream.remainingLength < 8) {\n        // Consume remaining bytes.\n        stream.curPos = stream.length;\n        return undefined;\n    }\n    // Type codes are a sequence of four uppercase ASCII letters.\n    const chars = [stream.readUint8(), stream.readUint8(), stream.readUint8(), stream.readUint8()];\n    if (chars.some((c) => c < 65 || c > 90))\n        return undefined;\n    const dataLength = stream.readUint32();\n    const data = dataLength > 0 ? stream.nextBytes(dataLength) : undefined;\n    return {\n        type: String.fromCharCode(...chars),\n        data,\n    };\n}\n/** Convert the output of [IModelConnection.generateElementMeshes]($frontend) into an array of [Polyface]($core-geometry)s.\n * @param data Encoded polyfaces obtained from [IModelConnection.generateElementMeshes]($frontend).\n * @returns a list of decoded polyfaces.\n * @beta\n */\nexport function readElementMeshes(data) {\n    const polyfaces = [];\n    const stream = ByteStream.fromUint8Array(data);\n    const firstChunk = nextChunk(stream);\n    if (!firstChunk || \"LMSH\" !== firstChunk.type)\n        return polyfaces;\n    while (stream.remainingLength > 0) {\n        const chunk = nextChunk(stream);\n        if (!chunk || chunk.type !== \"PLFC\" || !chunk.data)\n            continue;\n        try {\n            const geom = BentleyGeometryFlatBuffer.bytesToGeometry(chunk.data, true);\n            if (geom instanceof IndexedPolyface)\n                polyfaces.push(geom);\n        }\n        catch (_) {\n            //\n        }\n    }\n    return polyfaces;\n}\n//# sourceMappingURL=ElementMesh.js.map",
+      "start": 1693508120715,
+      "end": 1693508120775,
+      "sourcemaps": null
+    }
+  ]
+}

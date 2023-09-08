@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/setPrototypeOf.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export default function _setPrototypeOf(o, p) {\n  _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {\n    o.__proto__ = p;\n    return o;\n  };\n  return _setPrototypeOf(o, p);\n}",
+      "start": 1693508126706,
+      "end": 1693508126754,
+      "sourcemaps": null
+    }
+  ]
+}

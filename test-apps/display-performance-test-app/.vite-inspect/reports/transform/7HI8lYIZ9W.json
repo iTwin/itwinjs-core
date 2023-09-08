@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/CombineTextures.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { TextureUnit } from \"../RenderFlags\";\nimport { Texture2DHandle } from \"../Texture\";\nimport { createViewportQuadBuilder } from \"./ViewportQuad\";\nconst computeBaseColor = \"return vec4(1.0);\";\nconst assignFragData = `\r\n  if (v_texCoord.y < .5)\r\n    FragColor = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 2.0));\r\n  else\r\n    FragColor = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 2.0 - 1.0));\r\n`;\n/** @internal */\nexport function createCombineTexturesProgram(context) {\n    const builder = createViewportQuadBuilder(true);\n    const frag = builder.frag;\n    frag.set(1 /* FragmentShaderComponent.ComputeBaseColor */, computeBaseColor);\n    frag.addUniform(\"u_texture0\", 8 /* VariableType.Sampler2D */, (prog) => {\n        prog.addGraphicUniform(\"u_texture0\", (uniform, params) => {\n            Texture2DHandle.bindSampler(uniform, params.geometry.texture0, TextureUnit.Zero);\n        });\n    }, 3 /* VariablePrecision.High */);\n    frag.addUniform(\"u_texture1\", 8 /* VariableType.Sampler2D */, (prog) => {\n        prog.addGraphicUniform(\"u_texture1\", (uniform, params) => {\n            Texture2DHandle.bindSampler(uniform, params.geometry.texture1, TextureUnit.One);\n        });\n    }, 3 /* VariablePrecision.High */);\n    frag.set(16 /* FragmentShaderComponent.AssignFragData */, assignFragData);\n    builder.vert.headerComment = \"//!V! CombineTextures\";\n    builder.frag.headerComment = \"//!F! CombineTextures\";\n    return builder.buildProgram(context);\n}\n//# sourceMappingURL=CombineTextures.js.map",
+      "start": 1693508124617,
+      "end": 1693508124725,
+      "sourcemaps": null
+    }
+  ]
+}

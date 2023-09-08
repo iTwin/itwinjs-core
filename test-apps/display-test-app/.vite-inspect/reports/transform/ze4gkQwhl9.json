@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Svg.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  adopt,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { ns, svgjs, xlink, xmlns } from '../modules/core/namespaces.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Container from './Container.js'\r\nimport Defs from './Defs.js'\r\nimport { globals } from '../utils/window.js'\r\n\r\nexport default class Svg extends Container {\r\n  constructor (node) {\r\n    super(nodeOrNew('svg', node), node)\r\n    this.namespace()\r\n  }\r\n\r\n  isRoot () {\r\n    return !this.node.parentNode\r\n      || !(this.node.parentNode instanceof globals.window.SVGElement)\r\n      || this.node.parentNode.nodeName === '#document'\r\n  }\r\n\r\n  // Check if this is a root svg\r\n  // If not, call docs from this element\r\n  root () {\r\n    if (this.isRoot()) return this\r\n    return super.root()\r\n  }\r\n\r\n  // Add namespaces\r\n  namespace () {\r\n    if (!this.isRoot()) return this.root().namespace()\r\n    return this\r\n      .attr({ xmlns: ns, version: '1.1' })\r\n      .attr('xmlns:xlink', xlink, xmlns)\r\n      .attr('xmlns:svgjs', svgjs, xmlns)\r\n  }\r\n\r\n  // Creates and returns defs element\r\n  defs () {\r\n    if (!this.isRoot()) return this.root().defs()\r\n\r\n    return adopt(this.node.querySelector('defs'))\r\n      || this.put(new Defs())\r\n  }\r\n\r\n  // custom parent method\r\n  parent (type) {\r\n    if (this.isRoot()) {\r\n      return this.node.parentNode.nodeName === '#document'\r\n        ? null\r\n        : adopt(this.node.parentNode)\r\n    }\r\n\r\n    return super.parent(type)\r\n  }\r\n\r\n  clear () {\r\n    // remove children\r\n    while (this.node.hasChildNodes()) {\r\n      this.node.removeChild(this.node.lastChild)\r\n    }\r\n\r\n    // remove defs reference\r\n    delete this._defs\r\n\r\n    return this\r\n  }\r\n}\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create nested svg document\r\n    nested: wrapWithAttrCheck(function () {\r\n      return this.put(new Svg())\r\n    })\r\n  }\r\n})\r\n\r\nregister(Svg, 'Svg', true)\r\n",
+      "start": 1693508127064,
+      "end": 1693508127155,
+      "sourcemaps": null
+    }
+  ]
+}

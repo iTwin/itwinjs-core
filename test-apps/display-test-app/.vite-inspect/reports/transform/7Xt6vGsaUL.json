@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/internal/iterators/EntityPageListIterator.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export class EntityPageListIterator {\r\n    constructor(pageQueryFunc) {\r\n        this._entityPages = this.queryPages(pageQueryFunc);\r\n    }\r\n    [Symbol.asyncIterator]() {\r\n        return this;\r\n    }\r\n    async next() {\r\n        return this._entityPages.next();\r\n    }\r\n    async *queryPages(pageQueryFunc) {\r\n        let nextPageQueryFunc = pageQueryFunc;\r\n        while (nextPageQueryFunc) {\r\n            const entityPage = await nextPageQueryFunc();\r\n            nextPageQueryFunc = entityPage.next;\r\n            yield entityPage.entities;\r\n        }\r\n    }\r\n}\r\n//# sourceMappingURL=EntityPageListIterator.js.map",
+      "start": 1693508126241,
+      "end": 1693508126314,
+      "sourcemaps": null
+    }
+  ]
+}

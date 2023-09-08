@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-access-frontend@3.1.0_ueafa4slb6ohrhyf7kbp6egmha/node_modules/@itwin/imodels-access-frontend/lib/esm/interface-adapters/AccessTokenAdapter.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nimport { RepositoryStatus } from \"@itwin/core-bentley\";\r\nimport { IModelError } from \"@itwin/core-common\";\r\nexport class AccessTokenAdapter {\r\n    static toAuthorization(accessToken) {\r\n        const splitAccessToken = accessToken.split(\" \");\r\n        if (splitAccessToken.length !== 2)\r\n            throw new IModelError(RepositoryStatus.InvalidRequest, \"Unsupported access token format\");\r\n        return {\r\n            scheme: splitAccessToken[0],\r\n            token: splitAccessToken[1]\r\n        };\r\n    }\r\n    static toAuthorizationCallback(accessToken) {\r\n        const authorization = AccessTokenAdapter.toAuthorization(accessToken);\r\n        return async () => authorization;\r\n    }\r\n}\r\n//# sourceMappingURL=AccessTokenAdapter.js.map",
+      "start": 1693508122475,
+      "end": 1693508122605,
+      "sourcemaps": null
+    }
+  ]
+}

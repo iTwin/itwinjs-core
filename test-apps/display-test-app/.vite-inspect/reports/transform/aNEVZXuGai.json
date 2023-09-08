@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/types/SVGArray.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { delimiter } from '../modules/core/regex.js'\r\nimport { extend } from '../utils/adopter.js'\r\nimport { subClassArray } from './ArrayPolyfill.js'\r\n\r\nconst SVGArray = subClassArray('SVGArray', Array, function (arr) {\r\n  this.init(arr)\r\n})\r\n\r\nexport default SVGArray\r\n\r\nextend(SVGArray, {\r\n  init (arr) {\r\n    // This catches the case, that native map tries to create an array with new Array(1)\r\n    if (typeof arr === 'number') return this\r\n    this.length = 0\r\n    this.push(...this.parse(arr))\r\n    return this\r\n  },\r\n\r\n  toArray () {\r\n    return Array.prototype.concat.apply([], this)\r\n  },\r\n\r\n  toString () {\r\n    return this.join(' ')\r\n  },\r\n\r\n  // Flattens the array if needed\r\n  valueOf () {\r\n    const ret = []\r\n    ret.push(...this)\r\n    return ret\r\n  },\r\n\r\n  // Parse whitespace separated string\r\n  parse (array = []) {\r\n    // If already is an array, no need to parse it\r\n    if (array instanceof Array) return array\r\n\r\n    return array.trim().split(delimiter).map(parseFloat)\r\n  },\r\n\r\n  clone () {\r\n    return new this.constructor(this)\r\n  },\r\n\r\n  toSet () {\r\n    return new Set(this)\r\n  }\r\n})\r\n",
+      "start": 1693508127054,
+      "end": 1693508127150,
+      "sourcemaps": null
+    }
+  ]
+}

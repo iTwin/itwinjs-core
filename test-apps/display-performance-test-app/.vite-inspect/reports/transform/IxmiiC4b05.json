@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/TiledGraphicsProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Views\n */\n/** @public */\nexport var TiledGraphicsProvider;\n(function (TiledGraphicsProvider) {\n    /** @internal because TypeDoc can't disambiguate with the interface method by same name. */\n    function addToScene(provider, context) {\n        if (provider.addToScene)\n            provider.addToScene(context);\n        else\n            provider.forEachTileTreeRef(context.viewport, (ref) => ref.addToScene(context));\n    }\n    TiledGraphicsProvider.addToScene = addToScene;\n    /** @internal because TypeDoc can't disambiguate with the interface method by same name. */\n    function isLoadingComplete(provider, viewport) {\n        if (provider.isLoadingComplete && !provider.isLoadingComplete(viewport))\n            return false;\n        let allLoaded = true;\n        provider.forEachTileTreeRef(viewport, (ref) => {\n            allLoaded &&= ref.isLoadingComplete;\n        });\n        return allLoaded;\n    }\n    TiledGraphicsProvider.isLoadingComplete = isLoadingComplete;\n})(TiledGraphicsProvider || (TiledGraphicsProvider = {}));\n//# sourceMappingURL=TiledGraphicsProvider.js.map",
+      "start": 1693508121564,
+      "end": 1693508121663,
+      "sourcemaps": null
+    }
+  ]
+}

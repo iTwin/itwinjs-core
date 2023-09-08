@@ -1,0 +1,12 @@
+{
+  "resolvedId": "__vite-browser-external:fs",
+  "transforms": [
+    {
+      "name": "vite:resolve",
+      "result": "export default new Proxy({}, {\n  get(_, key) {\n    throw new Error(`Module \"fs\" has been externalized for browser compatibility. Cannot access \"fs.${key}\" in client code.  See http://vitejs.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.`)\n  }\n})",
+      "start": 1693508122291,
+      "end": 1693508122291,
+      "sourcemaps": null
+    }
+  ]
+}

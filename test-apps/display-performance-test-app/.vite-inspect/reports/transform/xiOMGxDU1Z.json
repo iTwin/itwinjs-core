@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+worker-utils@3.4.7/node_modules/@loaders.gl/worker-utils/dist/esm/lib/env-utils/assert.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export function assert(condition, message) {\n  if (!condition) {\n    throw new Error(message || 'loaders.gl assertion failed.');\n  }\n}\n//# sourceMappingURL=assert.js.map",
+      "start": 1693508124411,
+      "end": 1693508124568,
+      "sourcemaps": null
+    }
+  ]
+}

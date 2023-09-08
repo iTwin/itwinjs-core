@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/internal/ApiResponseInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export {};\r\n//# sourceMappingURL=ApiResponseInterfaces.js.map",
+      "start": 1693508123974,
+      "end": 1693508124097,
+      "sourcemaps": null
+    }
+  ]
+}

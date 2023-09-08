@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+schema@3.4.7/node_modules/@loaders.gl/schema/dist/esm/lib/schema/schema.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export { default as Schema } from './impl/schema';\nexport { default as Field } from './impl/field';\nexport { Type } from './impl/type';\nexport { DataType, Null, Bool, Int, Int8, Int16, Int32, Int64, Uint8, Uint16, Uint32, Uint64, Float, Float16, Float32, Float64, Binary, Utf8, Date, DateDay, DateMillisecond, Time, TimeSecond, TimeMillisecond, Timestamp, TimestampSecond, TimestampMillisecond, TimestampMicrosecond, TimestampNanosecond, Interval, IntervalDayTime, IntervalYearMonth, FixedSizeList, Struct } from './impl/type';\n//# sourceMappingURL=schema.js.map",
+      "start": 1693508126404,
+      "end": 1693508126519,
+      "sourcemaps": null
+    }
+  ]
+}

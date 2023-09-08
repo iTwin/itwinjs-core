@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/modules/optional/class.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { delimiter } from '../core/regex.js'\r\nimport { registerMethods } from '../../utils/methods.js'\r\n\r\n// Return array of classes on the node\r\nexport function classes () {\r\n  var attr = this.attr('class')\r\n  return attr == null ? [] : attr.trim().split(delimiter)\r\n}\r\n\r\n// Return true if class exists on the node, false otherwise\r\nexport function hasClass (name) {\r\n  return this.classes().indexOf(name) !== -1\r\n}\r\n\r\n// Add class to the node\r\nexport function addClass (name) {\r\n  if (!this.hasClass(name)) {\r\n    var array = this.classes()\r\n    array.push(name)\r\n    this.attr('class', array.join(' '))\r\n  }\r\n\r\n  return this\r\n}\r\n\r\n// Remove class from the node\r\nexport function removeClass (name) {\r\n  if (this.hasClass(name)) {\r\n    this.attr('class', this.classes().filter(function (c) {\r\n      return c !== name\r\n    }).join(' '))\r\n  }\r\n\r\n  return this\r\n}\r\n\r\n// Toggle the presence of a class on the node\r\nexport function toggleClass (name) {\r\n  return this.hasClass(name) ? this.removeClass(name) : this.addClass(name)\r\n}\r\n\r\nregisterMethods('Dom', {\r\n  classes, hasClass, addClass, removeClass, toggleClass\r\n})\r\n",
+      "start": 1693508126729,
+      "end": 1693508127013,
+      "sourcemaps": null
+    }
+  ]
+}

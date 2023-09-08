@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/apiEntities/UserPermissionInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\n/** Possible iModel Permission values. */\r\nexport var IModelPermission;\r\n(function (IModelPermission) {\r\n    /** Allows to view iModel in web browser, but does not allow to get its local copy and view in desktop app. */\r\n    IModelPermission[\"WebView\"] = \"imodels_webview\";\r\n    /** Allows to open and view an iModel only in read-only state. */\r\n    IModelPermission[\"Read\"] = \"imodels_read\";\r\n    /**\r\n     * Allows to make changes to an iModel. Allows to create and modify Named Versions. Allows to create mapping\r\n     * between PW connection and iModel to facilitate connectors.\r\n     */\r\n    IModelPermission[\"Write\"] = \"imodels_write\";\r\n    /**\r\n     * Allows to create an iModel. Allows to configure access per iModel. Allows to manage Locks or local copies\r\n     * for the entire iModel. This Permission is both iModel and iTwin level Permission, but Create iModel operation\r\n     * requires that user has `imodels_manage` Permission on the iTwin level. Use\r\n     * {@link https://developer.bentley.com/apis/access-control/operations/get-itwin-permissions/ Access Control API}\r\n     * to check if user can create an iModel on a given iTwin.\r\n     */\r\n    IModelPermission[\"Manage\"] = \"imodels_manage\";\r\n    /**\r\n     * Allows to delete an iModel. This Permission is only available on the iTwin level. Use\r\n     * {@link https://developer.bentley.com/apis/access-control/operations/get-itwin-permissions/ Access Control API}\r\n     * to check if user can delete iModels on a given iTwin. */\r\n    IModelPermission[\"Delete\"] = \"imodels-delete\";\r\n})(IModelPermission || (IModelPermission = {}));\r\n//# sourceMappingURL=UserPermissionInterfaces.js.map",
+      "start": 1693508125007,
+      "end": 1693508125106,
+      "sourcemaps": null
+    }
+  ]
+}

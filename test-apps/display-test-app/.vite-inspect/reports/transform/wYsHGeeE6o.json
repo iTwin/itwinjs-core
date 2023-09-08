@@ -1,0 +1,34 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/i18next-http-backend@1.4.5/node_modules/i18next-http-backend/esm/getFetch.cjs",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "var fetchApi\nif (typeof fetch === 'function') {\n  if (typeof global !== 'undefined' && global.fetch) {\n    fetchApi = global.fetch\n  } else if (typeof window !== 'undefined' && window.fetch) {\n    fetchApi = window.fetch\n  } else {\n    fetchApi = fetch\n  }\n}\n\nif (typeof require !== 'undefined' && (typeof window === 'undefined' || typeof window.document === 'undefined')) {\n  var f = fetchApi || require('cross-fetch')\n  if (f.default) f = f.default\n  exports.default = f\n  module.exports = exports.default\n}\n",
+      "start": 1693508126719,
+      "end": 1693508127003,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { commonjsRequire as commonjsRequire } from \"\u0000commonjs-dynamic-modules\";\nimport { __module as getFetchModule } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/i18next-http-backend@1.4.5/node_modules/i18next-http-backend/esm/getFetch.cjs?commonjs-module\";\nvar getFetch = getFetchModule.exports;\nimport { __require as require$$0 } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/cross-fetch@3.1.5/node_modules/cross-fetch/dist/browser-ponyfill.js?commonjs-wrapped\";\n\n(function (module, exports) {\n\tvar fetchApi\n\tif (typeof fetch === 'function') {\n\t  if (typeof commonjsHelpers.commonjsGlobal !== 'undefined' && commonjsHelpers.commonjsGlobal.fetch) {\n\t    fetchApi = commonjsHelpers.commonjsGlobal.fetch\n\t  } else if (typeof window !== 'undefined' && window.fetch) {\n\t    fetchApi = window.fetch\n\t  } else {\n\t    fetchApi = fetch\n\t  }\n\t}\n\n\tif (typeof commonjsRequire !== 'undefined' && (typeof window === 'undefined' || typeof window.document === 'undefined')) {\n\t  var f = fetchApi || require$$0()\n\t  if (f.default) f = f.default\n\t  exports.default = f\n\t  module.exports = exports.default\n\t} \n} (getFetchModule, getFetchModule.exports));\n\nvar getFetchExports = getFetchModule.exports;\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(getFetchExports);\nexport { getFetchExports as __moduleExports };",
+      "start": 1693508127004,
+      "end": 1693508127353,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [
+          "global",
+          "require"
+        ],
+        "mappings": ";;;;;;;CAAA,IAAI,QAAQ;CACZ,IAAI,OAAO,KAAK,KAAK,UAAU,EAAE;CACjC,EAAE,IAAI,OAAOA,8BAAM,KAAK,WAAW,IAAIA,8BAAM,CAAC,KAAK,EAAE;CACrD,IAAI,QAAQ,GAAGA,8BAAM,CAAC,KAAK;CAC3B,GAAG,MAAM,IAAI,OAAO,MAAM,KAAK,WAAW,IAAI,MAAM,CAAC,KAAK,EAAE;CAC5D,IAAI,QAAQ,GAAG,MAAM,CAAC,KAAK;CAC3B,GAAG,MAAM;CACT,IAAI,QAAQ,GAAG,KAAK;CACpB,GAAG;CACH,CAAC;AACD;CACA,IAAI,OAAOC,eAAO,KAAK,WAAW,KAAK,OAAO,MAAM,KAAK,WAAW,IAAI,OAAO,MAAM,CAAC,QAAQ,KAAK,WAAW,CAAC,EAAE;CACjH,EAAE,IAAI,CAAC,GAAG,QAAQ,IAAI,YAAsB;CAC5C,EAAE,IAAI,CAAC,CAAC,OAAO,EAAE,CAAC,GAAG,CAAC,CAAC,OAAO;CAC9B,EAAE,kBAAkB,CAAC;CACrB,EAAE,iBAAiB,OAAO,CAAC,OAAO;CAClC"
+      }
+    }
+  ]
+}

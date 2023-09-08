@@ -1,0 +1,31 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/axios@0.25.0/node_modules/axios/lib/helpers/isAbsoluteURL.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "'use strict';\n\n/**\n * Determines whether the specified URL is absolute\n *\n * @param {string} url The URL to test\n * @returns {boolean} True if the specified URL is absolute, otherwise false\n */\nmodule.exports = function isAbsoluteURL(url) {\n  // A URL is considered absolute if it begins with \"<scheme>://\" or \"//\" (protocol-relative URL).\n  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed\n  // by any combination of letters, digits, plus, period, or hyphen.\n  return /^([a-z][a-z\\d+\\-.]*:)?\\/\\//i.test(url);\n};\n",
+      "start": 1693508125717,
+      "end": 1693508125763,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\n\nvar isAbsoluteURL;\nvar hasRequiredIsAbsoluteURL;\n\nfunction requireIsAbsoluteURL () {\n\tif (hasRequiredIsAbsoluteURL) return isAbsoluteURL;\n\thasRequiredIsAbsoluteURL = 1;\n\t'use strict';\n\n\t/**\n\t * Determines whether the specified URL is absolute\n\t *\n\t * @param {string} url The URL to test\n\t * @returns {boolean} True if the specified URL is absolute, otherwise false\n\t */\n\tisAbsoluteURL = function isAbsoluteURL(url) {\n\t  // A URL is considered absolute if it begins with \"<scheme>://\" or \"//\" (protocol-relative URL).\n\t  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed\n\t  // by any combination of letters, digits, plus, period, or hyphen.\n\t  return /^([a-z][a-z\\d+\\-.]*:)?\\/\\//i.test(url);\n\t};\n\treturn isAbsoluteURL;\n}\n\nexport { requireIsAbsoluteURL as __require };",
+      "start": 1693508125763,
+      "end": 1693508125764,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [],
+        "mappings": ";;;;;;;;CAAA,YAAY,CAAC;AACb;CACA;CACA;CACA;CACA;CACA;CACA;AACA,cAAc,GAAG,SAAS,aAAa,CAAC,GAAG,EAAE;CAC7C;CACA;CACA;CACA,EAAE,OAAO,6BAA6B,CAAC,IAAI,CAAC,GAAG,CAAC,CAAC;CACjD,CAAC"
+      }
+    }
+  ]
+}

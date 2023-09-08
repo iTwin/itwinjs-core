@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-performance-test-app/src/index.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// index.html at the root of this project requires an index.ts file in this location. Using it to import the code\r\n// from the frontend.\r\n\r\nimport \"./frontend/DisplayPerformanceTestApp\";\r\n",
+      "start": 1693508118112,
+      "end": 1693508118128,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nimport \"./frontend/DisplayPerformanceTestApp\";\n",
+      "start": 1693508118128,
+      "end": 1693508118136,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-performance-test-app/src/index.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// index.html at the root of this project requires an index.ts file in this location. Using it to import the code\r\n// from the frontend.\r\n\r\nimport \"./frontend/DisplayPerformanceTestApp\";\r\n"
+        ],
+        "mappings": ";AAQA,OAAO;",
+        "names": []
+      }
+    }
+  ]
+}

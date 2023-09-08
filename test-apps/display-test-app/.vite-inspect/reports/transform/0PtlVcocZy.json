@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ChangedElements.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "// cspell:ignore bboxes\n/** Bitflags describing which aspects of an [Element]($backend) changed as part of a [[ChangedElements]].\n * @public\n * @extensions\n */\nexport var TypeOfChange;\n(function (TypeOfChange) {\n    /** Element contains no changes */\n    TypeOfChange[TypeOfChange[\"NoChange\"] = 0] = \"NoChange\";\n    /** A property in the element changed */\n    TypeOfChange[TypeOfChange[\"Property\"] = 1] = \"Property\";\n    /** The geometry stream of a [GeometricElement]($backend) changed */\n    TypeOfChange[TypeOfChange[\"Geometry\"] = 2] = \"Geometry\";\n    /** The [[Placement]] of a [GeometricElement]($backend) changed */\n    TypeOfChange[TypeOfChange[\"Placement\"] = 4] = \"Placement\";\n    /** Indirect change occurred to this element by a related instance */\n    TypeOfChange[TypeOfChange[\"Indirect\"] = 8] = \"Indirect\";\n    /** Hidden properties of the element changed */\n    TypeOfChange[TypeOfChange[\"Hidden\"] = 16] = \"Hidden\";\n    /** The top-most parent of the element has changed */\n    TypeOfChange[TypeOfChange[\"Parent\"] = 32] = \"Parent\";\n})(TypeOfChange || (TypeOfChange = {}));\n//# sourceMappingURL=ChangedElements.js.map",
+      "start": 1693508120676,
+      "end": 1693508120727,
+      "sourcemaps": null
+    }
+  ]
+}

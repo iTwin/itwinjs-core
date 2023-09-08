@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Defs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { nodeOrNew, register } from '../utils/adopter.js'\r\nimport Container from './Container.js'\r\n\r\nexport default class Defs extends Container {\r\n  constructor (node) {\r\n    super(nodeOrNew('defs', node), node)\r\n  }\r\n\r\n  flatten () {\r\n    return this\r\n  }\r\n  ungroup () {\r\n    return this\r\n  }\r\n}\r\n\r\nregister(Defs, 'Defs')\r\n",
+      "start": 1693508126755,
+      "end": 1693508127054,
+      "sourcemaps": null
+    }
+  ]
+}

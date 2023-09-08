@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/ClearTranslucent.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { createViewportQuadBuilder } from \"./ViewportQuad\";\nconst computeBaseColor = \"return vec4(0.0);\";\nconst assignFragData = `\r\n  FragColor0 = vec4(0.0, 0.0, 0.0, 1.0);\r\n  FragColor1 = vec4(1.0, 0.0, 0.0, 1.0);\r\n`;\n/** @internal */\nexport function createClearTranslucentProgram(context) {\n    const builder = createViewportQuadBuilder(false);\n    const frag = builder.frag;\n    frag.set(1 /* FragmentShaderComponent.ComputeBaseColor */, computeBaseColor);\n    frag.addDrawBuffersExtension(2);\n    frag.set(16 /* FragmentShaderComponent.AssignFragData */, assignFragData);\n    builder.vert.headerComment = \"//!V! ClearTranslucent\";\n    builder.frag.headerComment = \"//!F! ClearTranslucent\";\n    return builder.buildProgram(context);\n}\n//# sourceMappingURL=ClearTranslucent.js.map",
+      "start": 1693508125842,
+      "end": 1693508125930,
+      "sourcemaps": null
+    }
+  ]
+}

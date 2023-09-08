@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Gradient.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\r\n  extend,\r\n  nodeOrNew,\r\n  register,\r\n  wrapWithAttrCheck\r\n} from '../utils/adopter.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport Box from '../types/Box.js'\r\nimport Container from './Container.js'\r\nimport Stop from './Stop.js'\r\nimport baseFind from '../modules/core/selector.js'\r\nimport * as gradiented from '../modules/core/gradiented.js'\r\n\r\nexport default class Gradient extends Container {\r\n  constructor (type, attrs) {\r\n    super(\r\n      nodeOrNew(type + 'Gradient', typeof type === 'string' ? null : type),\r\n      attrs\r\n    )\r\n  }\r\n\r\n  // Add a color stop\r\n  stop (offset, color, opacity) {\r\n    return this.put(new Stop()).update(offset, color, opacity)\r\n  }\r\n\r\n  // Update gradient\r\n  update (block) {\r\n    // remove all stops\r\n    this.clear()\r\n\r\n    // invoke passed block\r\n    if (typeof block === 'function') {\r\n      block.call(this, this)\r\n    }\r\n\r\n    return this\r\n  }\r\n\r\n  // Return the fill id\r\n  url () {\r\n    return 'url(#' + this.id() + ')'\r\n  }\r\n\r\n  // Alias string convertion to fill\r\n  toString () {\r\n    return this.url()\r\n  }\r\n\r\n  // custom attr to handle transform\r\n  attr (a, b, c) {\r\n    if (a === 'transform') a = 'gradientTransform'\r\n    return super.attr(a, b, c)\r\n  }\r\n\r\n  targets () {\r\n    return baseFind('svg [fill*=\"' + this.id() + '\"]')\r\n  }\r\n\r\n  bbox () {\r\n    return new Box()\r\n  }\r\n}\r\n\r\nextend(Gradient, gradiented)\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // Create gradient element in defs\r\n    gradient: wrapWithAttrCheck(function (type, block) {\r\n      return this.defs().gradient(type, block)\r\n    })\r\n  },\r\n  // define gradient\r\n  Defs: {\r\n    gradient: wrapWithAttrCheck(function (type, block) {\r\n      return this.put(new Gradient(type)).update(block)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Gradient, 'Gradient')\r\n",
+      "start": 1693508127006,
+      "end": 1693508127077,
+      "sourcemaps": null
+    }
+  ]
+}

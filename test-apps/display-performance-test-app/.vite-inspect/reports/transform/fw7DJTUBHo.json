@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/UtilityTypes.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\n/** Returns true if `obj` is an object of class `T`.\n * @see [[asInstanceOf]] to cast `obj` to class `T`.\n * @public\n */\nexport function isInstanceOf(obj, constructor) {\n    return \"object\" === typeof obj && obj instanceof constructor;\n}\n/** Cast `obj` to an instance of class `T`, or return undefined if `obj` is not an instance of class `T`.\n * @see [[isInstanceOf]] to query whether `obj` is of class `T`.\n * @public\n */\nexport function asInstanceOf(obj, constructor) {\n    return isInstanceOf(obj, constructor) ? obj : undefined;\n}\n/** A runtime property omitter, makes a shallow copy of the given object without the specified properties\n * Compatible with the typescript `Omit` mapped type:\n * ```js\n * const testvar: Omit<{x: string, y: object}, \"y\"> = omit({x: \"hello\", y: {}}, [\"y\"]);\n * ```\n * @public\n */\nexport function omit(t, keys) {\n    const clone = { ...t };\n    for (const key of keys)\n        delete clone[key];\n    return clone;\n}\n//# sourceMappingURL=UtilityTypes.js.map",
+      "start": 1693508120451,
+      "end": 1693508120499,
+      "sourcemaps": null
+    }
+  ]
+}

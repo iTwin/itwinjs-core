@@ -1,0 +1,34 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/crypto-js@4.1.1/node_modules/crypto-js/enc-utf8.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": ";(function (root, factory) {\n\tif (typeof exports === \"object\") {\n\t\t// CommonJS\n\t\tmodule.exports = exports = factory(require(\"./core\"));\n\t}\n\telse if (typeof define === \"function\" && define.amd) {\n\t\t// AMD\n\t\tdefine([\"./core\"], factory);\n\t}\n\telse {\n\t\t// Global (browser)\n\t\tfactory(root.CryptoJS);\n\t}\n}(this, function (CryptoJS) {\n\n\treturn CryptoJS.enc.Utf8;\n\n}));",
+      "start": 1693508122069,
+      "end": 1693508122201,
+      "sourcemaps": null
+    },
+    {
+      "name": "commonjs",
+      "result": "import * as commonjsHelpers from \"\u0000commonjsHelpers.js\";\nimport { __module as encUtf8Module } from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/crypto-js@4.1.1/node_modules/crypto-js/enc-utf8.js?commonjs-module\";\nvar encUtf8 = encUtf8Module.exports;\nimport require$$0 from \"\\u0000D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/crypto-js@4.1.1/node_modules/crypto-js/core.js?commonjs-proxy\";\n\n(function (module, exports) {\n\t;(function (root, factory) {\n\t\tif ('object' === \"object\") {\n\t\t\t// CommonJS\n\t\t\tmodule.exports = exports = factory(require$$0);\n\t\t}\n\t\telse if (typeof undefined === \"function\" && undefined.amd) {\n\t\t\t// AMD\n\t\t\tundefined([\"./core\"], factory);\n\t\t}\n\t\telse {\n\t\t\t// Global (browser)\n\t\t\tfactory(root.CryptoJS);\n\t\t}\n\t}(commonjsHelpers.commonjsGlobal, function (CryptoJS) {\n\n\t\treturn CryptoJS.enc.Utf8;\n\n\t})); \n} (encUtf8Module, encUtf8Module.exports));\n\nvar encUtf8Exports = encUtf8Module.exports;\nexport default /*@__PURE__*/commonjsHelpers.getDefaultExportFromCjs(encUtf8Exports);\nexport { encUtf8Exports as __moduleExports };",
+      "start": 1693508122201,
+      "end": 1693508123913,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "file": null,
+        "sources": [
+          null
+        ],
+        "sourcesContent": [
+          null
+        ],
+        "names": [
+          "define",
+          "this"
+        ],
+        "mappings": ";;;;;;CAAA,CAAC,CAAC,UAAU,IAAI,EAAE,OAAO,EAAE;CAC3B,CAAC,IAAI,QAAc,KAAK,QAAQ,EAAE;CAClC;CACA,EAAE,iBAAiB,OAAO,GAAG,OAAO,CAAC,UAAiB,CAAC,CAAC;CACxD,EAAE;CACF,MAAM,IAAI,OAAOA,SAAM,KAAK,UAAU,IAAIA,SAAM,CAAC,GAAG,EAAE;CACtD;CACA,EAAEA,SAAM,CAAC,CAAC,QAAQ,CAAC,EAAE,OAAO,CAAC,CAAC;CAC9B,EAAE;CACF,MAAM;CACN;CACA,EAAE,OAAO,CAAC,IAAI,CAAC,QAAQ,CAAC,CAAC;CACzB,EAAE;CACF,CAAC,CAACC,8BAAI,EAAE,UAAU,QAAQ,EAAE;AAC5B;CACA,CAAC,OAAO,QAAQ,CAAC,GAAG,CAAC,IAAI,CAAC;AAC1B;CACA,CAAC,CAAC"
+      }
+    }
+  ]
+}

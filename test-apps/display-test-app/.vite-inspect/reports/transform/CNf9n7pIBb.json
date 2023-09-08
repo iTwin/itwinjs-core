@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@svgdotjs+svg.js@3.0.13/node_modules/@svgdotjs/svg.js/src/elements/Image.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { isImage } from '../modules/core/regex.js'\r\nimport { nodeOrNew, register, wrapWithAttrCheck } from '../utils/adopter.js'\r\nimport { off, on } from '../modules/core/event.js'\r\nimport { registerAttrHook } from '../modules/core/attr.js'\r\nimport { registerMethods } from '../utils/methods.js'\r\nimport { xlink } from '../modules/core/namespaces.js'\r\nimport Pattern from './Pattern.js'\r\nimport Shape from './Shape.js'\r\nimport { globals } from '../utils/window.js'\r\n\r\nexport default class Image extends Shape {\r\n  constructor (node) {\r\n    super(nodeOrNew('image', node), node)\r\n  }\r\n\r\n  // (re)load image\r\n  load (url, callback) {\r\n    if (!url) return this\r\n\r\n    var img = new globals.window.Image()\r\n\r\n    on(img, 'load', function (e) {\r\n      var p = this.parent(Pattern)\r\n\r\n      // ensure image size\r\n      if (this.width() === 0 && this.height() === 0) {\r\n        this.size(img.width, img.height)\r\n      }\r\n\r\n      if (p instanceof Pattern) {\r\n        // ensure pattern size if not set\r\n        if (p.width() === 0 && p.height() === 0) {\r\n          p.size(this.width(), this.height())\r\n        }\r\n      }\r\n\r\n      if (typeof callback === 'function') {\r\n        callback.call(this, e)\r\n      }\r\n    }, this)\r\n\r\n    on(img, 'load error', function () {\r\n      // dont forget to unbind memory leaking events\r\n      off(img)\r\n    })\r\n\r\n    return this.attr('href', (img.src = url), xlink)\r\n  }\r\n}\r\n\r\nregisterAttrHook(function (attr, val, _this) {\r\n  // convert image fill and stroke to patterns\r\n  if (attr === 'fill' || attr === 'stroke') {\r\n    if (isImage.test(val)) {\r\n      val = _this.root().defs().image(val)\r\n    }\r\n  }\r\n\r\n  if (val instanceof Image) {\r\n    val = _this.root().defs().pattern(0, 0, (pattern) => {\r\n      pattern.add(val)\r\n    })\r\n  }\r\n\r\n  return val\r\n})\r\n\r\nregisterMethods({\r\n  Container: {\r\n    // create image element, load image and set its size\r\n    image: wrapWithAttrCheck(function (source, callback) {\r\n      return this.put(new Image()).size(0, 0).load(source, callback)\r\n    })\r\n  }\r\n})\r\n\r\nregister(Image, 'Image')\r\n",
+      "start": 1693508127009,
+      "end": 1693508127080,
+      "sourcemaps": null
+    }
+  ]
+}

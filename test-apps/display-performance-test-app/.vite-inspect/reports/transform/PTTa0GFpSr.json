@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/ipc/IpcSession.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module IpcSocket\n */\n/** @internal */\nexport const rpcOverIpcStrings = {\n    channelName: \"itwinjs-core/rpc-over-ipc\",\n};\n/** @internal */\nexport class IpcSession {\n    static get active() { return this._active; }\n    static start(session) {\n        if (this._active)\n            return;\n        this._active = session;\n    }\n    static stop() {\n        this._active = undefined;\n    }\n}\n//# sourceMappingURL=IpcSession.js.map",
+      "start": 1693508120678,
+      "end": 1693508120733,
+      "sourcemaps": null
+    }
+  ]
+}

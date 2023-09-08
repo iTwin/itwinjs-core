@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/common/WorkerProxy.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Utils\n */\nimport { assert } from \"@itwin/core-bentley\";\n/** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.\n * @internal\n */\nexport function createWorkerProxy(workerJsPath) {\n    const tasks = new Map();\n    let curMsgId = 0;\n    let terminated = false;\n    const worker = new Worker(workerJsPath);\n    worker.onmessage = (e) => {\n        const response = e.data;\n        assert(typeof response === \"object\");\n        assert(\"result\" in response || \"error\" in response);\n        const task = tasks.get(response.msgId);\n        if (task) {\n            tasks.delete(response.msgId);\n            if (response.error)\n                task.reject(response.error);\n            else\n                task.resolve(response.result);\n        }\n    };\n    return new Proxy({}, {\n        get(_target, operation) {\n            if (operation === \"terminate\") {\n                assert(!terminated);\n                terminated = true;\n                return () => worker.terminate();\n            }\n            else if (operation === \"isTerminated\") {\n                return terminated;\n            }\n            else {\n                return async (...args) => new Promise((resolve, reject) => {\n                    const msgId = ++curMsgId;\n                    tasks.set(msgId, { resolve, reject });\n                    worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);\n                });\n            }\n        },\n    });\n}\n//# sourceMappingURL=WorkerProxy.js.map",
+      "start": 1693508119132,
+      "end": 1693508119327,
+      "sourcemaps": null
+    }
+  ]
+}

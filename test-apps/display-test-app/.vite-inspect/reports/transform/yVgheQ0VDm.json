@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/ImageryProviders/AzureMapsLayerImageryProvider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { IModelApp } from \"../../../IModelApp\";\nimport { MapLayerImageryProvider } from \"../../internal\";\n/** @internal */\nexport class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {\n    constructor(settings) { super(settings, true); }\n    // construct the Url from the desired Tile\n    async constructUrl(y, x, zoom) {\n        if (!this._settings.accessKey)\n            return \"\";\n        return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;\n    }\n    addLogoCards(cards) {\n        if (!cards.dataset.azureMapsLogoCard) {\n            cards.dataset.azureMapsLogoCard = \"true\";\n            cards.appendChild(IModelApp.makeLogoCard({ heading: \"Azure Maps\", notice: IModelApp.localization.getLocalizedString(\"iModelJs:BackgroundMap.AzureMapsCopyright\") }));\n        }\n    }\n}\n//# sourceMappingURL=AzureMapsLayerImageryProvider.js.map",
+      "start": 1693508121944,
+      "end": 1693508122033,
+      "sourcemaps": null
+    }
+  ]
+}

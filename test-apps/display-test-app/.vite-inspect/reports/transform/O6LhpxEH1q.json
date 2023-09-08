@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/extension/ExtensionHost.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Extensions\n */\nimport { IModelApp } from \"../IModelApp\";\n/**\n * Subset of IModelApp exposed to Extensions\n * @alpha\n */\nexport class ExtensionHost {\n    constructor() { }\n    static get toolAdmin() { return IModelApp.toolAdmin; }\n    static get notifications() { return IModelApp.notifications; }\n    static get viewManager() { return IModelApp.viewManager; }\n    static get locateManager() { return IModelApp.locateManager; } // internal ?\n    static get accuSnap() { return IModelApp.accuSnap; }\n    static get renderSystem() { return IModelApp.renderSystem; } // re think this, should be smaller interface\n}\n//# sourceMappingURL=ExtensionHost.js.map",
+      "start": 1693508122324,
+      "end": 1693508122526,
+      "sourcemaps": null
+    }
+  ]
+}

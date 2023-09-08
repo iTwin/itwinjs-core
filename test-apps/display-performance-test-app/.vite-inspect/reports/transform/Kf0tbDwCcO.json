@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/common/lib/esm/GeometrySummary.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Geometry\n */\n/** Describes the level of detail with which to report each geometric primitive in a [[GeometrySummaryRequestProps]].\n * @public\n * @extensions\n */\nexport var GeometrySummaryVerbosity;\n(function (GeometrySummaryVerbosity) {\n    /** Simply output the type of geometry as a string. */\n    GeometrySummaryVerbosity[GeometrySummaryVerbosity[\"Basic\"] = 10] = \"Basic\";\n    /** Output some details of the geometry. e.g., for a sphere, include the center and radius; for a line string, the number of points; etc. */\n    GeometrySummaryVerbosity[GeometrySummaryVerbosity[\"Detailed\"] = 20] = \"Detailed\";\n    /** Output extremely detailed information. e.g., for a line string, the coordinates of each point. This may produce an enormous amount of data for some primitives. */\n    GeometrySummaryVerbosity[GeometrySummaryVerbosity[\"Full\"] = 30] = \"Full\";\n})(GeometrySummaryVerbosity || (GeometrySummaryVerbosity = {}));\n//# sourceMappingURL=GeometrySummary.js.map",
+      "start": 1693508120600,
+      "end": 1693508120698,
+      "sourcemaps": null
+    }
+  ]
+}

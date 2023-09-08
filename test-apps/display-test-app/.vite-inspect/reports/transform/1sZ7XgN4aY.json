@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-client-management@3.1.0/node_modules/@itwin/imodels-client-management/lib/esm/base/types/CommonInterfaces.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\n/** Entity list ordering operators that are supported in $orderBy url parameter. */\r\nexport var OrderByOperator;\r\n(function (OrderByOperator) {\r\n    /** Ascending. Entities will be returned in ascending order. */\r\n    OrderByOperator[\"Ascending\"] = \"asc\";\r\n    /** Descending. Entities will be returned in descending order. */\r\n    OrderByOperator[\"Descending\"] = \"desc\";\r\n})(OrderByOperator || (OrderByOperator = {}));\r\n/**\r\n * Values for return preference used in `Prefer` header. The header value is formed by joining\r\n * `return=` and the enum value.\r\n */\r\nexport var PreferReturn;\r\n(function (PreferReturn) {\r\n    /** Instructs the server to return minimal entity representation. */\r\n    PreferReturn[\"Minimal\"] = \"minimal\";\r\n    /** Instructs the server to return full entity representation. */\r\n    PreferReturn[\"Representation\"] = \"representation\";\r\n})(PreferReturn || (PreferReturn = {}));\r\n//# sourceMappingURL=CommonInterfaces.js.map",
+      "start": 1693508125021,
+      "end": 1693508125113,
+      "sourcemaps": null
+    }
+  ]
+}

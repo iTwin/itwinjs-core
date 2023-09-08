@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/DisclosedTileTreeSet.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Tiles\n */\nimport { OrderedSet } from \"@itwin/core-bentley\";\n/** A set of [[TileTree]]s disclosed by a set of objects implementing [[TileTreeDiscloser]], used to collect references to tile trees in use by those objects.\n * @public\n * @extensions\n */\nexport class DisclosedTileTreeSet {\n    /** Construct a new set.\n     * @param comparator If supplied, a comparison function used to determine the order of iteration of the set; otherwise, iteration will proceed in insertion order.\n     */\n    constructor(comparator) {\n        this._processed = new Set();\n        this._trees = comparator ? new OrderedSet(comparator) : new Set();\n    }\n    /** Returns true if the specified tree has been [[add]]ed to the set. */\n    has(tree) {\n        return this._trees.has(tree);\n    }\n    /** Adds the specified tree to the set. */\n    add(tree) {\n        this._trees.add(tree);\n    }\n    /** Iterates all trees in the set.\n     * @note Do not [[add]] to the set during iteration.\n     */\n    [Symbol.iterator]() {\n        return this._trees[Symbol.iterator]();\n    }\n    /** The number of trees in the set. */\n    get size() {\n        return this._trees.size;\n    }\n    /** Add all tile trees referenced by `discloser` to the set. */\n    disclose(discloser) {\n        if (this._processed.has(discloser))\n            return;\n        this._processed.add(discloser);\n        discloser.discloseTileTrees(this);\n    }\n    /** Clear the contents of this set. */\n    clear() {\n        this._processed.clear();\n        this._trees.clear();\n    }\n}\n//# sourceMappingURL=DisclosedTileTreeSet.js.map",
+      "start": 1693508121335,
+      "end": 1693508121571,
+      "sourcemaps": null
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/hypermodeling/lib/esm/PopupToolbar.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module HyperModeling\n */\nimport { IModelApp } from \"@itwin/core-frontend\";\n/** @internal */\nclass PopupToolbarManager {\n    static show() {\n        const prov = this._provider;\n        if (!prov || !prov.overToolbarHotspot)\n            return false;\n        const admin = IModelApp.uiAdmin;\n        if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, admin.createXAndY(0, 0), this._itemExecuted, this._cancel, undefined, prov.htmlElement))\n            return false;\n        this._current = this._provider;\n        this._provider = undefined;\n        this.closeAfterTimeout();\n        return true;\n    }\n    static close() {\n        this._current = undefined;\n        return IModelApp.uiAdmin.hideToolbar();\n    }\n    static closeAfterTimeout() {\n        if (!this._current)\n            return;\n        const delay = 1000;\n        if (this._current.overToolbarHotspot || !IModelApp.toolAdmin.cursorView)\n            setTimeout(() => this.closeAfterTimeout(), delay); // Cursor not in view or over hotspot, check again\n        else\n            this.close();\n    }\n    static showToolbarAfterTimeout(provider) {\n        if (this._current === provider)\n            return;\n        this._provider = provider;\n        setTimeout(() => this.show(), 500);\n    }\n}\nPopupToolbarManager._itemExecuted = (item) => {\n    const mgr = PopupToolbarManager;\n    if (mgr._current)\n        mgr._current.onToolbarItemExecuted(item.id);\n    mgr.close();\n};\nPopupToolbarManager._cancel = () => {\n    const mgr = PopupToolbarManager;\n    if (!mgr._current || !mgr._current.overToolbarHotspot)\n        mgr.close(); // Don't hide when click is over hotspot\n};\nexport { PopupToolbarManager };\n//# sourceMappingURL=PopupToolbar.js.map",
+      "start": 1693508125118,
+      "end": 1693508125184,
+      "sourcemaps": null
+    }
+  ]
+}

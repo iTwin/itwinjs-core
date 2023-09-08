@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/glsl/ClearPickAndColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { createViewportQuadBuilder } from \"./ViewportQuad\";\nconst computeBaseColor = \"return u_bgColor;\";\nconst assignFragData = `\r\n  FragColor0 = baseColor;\r\n  FragColor1 = vec4(0.0);\r\n  FragColor2 = vec4(0.0);\r\n`;\n/** @internal */\nexport function createClearPickAndColorProgram(context) {\n    const builder = createViewportQuadBuilder(false);\n    const frag = builder.frag;\n    frag.addUniform(\"u_bgColor\", 5 /* VariableType.Vec4 */, (prog) => {\n        prog.addProgramUniform(\"u_bgColor\", (uniform, params) => {\n            params.target.uniforms.style.bindBackgroundRgba(uniform);\n        });\n    });\n    frag.set(1 /* FragmentShaderComponent.ComputeBaseColor */, computeBaseColor);\n    frag.addDrawBuffersExtension(3);\n    frag.set(16 /* FragmentShaderComponent.AssignFragData */, assignFragData);\n    builder.vert.headerComment = \"//!V! ClearPickAndColor\";\n    builder.frag.headerComment = \"//!F! ClearPickAndColor\";\n    return builder.buildProgram(context);\n}\n//# sourceMappingURL=ClearPickAndColor.js.map",
+      "start": 1693508124609,
+      "end": 1693508124718,
+      "sourcemaps": null
+    }
+  ]
+}

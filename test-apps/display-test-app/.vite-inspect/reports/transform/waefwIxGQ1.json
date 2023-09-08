@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/orbitgt/lib/esm/pointcloud/model/AttributeTypes.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module OrbitGT\n */\n/**\n * Class AttributeTypes defines the possible types of pointcloud attributes.\n */\n/** @internal */\nclass AttributeTypes {\n    /**\n     * No instances.\n     */\n    constructor() {\n    }\n    /**\n     * Get the name of a type.\n     * @param type the type of attributes.\n     * @return the name.\n     */\n    static getTypeName(type) {\n        if (type <= 0)\n            return \"none\";\n        if (type == AttributeTypes.TYPE_BOOLEAN)\n            return \"boolean\";\n        if (type == AttributeTypes.TYPE_INT1)\n            return \"int1\";\n        if (type == AttributeTypes.TYPE_INT2)\n            return \"int2\";\n        if (type == AttributeTypes.TYPE_INT4)\n            return \"int4\";\n        if (type == AttributeTypes.TYPE_INT8)\n            return \"int8\";\n        if (type == AttributeTypes.TYPE_FLOAT4)\n            return \"float4\";\n        if (type == AttributeTypes.TYPE_FLOAT8)\n            return \"float8\";\n        if (type == AttributeTypes.TYPE_COLOR)\n            return \"color\";\n        return \"\" + type;\n    }\n}\n/** The 1-bit boolean type */\nAttributeTypes.TYPE_BOOLEAN = 1;\n/** The 1-byte integer type */\nAttributeTypes.TYPE_INT1 = 2;\n/** The 2-byte integer type */\nAttributeTypes.TYPE_INT2 = 3;\n/** The 4-byte integer type */\nAttributeTypes.TYPE_INT4 = 4;\n/** The 8-byte integer type */\nAttributeTypes.TYPE_INT8 = 5;\n/** The 4-byte float type */\nAttributeTypes.TYPE_FLOAT4 = 6;\n/** The 8-byte float type */\nAttributeTypes.TYPE_FLOAT8 = 7;\n/** The 3-byte color type */\nAttributeTypes.TYPE_COLOR = 8;\nexport { AttributeTypes };\n//# sourceMappingURL=AttributeTypes.js.map",
+      "start": 1693508127185,
+      "end": 1693508127236,
+      "sourcemaps": null
+    }
+  ]
+}

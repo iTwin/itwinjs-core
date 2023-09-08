@@ -1,0 +1,30 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/index.ts",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// index.html at the root of this project requires an index.ts file in this location. Launch the app frontend\r\n\r\nimport \"./frontend/DisplayTestApp\";\r\n",
+      "start": 1693508118297,
+      "end": 1693508118323,
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "\"use strict\";\nimport \"./frontend/DisplayTestApp\";\n",
+      "start": 1693508118323,
+      "end": 1693508118330,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "D:/hub2023A/itwinjs-core/test-apps/display-test-app/src/index.ts"
+        ],
+        "sourcesContent": [
+          "/*---------------------------------------------------------------------------------------------\r\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n* See LICENSE.md in the project root for license terms and full copyright notice.\r\n*--------------------------------------------------------------------------------------------*/\r\n\r\n// index.html at the root of this project requires an index.ts file in this location. Launch the app frontend\r\n\r\nimport \"./frontend/DisplayTestApp\";\r\n"
+        ],
+        "mappings": ";AAOA,OAAO;",
+        "names": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/render/webgl/TechniqueId.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module WebGL\n */\nimport { assert } from \"@itwin/core-bentley\";\nconst compositeTechniqueIds = [\n    -1 /* TechniqueId.Invalid */,\n    10 /* TechniqueId.CompositeTranslucent */,\n    9 /* TechniqueId.CompositeHilite */,\n    11 /* TechniqueId.CompositeHiliteAndTranslucent */,\n    12 /* TechniqueId.CompositeOcclusion */,\n    13 /* TechniqueId.CompositeTranslucentAndOcclusion */,\n    14 /* TechniqueId.CompositeHiliteAndOcclusion */,\n    15 /* TechniqueId.CompositeAll */, // Translucent | Hilite | AmbientOcclusion == 1 | 2 | 4 == 7\n];\n/** @internal */\nexport function computeCompositeTechniqueId(flags) {\n    assert(flags >= 0 && flags <= 7);\n    return compositeTechniqueIds[flags];\n}\n//# sourceMappingURL=TechniqueId.js.map",
+      "start": 1693508123687,
+      "end": 1693508123824,
+      "sourcemaps": null
+    }
+  ]
+}

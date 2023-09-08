@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/webgl-compatibility/lib/esm/webgl-compatibility.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./Capabilities\";\nexport * from \"./RenderCompatibility\";\n/** @docs-package-description\n * The webgl-compatibility package provides APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.\n */\n/**\n * @docs-group-description Compatibility\n * APIs for evaluating compatibility with the iTwin.js rendering system.\n */\n//# sourceMappingURL=webgl-compatibility.js.map",
+      "start": 1693508124361,
+      "end": 1693508124436,
+      "sourcemaps": null
+    }
+  ]
+}

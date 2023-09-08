@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/geometry/lib/esm/curve/internalContexts/GapSearchContext.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Curve\n */\nimport { CurveChain } from \"../CurveCollection\";\nimport { RecursiveCurveProcessorWithStack } from \"../CurveProcessor\";\n// import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from \"./CurveSearches\";\n/**\n * Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.\n * @internal\n */\nexport class GapSearchContext extends RecursiveCurveProcessorWithStack {\n    constructor() {\n        super();\n        this.maxGap = 0.0;\n    }\n    static maxGap(target) {\n        const context = new GapSearchContext();\n        target.announceToCurveProcessor(context);\n        return context.maxGap;\n    }\n    announceCurvePrimitive(curve, _indexInParent) {\n        if (this._stack.length > 0) {\n            const parent = this._stack[this._stack.length - 1];\n            if (parent instanceof CurveChain) {\n                const chain = parent;\n                const nextCurve = chain.cyclicCurvePrimitive(_indexInParent + 1);\n                if (curve !== undefined && nextCurve !== undefined) {\n                    this.maxGap = Math.max(this.maxGap, curve.endPoint().distance(nextCurve.startPoint()));\n                }\n            }\n        }\n    }\n}\n//# sourceMappingURL=GapSearchContext.js.map",
+      "start": 1693508125201,
+      "end": 1693508125381,
+      "sourcemaps": null
+    }
+  ]
+}

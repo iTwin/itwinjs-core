@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/tile/map/MapFeatureInfo.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module MapLayers\n */\nimport { PropertyRecord } from \"@itwin/appui-abstract\";\n/** Contains record data of a [[MapLayerFeature]] instance .\n * @beta\n */\nexport class MapFeatureInfoRecord extends PropertyRecord {\n    /** Construct a record from [PropertyValue]($appui-abstract) and [PropertyDescription]($appui-abstract) objects. */\n    constructor(value, property) {\n        super(value, property);\n    }\n}\n/** Utility class that creates a [PropertyRecord]($appui-abstract) out of [[MapLayerFeatureAttribute]]\n * @see [[MapLayerFeature]]\n * @beta\n */\nexport class MapLayerFeatureRecord {\n    /** Convert a [[MapLayerFeatureAttribute]] object into [PropertyRecord]($appui-abstract) object. */\n    static createRecordFromAttribute(attribute) {\n        return new PropertyRecord(attribute.value, attribute.property);\n    }\n}\n//# sourceMappingURL=MapFeatureInfo.js.map",
+      "start": 1693508121785,
+      "end": 1693508121974,
+      "sourcemaps": null
+    }
+  ]
+}

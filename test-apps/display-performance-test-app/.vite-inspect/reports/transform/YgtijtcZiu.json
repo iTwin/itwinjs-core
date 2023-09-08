@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@itwin+imodels-access-frontend@3.1.0_ueafa4slb6ohrhyf7kbp6egmha/node_modules/@itwin/imodels-access-frontend/lib/esm/index.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\r\n * Copyright (c) Bentley Systems, Incorporated. All rights reserved.\r\n * See LICENSE.md in the project root for license terms and full copyright notice.\r\n *--------------------------------------------------------------------------------------------*/\r\nexport * from \"./interface-adapters/AccessTokenAdapter\";\r\nexport * from \"./FrontendIModelsAccess\";\r\n//# sourceMappingURL=index.js.map",
+      "start": 1693508118232,
+      "end": 1693508118451,
+      "sourcemaps": null
+    }
+  ]
+}

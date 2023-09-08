@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@babel+runtime@7.22.6/node_modules/@babel/runtime/helpers/esm/arrayLikeToArray.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "export default function _arrayLikeToArray(arr, len) {\n  if (len == null || len > arr.length) len = arr.length;\n  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];\n  return arr2;\n}",
+      "start": 1693508127248,
+      "end": 1693508127342,
+      "sourcemaps": null
+    }
+  ]
+}

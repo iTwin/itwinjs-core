@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/frontend/lib/esm/MarginPercent.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Views\n */\nimport { Geometry } from \"@itwin/core-geometry\";\n/** Specifies margins to apply around a view volume for methods like [[ViewState.lookAtVolume]] and [[Viewport.zoomToElements]], expanding the\n * viewed volume by a percentage of its original size to add extra space around one or more edges.\n * The margin values represent a fraction of the view volume's width (for [[left]] and [[right]]) or height (for [[top]] and [[bottom]]).\n * The values are clamped to the range 0 through 0.25.\n * @note Margins are only applied in 2d views, or 3d views in which the camera has been turned off.\n * @note The way in which the extra space is computed is somewhat unintuitive and may lead to surprising results.\n * @see [[MarginOptions.marginPercent]].\n * @see [[PaddingPercent]] for a more predictable way of adjusting the viewed volume.\n * @public\n * @extensions\n */\nexport class MarginPercent {\n    constructor(left, top, right, bottom) {\n        this.left = left;\n        this.top = top;\n        this.right = right;\n        this.bottom = bottom;\n        const limitMargin = (val) => Geometry.clamp(val, 0.0, 0.25);\n        this.left = limitMargin(left);\n        this.top = limitMargin(top);\n        this.right = limitMargin(right);\n        this.bottom = limitMargin(bottom);\n    }\n}\n//# sourceMappingURL=MarginPercent.js.map",
+      "start": 1693508119044,
+      "end": 1693508119260,
+      "sourcemaps": null
+    }
+  ]
+}

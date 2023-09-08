@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/telemetry/lib/esm/core-telemetry.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\nexport * from \"./TelemetryClient\";\nexport * from \"./TelemetryClientLoggerCategory\";\n//# sourceMappingURL=core-telemetry.js.map",
+      "start": 1693508123483,
+      "end": 1693508123576,
+      "sourcemaps": null
+    }
+  ]
+}

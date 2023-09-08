@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/common/temp/node_modules/.pnpm/@loaders.gl+draco@3.4.7/node_modules/@loaders.gl/draco/dist/esm/draco-writer.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import DRACOBuilder from './lib/draco-builder';\nimport { loadDracoEncoderModule } from './lib/draco-module-loader';\nimport { VERSION } from './lib/utils/version';\nconst DEFAULT_DRACO_OPTIONS = {\n  pointcloud: false,\n  attributeNameEntry: 'name'\n};\nexport const DracoWriter = {\n  name: 'DRACO',\n  id: 'draco',\n  module: 'draco',\n  version: VERSION,\n  extensions: ['drc'],\n  encode,\n  options: {\n    draco: DEFAULT_DRACO_OPTIONS\n  }\n};\nasync function encode(data) {\n  let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};\n  const {\n    draco\n  } = await loadDracoEncoderModule(options);\n  const dracoBuilder = new DRACOBuilder(draco);\n  try {\n    return dracoBuilder.encodeSync(data, options.draco);\n  } finally {\n    dracoBuilder.destroy();\n  }\n}\n//# sourceMappingURL=draco-writer.js.map",
+      "start": 1693508124349,
+      "end": 1693508124431,
+      "sourcemaps": null
+    }
+  ]
+}

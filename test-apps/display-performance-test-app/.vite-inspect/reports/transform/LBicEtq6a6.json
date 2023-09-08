@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/ui/appui-abstract/lib/esm/appui-abstract/utils/filter/strings.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/**\n * @internal\n */\nexport function convertSimple2RegExpPattern(pattern) {\n    return pattern.replace(/[\\-\\\\\\{\\}\\+\\?\\|\\^\\$\\.\\,\\[\\]\\(\\)\\#\\s]/g, \"\\\\$&\").replace(/[\\*]/g, \".*\");\n}\n/**\n * @internal\n */\nexport function isLowerAsciiLetter(code) {\n    return code >= 97 /* CharCode.a */ && code <= 122 /* CharCode.z */;\n}\n/**\n * @internal\n */\nexport function isUpperAsciiLetter(code) {\n    return code >= 65 /* CharCode.A */ && code <= 90 /* CharCode.Z */;\n}\n/**\n * @internal\n */\nfunction isAsciiLetter(code) {\n    return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);\n}\n/**\n * @internal\n */\nexport function equalsIgnoreCase(a, b) {\n    return a.length === b.length && doEqualsIgnoreCase(a, b);\n}\n/**\n * @internal\n */\nfunction doEqualsIgnoreCase(a, b, stopAt = a.length) {\n    for (let i = 0; i < stopAt; i++) {\n        const codeA = a.charCodeAt(i);\n        const codeB = b.charCodeAt(i);\n        if (codeA === codeB) {\n            continue;\n        }\n        // a-z A-Z\n        if (isAsciiLetter(codeA) && isAsciiLetter(codeB)) {\n            const diff = Math.abs(codeA - codeB);\n            if (diff !== 0 && diff !== 32) {\n                return false;\n            }\n        }\n        else {\n            // Any other char code\n            if (String.fromCharCode(codeA).toLowerCase() !== String.fromCharCode(codeB).toLowerCase()) {\n                return false;\n            }\n        }\n    }\n    return true;\n}\n/**\n * @internal\n */\nexport function startsWithIgnoreCase(str, candidate) {\n    const candidateLength = candidate.length;\n    if (candidate.length > str.length) {\n        return false;\n    }\n    return doEqualsIgnoreCase(str, candidate, candidateLength);\n}\n//# sourceMappingURL=strings.js.map",
+      "start": 1693508123614,
+      "end": 1693508123659,
+      "sourcemaps": null
+    }
+  ]
+}

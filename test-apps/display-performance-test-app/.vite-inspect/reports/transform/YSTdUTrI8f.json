@@ -1,0 +1,12 @@
+{
+  "resolvedId": "D:/hub2023A/itwinjs-core/core/bentley/lib/esm/BentleyLoggerCategory.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "/*---------------------------------------------------------------------------------------------\n* Copyright (c) Bentley Systems, Incorporated. All rights reserved.\n* See LICENSE.md in the project root for license terms and full copyright notice.\n*--------------------------------------------------------------------------------------------*/\n/** @packageDocumentation\n * @module Logging\n */\n/** Logger categories used by this package\n * @see [Logger]($bentley)\n * @public\n */\nexport var BentleyLoggerCategory;\n(function (BentleyLoggerCategory) {\n    /** The logger category used by common classes relating to ElementProps. */\n    BentleyLoggerCategory[\"Performance\"] = \"Performance\";\n})(BentleyLoggerCategory || (BentleyLoggerCategory = {}));\n//# sourceMappingURL=BentleyLoggerCategory.js.map",
+      "start": 1693508120059,
+      "end": 1693508120384,
+      "sourcemaps": null
+    }
+  ]
+}
