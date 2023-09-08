@@ -19,6 +19,7 @@ import { NumberArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
+import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { PolyfaceData } from "./PolyfaceData";
 
@@ -147,6 +148,137 @@ export class IndexedPolyface extends Polyface {
    */
   protected _facetStart: number[];
 
+  /** Given a readIndex (index into pointIndex array of PolyfaceData):
+   * * return the first readIndex for block of indices for that facet.
+   * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
+   */
+  public readIndexToStartIndex(k: number): number | undefined {
+    const q = this.readIndexToFacetIndex(k);
+    if (q !== undefined)
+      return this._facetStart[q];
+    return undefined;
+  }
+
+  /** Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * linear search from there for final value.
+   * * For regular spaced numbers (e.g. _facetStart indices for a triangulated mesh) the proportional estimate will be immediately correct.
+   */
+  public static searchMonotoneNumbers(data: number[], value: number): number | undefined {
+    // _facetStart is monotone increasing.
+    // It is commonly entirely steps of 3, 4, or 3 and 4.
+    // Hence jump to a start by simple proportion, and move incrementally
+    const lastQ = data.length - 1;
+
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
+
+  }
+
+  /** Given a readIndex `k` (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of its successor around its facet.
+   * * this is `k+1 for all but the last of its index block, which wraps back to readIndexToFacetStartIndex.
+   */
+  public readIndexToFacetSuccessor(k: number): number | undefined {
+    const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
+    if (facetIndex === undefined)
+      return undefined;
+    const kNextFacet = this._facetStart[facetIndex + 1];
+    const kNext = k + 1;
+    if (kNext < kNextFacet)
+      return kNext;
+    return this._facetStart[facetIndex];
+  }
+  /** Given a readIndex `k` (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of its predecessor around its facet.
+   * * this is `k-1 for all but the last of its index block, which wraps forward to the last of its block.
+   */
+  public readIndexToFacetPredecessor(k: number): number | undefined {
+    const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
+    if (facetIndex === undefined)
+      return undefined;
+    if (k === this._facetStart[facetIndex])
+      return this._facetStart[facetIndex + 1] - 1;
+    return k - 1;
+  }
+  /** Given a readIndex `k` (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of its successor around its VERTEX
+   * * if the PolyfaceData has a edgeMateReadIndex array, that array gives this value directly.
+   * * If that array is missing, return undefined.
+   */
+  public readIndexToVertexSuccessor(k: number): number | undefined {
+    let k1: number | undefined;
+    if (this.data.edgeMateReadIndex !== undefined && k < this.data.edgeMateReadIndex.length
+      && undefined !== (k1 = this.readIndexToFacetPredecessor(k)))
+      return this.data.edgeMateReadIndex[k1];
+    return undefined;
+  }
+  /** Given a readIndex `k` (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of the place on the adjacent facet but on the other end of the edge from readIndex.
+   * * if the PolyfaceData has a edgeMateReadIndex array, that array gives this value directly.
+   * * If that array is missing, return undefined.
+   */
+  public readIndexToEdgeMate(k: number): number | undefined {
+    if (this.data.edgeMateReadIndex !== undefined
+      && k >= 0
+      && k < this.data.edgeMateReadIndex.length)
+      return this.data.edgeMateReadIndex[k];
+    return undefined;
+  }
+  /** Given a readIndex `k` (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of the place on the adjacent facet moving "backwards" around the vertex loop.
+   * * If that array is missing, return undefined.
+   */
+  public readIndexToVertexPredecessor(k: number): number | undefined {
+    let k1: number | undefined;
+    if (undefined !== (k1 = this.readIndexToEdgeMate(k)))
+      return this.readIndexToFacetSuccessor(k1);
+    return undefined;
+  }
+
+  /** Given a readIndex (index into pointIndex array of PolyfaceData):
+   * * return the readIndex of the 0'th vertex of the block of indices for that facet.
+   * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
+   */
+  public readIndexToFacetIndex(k: number): number | undefined {
+    return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
+  }
+
+  public buildIndicesToAdjacentFacets() {
+    const matcher = new IndexedEdgeMatcher();
+    for (let facetIndex = 0; facetIndex + 1 < this._facetStart.length; facetIndex++) {
+      const kStart = this._facetStart[facetIndex];
+      const kEnd = this._facetStart[facetIndex + 1];
+      let k0 = kEnd - 1;
+      for (let k1 = kStart; k1 < kEnd; k0 = k1, k1++) {
+        matcher.addEdge(this.data.pointIndex[k0], this.data.pointIndex[k1], k0);
+      }
+    }
+    const matchedPairs: SortableEdgeCluster[] = [];
+    const singletons: SortableEdgeCluster[] = [];
+    const nullEdges: SortableEdgeCluster[] = [];
+    const allOtherClusters: SortableEdgeCluster[] = [];
+    matcher.sortAndCollectClusters(matchedPairs, singletons, nullEdges, allOtherClusters);
+
+    const numIndex = this.data.pointIndex.length;
+    this.data.edgeMateReadIndex = new Array<number>(numIndex);
+    for (let i = 0; i < numIndex; i++)
+      this.data.edgeMateReadIndex[i] = undefined;
+    for (const pair of matchedPairs) {
+      if (Array.isArray(pair) && pair.length === 2) {
+        const k0 = pair[0].facetIndex;
+        const k1 = pair[1].facetIndex;
+        this.data.edgeMateReadIndex[k0] = k1;
+        this.data.edgeMateReadIndex[k1] = k0;
+      }
+    }
+  }
   /**
    * * For facet i, _facetToFaceData[i] is the index of the faceData entry for the facet.
    * * _facetToFaceData has one entry per facet.
