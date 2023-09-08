@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity, Phenomenon, PropertyCategory, Schema, SchemaItem, StructClass } from "@itwin/ecschema-metadata";
+import { Constant, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity, Phenomenon, PropertyCategory, Schema, SchemaItem, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 
 export namespace SchemaItemFactory {
 
@@ -23,6 +23,8 @@ export namespace SchemaItemFactory {
       return new Phenomenon(targetSchema, template.name);
     if (is(template, Constant))
       return new Constant(targetSchema, template.name);
+    if (is(template, UnitSystem))
+      return new UnitSystem(targetSchema, template.name);
     throw new Error(`Unsupported Schema Item Type: ${template.constructor.name}`);
   }
 

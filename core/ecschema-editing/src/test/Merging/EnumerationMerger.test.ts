@@ -117,7 +117,7 @@ describe("Enumeration merge tests", () => {
 
   
 
-  describe.only("Enumeration delta tests", () => {
+  describe("Enumeration delta tests", () => {
     it("should merge missing enumerators of the same enumeration", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
@@ -208,7 +208,7 @@ describe("Enumeration merge tests", () => {
       await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Merged enumeration TestEnumeration types not equal: string -> int");
     });
 
-    it.only("should throw an error if enumerator value attribute conflict exist", async () => {
+    it("should throw an error if enumerator value attribute conflict exist", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
