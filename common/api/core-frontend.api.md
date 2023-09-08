@@ -9476,9 +9476,10 @@ export interface ModalReturn {
 }
 
 // @beta
-export type ModelDisplayTransform = Transform & {
+export interface ModelDisplayTransform {
     premultiply?: boolean;
-};
+    transform: Transform;
+}
 
 // @beta
 export interface ModelDisplayTransformProvider {
