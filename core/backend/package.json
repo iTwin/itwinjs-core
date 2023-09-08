@@ -72,6 +72,7 @@
     "@types/node": "18.16.1",
     "@types/semver": "7.3.10",
     "@types/sinon": "^10.0.15",
+    "@types/touch": "^3.1.2",
     "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -101,9 +102,9 @@
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "multiparty": "^4.2.1",
-    "touch": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.5",
+    "touch": "^3.1.0",
     "ws": "^7.5.3"
   },
   "nyc": {
