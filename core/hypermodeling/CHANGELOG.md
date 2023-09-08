@@ -1,6 +1,11 @@
 # Change Log - @itwin/hypermodeling-frontend
 
-This log was last generated on Wed, 06 Sep 2023 20:04:30 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Sep 2023 18:27:41 GMT and should not be manually modified.
+
+## 4.1.4
+Thu, 07 Sep 2023 18:26:02 GMT
+
+_Version update only_
 
 ## 4.1.3
 Wed, 30 Aug 2023 15:35:27 GMT
