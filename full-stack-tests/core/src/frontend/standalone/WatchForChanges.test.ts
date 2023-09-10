@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, IModelProps, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
@@ -180,6 +180,23 @@ for (const watchForChanges of [false, true]) {
       expect(newTree.range.isAlmostEqual(prevTree.range)).to.be.false;
 
       await expectElementsInTile(newTree, [elemId2]);
+    });
+
+    it.only("notifies front-end when project extents change", async () => {
+      async function expectProjectExtents(expectedMaxZ: number): Promise<void> {
+        const promise = new Promise((resolve) => {
+          roConn.onProjectExtentsChanged.addOnce(() => {
+            expect(roConn.projectExtents.high.z).to.equal(expectedMaxZ);
+            resolve(undefined);
+          });
+        });
+
+        await coreFullStackTestIpc.updateIModelProps(rwConn.key, { projectExtents: { low: [0, 0, 0], high: [10, 20, expectedMaxZ] } });
+        await promise;
+      }
+
+      await expectProjectExtents(17);
+      await expectProjectExtents(23);
     });
   });
 }
