@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -441,9 +441,12 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-    for (const changeset of changesets)
+    for (const changeset of changesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
       await this.applySingleChangeset(db, changeset);
-
+      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+    }
     // notify listeners
     db.notifyChangesetApplied();
   }

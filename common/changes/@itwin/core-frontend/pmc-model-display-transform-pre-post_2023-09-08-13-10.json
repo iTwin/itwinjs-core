@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add an option to premultiply a model display transform",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

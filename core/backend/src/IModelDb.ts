@@ -8,6 +8,7 @@
 
 import * as fs from "fs";
 import { join } from "path";
+import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -329,6 +330,15 @@ export abstract class IModelDb extends IModel {
    * @note this member is only valid while the iModel is opened.
    */
   public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
+
+  /** Get the full path to this iModel's "watch file".
+   * A read-only briefcase opened with `watchForChanges: true` creates this file next to the briefcase file on open, if it doesn't already exist.
+   * A writable briefcase "touches" this file if it exists whenever it commits changes to the briefcase.
+   * The read-only briefcase can use a file watcher to react when the writable briefcase makes changes to the briefcase.
+   * This is more reliable than watching the sqlite WAL file.
+   * @internal
+   */
+  public get watchFilePathName(): LocalFileName { return `${this.pathName}-watch`; }
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
@@ -2286,8 +2296,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return 0;
     }
 
-    /** Set the default view property the iModel
+    /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
+     * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
@@ -2540,11 +2552,13 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
-      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      // Must touch the file synchronously - cannot watch a file until it exists.
+      touch.sync(briefcaseDb.watchFilePathName);
+      const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => nativeDb.restartDefaultTxn());
       briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
     }
 

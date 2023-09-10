@@ -32,27 +32,24 @@ export class GeometryCoreTestIO {
   public static enableSave: boolean = false;
   /** For debugging: set to true to also run longer tests */
   public static enableLongTests: boolean = false;
-
   /** For debugging: the location of json files output by saveGeometry. */
   public static outputRootDirectory = "./src/test/output";
-
-  /** wrapper for console.log */
+  /** Wrapper for console.log */
   public static consoleLog(message?: any, ...optionalParams: any[]): void {
     if (this.enableConsole)
       console.log(message, ...optionalParams); // eslint-disable-line no-console
   }
-  /** wrapper for console.log -- bypasses enableConsole */
+  /** Wrapper for console.log -- bypasses enableConsole */
   public static consoleLogGo(message?: any, ...optionalParams: any[]): void {
     console.log(message, ...optionalParams); // eslint-disable-line no-console
   }
-
-  /** wrapper for console.time */
+  /** Wrapper for console.time */
   public static consoleTime(label?: string): void {
     if (!this.enableConsole)
       return;
     console.time(label);  // eslint-disable-line no-console
   }
-  /** wrapper for console.timeEnd */
+  /** Wrapper for console.timeEnd */
   public static consoleTimeEnd(label?: string): void {
     if (!this.enableConsole)
       return;
@@ -121,7 +118,13 @@ export class GeometryCoreTestIO {
     }
   }
   /** Create and capture a loop object from a (single) sequence of points . */
-  public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureLoop(
+    collection: GeometryQuery[],
+    points: IndexedXYZCollection | Point3d[] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (!points || points.length === 0)
       return;
     if (points.length <= 2) {
@@ -132,7 +135,13 @@ export class GeometryCoreTestIO {
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
   /** Create and capture loop object(s) from an array of point sequences. */
-  public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureLoops(
+    collection: GeometryQuery[],
+    points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (points instanceof IndexedXYZCollection) {
       this.createAndCaptureLoop(collection, points, dx, dy, dz);
       return;
@@ -177,7 +186,7 @@ export class GeometryCoreTestIO {
     }
   }
   /**
-   * Create a circle (or many circles) given center and radius.  Save the arcs in collection, shifted by [dx,dy,dz]
+   * Create a circle (or many circles) given center and radius. Save the arcs in collection, shifted by [dx,dy,dz]
    * @param collection growing array of geometry
    * @param center single or multiple center point data
    * @param radius radius of circles
@@ -185,7 +194,14 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureXYCircle(collection: GeometryQuery[], center: Point3d | Point3d[], radius: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureXYCircle(
+    collection: GeometryQuery[],
+    center: Point3d | Point3d[],
+    radius: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (Array.isArray(center)) {
       for (const c of center)
         this.createAndCaptureXYCircle(collection, c, radius, dx, dy, dz);
@@ -197,7 +213,6 @@ export class GeometryCoreTestIO {
       collection.push(newGeometry);
     }
   }
-
   /**
    * Create a circle in each sector of the mesh.
    * * centers are placed along line to centroid
@@ -210,7 +225,15 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureSectorMarkup(collection: GeometryQuery[], polyface: Polyface, radius: number, lines: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureSectorMarkup(
+    collection: GeometryQuery[],
+    polyface: Polyface,
+    radius: number,
+    lines: boolean = false,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     const visitor = polyface.createVisitor(0);
     const xyz = Point3d.create();
     const centers = [];
@@ -230,7 +253,6 @@ export class GeometryCoreTestIO {
       }
     }
   }
-
   /**
    * Create a marker (or many markers) given center and size  Save in collection, shifted by [dx,dy,dz]
    * * marker = 0 is a circle
@@ -243,7 +265,15 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureXYMarker(collection: GeometryQuery[], markerId: number, center: Point3d | Point3d[], a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureXYMarker(
+    collection: GeometryQuery[],
+    markerId: number,
+    center: Point3d | Point3d[],
+    a: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (Array.isArray(center)) {
       for (const c of center)
         if (markerId === 0)
@@ -284,7 +314,6 @@ export class GeometryCoreTestIO {
     } else
       this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
   }
-
   /**
    * Create transformed edges of a range.
    * * For 3d range, capture all the edges with various linestrings.
@@ -296,7 +325,14 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureTransformedRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, placement?: Transform, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureTransformedRangeEdges(
+    collection: GeometryQuery[],
+    range?: Range2d | Range3d,
+    placement?: Transform,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (range !== undefined && !range.isNull) {
       if (range instanceof Range3d) {
         const corners = range.corners();
@@ -316,7 +352,6 @@ export class GeometryCoreTestIO {
       }
     }
   }
-
   /**
    * Create edges of a range.
    * * For 3d range, capture all the edges with various linestrings.
@@ -327,11 +362,19 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureRangeEdges(
+    collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0,
+  ) {
     this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
-
-  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static showMomentData(
+    collection: GeometryQuery[],
+    momentData?: MomentData,
+    xyOnly: boolean = false,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (momentData) {
       const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
       if (momentData1) {
@@ -348,7 +391,13 @@ export class GeometryCoreTestIO {
             momentData1.origin.plusScaled(unitY, rz),
             momentData1.origin,
             momentData1.origin.plusScaled(unitZ, 3.0 * rz)]), dx, dy, dz);
-        this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)), dx, dy, dz);
+        this.captureGeometry(
+          collection,
+          Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)),
+          dx,
+          dy,
+          dz,
+        );
         if (!xyOnly) {
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitZ.scale(ry), unitX.scale(ry)), dx, dy, dz);
@@ -356,12 +405,27 @@ export class GeometryCoreTestIO {
       }
     }
   }
-  public static captureMesh(collection: GeometryQuery[], patch: UVSurface, numX: number, numY: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureMesh(
+    collection: GeometryQuery[],
+    patch: UVSurface,
+    numX: number,
+    numY: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     const builder = PolyfaceBuilder.create();
     builder.addUVGridBody(patch, numX, numY);
     this.captureGeometry(collection, builder.claimPolyface(), dx, dy, dz);
   }
-  public static captureCurveLocationDetails(collection: GeometryQuery[], data: CurveLocationDetail | CurveLocationDetailPair | CurveLocationDetail[] | CurveLocationDetailPair[], markerSize: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCurveLocationDetails(
+    collection: GeometryQuery[],
+    data: CurveLocationDetail | CurveLocationDetailPair | CurveLocationDetail[] | CurveLocationDetailPair[],
+    markerSize: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
+  ) {
     if (Array.isArray(data)) {
       for (const item of data) {
         this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
@@ -382,7 +446,5 @@ export class GeometryCoreTestIO {
       this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
       this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
     }
-
   }
-
 }
