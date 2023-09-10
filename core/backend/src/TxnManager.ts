@@ -317,6 +317,7 @@ export class TxnManager {
   /** @internal */
   protected _onReplayedExternalTxns() {
     this.onReplayedExternalTxns.raiseEvent();
+    this._iModel.initializeIModelDb();
     IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
   }
 

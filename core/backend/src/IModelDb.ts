@@ -395,7 +395,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  protected initializeIModelDb() {
+  public initializeIModelDb() {
     const props = this.nativeDb.getIModelProps();
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
@@ -2558,7 +2558,11 @@ export class BriefcaseDb extends IModelDb {
     if (args.watchForChanges && undefined === args.container) {
       // Must touch the file synchronously - cannot watch a file until it exists.
       touch.sync(briefcaseDb.watchFilePathName);
-      const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => nativeDb.restartDefaultTxn());
+
+      const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
+        nativeDb.restartDefaultTxn();
+      });
+
       briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
     }
 

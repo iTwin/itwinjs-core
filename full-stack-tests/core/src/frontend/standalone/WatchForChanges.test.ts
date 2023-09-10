@@ -192,6 +192,7 @@ for (const watchForChanges of [false, true]) {
         });
 
         await coreFullStackTestIpc.updateIModelProps(rwConn.key, { projectExtents: { low: [0, 0, 0], high: [10, 20, expectedMaxZ] } });
+        await rwConn.saveChanges();
         await promise;
       }
 
