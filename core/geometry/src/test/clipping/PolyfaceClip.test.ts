@@ -36,6 +36,39 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RFunctions } from "../polyface/DrapeLinestring.test";
 
+/** Estimate a volume for a mesh that may be missing side faces.
+ * * Compute volume "between" the mesh facets and the bottom plane of the mesh range
+ * * Compute volume "between" the mesh facets and the top plane of the mesh range.
+ * * The return structure contains
+ *    * a volume estimate
+ *    * a relative error estimate based on the difference between upper and lower volumes.
+ */
+function raggedVolume(mesh: Polyface): { volume: number, volumeDifferenceRelativeError: number } {
+  const range = mesh.range();
+  const xyPlane0 = Plane3dByOriginAndUnitNormal.createXYPlane(range.low);
+  const xyPlane1 = Plane3dByOriginAndUnitNormal.createXYPlane(range.high);
+  const volume0 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane0);
+  const volume1 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane1);
+  const volumeDifference = Math.abs(volume1.volume - volume0.volume);
+  return { volume: volume0.volume, volumeDifferenceRelativeError: Geometry.safeDivideFraction(volumeDifference, Math.abs(volume0.volume), 1000.0) };
+}
+
+function shiftZInXYFractionRange(mesh: Polyface, lowXFraction: number, lowYFraction: number, highXFraction: number, highYFraction: number, deltaZ: number) {
+  const points = mesh.data.point;
+  const rangeA = mesh.range();
+  const lowPoint = rangeA.localXYZToWorld(lowXFraction, lowYFraction, 0)!;
+  const highPoint = rangeA.localXYZToWorld(highXFraction, highYFraction, 0)!;
+  const rangeXY = Range2d.createXYXY(lowPoint?.x, lowPoint?.y, highPoint?.x, highPoint.y);
+  const p = Point3d.create();
+  for (let i = 0; i < points.length; i++) {
+    points.getPoint3dAtUncheckedPointIndex(i, p);
+    if (rangeXY.containsXY(p.x, p.y)) {
+      p.z += deltaZ;
+      points.setAtCheckedPointIndex(i, p);
+    }
+  }
+}
+
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();
@@ -1121,53 +1154,21 @@ describe("PolyfaceClip", () => {
   });
 
   it.only("DrapeRegion", () => {
-    /*
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const samples: Point3d[] = [];
-    // TODO: sample Franke's function: https://www.sfu.ca/~ssurjano/franke2d.html
     const options = StrokeOptions.createForFacets();
-    options.needNormals = options.needParams = options.shouldTriangulate = true;
-    const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(samples, options);
+    options.shouldTriangulate = options.needNormals = true;
+    const mesh = Sample.createMeshFromSmoothSurface(50, options);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+
     // TODO: create regions:
     // * CW and CCW loops
     // * punctured split washer parity region (CCW outer loop contains a bridged hole, CW isolated hole) to cover failsafe triangulation method, and force a Boolean difference (to verify that we don't need to reverse holes)
     // * parity region with no outer loop
     // TODO: drape
     // TODO: how verify numerically?
-    */
+    
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
-/** Estimate a volume for a mesh that may be missing side faces.
- * * Compute volume "between" the mesh facets and the bottom plane of the mesh range
- * * Compute volume "between" the mesh facets and the top plane of the mesh range.
- * * The return structure contains
- *    * a volume estimate
- *    * a relative error estimate based on the difference between upper and lower volumes.
- *
- */
-function raggedVolume(mesh: Polyface): { volume: number, volumeDifferenceRelativeError: number } {
-  const range = mesh.range();
-  const xyPlane0 = Plane3dByOriginAndUnitNormal.createXYPlane(range.low);
-  const xyPlane1 = Plane3dByOriginAndUnitNormal.createXYPlane(range.high);
-  const volume0 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane0);
-  const volume1 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane1);
-  const volumeDifference = Math.abs(volume1.volume - volume0.volume);
-  return { volume: volume0.volume, volumeDifferenceRelativeError: Geometry.safeDivideFraction(volumeDifference, Math.abs(volume0.volume), 1000.0) };
-}
-
-function shiftZInXYFractionRange(mesh: Polyface, lowXFraction: number, lowYFraction: number, highXFraction: number, highYFraction: number, deltaZ: number) {
-  const points = mesh.data.point;
-  const rangeA = mesh.range();
-  const lowPoint = rangeA.localXYZToWorld(lowXFraction, lowYFraction, 0)!;
-  const highPoint = rangeA.localXYZToWorld(highXFraction, highYFraction, 0)!;
-  const rangeXY = Range2d.createXYXY(lowPoint?.x, lowPoint?.y, highPoint?.x, highPoint.y);
-  const p = Point3d.create();
-  for (let i = 0; i < points.length; i++) {
-    points.getPoint3dAtUncheckedPointIndex(i, p);
-    if (rangeXY.containsXY(p.x, p.y)) {
-      p.z += deltaZ;
-      points.setAtCheckedPointIndex(i, p);
-    }
-  }
-}
