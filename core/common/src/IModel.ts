@@ -563,7 +563,7 @@ export abstract class IModel implements IModelProps {
   }
 
   /** @internal */
-  protected initialize(name: string, props: IModelProps) {
+  public initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
     this.projectExtents = Range3d.fromJSON(props.projectExtents);

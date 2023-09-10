@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CodeProps, SubCategoryAppearance } from "@itwin/core-common";
+import { CodeProps, IModelProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 
 export const fullstackIpcChannel = "full-stack-tests/fullStackIpc";
 export interface FullStackTestIpc {
   createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String>;
   createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+  updateIModelProps(key: string, props: Partial<IModelProps>): Promise<void>;
 }

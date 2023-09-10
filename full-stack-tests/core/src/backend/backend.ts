@@ -13,7 +13,7 @@ import {
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, IModelProps, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -70,6 +70,11 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
+  }
+
+  public async updateIModelProps(key: string, props: Partial<IModelProps>): Promise<void> {
+    const db = IModelDb.findByKey(key);
+    db.initialize(props.name ?? db.name, { ...db.toJSON(), ...props });
   }
 }
 
