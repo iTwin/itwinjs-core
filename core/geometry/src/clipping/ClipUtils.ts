@@ -7,7 +7,7 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { BagOfCurves } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";

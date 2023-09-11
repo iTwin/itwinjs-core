@@ -10,7 +10,7 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyCurve } from "../curve/CurveChain";
+import { AnyCurve } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";

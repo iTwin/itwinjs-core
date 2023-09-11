@@ -31,7 +31,7 @@ import { Cone } from "../solid/Cone";
 import { RuledSweep } from "../solid/RuledSweep";
 import { TorusPipe } from "../solid/TorusPipe";
 import { Arc3d, ArcBlendData } from "./Arc3d";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";

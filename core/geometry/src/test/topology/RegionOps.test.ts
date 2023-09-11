@@ -8,7 +8,7 @@ import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
