@@ -675,6 +675,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-touch",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "nodemon",
       "allowedCategories": [ "tools" ]
     },
@@ -788,6 +792,10 @@
     },
     {
       "name": "supertest",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "touch",
       "allowedCategories": [ "backend" ]
     },
     {
