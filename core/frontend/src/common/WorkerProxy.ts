@@ -101,7 +101,7 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
 
   let worker: Worker;
   const sameOrigin = workerJsPath.substring(0, globalThis.origin.length) === globalThis.origin;
-  if (sameOrigin) {
+  if (sameOrigin || !workerJsPath.startsWith("http")) {
     worker = new Worker(workerJsPath);
   } else {
     const workerBlob = new Blob([`importScripts("${workerJsPath}");`]);
