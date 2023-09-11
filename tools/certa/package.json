@@ -59,7 +59,7 @@
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "electron": ">=23.0.0 <26.0.0"
+    "electron": ">=23.0.0 <27.0.0"
   },
   "peerDependenciesMeta": {
     "electron": {
