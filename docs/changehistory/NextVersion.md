@@ -18,4 +18,4 @@ The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCu
 
 ## Electron 26 support
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
