@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Make watching for briefcase changes more reliable.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -112,7 +112,6 @@ export class XYZ implements XYAndZ {
   }
   /**
    * Set the x,y,z parts from one of these input types
-   *
    * * XYZ -- copy the x,y,z parts
    * * Float64Array -- Copy from indices 0,1,2 to x,y,z
    * * XY -- copy the x, y parts and set z=0

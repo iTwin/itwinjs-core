@@ -65,8 +65,8 @@
 
 To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
 
-1. Change the dependencies to the latest version of [connector-framework](https://www.npmjs.com/package/@itwin/connector-framework) (version 1.0.1 or greater).  A complete list of dependencies needed for connector development is available below under [Node Packages](#node-packages)
-2. The older term "bridge" has been replaced with "connector".  Therefore, the class "BridgeRunner" for example, is now called "ConnectorRunner".  In other instances, the term "bridge" was removed altogether, so, "BridgeJobDefArgs" is now simply "JobArgs". Lastly, the term "iModel" has been similarly replaced by "iTwin" or omitted.  Instead of "iModelBridge" your connector will extend "BaseConnector".
+1. Change the dependencies to the latest version of [connector-framework](https://www.npmjs.com/package/@itwin/connector-framework) (version 1.0.1 or greater). A complete list of dependencies needed for connector development is available below under [Node Packages](#node-packages)
+2. The older term "bridge" has been replaced with "connector". Therefore, the class "BridgeRunner" for example, is now called "ConnectorRunner". In other instances, the term "bridge" was removed altogether, so, "BridgeJobDefArgs" is now simply "JobArgs". Lastly, the term "iModel" has been similarly replaced by "iTwin" or omitted. Instead of "iModelBridge" your connector will extend "BaseConnector".
 
 ## Introduction
 
@@ -286,13 +286,13 @@ If an ExternalSource is not found, insert one using
 
 _Example:_
 
-``` ts
+```ts
 [[include:Sychronizer-getOrCreateExternalSource.example-code]]
 ```
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
-``` ts
+```ts
 [[include:Synchronizer-updateIModel.example-code]]
 ```
 
@@ -300,7 +300,7 @@ At the start of the Connector's updateExistingData function, examine all existin
 
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
-``` ts
+```ts
 [[include:Synchronizer-recordDocument.example-code]]
 ```
 
@@ -326,13 +326,13 @@ For each item found in the external source.
 
 Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
-``` ts
+```ts
 [[include:Synchronizer-recordDocument.example-code]]
 ```
 
 Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
-``` ts
+```ts
 [[include:Synchronizer-detectChanges.example-code]]
 ```
 
@@ -340,7 +340,7 @@ If so, check to see if the item’s state is unchanged since the previous conver
 
 Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
 
-``` ts
+```ts
 [[include:Synchronizer-onElementsSeen.example-code]]
 ```
 
@@ -358,7 +358,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version "^18.12.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
+You'll need Node.js version "^18.12.0”. Please refer to [development prerequisites](../tutorials/development-prerequisites) for more details.
 
 The node packages you'll need can be installed using
 
@@ -406,7 +406,7 @@ An iTwin Connector has a private Synchronizer member which can be gotten or set 
 
 The connectorModule assigned to the JobArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
-``` ts
+```ts
 [[include:TestConnector-extendsBaseConnector.example-code]]
 ```
 
@@ -414,7 +414,7 @@ The connectorModule assigned to the JobArgs above must extend the BaseConnector 
 
 Use this method to add any models (e.g., physical, definition, or group) required by your Connector upfront to ensure that the models exist when it is time to populate them with their respective elements.
 
-``` ts
+```ts
 [[include:TestConnector-initializeJob.example-code]]
 ```
 
@@ -427,7 +427,7 @@ See also:
 
 Use this method to read your native source data and assign it to a member property of your Connector to be accessed later on when it is time to convert your native object to their counterparts in the iModel.
 
-``` ts
+```ts
 [[include:TestConnector-openSourceData.example-code]]
 ```
 

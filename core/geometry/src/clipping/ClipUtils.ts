@@ -7,7 +7,7 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { BagOfCurves } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
@@ -124,7 +124,7 @@ export interface Clipper {
  * @param arrayCache cache for reusable GrowableXYZArray.
  */
 type AppendPolygonClipFunction = (
-  xyz: GrowableXYZArray,
+  xyz: IndexedXYZCollection,
   insideFragments: GrowableXYZArray[],
   outsideFragments: GrowableXYZArray[],
   arrayCache: GrowableXYZArrayCache
@@ -231,7 +231,7 @@ export class ClipUtilities {
     let result: UnionRegion | undefined;
     // Create "local region" which is the result of rotating region to make
     // it parallel to the xy-plane and then translating it to the xy-plane.
-    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
+    const localToWorld = ClipUtilities._workTransform = FrameBuilder.createRightHandedFrame(undefined, region, ClipUtilities._workTransform);
     if (!localToWorld)
       return result;
     const worldToLocal = localToWorld?.inverse();
@@ -678,7 +678,7 @@ export class ClipUtilities {
    * @param cache cache for array management
    */
   public static restoreSingletonInPlaceOfMultipleShards(
-    fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache,
+    fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: IndexedXYZCollection, arrayCache: GrowableXYZArrayCache,
   ): void {
     if (fragments && fragments.length > baseCount + 1) {
       while (fragments.length > baseCount) {
@@ -899,7 +899,7 @@ export class ClipUtilities {
    * @param finalCandidateAction
    */
   public static doPolygonClipSequence(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     clippers: Clipper[],
     acceptedIn: GrowableXYZArray[] | undefined,
     acceptedOut: GrowableXYZArray[] | undefined,
@@ -944,7 +944,7 @@ export class ClipUtilities {
   }
   /** Pass polygon `xyz` through a sequence of PolygonClip steps with "parity" rules */
   public static doPolygonClipParitySequence(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     clippers: Clipper[],
     acceptedIn: GrowableXYZArray[] | undefined,
     acceptedOut: GrowableXYZArray[] | undefined,

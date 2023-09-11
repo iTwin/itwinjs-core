@@ -430,7 +430,7 @@ export namespace BlobContainer {
     }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<UriAndId>;
+        create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
@@ -438,6 +438,9 @@ export namespace BlobContainer {
         updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
+    export interface CreatedContainerProps extends UriAndId {
+        provider: Provider;
+    }
     export interface CreateNewContainerProps {
         // @internal
         containerId?: ContainerId;
@@ -456,8 +459,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
@@ -633,6 +634,13 @@ export class ChangedElementsDb implements IDisposable {
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+}
+
+// @beta
+export interface ChangeInstanceKey {
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
 }
 
 // @public
@@ -833,9 +841,25 @@ export namespace CloudSqlite {
         showOnlyFinished?: boolean;
         startFromId?: number;
     }
+    // @internal
+    export interface BcvStats {
+        readonly activeClients?: number;
+        readonly attachedContainers?: number;
+        readonly lockedCacheslots: number;
+        readonly ongoingPrefetches?: number;
+        readonly populatedCacheslots: number;
+        readonly totalCacheslots: number;
+        readonly totalClients?: number;
+    }
+    // @internal
+    export interface BcvStatsFilterOptions {
+        addClientInformation?: boolean;
+    }
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -902,6 +926,8 @@ export namespace CloudSqlite {
         onDisconnect?: (container: CloudContainer, detach: boolean) => void;
         // (undocumented)
         onDisconnected?: (container: CloudContainer, detach: boolean) => void;
+        // @internal
+        queryBcvStats(filterOptions?: BcvStatsFilterOptions): CloudSqlite.BcvStats;
         queryDatabase(dbName: string): CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
@@ -910,6 +936,7 @@ export namespace CloudSqlite {
         releaseWriteLock(): void;
         get storageType(): string;
         uploadChanges(): Promise<void>;
+        get writeLockExpires(): string;
     }
     // (undocumented)
     export interface CloudHttpProps {
@@ -999,10 +1026,11 @@ export namespace CloudSqlite {
     }
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     // @internal (undocumented)
-    export interface LockAndOpenArgs {
+    export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
+        openMode?: OpenMode;
         user: string;
     }
     export enum LoggingMask {
@@ -1043,6 +1071,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
+        {};
 }
 
 // @alpha
@@ -2966,7 +2995,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
+    readonly nativeDb: IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3023,6 +3052,8 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
+    // @internal
+    get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -3133,6 +3164,7 @@ export namespace IModelDb {
         // @beta (undocumented)
         saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
+        // @deprecated
         setDefaultViewId(viewId: Id64String): void;
         // @beta (undocumented)
         get viewStore(): ViewStore.CloudAccess;
@@ -4406,6 +4438,12 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
+    readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4586,6 +4624,35 @@ export class Schemas {
     static getRegisteredSchema(schemaName: string): typeof Schema | undefined;
     static registerSchema(schema: typeof Schema): void;
     static unregisterSchema(schemaName: string): boolean;
+}
+
+// @internal (undocumented)
+export namespace SchemaSync {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        // (undocumented)
+        getUri(): string;
+        static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
+    }
+    const // (undocumented)
+    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    const // (undocumented)
+    withLockedAccess: (iModel: TestCacheIModel, args: {
+        operationName: string;
+        openMode?: OpenMode;
+        user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    initializeForIModel: (arg: {
+        iModel: IModelDb;
+        containerProps: CloudSqlite.ContainerProps;
+    }) => Promise<void>;
+    export class SchemaSyncDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        readonly myVersion = "4.0.0";
+    }
 }
 
 // @public
@@ -5422,6 +5489,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;

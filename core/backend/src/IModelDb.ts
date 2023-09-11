@@ -6,8 +6,9 @@
  * @module iModels
  */
 
-import { join } from "path";
 import * as fs from "fs";
+import { join } from "path";
+import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -48,6 +49,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { SchemaSync } from "./SchemaSync";
 import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
@@ -239,7 +241,6 @@ export abstract class IModelDb extends IModel {
   private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
 
@@ -322,19 +323,27 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
-  private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public readonly nativeDb: IModelJsNative.DgnDb;
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
   public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
 
+  /** Get the full path to this iModel's "watch file".
+   * A read-only briefcase opened with `watchForChanges: true` creates this file next to the briefcase file on open, if it doesn't already exist.
+   * A writable briefcase "touches" this file if it exists whenever it commits changes to the briefcase.
+   * The read-only briefcase can use a file watcher to react when the writable briefcase makes changes to the briefcase.
+   * This is more reliable than watching the sqlite WAL file.
+   * @internal
+   */
+  public get watchFilePathName(): LocalFileName { return `${this.pathName}-watch`; }
+
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this._nativeDb = args.nativeDb;
+    this.nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
@@ -368,7 +377,6 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     this.nativeDb.closeIModel();
-    this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
   /** @internal */
@@ -432,7 +440,7 @@ export abstract class IModelDb extends IModel {
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this.nativeDb; }
+  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
@@ -507,9 +515,9 @@ export abstract class IModelDb extends IModel {
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+    if (!this.nativeDb.isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
-    }
+
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
@@ -721,6 +729,7 @@ export abstract class IModelDb extends IModel {
   public clearCaches() {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
+    this._classMetaDataRegistry = undefined;
   }
 
   /** Update the project extents for this iModel.
@@ -822,20 +831,38 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (schemaFileNames.length === 0)
+      return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
-      schemaLockHeld: true,
-      ecSchemaXmlContext: maybeCustomNativeContext,
-    };
+    if (this.nativeDb.schemaSyncEnabled()) {
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
-    if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema");
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+        schemaLockHeld: true,
+        ecSchemaXmlContext: maybeCustomNativeContext,
+      };
+
+      if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
+
+      const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
     }
-
     this.clearCaches();
   }
 
@@ -849,13 +876,31 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-      await this.acquireSchemaLock();
+    if (serializedXmlSchemas.length === 0)
+      return;
 
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, "Error importing schema");
+    if (this.nativeDb.schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+        if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
+          this.abandonChanges();
+          if (this.nativeDb.getITwinId() !== Guid.empty)
+            await this.acquireSchemaLock();
+          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+        }
+        if (DbResult.BE_SQLITE_OK !== stat)
+          throw new IModelError(stat, "Error importing schema");
+      });
+    } else {
+      if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.acquireSchemaLock();
 
+      const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+      if (DbResult.BE_SQLITE_OK !== stat)
+        throw new IModelError(stat, "Error importing schema");
+    }
     this.clearCaches();
   }
 
@@ -2251,8 +2296,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return 0;
     }
 
-    /** Set the default view property the iModel
+    /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
+     * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
@@ -2505,11 +2552,13 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
-      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
+      // Must touch the file synchronously - cannot watch a file until it exists.
+      touch.sync(briefcaseDb.watchFilePathName);
+      const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => nativeDb.restartDefaultTxn());
       briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
     }
 

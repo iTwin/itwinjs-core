@@ -219,6 +219,10 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "@itwin/ecql-common",
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
@@ -237,6 +241,10 @@
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecsql-common",
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -667,6 +675,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-touch",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "nodemon",
       "allowedCategories": [ "tools" ]
     },
@@ -780,6 +792,10 @@
     },
     {
       "name": "supertest",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "touch",
       "allowedCategories": [ "backend" ]
     },
     {

@@ -6936,6 +6936,7 @@ export namespace IModelConnection {
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: ViewIdString): Promise<ViewState>;
+        // @deprecated
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
         // (undocumented)
@@ -9475,8 +9476,14 @@ export interface ModalReturn {
 }
 
 // @beta
+export interface ModelDisplayTransform {
+    premultiply?: boolean;
+    transform: Transform;
+}
+
+// @beta
 export interface ModelDisplayTransformProvider {
-    getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+    getModelDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined;
 }
 
 // @internal (undocumented)

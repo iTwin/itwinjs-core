@@ -34,7 +34,7 @@ export namespace AzuriteTest {
     export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
-      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType, accessLevel });
+      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, accessLevel });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
@@ -128,7 +128,7 @@ export namespace AzuriteTest {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri };
+      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType };
       const azCont = createAzClient(address.containerId);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
