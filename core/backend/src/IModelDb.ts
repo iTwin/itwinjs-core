@@ -2017,7 +2017,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     private static classMap = new Map<string, string>();
 
-    public _runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
+    private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
@@ -2037,41 +2037,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }
         return aspects;
       });
-    }
-
-    public _queryAspectsUsingInstanceQuery(elementId: Id64String, fromClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
-      if (fromClassFullName === undefined)
-        return this._runInstanceQuery(`SELECT $ FROM (
-          SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId
-            UNION ALL
-          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
-
-      // Check if class is abstract
-      const fullClassName = fromClassFullName.split(":");
-      const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
-      if (val.result !== undefined) {
-        const metaData = new EntityMetaData(JSON.parse(val.result));
-        if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
-          return this._queryAspects(elementId, fromClassFullName, excludedClassFullNames);
-      }
-      // If class specified is abstract, get the list of all classes derived from it
-      let classIdList = IModelDb.Elements.classMap.get(fromClassFullName);
-      if (classIdList === undefined) {
-        const classIds: string[] = [];
-        this._iModel.withPreparedStatement(`select distinct(ECClassId) from ${fromClassFullName}`, (statement: ECSqlStatement) => {
-          while (statement.step() === DbResult.BE_SQLITE_ROW)
-            classIds.push(statement.getValue(0).getId());
-        });
-        classIdList = classIds.join(",");
-        IModelDb.Elements.classMap.set(fromClassFullName, classIdList);
-      }
-
-      // Execute an instance query to retrieve all aspects from all the derived classes
-      return this._runInstanceQuery(`SELECT $ FROM (
-        SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
-          UNION ALL
-        SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
-        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
     }
 
     /** Get a single ElementAspect by its instance Id.
@@ -2094,8 +2059,39 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
-      return this._queryAspectsUsingInstanceQuery(elementId, aspectClassFullName);
+    public getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[] {
+      if (aspectClassFullName === undefined)
+        return this.runInstanceQuery(`SELECT $ FROM (
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId
+            UNION ALL
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+
+      // Check if class is abstract
+      const fullClassName = aspectClassFullName.split(":");
+      const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
+      if (val.result !== undefined) {
+        const metaData = new EntityMetaData(JSON.parse(val.result));
+        if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
+          return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
+      }
+      // If class specified is abstract, get the list of all classes derived from it
+      let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
+      if (classIdList === undefined) {
+        const classIds: string[] = [];
+        this._iModel.withPreparedStatement(`select distinct(ECClassId) from ${aspectClassFullName}`, (statement: ECSqlStatement) => {
+          while (statement.step() === DbResult.BE_SQLITE_ROW)
+            classIds.push(statement.getValue(0).getId());
+        });
+        classIdList = classIds.join(",");
+        IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+      }
+
+      // Execute an instance query to retrieve all aspects from all the derived classes
+      return this.runInstanceQuery(`SELECT $ FROM (
+        SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
+          UNION ALL
+        SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
+        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
     }
 
     /** Insert a new ElementAspect into the iModel.
