@@ -2057,6 +2057,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Get the ElementAspect instances that are owned by the specified element.
      * @param elementId Get ElementAspects associated with this Element
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
+     * @param excludedClassFullNames Optional filter to exclude aspects from classes in the given set.
      * @throws [[IModelError]]
      */
     public getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[] {
