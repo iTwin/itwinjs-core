@@ -280,54 +280,5 @@ describe("Constant merger tests", () => {
             const merger = new SchemaMerger();
             await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
         })
-
-        it("it should throw error if denominator conflict exist", async () => {
-            const sourceSchema = await Schema.fromJson({
-                ...sourceJson,
-                items: {
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
-                    testConstant: {
-                        schemaItemType: "Constant",
-                        label: "Test Constant",
-                        description: "testing a constant",
-                        definition: "PI",
-                        phenomenon: "SourceSchema.testPhenomenon",
-                        numerator: 5,
-                        denominator: 5.1,
-                    }
-                },
-            }, sourceContext);
-
-            const targetSchema = await Schema.fromJson({
-                ...targetJson,
-                items: {
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
-                    testConstant: {
-                        schemaItemType: "Constant",
-                        label: "Test Constant",
-                        description: "testing a constant",
-                        definition: "PI",
-                        phenomenon: "TargetSchema.testPhenomenon",
-                        numerator: 5,
-                        denominator: 4.2,
-                    }
-                },
-            }, targetContext);
-
-            const merger = new SchemaMerger();
-            await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
-        })
     })
 })
