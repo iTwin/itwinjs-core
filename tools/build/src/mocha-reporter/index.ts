@@ -5,7 +5,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-console */
-const debugLeaks = process.env.DEBUG_LEAKS;
+const debugLeaks = true;
+console.log("DEBUG");
 let asyncResourceStats: Map<number, any>;
 if (debugLeaks) {
   require("wtfnode");
@@ -135,6 +136,11 @@ class BentleyMochaReporter extends Spec {
       else
         logBuildWarning(`${this.stats.pending} tests skipped`);
     }
+
+    // setTimeout(function () {
+    //   log() // logs out active handles that are keeping node running
+    // }, 100)
+
   }
 }
 
