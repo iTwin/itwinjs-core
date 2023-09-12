@@ -18,6 +18,7 @@ import {
   MapLayerScaleRangeVisibility,
   MapTileTreeScaleRangeVisibility,
   PrimitiveTool,
+  Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
@@ -33,14 +34,27 @@ export interface MapFeatureInfoToolData {
 }
 
 class ActiveMapLayerState {
-  public activeMapLayers: MapLayerInfoFromTileTree[]|undefined;
+  private _activeMapLayers: MapLayerInfoFromTileTree[]|undefined;
+  public get activeMapLayers()  {return this._activeMapLayers;}
+  public set activeMapLayers(active: MapLayerInfoFromTileTree[]|undefined)  {
+    this._activeMapLayers = active;
+    this.isVisible = true;
+    this.isInRange = true;
+    this.existsInDisplayStyle = true;
+
+  }
+  public isVisible: boolean = true;
+  public isInRange: boolean = true;
+  public existsInDisplayStyle: boolean = true;
 
   public get hasMapLayers() { return (this.activeMapLayers && this.activeMapLayers.length > 0);}
 
-  public compareWithImagerySettings(imagery: MapImageryProps) {
+  public updateWithImagerySettings(imagery: MapImageryProps) {
     const result = {exists: false, hidden: false};
+    this.existsInDisplayStyle = false;
+    this.isVisible = false;
     if (this.hasMapLayers) {
-      const oldMls = this.activeMapLayers![0];    // consider only first layer for now
+      const oldMls = this._activeMapLayers![0];    // consider only first layer for now
 
       let newMls: MapLayerProps|undefined;
       if (oldMls.isBaseLayer) {
@@ -65,24 +79,23 @@ class ActiveMapLayerState {
 
       if (newJson === oldJson ) {
         // We consider newMls and OldMls to be the same mapLayer instance.
-        result.exists = true;
-        result.hidden = !newMls!.visible;
+        this.existsInDisplayStyle = true;
+        this.isVisible = newMls!.visible ? true : false;
       }
 
     }
     return result;
   }
 
-  public compareWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
+  public updateWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
     if (this.hasMapLayers) {
       const currentMls = this.activeMapLayers![0];    // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
         if (currentMls.index?.index === scaleRangeVisibility.index) {
-          return scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Hidden;
+          this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;
         }
       }
     }
-    return undefined;
 
   }
 }
@@ -94,6 +107,7 @@ class ActiveMapLayerState {
  */
 export class MapFeatureInfoTool extends PrimitiveTool {
   public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
+  public readonly onInfoCleared =  new BeEvent();
 
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
@@ -109,6 +123,19 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     return false;
   }
 
+  private updateDecorator(vp: Viewport) {
+    if (this._state.existsInDisplayStyle) {
+      if (this._state.isInRange) {
+        this._decorator.hidden = !this._state.isVisible;
+      }
+    } else {
+      // Flush existing decorations until a new selection is made
+      this.onInfoCleared.raiseEvent();
+      this._decorator.clearState();
+    }
+    vp.invalidateDecorations();
+  }
+
   public override async onPostInstall() {
     await super.onPostInstall();
     this.initLocateElements();
@@ -121,38 +148,27 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     if (vp) {
       const mapImageryChangeHandler = (newImagery: Readonly<MapImagerySettings>) => {
         if (this._state.hasMapLayers) {
-          const result = this._state.compareWithImagerySettings(newImagery.toJSON());
-          if (result.exists) {
-            this._decorator.hidden = result.hidden;
-          } else {
-            this._decorator.clearState();   // Flush existing decorations until another click is made
-          }
-          vp.invalidateDecorations();
+          this._state.updateWithImagerySettings(newImagery.toJSON());
+          this.updateDecorator(vp);
         }
         this._layerSettingsCache.clear();
       };
 
       this._detachListeners.push(vp.onChangeView.addListener((viewport, _previousViewState) => {
 
-        // When a saved view is loaded, 'onMapImageryChanged' events are no longer handled, we
-        // have to re-attach.
+        // When a saved view is loaded, 'onMapImageryChanged' events are no longer handled, we have to re-attach.
         if (this._detachOnMapImageryChanged) {
           this._detachOnMapImageryChanged();
         }
         this._detachOnMapImageryChanged = viewport.displayStyle.settings.onMapImageryChanged.addListener(mapImageryChangeHandler);
 
         if (this._state.hasMapLayers) {
-          const result = this._state.compareWithImagerySettings({
+          this._state.updateWithImagerySettings({
             backgroundBase: viewport.displayStyle.backgroundMapBase.toJSON(),
             backgroundLayers: viewport.displayStyle.getMapLayers(false).map((value) => value.toJSON()),
             overlayLayers: viewport.displayStyle.getMapLayers(true).map((value) => value.toJSON()),
           });
-          if (result.exists) {
-            this._decorator.hidden = result.hidden;
-          } else {
-            this._decorator.clearState();   // Flush existing decorations until another click is made
-          }
-          vp.invalidateDecorations();
+          this.updateDecorator(vp);
         }
         this._layerSettingsCache.clear();
       }));
@@ -162,9 +178,9 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       // Every time a layer goes out of range it, its associated decoration should be hidden (and restore if enter again the range)
       this._detachListeners.push(vp.onMapLayerScaleRangeVisibilityChanged.addListener(((layerIndexes: MapLayerScaleRangeVisibility[]) => {
         if (this._state.hasMapLayers) {
-          const hidden = this._state.compareWithScaleRangeVisibility(layerIndexes);
-          if (hidden !== undefined) {
-            this._decorator.hidden = hidden;
+          this._state.updateWithScaleRangeVisibility(layerIndexes);
+          if (this._state.existsInDisplayStyle && this._state.isVisible) {
+            this._decorator.hidden = !this._state.isInRange;
             vp.invalidateDecorations();
           }
         }
@@ -228,7 +244,9 @@ export class MapFeatureInfoTool extends PrimitiveTool {
         this._state.activeMapLayers = mapLayersHit;
         IModelApp.toolAdmin.setCursor("wait");
         try {
-          mapInfo = await hit.viewport.getMapFeatureInfo(hit);
+          const aperture = (hit.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+          const pixelRadius = Math.floor(aperture + 0.5);
+          mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
           if (mapInfo) {
             this._decorator.setState({ hit, mapInfo });
           }
