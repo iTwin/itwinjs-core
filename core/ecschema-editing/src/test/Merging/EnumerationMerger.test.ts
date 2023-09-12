@@ -8,7 +8,7 @@ import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Enumeration merge tests", () => {
+describe.only("Enumeration merge tests", () => {
 
   const sourceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -114,7 +114,7 @@ describe("Enumeration merge tests", () => {
       expect(sourceEnumeration!.toJSON()).deep.eq(mergedEnumeration!.toJSON());
     });
 
-    it.skip("should merge missing enumerator attributes", async () => {
+    it("should merge missing enumerator attributes", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -152,11 +152,14 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
+      const sourceEnumeration = await sourceSchema.getItem<Enumeration>("TestEnumeration");
+      const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
+      expect(sourceEnumeration!.toJSON()).deep.eq(mergedEnumeration!.toJSON());
 
     });
   });
-
-
 
   describe("Enumeration delta tests", () => {
     it("should merge missing enumerators of the same enumeration", async () => {
@@ -212,7 +215,7 @@ describe("Enumeration merge tests", () => {
       });
     });
 
-    it("should throw an error if merged enumeration types mismatch", async () => {
+    it("should throw an error if source enumeration and target enumeration type mismatch", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -287,7 +290,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Enumerator attribute conflict: Value: 100 -> 200");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merge enumerator attribute, Value: 100 -> 200 in EnumeratorOne");
 
     });
   });
