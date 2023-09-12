@@ -2834,6 +2834,7 @@ importers:
 
   ../../tools/backend-webpack:
     specifiers:
+      '@itwin/build-tools': workspace:*
       '@itwin/core-webpack-tools': workspace:*
       case-sensitive-paths-webpack-plugin: ^2.1.2
       chalk: ^3.0.0
@@ -2846,6 +2847,7 @@ importers:
       yargonaut: ^1.1.2
       yargs: ^17.4.0
     dependencies:
+      '@itwin/build-tools': link:../build
       '@itwin/core-webpack-tools': link:../webpack-core
       case-sensitive-paths-webpack-plugin: 2.4.0
       chalk: 3.0.0
