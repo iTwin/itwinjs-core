@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-orbitgt
 
-This log was last generated on Fri, 08 Sep 2023 13:37:23 GMT and should not be manually modified.
+This log was last generated on Tue, 12 Sep 2023 15:38:52 GMT and should not be manually modified.
+
+## 4.1.6
+Tue, 12 Sep 2023 15:38:52 GMT
+
+_Version update only_
 
 ## 4.1.5
 Fri, 08 Sep 2023 13:37:23 GMT
