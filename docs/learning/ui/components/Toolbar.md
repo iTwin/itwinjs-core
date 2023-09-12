@@ -28,9 +28,8 @@ const toolbarItems = [
 
 // Next create toolbar component and provide the item definitions with will create the buttons.
 <ToolbarWithOverflow
-    expandsTo={Direction.Bottom}
+    expandsTo={Direction.Bottom}  // Top/Bottom sets toolbar Horizontal; Left/Right sets toolbar Vertical
     panelAlignment={ToolbarPanelAlignment.Start}
-    direction={OrthogonalDirection.Horizontal}
     items={toolbarItems}
     useDragInteraction={false}
     useProximityOpacity={true}

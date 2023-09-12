@@ -2,6 +2,36 @@
   "name": "@itwin/editor-common",
   "entries": [
     {
+      "version": "4.1.6",
+      "tag": "@itwin/editor-common_v4.1.6",
+      "date": "Tue, 12 Sep 2023 15:38:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.5",
+      "tag": "@itwin/editor-common_v4.1.5",
+      "date": "Fri, 08 Sep 2023 13:37:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.4",
+      "tag": "@itwin/editor-common_v4.1.4",
+      "date": "Thu, 07 Sep 2023 18:26:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.3",
+      "tag": "@itwin/editor-common_v4.1.3",
+      "date": "Wed, 30 Aug 2023 15:35:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.2",
+      "tag": "@itwin/editor-common_v4.1.2",
+      "date": "Wed, 23 Aug 2023 15:25:29 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.1.1",
       "tag": "@itwin/editor-common_v4.1.1",
       "date": "Fri, 18 Aug 2023 13:02:53 GMT",

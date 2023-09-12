@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BilinearPatch, PolyfaceQuery } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -12,6 +11,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
+import { BilinearPatch } from "../../geometry3d/BilinearPatch";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -20,6 +20,7 @@ import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedR
 import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Checker } from "../Checker";
 import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
