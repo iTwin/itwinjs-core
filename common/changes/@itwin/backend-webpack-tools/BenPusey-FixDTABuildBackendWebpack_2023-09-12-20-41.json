@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/backend-webpack-tools",
-      "comment": "Fixes webpack tools dependencies.",
+      "comment": "",
       "type": "none"
     }
   ],
