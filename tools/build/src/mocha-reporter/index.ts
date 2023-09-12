@@ -5,11 +5,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-console */
+const wtf = require("wtfnode");
 const debugLeaks = true;
-console.log("DEBUG");
+console.log("DEBUG TOP");
 let asyncResourceStats: Map<number, any>;
 if (debugLeaks) {
-  require("wtfnode");
   asyncResourceStats = new Map<number, any>();
   setupAsyncHooks();
 }
@@ -95,7 +95,6 @@ class BentleyMochaReporter extends Spec {
       setTimeout(() => {
         logBuildError(`Handle leak detected. Node was still running 5 seconds after tests completed.`);
         if (debugLeaks) {
-          const wtf = require("wtfnode");
           wtf.setLogger("info", console.error);
           wtf.dump();
 
