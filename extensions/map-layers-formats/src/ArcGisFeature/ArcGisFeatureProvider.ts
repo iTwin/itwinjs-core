@@ -244,8 +244,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     try {
       this._renderer = EsriRenderer.fromJSON(this._layerMetadata?.drawingInfo?.renderer);
       await this._renderer.initialize();
-    } catch {
-      Logger.logError(loggerCategory, `Could not initialize symbology renderer`);
+    } catch (e) {
+      Logger.logError(loggerCategory, `Could not initialize symbology renderer for '${this._settings.name}': ${e}`);
     }
 
   }
@@ -399,7 +399,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", queryEnvelope,
-        outFields, undefined, returnGeometry, toleranceWorld);
+        outFields, undefined, returnGeometry, tilePixelSize);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);
