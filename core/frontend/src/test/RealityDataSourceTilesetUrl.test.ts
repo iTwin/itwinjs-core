@@ -59,15 +59,18 @@ describe("RealityDataSourceTilesetUrl", () => {
     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json#fragment")).to.equal("tileset");
     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb#fragment")).to.equal("tile");
   });
-  it("handle content type of odd cases", async () => {
+  it("handle content type of other cases", async () => {
     const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.TilesetUrl }, undefined);
     expect(rdSource).to.not.be.undefined;
-    expect(rdSource?.getTileContentType("tileset.json/")).to.equal("tile");
+    expect(rdSource?.getTileContentType("")).to.not.equal("tileset");
+    expect(rdSource?.getTileContentType("tileset.json/")).to.not.equal("tileset");
     expect(rdSource?.getTileContentType("tileset.json2")).to.equal("tile");
     expect(rdSource?.getTileContentType("tileset.json/tileset.js")).to.equal("tile");
     expect(rdSource?.getTileContentType("TILESET.JSON")).to.equal("tileset");
     expect(rdSource?.getTileContentType("..\\tilesets\\tileset.json")).to.equal("tileset");
-    expect(rdSource?.getTileContentType("/tilesets/../tilesets/tileset.json")).to.equal("tileset");
-    expect(rdSource?.getTileContentType("/models/../models/json.glb")).to.equal("tile");
+    expect(rdSource?.getTileContentType("/path/../tilesets/tileset.json")).to.equal("tileset");
+    expect(rdSource?.getTileContentType("/path/../models/json.glb")).to.equal("tile");
+    expect(rdSource?.getTileContentType("tile.glb?referer=tileset.json")).to.equal("tile");
+    expect(rdSource?.getTileContentType("file:///c:/path/to/tileset.json")).to.equal("tileset");
   });
 });
