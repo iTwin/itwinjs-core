@@ -64,6 +64,8 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
 
   await runner.runTests(config);
 
-  if (typeof cleanUpCallback === "function" && runner.supportsCleanup)
+  if (typeof cleanUpCallback === "function" && runner.supportsCleanup) {
+    console.log("CLEAN UP CALL BACK")
     await cleanUpCallback();
+  }
 }

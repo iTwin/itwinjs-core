@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+var wtfnode = require('wtfnode');
 import * as path from "path";
 import { Browser, chromium, LaunchOptions, Page } from "playwright";
 import { ChildProcess } from "child_process";

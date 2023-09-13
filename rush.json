@@ -427,12 +427,7 @@
       "reviewCategory": "internal",
       "shouldPublish": false
     },
-    {
-      "packageName": "rpc-full-stack-tests",
-      "projectFolder": "full-stack-tests/rpc",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
+
     {
       "packageName": "@itwin/rpcinterface-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc-interface",

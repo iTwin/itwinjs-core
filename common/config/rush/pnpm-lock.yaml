@@ -2924,6 +2924,7 @@ importers:
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~5.0.2
+      wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
       canonical-path: 1.0.0
@@ -2934,6 +2935,7 @@ importers:
       mocha: 10.2.0
       playwright: 1.35.1
       source-map-support: 0.5.21
+      wtfnode: 0.9.1
       yargs: 17.7.2
     devDependencies:
       '@itwin/build-tools': link:../build

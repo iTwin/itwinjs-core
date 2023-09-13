@@ -38,6 +38,7 @@
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.10",
     "mocha": "^10.0.0",
+    "wtfnode": "^0.9.1",
     "playwright": "~1.35.1",
     "source-map-support": "^0.5.6",
     "yargs": "^17.4.0"
