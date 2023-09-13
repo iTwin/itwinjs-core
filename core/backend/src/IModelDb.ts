@@ -2079,14 +2079,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
-        this._iModel.withPreparedStatement(`select distinct(ECClassId) from ${aspectClassFullName}`, (statement: ECSqlStatement) => {
+        this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`, (statement: ECSqlStatement) => {
           while (statement.step() === DbResult.BE_SQLITE_ROW)
             classIds.push(statement.getValue(0).getId());
         });
-        classIdList = classIds.join(",");
-        IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+        if (classIds.length > 0) {
+          classIdList = classIds.join(",");
+          IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+        }
       }
-
+      if (classIdList === undefined) {
+        Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for the class ${aspectClassFullName}`);
+        return [];
+      }
       // Execute an instance query to retrieve all aspects from all the derived classes
       return this.runInstanceQuery(`SELECT $ FROM (
         SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
