@@ -14,10 +14,12 @@ import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
+import { Listener } from '@itwin/core-bentley';
 import { Localization } from '@itwin/core-common';
 import { LocateFilterStatus } from '@itwin/core-frontend';
 import { LocateResponse } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
+import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
@@ -37,9 +39,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
     // (undocumented)
-    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriSFS | EsriSLS | EsriPMS | undefined;
+    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriPMS | EsriSLS | EsriSFS | undefined;
     // (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void>;
     // (undocumented)
     protected getLayerMetadata(layerId: number): Promise<any>;
     // (undocumented)
@@ -68,6 +70,8 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    readonly onInfoCleared: BeEvent<Listener>;
     // (undocumented)
     readonly onInfoReady: BeEvent<(data: MapFeatureInfoToolData) => void>;
     // (undocumented)
