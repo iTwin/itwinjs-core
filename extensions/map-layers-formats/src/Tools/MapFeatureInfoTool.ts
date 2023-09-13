@@ -195,6 +195,9 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public override async onCleanup() {
     this._detachListeners.forEach((f) => f());
     this._detachListeners.length = 0;
+    if (this._detachOnMapImageryChanged) {
+      this._detachOnMapImageryChanged();
+    }
 
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
