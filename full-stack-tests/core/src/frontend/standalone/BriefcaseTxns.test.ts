@@ -211,14 +211,18 @@ describe("BriefcaseTxns", () => {
         await rwConn.close();
 
         // Reopen roConn as temporarily writable, then reopen as read-only.
+        console.log("Reopening read-only connection...");
         await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+        console.log("...reopened.");
 
         // Reopen rwConn
         await openRW();
 
         await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
         await rwConn.saveChanges();
+        console.log("awaiting events...");
         await expectCommit("onElementsChanged", "onChangesApplied");
+        console.log("...events received.");
 
         await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
         await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
