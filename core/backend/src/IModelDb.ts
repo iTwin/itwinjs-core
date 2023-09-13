@@ -17,7 +17,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
@@ -39,7 +39,7 @@ import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import { ElementAspect } from "./ElementAspect";
 import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
@@ -2025,6 +2025,30 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.constructEntity<ElementAspect>(aspect);
     }
 
+    private static classMap = new Map<string, string>();
+
+    private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
+      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+        statement.bindId("elementId", elementId);
+        const aspects: ElementAspect[] = [];
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          const row: object = {};
+          const parsedRow = JSON.parse(statement.getValue(0).getString());
+          // eslint-disable-next-line guard-for-in
+          for (const key in parsedRow) {
+            const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
+            Object.defineProperty(row, jsName, { enumerable: true, configurable: true, writable: true, value: parsedRow[key] });
+          }
+          const aspectProps: ElementAspectProps = row as any;
+          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
+          (aspectProps as any).className = undefined; // clear property from SELECT $ that we don't want in the final instance
+          if ((undefined === excludedClassFullNames) || !excludedClassFullNames.has(aspectProps.classFullName))
+            aspects.push(this._iModel.constructEntity<ElementAspect>(aspectProps));
+        }
+        return aspects;
+      });
+    }
+
     /** Get a single ElementAspect by its instance Id.
      * @throws [[IModelError]]
      */
@@ -2043,16 +2067,42 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Get the ElementAspect instances that are owned by the specified element.
      * @param elementId Get ElementAspects associated with this Element
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
+     * @param excludedClassFullNames Optional filter to exclude aspects from classes in the given set.
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
-      if (undefined === aspectClassFullName) {
-        const uniqueAspects: ElementAspect[] = this._queryAspects(elementId, ElementUniqueAspect.classFullName);
-        const multiAspects: ElementAspect[] = this._queryAspects(elementId, ElementMultiAspect.classFullName);
-        return uniqueAspects.concat(multiAspects);
+    public getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[] {
+      if (aspectClassFullName === undefined)
+        return this.runInstanceQuery(`SELECT $ FROM (
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId
+            UNION ALL
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+
+      // Check if class is abstract
+      const fullClassName = aspectClassFullName.split(":");
+      const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
+      if (val.result !== undefined) {
+        const metaData = new EntityMetaData(JSON.parse(val.result));
+        if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
+          return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
       }
-      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassFullName);
-      return aspects;
+      // If class specified is abstract, get the list of all classes derived from it
+      let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
+      if (classIdList === undefined) {
+        const classIds: string[] = [];
+        this._iModel.withPreparedStatement(`select distinct(ECClassId) from ${aspectClassFullName}`, (statement: ECSqlStatement) => {
+          while (statement.step() === DbResult.BE_SQLITE_ROW)
+            classIds.push(statement.getValue(0).getId());
+        });
+        classIdList = classIds.join(",");
+        IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+      }
+
+      // Execute an instance query to retrieve all aspects from all the derived classes
+      return this.runInstanceQuery(`SELECT $ FROM (
+        SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
+          UNION ALL
+        SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
+        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
     }
 
     /** Insert a new ElementAspect into the iModel.
