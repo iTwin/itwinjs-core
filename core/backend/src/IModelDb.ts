@@ -2646,6 +2646,8 @@ export class BriefcaseDb extends IModelDb {
     const fileName = this.pathName;
 
     if (this.isReadonly) {
+      // Need to clear caches to avoid BUSY when attempting to close with unclosed statements.
+      this.clearCaches();
       this.nativeDb.closeIModel();
       this.nativeDb.openIModel(fileName, OpenMode.ReadWrite);
     }
@@ -2654,6 +2656,7 @@ export class BriefcaseDb extends IModelDb {
       await func();
     } finally {
       if (this.isReadonly) {
+        this.clearCaches();
         this.nativeDb.closeIModel();
         this.nativeDb.openIModel(fileName, OpenMode.Readonly);
       }
