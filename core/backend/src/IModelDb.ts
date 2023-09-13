@@ -2643,24 +2643,29 @@ export class BriefcaseDb extends IModelDb {
    * @internal Exported strictly for tests.
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
-    const fileName = this.pathName;
-
-    if (this.isReadonly) {
-      // Need to clear caches to avoid BUSY when attempting to close with unclosed statements.
-      this.clearCaches();
-      this.nativeDb.closeIModel();
-      this.nativeDb.openIModel(fileName, OpenMode.ReadWrite);
-    }
+    if (this.isReadonly)
+      this.closeAndReopen(OpenMode.ReadWrite);
 
     try {
       await func();
     } finally {
-      if (this.isReadonly) {
-        this.clearCaches();
-        this.nativeDb.closeIModel();
-        this.nativeDb.openIModel(fileName, OpenMode.Readonly);
-      }
+      if (this.isReadonly)
+        this.closeAndReopen(OpenMode.Readonly);
     }
+  }
+
+  private closeAndReopen(openMode: OpenMode) {
+    const fileName = this.pathName;
+
+    // Unclosed statements will produce BUSY error when attempting to close.
+    this.clearCaches();
+
+    // The following resets the native db's pointer to this JavaScript object.
+    this.nativeDb.closeIModel();
+    this.nativeDb.openIModel(fileName, openMode);
+
+    // Restore the native db's pointer to this JavaScript object.
+    this.nativeDb.setIModelDb(this);
   }
 
   /** Pull and apply changesets from iModelHub */
