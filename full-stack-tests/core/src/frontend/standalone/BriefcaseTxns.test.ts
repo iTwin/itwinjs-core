@@ -26,7 +26,7 @@ describe("BriefcaseTxns", () => {
     const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
     async function openRW(): Promise<void> {
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
-    };
+    }
 
     beforeEach(async () => openRW());
 
