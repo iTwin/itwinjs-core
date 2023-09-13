@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
+import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 describe("ElementAspect", () => {
 
@@ -122,12 +121,9 @@ describe("ElementAspect", () => {
     assert.equal(0, iModel.elements.getAspects(rootSubject.id).length, "Don't expect any aspects on the root Subject");
 
     // The 'Element' property is introduced by ElementUniqueAspect and ElementMultiAspect, but is not available at the ElementAspect base class.
-    // This is unfortunate, but is expected behavior and the reason why the getAllAspects method exists.
-
-    const slm = new SequentialLogMatcher();
-    slm.append().error().category("ECDb").message("No property or enumeration found for expression 'Element.Id'.");
-    assert.throws(() => iModel.elements.getAspects(element.id, ElementAspect.classFullName), IModelError);
-    assert.isTrue(slm.finishAndDispose());
+    // Since we're now using instance queries to query ElementUniqueAspect and ElementMultiAspect directly in getAspects(), we can provide ElementAspect to the function as well.
+    const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementAspect.classFullName);
+    assert.equal(aspects.length, 6);
 
     const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
     assert.equal(allAspects.length, 6);
