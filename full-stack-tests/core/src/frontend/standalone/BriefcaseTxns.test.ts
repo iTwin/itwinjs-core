@@ -193,6 +193,30 @@ describe("BriefcaseTxns", () => {
         await rwConn.saveChanges();
         await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
       });
+
+      it.only("continues to receive events after iModel is closed and reopened", async () => {
+        const expectEvents = installListeners(roConn);
+        const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
+
+        const dictModelId = await rwConn.models.getDictionaryModel();
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+      });
     });
   }
 });
