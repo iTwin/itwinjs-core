@@ -2065,7 +2065,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return this.runInstanceQuery(`SELECT $ FROM (
           SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId
             UNION ALL
-          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
 
       // Check if class is abstract
       const fullClassName = aspectClassFullName.split(":");
@@ -2092,7 +2092,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
           UNION ALL
         SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
-        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
     }
 
     /** Insert a new ElementAspect into the iModel.
