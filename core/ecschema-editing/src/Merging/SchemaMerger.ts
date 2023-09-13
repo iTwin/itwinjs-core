@@ -16,6 +16,7 @@ import mergeKindOfQuantity from "./KindOfQuantityMerger";
 import mergePhenomenon from "./PhenomenonMerger";
 import mergeConstant from "./ConstantMerger";
 import mergeUnitSystem from "./UnitSystemMerger";
+import mergeUnit from "./UnitMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -80,6 +81,10 @@ export class SchemaMerger {
 
     const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Constant]);
     await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
+
+    // TODO: UNIT
+    const unitChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Unit]);
+    await mergeSchemaItems(mergeContext, unitChanges, mergeUnit);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.

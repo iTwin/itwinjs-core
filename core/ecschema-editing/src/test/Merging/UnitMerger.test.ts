@@ -22,6 +22,12 @@ describe("Unit merger tests", () => {
         version: "1.0.0",
         alias: "target",
     };
+    const referenceJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceSchema",
+        version: "1.2.0",
+        alias: "reference",
+    }
 
     beforeEach(() => {
         targetContext = new SchemaContext();
@@ -65,6 +71,56 @@ describe("Unit merger tests", () => {
 
             const merger = new SchemaMerger();
             const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+        })
+        it("should merge missing unit with referenced schema", async () => {
+            const referenceSchema = await Schema.fromJson({
+                ...referenceJson,
+                items: {
+                    testUnitSystem: {
+                        schemaItemType: "UnitSystem",
+                        name: "IMPERIAL",
+                        label: "Imperial",
+                    },
+                    testPhenomenon: {
+                        schemaItemType: "Phenomenon",
+                        name: "AREA",
+                        label: "Area",
+                        description: "Area description",
+                        definition: "Units.LENGTH(2)",
+                    },
+                },
+            }, sourceContext);
+
+            const sourceSchema = await Schema.fromJson({
+                ...sourceJson,
+                references: [
+                    {
+                        name: "ReferenceSchema",
+                        version: "1.2.0",
+                    },
+                ],
+                items: {
+                    TestUnit: {
+                        schemaItemType: "Unit",
+                        label: "Millimeter",
+                        description: "A unit defining the millimeter metric unit of length",
+                        phenomenon: "ReferenceSchema.testPhenomenon",
+                        unitSystem: "ReferenceSchema.testUnitSystem",
+                        definition: "[MILLI]*Units.MM",
+                        numerator: 5,
+                        denominator: 1,
+                        offset: 4,
+                    },
+                },
+            }, sourceContext);
+
+            const targetSchema = await Schema.fromJson({
+                ...targetJson,
+            }, targetContext);
+
+            const merger = new SchemaMerger();
+            const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+
         })
     })
 })

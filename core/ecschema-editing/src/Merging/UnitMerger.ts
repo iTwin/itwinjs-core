@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitSystem } from "@itwin/ecschema-metadata";
+import { Unit } from "@itwin/ecschema-metadata";
 import { SchemaItemChanges } from "../ecschema-editing";
+import { MutableUnit } from "../Editing/Mutable/MutableUnit";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
-import { MutableUnitSystem } from "../Editing/Mutable/MutableUnitSystem";
 
-export default async function mergeUnitSystem(target: UnitSystem, _source: UnitSystem, changes: SchemaItemChanges) {
-    const targetMutableUnitSystem = target as MutableUnitSystem;
-    await mergeSchemaItemProperties(targetMutableUnitSystem, changes.propertyValueChanges, (_item, _propertyName, _propertyValue) => {});
+export default async function mergeUnit(target: Unit, _source: Unit, changes: SchemaItemChanges) {
+    const targetMutableUnit = target as MutableUnit;
+    await mergeSchemaItemProperties(targetMutableUnit, changes.propertyValueChanges, (_item, _propertyName, _propertyValue) => {});
 }

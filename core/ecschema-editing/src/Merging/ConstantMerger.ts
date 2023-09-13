@@ -11,7 +11,6 @@ export default async function mergeConstant(target: Constant, source: Constant, 
     const mutableConstant = target as MutableConstant;
 
     // Get referenced phenomenon to create lazy loaded phenomenon for target
-    // At this point, a phenomenon should already be merged or created, if undefined throw error
     const [schemaName, itemName] = SchemaItem.parseFullName(source.phenomenon!.fullName);
     const reference = await source.schema.getReference(schemaName);
 
@@ -36,10 +35,10 @@ export default async function mergeConstant(target: Constant, source: Constant, 
                     throw Error(`Failed to merged, constant denominator conflict: ${propertyValue} -> ${item.denominator}`);
             }
             case "phenomenon": {
-                // It assumes that higher level phenomenon item is not undefined in target schema
-                if (item.phenomenon === undefined) {
+                // At this point, higher level phenomenon item should not be undefined 
+                if (item.phenomenon === undefined) { // TODO: Need another condition to check for phenomenon mismatch 
                     // In this case, propertyValue references the phenomenon in source schema, this is incompatible with target schema
-                    // A lazy loaded phenomenon that references the phenomenon in target schema is needed 
+                    // A lazy loaded phenomenon with the correct reference schema is needed, it would either be the target schema or a referenced schema 
                     const schemaItemKey = reference !== undefined
                         ? new SchemaItemKey(itemName, reference.schemaKey)
                         : new SchemaItemKey(itemName, target.schema.schemaKey);
