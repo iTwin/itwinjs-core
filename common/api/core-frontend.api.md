@@ -9481,8 +9481,14 @@ export interface ModalReturn {
 }
 
 // @beta
+export interface ModelDisplayTransform {
+    premultiply?: boolean;
+    transform: Transform;
+}
+
+// @beta
 export interface ModelDisplayTransformProvider {
-    getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+    getModelDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined;
 }
 
 // @internal (undocumented)
