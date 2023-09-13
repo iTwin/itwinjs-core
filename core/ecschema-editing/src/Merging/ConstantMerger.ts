@@ -36,7 +36,7 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             }
             case "phenomenon": {
                 // At this point, higher level phenomenon item should not be undefined 
-                if (item.phenomenon === undefined) { // TODO: Need another condition to check for phenomenon mismatch 
+                if (item.phenomenon === undefined) {  
                     // In this case, propertyValue references the phenomenon in source schema, this is incompatible with target schema
                     // A lazy loaded phenomenon with the correct reference schema is needed, it would either be the target schema or a referenced schema 
                     const schemaItemKey = reference !== undefined
@@ -46,8 +46,6 @@ export default async function mergeConstant(target: Constant, source: Constant, 
                     const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => (await target.schema.context.getSchemaItem<Phenomenon>(schemaItemKey))!);
                     return item.setPhenomenon(lazyTargetPhenomenon);
                 }
-
-                // Handle phenomenon conflict case
             }
         }
     })
