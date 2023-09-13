@@ -2611,13 +2611,11 @@ export class BriefcaseDb extends IModelDb {
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
-        console.log("watch file changed");
         nativeDb.restartDefaultTxn();
       });
 
       // Stop the watcher when we close this connection.
       briefcaseDb.onBeforeClose.addOnce(() => {
-        console.log("closing file watcher");
         watcher.close();
       });
     }

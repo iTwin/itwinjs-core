@@ -194,7 +194,7 @@ describe("BriefcaseTxns", () => {
         await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
       });
 
-      it.only("continues to receive events after iModel is closed and reopened", async () => {
+      it("continues to receive events after iModel is closed and reopened", async () => {
         const expectEvents = installListeners(roConn);
         const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
 
@@ -211,18 +211,14 @@ describe("BriefcaseTxns", () => {
         await rwConn.close();
 
         // Reopen roConn as temporarily writable, then reopen as read-only.
-        console.log("Reopening read-only connection...");
         await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
-        console.log("...reopened.");
 
         // Reopen rwConn
         await openRW();
 
         await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
         await rwConn.saveChanges();
-        console.log("awaiting events...");
         await expectCommit("onElementsChanged", "onChangesApplied");
-        console.log("...events received.");
 
         // Repeat.
         await rwConn.close();

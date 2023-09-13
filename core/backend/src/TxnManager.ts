@@ -310,14 +310,12 @@ export class TxnManager {
 
   /** @internal */
   protected _onReplayExternalTxns() {
-    console.log("onReplay");
     this.onReplayExternalTxns.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReplayExternalTxns");
   }
 
   /** @internal */
   protected _onReplayedExternalTxns() {
-    console.log("onReplayed");
     this.onReplayedExternalTxns.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
   }
