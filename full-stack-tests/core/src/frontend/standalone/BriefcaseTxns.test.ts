@@ -224,7 +224,11 @@ describe("BriefcaseTxns", () => {
         await expectCommit("onElementsChanged", "onChangesApplied");
         console.log("...events received.");
 
+        // Repeat.
+        await rwConn.close();
         await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+        await openRW();
+
         await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
         await rwConn.saveChanges();
         await expectCommit("onElementsChanged", "onChangesApplied");
