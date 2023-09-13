@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Add support for Electron 26",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
