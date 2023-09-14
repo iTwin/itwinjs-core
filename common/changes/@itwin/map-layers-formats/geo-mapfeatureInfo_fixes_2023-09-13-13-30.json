@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "ArcGIS Features and MapFeatureInfo tools bug fixes and improvements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}
