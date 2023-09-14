@@ -17,6 +17,7 @@ import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -56,6 +57,8 @@ export abstract class GeometryHandler {
   public abstract handleArc3d(g: Arc3d): any;
   /** Handle strongly typed  [[CurveCollection]]  */
   public handleCurveCollection(_g: CurveCollection): any { }
+  /** Handle strongly typed  [[CurveChainWithDistanceIndex]]  */
+  public handleCurveChainWithDistanceIndex(_g: CurveChainWithDistanceIndex): any { }
   /** Handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
   /** Handle strongly typed  [[InterpolationCurve3d]]  */
@@ -145,6 +148,10 @@ export class NullGeometryHandler extends GeometryHandler {
   }
   /** No-action implementation */
   public override handleCurveCollection(_g: CurveCollection): any {
+    return undefined;
+  }
+  /** No-action implementation */
+  public override handleCurveChainWithDistanceIndex(_g: CurveChainWithDistanceIndex): any {
     return undefined;
   }
   /** No-action implementation */

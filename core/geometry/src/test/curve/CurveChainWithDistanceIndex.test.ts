@@ -191,47 +191,156 @@ describe("CurveChainWithDistanceIndex", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("closestApproach", () => {
-    const ck = new Checker(true, true);
+  it("closestApproachChainSegment", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const geometryA = CurveChainWithDistanceIndex.createCapture(
-      Path.create(
-        LineString3d.create(
-          Point3d.create(-1, -1),
-          Point3d.create(0, 0),
-          Point3d.create(-4, 4),
-        )
-      ),
+      Path.create(LineString3d.create([-1, -1], [0, 0], [-4, 4])),
     );
+    const geometryB = LineSegment3d.createXYXY(2, 0, 5, 2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
-    // test global fractions
-    let fractionalPoint, expectedPoint: Point3d;
-    fractionalPoint = geometryA.fractionToPoint(0.2);
-    expectedPoint = Point3d.create(0, 0);
-    ck.testPoint3d(fractionalPoint, expectedPoint);
-    fractionalPoint = geometryA.fractionToPoint(0.4);
-    expectedPoint = Point3d.create(-1, 1);
-    ck.testPoint3d(fractionalPoint, expectedPoint);
-    fractionalPoint = geometryA.fractionToPoint(0.6);
-    expectedPoint = Point3d.create(-2, 2);
-    ck.testPoint3d(fractionalPoint, expectedPoint);
-    fractionalPoint = geometryA.fractionToPoint(0.8);
-    expectedPoint = Point3d.create(-3, 3);
-    ck.testPoint3d(fractionalPoint, expectedPoint);
-    // test closest approach global fractions
-    const geometryB = LineSegment3d.createXYXY(3, 0, 5, 2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
-    const closestApproach = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
-    ck.testDefined(closestApproach);
-    const detailA = closestApproach!.detailA;
-    const detailB = closestApproach!.detailB;
-    const closestApproachSegment = LineSegment3d.create(detailA.point, detailB.point);
-    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegment);
-    ck.testExactNumber(detailA.fraction, 0);
-    ck.testExactNumber(detailB.fraction, 0.2);
+    // test closest approach global fractions
+    const closestApproachAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    const closestApproachBA = CurveCurve.closestApproachProjectedXYPair(geometryB, geometryA);
+    // AB
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentAB = LineSegment3d.create(
+      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
+    ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.2, "AB detailA");
+    ck.testCoordinate(closestApproachAB!.detailB.fraction, 0, "AB detailB");
+    // BA
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentBA = LineSegment3d.create(
+      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
+    ck.testCoordinate(closestApproachBA!.detailA.fraction, 0, "BA detailA");
+    ck.testCoordinate(closestApproachBA!.detailB.fraction, 0.2, "BA detailB");
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproach");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainSegment");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("closestApproachChainString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = CurveChainWithDistanceIndex.createCapture(
+      Path.create(LineString3d.create([-2, -2], [0, 0], [-4, 4])),
+    );
+    const geometryB = LineString3d.create([2, -2], [2, 0], [8, 0], [8, -2], [6, -2]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // test closest approach global fractions
+    const closestApproachAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    const closestApproachBA = CurveCurve.closestApproachProjectedXYPair(geometryB, geometryA);
+    // AB
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentAB = LineSegment3d.create(
+      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
+    ck.testCoordinate(closestApproachAB!.detailA.fraction, 1 / 3, "AB detailA");
+    ck.testCoordinate(closestApproachAB!.detailB.fraction, 1 / 4, "AB detailB");
+    // BA
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentBA = LineSegment3d.create(
+      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
+    ck.testCoordinate(closestApproachBA!.detailA.fraction, 1 / 4, "BA detailA");
+    ck.testCoordinate(closestApproachBA!.detailB.fraction, 1 / 3, "BA detailB");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainString");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("closestApproachChainArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const lineSegment = LineSegment3d.createXYXY(0, 5, 5, 5);
+    const lineString1 = LineString3d.create([[5, 5], [5, 3], [6, 3], [6, 5]]);
+    const lineString2 = LineString3d.create([[6, 5], [11, 5], [11, 0]]);
+    const path = Path.create();
+    path.tryAddChild(lineSegment);
+    path.tryAddChild(lineString1);
+    path.tryAddChild(lineString2);
+    const geometryA = CurveChainWithDistanceIndex.createCapture(path);
+    const geometryB = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
+    )!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // test closest approach global fractions
+    const closestApproachAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    const closestApproachBA = CurveCurve.closestApproachProjectedXYPair(geometryB, geometryA);
+    // AB
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentAB = LineSegment3d.create(
+      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
+    ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.4, "AB detailA");
+    ck.testCoordinate(closestApproachAB!.detailB.fraction, 0.5, "AB detailB");
+    // BA
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentBA = LineSegment3d.create(
+      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
+    ck.testCoordinate(closestApproachBA!.detailA.fraction, 0.5, "BA detailA");
+    ck.testCoordinate(closestApproachBA!.detailB.fraction, 0.4, "BA detailB");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("closestApproachChainChain", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // first CurveChainWithDistanceIndex
+    const lineSegment1 = LineSegment3d.createXYXY(-1, 5, 5, 5);
+    const lineString1 = LineString3d.create([[5, 5], [5, 3], [6, 3], [6, 5]]);
+    const lineString2 = LineString3d.create([[6, 5], [10, 5], [10, 0]]);
+    const path1 = Path.create();
+    path1.tryAddChild(lineSegment1);
+    path1.tryAddChild(lineString1);
+    path1.tryAddChild(lineString2);
+    const geometryA = CurveChainWithDistanceIndex.createCapture(path1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // second CurveChainWithDistanceIndex
+    const lineSegment2 = LineSegment3d.createXYXY(-1, 0, 3, 0);
+    const lineString3 = LineString3d.create([[3, 0], [5, 0], [5, -3], [12, -3]]);
+    const lineSegment3 = LineSegment3d.createXYXY(12, -3, 14, -3);
+    const path2 = Path.create();
+    path2.tryAddChild(lineSegment2);
+    path2.tryAddChild(lineString3);
+    path2.tryAddChild(lineSegment3);
+    const geometryB = CurveChainWithDistanceIndex.createCapture(path2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // test closest approach global fractions
+    const closestApproachAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    const closestApproachBA = CurveCurve.closestApproachProjectedXYPair(geometryB, geometryA);
+    // AB
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentAB = LineSegment3d.create(
+      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
+    ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.4, "AB detailA");
+    ck.testCoordinate(closestApproachAB!.detailB.fraction, 1 / 3, "AB detailB");
+    // BA
+    ck.testDefined(closestApproachAB);
+    const closestApproachSegmentBA = LineSegment3d.create(
+      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+    );
+    GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
+    ck.testCoordinate(closestApproachBA!.detailA.fraction, 1 / 3, "BA detailA");
+    ck.testCoordinate(closestApproachBA!.detailB.fraction, 0.4, "BA detailB");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainChain");
     expect(ck.getNumErrors()).equals(0);
   });
 });
-
