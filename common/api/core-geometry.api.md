@@ -1527,6 +1527,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
     get fragments(): PathFragment[];
+    getChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
     static getClosestPointTestCounts(clear?: boolean): {
         numCalls: number;
         numTested: number;

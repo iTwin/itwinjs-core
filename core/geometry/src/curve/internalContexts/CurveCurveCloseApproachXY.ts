@@ -262,7 +262,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
-    // recompute the points just in case
     CurveLocationDetail.createCurveEvaluatedFraction(cpA, globalFractionA, pair.detailA);
     CurveLocationDetail.createCurveEvaluatedFraction(cpB, globalFractionB, pair.detailB);
     pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
