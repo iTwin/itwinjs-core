@@ -56,7 +56,7 @@ export class TileStatisticsTracker {
   private readonly _statElements: HTMLElement[] = [];
   private readonly _div: HTMLDivElement;
   private readonly _vp: Viewport;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: NodeJS.Timeout;
 
   public constructor(parent: HTMLElement, vp: Viewport) {
     this._vp = vp;

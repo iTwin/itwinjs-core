@@ -12,7 +12,7 @@ import { createCheckBox } from "../ui/CheckBox";
 export class RenderCommandBreakdown {
   private readonly _div: HTMLDivElement;
   private readonly _cellDiv: HTMLDivElement;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: NodeJS.Timeout;
   private readonly _cells = new Map<string, HTMLElement>();
   private readonly _total: HTMLElement;
 

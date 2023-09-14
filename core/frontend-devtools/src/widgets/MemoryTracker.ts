@@ -178,7 +178,7 @@ export class MemoryTracker {
   private readonly _stats = new RenderMemory.Statistics();
   private readonly _vp: Viewport;
   private readonly _div: HTMLDivElement;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: NodeJS.Timeout;
   private _memIndex = MemIndex.None;
   private readonly _totalElem: HTMLElement;
   private readonly _totalTreesElem: HTMLElement;

@@ -141,7 +141,7 @@ function format(count: number, label: string, bytesUsed: number): string {
 export class TileMemoryBreakdown {
   private readonly _tracer = new TileMemoryTracer();
   private readonly _div: HTMLDivElement;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: NodeJS.Timeout;
   private readonly _statsElements: HTMLElement[] = [];
   private readonly _totalsElements: HTMLElement[] = [];
 

@@ -17,7 +17,7 @@ import { createCheckBox } from "../ui/CheckBox";
 export class FpsTracker {
   private readonly _label: HTMLLabelElement;
   private _metrics?: PerformanceMetrics;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: NodeJS.Timeout;
   private readonly _vp: Viewport;
 
   public constructor(parent: HTMLElement, viewport: Viewport) {
