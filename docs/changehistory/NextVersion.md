@@ -28,7 +28,7 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 [UiEvent]($appui-abstract) is a duplicate of [BeUiEvent]($bentley). [UiEventDispatcher]($appui-abstract) is only consumed internally from [SyncUiEventDispatcher]($appui-react) in @itwin/appui-react, which should be used in its place. Similarly, [UiSyncEventArgs]($appui-abstract) and [UiSyncEvent] have been also moved to appui-react.
 
-[PointProps]($appui-abstract) was created primarily to avoid a dependency on @itwin/core-geometry, which contains an identical interface named [XAndY]($core-geometry). PointProps is now deprecated in favor of XAndY, or your own simple implementation.
+[PointProps]($appui-abstract) was created primarily to avoid a dependency on @itwin/core-geometry, which contains an identical interface named [XAndY]($core-geometry). PointProps is now deprecated in favor of XAndY, or your own simple implementation. Similarly, [UiAdmin.createXAndY]($appui-abstract) has been deprecated.
 
 ### Alpha API Removals
 
