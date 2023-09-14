@@ -5,7 +5,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
 /** @internal */
@@ -29,9 +29,38 @@ export abstract class ArcGisSymbologyRenderer {
     }
   }
 }
+/** @internal */
+export class ArcGisDashLineStyle {
+  // ESRI does not provide any values for their line style definition, those values have been
+  // determined by pixel-peeping tiles rendered by ArcGIS servers.
+  // Available line styles are documented here: https://developers.arcgis.com/web-map-specification/objects/esriSLS_symbol/
+  private static _dashLineLength = 8;
+  private static _dashGapLength = 8;
+  private static _dashShortLineLength = 4;
+  private static _dashShortGapLength = 4;
+  private static _dashLongLineLength = 15;
+  private static _dashLongGapLength = 12;
+  private static _dotLineLength = 2;
+  private static _dotGapLength = 3;
+  private static _shortDotLineLength = 1;
+  private static _shortDotGapLength = 2;
+  public static dashValues = {
+    esriSLSDash : [this._dashLineLength, this._dashGapLength],
+    esriSLSDashDot : [this._dashLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
+    esriSLSDashDotDot : [this._dashLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
+    esriSLSDot : [this._dashLineLength, this._dotGapLength],
+    esriSLSLongDash : [this._dashLongLineLength, this._dashLongGapLength],
+    esriSLSLongDashDot : [this._dashLongLineLength, this._dashGapLength, this._dotLineLength, this._dashGapLength],
+    esriSLSShortDash : [this._dashShortLineLength, this._dashShortGapLength],
+    esriSLSShortDashDot : [this._dashShortLineLength, this._dashShortGapLength, this._dotLineLength, this._dashShortGapLength],
+    esriSLSShortDashDotDot :  [this._dashShortLineLength, this._dashShortGapLength, this._dotLineLength, this._dashGapLength, this._dotLineLength, this._dashShortGapLength],
+    esriSLSShortDot : [this._shortDotLineLength, this._shortDotGapLength],
+  };
+
+}
 
 /** @internal */
-export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
+export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
   public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
@@ -79,6 +108,12 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     return fillColor;
   }
 
+  private applyLineDash(context: CanvasRenderingContext2D, slsStyle: EsriSLSStyle) {
+    if (slsStyle !== "esriSLSSolid" && slsStyle !== "esriSLSNull") {
+      context.setLineDash(ArcGisDashLineStyle.dashValues[slsStyle]);
+    }
+  }
+
   public applyStrokeStyle(context: CanvasRenderingContext2D) {
     if (!context)
       return;
@@ -87,7 +122,7 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     let sls: EsriSLS | undefined;
     if (this._symbol.type === "esriSFS") {
       const sfs = this._symbol as EsriSFS;
-      if (sfs.outline && sfs.outline.style === "esriSLSSolid") {
+      if (sfs.outline) {
         sls = sfs.outline;
       }
     } else if (this._symbol.type === "esriSLS") {
@@ -95,8 +130,13 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     }
 
     if (sls) {
-      if (sls.color)
+      if (sls.color) {
         context.strokeStyle = sls.color.toRgbaString();
+      }
+      if (sls.style) {
+        this.applyLineDash(context, sls.style);
+      }
+
       context.lineWidth = sls.width * this.lineWidthScaleFactor;
     } else {
       Logger.logTrace(loggerCategory, `Could not apply stroke style`);
