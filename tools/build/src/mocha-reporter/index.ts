@@ -112,6 +112,10 @@ class BentleyMochaReporter extends Spec {
           console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
         }
 
+        process.stdin.destroy();
+        process.stdout.destroy();
+        process.stderr.destroy();
+
         // Not sure why, but process.exit(1) wasn't working here...
         process.kill(process.pid);
       }, 5000).unref();
