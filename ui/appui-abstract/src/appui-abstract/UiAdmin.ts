@@ -96,6 +96,7 @@ export class UiAdmin {
   public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
 
   /** Create a PointProps object. */
+  // @deprecated in 4.2.x. Please use @core/geometry [[XAndY]] or a custom implementation.
   // eslint-disable-next-line deprecation/deprecation
   public createXAndY(x: number, y: number): PointProps { return { x, y }; }
 
