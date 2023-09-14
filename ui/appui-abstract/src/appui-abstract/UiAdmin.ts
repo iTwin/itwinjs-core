@@ -57,6 +57,7 @@ export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> { }
 
 /** Flags that control enabling/disabling certain UI features
  * @public
+ * @deprecated in 4.2.x. Please implement at the App level
  */
 export interface UiFlags {
   /** if true then Ctrl+F2 will show popup key-in palette */
