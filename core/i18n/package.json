@@ -48,7 +48,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
-    "@types/node": "18.16.1",
+    "@types/node": "20.6.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/mocha": "^8.2.2",

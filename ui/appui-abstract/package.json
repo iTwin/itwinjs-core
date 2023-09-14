@@ -50,7 +50,7 @@
     "@itwin/certa": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/node": "20.6.0",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
     "babel-loader": "~8.2.5",

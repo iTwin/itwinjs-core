@@ -40,7 +40,7 @@
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/node": "20.6.0",
     "@types/sinon": "^10.0.15",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
