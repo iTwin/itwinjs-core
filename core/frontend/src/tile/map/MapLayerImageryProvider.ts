@@ -298,6 +298,7 @@ export abstract class MapLayerImageryProvider {
   /**
    * Calculates the projected x cartesian coordinate in EPSG:3857 from the longitude in EPSG:4326 (WGS84)
    * @param longitude Longitude in EPSG:4326 (WGS84)
+   * @internal
    */
   public getEPSG3857X(longitude: number): number {
     return longitude * 20037508.34 / 180.0;
@@ -306,6 +307,7 @@ export abstract class MapLayerImageryProvider {
   /**
    * Calculates the projected y cartesian coordinate in EPSG:3857 from the latitude in EPSG:4326 (WGS84)
    * @param latitude Latitude in EPSG:4326 (WGS84)
+   * @internal
    */
   public getEPSG3857Y(latitude: number): number {
     const y = Math.log(Math.tan((90.0 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
@@ -315,6 +317,7 @@ export abstract class MapLayerImageryProvider {
   /**
    * Calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
    * @param x3857 Projected x cartesian coordinate in EPSG:3857
+   * @internal
    */
   public getEPSG4326Lon(x3857: number): number {
     return Angle.radiansToDegrees(x3857 / earthRadius);
@@ -323,6 +326,7 @@ export abstract class MapLayerImageryProvider {
   /**
    * Calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
    * @param y3857 Projected y cartesian coordinate in EPSG:3857
+   * @internal
    */
   public getEPSG4326Lat(y3857: number): number {
     const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI / 2);
@@ -336,6 +340,7 @@ export abstract class MapLayerImageryProvider {
    * @param row Row of the tile
    * @param column Column of the tile
    * @param zoomLevel Desired zoom level of the tile
+   * @internal
    */
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
@@ -360,6 +365,7 @@ export abstract class MapLayerImageryProvider {
    * @param row Row of the tile
    * @param column Column of the tile
    * @param zoomLevel Desired zoom level of the tile
+   * @internal
    */
   public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
     const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);

@@ -7794,6 +7794,7 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
+    // @internal
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -7802,8 +7803,11 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG3857ExtentString(row: number, column: number, zoomLevel: number): string;
+    // @internal
     getEPSG3857X(longitude: number): number;
+    // @internal
     getEPSG3857Y(latitude: number): number;
+    // @internal
     getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
         longitudeLeft: number;
         longitudeRight: number;
@@ -7812,7 +7816,9 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
+    // @internal
     getEPSG4326Lat(y3857: number): number;
+    // @internal
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void>;
@@ -8001,7 +8007,9 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
     iModel: IModelConnection;
+    // @internal
     get isOpaque(): boolean;
+    // @internal
     get layerIndex(): number;
     // (undocumented)
     protected _layerIndex: number;

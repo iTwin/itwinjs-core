@@ -9,8 +9,8 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
-  ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeature, MapLayerFeatureInfo,
-  MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
+  ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
