@@ -67,6 +67,7 @@ export interface UiFlags {
  * @public
  */
 export class UiAdmin {
+  // @deprecated in 4.2.x. Please implement at the App level
   private _featureFlags: UiFlags = {};
   private static _messagePresenter?: MessagePresenter;
 
@@ -80,10 +81,12 @@ export class UiAdmin {
     UiAdmin._messagePresenter = mp;
   }
 
+  // @deprecated in 4.2.x. Please implement at the App level
   public get featureFlags(): UiFlags {
     return { ...this._featureFlags }; // return copy so no direct access to modify value
   }
 
+  // @deprecated in 4.2.x. Please implement at the App level
   public updateFeatureFlags(uiFlags: UiFlags) {
     this._featureFlags = { ...this._featureFlags, ...uiFlags };
   }
@@ -94,7 +97,10 @@ export class UiAdmin {
   /** Get the cursor X and Y position. */
   public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
 
-  /** Create a PointProps object. */
+  /**
+   * Create a PointProps object.
+   * @deprecated in 4.2.x. Please use XAndY
+   * */
   public createXAndY(x: number, y: number): PointProps { return { x, y }; }
 
   /** Determines if focus is set to Home */
