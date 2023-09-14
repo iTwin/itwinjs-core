@@ -16,7 +16,7 @@ import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
-import { PointProps } from "./utils/PointProps"; // Whole class may be on the move... will have to decide on intermediate step
+import { PointProps } from "./utils/PointProps";
 import { loggerCategory } from "./utils/misc";
 import { MessagePresenter } from "./notification/MessagePresenter";
 import { UiError } from "./utils/UiError";
@@ -95,8 +95,9 @@ export class UiAdmin {
   // eslint-disable-next-line deprecation/deprecation
   public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
 
-  /** Create a PointProps object. */
-  // @deprecated in 4.2.x. Please use @core/geometry [[XAndY]] or a custom implementation.
+  /** Create a PointProps object.
+  * @deprecated in 4.2.x. Please use @core/geometry [[XAndY]] or a custom implementation.
+  */
   // eslint-disable-next-line deprecation/deprecation
   public createXAndY(x: number, y: number): PointProps { return { x, y }; }
 

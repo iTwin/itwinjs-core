@@ -9,7 +9,8 @@
 import { BeUiEvent } from "@itwin/core-bentley";
 
 /** UiSync Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated in 4.x. Please use custom implementation if needed.
+ * @public
+ * @deprecated in 4.2.x Please use [[UiSyncEventArgs]] in @itwin/appui-react
  */
 export interface UiSyncEventArgs {
   eventIds: Set<string>;
@@ -23,7 +24,8 @@ export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
- * @public @deprecated in 4.2. Please use [[SyncUiEventDispatcher]] from @itwin/appui-react.
+ * @public
+ * @deprecated in 4.2.x Use [[SyncUiEventDispatcher]] from @itwin/appui-react.
  */
 export class UiEventDispatcher {
   private _syncEventTimerId: number | undefined;
