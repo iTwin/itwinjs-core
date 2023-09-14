@@ -60,8 +60,10 @@ export class ChromeTestRunner {
 
     const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
 
+    webserverProcess.stdin?.end();
+    webserverProcess.stderr?.removeAllListeners();
+    webserverProcess.stdout?.removeAllListeners();
     webserverProcess.stderr?.destroy();
-    webserverProcess.stdin?.destroy();
     webserverProcess.stdout?.destroy();
     webserverProcess.kill();
     webserverProcess.unref();
