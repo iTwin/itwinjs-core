@@ -11,6 +11,7 @@ import { SchemaMergeContext } from "./SchemaMerger";
  * Merges the schema references of two schemas.
  * @param mergeContext  current merge context
  * @param changes       schema changes.
+ * @internal
  */
 export default async function mergeSchemaReferences(mergeContext: SchemaMergeContext, changes: SchemaChanges) {
   const targetSchema = mergeContext.targetSchema;

@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, Enumeration, PropertyCategory, Schema, SchemaItem, StructClass } from "@itwin/ecschema-metadata";
 
+/**
+ * @internal
+ */
 export namespace SchemaItemFactory {
 
   export async function create(targetSchema: Schema, template: SchemaItem): Promise<SchemaItem> {

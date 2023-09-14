@@ -6,6 +6,9 @@ import { DelayedPromiseWithProps, ECClass, LazyLoadedECClass, SchemaItemKey } fr
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { BaseClassDelta, ChangeType, ClassChanges, PropertyChanges } from "../Validation/SchemaChanges";
 
+/**
+ * @internal
+ */
 export default async function mergeClasses(target: ECClass, source: ECClass, change: ClassChanges) {
   // This applies to all type of classes regardless if they are Entities, Structs, Mixins,...
   // all can have properties that required to get merged.

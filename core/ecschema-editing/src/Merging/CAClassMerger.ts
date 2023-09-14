@@ -8,6 +8,9 @@ import { ClassChanges } from "../Validation/SchemaChanges";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 import mergeClasses from "./ClassMerger";
 
+/**
+ * @internal
+ */
 export default async function mergeCAClasses(target: CustomAttributeClass, source: CustomAttributeClass, changes: ClassChanges) {
   const mutableCAClass = target as MutableCAClass;
   await mergeSchemaItemProperties(mutableCAClass, changes.propertyValueChanges, (item, propertyName, propertyValue) => {

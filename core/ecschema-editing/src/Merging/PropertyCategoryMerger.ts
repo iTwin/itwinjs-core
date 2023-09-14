@@ -7,6 +7,9 @@ import { MutablePropertyCategory } from "../Editing/Mutable/MutablePropertyCateg
 import { SchemaItemChanges } from "../Validation/SchemaChanges";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 
+/**
+ * @internal
+ */
 export default async function mergePropertyCategory(target: PropertyCategory, _source: PropertyCategory, changes: SchemaItemChanges) {
   const mutablePropertyCategory = target as MutablePropertyCategory;
   await mergeSchemaItemProperties(mutablePropertyCategory, changes.propertyValueChanges, (item, propertyName, propertyValue) => {

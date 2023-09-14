@@ -7,6 +7,9 @@ import { ChangeType, EnumerationChanges } from "../Validation/SchemaChanges";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
+/**
+ * @internal
+ */
 export default async function mergeEnumeration(target: Enumeration, source: Enumeration, changes: EnumerationChanges) {
   const mutableEnumeration = target as MutableEnumeration;
   await mergeSchemaItemProperties(mutableEnumeration, changes.propertyValueChanges, (item, propertyName, propertyValue) => {

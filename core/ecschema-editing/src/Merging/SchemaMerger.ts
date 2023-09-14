@@ -15,7 +15,7 @@ import mergeCAClasses from "./CAClassMerger";
 
 /**
  * Defines the context of a Schema merging run.
- * @internal
+ * @beta
  */
 export interface SchemaMergeContext {
   readonly targetSchema: Schema;
@@ -23,8 +23,9 @@ export interface SchemaMergeContext {
 }
 
 /**
- * TBD
- * @internal
+ * Class to merge two schemas together.
+ * See @see SchemaMerger.merge for details.
+ * @beta
  */
 export class SchemaMerger {
   /**
