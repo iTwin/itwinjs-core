@@ -87,7 +87,7 @@ server.on("error", async (e: any) => {
 
 process.on("exit", () => {
   server.close();
-})
+});
 
 // Run the server...
 server.listen(port);
