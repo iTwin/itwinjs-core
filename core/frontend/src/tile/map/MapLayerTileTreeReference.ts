@@ -14,7 +14,10 @@ import { IModelConnection } from "../../IModelConnection";
 import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
 
 /**
- * A reference to a [[TileTree]] to be used for map layer tiles.
+ * A [[TileTreeReference]] to be used specifically for [[MapTileTree]]s.
+ * The reference refers to its MapTileTree by way of the tree's [[TileTreeOwner]].
+ * Multiple MapLayerTileTreeReferences can refer to the same TileTree if the map layer settings are equivalent, meaning
+ * they have identical format IDs, URLs, credentials, etc.
  * @beta
  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
