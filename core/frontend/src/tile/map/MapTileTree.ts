@@ -25,7 +25,7 @@ import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapTile,
   MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -62,11 +62,20 @@ export enum MapTileTreeScaleRangeVisibility {
 }
 
 /**
-* Provided Map layer information from its underlying tile tree.
+* Provides map layer information for a given tile tree.
 * @internal
 */
 export interface MapLayerInfoFromTileTree {
+  /** Indicate if the map layer represents the base layer */
+  isBaseLayer: boolean;
+
+  /** Map layer index; undefined if base map */
+  index?: MapLayerIndex;
+
+  /** Settings for the map layer (or the base layer)*/
   settings: MapLayerSettings;
+
+  /** Provider for the map layer (or the base layer) */
   provider?: MapLayerImageryProvider;
 }
 
@@ -1074,7 +1083,11 @@ export class MapTileTreeReference extends TileTreeReference {
   public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
     return imageryTree.map((tree) => {
-      return {settings: tree.layerSettings, provider: tree.imageryProvider};
+      const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
+      return {
+        isBaseLayer,
+        index: isBaseLayer ? undefined : {isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex -1 : tree.layerIndex},
+        settings: tree.layerSettings, provider: tree.imageryProvider};
     });
   }
 
@@ -1164,7 +1177,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return div;
   }
 
-  public override async getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
+  public override async getMapFeatureInfo(hit: HitDetail, options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined> {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
@@ -1175,7 +1188,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
       const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
         try {
-          await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree, hit);
+          await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree, hit, options);
         } catch {
         }
       };
