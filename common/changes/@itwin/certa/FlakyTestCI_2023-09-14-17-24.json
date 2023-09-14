@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Add change file",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
