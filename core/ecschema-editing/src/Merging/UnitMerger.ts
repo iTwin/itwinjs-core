@@ -7,9 +7,23 @@ import { SchemaItemChanges } from "../ecschema-editing";
 import { MutableUnit } from "../Editing/Mutable/MutableUnit";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 
+/**
+ * 
+ * @param target The constant the differences get merged into
+ * @param source The constant to compare 
+ * @param changes Gets the @see SchemaItemChanges between the two Units. 
+ * For example, if source Unit has an phenomenon or unitSystem attribute/property that is undefined in  
+ * target one, it would be listed in propertyValueChanges.
+ */
 export default async function mergeUnit(target: Unit, source: Unit, changes: SchemaItemChanges) {
     const targetMutableUnit = target as MutableUnit;
 
+    /**
+     * Phenomenon and UnitSystem properties/attributes in Unit are lazy loaded types that reference higher level schema items. 
+     * The references can be in the same schema or another schema declared in references (a schema property).
+     * The references are needed to create lazy loaded types if the attributes are undefined in target schema.
+     * Edge case, phenomenon and unitSystem can have different references (TODO: Consult to make sure if this is allowed). 
+     */
     let phenomenonReference: Schema | undefined;
     let unitSystemReference: Schema | undefined;
 
@@ -47,6 +61,7 @@ export default async function mergeUnit(target: Unit, source: Unit, changes: Sch
                     item.setPhenomenon(lazyPhenomenon);
                     return;
                 }
+                
             }
             case "unitSystem": {
                 if (item.unitSystem === undefined) {
@@ -65,7 +80,6 @@ export default async function mergeUnit(target: Unit, source: Unit, changes: Sch
                     item.setUnitSystem(lazyUnitSystem);
                     return;
                 }
-
             }
         }
     });

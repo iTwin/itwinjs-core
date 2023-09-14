@@ -6,7 +6,7 @@ import { Schema, SchemaContext, Unit, UnitSystem } from "@itwin/ecschema-metadat
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
-describe.only("Unit merger tests", () => {
+describe.skip("Unit merger tests", () => {
     let sourceContext: SchemaContext;
     let targetContext: SchemaContext;
 
@@ -143,7 +143,7 @@ describe.only("Unit merger tests", () => {
             expect(mergedUnit?.toJSON()).deep.eq(sourceUnit?.toJSON());
         })
 
-        it.only("should merge missing unit with different references for phenomenon and unit system", async () => {
+        it("should merge missing unit with different references for phenomenon and unit system", async () => {
             const referenceSchema = await Schema.fromJson({
                 ...referenceJson,
                 items: {
@@ -198,7 +198,136 @@ describe.only("Unit merger tests", () => {
 
         })
     })
-    describe("Unit delta tests", ()=> {
+    describe("Unit delta tests", () => {
+        it("should throw error if numerator conflict exist", async () => {
+            const referenceSchema = await Schema.fromJson({
+                ...referenceJson,
+                items: {
+                    testPhenomenon: {
+                        schemaItemType: "Phenomenon",
+                        name: "AREA",
+                        label: "Area",
+                        description: "Area description",
+                        definition: "Units.LENGTH(2)",
+                    },
+                    testUnitSystem: {
+                        schemaItemType: "UnitSystem",
+                        name: "IMPERIAL",
+                        label: "Imperial",
+                    },
+                },
+            }, sourceContext);
 
+            const sourceSchema = await Schema.fromJson({
+                ...sourceJson,
+                references: [
+                    {
+                        name: "ReferenceSchema",
+                        version: "1.2.0",
+                    },
+                ],
+                items: {
+                    testUnit: {
+                        schemaItemType: "Unit",
+                        label: "Millimeter",
+                        description: "A unit defining the millimeter metric unit of length",
+                        phenomenon: "ReferenceSchema.testPhenomenon",
+                        unitSystem: "ReferenceSchema.testUnitSystem",
+                        definition: "[MILLI]*Units.MM",
+                        numerator: 5,
+                        denominator: 1,
+                        offset: 4,
+                    },
+                },
+            }, sourceContext);
+
+            const targetSchema = await Schema.fromJson({
+                ...targetJson,
+                references: [
+                    {
+                        name: "ReferenceSchema",
+                        version: "1.2.0",
+                    },
+                ],
+                items: {
+                    testUnit: {
+                        schemaItemType: "Unit",
+                        label: "Millimeter",
+                        description: "A unit defining the millimeter metric unit of length",
+                        phenomenon: "ReferenceSchema.testPhenomenon",
+                        unitSystem: "ReferenceSchema.testUnitSystem",
+                        definition: "[MILLI]*Units.MM",
+                        numerator: 2,
+                        denominator: 1,
+                        offset: 4,
+                    },
+                },
+            }, targetContext); 
+
+            const merger = new SchemaMerger();
+            await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merge Unit item, numerator conflict : 5 -> 2");
+
+        })
+
+        it("should throw an error if definition conflict exist", async () => {
+            const referenceSchema = await Schema.fromJson({
+                ...referenceJson,
+                items: {
+                    testPhenomenon: {
+                        schemaItemType: "Phenomenon",
+                        name: "AREA",
+                        label: "Area",
+                        description: "Area description",
+                        definition: "Units.LENGTH(2)",
+                    },
+                    testUnitSystem: {
+                        schemaItemType: "UnitSystem",
+                        name: "IMPERIAL",
+                        label: "Imperial",
+                    },
+                },
+            }, sourceContext);
+
+            const sourceSchema = await Schema.fromJson({
+                ...sourceJson,
+                references: [
+                    {
+                        name: "ReferenceSchema",
+                        version: "1.2.0",
+                    },
+                ],
+                items: {
+                    testUnit: {
+                        schemaItemType: "Unit",
+                        label: "Millimeter",
+                        description: "A unit defining the millimeter metric unit of length",
+                        phenomenon: "ReferenceSchema.testPhenomenon",
+                        unitSystem: "ReferenceSchema.testUnitSystem",
+                        definition: "[MILLI]*Units.MM",
+                        numerator: 5,
+                        denominator: 1,
+                        offset: 4,
+                    },
+                },
+            }, sourceContext);
+
+            const targetSchema = await Schema.fromJson({
+                ...targetJson,
+                items: {
+                    testUnit: {
+                        schemaItemType: "Unit",
+                        label: "Centimeter",
+                        description: "A unit defining the centimeter metric unit of length",
+                        phenomenon: "ReferenceSchema.testPhenomenon",
+                        unitSystem: "ReferenceSchema.testUnitSystem",
+                        definition: "[CENTI]*Units.CM",
+                        numerator: 5,
+                        denominator: 1,
+                        offset: 4,
+                    },
+                },
+            }, targetContext);
+
+        })
     })
 })

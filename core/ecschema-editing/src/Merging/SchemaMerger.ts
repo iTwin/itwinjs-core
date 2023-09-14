@@ -82,7 +82,6 @@ export class SchemaMerger {
     const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Constant]);
     await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
 
-    // TODO: UNIT
     const unitChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Unit]);
     await mergeSchemaItems(mergeContext, unitChanges, mergeUnit);
 
