@@ -8,22 +8,23 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { BooleanClipNodeIntersection } from "./BooleanClipNode";
 import { ClipPlane } from "./ClipPlane";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveProps, ClipShape } from "./ClipPrimitive";
 import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { BooleanClipNodeIntersection } from "./BooleanClipNode";
-import { Arc3d } from "../curve/Arc3d";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /**
  * Wire format describing a [[ClipVector]].
@@ -189,7 +190,7 @@ export class ClipVector implements Clipper {
   }
   /** Execute polygon clip as intersection of the child primitives. */
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache) {

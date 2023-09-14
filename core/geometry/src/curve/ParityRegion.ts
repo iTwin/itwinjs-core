@@ -8,7 +8,7 @@
  */
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { CurveCollection } from "./CurveCollection";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
@@ -98,7 +98,7 @@ export class ParityRegion extends CurveCollection {
     const clone = new ParityRegion();
     let child;
     for (child of this.children) {
-      const childStrokes = child.cloneStroked(options) as Loop;
+      const childStrokes = child.cloneStroked(options);
       if (childStrokes)
         clone.children.push(childStrokes);
     }

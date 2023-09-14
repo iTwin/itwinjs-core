@@ -9,7 +9,7 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
@@ -1470,11 +1470,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /** Add a polygon to the evolving facets.
-   *
-   * * Add points to the polyface
-   * * indices are added (in reverse order if indicated by the builder state)
-   * @param normals array of points.  This may contain extra points not to be used in the polygon
-   * @param numPointsToUse number of points to use.
+   * * add points to the polyface
+   * * compute each point index as the point is added
+   * * all data arrays are parallel to the point array
+   * * point indices are added in reverse order if indicated by the builder state
+   * @param points array of vertices in order around the facet
+   * @param normals optional array of normals, one per vertex
+   * @param params optional array of uv-parameters, one per vertex
+   * @param colors optional array of colors, one per vertex
+   * @param edgeVisible optional array of flags, one per vertex, true iff edge starting at corresponding vertex is visible
    */
   public addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined,
     params: GrowableXYArray | undefined, colors: number[] | undefined, edgeVisible?: boolean[]) {

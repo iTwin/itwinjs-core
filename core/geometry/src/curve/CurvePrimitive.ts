@@ -61,6 +61,11 @@ export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bspline
  */
 export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
 /**
+ * Union type for a linear [[CurvePrimitive]].
+ * @public
+ */
+export type LinearCurvePrimitive = LineSegment3d | LineString3d;
+/**
  * Function signature for callback which announces a pair of numbers, such as a fractional interval, along with a
  * containing CurvePrimitive.
  * @public

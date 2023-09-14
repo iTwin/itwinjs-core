@@ -81,7 +81,7 @@ Debugging display-test-app can be accomplished using the following procedures to
 In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
 
 1. Make sure the backend is built `npm run build:backend`
-1. Run `npm run start:webserver`
+1. Run `npm run start:webserver` (`npm run start:mobile` for Android and iOS)
     * Launches the vite dev server, providing hot-module reloading of the frontend
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
@@ -90,7 +90,7 @@ A more advanced debug experience will give you more quick turn around time for b
 1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
     * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
     * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
-1. Run `npm run start:webserver` in a separate terminal
+1. Run `npm run start:webserver` in a separate terminal (`nmp run start:mobile` for Android and iOS)
     * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
@@ -210,7 +210,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
-  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
+  * If defined on mobile, the URL used to open the frontend. (This is used in conjunction with `npm run start:mobile` and is the URL to the debug web server running on the developer's computer.)
 * IMJS_EXIT_AFTER_MODEL_OPENED
   * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 * IMJS_NO_ELECTRON_AUTH
@@ -284,7 +284,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `ratio=number` Specify y spacing as current x * ratio.
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
-* `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
+* `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees; `s=0.5` specifies a uniform scale of 0.5. `b=1` indicates the transform should be pre-multiplied with the models' base transforms. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
 * `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.

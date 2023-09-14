@@ -12,6 +12,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -324,8 +325,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
   }
   /**
-   *
-   * @param xyz input polygon.  This is not changed.
+   * Implement appendPolygonClip, as defined in interface PolygonClipper.
+   * @param xyz convex polygon. This is not changed.
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
@@ -333,7 +334,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * @param arrayCache cache for reusable GrowableXYZArray.
    */
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,

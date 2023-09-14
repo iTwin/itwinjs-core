@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
@@ -17,18 +17,22 @@ import path from "path";
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 
 // array of public directories static assets from dependencies to copy
-const assets = Object.keys(packageJson.dependencies)
-  .map((pkgName) => {
+const assets = ["./public/*"]; // assets for test-app
+Object.keys(packageJson.dependencies).forEach((pkgName) => {
+  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
     try {
       // gets dependency path and replaces everything after /lib/ with /lib/public/* to get static assets
-      let pkg = require.resolve(pkgName).replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
-      // use relative path with forward slashes
-      return path.relative(process.cwd(), pkg).replace(/\\/g, '/');
-    } catch { return undefined }
-  })
-  // ignores all invalid paths, including dependencies that don't contain a lib/ directory
-  .filter((path) => path?.endsWith('lib/public/*'));
-assets.push("./public/*");
+      let pkg = require
+        .resolve(pkgName)
+        .replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+
+      const assetsPath = path.relative(process.cwd(), pkg).replace(/\\/g, "/"); // use relative path with forward slashes
+      if (assetsPath.endsWith("lib/public/*")) { // filter out pkgs that actually dont have assets
+        assets.push(assetsPath);
+      }
+    } catch {}
+  }
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -47,9 +51,10 @@ export default defineConfig(() => {
     },
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
+    logLevel: process.env.VITE_CI ? "error" : "warn",
     build: {
       outDir: "./lib",
-      sourcemap: "inline", // append to the resulting output file
+      sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
@@ -60,21 +65,23 @@ export default defineConfig(() => {
           /node_modules/, // prevent errors for modules
           /core\/frontend/, // prevent errors with require in IModelApp
         ],
-        transformMixedEsModules: true // transforms require statements
+        transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {
-        input: "./index.html",
+        input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
         plugins: [
-          ...(process.env.OUTPUT_STATS !== undefined ? [
-            rollupVisualizer({
-              open: true,
-              filename: "stats.html",
-              template: "treemap",
-              sourcemap: true,
-            }),
-            webpackStats(), // needs to be the last plugin
-          ] : []),
+          ...(process.env.OUTPUT_STATS !== undefined
+            ? [
+                rollupVisualizer({
+                  open: true,
+                  filename: "stats.html",
+                  template: "treemap",
+                  sourcemap: true,
+                }),
+                webpackStats(), // needs to be the last plugin
+              ]
+            : []),
         ],
       },
     },
@@ -93,9 +100,9 @@ export default defineConfig(() => {
             },
           },
         ],
-        verbose: true,
         overwrite: true,
         copyOnce: true, // only during initial build or on change
+        hook: "buildStart"
       }),
       // open http://localhost:3000/__inspect/ to debug vite plugins
       ...(mode === "development" ? [viteInspect({ build: true })] : []),
@@ -104,7 +111,7 @@ export default defineConfig(() => {
       }),
     ],
     define: {
-      "process.env" : process.env // injects process.env into the frontend
+      "process.env": process.env, // injects process.env into the frontend
     },
     optimizeDeps: {
       esbuildOptions: {
@@ -115,6 +122,7 @@ export default defineConfig(() => {
           }),
         ],
       },
+      force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
         "@itwin/core-common", // for opening iModel error

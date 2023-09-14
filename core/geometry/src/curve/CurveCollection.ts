@@ -13,7 +13,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -28,6 +28,8 @@ import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceCont
 import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
+
+/** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
 /**
  * Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be
@@ -236,7 +238,7 @@ export abstract class CurveCollection extends GeometryQuery {
 /**
  * Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only CurvePrimitives. No other paths, loops, or regions allowed.
- * * The specific derived classes are `Path` and `Loop`
+ * * The specific derived classes are `Path` and `Loop`.
  * * `CurveChain` is an intermediate class. It is not instantiable on its own.
  * * The related class `CurveChainWithDistanceIndex` is a `CurvePrimitive` whose API presents well-defined mappings
  * from fraction to xyz over the entire chain, but in fact does all the calculations over multiple primitives.
@@ -253,8 +255,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return the array of `CurvePrimitive` */
   public override get children(): CurvePrimitive[] {
-    if (this._curves === undefined)
-      this._curves = [];
     return this._curves;
   }
   /**
@@ -330,7 +330,7 @@ export abstract class CurveChain extends CurveCollection {
   /**
    * Return the index where target is found in the array of children.
    * @param alsoSearchProxies whether to also check proxy curves of the children
-  */
+   */
   public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++) {
       if (this._curves[i] === target)
@@ -439,19 +439,4 @@ export class BagOfCurves extends CurveCollection {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBagOfCurves(this);
   }
-}
-
-/**
- * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
- * @public
- */
-export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
-  public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous arcs */
-  public consolidateCompatibleArcs: boolean = true;
-  /** Tolerance for collapsing identical points */
-  public duplicatePointTolerance = Geometry.smallMetricDistance;
-  /** Tolerance for removing interior colinear points. */
-  public colinearPointTolerance = Geometry.smallMetricDistance;
 }

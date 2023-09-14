@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { BagOfCurves, CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { Loop } from "./Loop";

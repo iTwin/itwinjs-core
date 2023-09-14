@@ -18,7 +18,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
 
-import type { VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode
 
@@ -47,7 +47,6 @@ export namespace CloudSqlite {
     refreshPromise?: Promise<void>;
     lockExpireSeconds: number;
     writeLockHeldBy?: string;
-    writeLockExpires?: string;
   }
 
   /**
@@ -63,7 +62,7 @@ export namespace CloudSqlite {
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
-      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, storageType: args.storageType, accessLevel: args.accessLevel };
+      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
       const doRefresh = async () => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
@@ -139,6 +138,10 @@ export namespace CloudSqlite {
     readonly transactions: boolean;
     /** the state of this database. Indicates whether the database is new or deleted since last upload */
     readonly state: "" | "copied" | "deleted";
+    /** current number of clients that have this database open. */
+    readonly nClient: number;
+    /** current number of ongoing prefetches on this database. */
+    readonly nPrefetch: number;
   }
 
   /** Filter options passed to CloudContainer.queryHttpLog
@@ -173,6 +176,37 @@ export namespace CloudSqlite {
     readonly uri: string;
     /** HTTP response code (e.g. 200) */
     readonly httpcode: number;
+  }
+
+  /** Filter options passed to 'CloudContainer.queryBcvStats'
+   *  @internal
+  */
+  interface BcvStatsFilterOptions {
+    /** if true, adds activeClients, totalClients, ongoingPrefetches, and attachedContainers to the result. */
+    addClientInformation?: boolean;
+  }
+
+  /** Returned from 'CloudContainer.queryBcvStats' describing the rows in the bcv_stat table.
+   *  Also gathers additional statistics using the other virtual tables bcv_container, bcv_database such as totalClients, ongoingPrefetches, activeClients and attachedContainers.
+   *  @internal
+   */
+  export interface BcvStats {
+    /** The total number of cache slots that are currently in use or 'locked' by ongoing client read transactions. In daemonless mode, this value is always 0.
+     *  A locked cache slot implies that it is not eligible for eviction in the event of a full cachefile.
+    */
+    readonly lockedCacheslots: number;
+    /** The current number of slots with data in them in the cache. */
+    readonly populatedCacheslots: number;
+    /** The configured size of the cache, in number of slots. */
+    readonly totalCacheslots: number;
+    /** The total number of clients opened on this cache */
+    readonly totalClients?: number;
+    /** The total number of ongoing prefetches on this cache */
+    readonly ongoingPrefetches?: number;
+    /** The total number of active clients on this cache. An active client is one which has an open read txn. */
+    readonly activeClients?: number;
+    /** The total number of attached containers on this cache. */
+    readonly attachedContainers?: number;
   }
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -238,7 +272,7 @@ export namespace CloudSqlite {
   }
 
   /** @internal */
-  export interface LockAndOpenArgs {
+  export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     user: string;
     /** the name of the database within the container */
@@ -247,6 +281,8 @@ export namespace CloudSqlite {
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
+    /** if present, open mode for Db. Default is ReadWrite */
+    openMode?: OpenMode;
   }
 
   /** Logging categories for `CloudCache.setLogMask` */
@@ -340,6 +376,10 @@ export namespace CloudSqlite {
     get alias(): string;
     /** The logId. */
     get logId(): string;
+    /** The time that the write lock expires. Of the form 'YYYY-MM-DDTHH:MM:SS.000Z' in UTC.
+     *  Returns empty string if write lock is not held.
+     */
+    get writeLockExpires(): string;
     /** true if this CloudContainer is currently connected to a CloudCache via the `connect` method. */
     get isConnected(): boolean;
     /** true if this CloudContainer was created with the `writeable` flag (and its `accessToken` supplies write access). */
@@ -483,6 +523,12 @@ export namespace CloudSqlite {
     queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
 
     /**
+     * query the bcv_stat table.
+     * @internal
+     */
+    queryBcvStats(filterOptions?: BcvStatsFilterOptions): CloudSqlite.BcvStats;
+
+    /**
      * Get the SHA1 hash of the content of a database.
      * @param dbName the name of the database of interest
      * @note the hash will be empty if the database does not exist
@@ -575,7 +621,7 @@ export namespace CloudSqlite {
   /**
     * Attempt to acquire the write lock for a container, with retries.
     * If write lock is held by another user, call busyHandler if supplied. If no busyHandler, or handler returns "stop", throw. Otherwise try again.
-    * @note if write lock is already held, this function does nothing.
+    * @note if write lock is already held by the same user, this function will refresh the write lock's expiry time.
     * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
     * @param container the CloudContainer for which the lock is to be acquired
     * @param busyHandler if present, function called when the write lock is currently held by another user.
@@ -586,9 +632,9 @@ export namespace CloudSqlite {
     while (true) {
       try {
         if (container.hasWriteLock) {
-          if (container.writeLockHeldBy === args.user)
-            return; // current user already has the lock
-
+          if (container.writeLockHeldBy === args.user) {
+            return container.acquireWriteLock(args.user); // refresh the write lock's expiry time.
+          }
           const err = new Error() as any; // lock held by another user within this process
           err.errorNumber = 5;
           err.lockedBy = container.writeLockHeldBy;
@@ -607,7 +653,7 @@ export namespace CloudSqlite {
 
   /**
  * Perform an asynchronous write operation on a CloudContainer with the write lock held.
- * 1. if write lock is already held by the current user, call operation and return.
+ * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
  * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
  * 3. perform the operation
  * 3.a if the operation throws, abandon all changes and re-throw
@@ -621,18 +667,19 @@ export namespace CloudSqlite {
  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
     await acquireWriteLock(args);
+    const containerInternal = args.container as CloudContainerInternal;
     try {
-      const containerInternal = args.container as CloudContainerInternal;
+      if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
+        return await operation();
       containerInternal.writeLockHeldBy = args.user;
-      containerInternal.writeLockExpires = new Date(Date.now() + 1000 * containerInternal.lockExpireSeconds).toLocaleString();
       // eslint-disable-next-line @typescript-eslint/await-thenable
       const val = await operation(); // wait for work to finish or fail
       containerInternal.releaseWriteLock();
       containerInternal.writeLockHeldBy = undefined;
-      containerInternal.writeLockExpires = undefined;
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
+      containerInternal.writeLockHeldBy = undefined;
       throw e;
     }
   }
@@ -844,7 +891,7 @@ export namespace CloudSqlite {
       let lockObtained = false;
       const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler, openMode: args.openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
