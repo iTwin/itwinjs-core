@@ -1332,8 +1332,14 @@ export class SchemaComparer {
     compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
-    compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareSchemas(schemaA: Schema, schemaB: Schema, options?: SchemaComparerOptions): Promise<void>;
     compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+}
+
+// @alpha
+export interface SchemaComparerOptions {
+    // (undocumented)
+    compareItemFullName?: boolean;
 }
 
 // @alpha
@@ -1433,6 +1439,11 @@ export interface SchemaItemEditResults {
 export class SchemaItemMissing extends SchemaItemChange {
     get defaultChangeType(): ChangeType;
     toString(): string;
+}
+
+// @internal
+export class SchemaMerger {
+    merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
 }
 
 // @alpha
