@@ -59,7 +59,13 @@ export class ChromeTestRunner {
       (config.mochaOptions as any).forbidOnly = true;
 
     const { failures, coverage } = await runTestsInPlaywright(config, process.env.CERTA_PORT!);
+
+    webserverProcess.stderr?.destroy();
+    webserverProcess.stdin?.destroy();
+    webserverProcess.stdout?.destroy();
     webserverProcess.kill();
+    webserverProcess.unref();
+    browser.close();
 
     // Save nyc/istanbul coverage file.
     if (config.cover)
