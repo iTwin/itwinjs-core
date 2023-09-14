@@ -65,7 +65,7 @@ export class ChromeTestRunner {
     webserverProcess.stdout?.destroy();
     webserverProcess.kill();
     webserverProcess.unref();
-    browser.close();
+    await browser.close();
 
     // Save nyc/istanbul coverage file.
     if (config.cover)
