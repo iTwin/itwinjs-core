@@ -24,7 +24,7 @@ export interface SchemaMergeContext {
 
 /**
  * Class to merge two schemas together.
- * See @see SchemaMerger.merge for details.
+ * @see [[merge]] to merge the schemas.
  * @beta
  */
 export class SchemaMerger {
