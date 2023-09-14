@@ -16,12 +16,14 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveTypes";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
+import { Path } from "../Path";
 
 // cspell:word XYRR
 
@@ -154,7 +156,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpB the second curve
    * @param fractionB0 start of the second curve
    * @param fractionB1 end of the second curve
-   * @param reversed true to have order reversed in final structures
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    * @param intervalDetails optional CurveLocationDetailPair
    */
   private recordPointWithLocalFractions(
@@ -231,7 +233,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpB curveB
    * @param fractionB0 global start fraction on curveB
    * @param fractionB1 global end fraction on curveB
-   * @param reversed whether to reverse the details in the pair
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    */
   private capturePairWithLocalFractions(
     pair: CurveLocationDetailPair,
@@ -260,13 +262,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
-    if (reversed)
-      pair.swapDetails();
-    // recompute the points just in case
     CurveLocationDetail.createCurveEvaluatedFraction(cpA, globalFractionA, pair.detailA);
     CurveLocationDetail.createCurveEvaluatedFraction(cpB, globalFractionB, pair.detailB);
     pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
     pair.detailB.setIntervalRole(CurveIntervalRole.isolated);
+    if (reversed)
+      pair.swapDetails();
     this._results.push(pair);
   }
   /**
@@ -274,7 +275,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpA first curve primitive (possibly different from curve in detailA, but fraction compatible)
    * @param cpB second curve primitive (possibly different from curve in detailA, but fraction compatible)
    * @param pairs array of pairs
-   * @param reversed true to have order reversed in final structures.
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    */
   public recordPairs(
     cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean,
@@ -291,7 +292,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Record fully assembled (but possibly reversed) detail pair.
    * @param detailA first detail
    * @param detailB second detail
-   * @param reversed true to have order reversed in final structures.
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    */
   public captureDetailPair(
     detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
@@ -411,7 +412,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param fB0 fraction0 on curveB
    * @param fB1 fraction0 on curveB
    * @param testProjectionOnB whether to record projections of the given curveA points onto curveB
-   * @param reversed true to have order reversed in final structures.
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    */
   private testAndRecordFractionalPairApproach(
     cpA: CurvePrimitive,
@@ -517,7 +518,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param pointA1 end point of the segment
    * @param fractionA1 fraction of the end of the segment
    * @param arc the arc
-   * @param reversed true to have order reversed in final structures
+   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
    */
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
@@ -727,6 +728,44 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     this._geometryB = geomB;  // restore
   }
+  /**
+   * The CurveCurveCloseApproachXY handler has close approaches stored in the its _results field. The results are stored
+   * with local details of the child. This function turns local detail of the child into the global detail of the chain.
+   */
+  private turnLocalDetailToChainDetail(
+    chain: CurveChainWithDistanceIndex, results: CurveLocationDetailPair[], updateDetailA: boolean, updateDetailB: boolean,
+  ): void {
+    for (const childDetailPair of results) {
+      if (updateDetailA) {
+        const chainDetail = chain.getChainDetail(childDetailPair.detailA);
+        if (chainDetail)
+          childDetailPair.detailA = chainDetail;
+      }
+      if (updateDetailB) {
+        const chainDetail = chain.getChainDetail(childDetailPair.detailB);
+        if (chainDetail)
+          childDetailPair.detailB = chainDetail;
+      }
+    }
+  }
+  /** Low level dispatch of CurveChainWithDistanceIndex. */
+  private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    const geomB = this._geometryB;  // save
+    if (!geomB || !(geomB instanceof CurveChainWithDistanceIndex))
+      return;
+    for (const child of geomB.path.children as AnyCurve[]) {
+      this.resetGeometry(child);
+      geomAHandler(geomA);
+    }
+    this._geometryB = geomB;  // restore
+    if (!this._results)
+      return;
+    const updateDetailA = (this._geometryB instanceof CurveChainWithDistanceIndex) ? false : true;
+    const updateDetailB = !updateDetailA;
+    this.turnLocalDetailToChainDetail(
+      this._geometryB as CurveChainWithDistanceIndex, this._results, updateDetailA, updateDetailB,
+    );
+  }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
@@ -744,6 +783,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchSegmentBsplineCurve(segmentA, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
     }
     return undefined;
   }
@@ -836,6 +877,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchLineStringBSplineCurve(lsA, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
     }
     return undefined;
   }
@@ -853,6 +896,8 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(arc0, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(arc0, this.handleArc3d.bind(this));
     }
     return undefined;
   }
@@ -868,8 +913,19 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curve, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
+  }
+  /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
+  public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
+    this.handlePath(chain.path as Path);
+    if (!this._results)
+      return;
+    const updateDetailA = true; // chain is always of type CurveChainWithDistanceIndex
+    const updateDetailB = (this._geometryB instanceof CurveChainWithDistanceIndex) ? true : false;
+    this.turnLocalDetailToChainDetail(chain, this._results, updateDetailA, updateDetailB);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {

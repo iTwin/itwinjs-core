@@ -769,14 +769,20 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
   /** Expand this range by distances a (possibly signed) in all directions */
   public extendXYZ(x: number, y: number, z: number): void {
-    if (x < this.low.x) this.low.x = x;
-    if (x > this.high.x) this.high.x = x;
+    if (x < this.low.x)
+      this.low.x = x;
+    if (x > this.high.x)
+      this.high.x = x;
 
-    if (y < this.low.y) this.low.y = y;
-    if (y > this.high.y) this.high.y = y;
+    if (y < this.low.y)
+      this.low.y = y;
+    if (y > this.high.y)
+      this.high.y = y;
 
-    if (z < this.low.z) this.low.z = z;
-    if (z > this.high.z) this.high.z = z;
+    if (z < this.low.z)
+      this.low.z = z;
+    if (z > this.high.z)
+      this.high.z = z;
   }
   /** Expand this range by a point interpolated between given points. */
   public extendInterpolated(xyz0: Point3d, fraction: number, xyz1: Point3d): void {

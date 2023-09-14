@@ -70,7 +70,7 @@ class StrokeCountSearch extends NullGeometryHandler {
   public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return { numBSplineCurve3dH: this.emitCountData(g) }; }
   public handleLBezierCurve3d(g: BezierCurve3d) { return { numBezierCurve3d: this.emitCountData(g) }; }
   public handleLBezierCurve3dH(g: BezierCurve3dH) { return { numBezierCurve3dH: this.emitCountData(g) }; }
-  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
+  public override handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
     const data = { numCurveVectorWithDistanceIndex: this.emitCountData(g) };
     const children = g.children;
     if (children) {
