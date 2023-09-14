@@ -366,7 +366,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
     if (!this._querySupported)
       return;
 
@@ -375,7 +375,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const maxAllowableOffsetFactor = 2;
     const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
 
-    const json = await this.getIdentifyData(quadId, carto, 5, true, maxAllowableOffset);
+    const tolerancePixel = options?.tolerance ?? 7;
+    const json = await this.getIdentifyData(quadId, carto, tolerancePixel, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
       const renderer = new ArcGisGraphicsRenderer(hit.iModel);
 

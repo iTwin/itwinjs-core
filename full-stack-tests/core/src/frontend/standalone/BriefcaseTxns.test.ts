@@ -24,13 +24,13 @@ describe("BriefcaseTxns", () => {
     });
 
     const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
-    beforeEach(async () => {
+    async function openRW(): Promise<void> {
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
-    });
+    }
 
-    afterEach(async () => {
-      await rwConn.close();
-    });
+    beforeEach(async () => openRW());
+
+    afterEach(async () => rwConn.close());
 
     type TxnEventName = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onChangesApplied" | "onReplayExternalTxns" | "onReplayedExternalTxns";
     type TxnEvent = TxnEventName | "beforeUndo" | "beforeRedo" | "afterUndo" | "afterRedo";
@@ -192,6 +192,42 @@ describe("BriefcaseTxns", () => {
         await deleteElements(rwConn, [elem1]);
         await rwConn.saveChanges();
         await expectCommit("onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
+      });
+
+      it("continues to receive events after iModel is closed and reopened", async () => {
+        const expectEvents = installListeners(roConn);
+        const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
+
+        const dictModelId = await rwConn.models.getDictionaryModel();
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        // Cannot reopen roConn as writable while rwConn is open for write.
+        await rwConn.close();
+
+        // Reopen roConn as temporarily writable, then reopen as read-only.
+        await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+
+        // Reopen rwConn
+        await openRW();
+
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
+
+        // Repeat.
+        await rwConn.close();
+        await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
+        await openRW();
+
+        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await rwConn.saveChanges();
+        await expectCommit("onElementsChanged", "onChangesApplied");
       });
     });
   }

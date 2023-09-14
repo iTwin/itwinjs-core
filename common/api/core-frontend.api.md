@@ -1338,7 +1338,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
@@ -7657,6 +7657,11 @@ export interface MapFeatureInfo {
 }
 
 // @beta
+export interface MapFeatureInfoOptions {
+    tolerance?: number;
+}
+
+// @beta
 export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
@@ -7810,7 +7815,7 @@ export abstract class MapLayerImageryProvider {
     getEPSG4326Lat(y3857: number): number;
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void>;
     // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -7883,9 +7888,9 @@ export interface MapLayerIndex {
 
 // @internal
 export interface MapLayerInfoFromTileTree {
-    // (undocumented)
+    index?: MapLayerIndex;
+    isBaseLayer: boolean;
     provider?: MapLayerImageryProvider;
-    // (undocumented)
     settings: MapLayerSettings;
 }
 
@@ -8339,7 +8344,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
-    getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
+    getMapFeatureInfo(hit: HitDetail, options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>;
     getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
@@ -14551,7 +14556,7 @@ export abstract class TileTreeReference {
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     // @alpha
-    getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
+    getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
@@ -16462,8 +16467,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
-    // @beta (undocumented)
-    getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
+    // @beta
+    getMapFeatureInfo(hit: HitDetail, options?: MapFeatureInfoOptions): Promise<MapFeatureInfo>;
     // @beta
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     // @internal

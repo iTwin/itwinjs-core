@@ -480,6 +480,7 @@ public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
 beta;MapFeatureInfo
+beta;MapFeatureInfoOptions
 beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
