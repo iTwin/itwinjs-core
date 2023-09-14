@@ -77,16 +77,11 @@ server.on("error", async (e: any) => {
   try {
     numRetries++;
     port = await detect(port);
-    server.close();
-    server.listen(port);
+    server.close(() => server.listen(port));
   } catch (error) {
     console.error(error);
     process.exit(1);
   }
-});
-
-process.on("exit", () => {
-  server.close();
 });
 
 // Run the server...
