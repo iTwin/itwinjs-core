@@ -5,7 +5,7 @@
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^18.0.0 || ^20.0.0"
   },
   "scripts": {
     "build": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
