@@ -7,6 +7,7 @@ import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
+import { Angle } from "@itwin/core-geometry";
 
 /** @internal */
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
@@ -107,7 +108,9 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     if (sls) {
       if (sls.color)
         context.strokeStyle = sls.color.toRgbaString();
-      context.lineWidth = sls.width * this.lineWidthScaleFactor;
+      context.lineWidth = (sls.width > 0 ? sls.width : 1);
+      if (this._symbol.type === "esriSLS")
+        context.lineWidth *= this.lineWidthScaleFactor;
     } else {
       Logger.logTrace(loggerCategory, `Could not apply stroke style`);
     }
@@ -115,33 +118,100 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
   }
   /**
   * Draw a simple marker
-  * @param x x-axis coordinate in the destination canvas at which to place the top-left corner of the marker
-  * @param y y-axis coordinate in the destination canvas at which to place the top-left corner of the marker
+  * @param x x-axis coordinate in the destination canvas at which to place the center of the marker
+  * @param y y-axis coordinate in the destination canvas at which to place the center of the marker
   * @param size size of the marker
   * @public
   */
   public drawSimpleMarker(context: CanvasRenderingContext2D, sms: EsriSMS, x: number, y: number, size: number) {
-    if (sms.style === "esriSMSSquare") {
-      if (sms.color) {
-        this.applyFillStyle(context);
-        context.fillRect(x, y, size, size);
-      }
-
-      if (sms.outline) {
-        this.applyStrokeStyle(context);
-        context.strokeRect(x, y, size, size);
-      }
-
-      /*
-    context.moveTo(xOffset, yOffset);
-    context.lineTo(xOffset+size, yOffset);
-    context.lineTo(xOffset+size, yOffset+size);
-    context.lineTo(xOffset, yOffset+size);
-    context.lineTo(xOffset, yOffset);
-    */
-
+    const halfSize = sms.size * 0.5;
+    if (sms.angle) {
+      context.save();
+      context.translate(x,y);
+      const angle = Angle.createDegrees(sms.angle);
+      context.rotate(angle.radians);
+      context.translate(-x,-y);
     }
 
+    if (sms.style === "esriSMSSquare") {
+
+      const dx = x + (-0.5 * size);
+      const dy = y + (-0.5 * size);
+      if (sms.color) {
+        this.applyFillStyle(context);
+        context.fillRect(dx, dy, size, size);
+      }
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+        context.strokeRect(dx, dy, size, size);
+      }
+
+    } else if (sms.style === "esriSMSCircle") {
+      context.beginPath();
+      context.arc(x, y, size*0.5, 0, 2*Math.PI);
+      context.closePath();
+      if (sms.color) {
+        this.applyFillStyle(context);
+        context.fill();
+      }
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+        context.stroke();
+      }
+    } else if (sms.style === "esriSMSCross") {
+      context.beginPath();
+      context.moveTo(x-halfSize, y);
+      context.lineTo(x+halfSize, y);
+      context.moveTo(x, y-halfSize);
+      context.lineTo(x, y+halfSize);
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+      }
+      context.stroke();
+    } else if (sms.style === "esriSMSDiamond") {
+      context.beginPath();
+
+      context.moveTo(x, y-halfSize);
+      context.lineTo(x+halfSize, y);
+      context.lineTo(x, y+halfSize);
+      context.lineTo(x-halfSize, y);
+      context.closePath();
+      if (sms.color) {
+        this.applyFillStyle(context);
+        context.fill();
+      }
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+      }
+      context.stroke();
+    } else if (sms.style === "esriSMSTriangle") {
+      context.beginPath();
+      context.moveTo(x, y-halfSize);
+      context.lineTo(x+halfSize, y+halfSize);
+      context.lineTo(x-halfSize, y+halfSize);
+
+      context.closePath();
+      if (sms.color) {
+        this.applyFillStyle(context);
+        context.fill();
+      }
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+      }
+      context.stroke();
+    } else if(sms.style === "esriSMSX") {
+      context.beginPath();
+      context.moveTo(x-halfSize, y-halfSize);
+      context.lineTo(x+halfSize, y+halfSize);
+      context.moveTo(x-halfSize, y+halfSize);
+      context.lineTo(x+halfSize, y-halfSize);
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+      }
+      context.stroke();
+    }
+    if (sms.angle)
+      context.restore();
   }
 
   public drawPoint(context: CanvasRenderingContext2D, ptX: number, ptY: number) {
@@ -150,6 +220,7 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
 
     if (this._symbol.type === "esriPMS") {
       const pms = this._symbol as EsriPMS;
+      const angleDegrees = pms.angle;
 
       // We scale up a little a bit the size of symbol.
       const width = pms.width === undefined ? pms.width : pms.width * 1.25;
@@ -166,20 +237,31 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       else if (height)
         yOffset = height * -0.5; // if no offset center in the middle
 
-      if (width && height) {
-        context.drawImage(pms.image, ptX + xOffset, ptY + yOffset, width, height);
-      } else {
-        context.drawImage(pms.image, ptX + xOffset, ptY + yOffset);
+      const dx = ptX + xOffset;
+      const dy = ptY + yOffset;
+
+      if (angleDegrees) {
+        context.save();
+        context.translate(ptX, ptY);
+        const angle = Angle.createDegrees(angleDegrees);
+        context.rotate(angle.radians);
+        context.translate(-ptX, -ptY);
       }
 
-      // TODO: marker rotation angle
+      if (width && height) {
+        context.drawImage(pms.image, dx, dy, width, height);
+      } else {
+        context.drawImage(pms.image, dx, dy);
+      }
+
+      if (angleDegrees)
+        context.restore();
+
     } else if (this._symbol.type === "esriSMS") {
       const sms = this._symbol as EsriSMS;
 
-      // We scale up a little a bit the size of symbol.
-      const size = sms.size;
-      let xOffset = size * -0.5;
-      let yOffset = size * -0.5;
+      let xOffset = 0;
+      let yOffset = 0;
 
       if (sms.xoffset)
         xOffset += sms.xoffset;
@@ -187,7 +269,7 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       if (sms.yoffset)
         yOffset += sms.yoffset;
 
-      this.drawSimpleMarker(context, sms, ptX + xOffset, ptY + yOffset, size);
+      this.drawSimpleMarker(context, sms, ptX + xOffset, ptY + yOffset, sms.size);
     }
   }
 }
