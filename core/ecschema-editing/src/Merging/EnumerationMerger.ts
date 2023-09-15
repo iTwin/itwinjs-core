@@ -46,7 +46,6 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
     }
   });
 
-
   for (const enumeratorChange of changes.enumeratorChanges.values()) {
     if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
       const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
@@ -71,10 +70,8 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
             enumerator.description = attributeValue;
             return;
           };
-          case "value": {
-            if (enumerator.value !== attributeValue)
-              throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
-            return;
+          case "value": {  
+            throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
           };
         }
       })

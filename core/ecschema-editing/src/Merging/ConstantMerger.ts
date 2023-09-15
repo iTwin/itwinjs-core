@@ -27,20 +27,17 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             case "definition": {
                 if (item.definition === "")
                     return item.setDefinition(propertyValue);
-                if (item.definition !== propertyValue)
-                    throw Error(`Failed to merged, constant definition conflict: ${propertyValue} -> ${item.definition}`);
+                throw Error(`Failed to merged, constant definition conflict: ${propertyValue} -> ${item.definition}`);
             }
             case "numerator": {
                 if (!item.hasNumerator)
                     return item.setNumerator(propertyValue);
-                if (item.numerator !== propertyValue)
-                    throw Error(`Failed to merged, constant numerator conflict: ${propertyValue} -> ${item.numerator}`);
+                throw Error(`Failed to merged, constant numerator conflict: ${propertyValue} -> ${item.numerator}`);
             }
             case "denominator": {
                 if (!item.hasDenominator)
                     return item.setDenominator(propertyValue);
-                if (item.denominator !== propertyValue)
-                    throw Error(`Failed to merged, constant denominator conflict: ${propertyValue} -> ${item.denominator}`);
+                throw Error(`Failed to merged, constant denominator conflict: ${propertyValue} -> ${item.denominator}`);
             }
             case "phenomenon": {
                 if (item.phenomenon === undefined) {

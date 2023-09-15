@@ -28,6 +28,20 @@ describe.skip("Unit merger tests", () => {
         version: "1.2.0",
         alias: "reference",
     }
+    const testItems = {
+        testUnitSystem: {
+            schemaItemType: "UnitSystem",
+            name: "IMPERIAL",
+            label: "Imperial",
+        },
+        testPhenomenon: {
+            schemaItemType: "Phenomenon",
+            name: "AREA",
+            label: "Area",
+            description: "Area description",
+            definition: "Units.LENGTH(2)",
+        },
+    }
 
     beforeEach(() => {
         targetContext = new SchemaContext();
@@ -39,18 +53,7 @@ describe.skip("Unit merger tests", () => {
             const sourceSchema = await Schema.fromJson({
                 ...sourceJson,
                 items: {
-                    testUnitSystem: {
-                        schemaItemType: "UnitSystem",
-                        name: "IMPERIAL",
-                        label: "Imperial",
-                    },
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
+                    ...testItems,
                     testUnit: {
                         schemaItemType: "Unit",
                         label: "Millimeter",
@@ -92,18 +95,7 @@ describe.skip("Unit merger tests", () => {
             const referenceSchema = await Schema.fromJson({
                 ...referenceJson,
                 items: {
-                    testUnitSystem: {
-                        schemaItemType: "UnitSystem",
-                        name: "IMPERIAL",
-                        label: "Imperial",
-                    },
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
+                 ...testItems,
                 },
             }, sourceContext);
 
@@ -203,18 +195,7 @@ describe.skip("Unit merger tests", () => {
             const referenceSchema = await Schema.fromJson({
                 ...referenceJson,
                 items: {
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
-                    testUnitSystem: {
-                        schemaItemType: "UnitSystem",
-                        name: "IMPERIAL",
-                        label: "Imperial",
-                    },
+                 ...testItems,
                 },
             }, sourceContext);
 
@@ -273,18 +254,7 @@ describe.skip("Unit merger tests", () => {
             const referenceSchema = await Schema.fromJson({
                 ...referenceJson,
                 items: {
-                    testPhenomenon: {
-                        schemaItemType: "Phenomenon",
-                        name: "AREA",
-                        label: "Area",
-                        description: "Area description",
-                        definition: "Units.LENGTH(2)",
-                    },
-                    testUnitSystem: {
-                        schemaItemType: "UnitSystem",
-                        name: "IMPERIAL",
-                        label: "Imperial",
-                    },
+                ...testItems,
                 },
             }, sourceContext);
 
