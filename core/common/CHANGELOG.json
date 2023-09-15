@@ -2,6 +2,24 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.1.6",
+      "tag": "@itwin/core-common_v4.1.6",
+      "date": "Tue, 12 Sep 2023 15:38:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.5",
+      "tag": "@itwin/core-common_v4.1.5",
+      "date": "Fri, 08 Sep 2023 13:37:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.4",
+      "tag": "@itwin/core-common_v4.1.4",
+      "date": "Thu, 07 Sep 2023 18:26:02 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.1.3",
       "tag": "@itwin/core-common_v4.1.3",
       "date": "Wed, 30 Aug 2023 15:35:27 GMT",

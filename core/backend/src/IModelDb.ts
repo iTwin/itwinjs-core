@@ -8,6 +8,7 @@
 
 import * as fs from "fs";
 import { join } from "path";
+import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
@@ -329,6 +330,15 @@ export abstract class IModelDb extends IModel {
    * @note this member is only valid while the iModel is opened.
    */
   public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
+
+  /** Get the full path to this iModel's "watch file".
+   * A read-only briefcase opened with `watchForChanges: true` creates this file next to the briefcase file on open, if it doesn't already exist.
+   * A writable briefcase "touches" this file if it exists whenever it commits changes to the briefcase.
+   * The read-only briefcase can use a file watcher to react when the writable briefcase makes changes to the briefcase.
+   * This is more reliable than watching the sqlite WAL file.
+   * @internal
+   */
+  public get watchFilePathName(): LocalFileName { return `${this.pathName}-watch`; }
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
@@ -2605,12 +2615,22 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    // If they asked to watch for changes, set an fs.watch on the "-wal" file (only it is modified while we hold this connection.)
+    // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
     // notifications as if they happened on this connection. Note: the watcher is called only when the backend event loop cycles.
     if (args.watchForChanges && undefined === args.container) {
-      const watcher = fs.watch(`${file.path}-wal`, { persistent: false }, () => nativeDb.restartDefaultTxn());
-      briefcaseDb.onBeforeClose.addOnce(() => watcher.close()); // Stop the watcher when we close this connection.
+      // Must touch the file synchronously - cannot watch a file until it exists.
+      touch.sync(briefcaseDb.watchFilePathName);
+
+      // Restart default txn to trigger events when watch file is changed by some other process.
+      const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
+        nativeDb.restartDefaultTxn();
+      });
+
+      // Stop the watcher when we close this connection.
+      briefcaseDb.onBeforeClose.addOnce(() => {
+        watcher.close();
+      });
     }
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
@@ -2627,23 +2647,44 @@ export class BriefcaseDb extends IModelDb {
     return briefcaseDb;
   }
 
+  /** If the briefcase is read-only, reopen the native briefcase for writing.
+   * Execute the supplied function.
+   * If the briefcase was read-only, reopen the native briefcase as read-only.
+   * @note this._openMode is not changed from its initial value.
+   * @internal Exported strictly for tests.
+   */
+  public async executeWritable(func: () => Promise<void>): Promise<void> {
+    if (this.isReadonly)
+      this.closeAndReopen(OpenMode.ReadWrite);
+
+    try {
+      await func();
+    } finally {
+      if (this.isReadonly)
+        this.closeAndReopen(OpenMode.Readonly);
+    }
+  }
+
   private closeAndReopen(openMode: OpenMode) {
     const fileName = this.pathName;
+
+    // Unclosed statements will produce BUSY error when attempting to close.
+    this.clearCaches();
+
+    // The following resets the native db's pointer to this JavaScript object.
     this.nativeDb.closeIModel();
     this.nativeDb.openIModel(fileName, openMode);
+
+    // Restore the native db's pointer to this JavaScript object.
+    this.nativeDb.setIModelDb(this);
   }
 
   /** Pull and apply changesets from iModelHub */
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
-    if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
-      this.closeAndReopen(OpenMode.ReadWrite);
-    try {
+    await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       this.initializeIModelDb();
-    } finally {
-      if (this.isReadonly) // if the briefcase was opened readonly - close and reopen it readonly
-        this.closeAndReopen(OpenMode.Readonly);
-    }
+    });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
   }
