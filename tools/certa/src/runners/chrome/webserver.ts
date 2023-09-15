@@ -84,9 +84,9 @@ server.on("error", async (e: any) => {
   }
 });
 
-process.on('SIGKILL', () => {
+process.on("SIGKIL", () => {
   server.close(() => console.log("closing server/process"));
-})
+});
 
 // Run the server...
 server.listen(port);
