@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Use instance query to get aspects for abstract classes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
