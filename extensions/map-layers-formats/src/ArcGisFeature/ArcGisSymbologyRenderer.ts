@@ -5,7 +5,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
 /** @internal */
@@ -49,6 +49,21 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
 
     if (this.renderer?.type === "simple") {
       this._symbol = (this.renderer as EsriSimpleRenderer).symbol;
+      /// REMOVE FOLLOWING LINE BEFORE COMMIT
+      if (this._symbol.type === "esriPMS") {
+        this._symbol = EsriSMS.fromJSON({
+          size: 10,
+          style: "esriSMSSquare",
+          type: "esriSMS",
+          color: [0,0,255,255],
+          outline: {
+            type:"esriSLS",
+            style: "esriSLSSolid",
+            color: [0,0,0,255],
+            width: 1,
+          },
+        });
+      }
     }  else {
       this._symbol = defaultSymbol;
     }
@@ -74,6 +89,11 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       if (sfs.color) {
         fillColor = sfs.color;
       }
+    } else  if (this._symbol.type === "esriSMS") {
+      const sms = this._symbol as EsriSMS;
+      if (sms.color) {
+        fillColor = sms.color;
+      }
     }
 
     return fillColor;
@@ -92,6 +112,11 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       }
     } else if (this._symbol.type === "esriSLS") {
       sls = this._symbol as EsriSLS;
+    } else if (this._symbol.type === "esriSMS") {
+      const sms = this._symbol as EsriSMS;
+      if (sms.outline) {
+        sls = sms.outline;
+      }
     }
 
     if (sls) {
@@ -100,6 +125,36 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       context.lineWidth = sls.width * this.lineWidthScaleFactor;
     } else {
       Logger.logTrace(loggerCategory, `Could not apply stroke style`);
+    }
+
+  }
+  /**
+  * Draw a simple marker
+  * @param x x-axis coordinate in the destination canvas at which to place the top-left corner of the marker
+  * @param y y-axis coordinate in the destination canvas at which to place the top-left corner of the marker
+  * @param size size of the marker
+  * @public
+  */
+  public drawSimpleMarker(context: CanvasRenderingContext2D, sms: EsriSMS, x: number, y: number, size: number) {
+    if (sms.style === "esriSMSSquare") {
+      if (sms.color) {
+        this.applyFillStyle(context);
+        context.fillRect(x, y, size, size);
+      }
+
+      if (sms.outline) {
+        this.applyStrokeStyle(context);
+        context.strokeRect(x, y, size, size);
+      }
+
+      /*
+    context.moveTo(xOffset, yOffset);
+    context.lineTo(xOffset+size, yOffset);
+    context.lineTo(xOffset+size, yOffset+size);
+    context.lineTo(xOffset, yOffset+size);
+    context.lineTo(xOffset, yOffset);
+    */
+
     }
 
   }
@@ -133,6 +188,21 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
       }
 
       // TODO: marker rotation angle
+    } else if (this._symbol.type === "esriSMS") {
+      const sms = this._symbol as EsriSMS;
+
+      // We scale up a little a bit the size of symbol.
+      const size = sms.size;
+      let xOffset = size * -0.5;
+      let yOffset = size * -0.5;
+
+      if (sms.xoffset)
+        xOffset += sms.xoffset;
+
+      if (sms.yoffset)
+        yOffset += sms.yoffset;
+
+      this.drawSimpleMarker(context, sms, ptX + xOffset, ptY + yOffset, size);
     }
   }
 }
