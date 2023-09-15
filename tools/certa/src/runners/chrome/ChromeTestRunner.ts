@@ -69,11 +69,17 @@ export class ChromeTestRunner {
     webserverProcess.stdout?.destroy();
     webserverProcess.kill();
     webserverProcess.unref();
-    const pages = await context.pages();
-      for (let i = 0; i < pages.length; i++) {
-        await pages[i].close();
-      }
-    await context.close();
+    const pages = context.pages();
+    for (const page of pages) {
+      page.removeListener("dialog", () => console.log("Removing dialog listener"));
+      page.removeListener("pageerror", () => console.log("Removing pageerror listener"));
+      await page.close();
+    }
+
+    const contexts = browser.contexts();
+    for (const x of contexts) {
+      await x.close();
+    }
     await browser.close();
     // console.log("Closing again");
     // await browser.close();
@@ -94,7 +100,6 @@ async function loadScript(page: Page, scriptPath: string) {
 async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
-      console.log(browser.contexts())
       const page = context.pages()?.pop() || await context.newPage();
 
       // Don't let dialogs block tests
