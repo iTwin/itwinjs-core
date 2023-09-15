@@ -123,19 +123,19 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
+    let imodel: IModelDb;
+    try {
+      imodel = await this.getIModel(token);
+    } catch (e) {
+      assert(e instanceof Error);
+      return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
+    }
+
     let resultPromise = this._pendingRequests.getValue(requestKey);
     if (resultPromise) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request already pending`);
     } else {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request not found, creating a new one`);
-      let imodel: IModelDb;
-      try {
-        imodel = await this.getIModel(token);
-      } catch (e) {
-        assert(e instanceof Error);
-        return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
-      }
-
       const { clientId: _, diagnostics: diagnosticsOptions, rulesetVariables, ...options } = requestOptions;
       const managerRequestOptions: any = {
         ...options,

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveChain";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -586,13 +586,13 @@ describe("LineString3dOps", () => {
     const createFragments = (perturbClosure: boolean, includeDangler: boolean): AnyCurve[] => {
       const fragments: AnyCurve[] = [];
       if (includeDangler)
-        fragments.push(LineSegment3d.create(Point3d.create(4,4,0), Point3d.create(3,2,0)));
-      fragments.push(Arc3d.create(Point3d.create(1,0,0), Vector3d.create(1,0,0), Vector3d.create(0,1,0), AngleSweep.createStartEndDegrees(0, 180)));
-      fragments.push(LineString3d.create(Point3d.createZero(), Point3d.create(0,2,0), Point3d.create(3,2,0)));
-      fragments.push(LineSegment3d.create(Point3d.create(2,0,0), Point3d.create(3,0,0)));
-      fragments.push(LineSegment3d.create(Point3d.create(3,2,0), Point3d.create(3,0,0)));
-      fragments.push(LineString3d.create(Point3d.create(1,0,0), Point3d.create(0,1,0), Point3d.create(-1,0,0), Point3d.create(0,-1,0)));
-      fragments.push(LineSegment3d.create(Point3d.create(0,-1,0), Point3d.create(1, perturbClosure ? -2 * Geometry.smallMetricDistance : 0, 0)));
+        fragments.push(LineSegment3d.create(Point3d.create(4, 4, 0), Point3d.create(3, 2, 0)));
+      fragments.push(Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), AngleSweep.createStartEndDegrees(0, 180)));
+      fragments.push(LineString3d.create(Point3d.createZero(), Point3d.create(0, 2, 0), Point3d.create(3, 2, 0)));
+      fragments.push(LineSegment3d.create(Point3d.create(2, 0, 0), Point3d.create(3, 0, 0)));
+      fragments.push(LineSegment3d.create(Point3d.create(3, 2, 0), Point3d.create(3, 0, 0)));
+      fragments.push(LineString3d.create(Point3d.create(1, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1, 0, 0), Point3d.create(0, -1, 0)));
+      fragments.push(LineSegment3d.create(Point3d.create(0, -1, 0), Point3d.create(1, perturbClosure ? -2 * Geometry.smallMetricDistance : 0, 0)));
       return fragments;
     };
 

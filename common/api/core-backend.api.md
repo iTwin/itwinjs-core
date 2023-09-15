@@ -430,7 +430,7 @@ export namespace BlobContainer {
     }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<UriAndId>;
+        create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
@@ -438,6 +438,9 @@ export namespace BlobContainer {
         updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
+    export interface CreatedContainerProps extends UriAndId {
+        provider: Provider;
+    }
     export interface CreateNewContainerProps {
         // @internal
         containerId?: ContainerId;
@@ -456,8 +459,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
@@ -492,6 +493,8 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // @internal
+    executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
@@ -840,6 +843,20 @@ export namespace CloudSqlite {
         showOnlyFinished?: boolean;
         startFromId?: number;
     }
+    // @internal
+    export interface BcvStats {
+        readonly activeClients?: number;
+        readonly attachedContainers?: number;
+        readonly lockedCacheslots: number;
+        readonly ongoingPrefetches?: number;
+        readonly populatedCacheslots: number;
+        readonly totalCacheslots: number;
+        readonly totalClients?: number;
+    }
+    // @internal
+    export interface BcvStatsFilterOptions {
+        addClientInformation?: boolean;
+    }
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
@@ -911,6 +928,8 @@ export namespace CloudSqlite {
         onDisconnect?: (container: CloudContainer, detach: boolean) => void;
         // (undocumented)
         onDisconnected?: (container: CloudContainer, detach: boolean) => void;
+        // @internal
+        queryBcvStats(filterOptions?: BcvStatsFilterOptions): CloudSqlite.BcvStats;
         queryDatabase(dbName: string): CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
@@ -919,6 +938,7 @@ export namespace CloudSqlite {
         releaseWriteLock(): void;
         get storageType(): string;
         uploadChanges(): Promise<void>;
+        get writeLockExpires(): string;
     }
     // (undocumented)
     export interface CloudHttpProps {
@@ -1053,6 +1073,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
+        {};
 }
 
 // @alpha
@@ -3033,6 +3054,8 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
+    // @internal
+    get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -3052,7 +3075,7 @@ export namespace IModelDb {
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
-        getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
+        getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
@@ -3143,6 +3166,7 @@ export namespace IModelDb {
         // @beta (undocumented)
         saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
+        // @deprecated
         setDefaultViewId(viewId: Id64String): void;
         // @beta (undocumented)
         get viewStore(): ViewStore.CloudAccess;

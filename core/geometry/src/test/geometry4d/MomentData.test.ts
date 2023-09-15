@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveChain";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
