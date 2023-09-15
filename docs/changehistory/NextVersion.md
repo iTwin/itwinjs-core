@@ -30,6 +30,8 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 [PointProps]($appui-abstract) was created primarily to avoid a dependency on @itwin/core-geometry, which contains an identical interface named [XAndY]($core-geometry). PointProps is now deprecated in favor of XAndY, or your own simple implementation. Similarly, [UiAdmin.createXAndY]($appui-abstract) has been deprecated.
 
-### Alpha API Removals
+## Alpha API Removals
 
-[isLetter]($appui-abstract) has been removed. Should you need that functionality, please implement it in your own code.
+### @itwin/appui-abstract
+
+`isLetter` has been removed. Should you need that functionality, please implement it in your own code.
