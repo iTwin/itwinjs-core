@@ -67,7 +67,9 @@ export class ChromeTestRunner {
     webserverProcess.stdout?.destroy();
     webserverProcess.kill();
     webserverProcess.unref();
-    await browser.close();
+    // console.log("Closing again");
+    // await browser.close();
+    // console.log(browser);
 
     // Save nyc/istanbul coverage file.
     if (config.cover)
@@ -84,7 +86,7 @@ async function loadScript(page: Page, scriptPath: string) {
 async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
-      const page = browser.contexts().pop()?.pages()?.pop() || await browser.newPage();
+      const page = await browser.newPage();
 
       // Don't let dialogs block tests
       page.on("dialog", async (dialog: any) => dialog.dismiss());
@@ -125,6 +127,7 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
           globals._CertaReportResults({ failures, coverage }); // This will close the browser
         });
       });
+      await page.close();
     } catch (error) {
       reject(error);
     }
