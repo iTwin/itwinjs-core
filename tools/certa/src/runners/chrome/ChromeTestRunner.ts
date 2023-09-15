@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 const wtfnode = require("wtfnode"); // eslint-disable-line @typescript-eslint/no-unused-vars
 import * as path from "path";
-import { Browser, chromium, LaunchOptions, Page } from "playwright";
+import { Browser, BrowserContext, chromium, LaunchOptions, Page } from "playwright";
 import { ChildProcess } from "child_process";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
@@ -20,6 +20,7 @@ interface ChromeTestResults {
 type ConsoleMethodName = "log" | "error" | "dir";
 
 let browser: Browser;
+let context: BrowserContext;
 let webserverProcess: ChildProcess;
 
 export class ChromeTestRunner {
@@ -36,6 +37,7 @@ export class ChromeTestRunner {
       options.args?.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
     browser = await chromium.launch(options);
+    context = await browser.newContext();
 
     const webserverEnv = {
       CERTA_PORT: `${config.ports.frontend}`, // eslint-disable-line @typescript-eslint/naming-convention
@@ -67,6 +69,12 @@ export class ChromeTestRunner {
     webserverProcess.stdout?.destroy();
     webserverProcess.kill();
     webserverProcess.unref();
+    const pages = await context.pages();
+      for (let i = 0; i < pages.length; i++) {
+        await pages[i].close();
+      }
+    await context.close();
+    await browser.close();
     // console.log("Closing again");
     // await browser.close();
     // console.log(browser);
@@ -86,7 +94,8 @@ async function loadScript(page: Page, scriptPath: string) {
 async function runTestsInPlaywright(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
-      const page = await browser.newPage();
+      console.log(browser.contexts())
+      const page = context.pages()?.pop() || await context.newPage();
 
       // Don't let dialogs block tests
       page.on("dialog", async (dialog: any) => dialog.dismiss());
@@ -99,7 +108,6 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
       await page.exposeFunction("_CertaSendToBackend", executeRegisteredCallback);
       await page.exposeFunction("_CertaReportResults", (results: ChromeTestResults) => {
         setTimeout(async () => {
-          await browser.close();
           resolve(results);
         });
       });
@@ -127,7 +135,6 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
           globals._CertaReportResults({ failures, coverage }); // This will close the browser
         });
       });
-      await page.close();
     } catch (error) {
       reject(error);
     }
