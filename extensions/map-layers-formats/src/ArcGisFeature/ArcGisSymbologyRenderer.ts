@@ -49,21 +49,6 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
 
     if (this.renderer?.type === "simple") {
       this._symbol = (this.renderer as EsriSimpleRenderer).symbol;
-      /// REMOVE FOLLOWING LINE BEFORE COMMIT
-      if (this._symbol.type === "esriPMS") {
-        this._symbol = EsriSMS.fromJSON({
-          size: 10,
-          style: "esriSMSSquare",
-          type: "esriSMS",
-          color: [0,0,255,255],
-          outline: {
-            type:"esriSLS",
-            style: "esriSLSSolid",
-            color: [0,0,0,255],
-            width: 1,
-          },
-        });
-      }
     }  else {
       this._symbol = defaultSymbol;
     }
