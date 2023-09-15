@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1035,7 +1035,9 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
   }
 
-  /** Obtain a tooltip from the map layer or reality model, if any, identified by the specified [[HitDetail]]. */
+  /** Obtain a tooltip from the map layer or reality model, if any, identified by the specified [[HitDetail]].
+ * @see [[ElementLocateManager]]
+  */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
@@ -1053,13 +1055,17 @@ export abstract class Viewport implements IDisposable, TileUser {
     return "";
   }
 
-  /** @beta */
-  public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
+  /** Obtain feature information from a map layer model, if any, identified by the specified [[HitDetail]].
+   * @see [[ElementLocateManager]]
+   * @see [[MapFeatureInfo]]
+   * @beta
+   */
+  public async getMapFeatureInfo(hit: HitDetail, options?: MapFeatureInfoOptions): Promise<MapFeatureInfo> {
     const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
-    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit, options).catch(() => undefined)));
     const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();

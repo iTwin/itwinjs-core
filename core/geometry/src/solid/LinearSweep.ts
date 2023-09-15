@@ -7,7 +7,7 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveChain";
+import { AnyCurve } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
