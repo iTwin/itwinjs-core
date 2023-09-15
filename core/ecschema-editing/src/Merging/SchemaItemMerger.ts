@@ -70,12 +70,19 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
   }
 }
 
+/**
+ * Performs the specified action for each property in the given PropertyValueChange array.
+ * @param targetItem  The target item
+ * @param changes     The array with PropertyValueChanges
+ * @param handler     The callback that gets invoked vor every change.
+ * @internal
+ */
 export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem: T, changes: PropertyValueChange[], handler: PropertyChangedFn<T>) {
-  for(let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
+  for(let index = 0, increment = true; index < changes.length; increment && index++, increment = true) {
     const [propertyName, propertyValue] = changes[index].diagnostic.messageArgs!;
     if(handler(targetItem, propertyName, propertyValue) === true) {
       changes.splice(index, 1);
-      stepUp = false;
+      increment = false;
     }
   }
 }
