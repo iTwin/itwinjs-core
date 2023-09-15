@@ -31,6 +31,7 @@ export class ChromeTestRunner {
     const options: LaunchOptions = {
       args: config.chromeOptions.args,
       headless: !config.debug,
+      timeout: 120000
     };
 
     if (config.debug)
