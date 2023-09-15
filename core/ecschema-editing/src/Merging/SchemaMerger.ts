@@ -15,7 +15,6 @@ import mergeCAClasses from "./CAClassMerger";
 import mergeKindOfQuantity from "./KindOfQuantityMerger";
 import mergePhenomenon from "./PhenomenonMerger";
 import mergeConstant from "./ConstantMerger";
-import mergeUnitSystem from "./UnitSystemMerger";
 import mergeUnit from "./UnitMerger";
 
 /**
@@ -74,7 +73,7 @@ export class SchemaMerger {
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
 
     const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.UnitSystem]);
-    await mergeSchemaItems(mergeContext, unitSystemChanges, mergeUnitSystem);
+    await mergeSchemaItems(mergeContext, unitSystemChanges);
 
     const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Phenomenon]);
     await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);

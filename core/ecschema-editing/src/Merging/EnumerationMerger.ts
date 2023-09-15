@@ -46,9 +46,8 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
     }
   });
 
-  
-  for (const enumeratorChange of changes.enumeratorChanges.values()) {
 
+  for (const enumeratorChange of changes.enumeratorChanges.values()) {
     if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
       const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
       if (enumerator === undefined) {
@@ -56,31 +55,30 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
       }
       const result = mutableEnumeration.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
       mutableEnumeration.addEnumerator(result);
-      continue;
-    }
-
-    const targetEnumerator = target.getEnumeratorByName(enumeratorChange.ecTypeName);
-    if (targetEnumerator === undefined) {
-      throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in Enumeration ${target.fullName}`);
-    }
-    const mutableEnumerator = targetEnumerator as MutableEnumerator;
-    await mergeEnumeratorAttributes(mutableEnumerator, enumeratorChange.enumeratorDeltas, (enumerator, attributeName, deltaChange, attributeValue) => {
-      switch (attributeName) {
-        case "label": {
-          enumerator.label = attributeValue;
-          return;
-        };
-        case "description": {
-          enumerator.description = attributeValue;
-          return;
-        };
-        case "value": {
-          if (enumerator.value !== attributeValue)
-            throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
-          return;
-        };
+    } else {
+      const targetEnumerator = target.getEnumeratorByName(enumeratorChange.ecTypeName);
+      if (targetEnumerator === undefined) {
+        throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in Enumeration ${target.fullName}`);
       }
-    })
+      const mutableEnumerator = targetEnumerator as MutableEnumerator;
+      await mergeEnumeratorAttributes(mutableEnumerator, enumeratorChange.enumeratorDeltas, (enumerator, attributeName, deltaChange, attributeValue) => {
+        switch (attributeName) {
+          case "label": {
+            enumerator.label = attributeValue;
+            return;
+          };
+          case "description": {
+            enumerator.description = attributeValue;
+            return;
+          };
+          case "value": {
+            if (enumerator.value !== attributeValue)
+              throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
+            return;
+          };
+        }
+      })
+    }
   }
 }
 
