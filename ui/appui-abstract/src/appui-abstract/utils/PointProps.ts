@@ -7,7 +7,7 @@
  */
 
 /** Describes 2d points.
- * @public @deprecated in 4.2.x. Use @core/geometry [[Geometry.XAndY]].
+ * @public @deprecated in 4.2.x. Use @core/geometry [[Geometry.XAndY]] or your own custom type.
  */
 export interface PointProps {
   readonly x: number;

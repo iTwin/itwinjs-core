@@ -16,10 +16,11 @@ import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
-import { PointProps } from "./utils/PointProps";
 import { loggerCategory } from "./utils/misc";
 import { MessagePresenter } from "./notification/MessagePresenter";
 import { UiError } from "./utils/UiError";
+
+interface XAndY { readonly x: number, readonly y: number }
 
 /** The Generic UI Event args contains information useful for any UI message
  * @public
@@ -92,14 +93,12 @@ export class UiAdmin {
   public onInitialized() { }
 
   /** Get the cursor X and Y position. */
-  // eslint-disable-next-line deprecation/deprecation
-  public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
+  public get cursorPosition(): XAndY { return { x: 0, y: 0 }; }
 
   /** Create a PointProps object.
   * @deprecated in 4.2.x. Please use @core/geometry [[XAndY]] or a custom implementation.
   */
-  // eslint-disable-next-line deprecation/deprecation
-  public createXAndY(x: number, y: number): PointProps { return { x, y }; }
+  public createXAndY(x: number, y: number): XAndY { return { x, y }; }
 
   /** Determines if focus is set to Home */
   public get isFocusOnHome(): boolean { return false; }
@@ -113,8 +112,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the menu was displayed, false if the menu could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean {
+  public showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -129,8 +127,7 @@ export class UiAdmin {
    * @return true if the Toolbar was displayed, false if the Toolbar could not be displayed.
    */
   public showToolbar(
-    // eslint-disable-next-line deprecation/deprecation
-    _toolbarProps: AbstractToolbarProps, _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
+    _toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean {
     return false;
   }
@@ -145,8 +142,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the button was displayed, false if the button could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean {
+  public showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -165,8 +161,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the calculator was displayed, false if the calculator could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showCalculator(_initialValue: number, _resultIcon: string, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -181,8 +176,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showAngleEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -194,8 +188,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showLengthEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -207,8 +200,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showHeightEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -221,8 +213,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: PointProps, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -239,8 +230,7 @@ export class UiAdmin {
    * @return true if the display element was displayed, false if the display element could not be displayed.
    */
   public showHTMLElement(
-    // eslint-disable-next-line deprecation/deprecation
-    _displayElement: HTMLElement, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc,
+    _displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }
@@ -262,8 +252,7 @@ export class UiAdmin {
    */
   public showCard(
     _content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined,
-    // eslint-disable-next-line deprecation/deprecation
-    _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
+    _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }
@@ -281,8 +270,7 @@ export class UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openToolSettingsPopup(
-    // eslint-disable-next-line deprecation/deprecation
-    _dataProvider: UiDataProvider, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc,
+    _dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }
