@@ -73,12 +73,15 @@ export class PolyfaceData {
    *   * is an index into this and other index arrays.
    *   * pointIndex[k1] is a point index in the next facet at the opposite end of the edge starting at pointIndex[k]
    */
-  public edgeMateReadIndex?: Array<number | undefined>;
+  public edgeMateIndex?: Array<number | undefined>;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
-
+  /** Test if `value` is a valid index into the pointIndex array. */
+  public isValidEdgeIndex(value: number): boolean {
+    return value >= 0 && value < this.pointIndex.length;
+  }
   /** set the `taggedNumericData` member */
   public setTaggedNumericData(data: TaggedNumericData | undefined) {
     this.taggedNumericData = data;

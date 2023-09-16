@@ -1635,12 +1635,12 @@ it.only("edgeMatesI", () => {
   let numMatched = 0;
   for (let k = 0; k < polyface.data.pointIndex.length; k++) {
     const v = polyface.data.pointIndex[k];
-    const k1 = polyface.readIndexToEdgeMate(k);
+    const k1 = polyface.edgeIndexToEdgeMate(k);
     if (k1 !== undefined)
       numMatched++;
     // eslint-disable-next-line no-console
     console.log({ k, v, k1 });
-    ck.testTrue(k1 === undefined || polyface.readIndexToEdgeMate(k1) === k, { s1, k, k1 });
+    ck.testTrue(k1 === undefined || polyface.edgeIndexToEdgeMate(k1) === k, { s1, k, k1 });
   }
   ck.testExactNumber(numMatched, 2 * numInteriorEdges);
   expect(ck.getNumErrors()).equals(0);
@@ -1878,16 +1878,16 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
     const k0 = polyface.facetIndex0(facetIndex);
     const k1 = polyface.facetIndex1(facetIndex);
     for (let k = k0; k < k1; k++) {
-      const kNextAroundFacet = polyface.readIndexToSuccessorAroundFacet(k);
+      const kNextAroundFacet = polyface.edgeIndexToSuccessorAroundFacet(k);
       if (ck.testTrue(kNextAroundFacet !== undefined) && kNextAroundFacet !== undefined) {
         ck.testTrue(kNextAroundFacet >= k0 && kNextAroundFacet < k1 && kNextAroundFacet !== k, "nextAroundFacet");
-        ck.testTrue(k === polyface.readIndexToPredecessorAroundFacet(kNextAroundFacet));
-        const kMate = polyface.readIndexToEdgeMate(k);
+        ck.testTrue(k === polyface.edgeIndexToPredecessorAroundFacet(kNextAroundFacet));
+        const kMate = polyface.edgeIndexToEdgeMate(k);
         if (kMate !== undefined) {
-          const kVertexPredecessor = polyface.readIndexToPredecessorAroundVertex(k);
+          const kVertexPredecessor = polyface.edgeIndexToPredecessorAroundVertex(k);
           if (ck.testDefined(kVertexPredecessor) && kVertexPredecessor !== undefined) {
-            ck.testTrue(polyface.readIndexToSuccessorAroundFacet(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
-            ck.testTrue(polyface.readIndexToSuccessorAroundVertex(kVertexPredecessor) === k, "mate.fs.fs === k");
+            ck.testTrue(polyface.edgeIndexToSuccessorAroundFacet(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
+            ck.testTrue(polyface.edgeIndexToSuccessorAroundVertex(kVertexPredecessor) === k, "mate.fs.fs === k");
           }
         }
       }
