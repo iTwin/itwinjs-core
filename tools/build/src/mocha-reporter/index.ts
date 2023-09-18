@@ -114,7 +114,7 @@ class BentleyMochaReporter extends Spec {
 
         // Not sure why, but process.exit(1) wasn't working here...
         process.kill(process.pid);
-      }, 30000).unref();
+      }, 30 * 1000).unref();
     }
 
     if (!this.stats.pending)
