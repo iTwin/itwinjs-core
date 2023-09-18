@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Allow creation of cross-origin web workers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

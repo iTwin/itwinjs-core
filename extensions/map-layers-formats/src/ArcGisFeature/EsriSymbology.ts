@@ -38,7 +38,7 @@ export abstract class EsriSymbol implements EsriSymbolCommonProps {
     } else if (props.type === "esriPMS") {
       return EsriPMS.fromJSON(props as EsriPMSProps);
     }
-    throw new Error("Unknown ESRI symbology type");
+    throw new Error(`Unknown ESRI symbology type: ${props.type}`);
   }
 }
 
