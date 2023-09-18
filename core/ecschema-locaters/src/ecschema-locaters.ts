@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./SchemaFileLocater";
-export * from "./SchemaFileUtility";
+export * from "./SchemaXml";
 export * from "./SchemaJsonFileLocater";
 export * from "./SchemaXmlFileLocater";
 export * from "./StubSchemaXmlFileLocater";

@@ -6,14 +6,14 @@ Bentley provided package [@itwin/ecschema-locaters](https://www.itwinjs.org/refe
 The second option utilizes two interfaces from the [@xmldom/xmldom](https://www.npmjs.com/package/@xmldom/xmldom)
 package. Both options will be covered here.
 
-## SchemaFileUtility in @itwin/ecschema-locaters
+## SchemaXml in @itwin/ecschema-locaters
 
-The SchemaFileUtility class in the [@itwin/ecschema-locaters](https://www.itwinjs.org/reference/ecschema-locaters) package
-contains the 'writeSchemaXmlFile' method. This method takes the EC Schema instance and a path to the file to create. The
-SchemaFileUtility.writeSchemaXmlFile method is asynchronous, requiring the 'await' keyword.
+The SchemaXml class in the [@itwin/ecschema-locaters](https://www.itwinjs.org/reference/ecschema-locaters) package
+contains the 'writeFile' method. This method takes the EC Schema instance and a path to the file to create. The
+SchemaXml.writeFile method is asynchronous, requiring the 'await' keyword.
 
 ```ts
-await SchemaFileUtility.writeSchemaXmlFile(schema, outDir);
+await SchemaXml.writeFile(schema, outDir);
 ```
 
 ## @xmldom/xmldom package

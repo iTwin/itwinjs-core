@@ -5,7 +5,7 @@
 
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ECClassModifier, PrimitiveType, SchemaLoader } from "@itwin/ecschema-metadata";
-import { SchemaFileUtility } from "@itwin/ecschema-locaters";
+import { SchemaXml } from "@itwin/ecschema-locaters";
 import { SchemaContextEditor } from "@itwin/ecschema-editing";
 import { StandaloneDb } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
@@ -60,7 +60,7 @@ describe("SchemaLoadAndEdit", () => {
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.importToIModel
     const pipingSchema = await editor.getSchema(createSchemaResult.schemaKey!);
-    const schemaXml = await SchemaFileUtility.writeSchemaToXmlString(pipingSchema);
+    const schemaXml = await SchemaXml.writeString(pipingSchema);
     await iModelDb.importSchemaStrings([schemaXml]);
     // __PUBLISH_EXTRACT_END__
 

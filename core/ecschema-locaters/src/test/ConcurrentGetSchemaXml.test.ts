@@ -9,7 +9,7 @@ import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
-import { SchemaFileUtility } from "../SchemaFileUtility";
+import { SchemaXml } from "../SchemaXml";
 
 describe("Concurrent XML schema deserialization", () => {
   const assetDir: string = path.join(__dirname, "assets");
@@ -86,11 +86,11 @@ describe("Concurrent XML schema deserialization", () => {
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
       expect(syncSchema).not.to.be.undefined;
-      const syncXML = await SchemaFileUtility.writeSchemaToXmlString(syncSchema!);
+      const syncXML = await SchemaXml.writeString(syncSchema!);
 
       const asyncSchema = asyncSchemas[i];
       expect(asyncSchema).not.to.be.undefined;
-      const asyncXML = await SchemaFileUtility.writeSchemaToXmlString(asyncSchema!);
+      const asyncXML = await SchemaXml.writeString(asyncSchema!);
       expect(asyncXML).to.deep.equal(syncXML);
     }
   });
@@ -118,11 +118,11 @@ describe("Concurrent XML schema deserialization", () => {
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
       expect(syncSchema).not.to.be.undefined;
-      const syncXML = await SchemaFileUtility.writeSchemaToXmlString(syncSchema!);
+      const syncXML = await SchemaXml.writeString(syncSchema!);
 
       const asyncSchema = asyncSchemas[i];
       expect(asyncSchema).not.to.be.undefined;
-      const asyncXML = await SchemaFileUtility.writeSchemaToXmlString(asyncSchema!);
+      const asyncXML = await SchemaXml.writeString(asyncSchema!);
       expect(asyncXML).to.deep.equal(syncXML);
     }
   });
