@@ -16,6 +16,10 @@ Table of contents:
 
 The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCurves` and any region including any `Loop`, `ParityRegion`, or `UnionRegion`. One just needs to pass `AnyCurve` and a `Clipper` and the functions collect portions of any curve that are within the clipper into an array of any curves and returns the array.
 
+## Node 20 support
+
+With Node 20 moving to LTS on October 24th, iTwin.js has been updated to add support. iTwin.js now supports Node 18 and 20.
+
 ## Electron 26 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
