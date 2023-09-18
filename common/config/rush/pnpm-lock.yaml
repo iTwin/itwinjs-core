@@ -149,7 +149,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       chai: ^4.1.2
       eslint: ^8.44.0
       flatbuffers: ~1.12.0
@@ -170,7 +169,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       chai: 4.3.7
       eslint: 8.45.0
       mocha: 10.2.0
@@ -420,7 +418,6 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       chai: ^4.1.2
       eslint: ^8.44.0
       mocha: ^10.0.0
@@ -433,7 +430,6 @@ importers:
       '@itwin/build-tools': link:../../../tools/build
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       chai: 4.3.7
       eslint: 8.45.0
       mocha: 10.2.0
@@ -581,7 +577,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -622,7 +617,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       '@types/sinon': 10.0.15
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
@@ -648,7 +642,6 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/file-saver': ^2.0.1
-      '@types/node': 20.6.0
       cpx2: ^3.0.0
       eslint: ^8.44.0
       file-saver: ^2.0.2
@@ -664,7 +657,6 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/file-saver': 2.0.5
-      '@types/node': 20.6.0
       cpx2: 3.0.2
       eslint: 8.45.0
       rimraf: 3.0.2
@@ -678,7 +670,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       chai: ^4.1.2
       debug: ^2.6.9
       eslint: ^8.44.0
@@ -696,7 +687,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       chai: 4.3.7
       debug: 2.6.9
       eslint: 8.45.0
@@ -717,7 +707,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -742,7 +731,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -767,7 +755,6 @@ importers:
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -795,7 +782,6 @@ importers:
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -819,7 +805,6 @@ importers:
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -844,7 +829,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -952,7 +936,6 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       '@types/sinon': ^10.0.15
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -970,7 +953,6 @@ importers:
       '@types/chai-as-promised': 7.1.5
       '@types/glob': 5.0.38
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       '@types/sinon': 10.0.15
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
@@ -990,7 +972,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       chai: ^4.1.2
       eslint: ^8.44.0
       mocha: ^10.0.0
@@ -1007,7 +988,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       chai: 4.3.7
       eslint: 8.45.0
       mocha: 10.2.0
@@ -1024,7 +1004,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
@@ -1043,7 +1022,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.7
@@ -1231,7 +1209,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       chai: ^4.1.2
       eslint: ^8.44.0
       mocha: ^10.0.0
@@ -1245,7 +1222,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       chai: 4.3.7
       eslint: 8.45.0
       mocha: 10.2.0
@@ -1399,7 +1375,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -1424,7 +1399,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       '@types/sinon': 10.0.15
       babel-loader: 8.2.5_webpack@5.88.2
       babel-plugin-istanbul: 6.1.1
@@ -2363,7 +2337,6 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
@@ -2400,7 +2373,6 @@ importers:
       '@types/deep-equal': 1.0.1
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       chai: 4.3.7
@@ -3114,7 +3086,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 20.6.0
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       babel-loader: ~8.2.5
@@ -3139,7 +3110,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
-      '@types/node': 20.6.0
       '@types/sinon': 10.0.15
       '@types/sinon-chai': 3.2.9
       babel-loader: 8.2.5_webpack@5.88.2

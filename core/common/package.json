@@ -51,7 +51,6 @@
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "20.6.0",
     "chai": "^4.1.2",
     "eslint": "^8.44.0",
     "mocha": "^10.0.0",
