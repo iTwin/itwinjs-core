@@ -55,11 +55,11 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          nodeVersion: 20.x
           buildIos: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          nodeVersion: 20.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
