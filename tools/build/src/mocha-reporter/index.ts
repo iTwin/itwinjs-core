@@ -92,7 +92,7 @@ class BentleyMochaReporter extends Spec {
       // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
       // the process alive after 30 seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
       setTimeout(() => {
-        logBuildError(`Handle leak detected. Node was still running 5 seconds after tests completed.`);
+        logBuildError(`Handle leak detected. Node was still running 30 seconds after tests completed.`);
         if (debugLeaks) {
           const wtf = require("wtfnode");
           wtf.setLogger("info", console.error);
