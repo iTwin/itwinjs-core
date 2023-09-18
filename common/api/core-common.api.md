@@ -4306,6 +4306,8 @@ export interface HttpServerRequest extends BackendReadable {
         [header: string]: string | string[] | undefined;
     };
     // (undocumented)
+    headersDistinct: NodeJS.Dict<string[]>;
+    // (undocumented)
     httpVersion: string;
     // (undocumented)
     httpVersionMajor: number;
@@ -4335,6 +4337,8 @@ export interface HttpServerRequest extends BackendReadable {
     trailers: {
         [key: string]: string | undefined;
     };
+    // (undocumented)
+    trailersDistinct: NodeJS.Dict<string[]>;
     // (undocumented)
     url?: string;
 }
