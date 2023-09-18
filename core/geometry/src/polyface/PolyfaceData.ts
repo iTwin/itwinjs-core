@@ -69,7 +69,7 @@ export class PolyfaceData {
   /** Tagged geometry data */
   public taggedNumericData: TaggedNumericData | undefined;
   /** OPTIONAL index for moving "across an edge" to an adjacent facet.
-   * * IF PRESENT, k1 = readIndexAroundVertex[k]
+   * * IF PRESENT, k1 = edgeMateIndex[k]
    *   * is an index into this and other index arrays.
    *   * pointIndex[k1] is a point index in the next facet at the opposite end of the edge starting at pointIndex[k]
    */
