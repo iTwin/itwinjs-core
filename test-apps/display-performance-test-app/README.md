@@ -155,9 +155,8 @@ If given the option of using a local file path or using iModelHub, the program w
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
 * To specify a remote iModel, set `iTwinId` and `iModelId`. External saved views will be downloaded as well.
-* To specify the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost, set "frontendTilesUrlTemplate".  It can include special tokens: `{iModel.key}` or
-`{iModel.filename}` (e.g.: "<http://localhost:8080{iModel.key}-tiles/3dft/>" or "<http://localhost:8080/MshX/{iModel.filename}/>"). These will get replaced by the value of iModel.key or just the iModel filename
- (no path or extension), correspondingly.
+* To specify the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost, set "frontendTilesUrlTemplate".  It can include special tokens: `{iModel.key}`,
+`{iModel.filename}` and `{iModel.extension}`.  These will get replaced by the value of iModel.key, just the iModel filename (no path or extension), or just the iModel extension (including .), correspondingly (e.g.: "<http://localhost:8080{iModel.key}-tiles/3dft/>" or "<http://localhost:8080/MshX/{iModel.filename}{iModel.extension}/>").
  Note that the contents of iModel.key in DPTA is a GUID.
 
 The json config file allows you to specify settings for the entire test run, for a specific model, and for a specific test performed on a given model. Priority for settings will be given first to those for a specific test, then for a specific model, and finally for the entire test run. For example: if transparency is set to true for the entire test run, but a specific test changes transparency to false, that specific test will NOT have transparency even though the rest of the tests run WILL have transparency.
