@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update executeWritable to handle db busy errors",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
