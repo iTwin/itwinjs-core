@@ -206,10 +206,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private _reversed: boolean;
   /** Ask if this builder is reversing vertex order as loops are received. */
   public get reversedFlag(): boolean { return this._reversed; }
-  /** extract the polyface. */
-  public claimPolyface(compress: boolean = true): IndexedPolyface {
+  /**
+   * Extract the polyface.
+   * @param compress whether to cluster vertices (default true)
+   * @param tolerance compression tolerance (default Geometry.smallMetricDistance)
+   */
+  public claimPolyface(compress: boolean = true, tolerance: number = Geometry.smallMetricDistance): IndexedPolyface {
     if (compress)
-      this._polyface.data.compress();
+      this._polyface.data.compress(tolerance);
     return this._polyface;
   }
   /** Toggle (reverse) the flag controlling orientation flips for newly added facets. */
@@ -1540,8 +1544,38 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color, visitor.edgeVisible);
   }
 
+  /**
+   * Add the subset of current visitor data indexed by the indices.
+   * @returns whether facet was added successfully. Encountering an invalid index returns false.
+  */
+  public addFacetFromIndexedVisitor(visitor: PolyfaceVisitor, indices: number[]): boolean {
+    if (indices.length > visitor.pointIndex.length)
+      return false;
+    const xyz = new GrowableXYZArray(indices.length);
+    const normal = visitor.normal ? new GrowableXYZArray(indices.length) : undefined;
+    const param = visitor.param ? new GrowableXYArray(indices.length) : undefined;
+    const color = visitor.color ? new Array<number>(indices.length) : undefined;
+    const visible = visitor.edgeVisible ? new Array<boolean>(indices.length) : undefined;
+    for (let i = 0; i < indices.length; ++i) {
+      const index = indices[i];
+      if (index < 0 || index >= visitor.point.length) // all visitor arrays have the same length
+        return false;
+      xyz.pushXYZ(visitor.point.getXAtUncheckedPointIndex(index), visitor.point.getYAtUncheckedPointIndex(index), visitor.point.getZAtUncheckedPointIndex(index));
+      if (visitor.normal && normal)
+        normal.pushXYZ(visitor.normal.getXAtUncheckedPointIndex(index), visitor.normal.getYAtUncheckedPointIndex(index), visitor.normal.getZAtUncheckedPointIndex(index));
+      if (visitor.param && param)
+        param.pushXY(visitor.param.getXAtUncheckedPointIndex(index), visitor.param.getYAtUncheckedPointIndex(index));
+      if (visitor.color && color)
+        color[i] = visitor.color[index];
+      if (visitor.edgeVisible && visible)
+        visible[i] = visitor.edgeVisible[index];
+    }
+    this.addFacetFromGrowableArrays(xyz, normal, param, color, visible);
+    return true;
+  }
+
   /** Add a polyface, with optional reverse and transform. */
-  public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform) {
+  public addIndexedPolyface(source: IndexedPolyface, reversed: boolean = false, transform?: Transform) {
     this._polyface.addIndexedPolyface(source, reversed, transform);
   }
 

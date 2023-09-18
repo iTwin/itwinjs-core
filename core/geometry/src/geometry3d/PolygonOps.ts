@@ -445,7 +445,7 @@ export class PolygonOps {
         let u1 = points.getXAtUncheckedPointIndex(1) - x0;
         let v1 = points.getYAtUncheckedPointIndex(1) - y0;
         let u2, v2;
-        for (let i = 1; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
+        for (let i = 2; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
           u2 = points.getXAtUncheckedPointIndex(i) - x0;
           v2 = points.getYAtUncheckedPointIndex(i) - y0;
           area += Geometry.crossProductXYXY(u1, v1, u2, v2);

@@ -10,12 +10,18 @@ import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -1153,21 +1159,92 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("DrapeRegion", () => {
-    const ck = new Checker(true, true);
+  it("DrapeRegion", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const options = StrokeOptions.createForFacets();
-    options.shouldTriangulate = options.needNormals = true;
-    const mesh = Sample.createMeshFromSmoothSurface(50, options);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+    let x = 0;
+    const surfaceOptions = StrokeOptions.createForFacets();
+    surfaceOptions.shouldTriangulate = true;
+    const mesh = Sample.createMeshFromSmoothSurface(30, surfaceOptions);
+    if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
+      const regionOptions = StrokeOptions.createForCurves();
+      regionOptions.maximizeConvexFacets = true;
+      regionOptions.angleTol = Angle.createDegrees(5);
 
-    // TODO: create regions:
-    // * CW and CCW loops
-    // * punctured split washer parity region (CCW outer loop contains a bridged hole, CW isolated hole) to cover failsafe triangulation method, and force a Boolean difference (to verify that we don't need to reverse holes)
-    // * parity region with no outer loop
-    // TODO: drape
-    // TODO: how verify numerically?
-    
+      const facetAndDrapeRegion = (region: AnyRegion, knownArea?: number): IndexedPolyface | undefined => {
+        let regionFacets: IndexedPolyface | undefined;
+        const contour = SweepContour.createForLinearSweep(region);
+        if (ck.testType(contour, SweepContour, "created contour from region"))
+          contour.announceFacets((facets: IndexedPolyface) => {regionFacets = facets;}, regionOptions);
+        const regionNormal = FrameBuilder.createRightHandedLocalToWorld(region)!.matrix.columnZ();
+        const drapeMesh = PolyfaceClip.drapeRegion(mesh, region, undefined, regionOptions);
+        if (ck.testType(drapeMesh, IndexedPolyface, "draped mesh is created")) {
+          const area = knownArea ? knownArea : RegionOps.computeXYArea(region);
+          if (ck.testTrue(area !== undefined && area > 0.0, "region area computed")) {
+            const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, regionNormal);
+            ck.testCoordinateWithToleranceFactor(area!, projectedArea, 1000, "projected area of draped mesh agrees with tool region area");
+          }
+        }
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mesh, region], x);
+        if (regionFacets)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, regionFacets, x, 2);
+        if (drapeMesh)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, drapeMesh, x);
+        return drapeMesh;
+      };
+
+      if (true) { // nonconvex polygon
+        const polygon: Point3d[] = [
+          Point3d.create(0.3, 0.3), Point3d.create(0.3, 0.1), Point3d.create(0.5, 0.2), Point3d.create(0.6, 0.1),
+          Point3d.create(0.8, 0.3), Point3d.create(0.5, 0.4), Point3d.create(0.5, 0.5), Point3d.create(0.9, 0.5),
+          Point3d.create(0.7, 0.7), Point3d.create(0.8, 0.8), Point3d.create(0.7, 0.9), Point3d.create(0.6, 0.7),
+          Point3d.create(0.5, 0.8), Point3d.create(0.4, 0.6), Point3d.create(0.2, 0.9), Point3d.create(0.1, 0.8),
+          Point3d.create(0.2, 0.7), Point3d.create(0.2, 0.5), Point3d.create(0.1, 0.4), Point3d.create(0.3, 0.3),
+        ];
+        const loopCCW = Loop.createPolygon(polygon);
+        const subMesh0 = facetAndDrapeRegion(loopCCW, 0.31);
+        const loopCW = Loop.createPolygon(polygon.reverse());
+        const subMesh1 = PolyfaceClip.drapeRegion(mesh, loopCW, undefined, regionOptions);
+        if (ck.testType(subMesh0, IndexedPolyface, "draped mesh #0 is created") && ck.testType(subMesh1, IndexedPolyface, "draped mesh #1 is created")) {
+          const area0 = PolyfaceQuery.sumFacetAreas(subMesh0);
+          const area1 = PolyfaceQuery.sumFacetAreas(subMesh1);
+          ck.testCoordinate(area0, area1, "loop order has no effect on area of the draped facets");
+        }
+      }
+
+      if (x += 2) { // simplest face with a bridge to hole
+        const outerTriangle = LineString3d.create(Point3d.create(0.1, 0.5), Point3d.create(0.9, 0.1), Point3d.create(0.9, 0.9), Point3d.create(0.1, 0.5));
+        const bridgeForward = LineSegment3d.createXYXY(0.1, 0.5, 0.4, 0.5);
+        const innerTriangle = LineString3d.create(Point3d.create(0.4, 0.5), Point3d.create(0.6, 0.6), Point3d.create(0.6, 0.4), Point3d.create(0.4, 0.5));
+        const bridgeBackward = bridgeForward.clone();
+        bridgeBackward.reverseInPlace();
+        const splitTriangle = Loop.create(outerTriangle, bridgeForward, innerTriangle, bridgeBackward);
+        facetAndDrapeRegion(splitTriangle, 0.3);
+      }
+
+      if (x += 2) { // split washer with hole
+        const outerArc = Arc3d.createRefs(Point3d.create(0.5, 0.5), Matrix3d.createIdentity().scale(0.4), AngleSweep.createStartEndDegrees(-180, 180)); // CCW
+        const bridgeForward = LineSegment3d.createXYXY(0.1, 0.5, 0.4, 0.5);
+        const innerArc = Arc3d.createRefs(Point3d.create(0.5, 0.5), Matrix3d.createIdentity().scale(0.1), AngleSweep.createStartEndDegrees(180, -180));
+        const bridgeBackward = bridgeForward.clone();
+        bridgeBackward.reverseInPlace();
+        const splitWasher = Loop.create(outerArc, bridgeForward, innerArc, bridgeBackward);
+        const hole = Loop.create(Arc3d.createCenterNormalRadius(Point3d.create(0.75, 0.5), Vector3d.unitZ().negate(), 0.1));  // CW
+        const splitWasherWithHole = ParityRegion.create(splitWasher, hole);
+        facetAndDrapeRegion(splitWasherWithHole, Math.PI * 0.14);
+      }
+
+      // TODO: create regions:
+      // * punctured split washer parity region (CCW outer loop contains a bridged hole, CW isolated hole) to cover failsafe triangulation method, and force a Boolean difference (to verify that we don't need to reverse holes)
+      // * parity/union region with no outer loop
+      // * union with two components (parity + loop)
+      // TODO: how verify numerically?
+
+      // OTHER THINGS TO TRY:
+      // * compress with optional tolerance---still think it should be tighter when the facets are coming from a mesh to begin with
+      // * break on the dangling edge vertex where added to mesh, or in the compress. Where do those clipper edges get removed?
+    }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion");
     expect(ck.getNumErrors()).equals(0);
   });

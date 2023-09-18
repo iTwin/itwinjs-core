@@ -908,7 +908,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
-  /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  /** Returns Returns true if the edge mate has Mask.EXTERIOR_MASK set. */
   public static testMateMaskExterior(node: HalfEdge) { return node.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
   /** Returns radians between this edge and its face predecessor edge, using all three coordinates x,y,z and given normal to resolve sweep direction.

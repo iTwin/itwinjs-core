@@ -7,8 +7,8 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
@@ -18,7 +18,7 @@ import { Loop } from "../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
-import { PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -75,12 +75,13 @@ export class ClippedPolyfaceBuilders {
     return new ClippedPolyfaceBuilders(keepInside ? PolyfaceBuilder.create() : undefined, keepOutside ? PolyfaceBuilder.create() : undefined, buildSideFaces);
   }
 
-  public claimPolyface(selector: 0 | 1, fixup: boolean): IndexedPolyface | undefined {
+  public claimPolyface(selector: 0 | 1, fixup: boolean, tolerance: number = Geometry.smallMetricDistance): IndexedPolyface | undefined {
     const builder = selector === 0 ? this.builderA : this.builderB;
     if (builder) {
-      let polyface = builder.claimPolyface();
+      let polyface = builder.claimPolyface(true, tolerance);
       if (fixup) {
         polyface = PolyfaceQuery.cloneWithTVertexFixup(polyface);
+        polyface = PolyfaceQuery.cloneWithDanglingEdgesRemoved(polyface);
       }
       return polyface;
     }
@@ -181,7 +182,6 @@ export class PolyfaceClip {
         if (outputSelector === 1 && localToWorld !== undefined
           && undefined !== (worldToLocal = localToWorld.inverse())) {
           this.cleanupAndAddRegion(builderA, insideShards, worldToLocal, localToWorld);
-
           this.cleanupAndAddRegion(builderB, outsideShards, worldToLocal, localToWorld);
         } else {
           for (const shard of insideShards)
@@ -207,6 +207,8 @@ export class PolyfaceClip {
       } else if (region instanceof UnionRegion) {
         for (const child of region.children)
           this.addRegion(builder, child);
+      } else {
+        assert(!"unexpected region encountered");
       }
     }
   }
@@ -220,7 +222,7 @@ export class PolyfaceClip {
       if (outsidePieces && outsidePieces.children.length > 0) {
         if (localToWorld)
           outsidePieces.tryTransformInPlace(localToWorld);
-        RegionOps.consolidateAdjacentPrimitives(outsidePieces);
+        RegionOps.consolidateAdjacentPrimitives(outsidePieces); // this can create T-vertices
         this.addRegion(builder, outsidePieces);
       }
     }
@@ -467,7 +469,7 @@ export class PolyfaceClip {
    * @param polyface input mesh, untouched
    * @param region planar region to drape onto mesh
    * @param sweepVector optional sweep direction for region; if undefined, region normal is used
-   * @param options primarily how to stroke the contour, but also how to facet it.
+   * @param options primarily how to stroke the region boundary, but also how to facet the region.
    * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
    * @returns clipped facets. No other mesh data but vertices appear in output.
    */
@@ -480,7 +482,7 @@ export class PolyfaceClip {
       return undefined;
     const builders = ClippedPolyfaceBuilders.create(true);
     this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, builders, 1);
-    return builders.claimPolyface(0, false);
+    return builders.claimPolyface(0, true, Geometry.smallMetricDistanceSquared);
   }
   /** Find consecutive points around a polygon (with implied closure edge) that are ON a plane
    * @param points array of points around polygon.  Closure edge is implied.

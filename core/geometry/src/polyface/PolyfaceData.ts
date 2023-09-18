@@ -399,30 +399,32 @@ export class PolyfaceData {
     return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
   }
   /**
+   * Compress the instance by equating duplicate data.
    * * Search for duplicates within points, normals, params, and colors.
-   * * compress the data arrays.
-   * * revise all indexing for the relocated data.
+   * * Compress each data array.
+   * * Revise all indexing for the relocated data.
+   * @param tolerance optional tolerance for comparing mesh data. Default is Geometry.smallMetricDistance.
    */
-  public compress() {
-    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
+  public compress(tolerance: number = Geometry.smallMetricDistance): void {
+    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point, tolerance);
     this.point = packedPoints.growablePackedPoints!;
     packedPoints.updateIndices(this.pointIndex);
     //  compressUnusedGrowableXYZArray(this.point, this.pointIndex);
 
     if (this.normalIndex && this.normal) {
-      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
+      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal, tolerance);
       this.normal = packedNormals.growablePackedPoints!;
       packedNormals.updateIndices(this.normalIndex);
     }
 
     if (this.paramIndex && this.param) {
-      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
+      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param, tolerance);
       this.param = packedParams.growablePackedPoints;
       packedParams.updateIndices(this.paramIndex);
     }
 
     if (this.colorIndex && this.color) {
-      const packedColors = ClusterableArray.clusterNumberArray(this.color);
+      const packedColors = ClusterableArray.clusterNumberArray(this.color, tolerance);
       this.color = packedColors.packedNumbers;
       packedColors.updateIndices(this.colorIndex);
     }
