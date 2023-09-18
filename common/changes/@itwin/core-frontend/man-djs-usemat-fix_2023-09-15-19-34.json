@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed ignore material not using default material params",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
