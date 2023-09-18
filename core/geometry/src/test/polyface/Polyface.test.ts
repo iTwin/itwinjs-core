@@ -42,6 +42,7 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { IndexedPolyfaceWalker } from "../../polyface/PolyfaceWalker";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -1634,10 +1635,13 @@ it.only("edgeMatesI", () => {
   const s1 = "Edge mate pairing";
   let numMatched = 0;
   for (let k = 0; k < polyface.data.pointIndex.length; k++) {
+    const walker = IndexedPolyfaceWalker.create(polyface, k)!;
     const v = polyface.data.pointIndex[k];
     const k1 = polyface.edgeIndexToEdgeMate(k);
+    checkWalkerAction(ck, "moveToEdgeMate", k1, walker.moveToEdgeMate(), walker);
     if (k1 !== undefined)
       numMatched++;
+
     // eslint-disable-next-line no-console
     console.log({ k, v, k1 });
     ck.testTrue(k1 === undefined || polyface.edgeIndexToEdgeMate(k1) === k, { s1, k, k1 });
@@ -1878,14 +1882,21 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
     const k0 = polyface.facetIndex0(facetIndex);
     const k1 = polyface.facetIndex1(facetIndex);
     for (let k = k0; k < k1; k++) {
+      const walker = IndexedPolyfaceWalker.create(polyface, k)!;
+      //      const walker1 = walker.clone();
       const kNextAroundFacet = polyface.edgeIndexToSuccessorAroundFacet(k);
+      checkWalkerAction(ck, "fs", kNextAroundFacet, walker.moveToSuccessorAroundFacet(), walker);
       if (ck.testTrue(kNextAroundFacet !== undefined) && kNextAroundFacet !== undefined) {
         ck.testTrue(kNextAroundFacet >= k0 && kNextAroundFacet < k1 && kNextAroundFacet !== k, "nextAroundFacet");
         ck.testTrue(k === polyface.edgeIndexToPredecessorAroundFacet(kNextAroundFacet));
+        checkWalkerAction(ck, "fp", k, walker.moveToPredecessorAroundFacet(), walker);      // walker returns to k!
         const kMate = polyface.edgeIndexToEdgeMate(k);
         if (kMate !== undefined) {
           const kVertexPredecessor = polyface.edgeIndexToPredecessorAroundVertex(k);
+          checkWalkerAction(ck, "vp", kVertexPredecessor, walker.moveToPredecessorAroundVertex(), walker);      // walker moves to kVertexPredecessor !
+          checkWalkerAction(ck, "vs", k, walker.moveToSuccessorAroundVertex(), walker);
           if (ck.testDefined(kVertexPredecessor) && kVertexPredecessor !== undefined) {
+            checkWalkerAction(ck, "edgeMate", kMate, walker.moveToEdgeMate(), walker);
             ck.testTrue(polyface.edgeIndexToSuccessorAroundFacet(kMate) === kVertexPredecessor, "k.mate.fs === k.vp");
             ck.testTrue(polyface.edgeIndexToSuccessorAroundVertex(kVertexPredecessor) === k, "mate.fs.fs === k");
           }
@@ -1894,4 +1905,21 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
     }
   }
   ck.testExactNumber(numFacets, facetIndex, "confirm facet count");
+}
+/**
+ * * if expected value is undefined, verify that the walker return is false.
+ * * if expected value is a number, verify that the walker return is true and the walker advanced to there.
+ * @param ck checker
+ * @param expectedValue expected value after successful move.
+ * @param walkerStatus in this param place the move action walker.moveXXXX()
+ * @param walker in this param place the walker
+ */
+function checkWalkerAction(ck: Checker, action: String, expectedValue: number | undefined, walkerStatus: boolean, walker: IndexedPolyfaceWalker) {
+  if (expectedValue === undefined) {
+    ck.testFalse(walkerStatus, { action, error: "expected walker false" });
+  } else {
+    if (ck.testTrue(walkerStatus, { action, error: "expected walker true" })) {
+      ck.testExactNumber(expectedValue, walker.currentEdgeIndex, { action, error: "expected edgeIndex" });
+    }
+  }
 }

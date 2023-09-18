@@ -20,6 +20,7 @@ export class IndexedPolyfaceWalker {
     this._polyface = polyface;
     this._edgeIndex = edgeIndex;
   }
+  public get currentEdgeIndex() { return this._edgeIndex; }
   /**
    * Create a walker for given polyface
    * * Create a walker which references the given IndexedPolyface.
@@ -58,8 +59,10 @@ export class IndexedPolyfaceWalker {
    */
   public moveToSuccessorAroundFacet(): boolean {
     const newEdgeIndex = this._polyface.edgeIndexToSuccessorAroundFacet(this._edgeIndex);
-    if (newEdgeIndex !== undefined)
+    if (newEdgeIndex !== undefined) {
+      this._edgeIndex = newEdgeIndex;
       return true;
+    }
     return false;
   }
   /**
@@ -67,8 +70,10 @@ export class IndexedPolyfaceWalker {
    */
   public moveToPredecessorAroundFacet(): boolean {
     const newEdgeIndex = this._polyface.edgeIndexToPredecessorAroundFacet(this._edgeIndex);
-    if (newEdgeIndex !== undefined)
+    if (newEdgeIndex !== undefined) {
+      this._edgeIndex = newEdgeIndex;
       return true;
+    }
     return false;
   }
   /**
@@ -77,8 +82,10 @@ export class IndexedPolyfaceWalker {
    */
   public moveToSuccessorAroundVertex(): boolean {
     const newEdgeIndex = this._polyface.edgeIndexToSuccessorAroundVertex(this._edgeIndex);
-    if (newEdgeIndex !== undefined)
+    if (newEdgeIndex !== undefined) {
+      this._edgeIndex = newEdgeIndex;
       return true;
+    }
     return false;
   }
   /**
@@ -87,8 +94,10 @@ export class IndexedPolyfaceWalker {
    */
   public moveToPredecessorAroundVertex(): boolean {
     const newEdgeIndex = this._polyface.edgeIndexToPredecessorAroundVertex(this._edgeIndex);
-    if (newEdgeIndex !== undefined)
+    if (newEdgeIndex !== undefined) {
+      this._edgeIndex = newEdgeIndex;
       return true;
+    }
     return false;
   }
   /**
@@ -97,8 +106,10 @@ export class IndexedPolyfaceWalker {
    */
   public moveToEdgeMate(): boolean {
     const newEdgeIndex = this._polyface.edgeIndexToEdgeMate(this._edgeIndex);
-    if (newEdgeIndex !== undefined)
+    if (newEdgeIndex !== undefined) {
+      this._edgeIndex = newEdgeIndex;
       return true;
+    }
     return false;
   }
   public loadVisitor(visitor: IndexedPolyfaceVisitor): boolean {
