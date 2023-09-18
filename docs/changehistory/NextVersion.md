@@ -8,7 +8,7 @@ Table of contents:
 - [Geometry](#geometry)
   - [Clip any curve](#clip-any-curve)
 - [Electron 26 support](#electron-26-support)
-- [Schema API](#schema-api)
+- [Locating and serializing schemas](#locating-and-serializing-schemas)
 
 ## Geometry
 
@@ -20,8 +20,7 @@ The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCu
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
 
-## Schema API
+## Locating and serializing schemas
 
-Make [SchemaLoader] and associated classes beta and added [documentation on how to use it to load schemas from an iModel](../learning/serializing-xml-schemas.md/#schemas-from-an-imodel).
-
-SchemaFileUtility class converted into the SchemaXml namespace and methods renamed to [SchemaXml.writeFile] and [SchemaXml.writeString].
+New APIs like [SchemaLoader]($ecschema-metadata) allow you to [locate schemas](../learning/serializing-xml-schemas.md/#schemas-from-an-imodel) in the context of an iModel.
+You can serialize schemas using the new functions [SchemaXml.writeFile]($ecschema-locaters) and [SchemaXml.writeString]($ecschema-locaters).
