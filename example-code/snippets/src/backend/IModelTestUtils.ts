@@ -8,6 +8,7 @@ import { OpenMode } from "@itwin/core-bentley";
 import { ITwinsAccessClient } from "@itwin/itwins-client";
 import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
+import { SchemaState } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
@@ -96,6 +97,23 @@ export class IModelTestUtils {
   }
   // __PUBLISH_EXTRACT_END__
 
+  /** Prepare for an output file by:
+   * - Resolving the output file name under the known test output directory
+   * - Making directories as necessary
+   * - Removing a previous copy of the output file
+   * @param fileName Name of output fille
+   * @returns The full path to the output file
+   */
+  public static prepareOutputFile(fileName: string): string {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+
+    const outputFile = path.join(KnownTestLocations.outputDir, fileName);
+    if (IModelJsFs.existsSync(outputFile))
+      IModelJsFs.unlinkSync(outputFile);
+
+    return outputFile;
+  }
 }
 
 // Start the backend

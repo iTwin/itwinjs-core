@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 beta;FileSchemaKey 
 beta;class SchemaFileLocater
+beta;SchemaFileUtility
 beta;SchemaJsonFileLocater 
 beta;SchemaXmlFileLocater 
 beta;SchemaXmlStringLocater 

@@ -49,3 +49,23 @@ We can now use the file system API to write the xml to file.
 ```ts
 [[include:Serialize_Schema_To_XML_Write]]
 ```
+
+## Schemas from an iModel
+
+First use the SchemaLoader from the [@itwin/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) package to create a SchemaContextEditor that knows about the schemas in the iModel
+
+```ts
+[[include:IModelSchemas.loadFromDb]]
+```
+
+Once an editor has been created the new schema can be created with classes that reference BisCore
+
+```ts
+[[include:IModelSchemas.editSchemas]]
+```
+
+Finally the new schema can be extracted from the editor, serialized to xml and imported into the iModel
+
+```ts
+[[include:IModelSchemas.importToIModel]]
+```
