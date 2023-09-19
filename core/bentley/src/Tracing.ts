@@ -139,18 +139,32 @@ export class Tracing {
 
   private static withOpenTelemetry(level: LogLevel, base: LogFunction, isError: boolean = false): LogFunction {
     return (category, message, metaData) => {
+      const oTelContext = Tracing._openTelemetry?.context.active();
+      if(Tracing._openTelemetry === undefined || oTelContext === undefined)
+        return base(category, message, metaData);
+
+      const serializedMetadata = Logger.getMetaData(metaData);
       if(Logger.isEnabled(category, level)) {
         try {
           Tracing._openTelemetry?.trace
             .getSpan(Tracing._openTelemetry.context.active())
             ?.addEvent(message, {
-              ...flattenObject(Logger.getMetaData(metaData)),
+              ...flattenObject(serializedMetadata),
               error: isError,
               loggerCategory: category,
             });
         } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+
+        const spanContext = Tracing._openTelemetry.trace.getSpan(oTelContext)?.spanContext();
+        base(category, message, {
+          ...serializedMetadata,
+          /* eslint-disable @typescript-eslint/naming-convention */
+          trace_id: spanContext?.traceId,
+          span_id: spanContext?.spanId,
+          trace_flags: spanContext?.traceFlags,
+          /* eslint-enable @typescript-eslint/naming-convention */
+        });
       }
-      base(category, message, metaData);
     };
   }
 
