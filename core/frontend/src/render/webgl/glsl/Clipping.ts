@@ -103,6 +103,17 @@ const applyClipPlanesPostlude = `
         g_clipColor = vec3(abs(convertedEyeSpace.x), 0.0, 0.0);
         return true;
       }
+
+
+      // A possible workaround if we can't get u_proj to work correctly is to do something like this
+      // By dividing by v_eyeSpace.z, we can get a d that changes as we zoom in and out
+      // Which will emulate the behavior of a purely pixel based distance check
+
+      // float d = abs(calcClipPlaneDist(v_eyeSpace, plane) / v_eyeSpace.z);
+      // if (d < 0.005) && (!clippedByCurrentClipPlane) {
+      //   g_clipColor = vec3(1.0, 0.0, 0.0);
+      //   return true;
+      // }
     }
   }
 
@@ -187,5 +198,3 @@ export function addClipping(prog: ProgramBuilder) {
 
   frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }
-
-
