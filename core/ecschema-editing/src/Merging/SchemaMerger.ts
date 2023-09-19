@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Merging
+ */
+
 import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -16,7 +20,7 @@ import mergeConstant from "./ConstantMerger";
 
 /**
  * Defines the context of a Schema merging run.
- * @internal
+ * @beta
  */
 export interface SchemaMergeContext {
   readonly targetSchema: Schema;
@@ -24,8 +28,9 @@ export interface SchemaMergeContext {
 }
 
 /**
- * TBD
- * @internal
+ * Class to merge two schemas together.
+ * @see [[merge]] to merge the schemas.
+ * @beta
  */
 export class SchemaMerger {
   /**
@@ -64,26 +69,26 @@ export class SchemaMerger {
 
     await mergeSchemaReferences(mergeContext, schemaChanges);
 
-    const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.PropertyCategory]);
-    await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
-
     await mergeSchemaItems(mergeContext, schemaChanges.enumerationChanges.values(), mergeEnumeration);
 
-    const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.UnitSystem]);
+    const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory);
+    await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
+
+    const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem);
     await mergeSchemaItems(mergeContext, unitSystemChanges);
 
-    const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Phenomenon]);
+    const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon);
     await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
 
-    const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Constant]);
+    const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant);
     await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
-    const caClassChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.CustomAttributeClass]);
+    const caClassChanges = filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass);
     await mergeSchemaItems(mergeContext, caClassChanges, mergeCAClasses);
 
-    const classChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.EntityClass, SchemaItemType.StructClass]);
+    const classChanges = filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass, SchemaItemType.StructClass);
     await mergeSchemaItems(mergeContext, classChanges, mergeClasses);
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
@@ -92,7 +97,13 @@ export class SchemaMerger {
   }
 }
 
-function filterChangesByItemType<TChange extends SchemaItemChanges>(changes: Map<string, TChange>, types: SchemaItemType[]): Iterable<TChange> {
+/**
+ * Filters and returns the changed items by its schema item type.
+ * @param changes   A map of changed schema items.
+ * @param types     A list of schema item types to filter.
+ * @returns         An Iterable with the filtered schema items.
+ */
+function filterChangesByItemType<TChange extends SchemaItemChanges>(changes: Map<string, TChange>, ...types: SchemaItemType[]): Iterable<TChange> {
   const result: TChange[] = [];
   for (const change of changes.values()) {
     if (types.includes(change.schemaItemType)) {
