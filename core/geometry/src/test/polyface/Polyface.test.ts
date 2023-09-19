@@ -1637,7 +1637,9 @@ it.only("edgeMatesI", () => {
   for (let k = 0; k < polyface.data.pointIndex.length; k++) {
     const walker = IndexedPolyfaceWalker.create(polyface, k)!;
     const v = polyface.data.pointIndex[k];
+    const walker1 = walker.edgeMate();
     const k1 = polyface.edgeIndexToEdgeMate(k);
+    checkWalkerAction(ck, "edgeMate", k1, walker1.isValid, walker1);
     checkWalkerAction(ck, "moveToEdgeMate", k1, walker.moveToEdgeMate(), walker);
     if (k1 !== undefined)
       numMatched++;
@@ -1885,15 +1887,26 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
       const walker = IndexedPolyfaceWalker.create(polyface, k)!;
       //      const walker1 = walker.clone();
       const kNextAroundFacet = polyface.edgeIndexToSuccessorAroundFacet(k);
+      const walkerFS = walker.nextAroundFacet();
+      const walkerFP = walker.previousAroundFacet();
+      const walkerVS = walker.nextAroundVertex();
+      const walkerVP = walker.previousAroundVertex();
+      checkWalkerAction(ck, "nextAroundFacet", kNextAroundFacet, walkerFS.isValid, walkerFS);
       checkWalkerAction(ck, "fs", kNextAroundFacet, walker.moveToSuccessorAroundFacet(), walker);
       if (ck.testTrue(kNextAroundFacet !== undefined) && kNextAroundFacet !== undefined) {
         ck.testTrue(kNextAroundFacet >= k0 && kNextAroundFacet < k1 && kNextAroundFacet !== k, "nextAroundFacet");
+        const kPreviousAroundFacet = polyface.edgeIndexToPredecessorAroundFacet(k);
         ck.testTrue(k === polyface.edgeIndexToPredecessorAroundFacet(kNextAroundFacet));
-        checkWalkerAction(ck, "fp", k, walker.moveToPredecessorAroundFacet(), walker);      // walker returns to k!
+        checkWalkerAction(ck, "walkerFP", kPreviousAroundFacet, walkerFP.isValid, walkerFP);
+        checkWalkerAction(ck, "fp", k, walker.moveToPredecessorAroundFacet(), walker);
         const kMate = polyface.edgeIndexToEdgeMate(k);
         if (kMate !== undefined) {
           const kVertexPredecessor = polyface.edgeIndexToPredecessorAroundVertex(k);
+          const kVertexSuccessor = polyface.edgeIndexToSuccessorAroundVertex(k);
+          checkWalkerAction(ck, "walkerVP", kVertexPredecessor, walkerVP.isValid, walkerVP);
           checkWalkerAction(ck, "vp", kVertexPredecessor, walker.moveToPredecessorAroundVertex(), walker);      // walker moves to kVertexPredecessor !
+
+          checkWalkerAction(ck, "walkerVS", kVertexSuccessor, walkerVS.isValid, walkerVS);
           checkWalkerAction(ck, "vs", k, walker.moveToSuccessorAroundVertex(), walker);
           if (ck.testDefined(kVertexPredecessor) && kVertexPredecessor !== undefined) {
             checkWalkerAction(ck, "edgeMate", kMate, walker.moveToEdgeMate(), walker);
@@ -1919,7 +1932,7 @@ function checkWalkerAction(ck: Checker, action: String, expectedValue: number | 
     ck.testFalse(walkerStatus, { action, error: "expected walker false" });
   } else {
     if (ck.testTrue(walkerStatus, { action, error: "expected walker true" })) {
-      ck.testExactNumber(expectedValue, walker.currentEdgeIndex, { action, error: "expected edgeIndex" });
+      ck.testExactNumber(expectedValue, walker.edgeIndex as number, { action, error: "expected edgeIndex" });
     }
   }
 }

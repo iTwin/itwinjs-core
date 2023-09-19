@@ -152,13 +152,30 @@ export class IndexedPolyface extends Polyface {
    * * return the first edgeIndex for block of indices for that facet.
    * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
    */
-  public edgeIndexToStartIndex(k: number): number | undefined {
+  public edgeIndexToFirstEdgeIndexInFacet(k: number): number | undefined {
     const q = this.edgeIndexToFacetIndex(k);
     if (q !== undefined)
       return this._facetStart[q];
     return undefined;
   }
-
+  /** Given a edgeIndex (index into pointIndex array of PolyfaceData):
+   * * return the first edgeIndex for AFTER the block of indices for this facet.
+   * * i.e. search the _facetStart array for the closest facet start index not exceeding k, and the index just beyond its block.
+   * * Use to step edgeIndex through this facet.
+   *    ```
+   *     upperK = polyface.edgeIndexToLastEdgeInFacet(k);
+   *     for (let movingK = polyface.edgeIndexToUpperEdgeIndexInFacet (k);
+   *               k < upperK; k++){
+   *          ... process edgeIndex movingK
+   *          }
+   *    ```
+   */
+  public edgeIndexToUpperEdgeIndexInFacet(k: number): number | undefined {
+    const q = this.edgeIndexToFacetIndex(k);
+    if (q !== undefined)
+      return this._facetStart[q + 1];
+    return undefined;
+  }
   /** Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal to `value`.
    * * Get an initial estimate by proportions of `value` and the first and last entries.
    * * linear search from there for final value.
@@ -185,7 +202,9 @@ export class IndexedPolyface extends Polyface {
    * * return the edgeIndex of its successor around its facet.
    * * this is `k+1 for all but the last of its index block, which wraps back to edgeIndexToFacetStartIndex.
    */
-  public edgeIndexToSuccessorAroundFacet(k: number): number | undefined {
+  public edgeIndexToSuccessorAroundFacet(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
     const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
     if (facetIndex === undefined)
       return undefined;
@@ -199,7 +218,9 @@ export class IndexedPolyface extends Polyface {
    * * return the edgeIndex of its predecessor around its facet.
    * * this is `k-1 for all but the last of its index block, which wraps forward to the last of its block.
    */
-  public edgeIndexToPredecessorAroundFacet(k: number): number | undefined {
+  public edgeIndexToPredecessorAroundFacet(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
     const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
     if (facetIndex === undefined)
       return undefined;
@@ -212,7 +233,9 @@ export class IndexedPolyface extends Polyface {
    * * if the PolyfaceData has an edgeMateIndex array, this is reached via its edgeMate and then a successor around the neighbor facet.
    * * If that array is missing, return undefined.
    */
-  public edgeIndexToSuccessorAroundVertex(k: number): number | undefined {
+  public edgeIndexToSuccessorAroundVertex(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
     let k1: number | undefined;
     if (this.data.edgeMateIndex !== undefined && k < this.data.edgeMateIndex.length
       && undefined !== (k1 = this.edgeIndexToPredecessorAroundFacet(k)))
@@ -224,7 +247,9 @@ export class IndexedPolyface extends Polyface {
    * * This is reached via the edgeMateIndex array in the PolyfaceData.
    * * If that array is missing, return undefined.
    */
-  public edgeIndexToEdgeMate(k: number): number | undefined {
+  public edgeIndexToEdgeMate(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
     if (this.data.edgeMateIndex !== undefined
       && k >= 0
       && k < this.data.edgeMateIndex.length)
@@ -235,8 +260,9 @@ export class IndexedPolyface extends Polyface {
    * * return the edgeIndex of the place on the adjacent facet moving "backwards" around the vertex loop.
    * * If that array is missing, return undefined.
    */
-  public edgeIndexToPredecessorAroundVertex(k: number): number | undefined {
-    let k1: number | undefined;
+  public edgeIndexToPredecessorAroundVertex(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined; let k1: number | undefined;
     if (undefined !== (k1 = this.edgeIndexToEdgeMate(k)))
       return this.edgeIndexToSuccessorAroundFacet(k1);
     return undefined;
@@ -246,7 +272,9 @@ export class IndexedPolyface extends Polyface {
    * * return the edgeIndex of the 0'th vertex of the block of indices for that facet.
    * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
    */
-  public edgeIndexToFacetIndex(k: number): number | undefined {
+  public edgeIndexToFacetIndex(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
   /**
@@ -631,12 +659,12 @@ export class IndexedPolyface extends Polyface {
       return this._facetStart[facetIndex + 1] - this._facetStart[facetIndex];
     return 0;
   }
-  /** test if `index` is a valid facet index. */
-  public isValidFacetIndex(index: number): boolean { return index >= 0 && index + 1 < this._facetStart.length; }
-  /** ASSUME valid facet index . .. return its start index in index arrays. */
-  public facetIndex0(index: number): number { return this._facetStart[index]; }
+  /** test if `facetIndex` is a valid facet index. */
+  public isValidFacetIndex(facetIndex: number): boolean { return facetIndex >= 0 && facetIndex + 1 < this._facetStart.length; }
+  /** ASSUME valid facetIndex . .. return its start index in index arrays. */
+  public facetIndex0(facetIndex: number): number { return this._facetStart[facetIndex]; }
   /** ASSUME valid facet index . .. return its end index in index arrays. */
-  public facetIndex1(index: number): number { return this._facetStart[index + 1]; }
+  public facetIndex1(facetIndex: number): number { return this._facetStart[facetIndex + 1]; }
   /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
   /** Return the range of (optionally transformed) points in this mesh. */
