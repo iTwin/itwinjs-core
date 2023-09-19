@@ -31,6 +31,7 @@ interface MutableEnumerator extends AnyEnumerator {
  * @param changes Gets the @see EnumerationChanges between the two Enumerations. 
  * For example, if source Enumeration has an attribute that is undefined in  
  * target one, it would be listed in propertyValueChanges.
+ * @internal
  */
 export default async function mergeEnumeration(target: Enumeration, source: Enumeration, changes: EnumerationChanges) {
   const mutableEnumeration = target as MutableEnumeration;
@@ -86,6 +87,7 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
  * @param targetEnumerator The enumerator the differences get merged into.
  * @param changes Gets the @see EnumeratorDelta, the Enumerator delta array holds information about changes between two Enumerators.
  * @param handler Defines the information needed to merge the attributes.
+ * @internal
  */
 async function mergeEnumeratorAttributes<T extends AnyEnumerator>(targetEnumerator: T, changes: EnumeratorDelta[], handler: EnumeratorAttributeChanged<T>) {
   for (let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
