@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Constant, DelayedPromiseWithProps, LazyLoadedPhenomenon, Phenomenon, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaItemChanges } from "../ecschema-editing";
-import { mergeSchemaItemProperties } from "./SchemaItemMerger";
+import { createNewSchemaItemKey, getItemNameAndSchemaRef, mergeSchemaItemProperties } from "./SchemaItemMerger";
 import { MutableConstant } from "../Editing/Mutable/MutableConstant";
 
 /**
@@ -19,9 +19,8 @@ export default async function mergeConstant(target: Constant, source: Constant, 
     const mutableConstant = target as MutableConstant;
 
     // Get referenced higher level phenomenon
-    const [schemaName, itemName] = SchemaItem.parseFullName(source.phenomenon!.fullName);
-    const reference = await source.schema.getReference(schemaName);
-
+    const [refSchema, itemName] = await getItemNameAndSchemaRef(source, source.phenomenon!.fullName);
+    
     await mergeSchemaItemProperties(mutableConstant, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
         switch (propertyName) {
             case "definition": {
@@ -41,12 +40,8 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             }
             case "phenomenon": {
                 if (item.phenomenon === undefined) {
-                    // In this case, propertyValue references the phenomenon in source schema, this is incompatible with target schema
-                    // A lazy loaded phenomenon with the correct reference schema is needed, it would either be the target schema or reference schema 
-                    const schemaItemKey = reference !== undefined
-                        ? new SchemaItemKey(itemName, reference.schemaKey)
-                        : new SchemaItemKey(itemName, target.schema.schemaKey);
-
+                    // A lazy loaded phenomenon with the correct reference schema is needed, if reference schema is undefined then item schema.  
+                    const schemaItemKey = createNewSchemaItemKey(refSchema ? refSchema : target.schema, itemName);
                     const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => {
                         const phenomenon = (await target.schema.context.getSchemaItem<Phenomenon>(schemaItemKey));
                         // At this point, higher level phenomenon item should not be undefined

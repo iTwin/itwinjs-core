@@ -19,7 +19,7 @@ export default async function mergePhenomenon(target: Phenomenon, _source: Pheno
                     item.setDefinition(propertyValue);
                     return;
                 }
-                throw Error(`definition attribute conflict: ${propertyValue} -> ${item.definition}`);
+                throw Error(`Failed to merge schemas, definition attribute conflict: ${propertyValue} -> ${item.definition}`);
             }
         }
     });

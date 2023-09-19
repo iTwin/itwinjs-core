@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItem } from "@itwin/ecschema-metadata";
+import { Schema, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { ChangeType, PropertyValueChange, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { SchemaItemFactory } from "./SchemaItemFactory";
@@ -79,4 +79,26 @@ export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem
       stepUp = false;
     }
   }
+}
+
+/**
+ * 
+ * @param source The schema item the reference gets copied from 
+ * @param itemFullName The full name of the schema item to get the schema reference from.
+ * @returns the item reference schema and the item name, these values are needed to create a schema item key. 
+ */
+export async function getItemNameAndSchemaRef(source: SchemaItem, itemFullName: string): Promise<[Schema | undefined, string]> {
+  const [schemaName, itemName] = SchemaItem.parseFullName(itemFullName);
+  const refSchema = await source.schema.getReference(schemaName);
+  return [refSchema, itemName];
+}
+
+/**
+ * This is needed to create a lazy loaded type for target schema when merging.
+ * @param refSchema the schema the item references to
+ * @param itemName name of the schema item
+ * @returns a schema item key.
+ */
+export function createNewSchemaItemKey(refSchema: Schema, itemName: string){
+  return new SchemaItemKey(itemName, refSchema.schemaKey);
 }

@@ -16,8 +16,8 @@ import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 type EnumeratorAttributeChanged<TEnumerator extends AnyEnumerator> = (item: TEnumerator, attributeName: string, deltaChange: string, attributeValue: any) => void | boolean;
 
 /**
- * Simple interface to extend access Enumerator type. 
- * It will allow editing to Enumerator attributes.
+ * Simple interface to extend access Enumerator attributes 
+ * and allow editing.
  */
 interface MutableEnumerator extends AnyEnumerator {
   label?: string;
