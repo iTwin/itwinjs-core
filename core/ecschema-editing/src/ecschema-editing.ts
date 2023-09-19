@@ -18,6 +18,7 @@ export * from "./Validation/SchemaCompareReporter";
 export * from "./Editing/Editor";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
 export { SchemaValidater } from "./Validation/SchemaValidater";
+export { SchemaMerger } from "./Merging/SchemaMerger";
 
 /** @docs-package-description
  * The ecschema-editing package contains classes for validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
@@ -37,4 +38,8 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
 /**
  * @docs-group-description Comparison
  * Set of classes to enable comparison of ECSchemas.
+ */
+/**
+ * @docs-group-description Merging
+ * Set of classes used to merge schemas.
  */
