@@ -40,6 +40,20 @@ function getFileName(path: string): string {
   return str;
 }
 
+// simple function to extract the file extension, including '.', on Windows or Linux
+function getFileExt(path: string): string {
+  let strs = path.split("/");
+  let str = strs[strs.length - 1];
+  strs = str.split("\\");
+  str = strs[strs.length - 1];
+  const ndx = str.lastIndexOf(".");
+  if (ndx > 0) // allow files starting with .
+    str = str.substring(ndx);
+  else
+    str = "";
+  return str;
+}
+
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
@@ -80,6 +94,7 @@ export class DisplayPerfTestApp {
         // Note: iModel.key in DPTA is just a GUID string (not path and filename)
         let urlStr = runner.curConfig.frontendTilesUrlTemplate.replace("{iModel.key}", iModel.key);
         urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
+        urlStr = urlStr.replace("{iModel.extension}", getFileExt(runner.curConfig.iModelName));
         const url = new URL(urlStr);
         try {
           // See if a tileset has been published for this iModel.
