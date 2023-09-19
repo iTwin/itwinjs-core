@@ -6,7 +6,7 @@ import { Constant, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 
-describe("Constant merger tests", () => {
+describe.only("Constant merger tests", () => {
     let targetContext: SchemaContext;
     let sourceContext: SchemaContext;
 

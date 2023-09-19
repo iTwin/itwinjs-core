@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Constant, DelayedPromiseWithProps, LazyLoadedPhenomenon, Phenomenon, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaItemChanges } from "../ecschema-editing";
-import { createNewSchemaItemKey, getItemNameAndSchemaRef, mergeSchemaItemProperties } from "./SchemaItemMerger";
+import { getItemNameAndSchemaRef, mergeSchemaItemProperties } from "./SchemaItemMerger";
 import { MutableConstant } from "../Editing/Mutable/MutableConstant";
 
 /**
@@ -41,14 +41,13 @@ export default async function mergeConstant(target: Constant, source: Constant, 
             case "phenomenon": {
                 if (item.phenomenon === undefined) {
                     // A lazy loaded phenomenon with the correct reference schema is needed, if reference schema is undefined then item schema.  
-                    const schemaItemKey = createNewSchemaItemKey(refSchema ? refSchema : target.schema, itemName);
+                    const schemaItemKey = new SchemaItemKey(itemName, refSchema ? refSchema.schemaKey : target.schema.schemaKey);
                     const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => {
                         const phenomenon = (await target.schema.context.getSchemaItem<Phenomenon>(schemaItemKey));
                         // At this point, higher level phenomenon item should not be undefined
                         if (phenomenon === undefined) throw Error(`Unable to locate phenomenon item in schema ${schemaItemKey.schemaName}`);
                         return phenomenon;
                     });
-
                     return item.setPhenomenon(lazyTargetPhenomenon);
                 }
             }
