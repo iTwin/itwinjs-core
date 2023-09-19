@@ -7,7 +7,7 @@
  */
 
 import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
-import { LogFunction, Logger } from "./Logger";
+import { LogFunction, Logger, LogLevel } from "./Logger";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 /**
@@ -131,17 +131,25 @@ export class Tracing {
   public static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry) {
     Tracing._tracer = tracer;
     Tracing._openTelemetry = api;
-    Logger.logTrace = Tracing.withOpenTelemetry(Logger.logTrace.bind(Logger)).bind(Logger);
-    Logger.logInfo = Tracing.withOpenTelemetry(Logger.logInfo.bind(Logger)).bind(Logger);
-    Logger.logWarning = Tracing.withOpenTelemetry(Logger.logWarning.bind(Logger)).bind(Logger);
-    Logger.logError = Tracing.withOpenTelemetry(Logger.logError.bind(Logger)).bind(Logger);
+    Logger.logTrace = Tracing.withOpenTelemetry(LogLevel.Trace, Logger.logTrace.bind(Logger)).bind(Logger);
+    Logger.logInfo = Tracing.withOpenTelemetry(LogLevel.Info, Logger.logInfo.bind(Logger)).bind(Logger);
+    Logger.logWarning = Tracing.withOpenTelemetry(LogLevel.Warning, Logger.logWarning.bind(Logger)).bind(Logger);
+    Logger.logError = Tracing.withOpenTelemetry(LogLevel.Error, Logger.logError.bind(Logger)).bind(Logger);
   }
 
-  private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
+  private static withOpenTelemetry(level: LogLevel, base: LogFunction, isError: boolean = false): LogFunction {
     return (category, message, metaData) => {
-      try {
-        Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
-      } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+      if(Logger.isEnabled(category, level)) {
+        try {
+          Tracing._openTelemetry?.trace
+            .getSpan(Tracing._openTelemetry.context.active())
+            ?.addEvent(message, {
+              ...flattenObject(Logger.getMetaData(metaData)),
+              error: isError,
+              loggerCategory: category,
+            });
+        } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+      }
       base(category, message, metaData);
     };
   }
