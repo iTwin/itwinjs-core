@@ -7,6 +7,9 @@ import { SchemaItemChanges } from "../ecschema-editing";
 import { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
 import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 
+/**
+ * @internal 
+ */
 export default async function mergePhenomenon(target: Phenomenon, _source: Phenomenon, changes: SchemaItemChanges) {
     const mutablePhenomenon = target as MutablePhenomenon;
 

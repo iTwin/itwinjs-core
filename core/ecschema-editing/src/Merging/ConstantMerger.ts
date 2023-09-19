@@ -8,7 +8,7 @@ import { createNewSchemaItemKey, getItemNameAndSchemaRef, mergeSchemaItemPropert
 import { MutableConstant } from "../Editing/Mutable/MutableConstant";
 
 /**
- * 
+ * @internal
  * @param target The constant the differences get merged into
  * @param source The constant to compare 
  * @param changes Gets the @see SchemaItemChanges between the two constants. 

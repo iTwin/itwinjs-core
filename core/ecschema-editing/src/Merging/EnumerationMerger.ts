@@ -8,6 +8,7 @@ import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
 /**
+ * @internal
  * @param item Type Enumerator, the Enumerator the differences get merged into.
  * @param attributeName Name of the Enumerator attribute that changed.
  * @param deltaChange Provides information about the changes in Enumerator attributes. 
@@ -80,7 +81,7 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
 }
 
 /**
- * Similar logic to mergeSchemaItemProperties but for Enumerator differences, EnumeratorDelta has the differences starting at index 1, 
+ * Similar logic to mergeSchemaItemProperties but for EnumeratorDelta, which has the differences starting at index 1, 
  * hence the .slice(1), this is the main difference between mergeSchemaItemProperties.
  * @param targetEnumerator The enumerator the differences get merged into.
  * @param changes Gets the @see EnumeratorDelta, the Enumerator delta array holds information about changes between two Enumerators.
