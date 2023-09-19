@@ -493,6 +493,8 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // @internal
+    executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
