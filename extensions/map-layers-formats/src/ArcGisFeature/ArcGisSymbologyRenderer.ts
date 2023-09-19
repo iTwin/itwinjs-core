@@ -34,12 +34,13 @@ export class ArcGisDashLineStyle {
   // ESRI does not provide any values for their line style definition, those values have been
   // determined by pixel-peeping tiles rendered by ArcGIS servers.
   // Available line styles are documented here: https://developers.arcgis.com/web-map-specification/objects/esriSLS_symbol/
-  private static _dashLineLength = 8;
-  private static _dashGapLength = 8;
-  private static _dashShortLineLength = 4;
-  private static _dashShortGapLength = 4;
-  private static _dashLongLineLength = 15;
-  private static _dashLongGapLength = 12;
+  private static _dashLineLength = 6;
+  private static _dashGapLength = 3;
+  private static _dashShortLineLength = 3;
+  private static _dashShortGapLength = 3;
+  private static _dashLongLineLength = 12;
+  private static _dashLongLineDotDotLength = 18;
+  private static _dashLongGapLength = 6;
   private static _dotLineLength = 2;
   private static _dotGapLength = 3;
   private static _shortDotLineLength = 1;
@@ -47,13 +48,13 @@ export class ArcGisDashLineStyle {
   public static dashValues = {
     esriSLSDash : [this._dashLineLength, this._dashGapLength],
     esriSLSDashDot : [this._dashLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
-    esriSLSDashDotDot : [this._dashLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
+    esriSLSDashDotDot : [this._dashLongLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
     esriSLSDot : [this._dashLineLength, this._dotGapLength],
     esriSLSLongDash : [this._dashLongLineLength, this._dashLongGapLength],
-    esriSLSLongDashDot : [this._dashLongLineLength, this._dashGapLength, this._dotLineLength, this._dashGapLength],
+    esriSLSLongDashDot : [this._dashLongLineDotDotLength, this._dashGapLength, this._dotLineLength, this._dashGapLength],
     esriSLSShortDash : [this._dashShortLineLength, this._dashShortGapLength],
     esriSLSShortDashDot : [this._dashShortLineLength, this._dashShortGapLength, this._dotLineLength, this._dashShortGapLength],
-    esriSLSShortDashDotDot :  [this._dashShortLineLength, this._dashShortGapLength, this._dotLineLength, this._dashGapLength, this._dotLineLength, this._dashShortGapLength],
+    esriSLSShortDashDotDot :  [this._dashLineLength, this._dashShortGapLength, this._dotLineLength, this._dashGapLength, this._dotLineLength, this._dashShortGapLength],
     esriSLSShortDot : [this._shortDotLineLength, this._shortDotGapLength],
   };
 
