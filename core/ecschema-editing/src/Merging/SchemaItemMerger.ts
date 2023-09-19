@@ -85,7 +85,7 @@ export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem
  * 
  * @param source The schema item the reference gets copied from 
  * @param itemFullName The full name of the schema item to get the schema reference from.
- * @returns the item reference schema and the item name, these values are needed to create a schema item key. 
+ * @returns the item reference schema and the item name, these values are needed to create a new schema item key. 
  */
 export async function getItemNameAndSchemaRef(source: SchemaItem, itemFullName: string): Promise<[Schema | undefined, string]> {
   const [schemaName, itemName] = SchemaItem.parseFullName(itemFullName);

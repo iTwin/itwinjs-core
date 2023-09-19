@@ -5,17 +5,14 @@
 import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-
 import mergeClasses from "./ClassMerger";
 import mergeEnumeration from "./EnumerationMerger";
 import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
 import mergeSchemaReferences from "./SchemaReferenceMerger";
 import mergeCAClasses from "./CAClassMerger";
-import mergeKindOfQuantity from "./KindOfQuantityMerger";
 import mergePhenomenon from "./PhenomenonMerger";
 import mergeConstant from "./ConstantMerger";
-import mergeUnit from "./UnitMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -81,9 +78,6 @@ export class SchemaMerger {
     const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Constant]);
     await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
 
-    const unitChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, [SchemaItemType.Unit]);
-    await mergeSchemaItems(mergeContext, unitChanges, mergeUnit);
-
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
     const caClassChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.CustomAttributeClass]);
@@ -91,8 +85,6 @@ export class SchemaMerger {
 
     const classChanges = filterChangesByItemType(schemaChanges.classChanges, [SchemaItemType.EntityClass, SchemaItemType.StructClass]);
     await mergeSchemaItems(mergeContext, classChanges, mergeClasses);
-
-    await mergeSchemaItems(mergeContext, schemaChanges.kindOfQuantityChanges.values(), mergeKindOfQuantity);
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.
