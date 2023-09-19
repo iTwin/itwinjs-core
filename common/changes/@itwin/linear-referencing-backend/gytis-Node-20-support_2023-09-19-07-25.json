@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/linear-referencing-backend",
-      "comment": "Add support for Node 20",
+      "comment": "Add support for Node 20.",
       "type": "none"
     }
   ],
