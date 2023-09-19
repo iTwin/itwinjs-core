@@ -168,7 +168,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir });
+      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir, cacheSize: "50G" });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)

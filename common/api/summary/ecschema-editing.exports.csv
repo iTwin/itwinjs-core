@@ -64,6 +64,7 @@ beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
 alpha;SchemaComparer
 alpha;SchemaComparerOptions
+alpha;SchemaComparerOptions
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaEditResults
@@ -72,7 +73,7 @@ alpha;SchemaItemChanges
 beta;class SchemaItemDiagnostic
 alpha;SchemaItemEditResults
 alpha;SchemaItemMissing 
-internal;SchemaMerger
+beta;SchemaMerger
 alpha;SchemaReferenceDelta 
 alpha;SchemaReferenceMissing 
 beta;SchemaValidater

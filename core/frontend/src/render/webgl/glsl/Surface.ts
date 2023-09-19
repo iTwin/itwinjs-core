@@ -195,7 +195,7 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
-  vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
+  vert.addInitializer("use_material = !u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial];");
 
   // Uniform material
   vert.addFunction(decodeMaterialColor);

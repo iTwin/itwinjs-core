@@ -14,7 +14,7 @@ import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY"
 import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
 import { CurveLocationDetailArrayPair, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
@@ -108,6 +108,9 @@ export class CurveCurve {
    * * Close approach xy-distances are measured without regard to z. This is equivalent to their separation distance
    * as seen in the top view, or as measured between their projections onto the xy-plane.
    * * If more than one approach is returned, one of them is the closest approach.
+   * * If an input curve is a `CurveCollection`, then close approaches are computed to each `CurvePrimitive` child.
+   * This can lead to many returned pairs, especially when both inputs are `CurveCollection`s. If an input curve is
+   * an `AnyRegion` then close approaches are computed only to the boundary curves, not to the interior.
    * @param curveA first curve
    * @param curveB second curve
    * @param maxDistance maximum xy-distance to consider between the curves.

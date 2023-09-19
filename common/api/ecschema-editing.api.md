@@ -1333,7 +1333,14 @@ export class SchemaComparer {
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareSchemas(schemaA: Schema, schemaB: Schema, options?: SchemaComparerOptions): Promise<void>;
+    compareSchemas(schemaA: Schema, schemaB: Schema, options?: SchemaComparerOptions): Promise<void>;
     compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+}
+
+// @alpha
+export interface SchemaComparerOptions {
+    // (undocumented)
+    compareItemFullName?: boolean;
 }
 
 // @alpha
@@ -1441,7 +1448,7 @@ export class SchemaItemMissing extends SchemaItemChange {
     toString(): string;
 }
 
-// @internal
+// @beta
 export class SchemaMerger {
     merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
 }
