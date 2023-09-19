@@ -539,8 +539,8 @@ export class Triangulator {
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
         return true;
       }
-      // earcut does not support self intersections, however we do recognize when vertex[i] === vertex[i+3]:
-      if (this.findAroundOrAtVertex(next2, pred)) {
+      // earcut does not support self intersections, however we do recognize when vertex[i] and vertex[i+3] weren't equated:
+      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
         const next3 = next2.faceSuccessor;
         const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
         if (hasBridgeEdgeOrHoleInside) {
@@ -760,9 +760,9 @@ export class Triangulator {
 
     if (hx === qx) return m.facePredecessor; // hole touches outer segment; pick lower endpoint
 
-    // look for points inside the triangle of hole point, segment intersection and endpoint;
-    // if there are no points found, we have a valid connection;
-    // otherwise choose the point of the minimum angle with the ray as connection point
+    // look for outer loop points p inside the triangle of hole point h, outer segment intersection (qx,hy), and outer segment endpoint m;
+    // if there are no points found, we have a valid connection (m);
+    // otherwise choose the point p with minimum angle with the ray as connection point
 
     const stop = m;
     const mx = m.x;

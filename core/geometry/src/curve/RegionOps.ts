@@ -836,8 +836,10 @@ export class RegionOps {
    * Facet the region according to stroke options.
    * @param region a closed xy-planar region, possibly with holes.
    * * The z-coordinates of the region are ignored. Caller is responsible for rotating the region into plane local coordinates beforehand, and reversing the rotation afterwards.
-   * * `UnionRegion` input is assumed to consist of non-overlapping children.
-   * * `ParityRegion` input is assumed to be correctly oriented (holes have opposite orientation to the outer loop).
+   * * For best results, `UnionRegion` input should consist of non-overlapping children.
+   * Caller can ensure this by passing in `region = RegionOps.regionBooleanXY(unionRegion, undefined, RegionBinaryOpType.Union)`.
+   * * For best results, `ParityRegion` input should be correctly oriented (holes have opposite orientation to their containing loop).
+   * Caller can ensure this for non-intersecting loops by passing in `region = RegionOps.sortOuterAndHoleLoopsXY(loops)`.
    * @param options primarily how to stroke the input curves, but also how to facet the region.
    * * By default, a triangulation is returned, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
    * @returns facets for the region, or undefined if facetting failed

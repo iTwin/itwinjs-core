@@ -16,8 +16,9 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionOps } from "../../curve/RegionOps";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -1234,15 +1235,61 @@ describe("PolyfaceClip", () => {
         facetAndDrapeRegion(splitWasherWithHole, Math.PI * 0.14);
       }
 
-      // TODO: create regions:
-      // * punctured split washer parity region (CCW outer loop contains a bridged hole, CW isolated hole) to cover failsafe triangulation method, and force a Boolean difference (to verify that we don't need to reverse holes)
-      // * parity/union region with no outer loop
-      // * union with two components (parity + loop)
-      // TODO: how verify numerically?
+      // areas for following union/parity regions
+      const circleArea = Math.PI*0.3*0.3;
+      const footballArea = 4*(circleArea * Math.asin(Math.sqrt(0.07)/0.3)/(2*Math.PI) - 0.1*Math.sqrt(2)*Math.sqrt(0.07)/2);
+      const unionArea = 2*circleArea - footballArea;
+      const parityArea = unionArea - footballArea;
 
-      // OTHER THINGS TO TRY:
-      // * compress with optional tolerance---still think it should be tighter when the facets are coming from a mesh to begin with
-      // * break on the dangling edge vertex where added to mesh, or in the compress. Where do those clipper edges get removed?
+      if (x += 2) { // union of intersecting circles
+        const arc0 = Arc3d.createRefs(Point3d.create(0.4, 0.4), Matrix3d.createIdentity().scale(0.3), AngleSweep.createStartEndDegrees(-180, 180)); // CCW
+        const arc1 = arc0.cloneTransformed(Transform.createTranslationXYZ(0.2, 0.2));
+        const loop0 = Loop.create(arc0);
+        const loop1 = Loop.create(arc1);
+        const arcUnion = UnionRegion.create(loop0, loop1);
+        ck.testExactNumber(arcUnion.children.length, 2, "UnionRegion constructor created a union with two loops");
+        const arcUnionDisjoint = RegionOps.regionBooleanXY(arcUnion, undefined, RegionBinaryOpType.Union);
+        if (ck.testDefined(arcUnionDisjoint, "boolean union succeeded") && arcUnionDisjoint) {
+          ck.testLT(arcUnion.children.length, arcUnionDisjoint.children.length, "region boolean added at least one face for the overlap");
+          facetAndDrapeRegion(arcUnionDisjoint, unionArea);
+        }
+      }
+
+      if (x += 2) { // xor of intersecting circles
+        const arc0 = Arc3d.createRefs(Point3d.create(0.4, 0.4), Matrix3d.createIdentity().scale(0.3), AngleSweep.createStartEndDegrees(-180, 180)); // CCW
+        const arc1 = arc0.cloneTransformed(Transform.createTranslationXYZ(0.2, 0.2));
+        const loop0 = Loop.create(arc0);
+        const loop1 = Loop.create(arc1);
+        const arcParity = ParityRegion.create(loop0, loop1);
+        ck.testExactNumber(arcParity.children.length, 2, "ParityRegion constructor created a parity region with two loops");
+        facetAndDrapeRegion(arcParity, parityArea);
+      }
+
+      if (x += 2) { // traditional parity region with solid loop and holes
+        const arc0 = Arc3d.createRefs(Point3d.create(0.65, 0.65), Matrix3d.createIdentity().scale(0.1), AngleSweep.createStartEndDegrees(-125, 235)); // CCW hole
+        const arc1 = Arc3d.createRefs(Point3d.create(0.5, 0.5), Matrix3d.createIdentity().scale(0.4), AngleSweep.createStartEndDegrees(-45, 315)); // CCW solid
+        const arc2 = Arc3d.createRefs(Point3d.create(0.5, 0.35), Matrix3d.createIdentity().scale(0.1), AngleSweep.createStartEndDegrees(30, 390)); // CCW hole
+        const loop0 = Loop.create(arc0);
+        const loop1 = Loop.create(arc1);
+        const loop2 = Loop.create(arc2);
+        const arcParity = ParityRegion.create(loop0, loop1, loop2);
+        ck.testExactNumber(arcParity.children.length, 3, "ParityRegion constructor created a parity region with two loops");
+        const arcParitySorted = RegionOps.sortOuterAndHoleLoopsXY(arcParity.children);
+        if (ck.testType(arcParitySorted, ParityRegion, "successfully sorted the non-intersecting loops into a ParityRegion"))
+          facetAndDrapeRegion(arcParitySorted, Math.PI*0.4*0.4 - 2*Math.PI*0.1*0.1);
+      }
+
+      if (x += 2) { // union of parity and loop
+        const arc0 = Arc3d.createRefs(Point3d.create(0.65, 0.65), Matrix3d.createIdentity().scale(0.1), AngleSweep.createStartEndDegrees(-125, 235)); // CCW hole
+        const arc1 = Arc3d.createRefs(Point3d.create(0.6, 0.6), Matrix3d.createIdentity().scale(0.3), AngleSweep.createStartEndDegrees(-45, 315)); // CCW solid
+        const arc2 = Arc3d.createRefs(Point3d.create(0.15, 0.15), Matrix3d.createIdentity().scale(0.1), AngleSweep.createStartEndDegrees(30, 390)); // CW solid
+        const loop0 = Loop.create(arc0);
+        const loop1 = Loop.create(arc1);
+        const loop2 = Loop.create(arc2);
+        const unionSorted = RegionOps.sortOuterAndHoleLoopsXY([loop0, loop1, loop2]);
+        if (ck.testType(unionSorted, UnionRegion, "successfully sorted the non-intersecting loops into a UnionRegion"))
+          facetAndDrapeRegion(unionSorted, circleArea);
+      }
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion");

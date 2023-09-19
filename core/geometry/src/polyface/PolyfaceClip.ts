@@ -466,14 +466,14 @@ export class PolyfaceClip {
   }
   /**
    * Clip the polyface by the swept region.
-   * @param polyface input mesh, untouched
+   * @param mesh input mesh, untouched
    * @param region planar region to drape onto mesh
    * @param sweepVector optional sweep direction for region; if undefined, region normal is used
    * @param options primarily how to stroke the region boundary, but also how to facet the region.
-   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, fewer clippers are constructed in general.
    * @returns clipped facets. No other mesh data but vertices appear in output.
    */
-  public static drapeRegion(polyface: Polyface, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
+  public static drapeRegion(mesh: Polyface, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
     const contour = SweepContour.createForLinearSweep(region);
     if (!contour)
       return undefined;
@@ -481,8 +481,8 @@ export class PolyfaceClip {
     if (!clipper)
       return undefined;
     const builders = ClippedPolyfaceBuilders.create(true);
-    this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, builders, 1);
-    return builders.claimPolyface(0, true, Geometry.smallMetricDistanceSquared);
+    this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh, clipper, builders, 1);
+    return builders.claimPolyface(0, true);
   }
   /** Find consecutive points around a polygon (with implied closure edge) that are ON a plane
    * @param points array of points around polygon.  Closure edge is implied.
