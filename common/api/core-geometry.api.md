@@ -2947,13 +2947,8 @@ export class IndexedPolyface extends Polyface {
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
     createVisitor(numWrap?: number): PolyfaceVisitor;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
-    edgeIndexToEdgeMate(k: number | undefined): number | undefined;
     edgeIndexToFacetIndex(k: number | undefined): number | undefined;
     edgeIndexToFirstEdgeIndexInFacet(k: number): number | undefined;
-    edgeIndexToPredecessorAroundFacet(k: number | undefined): number | undefined;
-    edgeIndexToPredecessorAroundVertex(k: number | undefined): number | undefined;
-    edgeIndexToSuccessorAroundFacet(k: number | undefined): number | undefined;
-    edgeIndexToSuccessorAroundVertex(k: number | undefined): number | undefined;
     edgeIndexToUpperEdgeIndexInFacet(k: number): number | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     get faceCount(): number;

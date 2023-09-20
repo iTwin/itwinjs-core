@@ -10,7 +10,9 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface } from "./Polyface";
-
+/**
+ * @public
+ */
 export class IndexedPolyfaceWalker {
   /** The polyface being traversed. */
   private _polyface: IndexedPolyface;
