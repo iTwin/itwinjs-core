@@ -198,80 +198,10 @@ export class IndexedPolyface extends Polyface {
 
   }
 
-  /** Given a edgeIndex `k` (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of its successor around its facet.
-   * * this is `k+1 for all but the last of its index block, which wraps back to edgeIndexToFacetStartIndex.
-   */
-  public edgeIndexToSuccessorAroundFacet(k: number | undefined): number | undefined {
-    if (k === undefined)
-      return undefined;
-    const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
-    if (facetIndex === undefined)
-      return undefined;
-    const kNextFacet = this._facetStart[facetIndex + 1];
-    const kNext = k + 1;
-    if (kNext < kNextFacet)
-      return kNext;
-    return this._facetStart[facetIndex];
-  }
-  /** Given a edgeIndex `k` (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of its predecessor around its facet.
-   * * this is `k-1 for all but the last of its index block, which wraps forward to the last of its block.
-   */
-  public edgeIndexToPredecessorAroundFacet(k: number | undefined): number | undefined {
-    if (k === undefined)
-      return undefined;
-    const facetIndex = IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
-    if (facetIndex === undefined)
-      return undefined;
-    if (k === this._facetStart[facetIndex])
-      return this._facetStart[facetIndex + 1] - 1;
-    return k - 1;
-  }
-  /** Given a edgeIndex `k` (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of its successor around its VERTEX
-   * * if the PolyfaceData has an edgeMateIndex array, this is reached via its edgeMate and then a successor around the neighbor facet.
-   * * If that array is missing, return undefined.
-   */
-  public edgeIndexToSuccessorAroundVertex(k: number | undefined): number | undefined {
-    if (k === undefined)
-      return undefined;
-    let k1: number | undefined;
-    if (this.data.edgeMateIndex !== undefined && k < this.data.edgeMateIndex.length
-      && undefined !== (k1 = this.edgeIndexToPredecessorAroundFacet(k)))
-      return this.data.edgeMateIndex[k1];
-    return undefined;
-  }
-  /** Given a edgeIndex `k` (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of the place on the adjacent facet but on the other end of the edge from edgeIndex.
-   * * This is reached via the edgeMateIndex array in the PolyfaceData.
-   * * If that array is missing, return undefined.
-   */
-  public edgeIndexToEdgeMate(k: number | undefined): number | undefined {
-    if (k === undefined)
-      return undefined;
-    if (this.data.edgeMateIndex !== undefined
-      && k >= 0
-      && k < this.data.edgeMateIndex.length)
-      return this.data.edgeMateIndex[k];
-    return undefined;
-  }
-  /** Given a edgeIndex `k` (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of the place on the adjacent facet moving "backwards" around the vertex loop.
-   * * If that array is missing, return undefined.
-   */
-  public edgeIndexToPredecessorAroundVertex(k: number | undefined): number | undefined {
-    if (k === undefined)
-      return undefined; let k1: number | undefined;
-    if (undefined !== (k1 = this.edgeIndexToEdgeMate(k)))
-      return this.edgeIndexToSuccessorAroundFacet(k1);
-    return undefined;
-  }
-
   /** Given a edgeIndex (index into pointIndex array of PolyfaceData):
-   * * return the edgeIndex of the 0'th vertex of the block of indices for that facet.
-   * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
-   */
+ * * return the edgeIndex of the 0'th vertex of the block of indices for that facet.
+ * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
+ */
   public edgeIndexToFacetIndex(k: number | undefined): number | undefined {
     if (k === undefined)
       return undefined;

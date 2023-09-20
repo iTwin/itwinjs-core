@@ -26,6 +26,10 @@ export class IndexedPolyfaceWalker {
    */
   public get isValid(): boolean { return this._edgeIndex !== undefined; }
   /**
+   * Return true if the walker has an undefined edgeIndex.
+   */
+  public get isUndefined(): boolean { return this._edgeIndex === undefined; }
+  /**
    * Create a walker for given polyface
    * * Create a walker which references the given IndexedPolyface.
    * * A reference to the the polyface is stored (captured) in the walker.
@@ -64,6 +68,26 @@ export class IndexedPolyfaceWalker {
       return visitor.moveToReadIndex(facetIndex);
     }
     return false;
+  }
+  /**
+   * test if two walkers are at different edges in the same polyface.
+   * * If either has undefined edge, return false.
+   * * If they are in different polyfaces, return false.
+   * * If they are the same edge in the same polyface, return false.
+   */
+  public static areDifferentEdgesInSamePolyface(walker1: IndexedPolyfaceWalker, walker2: IndexedPolyfaceWalker): boolean {
+    if (walker1.isUndefined || walker2.isUndefined)
+      return false;
+    return walker1._polyface === walker2._polyface
+      && walker1._edgeIndex !== walker2.edgeIndex
+      && walker1._edgeIndex !== undefined
+      && walker2._edgeIndex !== undefined;
+  }
+  public static areSameEdge(walker1: IndexedPolyfaceWalker, walker2: IndexedPolyfaceWalker): boolean {
+    return walker1._polyface === walker2._polyface
+      && walker1._edgeIndex !== undefined
+      && walker1._edgeIndex === walker2._edgeIndex;
+    // equality test after testing walker1._edgeIndex !== undefined assures walker2._edgeIndex is defined.
   }
 
   //=========================================================================
