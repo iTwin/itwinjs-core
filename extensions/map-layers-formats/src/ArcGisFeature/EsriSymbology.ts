@@ -6,7 +6,9 @@
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 
-// Convert a channel array [r, g, b, a] to ColorDef
+/** Convert a channel array [r, g, b, a] to ColorDef
+ * @internal
+ */
 function colorFromArray(channels?: number[]) {
   if (channels && channels.length === 4) {
     // Alpha channel is reversed, 255 = opaque
