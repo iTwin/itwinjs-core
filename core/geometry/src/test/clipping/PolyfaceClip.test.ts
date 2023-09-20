@@ -1169,7 +1169,6 @@ describe("PolyfaceClip", () => {
     const mesh = Sample.createMeshFromSmoothSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
-      regionOptions.maximizeConvexFacets = true;
       regionOptions.angleTol = Angle.createDegrees(5);
 
       const facetAndDrapeRegion = (regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {

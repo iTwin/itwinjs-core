@@ -474,8 +474,7 @@ export class PolyfaceClip {
    * @param mesh input mesh, untouched
    * @param region planar region to drape onto mesh
    * @param sweepVector optional sweep direction for region; if undefined, region normal is used
-   * @param options primarily how to stroke the region boundary, but also how to facet the region.
-   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, fewer clippers are constructed in general.
+   * @param options how to stroke the region boundary
    * @returns clipped facets. No other mesh data but vertices appear in output.
    */
   public static drapeRegion(mesh: Polyface | PolyfaceVisitor, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {

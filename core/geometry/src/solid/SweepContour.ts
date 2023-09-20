@@ -206,10 +206,10 @@ export class SweepContour {
   }
   /** Emit facets to a function
    * This method may cache and reuse facets over multiple calls.
-   * @param options primarily how to stroke the contour, but also how to facet it.
-   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * @param announce callback to receive the facet set
+   * @param options how to stroke the contour
    */
-  public announceFacets(announce: (facets: IndexedPolyface) => void, options?: StrokeOptions) {
+  public announceFacets(announce: (facets: IndexedPolyface) => void, options?: StrokeOptions): void {
     this.buildFacets(options);
     if (this._facets)
       announce(this._facets);
@@ -219,8 +219,7 @@ export class SweepContour {
    * @param sweepVector the sweep direction (does not have to be perpendicular to the contour). If undefined, the sweep direction is perpendicular to the plane of the contour, and no caps are constructed.
    * @param cap0 construct a clip plane equal to the contour plane. Note that `sweepVector` must be defined.
    * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`. That is, sweepVector indicates both direction and distance.
-   * @param options primarily how to stroke the contour, but also how to facet it.
-   * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * @param options how to stroke the contour
    * @returns clipper defined by faceting then sweeping the contour region
    */
   public sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false, options?: StrokeOptions): UnionOfConvexClipPlaneSets | undefined {
@@ -230,6 +229,7 @@ export class SweepContour {
       cap0 = cap1 = false;
       sweepVector = this.localToWorld.matrix.columnZ();
     }
+    options.maximizeConvexFacets = true;  // produce fewer ConvexClipPlaneSets
     // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
     this.buildFacets(options);
     const facets = this._facets;

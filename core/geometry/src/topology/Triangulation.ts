@@ -280,13 +280,14 @@ export class Triangulator {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
-    if (!startingNode || graph.countNodes() < 6) return graph;
+    if (!startingNode || graph.countNodes() < 6)
+      return undefined;
 
-    if (Triangulator.triangulateSingleFace(graph, startingNode)) {
-      Triangulator.flipTriangles(graph);
-      return graph;
-    }
-    return undefined;
+    if (!Triangulator.triangulateSingleFace(graph, startingNode))
+      return undefined;
+
+    Triangulator.flipTriangles(graph);
+    return graph;
   }
 
   /**
@@ -313,28 +314,32 @@ export class Triangulator {
       return baseNode;
     return graph.splitEdge(baseNode, x, y, z);
   }
-  /** Return length of data without wraparound point, if present */
+  /** Return length of data without wraparound point(s), if present */
   private static getUnwrappedLength(data: LineStringDataVariant): number {
     let n = data.length;
     let x0: number, y0: number, x1: number, y1: number;
-    if (data instanceof IndexedXYZCollection) {
-      x0 = data.getXAtUncheckedPointIndex(0);
-      y0 = data.getYAtUncheckedPointIndex(0);
-      x1 = data.getXAtUncheckedPointIndex(n - 1);
-      y1 = data.getYAtUncheckedPointIndex(n - 1);
-    } else if (Geometry.isArrayOfNumberArray(data, n, 2)) {
-      x0 = data[0][0];
-      y0 = data[0][1];
-      x1 = data[n - 1][0];
-      y1 = data[n - 1][1];
-    } else {
-      x0 = data[0].x;
-      y0 = data[0].y;
-      x1 = data[n - 1].x;
-      y1 = data[n - 1].y;
+    while (n > 1) {
+      if (data instanceof IndexedXYZCollection) {
+        x0 = data.getXAtUncheckedPointIndex(0);
+        y0 = data.getYAtUncheckedPointIndex(0);
+        x1 = data.getXAtUncheckedPointIndex(n - 1);
+        y1 = data.getYAtUncheckedPointIndex(n - 1);
+      } else if (Geometry.isArrayOfNumberArray(data, n, 2)) {
+        x0 = data[0][0];
+        y0 = data[0][1];
+        x1 = data[n - 1][0];
+        y1 = data[n - 1][1];
+      } else {
+        x0 = data[0].x;
+        y0 = data[0].y;
+        x1 = data[n - 1].x;
+        y1 = data[n - 1].y;
+      }
+      if (Geometry.isAlmostEqualNumber(x0, x1) && Geometry.isAlmostEqualNumber(y0, y1))
+        --n;
+      else
+        break;
     }
-    if (Geometry.isAlmostEqualNumber(x0, x1) && Geometry.isAlmostEqualNumber(y0, y1))
-      --n;
     return n;
   }
   /** Create a loop from coordinates.
@@ -342,7 +347,7 @@ export class Triangulator {
    * * no masking or other markup is applied.
    */
   public static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined {
-    const n = this.getUnwrappedLength(data);  // remove xy-closure point so we can start at a bridge edge
+    const n = this.getUnwrappedLength(data);  // open it up to allow starting at a bridge edge
     let baseNode: HalfEdge | undefined;
     if (data instanceof IndexedXYZCollection) {
       const xyz = Point3d.create();
