@@ -1172,21 +1172,22 @@ describe("PolyfaceClip", () => {
       regionOptions.maximizeConvexFacets = true;
       regionOptions.angleTol = Angle.createDegrees(5);
 
-      const facetAndDrapeRegion = (region: AnyRegion, knownArea?: number): IndexedPolyface | undefined => {
+      const facetAndDrapeRegion = (regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;
-        const contour = SweepContour.createForLinearSweep(region);
+        const contour = SweepContour.createForLinearSweep(regionXY);
         if (ck.testType(contour, SweepContour, "created contour from region"))
           contour.announceFacets((facets: IndexedPolyface) => {regionFacets = facets;}, regionOptions);
-        const regionNormal = FrameBuilder.createRightHandedLocalToWorld(region)!.matrix.columnZ();
-        const drapeMesh = PolyfaceClip.drapeRegion(mesh, region, undefined, regionOptions);
+        const regionNormal = FrameBuilder.createRightHandedLocalToWorld(regionXY)!.matrix.columnZ();
+        ck.testParallel(Vector3d.unitZ(), regionNormal, "we are only testing input regions parallel to the xy-plane");
+        const drapeMesh = PolyfaceClip.drapeRegion(mesh, regionXY, sweepDir, regionOptions);
         if (ck.testType(drapeMesh, IndexedPolyface, "draped mesh is created")) {
-          const area = knownArea ? knownArea : RegionOps.computeXYArea(region);
+          const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
           if (ck.testTrue(area !== undefined && area > 0.0, "region area computed")) {
-            const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, regionNormal);
+            const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
             ck.testCoordinateWithToleranceFactor(area!, projectedArea, 1000, "projected area of draped mesh agrees with tool region area");
           }
         }
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mesh, region], x);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mesh, regionXY], x);
         if (regionFacets)
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, regionFacets, x, 2);
         if (drapeMesh)
@@ -1289,6 +1290,16 @@ describe("PolyfaceClip", () => {
         const unionSorted = RegionOps.sortOuterAndHoleLoopsXY([loop0, loop1, loop2]);
         if (ck.testType(unionSorted, UnionRegion, "successfully sorted the non-intersecting loops into a UnionRegion"))
           facetAndDrapeRegion(unionSorted, circleArea);
+      }
+
+      if (x += 2) { // non-orthogonal sweep direction
+        const arc = Arc3d.createRefs(Point3d.create(0.1, 0.1), Matrix3d.createIdentity().scale(0.3), AngleSweep.create360());
+        const loop = Loop.create(arc);
+        const sweepDir = Vector3d.create(1, 1, 1).normalizeWithLength().v!;
+        const sweptArea = Vector3d.unitZ(circleArea).dotProduct(sweepDir);
+        facetAndDrapeRegion(loop, sweptArea, sweepDir);
+        const cylinder = LinearSweep.create(arc, sweepDir.scale(3), false);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, cylinder, x);  // visual check
       }
     }
 

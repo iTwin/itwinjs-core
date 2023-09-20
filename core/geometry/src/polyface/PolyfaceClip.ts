@@ -132,10 +132,14 @@ export class PolyfaceClip {
    *   * 0 outputs all shards -- this may have many interior edges.
    *   * 1 stitches shards together to get cleaner facets.
    */
-  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
+  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface | PolyfaceVisitor, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
+    if (polyface instanceof Polyface) {
+      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface.createVisitor(0), allClippers, destination, outputSelector);
+      return;
+    }
     const builderA = destination.builderA;
     const builderB = destination.builderB;
-    const visitor = polyface.createVisitor(0);
+    const visitor = polyface; // alias; we have a visitor now
     const cache = new GrowableXYZArrayCache();
     const insideShards: GrowableXYZArray[] = [];
     const outsideShards: GrowableXYZArray[] = [];
@@ -465,7 +469,8 @@ export class PolyfaceClip {
     return undefined;
   }
   /**
-   * Clip the polyface by the swept region.
+   * Drape the region onto the mesh.
+   * * This method computes the portion of the input mesh that lies inside the clipper generated from sweeping the input region in the given direction.
    * @param mesh input mesh, untouched
    * @param region planar region to drape onto mesh
    * @param sweepVector optional sweep direction for region; if undefined, region normal is used
@@ -473,7 +478,9 @@ export class PolyfaceClip {
    * * By default, a triangulation is computed, but if `options.maximizeConvexFacets === true`, fewer clippers are constructed in general.
    * @returns clipped facets. No other mesh data but vertices appear in output.
    */
-  public static drapeRegion(mesh: Polyface, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
+  public static drapeRegion(mesh: Polyface | PolyfaceVisitor, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
+    if (mesh instanceof Polyface)
+      return this.drapeRegion(mesh.createVisitor(0), region, sweepVector, options);
     const contour = SweepContour.createForLinearSweep(region);
     if (!contour)
       return undefined;
