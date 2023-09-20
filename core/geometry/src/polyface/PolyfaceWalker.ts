@@ -58,64 +58,6 @@ export class IndexedPolyfaceWalker {
       return new IndexedPolyfaceWalker(this._polyface, edgeIndex);
     return undefined;
   }
-  /**
-   * move to the next position (corner of facet) around the same facet.
-   */
-  public moveToSuccessorAroundFacet(): boolean {
-    const newEdgeIndex = this._polyface.edgeIndexToSuccessorAroundFacet(this._edgeIndex);
-    if (newEdgeIndex !== undefined) {
-      this._edgeIndex = newEdgeIndex;
-      return true;
-    }
-    return false;
-  }
-  /**
-   * move to the previous position (corner of facet) around the same facet.
-   */
-  public moveToPredecessorAroundFacet(): boolean {
-    const newEdgeIndex = this._polyface.edgeIndexToPredecessorAroundFacet(this._edgeIndex);
-    if (newEdgeIndex !== undefined) {
-      this._edgeIndex = newEdgeIndex;
-      return true;
-    }
-    return false;
-  }
-  /**
-   * move to the next facet sharing the vertex of the current position.
-   * With the usual convention that successorAroundFacet is counterclockwise, the successorAroundVertex is also counterclockwise around the vertex.
-   */
-  public moveToSuccessorAroundVertex(): boolean {
-    const newEdgeIndex = this._polyface.edgeIndexToSuccessorAroundVertex(this._edgeIndex);
-    if (newEdgeIndex !== undefined) {
-      this._edgeIndex = newEdgeIndex;
-      return true;
-    }
-    return false;
-  }
-  /**
-   * move to the next facet sharing the vertex of the current position.
-   * With the usual convention that successorAroundFacet is counterclockwise, the predecessorAroundVertex is clockwise around the vertex.
-   */
-  public moveToPredecessorAroundVertex(): boolean {
-    const newEdgeIndex = this._polyface.edgeIndexToPredecessorAroundVertex(this._edgeIndex);
-    if (newEdgeIndex !== undefined) {
-      this._edgeIndex = newEdgeIndex;
-      return true;
-    }
-    return false;
-  }
-  /**
-   * move across the edge from the current position.
-   * the new position is in the (unique) adjacent facet and at the opposite end of the same edge.
-   */
-  public moveToEdgeMate(): boolean {
-    const newEdgeIndex = this._polyface.edgeIndexToEdgeMate(this._edgeIndex);
-    if (newEdgeIndex !== undefined) {
-      this._edgeIndex = newEdgeIndex;
-      return true;
-    }
-    return false;
-  }
   public loadVisitor(visitor: IndexedPolyfaceVisitor): boolean {
     const facetIndex = this._polyface.edgeIndexToFacetIndex(this._edgeIndex);
     if (facetIndex !== undefined) {
