@@ -9,7 +9,7 @@
 
 import { Geometry } from "../Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceData } from "./PolyfaceData";
 
 /* eslint-disable @itwin/prefer-get */
@@ -40,7 +40,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
 
   }
   /** Return the client polyface object. */
-  public clientPolyface(): Polyface { return this._polyface; }
+  public clientPolyface(): IndexedPolyface { return this._polyface; }
   /** Set the number of vertices duplicated (e.g. 1 for start and end) in arrays in the visitor. */
   public setNumWrap(numWrap: number) { this._numWrap = numWrap; }
 

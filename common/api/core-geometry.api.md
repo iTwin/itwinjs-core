@@ -2939,7 +2939,6 @@ export class IndexedPolyface extends Polyface {
     addPoint(point: Point3d, priorIndex?: number): number;
     addPointIndex(index: number, visible?: boolean): void;
     addPointXYZ(x: number, y: number, z: number): number;
-    buildEdgeMateIndices(): void;
     cleanupOpenFacet(): void;
     clone(): IndexedPolyface;
     cloneTransformed(transform: Transform): IndexedPolyface;
@@ -2996,7 +2995,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     clientNormalIndex(i: number): number;
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
-    clientPolyface(): Polyface;
+    clientPolyface(): IndexedPolyface;
     static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor;
     currentReadIndex(): number;
     moveToNextFacet(): boolean;
@@ -3008,6 +3007,27 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     setNumWrap(numWrap: number): void;
     tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined;
     tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined;
+}
+
+// @public
+export class IndexedPolyfaceWalker {
+    static buildEdgeMateIndices(polyface: IndexedPolyface): void;
+    clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined;
+    static createAtEdgeIndex(polyface: IndexedPolyface, edgeIndex?: number): IndexedPolyfaceWalker;
+    static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    get edgeIndex(): number | undefined;
+    edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    isDifferentEdgeInSamePolyface(walker2: IndexedPolyfaceWalker): boolean;
+    isSameEdge(walker2: IndexedPolyfaceWalker): boolean;
+    get isUndefined(): boolean;
+    get isValid(): boolean;
+    loadVisitor(visitor: IndexedPolyfaceVisitor): boolean;
+    nextAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    nextAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    get polyface(): IndexedPolyface | undefined;
+    previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
 }
 
 // @public

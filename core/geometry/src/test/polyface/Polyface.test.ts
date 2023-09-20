@@ -1594,57 +1594,6 @@ it("SmallSynchroMesh", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("readIndexToFacet", () => {
-  const ck = new Checker();
-  const triIndices = [0, 3, 6, 9, 12, 15, 18];
-  verifyMonotoneArraySearch(ck, triIndices, "triangles");
-  const quadIndices = [];
-  for (let q = 0; q < 5; q++)
-    quadIndices.push(4 * q);
-  verifyMonotoneArraySearch(ck, triIndices, "triangles");
-  verifyMonotoneArraySearch(ck, quadIndices, "quads");
-  const mixedIndices = [0, 4, 12, 14, 20, 23, 30, 40, 43, 46, 49];
-  verifyMonotoneArraySearch(ck, mixedIndices, "mixed");
-  expect(ck.getNumErrors()).equals(0);
-
-});
-
-it.only("edgeMatesI", () => {
-  const ck = new Checker();
-  //
-  //    5     2   4
-  //    0    1   3
-  const builder = PolyfaceBuilder.create();
-  const points: Point3d[] = [
-    Point3d.create(0, 0, 0),
-    Point3d.create(1, 0, 0),
-    Point3d.create(1, 1, 0),
-    Point3d.create(2, 0, 0),
-    Point3d.create(2, 1, 0),
-    Point3d.create(0, 1, 0),
-  ];
-  let numInteriorEdges = 0;
-  builder.addPolygon([points[0], points[1], points[2]]);
-  builder.addPolygon([points[1], points[4], points[2]]); numInteriorEdges++;
-  builder.addPolygon([points[1], points[3], points[4]]); numInteriorEdges++;
-  builder.addPolygon([points[0], points[2], points[5]]); numInteriorEdges++;
-
-  const polyface = builder.claimPolyface();
-  polyface.buildEdgeMateIndices();
-  verifyEdgeMates(ck, polyface);
-  let numMatched = 0;
-  for (let k = 0; k < polyface.data.pointIndex.length; k++) {
-    const walker = IndexedPolyfaceWalker.create(polyface, k)!;
-    const walker1 = walker.edgeMate();
-    checkWalkerPair(ck, "edgeMate", walker, walker1, true, walker1.edgeMate());
-    if (walker1.isValid)
-      numMatched++;
-  }
-  ck.testExactNumber(numMatched, 2 * numInteriorEdges);
-  expect(ck.getNumErrors()).equals(0);
-
-});
-
 it("synchroPolyface", () => {
   const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/synchro/082020B/synchromesh.json", "utf8"));
 
@@ -1876,7 +1825,12 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
     const k0 = polyface.facetIndex0(facetIndex);
     const k1 = polyface.facetIndex1(facetIndex);
     for (let k = k0; k < k1; k++) {
-      const walker = IndexedPolyfaceWalker.create(polyface, k)!;
+      const offsetWithinFacet = k - k0;
+      const walkerZ = IndexedPolyfaceWalker.createAtFacetIndex(polyface, facetIndex, offsetWithinFacet);
+
+      const walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, k);
+      const kZ = walkerZ.edgeIndex;
+      ck.testTrue(walker.isSameEdge(walkerZ), { error: "createAtFacetIndex", facetIndex, k, k0, k1, kZ });
       const walker1 = walker.nextAroundFacet();
       const walker2 = walker1.previousAroundFacet();
       checkWalkerPair(ck, "face steps", walker, walker1, false, walker2);
@@ -1893,8 +1847,59 @@ function checkWalkerPair(ck: Checker, action: String, walker0: IndexedPolyfaceWa
       if (!walker1MayBeUndefined)
         ck.announceError({ action, error: "walker1 must be defined" });
     } else {
-      ck.testTrue(IndexedPolyfaceWalker.areDifferentEdgesInSamePolyface(walker0, walker1), { action, error: "Expect move to different edge" });
-      ck.testTrue(IndexedPolyfaceWalker.areSameEdge(walker0, walker2), { action, error: "Expected return to start" });
+      ck.testTrue(walker0.isDifferentEdgeInSamePolyface(walker1), { action, error: "Expect move to different edge" });
+      ck.testTrue(walker0.isSameEdge(walker2), { action, error: "Expected return to start" });
     }
   }
 }
+
+it.only("edgeIndexToFacetIndex", () => {
+  const ck = new Checker();
+  const triIndices = [0, 3, 6, 9, 12, 15, 18];
+  verifyMonotoneArraySearch(ck, triIndices, "triangles");
+  const quadIndices = [];
+  for (let q = 0; q < 5; q++)
+    quadIndices.push(4 * q);
+  verifyMonotoneArraySearch(ck, triIndices, "triangles");
+  verifyMonotoneArraySearch(ck, quadIndices, "quads");
+  const mixedIndices = [0, 4, 12, 14, 20, 23, 30, 40, 43, 46, 49];
+  verifyMonotoneArraySearch(ck, mixedIndices, "mixed");
+  expect(ck.getNumErrors()).equals(0);
+
+});
+
+it.only("edgeMatesI", () => {
+  const ck = new Checker();
+  //
+  //    5     2   4
+  //    0    1   3
+  const builder = PolyfaceBuilder.create();
+  const points: Point3d[] = [
+    Point3d.create(0, 0, 0),
+    Point3d.create(1, 0, 0),
+    Point3d.create(1, 1, 0),
+    Point3d.create(2, 0, 0),
+    Point3d.create(2, 1, 0),
+    Point3d.create(0, 1, 0),
+  ];
+  let numInteriorEdges = 0;
+  builder.addPolygon([points[0], points[1], points[2]]);
+  builder.addPolygon([points[1], points[4], points[2]]); numInteriorEdges++;
+  builder.addPolygon([points[1], points[3], points[4]]); numInteriorEdges++;
+  builder.addPolygon([points[0], points[2], points[5]]); numInteriorEdges++;
+
+  const polyface = builder.claimPolyface();
+  IndexedPolyfaceWalker.buildEdgeMateIndices(polyface);
+  verifyEdgeMates(ck, polyface);
+  let numMatched = 0;
+  for (let k = 0; k < polyface.data.pointIndex.length; k++) {
+    const walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, k)!;
+    const walker1 = walker.edgeMate();
+    checkWalkerPair(ck, "edgeMate", walker, walker1, true, walker1.edgeMate());
+    if (walker1.isValid)
+      numMatched++;
+  }
+  ck.testExactNumber(numMatched, 2 * numInteriorEdges);
+  expect(ck.getNumErrors()).equals(0);
+
+});

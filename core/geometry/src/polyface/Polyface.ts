@@ -208,57 +208,6 @@ export class IndexedPolyface extends Polyface {
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
   /**
-   * In the PolyfaceData object, build the edgeMate data array.
-   * After this method:
-   * * The array data.edgeMateIndex be present with the same length as the other index arrays.
-   * * For each facet edge with a unique "edge mate", the query polyface.edgeIndexToEdgeMate will navigate to the edge mate on the an adjacent facet.
-   * * The conditions for edgeMate matching are:
-   *    * pointIndices pointIndex[kA] and pointIndex[kB] are at "read index" kA and kB in the pointIndexArray, with
-   *       kA and kB being consecutive indices "around the facet" (either kB===kA+1 or kA is the highest read index for the facet and kB is "wrapped" to the first of the facet)
-   *    * there is another facet in which pointIndex[kC] and pointIndex[kD] are an edge with pointIndex value in reversed order, i.e.
-   *       * pointIndex[kA] = pointIndex[kD]
-   *       * pointIndex[kB] = pointIndex[kC]
-   * * All pointIndex values that do not have this matching property are undefined.  This includes
-   *    * "boundary" edges that have no mates at all
-   *    * "non manifold" edges that have more than one mate, or a single mate that is in the wrong direction.
-   * * These conditions are "just" the usual convention that each edge in a mesh has at most one partner with opposite orientation.
-   * * Following this setup step, this polyface will support the queries to reach the various neighbors of any given edgeIndex k into the pointIndex array.
-   *   * polyface.edgeIndexToEdgeMate = (possibly undefined) edgeIndex of the edge mate
-   *   * polyface.edgeIndexToSuccessorAroundFacet = edgeIndex of the next vertex around the facet.
-   *   * polyface.edgeIndexToPredecessorAroundFacet = edgeIndex of the previous vertex around the facet
-   *   * polyface.edgeIndexToSuccessorAroundVertex = (possibly undefined) edgeIndex of the next vertex around the facet.
-   *   * polyface.edgeIndexToPredecessorAroundVertex = (possibly undefined) edgeIndex of the previous vertex around the facet
-   */
-  public buildEdgeMateIndices() {
-    const matcher = new IndexedEdgeMatcher();
-    for (let facetIndex = 0; facetIndex + 1 < this._facetStart.length; facetIndex++) {
-      const kStart = this._facetStart[facetIndex];
-      const kEnd = this._facetStart[facetIndex + 1];
-      let k0 = kEnd - 1;
-      for (let k1 = kStart; k1 < kEnd; k0 = k1, k1++) {
-        matcher.addEdge(this.data.pointIndex[k0], this.data.pointIndex[k1], k0);
-      }
-    }
-    const matchedPairs: SortableEdgeCluster[] = [];
-    const singletons: SortableEdgeCluster[] = [];
-    const nullEdges: SortableEdgeCluster[] = [];
-    const allOtherClusters: SortableEdgeCluster[] = [];
-    matcher.sortAndCollectClusters(matchedPairs, singletons, nullEdges, allOtherClusters);
-
-    const numIndex = this.data.pointIndex.length;
-    this.data.edgeMateIndex = new Array<number>(numIndex);
-    for (let i = 0; i < numIndex; i++)
-      this.data.edgeMateIndex[i] = undefined;
-    for (const pair of matchedPairs) {
-      if (Array.isArray(pair) && pair.length === 2) {
-        const k0 = pair[0].facetIndex;
-        const k1 = pair[1].facetIndex;
-        this.data.edgeMateIndex[k0] = k1;
-        this.data.edgeMateIndex[k1] = k0;
-      }
-    }
-  }
-  /**
    * * For facet i, _facetToFaceData[i] is the index of the faceData entry for the facet.
    * * _facetToFaceData has one entry per facet.
    */
