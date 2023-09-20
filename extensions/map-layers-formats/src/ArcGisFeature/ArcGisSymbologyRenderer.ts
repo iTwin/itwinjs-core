@@ -110,19 +110,24 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
 
     if (this._symbol.type === "esriPMS") {
       const pms = this._symbol as EsriPMS;
+
+      // We scale up a little a bit the size of symbol.
+      const width = pms.width === undefined ? pms.width : pms.width * 1.25;
+      const height = pms.height === undefined ? pms.height : pms.height * 1.25;
+
       let xOffset = 0, yOffset = 0;
       if (pms.xoffset)
         xOffset = pms.xoffset;
-      else if (pms.width)
-        xOffset = pms.width * -0.5;  // if no offset center in the middle
+      else if (width)
+        xOffset = width * -0.5;  // if no offset center in the middle
 
       if (pms.yoffset)
         yOffset = pms.yoffset;
-      else if (pms.height)
-        yOffset = pms.height * -0.5; // if no offset center in the middle
+      else if (height)
+        yOffset = height * -0.5; // if no offset center in the middle
 
-      if (pms.width && pms.height) {
-        context.drawImage(pms.image, ptX + xOffset, ptY + yOffset, pms.width, pms.height);
+      if (width && height) {
+        context.drawImage(pms.image, ptX + xOffset, ptY + yOffset, width, height);
       } else {
         context.drawImage(pms.image, ptX + xOffset, ptY + yOffset);
       }
@@ -164,13 +169,15 @@ export class ArcGisUniqueValueSymbologyRenderer extends ArcGisSimpleSymbologyRen
 
         const queryValue = this._activeFeatureAttributes[this.uvRenderer.field1];
 
-        for (const uvi of this.uvRenderer.uniqueValueInfos) {
+        if (queryValue !== null && queryValue !== undefined) {
+          for (const uvi of this.uvRenderer.uniqueValueInfos) {
           // Strangely, ArcGIS documentation says 'value' is a string,
           // not too sure if a comparison on other types is possible, or its always forced to string properties?
-          if (uvi.value  === queryValue.toString()) {
-            this._symbol = uvi.symbol;
-            newSymbolApplied = true;
-            break;
+            if (uvi.value  === queryValue.toString()) {
+              this._symbol = uvi.symbol;
+              newSymbolApplied = true;
+              break;
+            }
           }
         }
       }

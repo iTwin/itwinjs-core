@@ -55,7 +55,7 @@ export default defineConfig(() => {
     publicDir: ".static-assets",
     build: {
       outDir: "./lib",
-      sourcemap: !!process.env.VITE_CI, // append to the resulting output file if not running in CI.
+      sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       logLevel: process.env.VITE_CI ? "error" : "warn",
@@ -124,6 +124,7 @@ export default defineConfig(() => {
           }),
         ],
       },
+      force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
         "@itwin/core-common", // for opening iModel error
