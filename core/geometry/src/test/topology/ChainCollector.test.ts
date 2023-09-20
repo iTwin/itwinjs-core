@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { AnyCurve } from "../../curve/CurveChain";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";

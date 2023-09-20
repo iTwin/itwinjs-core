@@ -8,6 +8,7 @@ Table of contents:
 - [Geometry](#geometry)
   - [Clip any curve](#clip-any-curve)
   - [Polyface adjacent facet queries](#polyface-adjacent-facet-queries)
+- [Electron 26 support](#electron-26-support)
 
 ## Geometry
 
@@ -26,3 +27,7 @@ The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCu
   - polyface.readIndexToPredecessorAroundFacet = readIndex of the previous vertex around the facet
   - polyface.readIndexToSuccessorAroundVertex = (possibly undefined) readIndex of the next vertex around the facet.
   - polyface.readIndexToPredecessorAroundVertex = (possibly undefined) readIndex of the previous vertex around the facet
+
+## Electron 26 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).

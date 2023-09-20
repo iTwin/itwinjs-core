@@ -493,6 +493,8 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // @internal
+    executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
@@ -3052,6 +3054,8 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
+    // @internal
+    get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -3071,7 +3075,7 @@ export namespace IModelDb {
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
-        getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
+        getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;

@@ -16,7 +16,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveChain";
+import { AnyCurve } from "../CurveTypes";
 import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
@@ -616,7 +616,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
-  /** Find the fractional point (if any) on the `arc` in the direction of `radialVector`. */
+  /** Find the fractional point (if any) on the circular `arc` in the direction of `radialVector`. */
   private resolveDirectionToArcXYFraction(
     arc: Arc3d, radialVector: Vector3d, scale: number,
   ): CurveLocationDetail | undefined {

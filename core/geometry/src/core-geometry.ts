@@ -189,7 +189,7 @@ export * from "./numerics/TriDiagonalSystem";
 export * from "./curve/Arc3d";
 export * from "./curve/ConstructCurveBetweenCurves";
 export * from "./curve/CoordinateXYZ";
-export * from "./curve/CurveChain";
+export * from "./curve/CurveTypes";
 export * from "./curve/CurveChainWithDistanceIndex";
 export * from "./curve/CurveExtendMode";
 export * from "./curve/CurveCollection";
