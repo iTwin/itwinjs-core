@@ -2025,6 +2025,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.constructEntity<ElementAspect>(aspect);
     }
 
+    /** Get a single ElementAspect by its instance Id.
+     * @throws [[IModelError]]
+     */
+    public getAspect(aspectInstanceId: Id64String): ElementAspect {
+      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
+      });
+      if (undefined === aspectClassFullName) {
+        throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}`);
+      }
+      return this._queryAspect(aspectInstanceId, aspectClassFullName);
+    }
+
     private static classMap = new Map<string, string>();
 
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
@@ -2049,21 +2064,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    /** Get a single ElementAspect by its instance Id.
-     * @throws [[IModelError]]
-     */
-    public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
-      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
-        statement.bindId("aspectInstanceId", aspectInstanceId);
-        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
-      });
-      if (undefined === aspectClassFullName) {
-        throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}`);
-      }
-      return this._queryAspect(aspectInstanceId, aspectClassFullName);
-    }
-
     /** Get the ElementAspect instances that are owned by the specified element.
      * @param elementId Get ElementAspects associated with this Element
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
@@ -2071,11 +2071,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]]
      */
     public getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[] {
-      if (aspectClassFullName === undefined)
-        return this.runInstanceQuery(`SELECT $ FROM (
+      if (aspectClassFullName === undefined) {
+        const allAspects: ElementAspect[] = this.runInstanceQuery(`SELECT $ FROM (
           SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId
             UNION ALL
-          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+          SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
+        if (allAspects.length === 0)
+          Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
+        return allAspects;
+      }
 
       // Check if class is abstract
       const fullClassName = aspectClassFullName.split(":");
@@ -2089,20 +2093,29 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
-        this._iModel.withPreparedStatement(`select distinct(ECClassId) from ${aspectClassFullName}`, (statement: ECSqlStatement) => {
+        this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`, (statement: ECSqlStatement) => {
           while (statement.step() === DbResult.BE_SQLITE_ROW)
             classIds.push(statement.getValue(0).getId());
         });
-        classIdList = classIds.join(",");
-        IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+        if (classIds.length > 0) {
+          classIdList = classIds.join(",");
+          IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
+        }
       }
-
+      if (classIdList === undefined) {
+        Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for the class ${aspectClassFullName}`);
+        return [];
+      }
       // Execute an instance query to retrieve all aspects from all the derived classes
-      return this.runInstanceQuery(`SELECT $ FROM (
+      const aspects: ElementAspect[] = this.runInstanceQuery(`SELECT $ FROM (
         SELECT ECInstanceId, ECClassId FROM Bis.ElementMultiAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
           UNION ALL
         SELECT ECInstanceId, ECClassId FROM Bis.ElementUniqueAspect WHERE Element.Id = :elementId AND ECClassId IN (${classIdList})
-        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`, elementId, excludedClassFullNames);
+        ) OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`, elementId, excludedClassFullNames);
+      if (aspects.length === 0)
+        Logger.logError(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
+      return aspects;
     }
 
     /** Insert a new ElementAspect into the iModel.
@@ -2641,20 +2654,20 @@ export class BriefcaseDb extends IModelDb {
    * @internal Exported strictly for tests.
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
-    if (this.isReadonly)
-      this.closeAndReopen(OpenMode.ReadWrite);
+    const fileName = this.pathName;
 
     try {
+      if (this.isReadonly)
+        this.closeAndReopen(OpenMode.ReadWrite, fileName);
+
       await func();
     } finally {
       if (this.isReadonly)
-        this.closeAndReopen(OpenMode.Readonly);
+        this.closeAndReopen(OpenMode.Readonly, fileName);
     }
   }
 
-  private closeAndReopen(openMode: OpenMode) {
-    const fileName = this.pathName;
-
+  private closeAndReopen(openMode: OpenMode, fileName: string) {
     // Unclosed statements will produce BUSY error when attempting to close.
     this.clearCaches();
 
