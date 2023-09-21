@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "4.2.0-dev.21",
+  "version": "4.2.0-dev.26",
   "description": "Set of Webpack Plugins and Loaders used for building iTwin.js applications",
   "license": "MIT",
   "repository": {

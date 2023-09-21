@@ -5,7 +5,7 @@
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisDashLineStyle, ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
@@ -15,6 +15,9 @@ import * as chaiAsPromised from "chai-as-promised";
 import { TestUtils } from "./TestUtils";
 import { ArcGisFeatureProvider } from "../../map-layers-formats";
 import * as moq from "typemoq";
+import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
+import { ColorDef } from "@itwin/core-common";
+
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
@@ -24,6 +27,22 @@ describe("ArcGisSymbologyRenderer", () => {
 
   const sandbox = sinon.createSandbox();
   const contextMock = moq.Mock.ofType<CanvasRenderingContext2D>();
+
+  // Make sure 'ArcGisSimpleSymbologyRenderer.applyStrokeStyle' apply the proper dashes number array for each style.
+  const verifyLineDashes = (refRenderer: any, lineSymbolObj: any, refColor: ColorDef, geometryType: ArcGisFeatureGeometryType) => {
+    for (const key of Object.keys(ArcGisDashLineStyle.dashValues)) {
+      lineSymbolObj.style = key;
+      const provider = TestUtils.createSymbologyRenderer(geometryType, refRenderer) as ArcGisUniqueValueSymbologyRenderer;
+      contextMock.setup((x) => x.setLineDash(moq.It.isAny()));
+
+      provider.applyStrokeStyle(contextMock.object);
+      const expectedDashes = ArcGisDashLineStyle.dashValues[key as keyof typeof ArcGisDashLineStyle.dashValues];
+
+      contextMock.verify((x) => x.setLineDash(moq.It.isValue(expectedDashes)), moq.Times.once());
+      contextMock.verify((x) => x.strokeStyle = moq.It.isValue(refColor.toRgbaString()), moq.Times.once());
+      contextMock.reset();
+    }
+  };
 
   afterEach(async () => {
     sandbox.restore();
@@ -82,11 +101,52 @@ describe("ArcGisSymbologyRenderer", () => {
   it("should provide fill color using simple renderer definition", async () => {
 
     const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
-    const fakeContext = {fillStyle: ""};
-    provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
+    contextMock.setup((x) => x.fillStyle);
+
+    provider.applyFillStyle(contextMock.object);
 
     const refSymbol = EsriSFS.fromJSON(PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer.symbol as any);
-    expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
+    contextMock.verify((x) => x.fillStyle = moq.It.isValue(refSymbol.color!.toRgbaString()), moq.Times.once());
+
+  });
+
+  it("should apply line dash on poly outline  using simple renderer definition", async () => {
+
+    const refRenderer =  PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer;
+    refRenderer.symbol.outline.style;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPolygon", refRenderer) as ArcGisUniqueValueSymbologyRenderer;
+
+    contextMock.setup((x) => x.fillStyle);
+    contextMock.setup((x) => x.setLineDash(moq.It.isAny()));
+
+    provider.applyFillStyle(contextMock.object);
+
+    const refColor = EsriSLS.fromJSON(refRenderer.symbol.outline as any);
+    verifyLineDashes(refRenderer, refRenderer.symbol.outline, refColor.color!, "esriGeometryPolygon");
+  });
+
+  it("should provide stroke style using simple renderer definition", async () => {
+
+    const refRenderer = PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryLine", refRenderer) as ArcGisUniqueValueSymbologyRenderer;
+
+    contextMock.setup((x) => x.strokeStyle);
+    contextMock.setup((x) => x.setLineDash(moq.It.isAny()));
+
+    const refColor = EsriSLS.fromJSON(refRenderer.symbol as any);
+    provider.applyStrokeStyle(contextMock.object);
+
+    contextMock.verify((x) => x.strokeStyle = moq.It.isValue(refColor.color!.toRgbaString()), moq.Times.once());
+    contextMock.verify((x) => x.setLineDash(moq.It.isAny()), moq.Times.never());
+  });
+
+  it("should provide stroke style using simple renderer definition", async () => {
+
+    const refRenderer = PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer;
+    const refColor = EsriSLS.fromJSON(refRenderer.symbol as any);
+
+    verifyLineDashes(refRenderer, refRenderer.symbol, refColor.color!, "esriGeometryLine");
+
   });
 
   it("should apply proper fill color using unique value SFS renderer definition", async () => {

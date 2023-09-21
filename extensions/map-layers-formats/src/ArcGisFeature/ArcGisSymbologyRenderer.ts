@@ -8,6 +8,8 @@ import { ColorDef } from "@itwin/core-common";
 import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
 /** @internal */
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
@@ -30,9 +32,39 @@ export abstract class ArcGisSymbologyRenderer {
     }
   }
 }
+/** @internal */
+export class ArcGisDashLineStyle {
+  // ESRI does not provide any values for their line style definition, those values have been
+  // determined by pixel-peeping tiles rendered by ArcGIS servers.
+  // Available line styles are documented here: https://developers.arcgis.com/web-map-specification/objects/esriSLS_symbol/
+  private static _dashLineLength = 6;
+  private static _dashGapLength = 3;
+  private static _dashShortLineLength = 3;
+  private static _dashShortGapLength = 3;
+  private static _dashLongLineLength = 12;
+  private static _dashLongLineDotDotLength = 18;
+  private static _dashLongGapLength = 6;
+  private static _dotLineLength = 2;
+  private static _dotGapLength = 3;
+  private static _shortDotLineLength = 1;
+  private static _shortDotGapLength = 2;
+  public static dashValues = {
+    esriSLSDash : [this._dashLineLength, this._dashGapLength],
+    esriSLSDashDot : [this._dashLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
+    esriSLSDashDotDot : [this._dashLongLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength, this._dotLineLength, this._dotGapLength],
+    esriSLSDot : [this._dashLineLength, this._dotGapLength],
+    esriSLSLongDash : [this._dashLongLineLength, this._dashLongGapLength],
+    esriSLSLongDashDot : [this._dashLongLineDotDotLength, this._dashGapLength, this._dotLineLength, this._dashGapLength],
+    esriSLSShortDash : [this._dashShortLineLength, this._dashShortGapLength],
+    esriSLSShortDashDot : [this._dashShortLineLength, this._dashShortGapLength, this._dotLineLength, this._dashShortGapLength],
+    esriSLSShortDashDotDot :  [this._dashLineLength, this._dashShortGapLength, this._dotLineLength, this._dashGapLength, this._dotLineLength, this._dashShortGapLength],
+    esriSLSShortDot : [this._shortDotLineLength, this._shortDotGapLength],
+  };
+
+}
 
 /** @internal */
-export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
+export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
   public override isAttributeDriven(): this is ArcGisAttributeDrivenSymbology {return false;}
   public lineWidthScaleFactor = 2;    // This is value is empirical, this might need to be adjusted
 
@@ -85,6 +117,12 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     return fillColor;
   }
 
+  private applyLineDash(context: CanvasRenderingContext2D, slsStyle: EsriSLSStyle) {
+    if (slsStyle !== "esriSLSSolid" && slsStyle !== "esriSLSNull") {
+      context.setLineDash(ArcGisDashLineStyle.dashValues[slsStyle]);
+    }
+  }
+
   public applyStrokeStyle(context: CanvasRenderingContext2D) {
     if (!context)
       return;
@@ -93,7 +131,7 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     let sls: EsriSLS | undefined;
     if (this._symbol.type === "esriSFS") {
       const sfs = this._symbol as EsriSFS;
-      if (sfs.outline && sfs.outline.style === "esriSLSSolid") {
+      if (sfs.outline) {
         sls = sfs.outline;
       }
     } else if (this._symbol.type === "esriSLS") {
@@ -106,11 +144,16 @@ export class ArcGisSimpleSymbologyRenderer  extends ArcGisSymbologyRenderer {
     }
 
     if (sls) {
-      if (sls.color)
-        context.strokeStyle = sls.color.toRgbaString();
+
       context.lineWidth = (sls.width > 0 ? sls.width : 1);
       if (this._symbol.type === "esriSLS")
         context.lineWidth *= this.lineWidthScaleFactor;
+      if (sls.color) {
+        context.strokeStyle = sls.color.toRgbaString();
+      }
+      if (sls.style) {
+        this.applyLineDash(context, sls.style);
+      }
     } else {
       Logger.logTrace(loggerCategory, `Could not apply stroke style`);
     }
