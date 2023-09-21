@@ -8,9 +8,7 @@ package. Both options will be covered here.
 
 ## SchemaXml in @itwin/ecschema-locaters
 
-The SchemaXml class in the [@itwin/ecschema-locaters](https://www.itwinjs.org/reference/ecschema-locaters) package
-contains the 'writeFile' method. This method takes the EC Schema instance and a path to the file to create. The
-SchemaXml.writeFile method is asynchronous, requiring the 'await' keyword.
+The [SchemaXml.writeFile]($ecschema-locaters) method takes the EC Schema instance and serializes it to a specified location on disk. Note: this method is `async`, requiring the caller to `await` it.
 
 ```ts
 await SchemaXml.writeFile(schema, outDir);
