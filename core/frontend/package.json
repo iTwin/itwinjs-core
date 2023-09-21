@@ -8,8 +8,8 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s webpackWorkers && npm run -s copy:workers",
-    "build:cjs": "npm run -s copy:js:cjsd: && tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --outDir lib/esm",
+    "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2020  --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",

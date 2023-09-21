@@ -40,7 +40,7 @@
     "**/node_modules": true,
     "**/test-apps/**/build": true,
     "**/out": true,
-    "**/lib": true,
+    //"**/lib": true,
     "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
