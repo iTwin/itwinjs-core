@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/naming-convention */
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
@@ -373,8 +374,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSCross
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": " "});
+    provider.setActiveFeatureAttributes({WEAPON: " "});
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
@@ -385,8 +385,8 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSDiamond
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": "blunt_instrument"});
+
+    provider.setActiveFeatureAttributes({WEAPON: "blunt_instrument"});
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
@@ -399,16 +399,14 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSSquare
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": "gun"});
+    provider.setActiveFeatureAttributes({WEAPON: "gun"});
     contextMock.setup((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     provider.drawPoint(contextMock.object, 0 ,0);
     contextMock.verify((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
 
     // check esriSMSTriangle
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": "knife"});
+    provider.setActiveFeatureAttributes({WEAPON: "knife"});
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
@@ -421,8 +419,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSX
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": "other"});
+    provider.setActiveFeatureAttributes({WEAPON: "other"});
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
@@ -433,8 +430,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSCircle
     contextMock.reset();
-    // eslint-disable-next-line quote-props
-    provider.setActiveFeatureAttributes({"WEAPON": "dummy"});
+    provider.setActiveFeatureAttributes({WEAPON: "dummy"});
     contextMock.setup((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     provider.drawPoint(contextMock.object, 0 ,0);
     contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(),moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
