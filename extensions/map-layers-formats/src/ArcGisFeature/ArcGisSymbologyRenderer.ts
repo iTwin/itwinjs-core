@@ -5,11 +5,9 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSMS, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
 import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSimpleRenderer, EsriSLS, EsriSLSStyle, EsriSymbol, EsriUniqueValueRenderer } from "./EsriSymbology";
-import { ArcGisAttributeDrivenSymbology } from "@itwin/core-frontend";
 
 /** @internal */
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
