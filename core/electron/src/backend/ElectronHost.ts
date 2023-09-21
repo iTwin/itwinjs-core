@@ -18,6 +18,7 @@ import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-bac
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
+import {pathToFileURL} from "url";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -251,7 +252,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line deprecation/deprecation
+      this.electron.protocol.handle("electron", async (request) => this.electron.net.fetch(pathToFileURL(this.parseElectronUrl(request.url)).toString())); // eslint-disable-line deprecation/deprecation
     }
 
     this._openWindow(windowOptions);

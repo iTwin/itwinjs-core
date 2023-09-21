@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
-import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
+import { IModelApp, ModelDisplayTransform, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
 
-  public getModelDisplayTransform(modelId: string): Transform | undefined {
-    return this._models.has(modelId) ? this._scaleTransform.clone() : undefined;
+  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined {
+    return this._models.has(modelId) ?{transform: this._scaleTransform.clone()} : undefined;
   }
 
   public get transform(): Transform { return this._scaleTransform.clone(); }

@@ -113,6 +113,29 @@ export default defineConfig(() => {
     define: {
       "process.env": process.env, // injects process.env into the frontend
     },
+    resolve: {
+      alias: {
+        "@itwin/appui-abstract": path.resolve(__dirname, '../../ui/appui-abstract/src/appui-abstract.ts'),
+        "@itwin/core-backend": path.resolve(__dirname, '../../core/backend/src/core-backend.ts'),
+        "@itwin/core-bentley": path.resolve(__dirname, '../../core/bentley/src/core-bentley.ts'),
+        "@itwin/core-common": path.resolve(__dirname, '../../core/common/src/core-common.ts'),
+        "@itwin/core-electron": path.resolve(__dirname, '../../core/electron'),
+        "@itwin/core-frontend": path.resolve(__dirname, '../../core/frontend/src/core-frontend.ts'),
+        "@itwin/core-geometry": path.resolve(__dirname, '../../core/geometry/src/core-geometry.ts'),
+        "@itwin/core-i18n": path.resolve(__dirname, '../../core/i18n/src/core-i18n.ts'),
+        "@itwin/core-markup": path.resolve(__dirname, '../../core/markup/src/core-markup.ts'),
+        "@itwin/core-mobile": path.resolve(__dirname, '../../core/mobile'),
+        "@itwin/core-quantity": path.resolve(__dirname, '../../core/quantity/src/core-quantity.ts'),
+        "@itwin/editor-backend": path.resolve(__dirname, '../../editor/backend/src/editor-backend.ts'),
+        "@itwin/editor-common": path.resolve(__dirname, '../../editor/common/src/editor-common.ts'),
+        "@itwin/editor-frontend": path.resolve(__dirname, '../../editor/frontend/src/editor-frontend.ts'),
+        "@itwin/frontend-devtools": path.resolve(__dirname, '../../core/frontend-devtools/src/frontend-devtools.ts'),
+        "@itwin/frontend-tiles": path.resolve(__dirname, '../../extensions/frontend-tiles/src/frontend-tiles.ts'),
+        "@itwin/hypermodeling-frontend": path.resolve(__dirname, '../../core/hypermodeling/src/hypermodeling-frontend.ts'),
+        "@itwin/map-layers-formats": path.resolve(__dirname, '../../extensions/map-layers-formats/src/map-layers-formats.ts'),
+        "@itwin/webgl-compatibility": path.resolve(__dirname, '../../core/webgl-compatibility/src/webgl-compatibility.ts')
+      }
+    },
     optimizeDeps: {
       esbuildOptions: {
         plugins: [

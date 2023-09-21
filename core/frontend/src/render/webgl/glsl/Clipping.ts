@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+// Test change
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
