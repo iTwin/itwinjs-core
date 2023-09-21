@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Added first version of SchemaMerger class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}

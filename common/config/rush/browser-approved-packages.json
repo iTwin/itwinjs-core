@@ -816,7 +816,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "typescript",

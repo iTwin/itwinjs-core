@@ -711,6 +711,7 @@ export class BlankConnection extends IModelConnection {
    */
   public static create(props: BlankConnectionProps): BlankConnection {
     return new this({
+      name: props.name,
       rootSubject: { name: props.name },
       projectExtents: props.extents,
       globalOrigin: props.globalOrigin,
