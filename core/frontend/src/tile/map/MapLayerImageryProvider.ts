@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 
 /** @internal */
@@ -141,7 +141,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void> {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
   }

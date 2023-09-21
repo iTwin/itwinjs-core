@@ -15,7 +15,7 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
@@ -266,8 +266,8 @@ class ImageryTileLoader extends RealityTileLoader {
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
 
-  public async getMapFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
-    await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree, hit);
+  public async getMapFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
+    await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree, hit, options);
   }
 
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
