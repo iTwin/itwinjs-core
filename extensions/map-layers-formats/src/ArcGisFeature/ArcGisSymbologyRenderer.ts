@@ -268,15 +268,18 @@ export class ArcGisSimpleSymbologyRenderer extends ArcGisSymbologyRenderer {
       const height = pms.height === undefined ? pms.height : pms.height * 1.25;
 
       let xOffset = 0, yOffset = 0;
-      if (pms.xoffset)
-        xOffset = pms.xoffset;
-      else if (width)
-        xOffset = width * -0.5;  // if no offset center in the middle
 
+      // Center the marker around the anchor point
+      if (width)
+        xOffset = width * -0.5;
+      if (height)
+        yOffset = height * -0.5;
+
+      // Add additional offset
+      if (pms.xoffset)
+        xOffset += pms.xoffset;
       if (pms.yoffset)
-        yOffset = pms.yoffset;
-      else if (height)
-        yOffset = height * -0.5; // if no offset center in the middle
+        yOffset += pms.yoffset;
 
       const dx = ptX + xOffset;
       const dy = ptY + yOffset;
