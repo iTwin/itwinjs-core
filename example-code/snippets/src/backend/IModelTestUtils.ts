@@ -8,7 +8,6 @@ import { OpenMode } from "@itwin/core-bentley";
 import { ITwinsAccessClient } from "@itwin/itwins-client";
 import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
-import { SchemaState } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
