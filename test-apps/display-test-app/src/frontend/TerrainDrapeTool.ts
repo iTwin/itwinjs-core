@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ConvexClipPlaneSet, CurvePrimitive, Geometry, GrowableXYZArray, LineString3d, Loop, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
+import { ConvexClipPlaneSet, CurvePrimitive, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import {
   BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GeometryTileTreeReference, GraphicType, HitDetail, IModelApp,
@@ -69,9 +69,15 @@ class TerrainDraper implements TileUser {
     range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
     range.extendZOnly(maxDistance);
 
-    const isClosed = (inPoints.length > 2) && Geometry.isDistanceWithinTol(inPoints.distanceIndexIndex(0, inPoints.length - 1)!);
-    const polygon = isClosed ? Loop.createPolygon(inPoints) : undefined;  // assume no self-intersections
     const sweepDir = Vector3d.unitZ();
+
+    let polygon: Loop | undefined;
+    const isClosed = (inPoints.length > 2) && Geometry.isDistanceWithinTol(inPoints.distanceIndexIndex(0, inPoints.length - 1)!, 100 * tolerance);
+    if (isClosed) {
+      const flatPoints = inPoints.clone();
+      flatPoints.multiplyMatrix3dInPlace(Matrix3d.createRowValues(1, 0, 0, 0, 1, 0, 0, 0, 0));
+      polygon = Loop.createPolygon(flatPoints);
+    }
 
     const collector = new DrapeLineStringCollector(this, tolerance, range, tree.iModelTransform, inPoints);
     this.treeRef.collectTileGeometry(collector);
