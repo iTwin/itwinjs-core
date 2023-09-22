@@ -822,14 +822,14 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /**
-   * Compute whether the sector at nodeB is convex.
-   * * This computation ignores z-coordinates.
-   * @param nodeA origin of first vector (typically face predecessor of nodeB)
-   * @param nodeB node at the sector vertex; the shared vertex of the two vectors in the 2D cross product.
-   * @param nodeC target of second vector (typically face successor of nodeB)
+   * Compute whether the sector defined by the chain of nodes is convex.
+   * * This computation ignores z-coordinates and connectivity, so the nodes are not required to be in the same face loop.
+   * @param nodeA the first node in the chain, nominally the face predecessor of nodeB
+   * @param nodeB the second node in the chain; the node at the sector vertex
+   * @param nodeC the third node in the chain, nominally the face successor of nodeB
    * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors.
-   *   Typically this a fraction of the sector's face's signed area. We can't compute area here, so if undefined, zero tolerance is used.
-   * @returns true iff the sector is convex and its two edges are not antiparallel.
+   *   Typically this is a fraction of the sector's face's signed area. We can't compute area here, so if undefined, zero tolerance is used.
+   * @returns true iff the sector is convex
    */
   public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, signedAreaTol: number = 0): boolean {
     const signedSectorArea = 0.5 * HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);

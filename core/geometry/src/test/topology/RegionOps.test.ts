@@ -1220,7 +1220,7 @@ describe("RegionOps2", () => {
     let y = 0;
     const testCases = [
       "./src/test/testInputs/curve/arcGisLoops.imjs",
-      "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon. RegionOps.computeXYArea is incorrect!
+      "./src/test/testInputs/curve/loopWithHole.imjs", // aka, split washer polygon
       "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
       "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
     ];

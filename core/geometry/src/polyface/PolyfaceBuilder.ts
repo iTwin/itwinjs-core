@@ -1545,8 +1545,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Add the subset of current visitor data indexed by the indices.
-   * @returns whether facet was added successfully. Encountering an invalid index returns false.
+   * Add the subset of visitor data indexed by the indices.
+   * * Ideally, the subset represents a sub-facet of the visited facet.
+   * @param visitor data for the currently visited facet
+   * @param indices local indices into the visitor data arrays
+   * @returns whether the data was added successfully. Encountering an invalid index returns false.
   */
   public addFacetFromIndexedVisitor(visitor: PolyfaceVisitor, indices: number[]): boolean {
     if (indices.length > visitor.pointIndex.length)
@@ -1619,13 +1622,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Rely on the builder's compress step to find common vertex coordinates
    * @internal
    */
-  public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
+  public addGraph(graph: HalfEdgeGraph, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction | undefined = (node) => HalfEdge.testMateMaskExterior(node)) {
     let index = 0;
     const needNormals = this._options.needNormals;
+    const needParams = this._options.needParams;
     let normalIndex = 0;
     if (needNormals)
-      normalIndex = this._polyface.addNormalXYZ(0, 0, 1);   // big assumption !!!!  someday check if that's where the facets actually are!!
+      normalIndex = this._polyface.addNormalXYZ(0, 0, 1);   // big assumption!!!! Is each node.z really the same?
 
     graph.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {
@@ -1635,7 +1639,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
             index = this.addPointXYZ(node.x, node.y, node.z);
             this._polyface.addPointIndex(index, isEdgeVisibleFunction === undefined ? true : isEdgeVisibleFunction(node));
             if (needParams) {
-              index = this.addParamXY(node.x, node.y);
+              index = this.addParamXY(node.x, node.y);  // big assumption!!!!
               this._polyface.addParamIndex(index);
             }
             if (needNormals) {
@@ -1674,7 +1678,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node)): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
-    builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);
+    builder.addGraph(graph, acceptFaceFunction);
     builder.endFace();
     return builder.claimPolyface();
   }

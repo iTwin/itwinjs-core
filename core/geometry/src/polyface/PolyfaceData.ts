@@ -403,28 +403,26 @@ export class PolyfaceData {
    * * Search for duplicates within points, normals, params, and colors.
    * * Compress each data array.
    * * Revise all indexing for the relocated data.
-   * @param tolerance optional tolerance for comparing mesh data. Default is Geometry.smallMetricDistance.
+   * @param tolerance optional tolerance for clustering mesh vertices. Default is [[Geometry.smallMetricDistance]].
    */
   public compress(tolerance: number = Geometry.smallMetricDistance): void {
     const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point, tolerance);
     this.point = packedPoints.growablePackedPoints!;
     packedPoints.updateIndices(this.pointIndex);
-    //  compressUnusedGrowableXYZArray(this.point, this.pointIndex);
 
+    // for now, normals, params, and colors use the default tolerance for clustering...
     if (this.normalIndex && this.normal) {
-      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal, tolerance);
+      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
       this.normal = packedNormals.growablePackedPoints!;
       packedNormals.updateIndices(this.normalIndex);
     }
-
     if (this.paramIndex && this.param) {
-      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param, tolerance);
+      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
       this.param = packedParams.growablePackedPoints;
       packedParams.updateIndices(this.paramIndex);
     }
-
     if (this.colorIndex && this.color) {
-      const packedColors = ClusterableArray.clusterNumberArray(this.color, tolerance);
+      const packedColors = ClusterableArray.clusterNumberArray(this.color);
       this.color = packedColors.packedNumbers;
       packedColors.updateIndices(this.colorIndex);
     }
@@ -516,40 +514,3 @@ export class PolyfaceData {
     return false;
   }
 }
-
-/**
- * pack out data entries that are unreferenced.
- * @param data data to pack
- * @param indices indices into the data.
-
-function compressUnusedGrowableXYZArray(data: GrowableXYZArray, indices: number[]): boolean {
-  // 1 entry per data[i]
-  // pass 0: number of references
-  // pass 1: post-compression index (or -1)
-  const n0 = data.length;
-  const work = new Int32Array(data.length);
-  for (const k of indices) {
-    if (k < 0 || k >= n0)
-      return false;
-    work[k]++;
-  }
-  let n1 = 0;
-  for (let i = 0; i < n0; i++) {
-    if (work[i] === 0)
-      work[i] = -1;
-    else
-      work[i] = n1++;
-  }
-  const numIndex = indices.length;
-  for (let i = 0; i < numIndex; i++) {
-    indices[i] = work[indices[i]];
-  }
-  for (let i = 0; i < n0; i++) {
-    const j = work[i];
-    if (j >= 0)
-      data.moveIndexToIndex(i, j);
-  }
-  data.length = n1;
-  return true;
-}
-*/

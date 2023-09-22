@@ -544,13 +544,15 @@ export class Triangulator {
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
         return true;
       }
-      // earcut does not support self intersections, however we do recognize when vertex[i] and vertex[i+3] weren't equated:
+      // The earcut algorithm does not support self intersections, however we do handle the re-entrant triangle
+      // case by pinching a bridge/hole into existence when vertices i and i+3 live in the same face loop, but not
+      // the same vertex loop. Earcut whittles larger faces down into triangles, so this is the only case needed.
       if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
         const next3 = next2.faceSuccessor;
         const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
         if (hasBridgeEdgeOrHoleInside) {
-          const holeFace = next2.vertexPredecessor;
-          HalfEdge.pinch(pred.vertexSuccessor, holeFace); // keep pred and next2 in their face loop
+          const nullOrHoleFace = next2.vertexPredecessor;
+          HalfEdge.pinch(pred.vertexSuccessor, nullOrHoleFace); // keep pred and next2 in their face loop
         } else {
           HalfEdge.pinch(pred, next2);  // pred and next2 split into different face loops
           ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
@@ -623,7 +625,6 @@ export class Triangulator {
 
   /**
    * Whether a and b are in same vertex loop, or at the same xy location.
-   * * This is useful for detecting bridge edges that haven't been pinched together yet.
    * @internal
    */
   private static findAroundOrAtVertex(a: HalfEdge, b: HalfEdge): boolean {
@@ -676,13 +677,13 @@ export class Triangulator {
         ClipUtilities.clipSegmentBelowPlanesXY(planes, p, q, edgeInterval, clipTolerance);
         if (!edgeInterval.isNull) {
           if (edgeInterval.low > oneMinus) {
-            // only q touches triangle abc, so b might still be an ear
+            // only q touches triangle abc, so b might still be an ear if q lies at a vertex
             if (!this.findAroundOrAtVertex(a, q)
               && !this.findAroundOrAtVertex(b, q)
               && !this.findAroundOrAtVertex(c, q))
               return false;
           } else if (edgeInterval.high < zeroPlus) {
-            // only p touches triangle abc, so b might still be an ear
+            // only p touches triangle abc, so b might still be an ear if p lies at a vertex
             if (!this.findAroundOrAtVertex(a, p)
               && !this.findAroundOrAtVertex(b, p)
               && !this.findAroundOrAtVertex(c, p))
@@ -807,14 +808,16 @@ export class Triangulator {
     return leftmost;
   }
 
-  /** check if a point lies within a convex triangle.
-   * i.e. areas of 3 triangles with an edge of abc and p all have zero or positive area.  (abp, bcp, cap)
+  /**
+   * Check if a point lies within a triangle.
+   * * In other words, the areas of the 3 triangles formed by an edge of abc and p all have zero or positive area.
    */
   private static pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
     return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
       (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
       (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
   }
+  /** Check if node p lies strictly inside the triangle abc. */
   private static nodeInTriangle(a: HalfEdge, b: HalfEdge, c: HalfEdge, p: HalfEdge) {
     return Triangulator.signedTolerancedCCWTriangleArea(a, b, p) > 0
       && Triangulator.signedTolerancedCCWTriangleArea(b, c, p) > 0

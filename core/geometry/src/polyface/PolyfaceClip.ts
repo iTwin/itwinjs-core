@@ -226,7 +226,7 @@ export class PolyfaceClip {
       if (outsidePieces && outsidePieces.children.length > 0) {
         if (localToWorld)
           outsidePieces.tryTransformInPlace(localToWorld);
-        RegionOps.consolidateAdjacentPrimitives(outsidePieces); // this can create T-vertices
+        RegionOps.consolidateAdjacentPrimitives(outsidePieces); // source of the T-vertices removed in claimPolyface
         this.addRegion(builder, outsidePieces);
       }
     }
