@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
+import { BatchType, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
@@ -17,11 +17,6 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
 }
-
-const viewFlagOverrides: ViewFlagOverrides = {
-  renderMode: RenderMode.SmoothShade,
-  visibleEdges: false,
-};
 
 /** @internal */
 export class BatchedTileTree extends TileTree {
@@ -65,7 +60,7 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override get viewFlagOverrides(): ViewFlagOverrides {
-    return viewFlagOverrides;
+    return { };
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
