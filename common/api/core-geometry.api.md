@@ -1509,6 +1509,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
+    computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
@@ -1526,7 +1527,6 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
     get fragments(): PathFragment[];
-    getChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
     static getClosestPointTestCounts(clear?: boolean): {
         numCalls: number;
         numTested: number;
