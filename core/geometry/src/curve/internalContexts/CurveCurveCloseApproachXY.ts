@@ -765,7 +765,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (!this._results)
       return;
     if (this._geometryB instanceof CurveChainWithDistanceIndex)
-      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB as CurveChainWithDistanceIndex);
+      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB);
     else
       this.convertChildDetailToChainDetail(this._results, geomA as CurveChainWithDistanceIndex);
   }
@@ -928,7 +928,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       return;
     this.convertChildDetailToChainDetail(this._results, chain);
     if (this._geometryB instanceof CurveChainWithDistanceIndex)
-      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB as CurveChainWithDistanceIndex);
+      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
