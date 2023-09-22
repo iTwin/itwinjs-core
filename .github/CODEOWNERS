@@ -37,10 +37,10 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/*-extension/                       @aruniverse @calebmshafer
 
 /common/**/ecsql-*/                           @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
-/common/**/ecschema-*.*                       @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-*.*                       @calebmshafer @ColinKerr @wgoehrig @christophermlawson
+/common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig @christophermlawson
+/common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
+/common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
 /common/**/core-electron.*                    @wgoehrig @GytisCepk @ben-polinsky
 /common/**/core-electron/                     @wgoehrig @GytisCepk @ben-polinsky
 /common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
@@ -95,7 +95,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/bentley                   @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
-/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
+/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig @christophermlawson
 /core/electron                  @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server            @paulius-valiunas @wgoehrig
 /core/extension                 @calebmshafer @wgoehrig @aruniverse @ben-polinsky
@@ -154,7 +154,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/backend-webpack @aruniverse @calebmshafer @wgoehrig
 /tools/build @aruniverse @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
+/tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
 /tools/internal @aruniverse @calebmshafer @wgoehrig
 /tools/perf-tools @aruniverse @calebmshafer @wgoehrig
 /tools/webpack-core @aruniverse @calebmshafer @wgoehrig
