@@ -16,6 +16,7 @@ import mergePropertyCategory from "./PropertyCategoryMerger";
 import mergeSchemaItems from "./SchemaItemMerger";
 import mergeSchemaReferences from "./SchemaReferenceMerger";
 import mergeCAClasses from "./CAClassMerger";
+import mergePhenomenon from "./PhenomenonMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -72,6 +73,9 @@ export class SchemaMerger {
 
     const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory);
     await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
+
+    const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon);
+    await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
