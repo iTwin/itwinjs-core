@@ -262,6 +262,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
           return;
       }
     }
+    // recompute the points just in case
     CurveLocationDetail.createCurveEvaluatedFraction(cpA, globalFractionA, pair.detailA);
     CurveLocationDetail.createCurveEvaluatedFraction(cpB, globalFractionB, pair.detailB);
     pair.detailA.setIntervalRole(CurveIntervalRole.isolated);
@@ -729,20 +730,23 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this._geometryB = geomB;  // restore
   }
   /**
-   * The CurveCurveCloseApproachXY handler has close approaches stored in the its _results field. The results are stored
-   * with local details of the child. This function turns local detail of the child into the global detail of the chain.
-   */
-  private turnLocalDetailToChainDetail(
-    chain: CurveChainWithDistanceIndex, results: CurveLocationDetailPair[], updateDetailA: boolean, updateDetailB: boolean,
+ * The CurveCurveCloseApproachXY handler has close approaches stored in the its _results field. The results are stored
+ * with local details of the child. This function converts local detail of the child into the global detail of the chain.
+ * @param results the results array to be converted.
+ * @param chainA (optional) curve chain. If passed, detailA of chainA will be converted.
+ * @param chainB (optional) curve chain. If passed, detailB of chainB will be converted.
+ */
+  private convertChildDetailToChainDetail(
+    results: CurveLocationDetailPair[], chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex,
   ): void {
     for (const childDetailPair of results) {
-      if (updateDetailA) {
-        const chainDetail = chain.getChainDetail(childDetailPair.detailA);
+      if (chainA) {
+        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
         if (chainDetail)
           childDetailPair.detailA = chainDetail;
       }
-      if (updateDetailB) {
-        const chainDetail = chain.getChainDetail(childDetailPair.detailB);
+      if (chainB) {
+        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
         if (chainDetail)
           childDetailPair.detailB = chainDetail;
       }
@@ -760,11 +764,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this._geometryB = geomB;  // restore
     if (!this._results)
       return;
-    const updateDetailA = (this._geometryB instanceof CurveChainWithDistanceIndex) ? false : true;
-    const updateDetailB = !updateDetailA;
-    this.turnLocalDetailToChainDetail(
-      this._geometryB as CurveChainWithDistanceIndex, this._results, updateDetailA, updateDetailB,
-    );
+    if (this._geometryB instanceof CurveChainWithDistanceIndex)
+      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB as CurveChainWithDistanceIndex);
+    else
+      this.convertChildDetailToChainDetail(this._results, geomA as CurveChainWithDistanceIndex);
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
@@ -923,9 +926,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this.handlePath(chain.path as Path);
     if (!this._results)
       return;
-    const updateDetailA = true; // chain is always of type CurveChainWithDistanceIndex
-    const updateDetailB = (this._geometryB instanceof CurveChainWithDistanceIndex) ? true : false;
-    this.turnLocalDetailToChainDetail(chain, this._results, updateDetailA, updateDetailB);
+    this.convertChildDetailToChainDetail(this._results, chain);
+    if (this._geometryB instanceof CurveChainWithDistanceIndex)
+      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB as CurveChainWithDistanceIndex);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
