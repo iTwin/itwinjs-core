@@ -1362,6 +1362,7 @@ export namespace IModelJson {
         },
       };
     }
+    /** Handle strongly typed [[CurveChainWithDistanceIndex]] */
     public override handleCurveChainWithDistanceIndex(data: CurveChainWithDistanceIndex): any {
       return data.path.dispatchToGeometryHandler(this);
     }
