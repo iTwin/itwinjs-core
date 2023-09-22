@@ -2874,7 +2874,6 @@ export namespace IModelJson {
         handleBSplineSurface3dH(surface: BSplineSurface3dH): any;
         handleCone(data: Cone): any;
         handleCoordinateXYZ(data: CoordinateXYZ): any;
-        // (undocumented)
         handleCurveChainWithDistanceIndex(data: CurveChainWithDistanceIndex): any;
         handleIndexedPolyface(pf: IndexedPolyface): any;
         handleInterpolationCurve3d(curve: InterpolationCurve3d): any;
