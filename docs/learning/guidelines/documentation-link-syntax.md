@@ -82,7 +82,7 @@ For example:
     // __PUBLISH_EXTRACT_END__
 ```
 
-A snippet can be referenced in conceptual or API docs using the syntax ```[[include:IModelDb.somethingUsingIModelDb]]```.  It should be wrapped in the appropriate code block to get the correct formatting.
+A snippet can be referenced in conceptual or API docs using double square brackets around the name of the snippet.  It should be wrapped in the appropriate code block to get the correct formatting.
 
 For example:
 
