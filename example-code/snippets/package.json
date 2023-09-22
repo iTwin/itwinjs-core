@@ -23,6 +23,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
+    "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.1.1",
     "@itwin/itwins-client": "^1.2.0",
