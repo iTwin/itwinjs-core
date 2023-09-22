@@ -74,6 +74,9 @@ export class SchemaMerger {
     const propertyCategoryChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory);
     await mergeSchemaItems(mergeContext, propertyCategoryChanges, mergePropertyCategory);
 
+    const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem);
+    await mergeSchemaItems(mergeContext, unitSystemChanges);
+
     const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon);
     await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
 

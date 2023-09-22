@@ -24,7 +24,7 @@ abstract class MutableSchemaItem extends SchemaItem{
  * @param mergeFn           Merge function for complex merging.
  * @internal
  */
-export default async function mergeSchemaItems<TChange extends SchemaItemChanges, TItem extends SchemaItem>(context: SchemaMergeContext, schemaItemChanges: Iterable<TChange>, mergeFn: SchemaItemMergeFn<TChange, TItem>) {
+export default async function mergeSchemaItems<TChange extends SchemaItemChanges, TItem extends SchemaItem>(context: SchemaMergeContext, schemaItemChanges: Iterable<TChange>, mergeFn?: SchemaItemMergeFn<TChange, TItem>) {
   for(const change of schemaItemChanges) {
 
     // Gets the source and the target item. The target item could be undefined at that point.
@@ -66,7 +66,8 @@ export default async function mergeSchemaItems<TChange extends SchemaItemChanges
       return;
     });
 
-    await mergeFn(targetItem, sourceItem, change, context);
+    if (mergeFn)
+      await mergeFn(targetItem, sourceItem, change, context);
   }
 }
 
