@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, Phenomenon, PropertyCategory, Schema, SchemaItem, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { Constant, CustomAttributeClass, EntityClass, Enumeration, Phenomenon, PropertyCategory, Schema, SchemaItem, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 
 /**
  * @internal
@@ -22,6 +22,8 @@ export namespace SchemaItemFactory {
       return new PropertyCategory(targetSchema, template.name);
     if (is(template, Phenomenon))
       return new Phenomenon(targetSchema, template.name);
+    if (is(template, Constant))
+      return new Constant(targetSchema, template.name);
     if (is(template, UnitSystem))
       return new UnitSystem(targetSchema, template.name);
 

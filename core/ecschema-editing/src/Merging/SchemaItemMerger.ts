@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaItem } from "@itwin/ecschema-metadata";
+import { Schema, SchemaItem } from "@itwin/ecschema-metadata";
 import { ChangeType, PropertyValueChange, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { SchemaItemFactory } from "./SchemaItemFactory";
@@ -86,4 +86,16 @@ export async function mergeSchemaItemProperties<T extends SchemaItem>(targetItem
       increment = false;
     }
   }
+}
+
+/**
+ * @param source The schema item the reference gets copied from
+ * @param itemFullName Parsing through item full name give us the schema reference name and the item name, these values are needed to create a new schema item key.
+ * @returns Item referenced schema and item name.
+ * @internal
+ */
+export async function getItemNameAndSchemaRef(source: SchemaItem, itemFullName: string): Promise<[Schema | undefined, string]> {
+  const [schemaName, itemName] = SchemaItem.parseFullName(itemFullName);
+  const refSchema = await source.schema.getReference(schemaName);
+  return [refSchema, itemName];
 }
