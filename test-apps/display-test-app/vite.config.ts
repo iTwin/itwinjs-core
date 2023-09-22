@@ -62,8 +62,7 @@ export default defineConfig(() => {
         include: [
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
-          /node_modules/, // prevent errors for modules
-          /core\/frontend/, // prevent errors with require in IModelApp
+          /node_modules/, // prevent errors from dependencies
         ],
         transformMixedEsModules: true, // transforms require statements
       },
@@ -150,7 +149,6 @@ export default defineConfig(() => {
       include: [
         "@itwin/core-common", // for opening iModel error
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-frontend", // file in repository uses require (cjs)
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
     },

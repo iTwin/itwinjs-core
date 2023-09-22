@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix failure to preserve name when creating a BlankConnection.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
