@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Utils
+ */
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import { Schema } from "@itwin/ecschema-metadata";
-
-/** @packageDocumentation
- * @module Utils
- */
 
 /**
  * Utility class to assist in creating serialized EC Schemas on the file system.
