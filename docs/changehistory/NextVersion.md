@@ -9,7 +9,7 @@ Table of contents:
   - [Clip any curve](#clip-any-curve)
   - [Drape region onto mesh](#drape-region-onto-mesh)
 - [Electron 26 support](#electron-26-support)
-
+- [Locating and serializing schemas](#locating-and-serializing-schemas)
 
 ## Geometry
 
@@ -26,3 +26,8 @@ The new method [PolyfaceClip.drapeRegion]($core-geometry) computes the portion o
 ## Electron 26 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
+
+## Locating and serializing schemas
+
+New APIs like [SchemaLoader]($ecschema-metadata) allow you to [locate schemas](../learning/serializing-xml-schemas.md/#schemas-from-an-imodel) in the context of an iModel.
+You can serialize schemas using the new functions [SchemaXml.writeFile]($ecschema-locaters) and [SchemaXml.writeString]($ecschema-locaters).

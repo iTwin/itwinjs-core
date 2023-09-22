@@ -214,6 +214,7 @@ const dtaFrontendMain = async () => {
   // this needs to execute after all DisplayTestApp.startup executions so that env var will be current
   if (configuration.frontendTilesUrlTemplate) {
     initializeFrontendTiles({
+      enableEdges: true,
       computeSpatialTilesetBaseUrl: async (iModel) => {
         let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
         urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
