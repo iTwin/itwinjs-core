@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/naming-convention */
 
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { ArcGisDashLineStyle, ArcGisSymbologyRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 
 import * as chai from "chai";
@@ -260,6 +261,179 @@ describe("ArcGisSymbologyRenderer", () => {
     provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
     refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
+  });
+
+  it ("should draw rotated marker using simple PMS renderer definition", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = structuredClone(PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const angle = 90;
+    (rendererDef.symbol as any).angle = angle;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    contextMock.setup((x) => x.drawImage(moq.It.isAny(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.rotate(moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+
+    // Make sure appropriate context methods are called.
+    provider.drawPoint(contextMock.object, 0 ,0);
+    const refSymbol = provider.symbol;
+    const pms = refSymbol as EsriPMS;
+    await pms.loadImage();
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.drawImage(moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+
+  });
+
+  it ("should draw rotated marker using unique value PMS renderer definition", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = structuredClone(NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer);
+    const angle = 90;
+    // change 'gun' class angle property
+    rendererDef.uniqueValueInfos[2].symbol.angle = angle;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    contextMock.setup((x) => x.drawImage(moq.It.isAny(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.rotate(moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+
+    // Now set proper attribute
+    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    provider.setActiveFeatureAttributes({"WEAPON": "gun"});
+
+    // Make sure appropriate context methods are called.
+    provider.drawPoint(contextMock.object, 0 ,0);
+    const refSymbol = provider.symbol;
+    const pms = refSymbol as EsriPMS;
+    await pms.loadImage();
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.drawImage(moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+
+  });
+
+  it("should draw rotated marker using simple SMS renderer definition", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = structuredClone(PhillyLandmarksDataset.phillySimpleSMSDrawingInfo.drawingInfo.renderer);
+    const angle = 90;
+    (rendererDef.symbol as any).angle = angle;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    contextMock.setup((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.rotate(moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+
+    const refSymbol = provider.symbol;
+    const refSms = refSymbol as EsriSMS;
+
+    // Make sure appropriate context methods are called.
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isValue(refSms.size*0.5), moq.It.isValue(0), moq.It.isValue(2*Math.PI)), moq.Times.once());
+
+  });
+
+  it("should draw different markers using unique value SMS renderer definition", async () => {
+    // Clone renderer definition and make adjustments for the test purposes.
+    const rendererDef = NewYorkDataset.uniqueValueSMSDrawingInfo.drawingInfo.renderer;
+    const provider = TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
+
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+      (listener as any)();
+    });
+    await provider.renderer!.initialize();
+
+    contextMock.setup((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+
+    // Make sure appropriate context methods are called.
+
+    // Should take default symbology
+    provider.drawPoint(contextMock.object, 0 ,0);
+    const refDefaultSymbol = rendererDef.defaultSymbol;
+    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isValue(refDefaultSymbol.size*0.5), moq.It.isValue(0), moq.It.isValue(2*Math.PI)), moq.Times.once());
+
+    // check esriSMSCross
+    contextMock.reset();
+    provider.setActiveFeatureAttributes({WEAPON: " "});
+    contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.beginPath());
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.beginPath(), moq.Times.once());
+
+    // check esriSMSDiamond
+    contextMock.reset();
+
+    provider.setActiveFeatureAttributes({WEAPON: "blunt_instrument"});
+    contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.beginPath());
+    contextMock.setup((x) => x.closePath());
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+    contextMock.verify((x) => x.beginPath(), moq.Times.once());
+    contextMock.verify((x) => x.closePath(), moq.Times.once());
+    contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(3));
+
+    // check esriSMSSquare
+    contextMock.reset();
+    provider.setActiveFeatureAttributes({WEAPON: "gun"});
+    contextMock.setup((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+
+    // check esriSMSTriangle
+    contextMock.reset();
+    provider.setActiveFeatureAttributes({WEAPON: "knife"});
+    contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.beginPath());
+    contextMock.setup((x) => x.closePath());
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+    contextMock.verify((x) => x.beginPath(), moq.Times.once());
+    contextMock.verify((x) => x.closePath(), moq.Times.once());
+    contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+
+    // check esriSMSX
+    contextMock.reset();
+    provider.setActiveFeatureAttributes({WEAPON: "other"});
+    contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    contextMock.setup((x) => x.beginPath());
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
+    contextMock.verify((x) => x.beginPath(), moq.Times.once());
+
+    // check esriSMSCircle
+    contextMock.reset();
+    provider.setActiveFeatureAttributes({WEAPON: "dummy"});
+    contextMock.setup((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
+    provider.drawPoint(contextMock.object, 0 ,0);
+    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(),moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
   });
 
   it("should apply proper marker using unique value PMS renderer definition", async () => {
