@@ -66,3 +66,35 @@ For example:
 ## Linking to external Urls
 
 Standard markdown applies: `[label](URL)`
+
+## Linking to code snippets
+
+The itwinjs-core repository has a directory of code snippets you can reference in docs.  The directory is `/example-code/snippets/` and contains both backend and frontend snippets, more can be added as needed.
+
+Snippets use the special comment to start `__PUBLISH_EXTRACT_START__ <unique.name>` and `__PUBLISH_EXTRACT_END__` to end the code snippet.
+
+For example:
+
+```ts
+   // __PUBLISH_EXTRACT_START__ IModelDb.somethingUsingIModelDb
+    // This is an example of how to do the thing.
+    do { theThing(iModelDb) } while (youCan)
+    // __PUBLISH_EXTRACT_END__
+```
+
+A snippet can be referenced in conceptual or API docs using double square brackets around the name of the snippet.  It should be wrapped in the appropriate code block to get the correct formatting.
+
+For example:
+
+```ts
+/**
+ * Does the thing
+ *
+ * ** Example:**
+ * ``` ts
+ * [[IModelDb.somethingUsingIModelDb]]
+ * ```
+ * @public
+ */
+export class SomeIModelThing {}
+```
