@@ -44,12 +44,6 @@ export abstract class SchemaFileLocater {
 }
 
 // @beta
-export class SchemaFileUtility {
-    static writeSchemaToXmlString(schema: Schema): Promise<string>;
-    static writeSchemaXmlFile(schema: Schema, outputPath: string): Promise<void>;
-}
-
-// @beta
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
