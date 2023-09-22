@@ -71,6 +71,7 @@ class TerrainDraper implements TileUser {
 
     const sweepDir = Vector3d.unitZ();
 
+    // when current point is near start point, create a polygon to drape
     let polygon: Loop | undefined;
     const isClosed = (inPoints.length > 2) && Geometry.isDistanceWithinTol(inPoints.distanceIndexIndex(0, inPoints.length - 1)!, 100 * tolerance);
     if (isClosed) {
@@ -86,7 +87,7 @@ class TerrainDraper implements TileUser {
     for (const polyface of collector.polyfaces) {
       if (polygon) {
         const mesh = PolyfaceClip.drapeRegion(polyface, polygon, sweepDir);
-        if (mesh !== undefined)
+        if (mesh?.tryTranslateInPlace(0, 0, 10 * tolerance)) // shift up to see it better
           outMeshes.push(mesh);
       } else {
         const options = SweepLineStringToFacetsOptions.create(sweepDir, undefined, true, true, true, true);
@@ -97,7 +98,7 @@ class TerrainDraper implements TileUser {
   }
 }
 
-/** Demonstrates draping line strings on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
+/** Demonstrates draping line strings and polygons on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
  */
 export class TerrainDrapeTool extends PrimitiveTool {
   private _drapePoints = new GrowableXYZArray();
