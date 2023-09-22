@@ -741,16 +741,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     if (!childDetail)
       return undefined;
-    const fragment = this.curveAndChildFractionToFragment(childDetail.curve!, childDetail.fraction);
-    if (fragment) { // turn local detail for the child into the global detail for the chain
-      const chainDistance = fragment.childFractionToChainDistance(childDetail.fraction);
-      const chainFraction = this.chainDistanceToChainFraction(chainDistance);
-      const chainDetail = CurveLocationDetail.createCurveFractionPoint(this, chainFraction, childDetail.point);
-      chainDetail.childDetail = childDetail;
-      chainDetail.a = childDetail.a;
-      return chainDetail;
-    }
-    return undefined;
+    return this.computeChainDetail(childDetail);
   }
   /**
    * Construct an offset of each child as viewed in the xy-plane (ignoring z).
@@ -786,11 +777,11 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
   /**
-   * Turn the local detail of the child into the global detail of the chain.
+   * Compute the global detail of the chain from the local detail of the child.
    * @param childDetail the local detail of the child.
    * @returns the global detail of the chain.
    */
-  public getChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
+  public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)
       return undefined;
     const fragment = this.curveAndChildFractionToFragment(childDetail.curve, childDetail.fraction);
