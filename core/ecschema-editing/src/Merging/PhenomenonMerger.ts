@@ -3,27 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Phenomenon } from "@itwin/ecschema-metadata";
-import { SchemaItemChanges } from "../ecschema-editing";
+import { SchemaItemChanges } from "../Validation/SchemaChanges";
 import { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
-import { mergeSchemaItemProperties } from "./SchemaItemMerger";
 
 /**
- * @internal 
+ * @internal
  */
-export default async function mergePhenomenon(target: Phenomenon, _source: Phenomenon, changes: SchemaItemChanges) {
-    const mutablePhenomenon = target as MutablePhenomenon;
+export default async function mergePhenomenon(target: Phenomenon, source: Phenomenon, _changes?: SchemaItemChanges) {
+  const mutablePhenomenon = target as MutablePhenomenon;
 
-    await mergeSchemaItemProperties(mutablePhenomenon, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
-        switch (propertyName) {
-            case 'definition': {
-                // If "", then a new Phenomenon item was created.
-                // Therefore, just set to new value. 
-                if (item.definition === "") {
-                    item.setDefinition(propertyValue);
-                    return;
-                }
-                throw Error(`Failed to merge schemas, definition attribute conflict: ${propertyValue} -> ${item.definition}`);
-            }
-        }
-    });
+  if(mutablePhenomenon.definition === ""){
+    await mutablePhenomenon.setDefinition(source.definition);
+  }else{
+    throw Error(`Failed to merge schemas, definition attribute conflict: ${source.definition} -> ${target.definition}`);
+  }
 }

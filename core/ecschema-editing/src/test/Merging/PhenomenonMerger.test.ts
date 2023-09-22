@@ -56,7 +56,7 @@ describe("Phenomenon merger tests", () => {
       expect(sourcePhenomenon!.toJSON()).deep.eq(mergedPhenomenon!.toJSON());
 
     });
-  })
+  });
 
   describe("Phenomenon attribute conflict tests", () => {
     it("should throw error for definition conflict", async () => {
@@ -87,7 +87,7 @@ describe("Phenomenon merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, 'definition attribute conflict: Units.LENGTH(2) -> Units.LENGTH(4)');
-    })
-  })
-})
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "definition attribute conflict: Units.LENGTH(2) -> Units.LENGTH(4)");
+    });
+  });
+});

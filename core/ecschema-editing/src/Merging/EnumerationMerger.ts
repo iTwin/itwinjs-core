@@ -11,13 +11,13 @@ import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
  * @internal
  * @param item Type Enumerator, the Enumerator the differences get merged into.
  * @param attributeName Name of the Enumerator attribute that changed.
- * @param deltaChange Provides information about the changes in Enumerator attributes. 
- * @param attributeValue The value that gets merged into the Enumerator attribute. 
+ * @param deltaChange Provides information about the changes in Enumerator attributes.
+ * @param attributeValue The value that gets merged into the Enumerator attribute.
  */
 type EnumeratorAttributeChanged<TEnumerator extends AnyEnumerator> = (item: TEnumerator, attributeName: string, deltaChange: string, attributeValue: any) => void | boolean;
 
 /**
- * Simple interface to extend access Enumerator attributes 
+ * Simple interface to extend access Enumerator attributes
  * and allow editing.
  */
 interface MutableEnumerator extends AnyEnumerator {
@@ -27,9 +27,9 @@ interface MutableEnumerator extends AnyEnumerator {
 
 /**
  * @param target The Enumeration the differences get merged into
- * @param source The Enumeration to compare 
- * @param changes Gets the @see EnumerationChanges between the two Enumerations. 
- * For example, if source Enumeration has an attribute that is undefined in  
+ * @param source The Enumeration to compare
+ * @param changes Gets the @see EnumerationChanges between the two Enumerations.
+ * For example, if source Enumeration has an attribute that is undefined in
  * target one, it would be listed in propertyValueChanges.
  * @internal
  */
@@ -67,22 +67,22 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
           case "label": {
             enumerator.label = attributeValue;
             return;
-          };
+          }
           case "description": {
             enumerator.description = attributeValue;
             return;
-          };
-          case "value": {  
+          }
+          case "value": {
             throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
-          };
+          }
         }
-      })
+      });
     }
   }
 }
 
 /**
- * Similar logic to mergeSchemaItemProperties but for EnumeratorDelta, which has the differences starting at index 1, 
+ * Similar logic to mergeSchemaItemProperties but for EnumeratorDelta, which has the differences starting at index 1,
  * hence the .slice(1), this is the main difference between mergeSchemaItemProperties.
  * @param targetEnumerator The enumerator the differences get merged into.
  * @param changes Gets the @see EnumeratorDelta, the Enumerator delta array holds information about changes between two Enumerators.
@@ -92,7 +92,7 @@ export default async function mergeEnumeration(target: Enumeration, source: Enum
 async function mergeEnumeratorAttributes<T extends AnyEnumerator>(targetEnumerator: T, changes: EnumeratorDelta[], handler: EnumeratorAttributeChanged<T>) {
   for (let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
     const deltaChange = changes[index].toString(); // this will be useful for error message.
-    const [attributeName, attributeValue] = changes[index].diagnostic.messageArgs!.slice(1); // messageArgs[0] seems to be an object, need to get to the next one, slice to start at index 1 
+    const [attributeName, attributeValue] = changes[index].diagnostic.messageArgs!.slice(1); // messageArgs[0] seems to be an object, need to get to the next one, slice to start at index 1
     if (handler(targetEnumerator, attributeName, deltaChange, attributeValue) === true) {
       changes.splice(index, 1);
       stepUp = false;
