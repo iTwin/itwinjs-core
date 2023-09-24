@@ -15,7 +15,7 @@ Table of contents:
 
 ### Clip any curve
 
-The new method [ClipUtils.clipAnyCurve]($core-geometry) clips the input curve or region. One just needs to pass an [AnyCurve]($core-geometry) and a [Clipper]($core-geometry), and the method returns the clipped curves or regions that lie inside the clipper.
+The new method [ClipUtilities.clipAnyCurve]($core-geometry) clips the input curve or region. One just needs to pass an [AnyCurve]($core-geometry) and a [Clipper]($core-geometry), and the method returns the clipped curves or regions that lie inside the clipper.
 
 ### Drape region onto mesh
 
