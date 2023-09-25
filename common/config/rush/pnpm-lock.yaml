@@ -3017,12 +3017,14 @@ importers:
   ../../tools/internal:
     specifiers:
       '@itwin/build-tools': workspace:*
+      glob: ^7.1.2
       mocha: ^10.0.0
       yargs: ^17.4.0
     dependencies:
       yargs: 17.7.2
     devDependencies:
       '@itwin/build-tools': link:../build
+      glob: 7.2.3
       mocha: 10.2.0
 
   ../../tools/perf-tools:
