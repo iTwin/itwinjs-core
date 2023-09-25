@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Locaters
+ */
 
 import * as path from "path";
 import { DOMParser } from "@xmldom/xmldom";
@@ -9,10 +12,6 @@ import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
-
-/** @packageDocumentation
- * @module Locaters
- */
 
 /**
  * A SchemaLocater implementation for locating XML Schema files

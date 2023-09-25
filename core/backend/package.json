@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.2.0-dev.22",
+  "version": "4.2.0-dev.28",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -41,9 +41,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.22",
-    "@itwin/core-common": "workspace:^4.2.0-dev.22",
-    "@itwin/core-geometry": "workspace:^4.2.0-dev.22",
+    "@itwin/core-bentley": "workspace:^4.2.0-dev.28",
+    "@itwin/core-common": "workspace:^4.2.0-dev.28",
+    "@itwin/core-geometry": "workspace:^4.2.0-dev.28",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -92,7 +92,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.2.4",
+    "@bentley/imodeljs-native": "4.2.5",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.1.0",
