@@ -10,7 +10,6 @@
 // eslint-disable-next-line @itwin/import-within-package
 import { version } from "../../package.json";
 /** @public */
-import packageJSON from "../package.json";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = version;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
