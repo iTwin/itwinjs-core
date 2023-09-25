@@ -1838,7 +1838,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
     readonly unitSystem: string;
 }
 
-// @alpha
+// @beta
 export class SchemaJsonLocater implements ISchemaLocater {
     constructor(_getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -1881,9 +1881,10 @@ export interface SchemaKeyProps {
     readonly write: number;
 }
 
-// @alpha
+// @beta
 export class SchemaLoader {
     constructor(getSchema: SchemaPropsGetter);
+    get context(): SchemaContext;
     getSchema<T extends Schema>(schemaName: string): T;
     tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
@@ -1937,7 +1938,7 @@ export interface SchemaProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal

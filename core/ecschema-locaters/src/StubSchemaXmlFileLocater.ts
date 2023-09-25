@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Locaters
+ */
 
 import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
-
-/** @packageDocumentation
- * @module Locaters
- */
 
 function isECv2Schema(schemaText: string): boolean {
   return /<ECSchema[^>]*xmlns=".*ECXML.2.0"/.test(schemaText);
