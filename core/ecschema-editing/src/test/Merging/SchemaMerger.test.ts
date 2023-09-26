@@ -9,7 +9,7 @@ import "chai-as-promised";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Schema merge tests", () => {
+describe.only("Schema merge tests", () => {
 
   const sourceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

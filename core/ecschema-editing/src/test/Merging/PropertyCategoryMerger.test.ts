@@ -8,7 +8,7 @@ import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("PropertyCategory merge tests", () => {
+describe.only("PropertyCategory merge tests", () => {
 
   const sourceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

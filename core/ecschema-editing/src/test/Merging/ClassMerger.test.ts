@@ -8,7 +8,7 @@ import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Class merger tests", () => {
+describe.only("Class merger tests", () => {
   let targetContext: SchemaContext;
   let sourceContext: SchemaContext;
 

@@ -2,27 +2,39 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, PropertyCategory, Schema, SchemaItem, StructClass } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, EntityClass, Enumeration, PrimitiveType, PropertyCategory, SchemaItem, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor, SchemaItemEditResults } from "../Editing/Editor";
+import { SchemaMergeContext } from "./SchemaMerger";
 
 /**
  * @internal
  */
 export namespace SchemaItemFactory {
 
-  export async function create(targetSchema: Schema, template: SchemaItem): Promise<SchemaItem> {
+  export async function add(context: SchemaMergeContext, template: SchemaItem): Promise<SchemaItemKey> {
+    return new Promise(async (resolve, reject) => {
+      const result = await create(context.editor, context.targetSchema.schemaKey, template);
+      if(result.errorMessage) {
+        return reject(result.errorMessage);
+      }
+      if(result.itemKey) {
+        return resolve(result.itemKey);
+      }
+    });
+  }
+
+  async function create(editor: SchemaContextEditor, targetSchemaKey: SchemaKey, template: SchemaItem): Promise<SchemaItemEditResults> {
     if (is(template, Enumeration))
-      return new Enumeration(targetSchema, template.name, template.type);
+      return editor.enumerations.create(targetSchemaKey, template.name, template.isInt ? PrimitiveType.Integer : PrimitiveType.String, template.label, template.isStrict);
     if (is(template, EntityClass))
-      return new EntityClass(targetSchema, template.name, template.modifier);
+      return editor.entities.create(targetSchemaKey, template.name, template.modifier);
     if (is(template, StructClass))
-      return new StructClass(targetSchema, template.name, template.modifier);
+      return editor.structs.create(targetSchemaKey, template.name);
     if (is(template, CustomAttributeClass))
-      return new CustomAttributeClass(targetSchema, template.name, template.modifier);
+      return editor.customAttributes.create(targetSchemaKey, template.name, template.containerType);
     if(is(template, PropertyCategory))
-      return new PropertyCategory(targetSchema, template.name);
-
+      return editor.propertyCategories.create(targetSchemaKey, template.name, template.priority);
     throw new Error(`Unsupported Schema Item Type: ${template.constructor.name}`);
-
   }
 
   function is<T extends SchemaItem>(item: SchemaItem, type: new (...args: any) => T ): item is T {
