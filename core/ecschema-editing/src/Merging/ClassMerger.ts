@@ -23,9 +23,7 @@ export default class ClassMerger extends SchemaItemMerger<ECClass> {
 
   private async mergeBaseClasses(itemKey: SchemaItemKey, source: ECClass, baseClassChange?: BaseClassDelta) {
     if (baseClassChange !== undefined) {
-      const sourceBaseClass = baseClassChange.diagnostic.messageArgs![0] as ECClass;
-      const targetBaseClass = baseClassChange.diagnostic.messageArgs![1] as ECClass;
-
+      const [sourceBaseClass, targetBaseClass] = baseClassChange.diagnostic.messageArgs! as [ECClass, ECClass];
       if (targetBaseClass === undefined) {
 
         const baseClassKey = sourceBaseClass.schema.schemaKey.matches(source.schema.schemaKey)

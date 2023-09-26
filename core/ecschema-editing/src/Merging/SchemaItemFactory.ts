@@ -11,19 +11,28 @@ import { SchemaMergeContext } from "./SchemaMerger";
  */
 export namespace SchemaItemFactory {
 
-  export async function add(context: SchemaMergeContext, template: SchemaItem): Promise<SchemaItemKey> {
-    return new Promise(async (resolve, reject) => {
-      const result = await create(context.editor, context.targetSchema.schemaKey, template);
-      if(result.errorMessage) {
-        return reject(result.errorMessage);
-      }
-      if(result.itemKey) {
-        return resolve(result.itemKey);
-      }
-    });
+  /**
+   * Creates a new Schema Item based on the given template instance.
+   * @param context   The current merging context.
+   * @param template  The Schema Items Template
+   * @returns         The SchemaItemKey of the created item.
+   */
+  export async function create(context: SchemaMergeContext, template: SchemaItem): Promise<SchemaItemKey> {
+    const result = await createItem(context.editor, context.targetSchema.schemaKey, template);
+    if(result.errorMessage) {
+      throw new Error(result.errorMessage);
+    }
+    return result.itemKey!;
   }
 
-  async function create(editor: SchemaContextEditor, targetSchemaKey: SchemaKey, template: SchemaItem): Promise<SchemaItemEditResults> {
+  /**
+   * Creates a new Schema Item in the SchemaContextEditor.
+   * @param editor          The SchemaContextEditor
+   * @param targetSchemaKey The key of the target schema the item shall be created in.
+   * @param template        The Schema Items Template
+   * @returns               A SchemaItemEditResults with a schema key if the item could be created.
+   */
+  async function createItem(editor: SchemaContextEditor, targetSchemaKey: SchemaKey, template: SchemaItem): Promise<SchemaItemEditResults> {
     if (is(template, Enumeration))
       return editor.enumerations.create(targetSchemaKey, template.name, template.isInt ? PrimitiveType.Integer : PrimitiveType.String, template.label, template.isStrict);
     if (is(template, EntityClass))
@@ -37,6 +46,12 @@ export namespace SchemaItemFactory {
     throw new Error(`Unsupported Schema Item Type: ${template.constructor.name}`);
   }
 
+  /**
+   * Type Guard to "cast" a given schema item into an implementation
+   * @param item  Item to be checked
+   * @param type  The desired implementation.
+   * @returns     true if the item could be casted, otherwise false.
+   */
   function is<T extends SchemaItem>(item: SchemaItem, type: new (...args: any) => T ): item is T {
     return item instanceof type;
   }
