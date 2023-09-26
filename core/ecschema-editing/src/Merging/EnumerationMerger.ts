@@ -4,23 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Enumeration, SchemaItemKey} from "@itwin/ecschema-metadata";
 import { ChangeType, EnumerationChanges } from "../Validation/SchemaChanges";
-import { PropertyValueResolver, SchemaItemMerger } from "./SchemaItemMerger";
+import { SchemaItemMerger } from "./SchemaItemMerger";
 
 /**
  * @internal
  */
 export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {
-
-  /**
-   * Creates the property value resolver for [[Enumeration]] items.
-   */
-  protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<Enumeration>> {
-    return {
-      isStrict: (value: boolean) => value,
-      type: (value: string) => value,
-    };
-  }
-
   protected override async merge(itemKey: SchemaItemKey, source: Enumeration, changes: EnumerationChanges) {
     for (const enumeratorChange of changes.enumeratorChanges.values()) {
       // Handle each case:

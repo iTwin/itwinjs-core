@@ -23,13 +23,13 @@ type MutableSchemaItemProps<T extends SchemaItem> = {
 };
 
 /**
- * The SchemaItemMerger is an abstract base class for several other mergers with the actual
- * logic to perform merging for a certain schema item type. The class provides the shared logics
+ * The SchemaItemMerger is an base class for several other mergers with the actual logic
+ * to perform merging for a certain schema item type. The class provides the shared logics
  * that is shared for all schema item mergers and custom logic can be applied by overriding
  * the protected class members.
  * @internal
  */
-export abstract class SchemaItemMerger<TItem extends SchemaItem> {
+export class SchemaItemMerger<TItem extends SchemaItem> {
 
   protected readonly context: SchemaMergeContext;
 
@@ -54,18 +54,14 @@ export abstract class SchemaItemMerger<TItem extends SchemaItem> {
     }
 
     const jsonProps = {} as MutableSchemaItemProps<TItem>;
-    const propertyResolver = {
-      label:       (value: string) => value,
-      description: (value: string) => value,
-      ...await this.createPropertyValueResolver(),
-    };
+    const propertyResolver = await this.createPropertyValueResolver();
 
     for(const change of changes) {
       const [propertyName, propertyValue] = change.diagnostic.messageArgs! as [keyof typeof jsonProps, any];
       const resolver = propertyResolver[propertyName];
-      if(resolver !== undefined) {
-        jsonProps[propertyName] = resolver(propertyValue, jsonProps);
-      }
+      jsonProps[propertyName] = resolver !== undefined
+        ? resolver(propertyValue, jsonProps)
+        : propertyValue;
     }
 
     await targetItem.fromJSON(jsonProps);

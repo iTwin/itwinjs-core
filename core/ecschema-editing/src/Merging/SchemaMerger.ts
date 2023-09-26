@@ -12,10 +12,10 @@ import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaContextEditor } from "../Editing/Editor";
 
 import mergeSchemaReferences from "./SchemaReferenceMerger";
-import PropertyCategoryMerger from "./PropertyCategoryMerger";
 import ClassMerger from "./ClassMerger";
 import CAClassMerger from "./CAClassMerger";
 import EnumerationMerger from "./EnumerationMerger";
+import { SchemaItemMerger } from "./SchemaItemMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -72,7 +72,7 @@ export class SchemaMerger {
 
     const itemChanges = getSchemaItemChanges(schemaChanges);
     await EnumerationMerger.mergeChanges(mergeContext, itemChanges.enumeratations);
-    await PropertyCategoryMerger.mergeChanges(mergeContext, itemChanges.propertyCategories);
+    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.propertyCategories);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
