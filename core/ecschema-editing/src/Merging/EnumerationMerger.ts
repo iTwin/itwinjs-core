@@ -17,6 +17,7 @@ export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {
   protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<Enumeration>> {
     return {
       isStrict: (value: boolean) => value,
+      type: (value: string) => value,
     };
   }
 

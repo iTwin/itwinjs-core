@@ -29,8 +29,12 @@ export abstract class SchemaItemMerger<TItem extends SchemaItem> {
    * @param changes     The property changes.
    */
   private async mergeItemPropertyValues(targetItem: TItem, changes: PropertyValueChange[]) {
+    if(changes.length === 0) {
+      return;
+    }
+
     // This implementation is still a bit wanky, as the editor api does not allow to set all
-    const jsonProps = targetItem.toJSON() as MutableSchemaProps<TItem>;
+    const jsonProps = {} as MutableSchemaProps<TItem>;
     const propertyResolver = {
       label: (value: string) => value,
       description: (value: string) => value,
@@ -44,6 +48,7 @@ export abstract class SchemaItemMerger<TItem extends SchemaItem> {
         jsonProps[propertyName] = resolver(propertyValue, jsonProps);
       }
     }
+
     await targetItem.fromJSON(jsonProps);
   }
 
