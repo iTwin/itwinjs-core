@@ -416,9 +416,9 @@ export enum CurveCurveApproachType {
  * @public
  */
 export class CurveLocationDetailPair {
-  /** The first of the two details ... */
+  /** The first of the two details. */
   public detailA: CurveLocationDetail;
-  /** The second of the two details ... */
+  /** The second of the two details. */
   public detailB: CurveLocationDetail;
   /**
    * Enumeration of how the detail pairs relate.
@@ -478,9 +478,9 @@ export class CurveLocationDetailPair {
  * @public
  */
 export class CurveLocationDetailArrayPair {
-  /** First array of details ... */
+  /** First array of details. */
   public dataA: CurveLocationDetail[];
-  /** Second array of details ... */
+  /** Second array of details. */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];
