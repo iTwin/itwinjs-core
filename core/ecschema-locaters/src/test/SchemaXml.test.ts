@@ -8,9 +8,9 @@ import * as fs from "fs-extra";
 import * as sinon from "sinon";
 import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
-import { SchemaFileUtility } from "../SchemaFileUtility";
+import { SchemaXml } from "../SchemaXml";
 
-describe("SchemaFileUtility tests:", () => {
+describe("SchemaXml tests:", () => {
   let locater: SchemaXmlFileLocater;
   let resultLocater: SchemaXmlFileLocater;
   let context: SchemaContext;
@@ -37,11 +37,11 @@ describe("SchemaFileUtility tests:", () => {
     sinon.restore();
   });
 
-  it("writeSchemaXmlFile creates schema xml file successfully.", async () => {
+  it("writeFile creates schema xml file successfully.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
-    await SchemaFileUtility.writeSchemaXmlFile(schema!, outDir);
+    await SchemaXml.writeFile(schema!, outDir);
 
     const resultSchema = await resultContext.getSchema(schemaKey, SchemaMatchType.Exact);
 
@@ -49,19 +49,19 @@ describe("SchemaFileUtility tests:", () => {
     expect(resultSchema?.schemaKey.matches(schema?.schemaKey as SchemaKey)).to.be.true;
   });
 
-  it("writeSchemaXmlFile with bad path specified, should fail.", async () => {
+  it("writeFile with bad path specified, should fail.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
-    await expect(SchemaFileUtility.writeSchemaXmlFile(schema!, "badPath")).to.be.rejectedWith(`The output directory 'badPath' does not exist.`);
+    await expect(SchemaXml.writeFile(schema!, "badPath")).to.be.rejectedWith(`The output directory 'badPath' does not exist.`);
   });
 
-  it("writeSchemaXmlFile, writeFile fails, failure handled properly.", async () => {
+  it("writeFile, writeFile fails, failure handled properly.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
     sinon.stub(fs, "writeFile").rejects(new Error("SomeError"));
     const outFile = path.resolve(outDir, `${schema!.name}.ecschema.xml`);
 
-    await expect(SchemaFileUtility.writeSchemaXmlFile(schema!, outDir)).to.be.rejectedWith(`An error occurred writing to file '${outFile}': SomeError`);
+    await expect(SchemaXml.writeFile(schema!, outDir)).to.be.rejectedWith(`An error occurred writing to file '${outFile}': SomeError`);
   });
 });

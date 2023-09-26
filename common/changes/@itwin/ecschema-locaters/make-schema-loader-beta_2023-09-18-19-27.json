@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-locaters",
+      "comment": "Export SchemaFileUtility and make beta",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-locaters"
+}
