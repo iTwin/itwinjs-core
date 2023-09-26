@@ -14,7 +14,12 @@ Table of contents:
 
 ### Clip any curve
 
-The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCurves` and any region including any `Loop`, `ParityRegion`, or `UnionRegion`. One just needs to pass `AnyCurve` and a `Clipper` and the functions collect portions of any curve that are within the clipper into an array of any curves and returns the array.
+The new method [ClipUtilities.clipAnyCurve]($core-geometry) clips the input curve or region. One just needs to pass an [AnyCurve]($core-geometry) and a [Clipper]($core-geometry), and the method returns the clipped curves or regions that lie inside the clipper.
+
+Here is an example of clipping a union region:
+![Clip union region](./assets/clip-union-region.jpg "A union region clipped by a 3D clipper")
+and an example of clipping a parity region:
+![Clip parity region](./assets/clip-parity-region.jpg "A parity region clipped by a 3D clipper")
 
 ## Electron 26 support
 
