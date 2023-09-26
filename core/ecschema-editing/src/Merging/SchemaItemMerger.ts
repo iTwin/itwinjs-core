@@ -7,18 +7,37 @@ import { ChangeType, PropertyValueChange, SchemaItemChanges } from "../Validatio
 import { SchemaItemFactory } from "./SchemaItemFactory";
 import { SchemaMergeContext } from "./SchemaMerger";
 
-export type PropertyValueResolver<T extends SchemaItem> = {
-  -readonly [key in keyof ReturnType<T["toJSON"]>]?: (value: any, item: MutableSchemaProps<T>) => any;
+/**
+ * Defines a type-safe interface of Property Value resolver.
+ * @internal
+ */
+export type PropertyValueResolver<T extends SchemaItem, TProps=MutableSchemaItemProps<T>> = {
+  [P in keyof TProps]?: (value: any, item: TProps) => any;
 };
 
-type MutableSchemaProps<T extends SchemaItem> = {
+/**
+ * Defines a Mutable Schema Props interface.
+ */
+type MutableSchemaItemProps<T extends SchemaItem> = {
   -readonly [key in keyof ReturnType<T["toJSON"]>]: ReturnType<T["toJSON"]>[key];
 };
 
+/**
+ * The SchemaItemMerger is an abstract base class for several other mergers with the actual
+ * logic to perform merging for a certain schema item type. The class provides the shared logics
+ * that is shared for all schema item mergers and custom logic can be applied by overriding
+ * the protected class members.
+ * @internal
+ */
 export abstract class SchemaItemMerger<TItem extends SchemaItem> {
 
   protected readonly context: SchemaMergeContext;
 
+  /**
+   * Constructor of the abstract SchemaItemMerger class. This should not
+   * be overriden or extended by sub-implementations.
+   * @param context   The current merging context.
+   */
   constructor(context: SchemaMergeContext) {
     this.context = context;
   }
@@ -29,14 +48,14 @@ export abstract class SchemaItemMerger<TItem extends SchemaItem> {
    * @param changes     The property changes.
    */
   private async mergeItemPropertyValues(targetItem: TItem, changes: PropertyValueChange[]) {
+    // No need to process anything if no properties differ.
     if(changes.length === 0) {
       return;
     }
 
-    // This implementation is still a bit wanky, as the editor api does not allow to set all
-    const jsonProps = {} as MutableSchemaProps<TItem>;
+    const jsonProps = {} as MutableSchemaItemProps<TItem>;
     const propertyResolver = {
-      label: (value: string) => value,
+      label:       (value: string) => value,
       description: (value: string) => value,
       ...await this.createPropertyValueResolver(),
     };
