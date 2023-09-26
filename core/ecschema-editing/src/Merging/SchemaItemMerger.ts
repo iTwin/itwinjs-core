@@ -47,7 +47,7 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
    * @param targetItem  The current schema item
    * @param changes     The property changes.
    */
-  private async mergeItemPropertyValues(targetItem: TItem, changes: PropertyValueChange[]) {
+  private async mergeItemPropertyValues(targetItemKey: SchemaItemKey, changes: PropertyValueChange[]) {
     // No need to process anything if no properties differ.
     if(changes.length === 0) {
       return;
@@ -64,7 +64,7 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
         : propertyValue;
     }
 
-    await targetItem.fromJSON(jsonProps);
+    await this.context.editor.schemaItems.applyProps(targetItemKey, jsonProps);
   }
 
   /**
@@ -98,29 +98,23 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
 
       // Gets the source and the target item. The target item could be undefined at that point.
       const sourceItem = (await context.sourceSchema.getItem<SchemaItem>(change.ecTypeName))!;
-      let targetItem = await context.targetSchema.getItem<SchemaItem>(change.ecTypeName);
+      let targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
 
       // In case the schema item does not exists in the target schema, an instance for
       // this schema item is created. It's properties get set by the merger then.
       if(change.schemaItemMissing?.changeType === ChangeType.Missing) {
         // Check for name to make sure there is no collision for items with the same name
         // but different type.
-        if(targetItem !== undefined) {
+        if(await context.targetSchema.lookupItem(targetItemKey) !== undefined) {
           throw new Error(`Schema ${context.targetSchema.name} already contains a Schema Item ${change.ecTypeName}.`);
         }
 
         // TODO: Think about renaming the Schema Item. This could be controlled though a flag.
-
-        const itemKey = await SchemaItemFactory.add(context, sourceItem);
-        targetItem = await context.targetSchema.lookupItem(itemKey);
+        targetItemKey = await SchemaItemFactory.add(context, sourceItem);
       }
 
-      if(targetItem === undefined) {
-        throw new Error("Invalid state, targetItem must not be undefined at that point.");
-      }
-
-      await merger.mergeItemPropertyValues(targetItem, change.propertyValueChanges);
-      await merger.merge(targetItem.key, sourceItem, change);
+      await merger.mergeItemPropertyValues(targetItemKey, change.propertyValueChanges);
+      await merger.merge(targetItemKey, sourceItem, change);
     }
   }
 
