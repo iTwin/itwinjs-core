@@ -237,6 +237,8 @@ export interface PresentationManagerProps {
    *   - `{source file being executed}.js`
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
+   *
+   * @deprecated in 4.2. This attribute is not used anymore - the package is not using private assets anymore.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
