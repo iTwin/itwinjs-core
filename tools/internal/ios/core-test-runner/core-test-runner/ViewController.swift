@@ -12,8 +12,25 @@ class ViewController: ObservableObject {
     @Published var testStatus = "Tests not started."
     @Published var numFailed = -1
 
+    func copyAssetsToTemp() throws {
+        let srcPath = Bundle.main.bundlePath.appending("/Assets/assets")
+        let dstPath = NSString(string: NSTemporaryDirectory()).appendingPathComponent("assets")
+        let fm = FileManager.default
+        if fm.fileExists(atPath: dstPath) {
+            try fm.removeItem(atPath: dstPath)
+        }
+        try fm.copyItem(atPath: srcPath, toPath: dstPath)
+    }
+
     func runTests() {
         testStatus = "Starting tests..."
+        do {
+            try copyAssetsToTemp()
+        } catch {
+            NSLog("Error copying assets to tmp: \(error)")
+            self.testStatus = "Tests initialization error."
+            return
+        }
         // Environment variable is read in configureMocha.js and passed to BentleyMochaReporter.
         let testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("mocha_test_results.xml")
         setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
