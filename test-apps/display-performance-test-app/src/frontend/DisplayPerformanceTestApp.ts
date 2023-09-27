@@ -88,6 +88,7 @@ export class DisplayPerfTestApp {
     Object.assign(envConfiguration, config);
 
     initializeFrontendTiles({
+      enableEdges: true,
       computeSpatialTilesetBaseUrl: async (iModel) => {
         if (runner.curConfig.frontendTilesUrlTemplate === undefined)
           return undefined;

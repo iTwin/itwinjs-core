@@ -7,6 +7,11 @@ import { ChangeType, EnumerationChanges } from "../Validation/SchemaChanges";
 import { SchemaItemMerger } from "./SchemaItemMerger";
 
 /**
+ * @param target The Enumeration the differences get merged into
+ * @param source The Enumeration to compare
+ * @param changes Gets the @see EnumerationChanges between the two Enumerations.
+ * For example, if source Enumeration has an attribute that is undefined in
+ * target one, it would be listed in propertyValueChanges.
  * @internal
  */
 export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {

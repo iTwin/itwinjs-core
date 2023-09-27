@@ -74,6 +74,15 @@ export class SchemaMerger {
     await EnumerationMerger.mergeChanges(mergeContext, itemChanges.enumeratations);
     await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.propertyCategories);
 
+    // const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem);
+    // await mergeSchemaItems(mergeContext, unitSystemChanges);
+
+    // const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon);
+    // await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
+
+    // const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant);
+    // await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
+
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
     await CAClassMerger.mergeChanges(mergeContext, itemChanges.customAttributeClasses);

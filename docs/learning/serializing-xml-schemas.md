@@ -6,14 +6,12 @@ Bentley provided package [@itwin/ecschema-locaters](https://www.itwinjs.org/refe
 The second option utilizes two interfaces from the [@xmldom/xmldom](https://www.npmjs.com/package/@xmldom/xmldom)
 package. Both options will be covered here.
 
-## SchemaFileUtility in @itwin/ecschema-locaters
+## SchemaXml in @itwin/ecschema-locaters
 
-The SchemaFileUtility class in the [@itwin/ecschema-locaters](https://www.itwinjs.org/reference/ecschema-locaters) package
-contains the 'writeSchemaXmlFile' method. This method takes the EC Schema instance and a path to the file to create. The
-SchemaFileUtility.writeSchemaXmlFile method is asynchronous, requiring the 'await' keyword.
+The [SchemaXml.writeFile]($ecschema-locaters) method takes the EC Schema instance and serializes it to a specified location on disk. Note: this method is `async`, requiring the caller to `await` it.
 
 ```ts
-await SchemaFileUtility.writeSchemaXmlFile(schema, outDir);
+await SchemaXml.writeFile(schema, outDir);
 ```
 
 ## @xmldom/xmldom package
@@ -48,4 +46,24 @@ We can now use the file system API to write the xml to file.
 
 ```ts
 [[include:Serialize_Schema_To_XML_Write]]
+```
+
+## Schemas from an iModel
+
+First use the [SchemaLoader]($ecschema-metadata) to create a SchemaContextEditor that knows about the schemas in the iModel
+
+```ts
+[[include:IModelSchemas.loadFromDb]]
+```
+
+Once an editor has been created the new schema can be created with classes that reference BisCore
+
+```ts
+[[include:IModelSchemas.editSchemas]]
+```
+
+Finally the new schema can be extracted from the editor, serialized to xml and imported into the iModel
+
+```ts
+[[include:IModelSchemas.importToIModel]]
 ```

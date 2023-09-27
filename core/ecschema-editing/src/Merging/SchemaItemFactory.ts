@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, PrimitiveType, PropertyCategory, SchemaItem, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
+import { Constant, CustomAttributeClass, EntityClass, Enumeration, LazyLoadedSchemaItem, Phenomenon, PrimitiveType, PropertyCategory, SchemaItem, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "../Editing/Editor";
 import { SchemaMergeContext } from "./SchemaMerger";
 
@@ -43,7 +43,18 @@ export namespace SchemaItemFactory {
       return editor.customAttributes.create(targetSchemaKey, template.name, template.containerType);
     if(is(template, PropertyCategory))
       return editor.propertyCategories.create(targetSchemaKey, template.name, template.priority);
+    if (is(template, Phenomenon))
+      return editor.phenomenons.create(targetSchemaKey, template.name, template.definition);
+    if (is(template, Constant))
+      return editor.constants.create(targetSchemaKey, template.name, await resolveLazyLoadedItemKey(template.phenomenon!), template.definition);
+    if (is(template, UnitSystem))
+      return editor.unitSystems.create(targetSchemaKey, template.name);
+
     throw new Error(`Unsupported Schema Item Type: ${template.constructor.name}`);
+  }
+
+  async function resolveLazyLoadedItemKey(lazy: LazyLoadedSchemaItem<SchemaItem>): Promise<SchemaItemKey> {
+    return (await lazy).key;
   }
 
   /**

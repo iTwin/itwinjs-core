@@ -1333,6 +1333,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-editing': workspace:*
+      '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/imodel-transformer': ^0.1.1
@@ -1361,6 +1362,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
+      '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodel-transformer': 0.1.16_ldn7mm7njkdg5fypcar6myqs34
       '@itwin/itwins-client': 1.2.0
@@ -1511,6 +1513,7 @@ importers:
       sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
+      typemoq: ^2.1.0
       typescript: ~5.0.2
     dependencies:
       google-protobuf: 3.20.1
@@ -1541,6 +1544,7 @@ importers:
       sinon: 15.2.0
       sinon-chai: 3.7.0_chai@4.3.7+sinon@15.2.0
       source-map-support: 0.5.21
+      typemoq: 2.1.0
       typescript: 5.0.4
 
   ../../extensions/test-extension:
@@ -3013,12 +3017,14 @@ importers:
   ../../tools/internal:
     specifiers:
       '@itwin/build-tools': workspace:*
+      glob: ^7.1.2
       mocha: ^10.0.0
       yargs: ^17.4.0
     dependencies:
       yargs: 17.7.2
     devDependencies:
       '@itwin/build-tools': link:../build
+      glob: 7.2.3
       mocha: 10.2.0
 
   ../../tools/perf-tools:
