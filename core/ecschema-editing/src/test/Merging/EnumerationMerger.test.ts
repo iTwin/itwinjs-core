@@ -290,7 +290,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merge enumerator attribute, Value: 100 -> 200 in EnumeratorOne");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
 
     });
   });

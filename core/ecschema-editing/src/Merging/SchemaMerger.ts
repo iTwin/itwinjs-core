@@ -10,12 +10,13 @@ import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaContextEditor } from "../Editing/Editor";
+import { SchemaItemMerger } from "./SchemaItemMerger";
 
 import mergeSchemaReferences from "./SchemaReferenceMerger";
 import ClassMerger from "./ClassMerger";
 import CAClassMerger from "./CAClassMerger";
 import EnumerationMerger from "./EnumerationMerger";
-import { SchemaItemMerger } from "./SchemaItemMerger";
+import ConstantsMerger from "./ConstantMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -74,14 +75,9 @@ export class SchemaMerger {
     await EnumerationMerger.mergeChanges(mergeContext, itemChanges.enumeratations);
     await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.propertyCategories);
 
-    // const unitSystemChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem);
-    // await mergeSchemaItems(mergeContext, unitSystemChanges);
-
-    // const phenomenonChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon);
-    // await mergeSchemaItems(mergeContext, phenomenonChanges, mergePhenomenon);
-
-    // const constantChanges = filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant);
-    // await mergeSchemaItems(mergeContext, constantChanges, mergeConstant);
+    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.unitSystems);
+    await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.phenomenons);
+    await ConstantsMerger.mergeChanges(mergeContext, itemChanges.constants);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
@@ -101,9 +97,12 @@ export class SchemaMerger {
 function getSchemaItemChanges(schemaChanges: SchemaChanges) {
   return {
     get classes() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass, SchemaItemType.StructClass); },
+    get constants() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant); },
     get customAttributeClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass); },
     get enumeratations() { return schemaChanges.enumerationChanges.values(); },
+    get phenomenons() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon); },
     get propertyCategories() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory); },
+    get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
   };
 }
 
