@@ -59,11 +59,11 @@ export class DisplayPerfTestApp {
     iModelApp = iModelApp ?? {};
     if (iModelApp.tileAdmin === undefined) {
       iModelApp.tileAdmin = {
-        minimumSpatialTolerance: 0,
+        minimumSpatialTolerance: 0.001,
         cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
       };
     } else {
-      iModelApp.tileAdmin.minimumSpatialTolerance = 0;
+      iModelApp.tileAdmin.minimumSpatialTolerance = 0.001;
       iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
     }
 
