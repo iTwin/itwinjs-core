@@ -14,7 +14,8 @@ import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
 
-const mode = process.env.NODE_ENV === "development" ? "development" : "production";
+const mode =
+  process.env.NODE_ENV === "development" ? "development" : "production";
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
@@ -27,7 +28,8 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         .replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
 
       const assetsPath = path.relative(process.cwd(), pkg).replace(/\\/g, "/"); // use relative path with forward slashes
-      if (assetsPath.endsWith("lib/public/*")) { // filter out pkgs that actually dont have assets
+      if (assetsPath.endsWith("lib/public/*")) {
+        // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
     } catch {}
@@ -58,12 +60,11 @@ export default defineConfig(() => {
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
-        // plugin to convert CommonJS modules to ES6, so they can be included in bundle
+        // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
-          /node_modules/, // prevent errors for modules
-          /core\/frontend/, // prevent errors with require in IModelApp
+          /node_modules/, // prevent errors from dependencies
         ],
         transformMixedEsModules: true, // transforms require statements
       },
@@ -102,7 +103,7 @@ export default defineConfig(() => {
         ],
         overwrite: true,
         copyOnce: true, // only during initial build or on change
-        hook: "buildStart"
+        hook: "buildStart",
       }),
       // open http://localhost:3000/__inspect/ to debug vite plugins
       ...(mode === "development" ? [viteInspect({ build: true })] : []),
@@ -125,9 +126,9 @@ export default defineConfig(() => {
       force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
-        "@itwin/core-common", // for opening iModel error
+        "@itwin/core-common", // to prevent error when opening iModel from undefined rpc policy
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-frontend", // file in repository uses require (cjs)
+        "@itwin/core-frontend", // to prevent multiple core-frontends (cjs & esm) from being imported
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
     },
