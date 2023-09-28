@@ -98,6 +98,7 @@ Only following property types can be used directly and they return strong type v
 - Try use regular properties accessor where possible.
 - Do not use instance property access for local properties of class been selected.
 - Try avoiding filtering queries by instance properties. Though it fast be without a index it could be slow depending on number of rows to which filter will be applied.
+- Relationships that are mapped as foreign key / Navigation properties cannot be accessed via instance access.
 
 ## Examples
 
@@ -110,19 +111,32 @@ SELECT $->CodeValue FROM bis.Element WHERE $->CodeValue IS NOT NULL LIMIT 1;
 SELECT e.$->CodeValue FROM bis.Element e LIMIT 1;
 
 -- Nested select
-SELECT * from (SELECT $ from meta.ECClassDef);
-SELECT $ from (SELECT * from meta.ECClassDef);
+SELECT * FROM (SELECT $ FROM meta.ECClassDef);
+SELECT $ FROM (SELECT * FROM meta.ECClassDef);
 
 -- Instance access in different clauses
-select $ from meta.ECClassDef where $->ECInstanceId < 3;
-select $ from meta.ECClassDef where $->ECInstanceId < 3 order by $->ECClassId;
+SELECT $ FROM meta.ECClassDef WHERE $->ECInstanceId < 3;
+SELECT $ FROM meta.ECClassDef WHERE $->ECInstanceId < 3 ORDER BY $->ECClassId;
 SELECT $ FROM meta.ECClassDef WHERE $->Name LIKE 'Class%' ORDER BY $->ECInstanceId DESC;
 SELECT $->RevitId, $->LastModifier  FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005';
-select $->Name from meta.ECClassDef where $->ECInstanceId = 1;
+SELECT $->Name from meta.ECClassDef WHERE $->ECInstanceId = 1;
 SELECT $ from Bis.Element WHERE $->RevitId In ( 1000, 2000, 3000 );
 
-select ECInstanceId, Name from meta.ECClassDef where Name in (select $->Name from meta.ECClassDef where $->ECInstanceId = 1);
-select * from (select $ from meta.ECClassDef where $->Schema.Id in (select Schema.Id from meta.ECClassDef where Schema.Id < 3) order by $->ECClassId);
+SELECT ECInstanceId, Name
+  FROM meta.ECClassDef
+    WHERE Name in (
+      SELECT $->Name
+      FROM meta.ECClassDef 
+        WHERE $->ECInstanceId = 1);
+
+SELECT *
+  FROM (
+    SELECT $
+    FROM meta.ECClassDef
+      WHERE $->Schema.Id in (
+        SELECT Schema.Id
+        FROM meta.ECClassDef
+          WHERE Schema.Id < 3) ORDER BY $->ECClassId);
 ```
 
 [**< Previous**](./BuiltInFunctions.md)
