@@ -23,7 +23,7 @@ beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warnin
 beta;DiagnosticCodes:
 beta;Diagnostics:
 beta;DiagnosticType
-beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "SchemaItem"
+beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
 beta;ECRuleSet: IRuleSet
 alpha;EntityMixinChange 
 alpha;EntityMixinChanges 
