@@ -5840,7 +5840,12 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
 
 // @beta
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-    constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection);
+    // @internal
+    constructor(args: {
+        layerSettings: MapLayerSettings;
+        layerIndex: number;
+        iModel: IModelConnection;
+    });
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -8001,26 +8006,23 @@ export interface MapLayerSourceValidation {
 
 // @beta
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
+    // @internal
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
     iModel: IModelConnection;
-    // @internal
     get isOpaque(): boolean;
-    // @internal
     get layerIndex(): number;
     // (undocumented)
     protected _layerIndex: number;
     // (undocumented)
     get layerName(): string;
     set layerSettings(layerSettings: MapLayerSettings);
-    // (undocumented)
     get layerSettings(): MapLayerSettings;
     // (undocumented)
     protected _layerSettings: MapLayerSettings;
-    // (undocumented)
     get transparency(): number | undefined;
     // (undocumented)
     protected get _transparency(): number | undefined;

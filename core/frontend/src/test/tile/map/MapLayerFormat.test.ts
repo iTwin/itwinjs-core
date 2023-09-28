@@ -20,8 +20,8 @@ class TestMapLayerFormat extends MapLayerFormat {
     return new TestMapLayerImageryProvider(settings, false);
   }
 
-  public static override createMapLayerTree(_layerSettings: TestMapLayerSettings, _layerIndex: number, _iModel: IModelConnection) {
-    return new ImageryMapLayerTreeReference(_layerSettings, _layerIndex, _iModel);
+  public static override createMapLayerTree(layerSettings: TestMapLayerSettings, layerIndex: number, iModel: IModelConnection) {
+    return new ImageryMapLayerTreeReference({ layerSettings, layerIndex, iModel });
   }
 }
 

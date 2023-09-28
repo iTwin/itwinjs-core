@@ -33,6 +33,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
    * @param _layerSettings Map layer settings that are applied to the MapLayerTileTreeReference.
    * @param _layerIndex The index of the associated map layer.
    * @param iModel The iModel containing the MapLayerTileTreeReference.
+   * @internal
    */
   constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection) {
     super();
@@ -44,33 +45,26 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   /* @internal */
   protected get _transparency() { return this._layerSettings.transparency ? this._layerSettings.transparency : undefined; }
 
-  /**
-   * Returns true if the associated map layer, including its sublayers, is opaque.
-   * @internal
-   */
+  /** Returns true if the associated map layer, including its sublayers, is opaque. */
   public get isOpaque() {
     return this._layerSettings.visible && (!this._layerSettings.allSubLayersInvisible) && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
   }
 
-  /* @internal */
+  /* Returns the map layer name. */
   public get layerName() { return this._layerSettings.name; }
 
   /** Returns the imagery provider for the tile tree. */
   public get imageryProvider(): MapLayerImageryProvider | undefined { return undefined; }
 
-  /* @internal */
   public set layerSettings(layerSettings: MapLayerSettings) { this._layerSettings = layerSettings; }
 
-  /* @internal */
+  /** Returns the layer settings for the map layer. */
   public get layerSettings(): MapLayerSettings { return this._layerSettings; }
 
-  /**
-   * Returns the index of the map layer associated with the tile tree.
-   * @internal
-   */
+  /** Returns the index of the map layer associated with the tile tree. */
   public get layerIndex(): number { return this._layerIndex; }
 
-  /* @internal */
+  /** Returns the transparency value of the map layer. */
   public get transparency() { return this._transparency; }
 
   /* Returns a tooltip describing the hit with the map layer name. */
