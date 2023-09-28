@@ -405,6 +405,8 @@ export namespace Atmosphere {
 // @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
+    isAuthorized?: boolean;
+    readonly onAccessTokenChanged?: BeEvent<(token: AccessToken) => void>;
 }
 
 // @public
