@@ -6,12 +6,14 @@
  * @module IModelApp
  */
 
-// @ts-expect-error resolves from the lib/{cjs,esm} dir
+
+// @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
 import { version } from "../../package.json";
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const ITWINJS_CORE_VERSION = version;
+
+export const ITWINJS_CORE_VERSION = version as string;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";

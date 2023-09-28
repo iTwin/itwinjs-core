@@ -72,10 +72,7 @@ export abstract class GeometryHandler {
   public abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
   /** Handle strongly typed  [[IndexedPolyface]]  */
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
-  /**
-   * Handle strongly typed [[TransitionSpiral3d]]
-   * @alpha
-   */
+  /** handle strongly typed [[TransitionSpiral3d]] */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
   /** Handle strongly typed Path (base class method calls handleCurveCollection) */
   public handlePath(g: Path): any {
@@ -179,9 +176,7 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleIndexedPolyface(_g: IndexedPolyface): any {
     return undefined;
   }
-  /** No-action implementation
-   * @alpha
-   */
+  /** No-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any {
     return undefined;
   }
@@ -295,9 +290,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleIndexedPolyface(_g: IndexedPolyface): any {
     return undefined;
   }
-  /** No-action implementation
-   * @alpha
-   */
+  /** No-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any {
     return undefined;
   }
