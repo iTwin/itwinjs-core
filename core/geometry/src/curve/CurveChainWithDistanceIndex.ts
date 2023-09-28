@@ -589,7 +589,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return undefined;
     // See fractionToPointAndDerivative for derivation of d/df(C(t(f)))=L C'/||C'||.
     // For the 2nd deriv, use quotient rule, d/dt||x(t)||=x.x'/||x|| and ||x||^2=x.x :
-    // d/df(C'(t(f))) = L d/df(C'/||C'||)
+    // d2/df2(C(t(f))) = L d/df(C'/||C'||)
     //  = L (||C'|| d/df(C') - C' d/df||C'||) / ||C'||^2
     //  = L (||C'|| C" L/||C'|| - C' C'.C"/||C'|| L/||C'||) / ||C'||^2
     //  = (L/||C'||)^2 (C" - C' C'.C"/C'.C' )
