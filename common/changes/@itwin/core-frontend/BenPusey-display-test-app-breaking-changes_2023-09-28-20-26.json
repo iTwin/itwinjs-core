@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Changes import for package version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
