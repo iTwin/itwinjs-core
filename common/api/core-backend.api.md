@@ -1668,6 +1668,7 @@ export class ECDb implements IDisposable {
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
+    getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     // @internal (undocumented)
