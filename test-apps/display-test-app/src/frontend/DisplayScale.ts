@@ -10,8 +10,8 @@ import { parseArgs } from "@itwin/frontend-devtools";
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
 
-  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined {
-    return this._models.has(modelId) ?{transform: this._scaleTransform.clone()} : undefined;
+  public getModelDisplayTransform(modelId: string): Transform | undefined {
+    return this._models.has(modelId) ? this._scaleTransform.clone() : undefined;
   }
 
   public get transform(): Transform { return this._scaleTransform.clone(); }

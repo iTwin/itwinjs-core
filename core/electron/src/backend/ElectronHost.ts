@@ -18,7 +18,7 @@ import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-bac
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
-import {pathToFileURL} from "url";
+import { pathToFileURL } from "url";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
