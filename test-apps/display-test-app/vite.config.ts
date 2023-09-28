@@ -30,7 +30,7 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
       if (assetsPath.endsWith("lib/public/*")) { // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
-    } catch {}
+    } catch { }
   }
 });
 
@@ -63,6 +63,7 @@ export default defineConfig(() => {
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
           /node_modules/, // prevent errors from dependencies
+          /core\/frontend/, // prevents multiple instances loaded error
         ],
         transformMixedEsModules: true, // transforms require statements
       },
@@ -72,14 +73,14 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
         ],
       },
@@ -132,7 +133,8 @@ export default defineConfig(() => {
         "@itwin/frontend-tiles": path.resolve(__dirname, '../../extensions/frontend-tiles/src/frontend-tiles.ts'),
         "@itwin/hypermodeling-frontend": path.resolve(__dirname, '../../core/hypermodeling/src/hypermodeling-frontend.ts'),
         "@itwin/map-layers-formats": path.resolve(__dirname, '../../extensions/map-layers-formats/src/map-layers-formats.ts'),
-        "@itwin/webgl-compatibility": path.resolve(__dirname, '../../core/webgl-compatibility/src/webgl-compatibility.ts')
+        "@itwin/webgl-compatibility": path.resolve(__dirname, '../../core/webgl-compatibility/src/webgl-compatibility.ts'),
+        "../../package.json": "../package.json"
       }
     },
     optimizeDeps: {
@@ -150,6 +152,7 @@ export default defineConfig(() => {
         "@itwin/core-common", // for opening iModel error
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
+        "@itwin/core-frontend", // for multiple loaded instances error
       ],
     },
   };
