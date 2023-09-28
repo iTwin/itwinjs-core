@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "4.2.0-dev.21",
+  "version": "4.2.0-dev.30",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -49,7 +49,7 @@
     "@types/mocha": "^8.2.2",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
@@ -62,6 +62,7 @@
     "sinon": "^15.0.4",
     "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.6",
+    "typemoq": "^2.1.0",
     "typescript": "~5.0.2"
   },
   "peerDependencies": {

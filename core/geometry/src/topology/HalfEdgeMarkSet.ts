@@ -201,7 +201,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
  * AbstractHalfEdgeGraphMarkSet specialized to manage the masks on individual half edges
  * @internal
  */
-export class MarkedHalfEdgeSt extends AbstractHalfEdgeGraphMarkSet {
+export class MarkedHalfEdgeSet extends AbstractHalfEdgeGraphMarkSet {
   constructor(graph: HalfEdgeGraph, mask: HalfEdgeMask) {
     super(graph, mask);
   }
@@ -209,11 +209,11 @@ export class MarkedHalfEdgeSt extends AbstractHalfEdgeGraphMarkSet {
    * * Returns undefined if unable to get a mask for the graph.
    * * Undefined return can only happen if the caller is failing to return grabbed masks.
    */
-  public static create(graph: HalfEdgeGraph): MarkedHalfEdgeSt | undefined {
+  public static create(graph: HalfEdgeGraph): MarkedHalfEdgeSet | undefined {
     const mask = graph.grabMask();
     if (mask === HalfEdgeMask.NULL_MASK)
       return undefined;
-    return new MarkedHalfEdgeSt(graph, mask);
+    return new MarkedHalfEdgeSet(graph, mask);
   }
 
   /**
