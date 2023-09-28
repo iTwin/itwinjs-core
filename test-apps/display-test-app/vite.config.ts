@@ -151,11 +151,13 @@ export default defineConfig(() => {
       force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
-        "@itwin/core-common", // to prevent error when opening iModel from undefined rpc policy
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-frontend", // to prevent multiple core-frontends (cjs & esm) from being imported
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
+      exclude: [
+        "@itwin/core-frontend", //prevents import not resolved errors
+        "@itwin/core-common" //prevents rpc errors
+      ]
     },
   };
 });
