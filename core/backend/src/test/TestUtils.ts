@@ -50,7 +50,7 @@ export class DisableNativeAssertions implements IDisposable {
 
 export class TestUtils {
   public static getCacheDir(fallback: string | undefined = undefined) {
-    if (ProcessDetector.isIOSAppBackend) {
+    if (ProcessDetector.isMobileAppBackend) {
       return undefined; // Let the native side handle the cache.
     }
     return fallback ?? path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
