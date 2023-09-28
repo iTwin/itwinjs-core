@@ -392,7 +392,7 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
    * @internal
    */
   public constructor(args: { layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection }) {
-    super( args.layerSettings, args.layerIndex, args.iModel );
+    super(args.layerSettings, args.layerIndex, args.iModel);
   }
 
   public override get castsShadows() { return false; }
