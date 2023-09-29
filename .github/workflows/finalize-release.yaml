@@ -15,7 +15,7 @@ on:
 
 jobs:
   finalize:
-    name: Cherry-pick Changelogs to master
+    name: Cherry-pick Changelogs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,11 +27,10 @@ jobs:
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - name: Cherry-pick changelogs
+      - name: Run update-changelogs.mjs
         run: |
           npm i -g zx
           npm install -g @microsoft/rush
           zx ./.github/workflows/automation-scripts/update-changelogs.mjs
+        # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
-      - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
