@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry } from "../../Geometry";
@@ -67,7 +68,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Start and end points of line segments that meet closest approach criteria, i.e., they are perpendicular to
    * both curves and their length is smaller than _maxDistanceToAccept.
    */
-  private _results!: CurveLocationDetailPair[];
+  private _results: CurveLocationDetailPair[];
 
   private static _workPointAA0 = Point3d.create();
   private static _workPointAA1 = Point3d.create();
@@ -75,9 +76,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private static _workPointBB1 = Point3d.create();
   private static _workPointB = Point3d.create();
 
-  private reinitialize() {
-    this._results = [];
-  }
   /**
    * Constructor.
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
@@ -86,7 +84,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     super();
     this.setGeometryB(geometryB);
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
-    this.reinitialize();
+    this._results = [];
   }
   /** Set the (possibly undefined) max XY distance (z is ignored) to accept. */
   public set maxDistanceToAccept(value: number | undefined) {
@@ -121,7 +119,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   public grabPairedResults(reinitialize: boolean = false): CurveLocationDetailPair[] {
     const result = this._results;
     if (reinitialize)
-      this.reinitialize();
+      this._results = [];
     return result;
   }
   /** Returns `true` if `detail` has same curve and fraction. */
@@ -729,16 +727,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     this._geometryB = geomB;  // restore
   }
   /**
- * The CurveCurveCloseApproachXY handler has close approaches stored in the its _results field. The results are stored
- * with local details of the child. This function converts local detail of the child into the global detail of the chain.
- * @param results the results array to be converted.
- * @param chainA (optional) curve chain. If passed, detailA of chainA will be converted.
- * @param chainB (optional) curve chain. If passed, detailB of chainB will be converted.
- */
-  private convertChildDetailToChainDetail(
-    results: CurveLocationDetailPair[], chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex,
-  ): void {
-    for (const childDetailPair of results) {
+   * Given a parent chain, convert the corresponding child details so that they refer to the chain's global parameterization.
+   * * It is assumed that `this._results[i].detailA.curve` is a child of chainA, and similarly for detailB/chainB.
+   * @param chainA convert each detailA to the global parameterization of chainA
+   * @param chainB convert each detailB to the global parameterization of chainB
+   */
+  private convertChildDetailToChainDetail(chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): void {
+    for (const childDetailPair of this._results) {
       if (chainA) {
         const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
         if (chainDetail)
@@ -751,22 +746,18 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
-  /** Low level dispatch of CurveChainWithDistanceIndex. */
+  /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
   private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
-    const geomB = this._geometryB;  // save
-    if (!geomB || !(geomB instanceof CurveChainWithDistanceIndex))
+    if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
-    for (const child of geomB.path.children as AnyCurve[]) {
+    const geomB = this._geometryB;  // save
+    for (const child of geomB.path.children) {
       this.resetGeometry(child);
       geomAHandler(geomA);
     }
-    this._geometryB = geomB;  // restore
-    if (!this._results)
-      return;
-    if (this._geometryB instanceof CurveChainWithDistanceIndex)
-      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB);
-    else
-      this.convertChildDetailToChainDetail(this._results, geomA as CurveChainWithDistanceIndex);
+    this.resetGeometry(geomB);  // restore
+    assert(!(geomA instanceof CurveChainWithDistanceIndex));
+    this.convertChildDetailToChainDetail(undefined, geomB);
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
@@ -923,11 +914,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
   public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
     this.handleChildren(chain.path); // handles Path or Loop
-    if (!this._results)
-      return;
-    this.convertChildDetailToChainDetail(this._results, chain);
-    if (this._geometryB instanceof CurveChainWithDistanceIndex)
-      this.convertChildDetailToChainDetail(this._results, undefined, this._geometryB);
+    this.convertChildDetailToChainDetail(chain, this._geometryB instanceof CurveChainWithDistanceIndex ? this._geometryB : undefined);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
