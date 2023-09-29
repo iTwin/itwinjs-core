@@ -23,7 +23,6 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { Path } from "../Path";
 
 // cspell:word XYRR
 
@@ -923,7 +922,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
   public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
-    this.handlePath(chain.path as Path);
+    this.handleChildren(chain.path); // handles Path or Loop
     if (!this._results)
       return;
     this.convertChildDetailToChainDetail(this._results, chain);
