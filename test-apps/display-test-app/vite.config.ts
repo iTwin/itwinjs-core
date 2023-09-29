@@ -36,6 +36,25 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
   }
 });
 
+function findPathToPackage(packageName: string): string {
+  const fileName = packageName.replace("@itwin/", "");
+  let absolutePath = '';
+  if (fileName.startsWith("appui-")) {
+    absolutePath = `ui/${fileName}/src/${fileName}.ts`
+  } else if ((fileName.startsWith("core-") && !fileName.includes("/")) || fileName.startsWith("editor-")) {
+    absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1]}/src/${fileName}.ts`
+  } else if (fileName.startsWith("core-") && fileName.includes("/")) {
+    absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1].split("/")[0]}/src/${fileName.split("/")[3]}.ts`
+  } else if (fileName.startsWith("hypermodeling-")) {
+    absolutePath = `core/${fileName.split("-")[0]}/src/${fileName}.ts`
+  } else if (fileName == "frontend-devtools" || fileName.startsWith("webgl-")) {
+    absolutePath = `core/${fileName}/src/${fileName}.ts`
+  } else if (fileName == "frontend-tiles" || fileName.startsWith("map-")) {
+    absolutePath = `extensions/${fileName}/src/${fileName}.ts`
+  }
+  return path.resolve(__dirname, `../../${absolutePath}`)
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   // This changes the output dir from dist to build
@@ -65,7 +84,6 @@ export default defineConfig(() => {
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
           /node_modules/, // prevent errors from dependencies
-          /core\/frontend/, // prevents multiple instances loaded error
         ],
         transformMixedEsModules: true, // transforms require statements
       },
@@ -117,23 +135,23 @@ export default defineConfig(() => {
     },
     resolve: {
       alias: {
-        "@itwin/appui-abstract": path.resolve(__dirname, '../../ui/appui-abstract/src/appui-abstract.ts'),
-        "@itwin/core-bentley": path.resolve(__dirname, '../../core/bentley/src/core-bentley.ts'),
-        "@itwin/core-common": path.resolve(__dirname, '../../core/common/src/core-common.ts'),
-        "@itwin/core-electron/lib/cjs/ElectronFrontend": path.resolve(__dirname, '../../core/electron/src/ElectronFrontend.ts'),
-        "@itwin/core-frontend": path.resolve(__dirname, '../../core/frontend/src/core-frontend.ts'),
-        "@itwin/core-geometry": path.resolve(__dirname, '../../core/geometry/src/core-geometry.ts'),
-        "@itwin/core-i18n": path.resolve(__dirname, '../../core/i18n/src/core-i18n.ts'),
-        "@itwin/core-markup": path.resolve(__dirname, '../../core/markup/src/core-markup.ts'),
-        "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(__dirname, '../../core/mobile/src/MobileFrontend.ts'),
-        "@itwin/core-quantity": path.resolve(__dirname, '../../core/quantity/src/core-quantity.ts'),
-        "@itwin/editor-common": path.resolve(__dirname, '../../editor/common/src/editor-common.ts'),
-        "@itwin/editor-frontend": path.resolve(__dirname, '../../editor/frontend/src/editor-frontend.ts'),
-        "@itwin/frontend-devtools": path.resolve(__dirname, '../../core/frontend-devtools/src/frontend-devtools.ts'),
-        "@itwin/frontend-tiles": path.resolve(__dirname, '../../extensions/frontend-tiles/src/frontend-tiles.ts'),
-        "@itwin/hypermodeling-frontend": path.resolve(__dirname, '../../core/hypermodeling/src/hypermodeling-frontend.ts'),
-        "@itwin/map-layers-formats": path.resolve(__dirname, '../../extensions/map-layers-formats/src/map-layers-formats.ts'),
-        "@itwin/webgl-compatibility": path.resolve(__dirname, '../../core/webgl-compatibility/src/webgl-compatibility.ts'),
+        "@itwin/appui-abstract": findPathToPackage("@itwin/appui-abstract"),
+        "@itwin/core-bentley": findPathToPackage("@itwin/core-bentley"),
+        "@itwin/core-common": findPathToPackage("@itwin/core-common"),
+        "@itwin/core-electron/lib/cjs/ElectronFrontend": findPathToPackage("@itwin/core-electron/lib/cjs/ElectronFrontend"),
+        "@itwin/core-frontend": findPathToPackage("@itwin/core-frontend"),
+        "@itwin/core-geometry": findPathToPackage("@itwin/core-geometry"),
+        "@itwin/core-i18n": findPathToPackage("@itwin/core-i18n"),
+        "@itwin/core-markup": findPathToPackage("@itwin/core-markup"),
+        "@itwin/core-mobile/lib/cjs/MobileFrontend": findPathToPackage("@itwin/core-mobile/lib/cjs/MobileFrontend"),
+        "@itwin/core-quantity": findPathToPackage("@itwin/core-quantity"),
+        "@itwin/editor-common": findPathToPackage("@itwin/editor-common"),
+        "@itwin/editor-frontend": findPathToPackage("@itwin/editor-frontend"),
+        "@itwin/frontend-devtools": findPathToPackage("@itwin/frontend-devtools"),
+        "@itwin/frontend-tiles": findPathToPackage("@itwin/frontend-tiles"),
+        "@itwin/hypermodeling-frontend": findPathToPackage("@itwin/hypermodeling-frontend"),
+        "@itwin/map-layers-formats": findPathToPackage("@itwin/map-layers-formats"),
+        "@itwin/webgl-compatibility": findPathToPackage("@itwin/webgl-compatibility"),
         "../../package.json": "../package.json"
       }
     },

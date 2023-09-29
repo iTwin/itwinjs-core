@@ -11,7 +11,6 @@
 import { version } from "../../package.json";
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-
 export const ITWINJS_CORE_VERSION = version as string;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
