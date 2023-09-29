@@ -43,7 +43,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "18.11.5",
     "@types/sinon": "^9.0.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
