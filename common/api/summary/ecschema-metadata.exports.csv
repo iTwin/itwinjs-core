@@ -122,14 +122,14 @@ beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
 beta;SchemaItemUnitProps 
-alpha;SchemaJsonLocater 
+beta;SchemaJsonLocater 
 beta;SchemaKey
 beta;SchemaKeyProps
-alpha;SchemaLoader
+beta;SchemaLoader
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
-alpha;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
+beta;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
 alpha;SchemaUnitProvider 

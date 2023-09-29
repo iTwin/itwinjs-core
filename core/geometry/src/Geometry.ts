@@ -1039,7 +1039,7 @@ export class Geometry {
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
    * those beyond minEntries).
    */
-  public static isNumberArray(json: any, minEntries: number = 0): boolean {
+  public static isNumberArray(json: any, minEntries: number = 0): json is number[] {
     if (Array.isArray(json) && json.length >= minEntries) {
       let entry;
       for (entry of json) {
@@ -1054,7 +1054,7 @@ export class Geometry {
    * Return `true` if `json` is an array of at least `minArrays` arrays with at least `minEntries` entries in
    * each array and all entries are numbers (including those beyond minEntries).
    */
-  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): boolean {
+  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): json is number[][] {
     if (Array.isArray(json) && json.length >= minArrays) {
       let entry;
       for (entry of json)
