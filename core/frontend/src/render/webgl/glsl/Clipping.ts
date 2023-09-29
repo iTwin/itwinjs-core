@@ -130,15 +130,7 @@ export function addClipping(prog: ProgramBuilder) {
   const vert = prog.vert;
 
   addEyeSpace(prog);
-  
-  // frag.addUniform("u_frustumPlanes", VariableType.Vec4, (prog) => {
-  //   prog.addProgramUniform("u_frustumPlanes", (uniform, params) => {
-  //     uniform.setUniform4fv(params.target.uniforms.frustum.planes);
-  //   });
-  // });
-  //addProjectionMatrix(vert); 
 
-  //getting access to u_proj, I could be doing this incorrectly
   frag.addUniform("u_proj", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_proj", (uniform, params) => {
       params.bindProjectionMatrix(uniform);
@@ -146,7 +138,6 @@ export function addClipping(prog: ProgramBuilder) {
   });
 
   addModelViewMatrix(vert);
-  //addWindowToTexCoords(frag);
   addViewport(frag);
 
   // [0] = index of first plane
