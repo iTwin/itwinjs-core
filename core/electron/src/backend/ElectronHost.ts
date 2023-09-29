@@ -13,12 +13,12 @@ import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
+import { pathToFileURL } from "url";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
-import { pathToFileURL } from "url";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
