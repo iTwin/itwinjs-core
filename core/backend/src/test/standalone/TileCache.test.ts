@@ -103,7 +103,7 @@ describe("TileCache open v1", () => {
     // Shutdown IModelHost to allow this test to use it.
     await TestUtils.shutdownBackend();
     const config = {
-      cacheDir: path.join(__dirname, ".cache"),
+      cacheDir: TestUtils.getCacheDir(),
     };
     await TestUtils.startBackend(config);
 
