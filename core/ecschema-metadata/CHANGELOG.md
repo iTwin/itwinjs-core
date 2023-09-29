@@ -1,6 +1,6 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Thu, 28 Sep 2023 21:41:33 GMT and should not be manually modified.
+This log was last generated on Fri, 29 Sep 2023 03:37:40 GMT and should not be manually modified.
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT
@@ -89,6 +89,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Added support for async schema location
 - Update to eslint@8
 - Replaced UnitProps interface with SchemaItemUnitProps type.
+
+## 3.7.14
+Fri, 29 Sep 2023 16:57:16 GMT
+
+_Version update only_
 
 ## 3.7.13
 Tue, 08 Aug 2023 19:49:18 GMT
