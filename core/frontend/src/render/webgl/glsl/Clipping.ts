@@ -9,8 +9,9 @@
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { addEyeSpace } from "./Common";
+import { addEyeSpace, addFrustum} from "./Common";
 import { addModelViewMatrix, addProjectionMatrix } from "./Vertex";
+import { addWindowToTexCoords } from "./Fragment";
 import { addViewport } from "./Viewport";
 
 const getClipPlaneFloat = `
@@ -45,6 +46,7 @@ const applyClipPlanesPrelude = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
   bool clippedByCurrentPlaneSet = false;
+  bool highlightedEdge = false;
 `;
 
 const applyClipPlanesLoop = `
@@ -69,7 +71,7 @@ const applyClipPlanesPostlude = `
     }
 
     //avoiding near and far clip planes
-    if (i <= u_clipParams[1] - 2) {
+    if ((i <= u_clipParams[1] - 2) && (!clippedByCurrentPlaneSet)) {
 
       /* 
       * The closest point on a plane from a point, p,  will be: p minus the distance between p and the plane, in the direction of the plane's normal vector.
@@ -80,43 +82,28 @@ const applyClipPlanesPostlude = `
       * to determine whether or not to highlight the current fragment. 
       */
 
-      float d = calcClipPlaneDist(v_eyeSpace, plane);
-      vec4 pointOnPlane = vec4((v_eyeSpace - (d * plane.xyz)), 1.0);
+      vec4 pointOnPlane = vec4(v_eyeSpace, 1.0);
+      pointOnPlane.xyz = pointOnPlane.xyz - (abs(calcClipPlaneDist(v_eyeSpace, plane)) * plane.xyz);
 
-      //Converting original point to window coords
-      //Only doing this now to ensure the conversion is correct by later comparing with gl_FragCoord
-      //In final implementation, pointOnPlane will be converted, not v_eyeSpace
+      pointOnPlane = u_proj * pointOnPlane; 
+      pointOnPlane.xyz /= pointOnPlane.w;   // Now in NDC  
 
-      vec4 convertedEyeSpace = vec4(v_eyeSpace, 1.0);
-      convertedEyeSpace = convertedEyeSpace * u_proj;
-      convertedEyeSpace.xyz /= convertedEyeSpace.w;                               //Should now be in NDC
+      
+      pointOnPlane.x = ((pointOnPlane.x + 1.0) * 0.5 * u_viewport.x);
+      pointOnPlane.y = ((pointOnPlane.y + 1.0) * 0.5 * u_viewport.y);   //Now in window coords
 
-      //This will convert from NDC to window coords
-      //commented out for now to check previous conversion
-      //convertedEyeSpace.x = ((convertedEyeSpace.x + 1.0) * 0.5 * u_viewport.x);
-      //convertedEyeSpace.y = ((convertedEyeSpace.y + 1.0) * 0.5 * u_viewport.y);   //Should now be in window coords
-
-      //This check will show if it is correctly in NDC
-      //since NDC is in range -1 to 1, we should expect every point to be red
-      // while being darkest at the center, getting brighter as absolute value of x increases
-      if ((abs(convertedEyeSpace.x) <= 1.0) && (abs(convertedEyeSpace.y) <= 1.0) && (!clippedByCurrentPlaneSet)) {
-        g_clipColor = vec3(abs(convertedEyeSpace.x), 0.0, 0.0);
-        return true;
+      if (distance(gl_FragCoord.xy, pointOnPlane.xy) <= 3.0) {
+        highlightedEdge = true;
       }
-
-
-      // A possible workaround if we can't get u_proj to work correctly is to do something like this
-      // By dividing by v_eyeSpace.z, we can get a d that changes as we zoom in and out
-      // Which will emulate the behavior of a purely pixel based distance check
-
-      // float d = abs(calcClipPlaneDist(v_eyeSpace, plane) / v_eyeSpace.z);
-      // if (d < 0.005) && (!clippedByCurrentClipPlane) {
-      //   g_clipColor = vec3(1.0, 0.0, 0.0);
-      //   return true;
-      // }
     }
   }
 
+  //Need to pull this condition out of the loop for when there are multiple clip planes defined
+  if (highlightedEdge && !clippedByCurrentPlaneSet) {
+    g_clipColor = vec3(1.0, 0.0, 0.0);
+    return true;
+  }
+  
   numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets) {
     if (u_outsideRgba.a > 0.0) {
@@ -143,6 +130,12 @@ export function addClipping(prog: ProgramBuilder) {
   const vert = prog.vert;
 
   addEyeSpace(prog);
+  
+  // frag.addUniform("u_frustumPlanes", VariableType.Vec4, (prog) => {
+  //   prog.addProgramUniform("u_frustumPlanes", (uniform, params) => {
+  //     uniform.setUniform4fv(params.target.uniforms.frustum.planes);
+  //   });
+  // });
   //addProjectionMatrix(vert); 
 
   //getting access to u_proj, I could be doing this incorrectly
@@ -153,7 +146,8 @@ export function addClipping(prog: ProgramBuilder) {
   });
 
   addModelViewMatrix(vert);
-  //addViewport(frag);
+  //addWindowToTexCoords(frag);
+  addViewport(frag);
 
   // [0] = index of first plane
   // [1] = index of last plane (one past the end)
