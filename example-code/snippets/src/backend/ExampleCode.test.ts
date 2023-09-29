@@ -237,6 +237,7 @@ describe("Example Code", () => {
         version: "1.0",
       },
     };
+
     await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
 
     iModel.codeSpecs.insert(name, props);

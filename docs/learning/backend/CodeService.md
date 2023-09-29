@@ -179,6 +179,8 @@ For example,
 [[include:CodeService.updateInternalCodeForExistinglement]]
 ```
 
+Note that the element's `federationGuid` must be used as the Code's GUID.
+
 ### Managing and Creating CodeSpecs via the CodeService API
 
 CodeService has an API for managing and creating CodeSpecs.
@@ -186,7 +188,7 @@ CodeService has an API for managing and creating CodeSpecs.
 - `getCodeSpec`
 - `addCodeSpec`
 
-Here is an example of creating a *internal* CodeSpec:
+Here is an example of creating an internal CodeSpec that is scoped to a model.
 
 ```ts
 [[include:CodeService.addInternalCodeSpec]]
