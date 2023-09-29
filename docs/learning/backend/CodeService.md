@@ -124,7 +124,7 @@ Generally it is a good idea to reserve a group of codes together rather than one
 - `reserveCode` to reserve a single code
 - `reserveCodes` to reserve a set of codes
 
-Here is an example of how to reserve an *internal* code for a new element:
+Here are the steps to follow.
 
 First, you must choose the code service that should be used at the time that you create your iModel. The identity of the code service and information about how to connect  are stored in the iModel persistently.
 
@@ -140,7 +140,7 @@ That's it. `ITwinCodeService` registers itself by setting `CodeService.createFor
 
 When an app opens a briefcase, the briefcase will adopt the registered code service client, which will connect to the code service in the cloud using the connection information stored in the iModel. The briefcase `.codeService` property refers to the connected code service client, and apps use that to reserve, update, and query codes and CodeSpecs.
 
-Here is an example of using codeService to reserve a new code.
+Here is an example of using codeService to reserve a new internal code.
 
 ``` ts
 const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId, asOf: { afterChangeSetId }, briefcaseId: 0, fileName });
