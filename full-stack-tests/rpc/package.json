@@ -44,7 +44,7 @@
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
     "browserify-zlib": "^0.2.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "null-loader": "^4.0.1",

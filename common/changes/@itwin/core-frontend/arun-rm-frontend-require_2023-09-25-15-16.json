@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "remove `require` call preventing pure ESM usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
