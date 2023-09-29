@@ -255,7 +255,8 @@ export class NullGeometryHandler extends GeometryHandler {
   }
 }
 /**
- * Implement GeometryHandler methods, with all curve collection methods recursing to children.
+ * Implement GeometryHandler methods, but override `handleCurveCollection` so that all methods
+ * that operate on a [[CurveCollection]] recurse to their children.
  * @public
  */
 export class RecurseToCurvesGeometryHandler extends GeometryHandler {
@@ -317,26 +318,6 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   }
   /** Recurse to children */
   public override handleCurveCollection(g: CurveCollection): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handlePath(g: Path): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleLoop(g: Loop): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleParityRegion(g: ParityRegion): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleUnionRegion(g: UnionRegion): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleBagOfCurves(g: BagOfCurves): any {
     return this.handleChildren(g);
   }
   /** No-action implementation */
