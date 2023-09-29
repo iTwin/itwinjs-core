@@ -947,7 +947,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     return transform;
   }
   /**
-   * Ensure that the length of each dimension of this AxisAlignedBox3d is at least a minimum size. If not, expand
+   * Ensure that the length of each dimension of this Range3d is at least a minimum size. If not, expand
    * to minimum about the center.
    * @param min The minimum length for each dimension.
    */

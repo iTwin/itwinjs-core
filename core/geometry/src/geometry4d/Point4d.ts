@@ -110,7 +110,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   /** Set this point's xyzw from a json array `[x,y,z,w]` */
   public setFromJSON(json?: Point4dProps) {
     if (Geometry.isNumberArray(json, 4))
-      this.set(json![0], json![1], json![2], json![3]);
+      this.set(json[0], json[1], json[2], json[3]);
     else
       this.set(0, 0, 0, 0);
   }

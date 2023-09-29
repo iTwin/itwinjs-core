@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
@@ -136,15 +137,15 @@ export class HalfEdgeGraphOps {
       HalfEdge.pinch(nodeA, nodeB);
     }
   }
-
   /**
    * Compute convexity of a sector of a super-face.
    * @param base node whose edge is to be tested for removal
    * @param ignore edges with this mask (on either side) are ignored for the purposes of computing convexity
    * @param barrier edges with this mask (on either side) will not be removed
+   * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors
    * @return whether removing the edge at base would create a convex sector in the super-face
    */
-  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge, ignore: HalfEdgeMask, barrier: HalfEdgeMask): boolean {
+  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge, ignore: HalfEdgeMask, barrier: HalfEdgeMask, signedAreaTol: number = 0): boolean {
     let vs = base;
     do { // loop ccw around vertex looking for a super-face predecessor
       if (vs.isMaskSet(barrier) || vs.edgeMate.isMaskSet(barrier))
@@ -161,9 +162,8 @@ export class HalfEdgeGraphOps {
     } while (vp !== base && vp.isMaskSet(ignore));
     if (vp === base)
       return false;
-    return HalfEdge.isSectorConvex(vs.edgeMate, base, vp.faceSuccessor);
+    return HalfEdge.isSectorConvex(vs.edgeMate, base, vp.faceSuccessor, signedAreaTol);
   }
-
   /**
    * Mask edges between faces if the union of the faces is convex.
    * Uses a greedy algorithm with no regard to quality of resulting convex faces.
@@ -181,7 +181,9 @@ export class HalfEdgeGraphOps {
     for (const node of graph.allHalfEdges) {
       if (!node.isMaskSet(visit)) {
         if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
-          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier)) {
+          // tol based on areas of *original* faces on each side of the edge to be removed
+          const signedAreaTol = Geometry.smallMetricDistanceSquared * (node.signedFaceArea() + node.edgeMate.signedFaceArea());
+          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier, signedAreaTol) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier, signedAreaTol)) {
             node.setMaskAroundEdge(mark);
             ++numMarked;
           }
@@ -189,9 +191,9 @@ export class HalfEdgeGraphOps {
       }
       node.setMaskAroundEdge(visit);
     }
+    graph.dropMask(visit);
     return numMarked;
   }
-
   /**
    * Collect edges between faces if the union of the faces is convex.
    * Uses a greedy algorithm with no regard to quality of resulting convex faces.
@@ -228,8 +230,10 @@ export class HalfEdgeGraphOps {
   public static expandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
     const mark = graph.grabMask(true);
     const numRemovedEdges = this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier);
-    if (numRemovedEdges > 0)
-      graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(mark));
+    if (numRemovedEdges > 0) {
+      const numYankedEdges = 0.5 * graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(mark));
+      assert(numYankedEdges === numRemovedEdges);
+    }
     graph.dropMask(mark);
     return numRemovedEdges;
   }
@@ -336,6 +340,10 @@ export class HalfEdgeGraphMerge {
       }
     }
     return 0.0;
+  }
+  /** Whether the HalfEdge is part of a null face, as marked by [[clusterAndMergeXYTheta]]. */
+  public static isNullFace(node: HalfEdge): boolean {
+    return node.isMaskSet(HalfEdgeMask.NULL_FACE) && node.faceSuccessor.isMaskSet(HalfEdgeMask.NULL_FACE) && node === node.faceSuccessor.faceSuccessor;
   }
   /** Simplest merge algorithm:
    * * collect array of (x,y,theta) at all nodes
@@ -579,7 +587,6 @@ export class HalfEdgeGraphMerge {
     HalfEdgeGraphOps.segmentArrayToGraphEdges(lineSegments, graph, HalfEdgeMask.BOUNDARY_EDGE);
     this.splitIntersectingEdges(graph);
     this.clusterAndMergeXYTheta(graph);
-
     return graph;
   }
 
