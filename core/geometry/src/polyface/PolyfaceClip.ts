@@ -7,8 +7,8 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
@@ -16,8 +16,9 @@ import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
-import { PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -74,12 +75,13 @@ export class ClippedPolyfaceBuilders {
     return new ClippedPolyfaceBuilders(keepInside ? PolyfaceBuilder.create() : undefined, keepOutside ? PolyfaceBuilder.create() : undefined, buildSideFaces);
   }
 
-  public claimPolyface(selector: 0 | 1, fixup: boolean): IndexedPolyface | undefined {
+  public claimPolyface(selector: 0 | 1, fixup: boolean, tolerance: number = Geometry.smallMetricDistance): IndexedPolyface | undefined {
     const builder = selector === 0 ? this.builderA : this.builderB;
     if (builder) {
-      let polyface = builder.claimPolyface();
+      let polyface = builder.claimPolyface(true, tolerance);
       if (fixup) {
         polyface = PolyfaceQuery.cloneWithTVertexFixup(polyface);
+        polyface = PolyfaceQuery.cloneWithDanglingEdgesRemoved(polyface);
       }
       return polyface;
     }
@@ -129,12 +131,15 @@ export class PolyfaceClip {
    * * outputSelect determines how the clip output is structured
    *   * 0 outputs all shards -- this may have many interior edges.
    *   * 1 stitches shards together to get cleaner facets.
-   * @internal
    */
-  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
+  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface | PolyfaceVisitor, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
+    if (polyface instanceof Polyface) {
+      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface.createVisitor(0), allClippers, destination, outputSelector);
+      return;
+    }
     const builderA = destination.builderA;
     const builderB = destination.builderB;
-    const visitor = polyface.createVisitor(0);
+    const visitor = polyface; // alias; we have a visitor now
     const cache = new GrowableXYZArrayCache();
     const insideShards: GrowableXYZArray[] = [];
     const outsideShards: GrowableXYZArray[] = [];
@@ -181,7 +186,6 @@ export class PolyfaceClip {
         if (outputSelector === 1 && localToWorld !== undefined
           && undefined !== (worldToLocal = localToWorld.inverse())) {
           this.cleanupAndAddRegion(builderA, insideShards, worldToLocal, localToWorld);
-
           this.cleanupAndAddRegion(builderB, outsideShards, worldToLocal, localToWorld);
         } else {
           for (const shard of insideShards)
@@ -207,6 +211,8 @@ export class PolyfaceClip {
       } else if (region instanceof UnionRegion) {
         for (const child of region.children)
           this.addRegion(builder, child);
+      } else {
+        assert(!"unexpected region encountered");
       }
     }
   }
@@ -220,7 +226,7 @@ export class PolyfaceClip {
       if (outsidePieces && outsidePieces.children.length > 0) {
         if (localToWorld)
           outsidePieces.tryTransformInPlace(localToWorld);
-        RegionOps.consolidateAdjacentPrimitives(outsidePieces);
+        RegionOps.consolidateAdjacentPrimitives(outsidePieces); // source of the T-vertices removed in claimPolyface
         this.addRegion(builder, outsidePieces);
       }
     }
@@ -450,7 +456,7 @@ export class PolyfaceClip {
     }
   }
   /** Clip each facet of polyface to the ClipPlane or ConvexClipPlaneSet
-    * * This method parses  the variant input types and calls a more specific method.
+    * * This method parses the variant input types and calls a more specific method.
     * * To get both inside and outside parts, use clipPolyfaceInsideOutside
     * * WARNING: The new mesh is "points only".
     */
@@ -461,6 +467,28 @@ export class PolyfaceClip {
       return this.clipPolyfaceConvexClipPlaneSet(polyface, clipper);
     // (The if tests exhaust the type space -- this line is unreachable.)
     return undefined;
+  }
+  /**
+   * Drape the region onto the mesh.
+   * * This method computes the portion of the input mesh that lies inside the clipper generated from sweeping the input region in the given direction.
+   * @param mesh input mesh, untouched
+   * @param region planar region to drape onto mesh
+   * @param sweepVector optional sweep direction for region; if undefined, region normal is used
+   * @param options how to stroke the region boundary
+   * @returns clipped facets. No other mesh data but vertices appear in output.
+   */
+  public static drapeRegion(mesh: Polyface | PolyfaceVisitor, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined {
+    if (mesh instanceof Polyface)
+      return this.drapeRegion(mesh.createVisitor(0), region, sweepVector, options);
+    const contour = SweepContour.createForLinearSweep(region);
+    if (!contour)
+      return undefined;
+    const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweepVector, false, false, options);
+    if (!clipper)
+      return undefined;
+    const builders = ClippedPolyfaceBuilders.create(true);
+    this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh, clipper, builders, 1);
+    return builders.claimPolyface(0, true);
   }
   /** Find consecutive points around a polygon (with implied closure edge) that are ON a plane
    * @param points array of points around polygon.  Closure edge is implied.

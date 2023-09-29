@@ -6,7 +6,9 @@
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 
-// Convert a channel array [r, g, b, a] to ColorDef
+/** Convert a channel array [r, g, b, a] to ColorDef
+ * @internal
+ */
 function colorFromArray(channels?: number[]) {
   if (channels && channels.length === 4) {
     // Alpha channel is reversed, 255 = opaque
@@ -16,7 +18,7 @@ function colorFromArray(channels?: number[]) {
 }
 
 /** @internal */
-export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
+export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
 
 /** @internal */
 export interface EsriSymbolCommonProps {
@@ -24,7 +26,7 @@ export interface EsriSymbolCommonProps {
 }
 
 /** @internal */
-export type EsriSymbolProps = EsriSLSProps | EsriPMSProps | EsriSFSProps;
+export type EsriSymbolProps = EsriSLSProps | EsriPMSProps | EsriSFSProps | EsriSMSProps;
 
 /** @internal */
 export abstract class EsriSymbol implements EsriSymbolCommonProps {
@@ -32,13 +34,15 @@ export abstract class EsriSymbol implements EsriSymbolCommonProps {
 
   public static fromJSON(props: EsriSymbolProps) {
     if (props.type === "esriSFS") {
-      return EsriSFS.fromJSON(props as EsriSFSProps);
+      return EsriSFS.fromJSON(props );
     } else if (props.type === "esriSLS") {
-      return EsriSLS.fromJSON(props as EsriSLSProps);
+      return EsriSLS.fromJSON(props );
     } else if (props.type === "esriPMS") {
-      return EsriPMS.fromJSON(props as EsriPMSProps);
+      return EsriPMS.fromJSON(props );
+    } else if (props.type === "esriSMS") {
+      return EsriSMS.fromJSON(props );
     }
-    throw new Error("Unknown ESRI symbology type");
+    throw new Error(`Unknown ESRI symbology type}`);
   }
 }
 
@@ -49,7 +53,7 @@ export type EsriSLSStyle = "esriSLSDash" | "esriSLSDashDot" | "esriSLSDashDotDot
 /** @internal */
 export interface EsriSLSProps extends EsriSymbolCommonProps {
   color: number[];
-  type: EsriSymbolPropsType;
+  type: "esriSLS";
   width: number;
   style: EsriSLSStyle;
 }
@@ -74,7 +78,7 @@ export class EsriSLS implements EsriSymbolCommonProps {
 
 /** @internal */
 export interface EsriPMSProps extends EsriSymbolCommonProps {
-  type: EsriSymbolPropsType;
+  type: "esriPMS";
   url: string;
   imageData: string;
   contentType: string;
@@ -131,12 +135,51 @@ export class EsriPMS implements EsriSymbolCommonProps {
 }
 
 /** @internal */
+export type EsriSMSStyleType = "esriSMSCircle" | "esriSMSCross" | "esriSMSDiamond" | "esriSMSSquare" | "esriSMSTriangle" | "esriSMSX";
+
+/** @internal */
+export interface EsriSMSProps extends EsriSymbolCommonProps {
+  angle?: number;
+  color?: number[];
+  outline?: EsriSLSProps;
+  size: number;
+  style: EsriSMSStyleType;
+  type: "esriSMS";
+  xoffset?: number;
+  yoffset?: number;
+}
+
+/** @internal */
+export class EsriSMS implements EsriSymbolCommonProps {
+  public readonly props: EsriSMSProps;
+  private _outline: EsriSLS | undefined;
+  public get angle()    { return this.props.angle; }
+  public get color()    { return colorFromArray(this.props.color); }
+  public get outline()  { return this._outline; }
+  public get size()     { return this.props.size; }
+  public get style()    { return this.props.style; }
+  public get type()     { return this.props.type; }
+  public get xoffset()  { return this.props.xoffset; }
+  public get yoffset()  { return this.props.yoffset; }
+
+  private constructor(json: EsriSMSProps) {
+    this.props = json;
+    if (json.outline)
+      this._outline = EsriSLS.fromJSON(json.outline);
+  }
+
+  public static fromJSON(json: EsriSMSProps) {
+    return new EsriSMS(json);
+  }
+}
+
+/** @internal */
 export type EsriSFSStyleProps = "esriSFSBackwardDiagonal" | "esriSFSCross" | "esriSFSDiagonalCross" | "esriSFSForwardDiagonal" | "esriSFSHorizontal" | "esriSFSNull" | "esriSFSSolid" | "esriSFSVertical";
 
 /** @internal */
-export interface EsriSFSProps {
+export interface EsriSFSProps extends EsriSymbolCommonProps {
   color?: number[];
-  type: EsriSymbolPropsType;
+  type: "esriSFS";
   style: EsriSFSStyleProps;
   outline?: EsriSLSProps;
 }

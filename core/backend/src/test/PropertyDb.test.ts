@@ -10,11 +10,12 @@ import { join } from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
 import { PropertyStore } from "../PropertyStore";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("PropertyDb", function (this: Suite) {
   this.timeout(0);
 
-  const outputDir = join(__dirname, "output");
+  const outputDir = KnownTestLocations.outputDir;
 
   before(async () => IModelHost.startup());
 

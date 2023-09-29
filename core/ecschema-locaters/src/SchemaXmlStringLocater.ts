@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Locaters
+ */
 
 import { DOMParser } from "@xmldom/xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
-
-/** @packageDocumentation
- * @module Locaters
- */
 
 /**
  * A SchemaLocator implementation for locating and deserializing EC Schemas from XML strings

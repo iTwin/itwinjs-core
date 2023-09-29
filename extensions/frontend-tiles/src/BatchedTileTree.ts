@@ -10,6 +10,12 @@ import {
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
+import { frontendTilesOptions } from "./FrontendTiles";
+
+const defaultViewFlags: ViewFlagOverrides = {
+  renderMode: RenderMode.SmoothShade,
+  visibleEdges: false,
+};
 
 /** @internal */
 export interface BatchedTileTreeParams extends TileTreeParams {
@@ -17,11 +23,6 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
 }
-
-const viewFlagOverrides: ViewFlagOverrides = {
-  renderMode: RenderMode.SmoothShade,
-  visibleEdges: false,
-};
 
 /** @internal */
 export class BatchedTileTree extends TileTree {
@@ -65,7 +66,7 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override get viewFlagOverrides(): ViewFlagOverrides {
-    return viewFlagOverrides;
+    return frontendTilesOptions.enableEdges ?{ } : defaultViewFlags;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention

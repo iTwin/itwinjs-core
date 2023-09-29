@@ -15,7 +15,12 @@ import { ECVersion, SchemaKey } from "./SchemaKey";
  * Loaded schemas are held in memory within  a schema context managed by SchemaLoader.
  * The SchemaLoader object should be held in memory if multiple calls to [[getSchema]] or [[tryGetSchema]]
  * is a possibility, thereby avoiding unnecessary schema retrievals from the function.
- * @alpha
+ *
+ * ** Example **
+ * ```ts
+ * [[include:IModelSchemas.loadFromDb]]
+ * ```
+ * @beta
  */
 export class SchemaLoader {
   private _context: SchemaContext;
@@ -47,5 +52,10 @@ export class SchemaLoader {
     const key = new SchemaKey(schemaName, new ECVersion(1, 0, 0));
     const schema = this._context.getSchemaSync(key, SchemaMatchType.Latest);
     return schema as T;
+  }
+
+  /** Gets the SchemaContext used by the loader. */
+  public get context(): SchemaContext {
+    return this._context;
   }
 }
