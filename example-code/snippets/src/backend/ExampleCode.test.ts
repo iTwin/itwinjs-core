@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
+import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
-import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb, Subject } from "@itwin/core-backend";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -199,6 +199,56 @@ describe("Example Code", () => {
     settings.dropDictionary("iTwin"); // drop iTwin dict
     expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("CodeService", async () => {
+
+    // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
+    const code = Subject.createCode(iModel, IModel.rootSubjectId, "test"); // example code
+
+    const proposedCode = CodeService.makeProposedCode({ iModel, code, props: { guid: Guid.createValue() } });
+    await iModel.codeService?.internalCodes?.writeLocker.reserveCode(proposedCode);
+
+    const elementId = Subject.insert(iModel, IModel.rootSubjectId, code.value);
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
+    const el = iModel.elements.getElement(elementId);
+    el.code = new Code({ ...el.code.toJSON(), value: "changed" });
+    await iModel.codeService?.internalCodes?.writeLocker.updateCode({ guid: el.federationGuid!, value: el.code.value });
+
+    el.update();
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ CodeService.addInternalCodeSpec
+    const name = "myapp:codespec1";
+
+    const props: CodeSpecProperties = {
+      scopeSpec: {
+        type: CodeScopeSpec.Type.Model,
+        fGuidRequired: false,
+      },
+    };
+
+    const nameAndJson: CodeService.NameAndJson = {
+      name,
+      json: {
+        scopeSpec: props.scopeSpec,
+        version: "1.0",
+      },
+    };
+    await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
+
+    iModel.codeSpecs.insert(name, props);
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ CodeService.findCode
+    const existingCodeGuid = iModel.codeService?.internalCodes?.reader.findCode({ value: code.value, ...CodeService.makeScopeAndSpec(iModel, code) });
+    if (existingCodeGuid !== undefined) {
+      /* the code has already been reserved and may be in use */
+    }
+    // __PUBLISH_EXTRACT_END__
+
   });
 
 });

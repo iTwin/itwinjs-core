@@ -62,7 +62,6 @@ The following rules may be helpful:
 
 Internal CodeSpecs identify elements within an iModel that must have unique names. The internal CodeService index holds the set of extant values across all briefcase and (potentially) branches of an iModel to avoid conflicts. Before a new element that uses an Internal CodeSpec may be added, the Code value must first be *reserved* in the Internal Code index of the `CodeService`.
 
-
 ## CodeService's Role in the "Code Ecosystem"
 
 The purpose of the CodeService is to enforce uniqueness of Codes within an iTwin and to enforce that everywhere a Code is used, the correct `FederationGuid` is stored on its element. It does not provide any way of telling whether or where Codes are actually *used* on a project (though the `origin` property can give a clue where it *may* be.)
@@ -125,11 +124,73 @@ Generally it is a good idea to reserve a group of codes together rather than one
 - `reserveCode` to reserve a single code
 - `reserveCodes` to reserve a set of codes
 
+Here is an example of how to reserve an *internal* code for a new element:
+
+First, you must choose the code service that should be used at the time that you create your iModel. The identity of the code service and information about how to connect  are stored in the iModel persistently.
+
+When you open a BriefcaseDb for that iModel, it will read the configuration data from the iModel and automatically try to connect to the code service. To support that, apps that access the iModel must provide the client for the code service and set `CodeService.createForIModel` to point to it.
+
+For example, if you configure your new iModel to use Bentley's cloud-based code service, apps must provide the `ITwinCodeService` client. To do that, an app simply depends on the `@bentley/code-service` package and then imports it.
+
+```ts
+import { ITwinCodeService } from "@bentley/code-service";
+```
+
+That's it. `ITwinCodeService` registers itself by setting `CodeService.createForIModel`.
+
+When an app opens a briefcase, the briefcase will adopt the registered code service client, which will connect to the code service in the cloud using the connection information stored in the iModel. The briefcase `.codeService` property refers to the connected code service client, and apps use that to reserve, update, and query codes and CodeSpecs.
+
+Here is an example of using codeService to reserve a new code.
+
+``` ts
+const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId, asOf: { afterChangeSetId }, briefcaseId: 0, fileName });
+const iModel = await BriefcaseDb.open({ fileName: props.fileName });
+```
+
+``` ts
+[[include:CodeService.reserveInternalCodeForNewElement]]
+```
+
+The logic to reserve an external code is similar - just use the `externalCodes` property instead.
+
+Note that reserveCode is asynchronous. It locks and unlocks the code index in the cloud.
+
+Note the use of the `CodeService.makeProposedCode` helper function.
+
+Note that the reserveCode function will throw if the code is already reserved. If that happens when you are trying to insert a new element, it means that you cannot use that code.
+
+Don't call reserveCode when updating an existing element. If the element's code is changing, call `updateCode` before updating it.
+
+In general, to find out if a code has been reserved, call findCode.
+
+```ts
+[[include:CodeService.findCode]]
+```
+
 There are also `CodeService` apis for updating properties of and deleting codes. They have the same rules for authentication and serialization as reserving Codes. They are:
 
 - `updateCode` to modify the properties of a code
 - `updateCodes` to modify the properties of a set of codes
 - `deleteCodes` to delete a set of codes
+
+For example,
+
+``` ts
+[[include:CodeService.updateInternalCodeForExistinglement]]
+```
+
+### Managing and Creating CodeSpecs via the CodeService API
+
+CodeService has an API for managing and creating CodeSpecs.
+
+- `getCodeSpec`
+- `addCodeSpec`
+
+Here is an example of creating a *internal* CodeSpec:
+
+```ts
+[[include:CodeService.addInternalCodeSpec]]
+```
 
 ### Code Sequences
 
