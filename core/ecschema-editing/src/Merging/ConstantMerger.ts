@@ -25,6 +25,20 @@ export default class ConstantsMerger extends SchemaItemMerger<Constant> {
         }
         return phenomenonFullName;
       },
+      numerator: (value, targetItemKey) => {
+        const item = this.context.targetSchema.lookupItemSync<Constant>(targetItemKey);
+        if(item !== undefined && item.hasNumerator && item.numerator !== value) {
+          throw new Error(`Failed to merged, constant numerator conflict: ${value} -> ${item.numerator}`);
+        }
+        return value;
+      },
+      denominator: (value, targetItemKey) => {
+        const item = this.context.targetSchema.lookupItemSync<Constant>(targetItemKey);
+        if(item !== undefined && item.hasDenominator && item.denominator !== value) {
+          throw new Error(`Failed to merged, constant denominator conflict: ${value} -> ${item.denominator}`);
+        }
+        return value;
+      },
     };
   }
 }

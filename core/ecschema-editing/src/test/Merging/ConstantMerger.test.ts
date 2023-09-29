@@ -183,7 +183,7 @@ describe("Constant merger tests", () => {
 
     });
 
-    it.skip("it should throw error if numerator conflict exist", async () => {
+    it("it should throw error if numerator conflict exist", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -232,7 +232,7 @@ describe("Constant merger tests", () => {
       await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
     });
 
-    it.skip("it should throw error if denominator conflict exist", async () => {
+    it("it should throw error if denominator conflict exist", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
