@@ -777,9 +777,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
   /**
-   * Compute the global detail of the chain from the local detail of the child.
-   * @param childDetail the local detail of the child.
-   * @returns the global detail of the chain.
+   * Compute the global chain detail corresponding to a local child detail.
+   * @param childDetail the local detail, with respect to a child of this chain.
+   * @returns the global detail, with respect to this chain.
    */
   public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)
