@@ -18,7 +18,6 @@ import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps
 import { BSplineWrapMode } from "../bspline/KnotVector";
 import { Arc3d } from "../curve/Arc3d";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { AnyGeometryQuery, GeometryQuery } from "../curve/GeometryQuery";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -1361,10 +1360,6 @@ export namespace IModelJson {
           sweepStartEnd: [data.sweep.startDegrees, data.sweep.endDegrees],
         },
       };
-    }
-    /** Handle strongly typed [[CurveChainWithDistanceIndex]] */
-    public override handleCurveChainWithDistanceIndex(data: CurveChainWithDistanceIndex): any {
-      return data.path.dispatchToGeometryHandler(this);
     }
     /**
      * Insert orientation description to a data object.

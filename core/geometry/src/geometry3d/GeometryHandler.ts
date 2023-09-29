@@ -57,8 +57,14 @@ export abstract class GeometryHandler {
   public abstract handleArc3d(g: Arc3d): any;
   /** Handle strongly typed  [[CurveCollection]]  */
   public handleCurveCollection(_g: CurveCollection): any { }
-  /** Handle strongly typed  [[CurveChainWithDistanceIndex]]  */
-  public handleCurveChainWithDistanceIndex(_g: CurveChainWithDistanceIndex): any { }
+  /**
+   * Handle strongly typed [[CurveChainWithDistanceIndex]].
+   * * Default implementation invokes `this.handleCurveCollection` on the embedded [[CurveChain]].
+   * * Implementers should override if global results are needed with respect to the chain rather than its children.
+   */
+  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
+    return this.handleCurveCollection(g.path);
+   }
   /** Handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
   /** Handle strongly typed  [[InterpolationCurve3d]]  */
