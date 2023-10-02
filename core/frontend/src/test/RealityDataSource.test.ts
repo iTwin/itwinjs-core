@@ -99,7 +99,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:c9fddf2c-e519-468b-b6fa-6d0e39f198a7:a57f6b1c-747d-4253-b0ce-9900c4dd7c1c");
   });
   it("should handle creation from Context Share url using Reality Management apim in QA (qa-api.bentley.com)", () => {
-    const tilesetUrl = "https://qa-api.bentley.com/reality-management/c9fddf2c-e519-468b-b6fa-6d0e39f198a7?iTwinId=a57f6b1c-747d-4253-b0ce-9900c4dd7c1c";
+    const tilesetUrl = "https://qa-api.bentley.com/reality-management/reality-data/c9fddf2c-e519-468b-b6fa-6d0e39f198a7?iTwinId=a57f6b1c-747d-4253-b0ce-9900c4dd7c1c";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
@@ -109,7 +109,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:c9fddf2c-e519-468b-b6fa-6d0e39f198a7:a57f6b1c-747d-4253-b0ce-9900c4dd7c1c");
   });
   it("should handle creation from Context Share url using Reality Management apim in PROD (api.bentley.com)", () => {
-    const tilesetUrl = "https://api.bentley.com/reality-management/c9fddf2c-e519-468b-b6fa-6d0e39f198a7?iTwinId=a57f6b1c-747d-4253-b0ce-9900c4dd7c1c";
+    const tilesetUrl = "https://api.bentley.com/reality-management/reality-data/c9fddf2c-e519-468b-b6fa-6d0e39f198a7?iTwinId=a57f6b1c-747d-4253-b0ce-9900c4dd7c1c";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
