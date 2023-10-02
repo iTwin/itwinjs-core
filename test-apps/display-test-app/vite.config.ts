@@ -19,17 +19,6 @@ const mode =
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
-const itwinPackagesWithoutAliases = [
-  "@itwin/browser-authorization",
-  "@itwin/core-backend",
-  "@itwin/editor-backend",
-  "@itwin/electron-authorization",
-  "@itwin/imodels-access-backend",
-  "@itwin/imodels-access-frontend",
-  "@itwin/imodels-client-authoring",
-  "@itwin/imodels-client-management",
-  "@itwin/object-storage-core",
-  "@itwin/reality-data-client"]; // backend packages and packages not in itwin core, which are not included in the vite bundle or do not have frontend .ts sourcemaps and thus do not need aliases
 let packageAliases = {};
 Object.keys(packageJson.dependencies).forEach((pkgName) => {
   if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
@@ -46,24 +35,19 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
       }
     } catch { }
   }
-  if (pkgName.startsWith("@itwin") && !itwinPackagesWithoutAliases.includes(pkgName)) {
-    if (pkgName.includes("electron") || pkgName.includes("mobile")) {
-      const fileName = pkgName.replace("@itwin/", "");
-      packageAliases = { ...packageAliases, [`${pkgName}/lib/cjs/${fileName.split("-")[1].charAt(0).toUpperCase()}${fileName.split("-")[1].substring(1)}Frontend`]: findPathToPackage(pkgName) }
-    } else {
-      packageAliases = { ...packageAliases, [pkgName]: findPathToPackage(pkgName) }
+  try {
+    if (pkgName.startsWith("@itwin") && !(require.resolve(pkgName).includes("\\temp\\") || require.resolve(pkgName).includes("/temp/"))) {
+      packageAliases[pkgName] = findPathToPackage(pkgName)
     }
-  }
+  } catch { }
 });
 
 function findPathToPackage(packageName: string): string {
-  if (packageName.includes("core-electron") || packageName.includes("core-mobile")) { //require.resolve does not work for core-electron or core-mobile, so these packages are mutated based on their name.
-    const fileName = packageName.replace("@itwin/", "");
-    const absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1]}/src/${fileName.split("-")[1].charAt(0).toUpperCase()}${fileName.split("-")[1].substring(1)}Frontend.ts`
-    return path.resolve(__dirname, `../../${absolutePath}`)
-  } else {
-    const absolutePath = require.resolve(packageName).replace("\\lib\\cjs\\", "\\src\\").replace(".js", ".ts");
-    return absolutePath
+  const packagePath = require.resolve(packageName);
+  if (packagePath.includes("\\")) { //Windows paths
+    return packagePath.replace("\\lib\\cjs\\", "\\src\\").replace(".js", ".ts");
+  } else { //Mac and Linux paths
+    return packagePath.replace("/lib/cjs/", "/src/").replace(".js", ".ts");
   }
 }
 
@@ -148,6 +132,8 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         ...packageAliases,
+        "@itwin/core-electron/lib/cjs/ElectronFrontend": "@itwin/core-electron/src/ElectronFrontend.ts",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend": "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json"
       }
     },

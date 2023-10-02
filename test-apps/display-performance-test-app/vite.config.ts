@@ -19,6 +19,7 @@ const mode =
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
+let packageAliases = {};
 Object.keys(packageJson.dependencies).forEach((pkgName) => {
   if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
     try {
@@ -32,9 +33,23 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
-    } catch {}
+    } catch { }
   }
+  try {
+    if (pkgName.startsWith("@itwin") && !(require.resolve(pkgName).includes("\\temp\\") || require.resolve(pkgName).includes("/temp/"))) {
+      packageAliases[pkgName] = findPathToPackage(pkgName)
+    }
+  } catch { }
 });
+
+function findPathToPackage(packageName: string): string {
+  const packagePath = require.resolve(packageName);
+  if (packagePath.includes("\\")) { //Windows paths
+    return packagePath.replace("\\lib\\cjs\\", "\\src\\").replace(".js", ".ts");
+  } else { //Mac and Linux paths
+    return packagePath.replace("/lib/cjs/", "/src/").replace(".js", ".ts");
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -74,14 +89,14 @@ export default defineConfig(() => {
           // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
         ],
       },
@@ -113,6 +128,14 @@ export default defineConfig(() => {
     ],
     define: {
       "process.env": process.env, // injects process.env into the frontend
+    },
+    resolve: {
+      alias: {
+        ...packageAliases,
+        "@itwin/core-electron/lib/cjs/ElectronFrontend": "@itwin/core-electron/src/ElectronFrontend.ts",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend": "@itwin/core-mobile/src/MobileFrontend.ts",
+        "../../package.json": "../package.json"
+      }
     },
     optimizeDeps: {
       esbuildOptions: {
