@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.7.13",
+  "version": "3.7.14",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -41,13 +41,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.7.13",
-    "@itwin/core-bentley": "workspace:^3.7.13",
-    "@itwin/core-common": "workspace:^3.7.13",
-    "@itwin/core-geometry": "workspace:^3.7.13",
-    "@itwin/core-orbitgt": "workspace:^3.7.13",
-    "@itwin/core-quantity": "workspace:^3.7.13",
-    "@itwin/webgl-compatibility": "workspace:^3.7.13"
+    "@itwin/appui-abstract": "workspace:^3.7.14",
+    "@itwin/core-bentley": "workspace:^3.7.14",
+    "@itwin/core-common": "workspace:^3.7.14",
+    "@itwin/core-geometry": "workspace:^3.7.14",
+    "@itwin/core-orbitgt": "workspace:^3.7.14",
+    "@itwin/core-quantity": "workspace:^3.7.14",
+    "@itwin/webgl-compatibility": "workspace:^3.7.14"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -76,7 +76,7 @@
     "@types/sinon": "^9.0.0",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",

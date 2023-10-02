@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "3.7.13",
+  "version": "3.7.14",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",

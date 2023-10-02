@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.7.13",
+  "version": "3.7.14",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -47,7 +47,7 @@
     "@types/node": "18.11.5",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "eslint": "^7.11.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.7.13",
+  "version": "3.7.14",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -40,8 +40,8 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.7.13",
-    "@itwin/core-geometry": "workspace:^3.7.13"
+    "@itwin/core-bentley": "workspace:^3.7.14",
+    "@itwin/core-geometry": "workspace:^3.7.14"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -54,7 +54,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "18.11.5",
     "@types/semver": "7.3.10",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",

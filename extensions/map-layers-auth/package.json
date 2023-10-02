@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-auth",
-  "version": "3.7.13",
+  "version": "3.7.14",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers-auth.js",
   "module": "lib/esm/map-layers-auth.js",
@@ -43,7 +43,7 @@
     "@types/mocha": "^8.2.2",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "eslint": "^7.11.0",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
