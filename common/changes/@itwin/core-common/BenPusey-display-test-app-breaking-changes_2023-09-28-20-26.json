@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Changes exports in IModelError to be more explicit.",
+      "comment": "",
       "type": "none"
     }
   ],
