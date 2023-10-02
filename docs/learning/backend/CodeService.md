@@ -126,19 +126,7 @@ Generally it is a good idea to reserve a group of codes together rather than one
 
 Here are the steps to follow.
 
-First, you must choose the code service that should be used at the time that you create your iModel. The identity of the code service and information about how to connect  are stored in the iModel persistently.
-
-When you open a BriefcaseDb for that iModel, it will read the configuration data from the iModel and automatically try to connect to the code service. To support that, apps that access the iModel must provide the client for the code service and set `CodeService.createForIModel` to point to it.
-
-For example, if you configure your new iModel to use Bentley's cloud-based code service, apps must provide the `ITwinCodeService` client. To do that, an app simply depends on the `@bentley/code-service` package and then imports it.
-
-```ts
-import { ITwinCodeService } from "@bentley/code-service";
-```
-
-That's it. `ITwinCodeService` registers itself by setting `CodeService.createForIModel`.
-
-When an app opens a briefcase, the briefcase will adopt the registered code service client, which will connect to the code service in the cloud using the connection information stored in the iModel. The briefcase `.codeService` property refers to the connected code service client, and apps use that to reserve, update, and query codes and CodeSpecs.
+The identity of the code service and information about how to connect are stored in the iModel persistently. When you open a BriefcaseDb for that iModel, it will read the configuration data from the iModel and automatically try to connect to the code service. When an app opens a briefcase, the briefcase will connect to the code service using the connection information stored in the iModel. The briefcase `.codeService` property will refer to the connected code service client, and apps must use that to reserve, update, and query codes and CodeSpecs.
 
 Here is an example of using codeService to reserve a new internal code.
 
