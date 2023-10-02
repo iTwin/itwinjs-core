@@ -6,10 +6,14 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -17,8 +21,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { CurveCurve } from "../../curve/CurveCurve";
 
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
 
@@ -340,6 +342,44 @@ describe("CurveChainWithDistanceIndex", () => {
     ck.testCoordinate(closestApproachBA!.detailB.fraction, 0.4, "BA detailB");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("closestApproachChainLoops", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const semicircleCW = Arc3d.createXY(Point3d.createZero(), 3, AngleSweep.createStartEndDegrees(-45, -225));
+    const diameter = LineSegment3d.createCapture(semicircleCW.endPoint(), semicircleCW.startPoint());
+    const chainA = CurveChainWithDistanceIndex.createCapture(Loop.createArray([semicircleCW, diameter]));
+    const lowestPolygonPoint = Point3d.create(-4,-4,2);
+    const skewPlanePolygon = [Point3d.create(4,4,8), Point3d.create(-4,4,5), lowestPolygonPoint, Point3d.create(4,-4,5)];
+    const chainB = CurveChainWithDistanceIndex.createCapture(Loop.createPolygon(skewPlanePolygon));
+    const pairs = CurveCurve.closeApproachProjectedXYPairs(chainA, chainB, 1.5);
+    // known fractions of xy close approaches
+    const arcFractionOfChain = semicircleCW.curveLength() / chainA.curveLength();
+    const xyApproachFractionA0 = 0.25 * arcFractionOfChain;
+    const xyApproachFractionA1 = 3 * xyApproachFractionA0;
+    const xyApproachFractionB0 = 0.625;
+    const xyApproachFractionB1 = 0.375;
+    if (ck.testExactNumber(pairs.length, 2, "found two close approaches")) {
+      const xyApproachDistance0 = pairs[0].detailA.point.distanceXY(pairs[0].detailB.point);
+      const xyApproachDistance1 = pairs[1].detailA.point.distanceXY(pairs[1].detailB.point);
+      ck.testCoordinate(xyApproachDistance0, xyApproachDistance1, "close approaches are the same distance");
+      const xyApproachDistance3D = pairs[0].detailA.point.distance(pairs[0].detailB.point);
+      const xyzApproachDistance = chainA.closestPoint(lowestPolygonPoint, false);
+      if (ck.testType(xyzApproachDistance, CurveLocationDetail, "found 3D closest approach between chains"))
+        ck.testLT(xyzApproachDistance.a, xyApproachDistance3D, "3D closest approach is actually closer");
+      for (const pair of pairs) {
+        if (Geometry.isSmallRelative(pair.detailA.fraction - xyApproachFractionA0))
+          ck.testTrue(Geometry.isSmallRelative(pair.detailB.fraction - xyApproachFractionB0), "has expected close approach 0");
+        else if (Geometry.isSmallRelative(pair.detailA.fraction - xyApproachFractionA1))
+          ck.testTrue(Geometry.isSmallRelative(pair.detailB.fraction - xyApproachFractionB1), "has expected close approach 1");
+        else
+          ck.announceError("unexpected close approach");
+      }
+      GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB, LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainLoops");
     expect(ck.getNumErrors()).equals(0);
   });
 });

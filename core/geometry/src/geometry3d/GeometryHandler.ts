@@ -57,14 +57,6 @@ export abstract class GeometryHandler {
   public abstract handleArc3d(g: Arc3d): any;
   /** Handle strongly typed  [[CurveCollection]]  */
   public handleCurveCollection(_g: CurveCollection): any { }
-  /**
-   * Handle strongly typed [[CurveChainWithDistanceIndex]].
-   * * Default implementation invokes `this.handleCurveCollection` on the embedded [[CurveChain]].
-   * * Implementers should override if global results are needed with respect to the chain rather than its children.
-   */
-  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
-    return this.handleCurveCollection(g.path);
-   }
   /** Handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
   /** Handle strongly typed  [[InterpolationCurve3d]]  */
@@ -83,26 +75,34 @@ export abstract class GeometryHandler {
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
   /** handle strongly typed [[TransitionSpiral3d]] */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
-  /** Handle strongly typed Path (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[Path]] (base class method calls [[handleCurveCollection]]) */
   public handlePath(g: Path): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  Loop (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[Loop]] (base class method calls [[handleCurveCollection]]) */
   public handleLoop(g: Loop): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  ParityRegion (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[ParityRegion]] (base class method calls [[handleCurveCollection]]) */
   public handleParityRegion(g: ParityRegion): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  UnionRegion (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[UnionRegion]] (base class method calls [[handleCurveCollection]]) */
   public handleUnionRegion(g: UnionRegion): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[BagOfCurves]] (base class method calls [[handleCurveCollection]]) */
   public handleBagOfCurves(g: BagOfCurves): any {
     return this.handleCurveCollection(g);
   }
+  /** Handle strongly typed [[CurveChainWithDistanceIndex]] (base class method calls [[handlePath]] or [[handleLoop]]) */
+  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
+    if (g.path instanceof Path)
+      return this.handlePath(g.path);
+    if (g.path instanceof Loop)
+      return this.handleLoop(g.path);
+    return this.handleCurveCollection(g.path);
+   }
   /** Handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
   /** Handle strongly typed  Cone */
