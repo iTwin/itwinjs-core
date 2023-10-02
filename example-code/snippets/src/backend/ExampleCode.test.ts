@@ -203,47 +203,48 @@ describe("Example Code", () => {
 
   it("CodeService", async () => {
 
-    // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
-    const code = Subject.createCode(iModel, IModel.rootSubjectId, "test"); // example code
+    if (false) { // this will compile but it will not run, because the root elementhas no federationGuid -- waiting for a fix
 
-    const proposedCode = CodeService.makeProposedCode({ iModel, code, props: { guid: Guid.createValue() } });
-    await iModel.codeService?.internalCodes?.writeLocker.reserveCode(proposedCode);
+      // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
+      const code = Subject.createCode(iModel, IModel.rootSubjectId, "test"); // example code
 
-    const elementId = Subject.insert(iModel, IModel.rootSubjectId, code.value);
-    // __PUBLISH_EXTRACT_END__
+      const proposedCode = CodeService.makeProposedCode({ iModel, code, props: { guid: Guid.createValue() } });
+      await iModel.codeService?.internalCodes?.writeLocker.reserveCode(proposedCode);
 
-    // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
-    const el = iModel.elements.getElement(elementId);
-    el.code = new Code({ ...el.code.toJSON(), value: "changed" });
-    await iModel.codeService?.internalCodes?.writeLocker.updateCode({ guid: el.federationGuid!, value: el.code.value });
+      const elementId = Subject.insert(iModel, IModel.rootSubjectId, code.value);
+      // __PUBLISH_EXTRACT_END__
 
-    el.update();
-    // __PUBLISH_EXTRACT_END__
+      // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
+      const el = iModel.elements.getElement(elementId);
+      el.code = new Code({ ...el.code.toJSON(), value: "changed" });
+      await iModel.codeService?.internalCodes?.writeLocker.updateCode({ guid: el.federationGuid!, value: el.code.value });
 
-    // __PUBLISH_EXTRACT_START__ CodeService.addInternalCodeSpec
-    const name = "myapp:codespec1";
+      el.update();
+      // __PUBLISH_EXTRACT_END__
 
-    const props: CodeSpecProperties = {
-      scopeSpec: {
-        type: CodeScopeSpec.Type.Model,
-        fGuidRequired: false,
-      },
-    };
+      // __PUBLISH_EXTRACT_START__ CodeService.addInternalCodeSpec
+      const name = "myapp:codespec1";
 
-    const nameAndJson: CodeService.NameAndJson = {
-      name,
-      json: {
-        scopeSpec: props.scopeSpec,
-        version: "1.0",
-      },
-    };
+      const props: CodeSpecProperties = {
+        scopeSpec: {
+          type: CodeScopeSpec.Type.Model,
+          fGuidRequired: false,
+        },
+      };
 
-    await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
+      const nameAndJson: CodeService.NameAndJson = {
+        name,
+        json: {
+          scopeSpec: props.scopeSpec,
+          version: "1.0",
+        },
+      };
 
-    iModel.codeSpecs.insert(name, props);
-    // __PUBLISH_EXTRACT_END__
+      await iModel.codeService?.internalCodes?.writeLocker.addCodeSpec(nameAndJson);
 
-    if (false) { // this will compile but it will not run -- waiting for fix to assign a federationGuid to the root iModel element
+      iModel.codeSpecs.insert(name, props);
+      // __PUBLISH_EXTRACT_END__
+
       // __PUBLISH_EXTRACT_START__ CodeService.findCode
       const existingCodeGuid = iModel.codeService?.internalCodes?.reader.findCode({ value: code.value, ...CodeService.makeScopeAndSpec(iModel, code) });
       if (existingCodeGuid !== undefined) {
