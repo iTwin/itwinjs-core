@@ -19,7 +19,17 @@ const mode =
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
-const blackListedPackages = ["@itwin/browser-authorization", "@itwin/core-backend", "@itwin/editor-backend", "@itwin/electron-authorization", "@itwin/imodels-access-backend", "@itwin/imodels-access-frontend", "@itwin/imodels-client-authoring", "@itwin/imodels-client-management", "@itwin/object-storage-core", "@itwin/reality-data-client"]; // backend packages and packages not in itwin core
+const itwinPackagesWithoutAliases = [
+  "@itwin/browser-authorization",
+  "@itwin/core-backend",
+  "@itwin/editor-backend",
+  "@itwin/electron-authorization",
+  "@itwin/imodels-access-backend",
+  "@itwin/imodels-access-frontend",
+  "@itwin/imodels-client-authoring",
+  "@itwin/imodels-client-management",
+  "@itwin/object-storage-core",
+  "@itwin/reality-data-client"]; // backend packages and packages not in itwin core, which are not included in the vite bundle or do not have frontend .ts sourcemaps and thus do not need aliases
 let packageAliases = {};
 Object.keys(packageJson.dependencies).forEach((pkgName) => {
   if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
@@ -36,7 +46,7 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
       }
     } catch { }
   }
-  if (pkgName.startsWith("@itwin") && !blackListedPackages.includes(pkgName)) {
+  if (pkgName.startsWith("@itwin") && !itwinPackagesWithoutAliases.includes(pkgName)) {
     if (pkgName.includes("electron") || pkgName.includes("mobile")) {
       const fileName = pkgName.replace("@itwin/", "");
       packageAliases = { ...packageAliases, [`${pkgName}/lib/cjs/${fileName.split("-")[1].charAt(0).toUpperCase()}${fileName.split("-")[1].substring(1)}Frontend`]: findPathToPackage(pkgName) }
@@ -47,22 +57,14 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
 });
 
 function findPathToPackage(packageName: string): string {
-  const fileName = packageName.replace("@itwin/", "");
-  let absolutePath = '';
-  if (fileName.startsWith("appui-")) {
-    absolutePath = `ui/${fileName}/src/${fileName}.ts`
-  } else if ((fileName.startsWith("core-") && !fileName.includes("electron") && !fileName.includes("mobile")) || fileName.startsWith("editor-")) {
-    absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1]}/src/${fileName}.ts`
-  } else if (fileName.startsWith("core-") && (fileName.includes("electron") || fileName.includes("mobile"))) {
-    absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1]}/src/${fileName.split("-")[1].charAt(0).toUpperCase()}${fileName.split("-")[1].substring(1)}Frontend.ts`
-  } else if (fileName.startsWith("hypermodeling-")) {
-    absolutePath = `core/${fileName.split("-")[0]}/src/${fileName}.ts`
-  } else if (fileName == "frontend-devtools" || fileName.startsWith("webgl-")) {
-    absolutePath = `core/${fileName}/src/${fileName}.ts`
-  } else if (fileName == "frontend-tiles" || fileName.startsWith("map-")) {
-    absolutePath = `extensions/${fileName}/src/${fileName}.ts`
+  if (packageName.includes("core-electron") || packageName.includes("core-mobile")) { //require.resolve does not work for core-electron or core-mobile, so these packages are mutated based on their name.
+    const fileName = packageName.replace("@itwin/", "");
+    const absolutePath = `${fileName.split("-")[0]}/${fileName.split("-")[1]}/src/${fileName.split("-")[1].charAt(0).toUpperCase()}${fileName.split("-")[1].substring(1)}Frontend.ts`
+    return path.resolve(__dirname, `../../${absolutePath}`)
+  } else {
+    const absolutePath = require.resolve(packageName).replace("\\lib\\cjs\\", "\\src\\").replace(".js", ".ts");
+    return absolutePath
   }
-  return path.resolve(__dirname, `../../${absolutePath}`)
 }
 
 // https://vitejs.dev/config/
