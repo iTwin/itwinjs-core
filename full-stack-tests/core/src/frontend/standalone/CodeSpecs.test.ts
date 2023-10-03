@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("CodeSpecs", async () => {
   let iModel: IModelConnection;

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers.js";
+import { TestUtility } from "../TestUtility.js";
+import { testOnScreenViewport, TestViewport } from "../TestViewport.js";
 
 describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;

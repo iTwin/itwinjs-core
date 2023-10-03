@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
 import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
-import { Color, testOnScreenViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { Color, testOnScreenViewport } from "../TestViewport.js";
 
 describe("White-on-white reversal", async () => {
   let imodel: IModelConnection;

@@ -9,7 +9,7 @@ import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-front
 import { LineSegment3d, LineString3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc.js";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
   return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });

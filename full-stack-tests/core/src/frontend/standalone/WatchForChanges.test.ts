@@ -10,8 +10,8 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
-import { TestUtility } from "../TestUtility";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing.js";
+import { TestUtility } from "../TestUtility.js";
 
 class System extends MockRender.System {
   public readonly batchElementIds = new Set<string>();

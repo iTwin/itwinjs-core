@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("Elements", () => {
   let imodel: SnapshotConnection;

@@ -8,7 +8,7 @@ import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
   DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;

@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {

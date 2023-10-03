@@ -7,7 +7,7 @@ import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
 import { B3dmReader, GltfDataType, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../../TestUtility";
+import { TestUtility } from "../../TestUtility.js";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

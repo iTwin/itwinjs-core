@@ -9,7 +9,7 @@ import {
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 

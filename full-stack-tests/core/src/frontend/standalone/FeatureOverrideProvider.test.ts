@@ -6,8 +6,8 @@ import { expect } from "chai";
 import {
   EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { testOnScreenViewport } from "../TestViewport.js";
 
 describe("FeatureOverrideProvider", () => {
   let imodel: IModelConnection;

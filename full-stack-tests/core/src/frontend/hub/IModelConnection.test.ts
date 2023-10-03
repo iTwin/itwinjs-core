@@ -10,8 +10,8 @@ import {
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend.js";
+import { TestUtility } from "../TestUtility.js";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];

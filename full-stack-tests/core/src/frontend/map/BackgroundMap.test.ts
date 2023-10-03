@@ -6,8 +6,8 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { testOnScreenViewport, TestViewport } from "../TestViewport.js";
 
 // Set of tests require a BingMap key to be defined
 describe("Background map (#integration)", () => {

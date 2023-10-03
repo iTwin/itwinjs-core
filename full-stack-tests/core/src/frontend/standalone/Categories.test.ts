@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("IModelConnection.Categories", () => {
   const c1 = "0x17";

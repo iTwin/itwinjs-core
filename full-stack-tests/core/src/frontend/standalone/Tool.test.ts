@@ -7,7 +7,7 @@ import { Id64, Id64Arg } from "@itwin/core-bentley";
 import {
   ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("Tools", () => {
   let imodel: IModelConnection;

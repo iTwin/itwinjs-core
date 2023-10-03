@@ -7,13 +7,13 @@ import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-be
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend.js";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
-import { rpcInterfaces } from "../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
-import { setBackendAccessToken } from "../certa/certaCommon";
+import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend.js";
+import { IModelHubUserMgr } from "../common/IModelHubUserMgr.js";
+import { rpcInterfaces } from "../common/RpcInterfaces.js";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv.js";
+import { setBackendAccessToken } from "../certa/certaCommon.js";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";

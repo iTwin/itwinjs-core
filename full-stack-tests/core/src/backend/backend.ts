@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
-import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend.js";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -14,17 +13,18 @@ import {
 } from "@itwin/core-backend";
 import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend.js";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { exposeBackendCallbacks } from "../certa/certaBackend";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
-import { rpcInterfaces } from "../common/RpcInterfaces";
-import * as testCommands from "./TestEditCommands";
+import { exposeBackendCallbacks } from "../certa/certaBackend.js";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc.js";
+import { rpcInterfaces } from "../common/RpcInterfaces.js";
+import * as testCommands from "./TestEditCommands.js";
+import { TestRpcImpl } from "./RpcImpl.js";
 
 /* eslint-disable no-console */
 
@@ -78,7 +78,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   }
 }
 
-async function init() {
+export async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
@@ -125,6 +125,7 @@ async function init() {
   }
 
   ECSchemaRpcImpl.register();
+  TestRpcImpl.register();
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
   Logger.initializeToConsole();
@@ -150,4 +151,4 @@ class BackendTestAssetResolver extends FileNameResolver {
   }
 }
 
-module.exports = init();
+export { };

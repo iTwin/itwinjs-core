@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run -s webpack:test",
+    "build:ts": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
@@ -22,7 +24,7 @@
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "webpack:test": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.cjs 1>&2"
   },
   "repository": {},
   "dependencies": {

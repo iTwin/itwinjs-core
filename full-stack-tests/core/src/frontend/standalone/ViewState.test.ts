@@ -12,9 +12,9 @@ import {
   ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { TestRpcInterface } from "../../common/RpcInterfaces.js";
 import { Mutable } from "@itwin/core-bentley";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;

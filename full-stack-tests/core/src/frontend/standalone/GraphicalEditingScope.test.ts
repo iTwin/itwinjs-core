@@ -11,8 +11,8 @@ import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
-import { TestUtility } from "../TestUtility";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing.js";
+import { TestUtility } from "../TestUtility.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

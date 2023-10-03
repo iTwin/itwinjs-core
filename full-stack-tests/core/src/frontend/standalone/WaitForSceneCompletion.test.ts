@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport.js";
 
 describe("Wait for scene completion", () => {
   let imodel: IModelConnection;

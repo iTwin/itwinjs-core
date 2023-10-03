@@ -6,9 +6,9 @@
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
 import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers.js";
 import { assert, expect } from "chai";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 type AbortSignalListener = (this: MockAbortSignal, ev: any) => any;
 

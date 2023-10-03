@@ -9,7 +9,7 @@ import {
   FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
   Viewport,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(vp: Viewport) {

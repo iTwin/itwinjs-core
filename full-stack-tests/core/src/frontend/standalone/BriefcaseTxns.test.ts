@@ -7,8 +7,8 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
-import { TestUtility } from "../TestUtility";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing.js";
+import { TestUtility } from "../TestUtility.js";
 
 describe("BriefcaseTxns", () => {
   if (!ProcessDetector.isMobileAppFrontend) {

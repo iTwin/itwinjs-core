@@ -13,8 +13,8 @@ import {
   GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import { TestUtility } from "../../TestUtility";
-import { fakeViewState } from "./TileIO.test";
+import { TestUtility } from "../../TestUtility.js";
+import { fakeViewState } from "./TileIO.test.js";
 
 describe("Tile tolerance", () => {
   let imodel: IModelConnection;

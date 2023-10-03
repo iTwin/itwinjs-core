@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface } from "../common/RpcInterfaces";
+import { TestRpcInterface } from "../common/RpcInterfaces.js";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");
 const NATIVE_FETCH = Symbol.for("NATIVE_FETCH");

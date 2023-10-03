@@ -7,7 +7,7 @@ import { Guid, GuidString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
 import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 function createViewDiv() {
   const div = document.createElement("div");
