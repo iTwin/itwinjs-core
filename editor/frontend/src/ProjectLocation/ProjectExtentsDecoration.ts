@@ -223,9 +223,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       this._controls[i].extentValid = (faceNormal.isParallelTo(Vector3d.unitX(), true) ? this._extentsLengthValid : this._extentsWidthValid);
     }
 
-    const zFillColor = ColorDef.from(150, 150, 250);
-    this._controls[numControls - 2] = new ProjectExtentsControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, zFillColor, undefined, "zLow");
-    this._controls[numControls - 1] = new ProjectExtentsControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, zFillColor, undefined, "zHigh");
+    this._controls[numControls - 2] = new ProjectExtentsControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, undefined, undefined, "zLow");
+    this._controls[numControls - 1] = new ProjectExtentsControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, undefined, undefined, "zHigh");
     this._controls[numControls - 2].extentValid = this._extentsHeightValid;
     this._controls[numControls - 1].extentValid = this._extentsHeightValid;
 
@@ -577,46 +576,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     context.addDecorationFromBuilder(areaWarnBuilder);
   }
 
-  protected drawExtentTooLargeIndicator(context: DecorateContext, worldPoint: Point3d, sizePixels: number): void {
-    const position = context.viewport.worldToView(worldPoint);
-    position.x = Math.floor(position.x) + 0.5;
-    position.y = Math.floor(position.y) + 0.5;
-    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-      ctx.lineWidth = 4;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = "rgba(255,0,0,.75)";
-      ctx.fillStyle = "rgba(255,255,255,.75)";
-      ctx.shadowColor = "black";
-      ctx.shadowBlur = 5;
-
-      ctx.beginPath();
-      ctx.moveTo(0, -sizePixels);
-      ctx.lineTo(-sizePixels, sizePixels);
-      ctx.lineTo(sizePixels, sizePixels);
-      ctx.lineTo(0, -sizePixels);
-      ctx.fill();
-
-      ctx.shadowBlur = 0;
-
-      ctx.beginPath();
-      ctx.moveTo(0, -sizePixels);
-      ctx.lineTo(-sizePixels, sizePixels);
-      ctx.lineTo(sizePixels, sizePixels);
-      ctx.lineTo(0, -sizePixels);
-      ctx.stroke();
-
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 3;
-
-      ctx.beginPath();
-      ctx.moveTo(0, -sizePixels * 0.2);
-      ctx.lineTo(0, sizePixels * 0.3);
-      ctx.moveTo(0, (sizePixels * 0.3) + 4);
-      ctx.lineTo(0, (sizePixels * 0.3) + 4.5);
-      ctx.stroke();
-
-    };
-    context.addCanvasDecoration({ position, drawDecoration });
+  private getCustomArrow(baseStart: number = 0.0, baseWidth: number = 0.3, tipStart: number = baseWidth / 2): Point3d[] {
+    const shapePts: Point3d[] = [];
+    shapePts[0] = Point3d.create(tipStart, 0);
+    shapePts[1] = Point3d.create(baseStart, baseWidth);
+    shapePts[2] = Point3d.create(tipStart * 3, 0);
+    shapePts[3] = Point3d.create(baseStart, -baseWidth);
+    shapePts[4] = shapePts[0].clone();
+    return shapePts;
   }
 
   public override decorate(context: DecorateContext): void {
@@ -646,11 +613,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this._isActive)
       return;
 
-    const outlineColor = ColorDef.from(0, 0, 0, 50).adjustedForContrast(vp.view.backgroundColor);
-    const fillVisColor = ColorDef.from(150, 250, 200, 225).adjustedForContrast(vp.view.backgroundColor);
+    const outlineColor = ColorDef.white;
+    const fillVisColor = ColorDef.black;
     const fillHidColor = fillVisColor.withAlpha(200);
     const fillSelColor = fillVisColor.inverse().withAlpha(75);
-    const shapePts = EditManipulator.HandleUtils.getArrowShape(0.0, 0.15, 0.55, 1.0, 0.3, 0.5, 0.1);
+    const shapePts = this.getCustomArrow();
 
     for (let iFace = 0; iFace < this._controlIds.length; iFace++) {
       const sizeInches = Math.min(this._controls[iFace].sizeInches, maxSizeInches);
@@ -678,35 +645,17 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         outlineColorOvr = outlineColor;
       }
 
-      let fillVisColorOvr = this._controls[iFace].fill;
-      let fillHidColorOvr = fillHidColor;
-      let fillSelColorOvr = fillSelColor;
-      if (undefined !== fillVisColorOvr) {
-        fillVisColorOvr = fillVisColorOvr.adjustedForContrast(vp.view.backgroundColor);
-        fillVisColorOvr = fillVisColorOvr.withAlpha(fillVisColor.getAlpha());
-        fillHidColorOvr = fillVisColorOvr.withAlpha(fillHidColor.getAlpha());
-        fillSelColorOvr = fillVisColorOvr.inverse().withAlpha(fillSelColor.getAlpha());
-      } else {
-        fillVisColorOvr = fillVisColor;
-      }
+      const fillVisColorOvr = this._controls[iFace].extentValid ? this._controls[iFace].fill : EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(255, 138, 0), vp);
 
-      arrowVisBuilder.setSymbology(outlineColorOvr, outlineColorOvr, isSelected ? 4 : 2);
+      arrowVisBuilder.setSymbology(outlineColorOvr, outlineColorOvr, isSelected ? 10 : 6);
       arrowVisBuilder.addLineString(visPts);
-      arrowVisBuilder.setBlankingFill(isSelected ? fillSelColorOvr : fillVisColorOvr);
+      arrowVisBuilder.setBlankingFill(isSelected ? fillSelColor : fillVisColorOvr ?? fillVisColor);
       arrowVisBuilder.addShape(visPts);
       context.addDecorationFromBuilder(arrowVisBuilder);
 
-      arrowHidBuilder.setSymbology(fillHidColorOvr, fillHidColorOvr, 1);
+      arrowHidBuilder.setSymbology(fillHidColor, fillHidColor, 1);
       arrowHidBuilder.addShape(hidPts);
       context.addDecorationFromBuilder(arrowHidBuilder);
-
-      if (this._controls[iFace].extentValid)
-        continue;
-
-      const warnPixels = 15.0;
-      const warnOffset = vp.viewingSpace.getPixelSizeAtPoint(anchorRay.origin) * warnPixels * 1.5;
-      const warnOrigin = anchorRay.origin.plusScaled(anchorRay.direction, -warnOffset);
-      this.drawExtentTooLargeIndicator(context, warnOrigin, warnPixels);
     }
   }
 

@@ -463,18 +463,18 @@
         "SpecifyCoordinates": "Specify latitude and longitude then accept"
       },
       "Inputs": {
-        "AcceptHandle": "Accept project extents or handle"
+        "AcceptHandle": "Accept iTwin extents or handle"
       },
       "Message": {
         "RestartTxn": "Undo of prior changes will no longer be possible, continue?",
         "NotActive": "Enable geolocation tools with 'editor project location show' first",
         "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",
-        "NoChanges": "No changes to project extents or geolocation to save",
+        "NoChanges": "No changes to iTwin extents or geolocation to save",
         "Readonly": "iModel is read-only",
-        "ProjectExtents": "Project Extents",
-        "LargeProjectExtents": "Project Extents Too Large",
-        "ModifyProjectExtents": "Modify Project Extents",
+        "ProjectExtents": "iTwin Extents",
+        "LargeProjectExtents": "iTwin Extents Too Large",
+        "ModifyProjectExtents": "Modify iTwin Extents",
         "ModifyGeolocation": "Modify/Add Geolocation",
         "ModifyNorthDirection": "Modify North Direction",
         "MaxExtent": "Recommended Maximum",
