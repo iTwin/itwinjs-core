@@ -1,6 +1,6 @@
 # Element Fundamentals
 
-A BIS `Element` represents an entity in the real world, e.g. pumps, beams, contracts, companies, processes, requirements, documents, persons, etc.
+A BIS `Element` represents an entity being modeled. e.g. pumps, beams, contracts, companies, processes, requirements, documents, persons, etc.
 
 ## BIS Element Properties
 
@@ -20,7 +20,7 @@ See [CodeValue](./codes.md#codevalue-property)
 
 ### FederationGuid
 
-Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. It is really identifying the real-world Entity that the Element represents, not the Element itself. Generally it is intended that FederationGuid are assigned by external systems to *federate* Elements to their external meaning.
+See [FederationGuids](./federationGuids.md)
 
 ### UserLabel
 
@@ -34,29 +34,31 @@ With the exception of data conversion programs, the UserLabel is always left for
 
 The `JsonProperties` member holds instance-specific *ad hoc* data on an Element in JSON format. It is a dictionary of key-value pairs, where the key is a *namespace* (see below) and the value is a JSON object. In this manner the `JsonProperties` member can hold any form and complexity of externally-defined (i.e. outside of BIS) data on any element.
 
+*Ad hoc* data stored in the `JsonProperties` member is assumed to be internal to the iModel and thus, it is not shown in the User-Interface of generic iTwin.js controls and applications.
+
 To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters).
 
 > Note: all JSON property names, and therefore namespaces, are *case sensitive*.
 
 #### The `UserProps` namespace
 
-There is a reserved namespace of JsonProperties called `UserProps`. All values in the UserProps namespace are meant to be added by users, and application code should never store information there. Users should store their properties in names with their own name-scoping rules, such as a capitalized prefix to avoid conflicts. But since they know that only their data is held in the UserProps, they don't need to worry about collisions with applications.
+There is a reserved namespace of JsonProperties called `UserProps`. All values in the UserProps namespace are meant to be added by users, and application code should never store information there. Users should store their properties in names with their own name-scoping rules, such as a capitalized prefix to avoid conflicts. But since they know that only their internal data is held in the UserProps, they don't need to worry about collisions with applications.
 
 For example, an Element may have the following set of JsonProperties:
 
 ```json
 {
-  "SLYSOFT_props": {
-    "partType": "st-10",
-    "partName": "runner*144"
+  "ABCConnector_props": {
+    "conversionStatus": "incomplete",
+    "lastConversionElapsedTime": "15.35"
   },
-  "IGASPEC_domFlow": {
-    "max": 100,
-    "min": 22
+  "XYZConnector_props": {
+    "conversionQualityScore": 100,
+    "conversionDataCache": 22
   },
   "UserProps": {
-    "BTTE_vendorInfo": {
-      "name": "Ace Manufacturing",
+    "BTTE_contractInfo": {
+      "contractor": "Ace Manufacturing",
       "contractId": "1032SW3"
     },
     "BTTE_approvals": {
@@ -74,10 +76,19 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 - No type-safety. There is no mechanism for controlling what is stored for any property name.
 - No required data. There is no mechanism for defining the requirement for certain properties to be defined.
+- Data stored in the `JsonProperties` member is not shown in the User-Interface of generic iTwin.js controls and applications.
 
-<!-- TODO
 ### JsonProperties and ECSQL
--->
+
+Data stored in the `JsonProperties` member of any Element class can be queried with ECSQL by using regular json_XXX functions. The following example retrieves the `ABCConnector_props.lastConversionElapsedTime` Json value stored in the `JsonProperties` member of Elements, whose `ABCConnector_props.conversionStatus` Json value is not equal to `incomplete`.
+
+```sql
+SELECT json_extract(JsonProperties, '$.ABCConnector_props.lastConversionElapsedTime')
+FROM bis.Element
+WHERE json_extract(JsonProperties, '$.ABCConnector_props.conversionStatus') <> 'incomplete'
+```
+
+Please see [JSON functions and operators](https://www.sqlite.org/json1.html) for more information on supported functions.
 
 ## Elements and Models
 
