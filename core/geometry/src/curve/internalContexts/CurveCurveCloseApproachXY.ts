@@ -153,7 +153,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpB the second curve
    * @param fractionB0 start of the second curve
    * @param fractionB1 end of the second curve
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    * @param intervalDetails optional CurveLocationDetailPair
    */
   private recordPointWithLocalFractions(
@@ -230,7 +230,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpB curveB
    * @param fractionB0 global start fraction on curveB
    * @param fractionB1 global end fraction on curveB
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    */
   private capturePairWithLocalFractions(
     pair: CurveLocationDetailPair,
@@ -273,7 +273,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param cpA first curve primitive (possibly different from curve in detailA, but fraction compatible)
    * @param cpB second curve primitive (possibly different from curve in detailA, but fraction compatible)
    * @param pairs array of pairs
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    */
   public recordPairs(
     cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean,
@@ -290,7 +290,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Record fully assembled (but possibly reversed) detail pair.
    * @param detailA first detail
    * @param detailB second detail
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    */
   public captureDetailPair(
     detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined, reversed: boolean,
@@ -328,7 +328,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   }
   /**
    * Return fractions of close approach within maxDistance between two line segments (a0,a1) and (b0,b1).
-   * * Math details can be found at docs/learning/geometry/CurveCurve.md
+   * * Math details can be found at core/geometry/internaldocs/Curve.md
    * @param a0 start point of line a
    * @param a1 end point of line a
    * @param b0 start point of line b
@@ -410,7 +410,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param fB0 fraction0 on curveB
    * @param fB1 fraction0 on curveB
    * @param testProjectionOnB whether to record projections of the given curveA points onto curveB
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    */
   private testAndRecordFractionalPairApproach(
     cpA: CurvePrimitive,
@@ -516,7 +516,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * @param pointA1 end point of the segment
    * @param fractionA1 fraction of the end of the segment
    * @param arc the arc
-   * @param reversed whether to reverse the details in the pair. This guarantees detailB has always curve type of geometryB.
+   * @param reversed whether to reverse the details in the pair (e.g., so that detailB refers to geometryB).
    */
   private dispatchSegmentArc(
     cpA: CurvePrimitive,

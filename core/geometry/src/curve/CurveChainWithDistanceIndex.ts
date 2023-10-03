@@ -83,9 +83,8 @@ export class PathFragment {
     return 0;
   }
   /**
-   * Return an array with (references to) all the input path fragments, sorted smallest to largest on the "a" value
-   * which is equal to the quick minimum distance from spacePoint to the curve (min distance from spacePoint to the
-   * fragment range box).
+   * Return an array with (references to) all the input path fragments, sorted smallest to largest on the "a" value,
+   * initialized with `quickMinDistanceToChildCurve`
    */
   public static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[] {
     const sortedFragments: PathFragment[] = [];
@@ -114,7 +113,7 @@ export class PathFragment {
       this.childFraction0,
     )!; // the interval must have nonzero length so division should be safe
   }
-  /** Convert chainDistance to chidFraction using detailed `CurvePrimitive.moveSignedDistanceFromFraction`. */
+  /** Convert the given chainDistance to a fraction along this childCurve using `moveSignedDistanceFromFraction`. */
   public chainDistanceToAccurateChildFraction(chainDistance: number, allowExtrapolation?: boolean): number {
     const childDetail = this.childCurve.moveSignedDistanceFromFraction(
       this.childFraction0, chainDistance - this.chainDistance0, allowExtrapolation ?? false,
@@ -441,7 +440,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     this._path.extendRange(rangeToExtend, transform);
   }
-  /** Return a (high accuracy nad positive) length of the curve between fractional positions */
+  /** Return a (high accuracy and positive) length of the curve between fractional positions */
   public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     return Math.abs(fraction1 - fraction0) * this._totalLength;
   }
@@ -455,7 +454,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return result;
   }
   /**
-   * Return PathFragment object related to `distance`.
+   * Return the PathFragment object at the given `distance` along the chain.
    * @param distance distance along the chain.
    * @param allowExtrapolation if `true`, returns first fragment for negative distances and returns last fragment
    * for distances larger than curve length. If `false` returns `undefined` for those out of bound distances.
@@ -467,7 +466,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return undefined;
   }
   /**
-   * Return PathFragment index related to `distance`.
+   * Return the index of the PathFragment at the given `distance` along the chain.
    * @param distance distance along the chain.
    * @param allowExtrapolation if `true`, returns 0 for negative distances and returns last fragment index for
    * distances larger than curve length. If `false` returns `undefined` for those out of bound distances.
@@ -480,7 +479,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
         return allowExtrapolation ? 0 : undefined;
       if (distance > this._totalLength)
         return allowExtrapolation ? (numFragments - 1) : undefined;
-      // linear search
+      // linear search (opportunity for improvement)
       for (let i = 0; i < numFragments; i++) {
         if (fragments[i].containsChainDistance(distance))
           return i;
@@ -495,7 +494,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public chainDistanceToChainFraction(distance: number): number {
     return distance / this._totalLength;
   }
-  /** Return PathFragment object that addresses `curve` and brackets `fraction`. */
+  /** Return the PathFragment object containing the point at the given `fraction` of the given child curve. */
   public curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined {
     const numFragments = this._fragments.length;
     const fragments = this._fragments;
@@ -504,7 +503,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
         return fragments[0];
       if (fraction > 1.0)
         return fragments[numFragments - 1];
-      // linear search
+      // linear search (opportunity for improvement)
       for (const fragment of fragments) {
         if (fragment.containsChildCurveAndChildFraction(curve, fraction))
           return fragment;
@@ -517,7 +516,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return this._totalLength;
   }
   /**
-   * Returns the total length of the path (which is the total length of `this` curve).
+   * Returns the total length of the path.
    * * This is exact (and simple property lookup) because the true lengths were summed at construction time.
    */
   public quickLength(): number {
@@ -553,19 +552,21 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
     const childFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAndDerivative(childFraction, result);
-    // If "f" is the fractional arc length parameterization for the curve C(t), then d/df(C(t(f)))=LC'/||C'||
-    // where C'=d/dt(C(t)) and L is total length of C. The derivative that fractionToPointAndDerivative returns
-    // is C', so the derivative we seek is just a scale away and we need to scale by L/||C'||.
-    // Math details can be found at docs/learning/geometry/CurveCurve.md
+    // Recall the standard arclength formula s(t) for the curve C = C(t), with derivative s'(t) = ||C'||.
+    // Define fractional arclength for C by f = f(t) = s(t)/L, where L is the total length of C. Then f' = ||C'||/L.
+    // Denote the inverse of f by t = t(f). Then C = C(t(f)) is a parameterization of C by its fractional arclength f.
+    // Since the derivative of t is t'=1/f'=L/||C'||, the derivative we seek is d/df(C(t(f))) = C' t' = C' L/||C'||.
+    // The fragment gives us C', so we're just a scale away.
+    // Math details can be found at core/geometry/internaldocs/Curve.md
     const a = this._totalLength / result.direction.magnitude(); // L/||C'||
-    result.direction.scaleInPlace(a); // scale direction by L/||C'||
+    result.direction.scaleInPlace(a);
     return result;
   }
   /**
    * Return the point (x,y,z) and normalized derivative on the curve at fractional position.
    * * Note that the derivative is "derivative of xyz with respect to fraction".
    * * The un-normalized derivative shows the speed of the "fractional point" moving along the curve.
-   * * To find the un-normalized derivative, use `fractionToPointAndUnitTangent`.
+   * * To find the un-normalized derivative, use `fractionToPointAndDerivative`.
    * @param fraction fractional position on the curve
    * @param result optional receiver for the result.
    * @returns a ray whose origin is the curve point and direction is the normalized derivative with respect to
@@ -596,13 +597,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     result = fragment.childCurve.fractionToPointAnd2Derivatives(childFraction, result);
     if (!result)
       return undefined;
-    // See fractionToPointAndDerivative for details on first derivate.
-    // If "f" is the fractional arc length parameterization for the curve C(t), then
-    // d2/df2(C(t(f)))= (C"-(C'*C'.C")/(||C'||^2))/(L/||C'||)^2
-    // where C"=d^2/dt^2(C(t)), C'=d/dt(C(t)), "." is dot product, and L is total length of C.
-    // The second derivative that fractionToPointAndDerivative returns is C", so the second
+    // See fractionToPointAndDerivative, where we show d/df(C(t(f))) = L C'/||C'||.
+    // Here we seek the 2nd derivative. We'll use the quotient rule, and the identities
+    // d/dt||x(t)|| = x.x'/||x|| and ||x||^2 = x.x, where "." is the dot product.
+    // d2/df2(C(t(f))) = L d/df(C'/||C'||) = L (||C'|| d/df(C') - C' d/df||C'||) / ||C'||^2
+    //  = L (||C'|| C" L/||C'|| - C' C'.C"/||C'|| L/||C'||) / ||C'||^2
+    //  = (L/||C'||)^2 (C" - C' C'.C"/C'.C' ), where C' and C" are given by the fragment.
+    // The second derivative that fractionToPointAnd2Derivatives returns is C", so the second
     // derivative we seek is just few scales away.
-    // Math details can be found at docs/learning/geometry/CurveCurve.md
+    // Math details can be found at core/geometry/internaldocs/Curve.md
     const magU = result.vectorU.magnitude(); // ||C'||
     const dotUU = magU * magU; // ||C'||^2
     const dotUV = result.vectorU.dotProduct(result.vectorV); // C'.C"
@@ -641,7 +644,6 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof CurveChainWithDistanceIndex) {
-      // if "isSameCoordinate" returns false, "isAlmostEqual" wont be called.
       return Geometry.isSameCoordinate(this._totalLength, other._totalLength) && this._path.isAlmostEqual(other._path);
     }
     return false;
