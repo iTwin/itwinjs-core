@@ -58,6 +58,8 @@ The following rules may be helpful:
 - If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid in the `CodeService`.
 - Elements in different iModels of an iTwin *may* have the same Code. The `CodeService` does *not* record where/if Codes are used, and cannot be used to "find" elements. However, the `CodeService` does record the "origin" of a Code. If the origin was an iModel, there's a good chance that there is (or was) an element in that iModel with that Code.
 
+Reserving codes is distinct from inserting elements with codes into the iModel. An application or user may reserve codes (e.g. a range of sequential codes) ahead of time and then use them as needed.
+
 ### Internal Codes
 
 Internal CodeSpecs identify elements within an iModel that must have unique names. The internal CodeService index holds the set of extant values across all briefcase and (potentially) branches of an iModel to avoid conflicts. Before a new element that uses an Internal CodeSpec may be added, the Code value must first be *reserved* in the Internal Code index of the `CodeService`.
@@ -126,7 +128,7 @@ Generally it is a good idea to reserve a group of codes together rather than one
 
 Here are the steps to follow.
 
-The identity of the code service and information about how to connect are stored in the iModel persistently. When you open a BriefcaseDb for that iModel, it will read the configuration data from the iModel and automatically try to connect to the code service. When an app opens a briefcase, the briefcase will connect to the code service using the connection information stored in the iModel. The briefcase `.codeService` property will refer to the connected code service client, and apps must use that to reserve, update, and query codes and CodeSpecs.
+The identity of the code service and information about how to connect are stored in the iModel persistently. When an app opens a briefcase for editing, the briefcase will connect to the code service using the connection information stored in the iModel and the user's credentials. The briefcase `.codeService` property will refer to the connected CodeService client, and apps must use that to reserve, update, and query codes and CodeSpecs.
 
 Here is an example of using codeService to reserve a new internal code.
 
@@ -141,11 +143,11 @@ const iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
 The logic to reserve an external code is similar - just use the `externalCodes` property instead.
 
-Note that reserveCode is asynchronous. It locks and unlocks the code index in the cloud.
+Note that reserveCode is asynchronous and must be `await`ed. It updates the code index in the cloud.
 
 Note the use of the `CodeService.makeProposedCode` helper function.
 
-Note that the reserveCode function will throw if the code is already reserved. If that happens when you are trying to insert a new element, it means that you cannot use that code.
+The `reserveCode` function will throw if the code is already reserved. If that happens when you are trying to insert a new element, it means that someone else has already reserved that code and you should choose a different one.
 
 Don't call reserveCode when updating an existing element. If the element's code is changing, call `updateCode` before updating it.
 
@@ -167,7 +169,7 @@ For example,
 [[include:CodeService.updateInternalCodeForExistinglement]]
 ```
 
-Note that the element's `federationGuid` must be used as the Code's GUID.
+Note that the element's `federationGuid` is the Code's Guid.
 
 ### Managing and Creating CodeSpecs via the CodeService API
 

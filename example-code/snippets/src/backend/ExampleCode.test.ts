@@ -206,18 +206,30 @@ describe("Example Code", () => {
     if (false) { // this will compile but it will not run, because the root elementhas no federationGuid -- waiting for a fix
 
       // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
-      const code = Subject.createCode(iModel, IModel.rootSubjectId, "test"); // example code
+      const code = Subject.createCode(iModel, IModel.rootSubjectId, "main transfer pump"); // an example a code that an app might use
 
       const proposedCode = CodeService.makeProposedCode({ iModel, code, props: { guid: Guid.createValue() } });
-      await iModel.codeService?.internalCodes?.writeLocker.reserveCode(proposedCode);
+      try {
+        await iModel.codeService?.internalCodes?.writeLocker.reserveCode(proposedCode);
+      } catch (err) {
+        // reserveCode will throw if another user has already reserved this code. In that case, you must user another code.
+        // In this example, we'll just fail.
+        throw err;
+      }
 
       const elementId = Subject.insert(iModel, IModel.rootSubjectId, code.value);
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.updateInternalCodeForExistinglement
       const el = iModel.elements.getElement(elementId);
-      el.code = new Code({ ...el.code.toJSON(), value: "changed" });
-      await iModel.codeService?.internalCodes?.writeLocker.updateCode({ guid: el.federationGuid!, value: el.code.value });
+      el.code = new Code({ ...el.code.toJSON(), value: "secondary transfer pump" });
+      try {
+        await iModel.codeService?.internalCodes?.writeLocker.updateCode({ guid: el.federationGuid!, value: el.code.value });
+      } catch (err) {
+        // updateCode will throw if another user has already reserved this code. In that case, you must user another code.
+        // In this example, we'll just fail.
+        throw err;
+      }
 
       el.update();
       // __PUBLISH_EXTRACT_END__
