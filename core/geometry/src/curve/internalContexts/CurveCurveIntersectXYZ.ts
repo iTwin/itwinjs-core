@@ -62,22 +62,6 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
       this._results = [];
     return result;
   }
-  /**
-   * Return the results structure for the intersection calculation, structured as CurveLocationDetailArrayPair.
-   * @deprecated in 4.x. Use [[grabPairedResults]] instead.
-   * @param reinitialize if true, a new results structure is created for use by later calls.
-   */
-  public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair { // eslint-disable-line deprecation/deprecation
-    const result = this._results;
-    if (reinitialize)
-      this._results = [];
-    const ret = new CurveLocationDetailArrayPair(); // eslint-disable-line deprecation/deprecation
-    for (const pair of result) {
-      ret.dataA.push(pair.detailA);
-      ret.dataB.push(pair.detailB);
-    }
-    return ret;
-  }
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean) {
     if (!extend0 && fraction < 0.0)
       return false;
