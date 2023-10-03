@@ -19,37 +19,35 @@ const mode =
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
-let packageAliases = {};
+// local path alias to the ts entry point of each package
+const packageAliases = {};
+
 Object.keys(packageJson.dependencies).forEach((pkgName) => {
   if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
     try {
-      // gets dependency path and replaces everything after /lib/ with /lib/public/* to get static assets
-      let pkg = require
-        .resolve(pkgName)
-        .replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+      // gets dependency path
+      const pkgPath = require.resolve(pkgName);
 
-      const assetsPath = path.relative(process.cwd(), pkg).replace(/\\/g, "/"); // use relative path with forward slashes
+      // replaces everything after /lib/ with /lib/public/* to get static assets
+      let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+
+      const assetsPath = path
+        .relative(process.cwd(), pkgPublicPath)
+        .replace(/\\/g, "/"); // use relative path with forward slashes
       if (assetsPath.endsWith("lib/public/*")) {
         // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
-    } catch { }
-  }
-  try {
-    if (pkgName.startsWith("@itwin") && !(require.resolve(pkgName).includes("\\temp\\") || require.resolve(pkgName).includes("/temp/"))) {
-      packageAliases[pkgName] = findPathToPackage(pkgName)
-    }
-  } catch { }
-});
 
-function findPathToPackage(packageName: string): string {
-  const packagePath = require.resolve(packageName);
-  if (packagePath.includes("\\")) { //Windows paths
-    return packagePath.replace("\\lib\\cjs\\", "\\src\\").replace(".js", ".ts");
-  } else { //Mac and Linux paths
-    return packagePath.replace("/lib/cjs/", "/src/").replace(".js", ".ts");
+      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
+      if (pkgPath.includes("temp") || pkgPath.includes("backend")) return;
+      packageAliases[pkgName] = pkgPath
+        .replace("\\lib\\cjs\\", "\\src\\")
+        .replace("/lib/cjs/", "/src/")
+        .replace(".js", ".ts");
+    } catch {}
   }
-}
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -68,12 +66,12 @@ export default defineConfig(() => {
     },
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
+    logLevel: process.env.VITE_CI ? "error" : "warn",
     build: {
       outDir: "./lib",
       sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
-      logLevel: process.env.VITE_CI ? "error" : "warn",
       commonjsOptions: {
         // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
@@ -85,18 +83,18 @@ export default defineConfig(() => {
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
+        // run `rushx build --stats` to view stats
         plugins: [
-          // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-              rollupVisualizer({
-                open: true,
-                filename: "stats.html",
-                template: "treemap",
-                sourcemap: true,
-              }),
-              webpackStats(), // needs to be the last plugin
-            ]
+                rollupVisualizer({
+                  open: true,
+                  filename: "stats.html",
+                  template: "treemap",
+                  sourcemap: true,
+                }),
+                webpackStats(), // needs to be the last plugin
+              ]
             : []),
         ],
       },
@@ -132,10 +130,12 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         ...packageAliases,
-        "@itwin/core-electron/lib/cjs/ElectronFrontend": "@itwin/core-electron/src/ElectronFrontend.ts",
-        "@itwin/core-mobile/lib/cjs/MobileFrontend": "@itwin/core-mobile/src/MobileFrontend.ts",
-        "../../package.json": "../package.json"
-      }
+        "@itwin/core-electron/lib/cjs/ElectronFrontend":
+          "@itwin/core-electron/src/ElectronFrontend.ts",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend":
+          "@itwin/core-mobile/src/MobileFrontend.ts",
+        "../../package.json": "../package.json", // in core-frontend
+      },
     },
     optimizeDeps: {
       esbuildOptions: {
@@ -154,8 +154,8 @@ export default defineConfig(() => {
       ],
       exclude: [
         "@itwin/core-frontend", //prevents import not resolved errors
-        "@itwin/core-common" //prevents rpc errors
-      ]
+        "@itwin/core-common", //prevents rpc errors
+      ],
     },
   };
 });
