@@ -89,7 +89,7 @@ export class CurveCurve {
   }
   /**
    * Return full 3d xyz intersections of 2 curves.
-   *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d. 
+   *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
    *  * Not Implemented for bspline and bezier curves.
    * @beta
    * @deprecated in 4.x. Use [[intersectionXYZPairs]] instead.
