@@ -22,7 +22,7 @@ export class ContextShareProvider {
       return false;
     }
     // If api.bentley.com/realitydata or api.bentley.com/reality-management is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data/"))
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data"))
       return true;
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
@@ -52,7 +52,7 @@ export class ContextShareProvider {
       return invalidUrlInfo;
     }
     // If api.bentley.com/realitydata or api.bentley.com/reality-management is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data/")) {
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data")) {
       const lcTilesetUrl = tilesetUrl.toLowerCase();
       // NOTICE: We assume it is a ThreeDTile BUT this could technically be a point cloud (OPC).
       // This method was used in typical workflow where format was always ThreeDTile and is here for legacy support.
@@ -61,7 +61,7 @@ export class ContextShareProvider {
       let indexId = -1;
       let indexProjectId = -1;
 
-      if(tilesetUrl.toLowerCase().includes("reality-management/reality-data/")) {
+      if(tilesetUrl.toLowerCase().includes("reality-management/reality-data")) {
         indexId = lcTilesetUrl.indexOf("reality-management/reality-data/") + 32; // length of "reality-management/reality-data/" = 32;
         indexProjectId = lcTilesetUrl.indexOf("itwinid=") + 8; // length of "itwinid=" = 8;
       } else if(tilesetUrl.toLowerCase().includes("realitydata")) {
