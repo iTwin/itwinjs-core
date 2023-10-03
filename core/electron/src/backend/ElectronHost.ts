@@ -13,7 +13,6 @@ import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
-import { pathToFileURL } from "url";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
@@ -252,7 +251,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.handle("electron", async (request) => this.electron.net.fetch(pathToFileURL(this.parseElectronUrl(request.url)).toString())); // eslint-disable-line deprecation/deprecation
+      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line deprecation/deprecation
     }
 
     this._openWindow(windowOptions);
