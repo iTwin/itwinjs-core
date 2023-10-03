@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -10,6 +11,8 @@ Table of contents:
   - [Drape region onto mesh](#drape-region-onto-mesh)
 - [Electron 26 support](#electron-26-support)
 - [Locating and serializing schemas](#locating-and-serializing-schemas)
+- [API Deprecations](#api-deprecations)
+- [API Alpha Removals](#api-deprecations)
 
 ## Geometry
 
@@ -31,3 +34,17 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 New APIs like [SchemaLoader]($ecschema-metadata) allow you to [locate schemas](../learning/serializing-xml-schemas.md/#schemas-from-an-imodel) in the context of an iModel.
 You can serialize schemas using the new functions [SchemaXml.writeFile]($ecschema-locaters) and [SchemaXml.writeString]($ecschema-locaters).
+
+## API deprecations
+
+### @itwin/appui-abstract
+
+[UiEvent]($appui-abstract) is a duplicate of [BeUiEvent]($bentley). [UiEventDispatcher]($appui-abstract) is only consumed internally from [SyncUiEventDispatcher]($appui-react) in @itwin/appui-react, which should be used in its place. Similarly, [UiSyncEventArgs]($appui-abstract) and [UiSyncEvent] have been also moved to appui-react.
+
+[PointProps]($appui-abstract) was created primarily to avoid a dependency on @itwin/core-geometry, which contains an identical interface named [XAndY]($core-geometry). PointProps is now deprecated in favor of XAndY, or your own simple implementation. Similarly, [UiAdmin.createXAndY]($appui-abstract) has been deprecated.
+
+## Alpha API Removals
+
+### @itwin/appui-abstract
+
+`isLetter` has been removed. Should you need that functionality, please implement it in your own code.
