@@ -389,7 +389,6 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
    * @param layerSettings Map layer settings that are applied to the ImageryMapLayerTreeReference.
    * @param layerIndex The index of the associated map layer. Usually passed in through [[createMapLayerTreeReference]] in [[MapTileTree]]'s constructor.
    * @param iModel The iModel containing the ImageryMapLayerTreeReference.
-   * @internal
    */
   public constructor(args: { layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection }) {
     super(args.layerSettings, args.layerIndex, args.iModel);

@@ -5840,7 +5840,6 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
 
 // @beta
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-    // @internal
     constructor(args: {
         layerSettings: MapLayerSettings;
         layerIndex: number;
