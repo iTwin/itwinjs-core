@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
