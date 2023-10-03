@@ -1509,6 +1509,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
+    computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
@@ -1723,7 +1724,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     abstract clone(): CurvePrimitive;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
     abstract cloneTransformed(transform: Transform): CurvePrimitive | undefined;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap): void;
@@ -2219,6 +2220,7 @@ export abstract class GeometryHandler {
     abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
     abstract handleCone(g: Cone): any;
     abstract handleCoordinateXYZ(g: CoordinateXYZ): any;
+    handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any;
     handleCurveCollection(_g: CurveCollection): any;
     abstract handleIndexedPolyface(g: IndexedPolyface): any;
     abstract handleInterpolationCurve3d(g: InterpolationCurve3d): any;
@@ -3916,6 +3918,7 @@ export class NullGeometryHandler extends GeometryHandler {
     handleBSplineSurface3dH(_g: BSplineSurface3dH): any;
     handleCone(_g: Cone): any;
     handleCoordinateXYZ(_g: CoordinateXYZ): any;
+    handleCurveChainWithDistanceIndex(_g: CurveChainWithDistanceIndex): any;
     handleCurveCollection(_g: CurveCollection): any;
     handleIndexedPolyface(_g: IndexedPolyface): any;
     handleInterpolationCurve3d(_g: InterpolationCurve3d): any;
@@ -5293,7 +5296,6 @@ export class Ray3d implements BeJSONFunctions {
 export class RecurseToCurvesGeometryHandler extends GeometryHandler {
     handleAkimaCurve3d(_g: AkimaCurve3d): any;
     handleArc3d(_g: Arc3d): any;
-    handleBagOfCurves(g: BagOfCurves): any;
     handleBezierCurve3d(_g: BezierCurve3d): any;
     handleBezierCurve3dH(_g: BezierCurve3dH): any;
     handleBox(_g: Box): any;
@@ -5310,16 +5312,12 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
     handleLinearSweep(_g: LinearSweep): any;
     handleLineSegment3d(_g: LineSegment3d): any;
     handleLineString3d(_g: LineString3d): any;
-    handleLoop(g: Loop): any;
-    handleParityRegion(g: ParityRegion): any;
-    handlePath(g: Path): any;
     handlePointString3d(_g: PointString3d): any;
     handleRotationalSweep(_g: RotationalSweep): any;
     handleRuledSweep(_g: RuledSweep): any;
     handleSphere(_g: Sphere): any;
     handleTorusPipe(_g: TorusPipe): any;
     handleTransitionSpiral(_g: TransitionSpiral3d): any;
-    handleUnionRegion(g: UnionRegion): any;
 }
 
 // @public

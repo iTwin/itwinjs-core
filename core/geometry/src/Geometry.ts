@@ -1009,8 +1009,8 @@ export class Geometry {
     return result;
   }
   /**
-   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`
-   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`.
+   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`.
    */
   public static inverseInterpolate(
     x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number,
