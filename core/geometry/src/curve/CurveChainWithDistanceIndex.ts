@@ -71,8 +71,9 @@ export class PathFragment {
     return distance >= this.chainDistance0 && distance <= this.chainDistance1;
   }
   /**
-   * Return a quick minimum distance from spacePoint to the curve (minimum distance from spacePoint to the curve
-   * range box). This may be SMALLER than true distance but may not be larger.
+   * Return a quick minimum distance from spacePoint to the curve.
+   * * The returned distance is to the curve's range box if defined; otherwise, the true distance is computed.
+   * * Thus the returned distance may be SMALLER than the true distance to the curve, but not larger.
    */
   public quickMinDistanceToChildCurve(spacePoint: Point3d): number {
     if (this.range)
