@@ -150,5 +150,3 @@ class BackendTestAssetResolver extends FileNameResolver {
     }
   }
 }
-
-export { };
