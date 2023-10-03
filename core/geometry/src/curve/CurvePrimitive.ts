@@ -130,7 +130,6 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract fractionToPoint(fraction: number, result?: Point3d): Point3d;
   /**
    * Return the point (x,y,z) and derivative on the curve at fractional position.
-   *
    * * Note that this derivative is "derivative of xyz with respect to fraction".
    * * This derivative shows the speed of the "fractional point" moving along the curve.
    * * This is not generally a unit vector. Use fractionToPointAndUnitTangent for a unit vector.
@@ -403,7 +402,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
         startFraction,
         startFraction + signedFractionMove,
         signedDistance,
-        result);
+        result,
+      );
     }
     return this.moveSignedDistanceFromFractionGeneric(startFraction, signedDistance, allowExtension, result);
   }
@@ -535,8 +535,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * directions), or array of distinct CurveExtendOptions for start and end.
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
-  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
-    const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend);
+  public closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
   }
