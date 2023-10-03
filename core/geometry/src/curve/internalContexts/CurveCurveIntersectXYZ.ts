@@ -34,21 +34,12 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   private _extendA: boolean;
   private _geometryB: AnyCurve;
   private _extendB: boolean;
-  private _results!: CurveLocationDetailPair[];
+  private _results: CurveLocationDetailPair[];
   private static _workVector2dA = Vector2d.create();
   private static _workPointAA0 = Point3d.create();
   private static _workPointAA1 = Point3d.create();
   private static _workPointBB0 = Point3d.create();
   private static _workPointBB1 = Point3d.create();
-  /*
-  private _xyzwA0?: Point4d;
-  private _xyzwA1?: Point4d;
-  private _xyzwPlane?: Point4d;
-  private _xyzwB?: Point4d;
-  */
-  private reinitialize() {
-    this._results = [];
-  }
   /**
    * @param extendA flag to enable using extension of the other geometry.
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
@@ -59,7 +50,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;
-    this.reinitialize();
+    this._results = [];
   }
   /**
    * Return the results structure for the intersection calculation, structured as an array of CurveLocationDetailPair.
@@ -68,7 +59,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   public grabPairedResults(reinitialize: boolean = false): CurveLocationDetailPair[] {
     const result = this._results;
     if (reinitialize)
-      this.reinitialize();
+      this._results = [];
     return result;
   }
   /**
@@ -76,11 +67,11 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
    * @deprecated in 4.x. Use [[grabPairedResults]] instead.
    * @param reinitialize if true, a new results structure is created for use by later calls.
    */
-  public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair {
+  public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair { // eslint-disable-line deprecation/deprecation
     const result = this._results;
     if (reinitialize)
-      this.reinitialize();
-    const ret = new CurveLocationDetailArrayPair();
+      this._results = [];
+    const ret = new CurveLocationDetailArrayPair(); // eslint-disable-line deprecation/deprecation
     for (const pair of result) {
       ret.dataA.push(pair.detailA);
       ret.dataB.push(pair.detailB);

@@ -74,7 +74,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   private _extendA: boolean;
   private _geometryB: AnyCurve | undefined;
   private _extendB: boolean;
-  private _results!: CurveLocationDetailPair[];
+  private _results: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
   private _worldToLocalAffine: Transform | undefined;
   private _coincidentGeometryContext: CoincidentGeometryQuery;
@@ -95,10 +95,6 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   private _xyzwA1?: Point4d;
   private _xyzwPlane?: Point4d;
   private _xyzwB?: Point4d;
-  /** Erase the _results array */
-  private reinitialize() {
-    this._results = [];
-  }
   /**
    * The constructor.
    * @param worldToLocal optional transform (possibly perspective) to project to xy plane for intersection.
@@ -126,7 +122,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         this._worldToLocalPerspective = worldToLocal.clone();
     }
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
-    this.reinitialize();
+    this._results = [];
   }
   /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
   public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
@@ -163,7 +159,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
   public grabPairedResults(reinitialize: boolean = false): CurveLocationDetailPair[] {
     const result = this._results;
     if (reinitialize)
-      this.reinitialize();
+      this._results = [];
     return result;
   }
   private sameCurveAndFraction(cp: CurvePrimitive, fraction: number, detail: CurveLocationDetail): boolean {
