@@ -16,7 +16,7 @@ import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailArrayPair, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
