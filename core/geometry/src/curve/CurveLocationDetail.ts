@@ -474,7 +474,8 @@ export class CurveLocationDetailPair {
 }
 
 /**
- * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by [[CurveCurve.intersectionXYZ]].
+ * Data bundle for a pair of arrays of CurveLocationDetail structures.
+ * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {

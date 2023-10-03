@@ -9,7 +9,7 @@
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveCollection } from "./CurveCollection";
-import { CurveLocationDetailArrayPair, CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve } from "./CurveTypes";
 import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY";
@@ -86,25 +86,6 @@ export class CurveCurve {
     const handler = new CurveCurveIntersectXYZ(extendA, curveB, extendB);
     curveA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
-  }
-  /**
-   * Return full 3d xyz intersections of 2 curves.
-   *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
-   *  * Not Implemented for bspline and bezier curves.
-   * @beta
-   * @deprecated in 4.x. Use [[intersectionXYZPairs]] instead.
-   * @param curveA first curve
-   * @param extendA true to allow curveA to extend
-   * @param curveB second curve
-   * @param extendB true to allow curveB to extend
-   * @returns array of intersections structured as CurveLocationDetailArrayPair
-   */
-  public static intersectionXYZ(
-    curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean,
-  ): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXYZ(extendA, curveB, extendB);
-    curveA.dispatchToGeometryHandler(handler);
-    return handler.grabResults(); // eslint-disable-line
   }
   /**
    * Return xy intersections of input curves.
