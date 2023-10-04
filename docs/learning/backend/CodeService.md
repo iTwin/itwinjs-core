@@ -186,7 +186,7 @@ Here is an example of creating an internal CodeSpec that is scoped to a model.
 
 ### Code Sequences
 
-Some types of Codes follow a *sequential* pattern wherein the value of a new Code is be determined by applying a sequencing algorithm to the previous value.
+Some types of Codes follow a *sequential* pattern wherein the value of a new Code is to be determined by applying a sequencing algorithm to the previous value.
 
 Applications may supply their own code sequencing algorithm by implementing the interface `CodeService.CodeSequence`, supplying methods to get the first and last valid values, and a method to get the next value given another valid value. `CodeSequences` have a name, and can be registered with the `CodeService.registerSequence` and found via `CodeService.getSequence`.
 
