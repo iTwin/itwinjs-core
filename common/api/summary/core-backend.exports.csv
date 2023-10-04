@@ -43,6 +43,8 @@ public;CloudContainerArgs
 beta;CloudSqlite
 internal;BcvHttpLog
 internal;BcvHttpLogFilterOptions
+internal;BcvStats
+internal;BcvStatsFilterOptions
 internal;LockAndOpenArgs 
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeService

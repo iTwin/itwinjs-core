@@ -23,7 +23,7 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^25.0.0"
+    "electron": "^26.2.1"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -32,7 +32,7 @@
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
     "mocha": "^10.0.0",

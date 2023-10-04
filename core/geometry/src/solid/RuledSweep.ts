@@ -8,7 +8,7 @@
  */
 
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve } from "../curve/CurveChain";
+import { AnyCurve } from "../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";

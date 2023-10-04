@@ -145,10 +145,10 @@ describe("AccuSnap", () => {
     });
 
     class Transformer {
-      public constructor(public readonly transform: Transform) { }
+      public constructor(public readonly transform: Transform, public readonly premultiply = false) { }
 
-      public getModelDisplayTransform(): Transform {
-        return this.transform.clone();
+      public getModelDisplayTransform() {
+        return { transform: this.transform, premultiply: this.premultiply };
       }
     }
 
@@ -230,6 +230,33 @@ describe("AccuSnap", () => {
         (vp) => {
           vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(new Point3d(1, -1, 10), Matrix3d.createIdentity()));
           vp.view.getModelElevation = () => -4;
+        },
+      );
+    });
+
+    it("post-multiplies display transform by default", async () => {
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [1, 3, 8], normal: [0, 0, -1], curve: [[0, 0, 10], [1, 0, 10]] }),
+        [],
+        (vp) => {
+          vp.view.getModelElevation = () => 10;
+          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(-90))));
+        },
+      );
+    });
+
+    it("pre-multiplies display transform if specified", async () => {
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [1, 13, -2], normal: [0, 0, -1], curve: [[0, 10, 0], [1, 10, 0]] }),
+        [],
+        (vp) => {
+          vp.view.getModelElevation = () => 10;
+          vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(-90))),
+            true,
+          );
         },
       );
     });

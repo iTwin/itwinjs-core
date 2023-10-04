@@ -9,7 +9,7 @@
 
 import { Geometry } from "../Geometry";
 import { Range3d } from "../geometry3d/Range";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { BagOfCurves, CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { MultiChainCollector } from "./internalContexts/MultiChainCollector";

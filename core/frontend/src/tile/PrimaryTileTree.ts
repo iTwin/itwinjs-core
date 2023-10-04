@@ -257,7 +257,10 @@ class PrimaryTreeReference extends TileTreeReference {
   protected override computeTransform(tree: TileTree): Transform {
     const baseTf = this.computeBaseTransform(tree);
     const displayTf = this.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.model.id);
-    return displayTf ? baseTf.multiplyTransformTransform(displayTf, displayTf) : baseTf;
+    if (!displayTf)
+      return baseTf;
+
+    return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
   }
 }
 

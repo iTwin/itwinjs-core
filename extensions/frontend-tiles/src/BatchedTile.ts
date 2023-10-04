@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
-import { getMaxLevelsToSkip } from "./FrontendTiles";
+import { frontendTilesOptions } from "./FrontendTiles";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
@@ -33,7 +33,7 @@ export class BatchedTile extends Tile {
     super(params, tree);
 
     // The root tile never has content, so it doesn't count toward max levels to skip.
-    this._unskippable = 0 === (this.depth % getMaxLevelsToSkip());
+    this._unskippable = 0 === (this.depth % frontendTilesOptions.maxLevelsToSkip);
 
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;

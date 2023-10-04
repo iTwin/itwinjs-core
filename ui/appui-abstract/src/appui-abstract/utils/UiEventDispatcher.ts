@@ -6,11 +6,11 @@
  * @module Utilities
  */
 
-// cSpell:ignore configurableui
-import { UiEvent } from "./UiEvent";
+import { BeUiEvent } from "@itwin/core-bentley";
 
 /** UiSync Event arguments. Contains a set of lower case event Ids.
  * @public
+ * @deprecated in 4.2.x Please use [[UiSyncEventArgs]] in @itwin/appui-react
  */
 export interface UiSyncEventArgs {
   eventIds: Set<string>;
@@ -18,17 +18,21 @@ export interface UiSyncEventArgs {
 
 /** UiSync Event class.
  * @public
+ * @deprecated in 4.2.x Use [[UiSyncEvent]] from @itwin/appui-react.
  */
-export class UiSyncEvent extends UiEvent<UiSyncEventArgs> { }
+// eslint-disable-next-line deprecation/deprecation
+export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
+ * @deprecated in 4.2.x Use [[SyncUiEventDispatcher]] from @itwin/appui-react.
  */
 export class UiEventDispatcher {
   private _syncEventTimerId: number | undefined;
   private _eventIds: Set<string>;
   private _eventIdAdded;
+  // eslint-disable-next-line deprecation/deprecation
   private _uiSyncEvent: UiSyncEvent;
   private _timeoutPeriod;
   private _secondaryTimeoutPeriod;
@@ -36,6 +40,7 @@ export class UiEventDispatcher {
   constructor() {
     this._eventIds = new Set<string>();
     this._eventIdAdded = false;
+    // eslint-disable-next-line deprecation/deprecation
     this._uiSyncEvent = new UiSyncEvent();
     this._timeoutPeriod = 100;
     this._secondaryTimeoutPeriod = this._timeoutPeriod / 2;
@@ -68,6 +73,7 @@ export class UiEventDispatcher {
   }
 
   /** Return UiSyncEvent so callers can register an event callback. */
+  // eslint-disable-next-line deprecation/deprecation
   public get onSyncUiEvent(): UiSyncEvent {
     return this._uiSyncEvent;
   }
@@ -88,7 +94,7 @@ export class UiEventDispatcher {
 
     this.syncEventIds.add(eventId.toLowerCase());
     if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._timeoutPeriod);
+      this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -104,7 +110,7 @@ export class UiEventDispatcher {
     eventIds.forEach((id) => this.syncEventIds.add(id.toLowerCase()));
     // istanbul ignore else
     if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._timeoutPeriod);
+      this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -139,7 +145,7 @@ export class UiEventDispatcher {
     this._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     // istanbul ignore next
-    this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._secondaryTimeoutPeriod);
+    this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._secondaryTimeoutPeriod);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */

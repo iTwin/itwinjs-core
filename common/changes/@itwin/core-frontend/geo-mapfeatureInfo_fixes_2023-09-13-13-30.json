@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

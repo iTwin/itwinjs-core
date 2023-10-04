@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Deprecate PointProps, UiEvent, UiEventDispatcher, and UiSyncEvent. Remove isLetter utility.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

@@ -7,7 +7,7 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { BagOfCurves } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
@@ -206,8 +206,10 @@ export class ClipUtilities {
     return intervals.length > 0;
   }
   /**
-   * Find portions of the curve primitive that are within the clipper.
-   * Collect them into an array of curve primitives.
+   * Compute and return portions of the input curve that are within the clipper.
+   * @param curve input curve, unmodified
+   * @param clipper used to compute the clipped components
+   * @return array of clipped curves
    */
   public static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
@@ -224,8 +226,10 @@ export class ClipUtilities {
     return result;
   }
   /**
-   * Find portions of the planar region that are within the clipper.
-   * Collect them into a single region to return.
+   * Compute and return the portions of the input region that are within the clipper.
+   * @param region input region, unmodified
+   * @param clipper used to compute the clipped components
+   * @return clipped subregion, as a single `AnyRegion`
    */
   public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
     let result: UnionRegion | undefined;
@@ -273,14 +277,16 @@ export class ClipUtilities {
     return result;
   }
   /**
-   * Find portions of any curve that are within the clipper.
-   * Collect them into an array of any curves.
+   * Compute and return portions of the input curve or region that are within the clipper.
+   * @param curve input curve or region, unmodified
+   * @param clipper used to compute the clipped components
+   * @return array of clipped components of the input curve or region that lie inside the clipper
    */
   public static clipAnyCurve(curve: AnyCurve, clipper: Clipper): AnyCurve[] {
     if (curve instanceof CurvePrimitive)
       return ClipUtilities.collectClippedCurves(curve, clipper);
-    if (curve.isAnyRegionType) {
-      const ret = ClipUtilities.clipAnyRegion(curve as AnyRegion, clipper);
+    if (curve.isAnyRegion()) {
+      const ret = ClipUtilities.clipAnyRegion(curve, clipper);
       return ret ? [ret] : [];
     }
     const result: AnyCurve[] = [];

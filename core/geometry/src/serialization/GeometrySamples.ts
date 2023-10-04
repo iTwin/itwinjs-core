@@ -31,14 +31,17 @@ import { PointString3d } from "../curve/PointString3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
+import { UVSurface } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
@@ -104,6 +107,57 @@ export class SteppedIndexFunctionFactory {
    */
   public static createSine(amplitude: number, sweep: AngleSweep = AngleSweep.create360(), f0: number = 0): SteppedIndexFunction {
     return (i: number, n: number) => (f0 + amplitude * Math.sin(sweep.fractionToRadians(i / n)));
+  }
+}
+// cspell:word Franke bivariate
+/**
+ * Implement Franke's function, a smooth bivariate real-valued function with interesting features over [0,1]x[0,1].
+ * * This surface is commonly used to test interpolation algorithms. See https://www.sfu.ca/~ssurjano/franke2d.html
+ * @internal
+ */
+class FrankeSurface implements UVSurface {
+  private exp0(u: number, v: number): number {
+    return Math.exp(-0.25 * (u * u + v * v) + u + v - 2);
+  }
+  private exp1(u: number, v: number): number {
+    return Math.exp(-(((u + 1) * (u + 1)) / 49 + 0.1 * (v + 1)));
+  }
+  private exp2(u: number, v: number): number {
+    return Math.exp(-0.25 * ((u - 7) * (u - 7) + (v - 3) * (v - 3)));
+  }
+  private exp3(u: number, v: number): number {
+    return Math.exp(-((u - 4) * (u - 4) + (v - 7) * (v - 7)));
+  }
+  private f(u: number, v: number): number {
+    const f0 = 0.75 * this.exp0(u, v);
+    const f1 = 0.75 * this.exp1(u, v);
+    const f2 = 0.5 * this.exp2(u, v);
+    const f3 = -0.2 * this.exp3(u, v);
+    return f0 + f1 + f2 + f3;
+  }
+  private du(u: number, v: number): number {
+    const du0 = -3.375 * (u - 2) * this.exp0(u, v);
+    const du1 = -(27/98) * (u + 1) * this.exp1(u, v);
+    const du2 = -2.25 * (u - 7) * this.exp2(u, v);
+    const du3 = 3.6 * (u - 4) * this.exp3(u, v);
+    return du0 + du1 + du2 + du3;
+  }
+  private dv(u: number, v: number): number {
+    const dv0 = -3.375 * (v - 2) * this.exp0(u, v);
+    const dv1 = -0.675 * this.exp1(u, v);
+    const dv2 = -2.25 * (v - 3) * this.exp2(u, v);
+    const dv3 = 3.6 * (v - 7) * this.exp3(u, v);
+    return dv0 + dv1 + dv2 + dv3;
+  }
+  public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+    const u = 9 * uFraction;
+    const v = 9 * vFraction;
+    return Point3d.create(uFraction, vFraction, this.f(u, v), result);
+  }
+  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const u = 9 * uFraction;
+    const v = 9 * vFraction;
+    return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(uFraction, vFraction, this.f(u, v), 1, 0, this.du(u, v), 0, 1, this.dv(u, v), result);
   }
 }
 /**
@@ -2154,7 +2208,13 @@ export class Sample {
    * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
-    const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
+    const pointsA = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 3, 0),
+      Point3d.create(2, 4, 0),
+      Point3d.create(3, 3, 0),
+      Point3d.create(4, 0, 0),
+    ];
     const result = [];
     // one singleton per basic curve type ...
     result.push(
@@ -2862,6 +2922,14 @@ export class Sample {
         result.push(result[result.length - 1].plus(step));
       }
     }
-    return result;
+  }
+  /**
+   * Create a mesh surface from samples of a smooth function over [0,1]x[0,1].
+   * @param size grid size; the number of intervals on each side of the unit square domain.
+   */
+  public static createMeshFromSmoothSurface(size: number, options?: StrokeOptions): IndexedPolyface | undefined {
+    const builder = PolyfaceBuilder.create(options);
+    builder.addUVGridBody(new FrankeSurface(), size, size);
+    return builder.claimPolyface(true);
   }
 }
