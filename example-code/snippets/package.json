@@ -27,7 +27,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.1.1",
     "@itwin/itwins-client": "^1.2.0",
-    "@itwin/service-authorization": "^0.6.3",
+    "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.5",
     "fs-extra": "^8.1.0"
   },

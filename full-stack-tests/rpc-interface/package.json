@@ -48,7 +48,7 @@
     "@itwin/oidc-signin-tool": "~3.6.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
-    "@itwin/service-authorization": "^0.6.3",
+    "@itwin/service-authorization": "^1.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
