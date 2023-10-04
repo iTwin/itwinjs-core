@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.2.0-dev.28",
+  "version": "4.2.0-dev.32",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -42,7 +42,7 @@
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "18.16.1",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "debug": "^2.6.9",
     "eslint": "^8.44.0",
     "mocha": "^10.0.0",
