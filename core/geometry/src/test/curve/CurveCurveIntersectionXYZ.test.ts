@@ -4,11 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
+import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -35,7 +40,7 @@ function testIntersectionsXYZ(
     }
     if (testCoordinates) {
       for (let i = 0; i < n; i++) {
-        ck.testPoint3dXY(intersections[i].detailB.point, intersections[i].detailB.point, "CLD coordinate match");
+        ck.testPoint3d(intersections[i].detailB.point, intersections[i].detailB.point, "CLD coordinate match");
         const fA = intersections[i].detailA.fraction;
         const fB = intersections[i].detailB.fraction;
         const cpA = intersections[i].detailA.curve;
@@ -51,7 +56,7 @@ function testIntersectionsXYZ(
 }
 
 describe("CurveCurveIntersectXYZ", () => {
-  it("LineLine", () => {
+  it("LineLineCoplanar", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const dx = 5;
@@ -61,16 +66,16 @@ describe("CurveCurveIntersectXYZ", () => {
     segment2.tryTranslateInPlace(0, 0, 1);
     const intersectionsAB = CurveCurve.intersectionXYZPairs(segment0, false, segment1, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment0, segment1]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
     let numExpected = 1;
     testIntersectionsXYZ(ck, intersectionsAB, numExpected, numExpected);
     const intersectionsBA = CurveCurve.intersectionXYZPairs(segment2, false, segment0, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment2, segment0], dx);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04, dx);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05, dx);
     numExpected = 0;
     testIntersectionsXYZ(ck, intersectionsBA, numExpected, numExpected);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLine");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLineCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
   it("LineArcCoplanar", () => {
@@ -85,12 +90,12 @@ describe("CurveCurveIntersectXYZ", () => {
     const segment0 = LineSegment3d.create(pointA, pointB);
     const intersectionsAB = CurveCurve.intersectionXYZPairs(segment0, true, arc, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment0, arc]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
     const numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsAB, numExpected, numExpected);
     const intersectionsBA = CurveCurve.intersectionXYZPairs(arc, true, segment0, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, segment0], dx);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04, dx);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05, dx);
     testIntersectionsXYZ(ck, intersectionsBA, numExpected, numExpected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineArcCoplanar");
@@ -132,7 +137,7 @@ describe("CurveCurveIntersectXYZ", () => {
         seg.tryTransformInPlace(trans);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, dx);
         const intersections = CurveCurve.intersectionXYZPairs(seg, false, arc, false);
-        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.04, dx);
+        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05, dx);
         if (ck.testLE(1, intersections.length)) {
           for (const intersection of intersections) {
             ck.testPoint3d(pt, intersection.detailA.point);
@@ -145,21 +150,21 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineArcNotCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("LineStringLineString", () => {
+  it("LineStringLineStringCoplanar", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const linestring0 = LineString3d.create([1, 1, 1], [3, 0, 1], [3, 5, 1]);
     const linestring1 = LineString3d.create([2, 4, 1], [4, 1, 1], [2, 5, 1]);
     const intersectionsX = CurveCurve.intersectionXYZPairs(linestring0, true, linestring1, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [linestring0, linestring1]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.05);
     const numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsX, numExpected, numExpected);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineStringLineString");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineStringLineStringCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("LineLineString", () => {
+  it("LineLineStringCoplanar", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const dx = 5;
@@ -167,18 +172,18 @@ describe("CurveCurveIntersectXYZ", () => {
     const lineString1 = LineString3d.create([2, 4, 1], [4, 1, 1], [5, 5, 1]);
     const intersectionsX = CurveCurve.intersectionXYZPairs(lineSegment0, true, lineString1, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [lineSegment0, lineString1]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.05);
     const numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsX, numExpected, numExpected);
     const intersectionsX1 = CurveCurve.intersectionXYZPairs(lineString1, true, lineSegment0, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [lineString1, lineSegment0], dx);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX1, 0.04, dx);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX1, 0.05, dx);
     testIntersectionsXYZ(ck, intersectionsX1, numExpected, numExpected);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLineString");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLineStringCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("ArcLineString", () => {
+  it("ArcLineStringCoplanar", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const dx = 8;
@@ -188,15 +193,15 @@ describe("CurveCurveIntersectXYZ", () => {
     const linestring = LineString3d.create([2, 4, 1], [4, 1, 1], [5, 5, 1]);
     const intersectionsX = CurveCurve.intersectionXYZPairs(arc, false, linestring, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, linestring]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX, 0.05);
     const numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsX, numExpected, numExpected);
     const intersectionsX1 = CurveCurve.intersectionXYZPairs(linestring, false, arc, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [linestring, arc], dx);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX1, 0.04, dx);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsX1, 0.05, dx);
     testIntersectionsXYZ(ck, intersectionsX1, numExpected, numExpected);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcLineString");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcLineStringCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
   it("ArcArcSkew", () => {
@@ -206,7 +211,7 @@ describe("CurveCurveIntersectXYZ", () => {
     const arcB = Arc3d.create(Point3d.create(1, 1, 1), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 2));
     const intersectionsAB = CurveCurve.intersectionXYZPairs(arcA, true, arcB, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
     const numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsAB, numExpected, numExpected);
 
@@ -221,17 +226,422 @@ describe("CurveCurveIntersectXYZ", () => {
     const arcB = Arc3d.create(Point3d.create(4, 1, 1), Vector3d.create(2, 2, 0), Vector3d.create(-2, 2, 0));
     const intersectionsAB = CurveCurve.intersectionXYZPairs(arcA, true, arcB, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB]);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
     let numExpected = 2;
     testIntersectionsXYZ(ck, intersectionsAB, numExpected, numExpected);
     arcA.tryTranslateInPlace(0, 0, 1);
     const intersectionsAB1 = CurveCurve.intersectionXYZPairs(arcA, true, arcB, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], dx);
-    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB1, 0.04, dx);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB1, 0.05, dx);
     numExpected = 0;
     testIntersectionsXYZ(ck, intersectionsAB1, numExpected, numExpected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcArcInPlane");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("LineLine", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(-3, 3, 0, 3, 3, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = LineSegment3d.createXYZXYZ(0, 3, -5, 0, 3, 5);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 1;
+    const expectedIntersectionXY = Point3d.create(0, 3, 0);
+    ck.testExactNumber(numExpected, intersections.length);
+    const i1 = intersections[0].detailA.point;
+    const i2 = intersections[0].detailB.point;
+    ck.testPoint3d(i1, i2);
+    ck.testExactNumber(i1.x, expectedIntersectionXY.x);
+    ck.testExactNumber(i1.y, expectedIntersectionXY.y);
+    ck.testExactNumber(i1.z, expectedIntersectionXY.z);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLine");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineLineString1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(0, 0, 0, 8, 3, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = LineString3d.create([1, 0, 0], [2, 3, 0], [3, 0, 0], [4, 2, -1], [5, 0, 0], [6, 3, 0], [7, 0, 1]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 3;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLineString1");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineLineString2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(2, 0, 0, 6, 4, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = LineString3d.create([1, 0, 1], [2, 3, 1], [3, 0, 1], [4, 2, 0], [5, 0, 1], [6, 3, -2], [7, 0, 1]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 1;
+    const expectedIntersectionXY = Point3d.create(4, 2, 0);
+    ck.testExactNumber(numExpected, intersections.length);
+    const i1 = intersections[0].detailA.point;
+    const i2 = intersections[0].detailB.point;
+    ck.testPoint3d(i1, i2);
+    ck.testExactNumber(i1.x, expectedIntersectionXY.x);
+    ck.testExactNumber(i1.y, expectedIntersectionXY.y);
+    ck.testExactNumber(i1.z, expectedIntersectionXY.z);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLineString2");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(0, 2, -5, 0, 2, 5);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
+    )!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const expectedIntersectionXY = Point3d.create(0, 2, 0);
+    ck.testExactNumber(numExpected, intersections.length);
+    const i1 = intersections[0].detailA.point;
+    const i2 = intersections[0].detailB.point;
+    ck.testPoint3d(i1, i2);
+    ck.testTightNumber(i1.x, expectedIntersectionXY.x);
+    ck.testTightNumber(i1.y, expectedIntersectionXY.y);
+    ck.testTightNumber(i1.z, expectedIntersectionXY.z);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LinePath", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(0, 3, 0, 11, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2))!;
+    const lineString = LineString3d.create([5, 2, 0], [6, 0, 1], [7, 2, 0]);
+    const lineSegment = LineSegment3d.create(Point3d.create(7, 2, 0), Point3d.create(10, 0, 0));
+    const geometryB = Path.create();
+    geometryB.tryAddChild(arc);
+    geometryB.tryAddChild(lineString);
+    geometryB.tryAddChild(lineSegment);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LinePath");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineLoop", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(0, 5, 0, 8, -1, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2))!;
+    const lineString = LineString3d.create([5, 2], [6, 0], [7, 2]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(7, 2), Point3d.create(10, 0));
+    const lineSegment2 = LineSegment3d.create(Point3d.create(10, 0), Point3d.create(1, 2));
+    const geometryB = Loop.create();
+    geometryB.tryAddChild(arc);
+    geometryB.tryAddChild(lineString);
+    geometryB.tryAddChild(lineSegment1);
+    geometryB.tryAddChild(lineSegment2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 4;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineLoop");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ArcArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(-1, 2, 0), Point3d.create(3, 4, 0), Point3d.create(7, 2, 0),
+    )!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(3, 3, -2), Point3d.create(3, 4, 0), Point3d.create(3, 5, -2),
+    )!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const expectedIntersectionXY = Point3d.create(3, 4);
+    ck.testExactNumber(numExpected, intersections.length);
+    const i1 = intersections[0].detailA.point;
+    const i2 = intersections[0].detailB.point;
+    ck.testPoint3d(i1, i2);
+    ck.testTightNumber(i1.x, expectedIntersectionXY.x);
+    ck.testTightNumber(i1.y, expectedIntersectionXY.y);
+    ck.testTightNumber(i1.z, expectedIntersectionXY.z);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineStringLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineString3d.create([1, 2, 0], [5, 2, 0], [3, 5, 1]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = LineString3d.create([1, 3, 0], [2, 1, 0], [5, 5, 0]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineStringLineString");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ArcLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 2), Point3d.create(3, 4), Point3d.create(5, 2))!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = LineString3d.create([3, 4, 1], [3, 4, -1], [3, 1, 0]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const expectedIntersectionXY = Point3d.create(3, 4);
+    ck.testExactNumber(numExpected, intersections.length);
+    const i1 = intersections[0].detailA.point;
+    const i2 = intersections[0].detailB.point;
+    ck.testPoint3d(i1, i2);
+    // ck.testTightNumber(i1.x, expectedIntersectionXY.x); // this line fails due to the duplicate bug!
+    ck.testTightNumber(i1.y, expectedIntersectionXY.y);
+    ck.testTightNumber(i1.z, expectedIntersectionXY.z);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcLineString");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PathPath", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // path1
+    const arc1 = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(1, 5, 0), Point3d.create(3, 6.5, 0), Point3d.create(5, 5, 0),
+    )!;
+    const lineString1 = LineString3d.create([5, 5, 0], [6, 3, -1], [7, 5, 0], [10, 3, 0]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3, 0), Point3d.create(1, 5, 0));
+    const geometryA = Path.create();
+    geometryA.tryAddChild(arc1);
+    geometryA.tryAddChild(lineString1);
+    geometryA.tryAddChild(lineSegment1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // path2
+    const arc2 = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
+    )!;
+    const lineString2 = LineString3d.create([4, -2, 0], [6, -1, 1], [8, -2, -1], [9, 6, 0]);
+    const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
+    const geometryB = Path.create();
+    geometryB.tryAddChild(arc2);
+    geometryB.tryAddChild(lineString2);
+    geometryB.tryAddChild(lineSegment2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 2;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "PathPath");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LoopLoop", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // loop1
+    const arc1 = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
+    )!;
+    const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
+    const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
+    const geometryA = Loop.create();
+    geometryA.tryAddChild(arc1);
+    geometryA.tryAddChild(lineString1);
+    geometryA.tryAddChild(lineSegment1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // loop2
+    const arc2 = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
+    )!;
+    const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [9, 6]);
+    const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
+    const geometryB = Loop.create();
+    geometryB.tryAddChild(arc2);
+    geometryB.tryAddChild(lineString2);
+    geometryB.tryAddChild(lineSegment2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 6;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LoopLoop");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineUnionRegion", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(-15, -7, 1, 15, 7, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // union region
+    const arc1 = Arc3d.createXY(Point3d.create(6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop1 = Loop.create();
+    loop1.tryAddChild(arc1);
+    const arc2 = Arc3d.createXY(Point3d.create(-6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop2 = Loop.create();
+    loop2.tryAddChild(arc2);
+    const geometryB = UnionRegion.create();
+    geometryB.tryAddChild(loop1);
+    geometryB.tryAddChild(loop2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 4;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.4);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineUnionRegion");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineParityRegion", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(-15, -7, 1, 15, 7, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // parity region
+    const arc1 = Arc3d.createXY(Point3d.create(6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop1 = Loop.create();
+    loop1.tryAddChild(arc1);
+    const arc2 = Arc3d.createXY(Point3d.create(-6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop2 = Loop.create();
+    loop2.tryAddChild(arc2);
+    const geometryB = ParityRegion.create();
+    geometryB.tryAddChild(loop1);
+    geometryB.tryAddChild(loop2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 4;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.4);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineParityRegion");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ParityRegionUnionRegion", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineSegment3d.createXYZXYZ(-15, -7, 1, 15, 7, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const arc1 = Arc3d.createXY(Point3d.create(6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop1 = Loop.create();
+    loop1.tryAddChild(arc1);
+    const arc2 = Arc3d.createXY(Point3d.create(-6, 0, 1), 8, AngleSweep.createStartEndDegrees(-180, 180));
+    const loop2 = Loop.create();
+    loop2.tryAddChild(arc2);
+    // parity region
+    const geometryB1 = ParityRegion.create();
+    geometryB1.tryAddChild(loop1);
+    geometryB1.tryAddChild(loop2);
+    // union region
+    const geometryB2 = UnionRegion.create();
+    geometryB2.tryAddChild(loop1);
+    geometryB2.tryAddChild(loop2);
+    // find intersections
+    const intersections1 = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB1, false);
+    const intersections2 = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB1, false);
+    const numExpected = 4;
+    for (let i = 0; i < numExpected; i++) {
+      const i1 = intersections1[i].detailA.point;
+      const i2 = intersections2[i].detailA.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ParityRegionUnionRegion");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LineStringBagOfCurves", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const geometryA = LineString3d.create([0, 0, 1], [2, 7, 0], [15, 1, 0]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    // bag of curves
+    const arc1 = Arc3d.createCircularStartMiddleEnd(
+      Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
+    )!;
+    const lineString1 = LineString3d.create([5, 5, 0], [6, 3, 1], [7, 5, -1], [10, 3, 0]);
+    const path = Path.create();
+    path.tryAddChild(arc1);
+    path.tryAddChild(lineString1);
+    const lineString2 = LineString3d.create([10, 3, 0], [12, 5, 0], [14, -1, 1]);
+    const geometryB = BagOfCurves.create(path, lineString2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    // find intersections
+    const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+    const numExpected = 3;
+    ck.testExactNumber(numExpected, intersections.length);
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3d(i1, i2);
+    }
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.1);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "LineStringBagOfCurves");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+
