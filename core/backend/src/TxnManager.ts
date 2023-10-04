@@ -6,6 +6,7 @@
  * @module iModels
  */
 
+import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
@@ -45,6 +46,29 @@ export interface TxnChangedEntities {
   readonly deletes: EntityIdAndClassIdIterable;
   /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
   readonly updates: EntityIdAndClassIdIterable;
+}
+
+/** Arguments supplied to [[TxnManager.queryLocalChanges]].
+ * @beta
+ */
+export interface QueryLocalChangesArgs {
+  /** If supplied and non-empty, restricts the results to include only EC instances belonging to the specified classes or subclasses thereof. */
+  readonly includedClasses?: string[];
+  /** If `true`, include changes that have not yet been saved. */
+  readonly includeUnsavedChanges?: boolean;
+}
+
+/** Represents a change (insertion, deletion, or modification) to a single EC instance made in a local [[BriefcaseDb]].
+ * @see [[TxnManager.queryLocalChanges]] to iterate all of the changed instances.
+* @beta
+*/
+export interface ChangeInstanceKey {
+  /** ECInstanceId of the instance. */
+  id: Id64String;
+  /** Fully-qualified class name of the instance. */
+  classFullName: string;
+  /** The type of change. */
+  changeType: "inserted" | "updated" | "deleted";
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
@@ -221,6 +245,16 @@ export class TxnManager {
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
+
+  /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
+   * notified that we've modified the briefcase.
+   */
+  private touchWatchFile(): void {
+    // This is an async call. We don't have any reason to await it.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    touch(this._iModel.watchFilePathName, { nocreate: true });
+  }
+
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
@@ -269,8 +303,21 @@ export class TxnManager {
 
   /** @internal */
   protected _onCommitted() {
+    this.touchWatchFile();
     this.onCommitted.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
+  }
+
+  /** @internal */
+  protected _onReplayExternalTxns() {
+    this.onReplayExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayExternalTxns");
+  }
+
+  /** @internal */
+  protected _onReplayedExternalTxns() {
+    this.onReplayedExternalTxns.raiseEvent();
+    IpcHost.notifyTxns(this._iModel, "notifyReplayedExternalTxns");
   }
 
   /** @internal */
@@ -288,6 +335,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onAfterUndoRedo(isUndo: boolean) {
+    this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
@@ -339,6 +387,14 @@ export class TxnManager {
    * @param _action The action that was performed.
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayedExternalTxns]] for the event raised after all such changes have been applied.
+   */
+  public readonly onReplayExternalTxns = new BeEvent<() => void>();
+  /** Event raised for a read-only briefcase that was opened with the `watchForChanges` flag enabled when changes made by another connection are applied to the briefcase.
+   * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
+   */
+  public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /**
    * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
@@ -450,4 +506,14 @@ export class TxnManager {
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
+  /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
+   * @beta
+  */
+  public queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey> {
+    if (!args) {
+      args = { includedClasses: [], includeUnsavedChanges: false };
+    }
+    return this._nativeDb.getLocalChanges(args.includedClasses ?? [], args.includeUnsavedChanges ?? false);
+  }
 }
+

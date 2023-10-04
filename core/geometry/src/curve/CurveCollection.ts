@@ -13,10 +13,10 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { AnyCurve } from "./CurveChain";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
@@ -28,6 +28,11 @@ import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceCont
 import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { Path } from "./Path";
+import type { Loop } from "./Loop";
+
+/** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
 /**
  * Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be
@@ -152,23 +157,41 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `Loop`
    * * `ParityRegion`
    * * `UnionRegion`
+   * @see isAnyRegion
    */
   public get isAnyRegionType(): boolean {
     return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 4 || this.dgnBoundaryType() === 5;
   }
-  /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail */
+  /** Type guard for AnyRegion */
+  public isAnyRegion(): this is AnyRegion {
+    return this.isAnyRegionType;
+  }
+  /**
+   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail
+   * @see isPath
+   */
   public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
+  }
+  /** Type guard for Path */
+  public isPath(): this is Path {
+    return this.isOpenPath;
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
    * * This is NOT a test for physical closure of a `Path`.
+   * @see isLoop
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
+  /** Type guard for Loop */
+  public isLoop(): this is Loop {
+    return this.isClosedPath;
+  }
+
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
-  public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract cloneStroked(options?: StrokeOptions): CurveCollection;
   /** Support method for ICurvePrimitive ... one line call to specific announce method . . */
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** Clone an empty collection. */
@@ -236,7 +259,7 @@ export abstract class CurveCollection extends GeometryQuery {
 /**
  * Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only CurvePrimitives. No other paths, loops, or regions allowed.
- * * The specific derived classes are `Path` and `Loop`
+ * * The specific derived classes are `Path` and `Loop`.
  * * `CurveChain` is an intermediate class. It is not instantiable on its own.
  * * The related class `CurveChainWithDistanceIndex` is a `CurvePrimitive` whose API presents well-defined mappings
  * from fraction to xyz over the entire chain, but in fact does all the calculations over multiple primitives.
@@ -253,8 +276,6 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return the array of `CurvePrimitive` */
   public override get children(): CurvePrimitive[] {
-    if (this._curves === undefined)
-      this._curves = [];
     return this._curves;
   }
   /**
@@ -296,7 +317,7 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
-  public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
   /**
    * Add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
@@ -330,7 +351,7 @@ export abstract class CurveChain extends CurveCollection {
   /**
    * Return the index where target is found in the array of children.
    * @param alsoSearchProxies whether to also check proxy curves of the children
-  */
+   */
   public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++) {
       if (this._curves[i] === target)
@@ -439,19 +460,4 @@ export class BagOfCurves extends CurveCollection {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBagOfCurves(this);
   }
-}
-
-/**
- * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
- * @public
- */
-export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
-  public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous arcs */
-  public consolidateCompatibleArcs: boolean = true;
-  /** Tolerance for collapsing identical points */
-  public duplicatePointTolerance = Geometry.smallMetricDistance;
-  /** Tolerance for removing interior colinear points. */
-  public colinearPointTolerance = Geometry.smallMetricDistance;
 }

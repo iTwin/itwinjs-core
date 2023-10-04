@@ -5,12 +5,8 @@
   "globalPeerDependencyRules": {
     "ignoreMissing": [
       "@babel/core",
-      "@babel/plugin-syntax-flow",
-      "@babel/plugin-transform-react-jsx",
-      "@testing-library/dom",
       "@types/node",
-      "@typescript-eslint/parser",
-      "typescript"
+      "@typescript-eslint/parser"
     ]
   },
   "globalOverrides": {},

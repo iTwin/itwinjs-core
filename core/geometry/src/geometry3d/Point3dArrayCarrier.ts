@@ -190,14 +190,14 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     );
   }
   /** Extract (copy) the final point */
-  public back(result?: Point3d): Point3d | undefined {
+  public override back(result?: Point3d): Point3d | undefined {
     if (this.data.length > 0) {
       return this.data[this.data.length - 1].clone(result);
     }
     return undefined;
   }
   /** Extract (copy) the first point */
-  public front(result?: Point3d): Point3d | undefined {
+  public override front(result?: Point3d): Point3d | undefined {
     if (this.data.length > 0) {
       return this.data[0].clone(result);
     }

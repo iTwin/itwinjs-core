@@ -8,7 +8,7 @@
  */
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { CurveCollection } from "./CurveCollection";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
@@ -66,7 +66,7 @@ export class ParityRegion extends CurveCollection {
     result.addLoops(data);
     return result;
   }
-  /** Create a parity region with given loops */
+  /** Create a parity region by capturing the given loops as children. */
   public static create(...data: Loop[]): ParityRegion {
     const result = new ParityRegion();
     for (const child of data) {
@@ -98,7 +98,7 @@ export class ParityRegion extends CurveCollection {
     const clone = new ParityRegion();
     let child;
     for (child of this.children) {
-      const childStrokes = child.cloneStroked(options) as Loop;
+      const childStrokes = child.cloneStroked(options);
       if (childStrokes)
         clone.children.push(childStrokes);
     }
@@ -109,7 +109,7 @@ export class ParityRegion extends CurveCollection {
     return new ParityRegion();
   }
   /**
-   * Add `child` to this parity region.
+   * Add `child` to this parity region (by capturing it).
    * * Any child type other than `Loop` is ignored.
    */
   public tryAddChild(child: AnyCurve | undefined): boolean {

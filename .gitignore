@@ -18,6 +18,9 @@ ecschema-rpcinterface-tests-result
 imjs_plugins
 imjs_extensions
 !tools/build
+.vite-inspect/
+.static-assets/
+stats.html
 
 # rush-specific
 /common/temp

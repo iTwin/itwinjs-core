@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Locaters
+ */
 
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-
-/** @packageDocumentation
- * @module Locaters
- */
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {

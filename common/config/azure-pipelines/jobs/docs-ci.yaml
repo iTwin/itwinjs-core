@@ -1,5 +1,11 @@
 # iTwin.js Docs CI Build
 
+parameters:
+  - name: forcePublish
+    displayName: Publish
+    type: boolean
+    default: false
+
 trigger:
   branches:
     include:
@@ -32,4 +38,4 @@ jobs:
     parameters:
       workingDir: $(Pipeline.Workspace)/itwinjs-core
       outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
-      shouldPublish: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}
+      shouldPublish: ${{ or(eq('${{parameters.forcePublish}}', true), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}

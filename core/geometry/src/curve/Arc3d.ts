@@ -546,12 +546,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       -uv,
       this._matrix.dotColumnY(vectorQ),
       -this._matrix.dotColumnX(vectorQ),
-      0.0, radians);
+      0.0,
+      radians,
+    );
     if (_endpoints) {
       radians.push(this.sweep.startRadians);
       radians.push(this.sweep.endRadians);
     }
-
     return radians;
   }
   /**
@@ -635,19 +636,20 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
-  /** Return true if the vector0 and vector90 are of equal length and perpendicular. */
+  /** Return radius if the vector0 and vector90 are of equal length and perpendicular. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
     const uy = this._matrix.at(1, 0);
-    const vx = this._matrix.at(0, 1), vy = this._matrix.at(1, 1);
-    const axx = Geometry.dotProductXYXY(ux, uy, ux, uy);
-    const ayy = Geometry.dotProductXYXY(vx, vy, vx, vy);
-    const axy = Geometry.dotProductXYXY(ux, uy, vx, vy);
-    if (Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy))
+    const vx = this._matrix.at(0, 1);
+    const vy = this._matrix.at(1, 1);
+    const dotUU = Geometry.dotProductXYXY(ux, uy, ux, uy);
+    const dotVV = Geometry.dotProductXYXY(vx, vy, vx, vy);
+    const dotUV = Geometry.dotProductXYXY(ux, uy, vx, vy);
+    if (Angle.isPerpendicularDotSet(dotUU, dotVV, dotUV) && Geometry.isSameCoordinateSquared(dotUU, dotVV))
       return Geometry.hypotenuseXY(ux, uy);
     return undefined;
   }
-  /** If the arc is circular, return its radius.  Otherwise return undefined */
+  /** If the arc is circular, return its radius. Otherwise return undefined */
   public circularRadius(): number | undefined {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
@@ -762,10 +764,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param radius radius of arc
    * @param sweep sweep limits.  defaults to full circle.
    */
-  public static createXY(
-    center: Point3d,
-    radius: number,
-    sweep: AngleSweep = AngleSweep.create360()): Arc3d {
+  public static createXY(center: Point3d, radius: number, sweep: AngleSweep = AngleSweep.create360()): Arc3d {
     return new Arc3d(center.clone(), Matrix3d.createScale(radius, radius, 1.0), sweep);
   }
   /**

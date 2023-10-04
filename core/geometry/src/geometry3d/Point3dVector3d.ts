@@ -71,7 +71,7 @@ export class XYZ implements XYAndZ {
    * * [number,number]
    * * [number,number,number]
    */
-  public static isAnyImmediatePointType(arg: any): boolean {
+  public static isAnyImmediatePointType(arg: any): arg is XAndY | XYAndZ | number[] {
     return Point3d.isXAndY(arg) || Geometry.isNumberArray(arg, 2);
   }
   /**
@@ -112,7 +112,6 @@ export class XYZ implements XYAndZ {
   }
   /**
    * Set the x,y,z parts from one of these input types
-   *
    * * XYZ -- copy the x,y,z parts
    * * Float64Array -- Copy from indices 0,1,2 to x,y,z
    * * XY -- copy the x, y parts and set z=0

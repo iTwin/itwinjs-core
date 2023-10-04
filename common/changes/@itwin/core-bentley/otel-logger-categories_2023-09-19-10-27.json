@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "improve OpenTelemetry logging support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

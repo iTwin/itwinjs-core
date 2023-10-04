@@ -5,34 +5,35 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { AxisOrder, Geometry } from "../../Geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { RuledSweep } from "../../solid/RuledSweep";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { RuledSweep } from "../../solid/RuledSweep";
-import { CurveCollection } from "../../curve/CurveCollection";
-import { Transform } from "../../geometry3d/Transform";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Range1d } from "../../geometry3d/Range";
-import { IndexedPolyface } from "../../core-geometry";
+
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
     const allGeometry: GeometryQuery[] = [];

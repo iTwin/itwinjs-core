@@ -330,6 +330,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
+    // @alpha
+    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1213,6 +1215,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get propertyType(): PropertyType;
     get schema(): Schema;
+    // (undocumented)
+    protected setName(name: ECName): void;
     toJSON(): PropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1834,7 +1838,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
     readonly unitSystem: string;
 }
 
-// @alpha
+// @beta
 export class SchemaJsonLocater implements ISchemaLocater {
     constructor(_getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -1877,9 +1881,10 @@ export interface SchemaKeyProps {
     readonly write: number;
 }
 
-// @alpha
+// @beta
 export class SchemaLoader {
     constructor(getSchema: SchemaPropsGetter);
+    get context(): SchemaContext;
     getSchema<T extends Schema>(schemaName: string): T;
     tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
@@ -1933,7 +1938,7 @@ export interface SchemaProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal

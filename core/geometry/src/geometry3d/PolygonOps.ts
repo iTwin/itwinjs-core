@@ -377,7 +377,6 @@ export class PolygonOps {
       }
     }
     s *= 0.5;
-    // GeometryCoreTestIO.consoleLog("polygon area ", s, points);
     return s;
   }
   /** These values are the integrated area moment products [xx,xy,xz, x]
@@ -446,7 +445,7 @@ export class PolygonOps {
         let u1 = points.getXAtUncheckedPointIndex(1) - x0;
         let v1 = points.getYAtUncheckedPointIndex(1) - y0;
         let u2, v2;
-        for (let i = 1; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
+        for (let i = 2; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
           u2 = points.getXAtUncheckedPointIndex(i) - x0;
           v2 = points.getYAtUncheckedPointIndex(i) - y0;
           area += Geometry.crossProductXYXY(u1, v1, u2, v2);
@@ -1197,7 +1196,7 @@ export class PolygonOps {
 }
 
 /**
- *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
+ *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXYZCollection`
  * @public
  */
 export class IndexedXYZCollectionPolygonOps {
@@ -1214,7 +1213,7 @@ export class IndexedXYZCollectionPolygonOps {
    * @param altitudeRange min and max altitudes encountered.
    */
   public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
-    xyz: IndexedReadWriteXYZCollection,
+    xyz: IndexedXYZCollection,
     xyzPositive: IndexedReadWriteXYZCollection,
     xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
     const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;
@@ -1324,7 +1323,33 @@ export class IndexedXYZCollectionPolygonOps {
     work.clear();
     return numCrossings;
   }
-
+  /** Return an array containing
+   * * All points that are exactly on the plane.
+   * * Crossing points between adjacent points that are (strictly) on opposite sides.
+   */
+  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: IndexedXYZCollection, crossings: Point3d[]) {
+    crossings.length = 0;
+    if (xyz.length >= 2) {
+      const xyz0 = this._xyz0Work;
+      xyz.getPoint3dAtUncheckedPointIndex(xyz.length - 1, xyz0);
+      let a0 = plane.altitude(xyz0);
+      const xyz1 = this._xyz1Work;
+      for (let i = 0; i < xyz.length; i++) {
+        xyz.getPoint3dAtUncheckedPointIndex(i, xyz1);
+        const a1 = plane.altitude(xyz1);
+        if (a0 * a1 < 0.0) {
+          // simple crossing. . .
+          const f = - a0 / (a1 - a0);
+          crossings.push(xyz0.interpolate(f, xyz1));
+        }
+        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
+          crossings.push(xyz1.clone());
+        }
+        xyz0.setFromPoint3d(xyz1);
+        a0 = a1;
+      }
+    }
+  }
   /**
    * * Input a "clipped" polygon (from clipConvexPolygonInPlace) with more than 2 crossings, i.e. is from a non-convex polygon with configurations like:
    *   * multiple distinct polygons
@@ -1456,38 +1481,20 @@ export class Point3dArrayPolygonOps {
    * @param xyzOut array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
    */
-  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
+  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void {
     const xyzCarrier = new Point3dArrayCarrier(xyz);
     const xyzInCarrier = new Point3dArrayCarrier(xyzIn);
     const xyzOutCarrier = new Point3dArrayCarrier(xyzOut);
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, xyzCarrier, xyzInCarrier, xyzOutCarrier, altitudeRange);
-
   }
 
   /** Return an array containing
    * * All points that are exactly on the plane.
    * * Crossing points between adjacent points that are (strictly) on opposite sides.
    */
-  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]) {
-    crossings.length = 0;
-    if (xyz.length >= 2) {
-      const xyz0 = this._xyz0Work;
-      xyz0.setFromPoint3d(xyz[xyz.length - 1]);
-      let a0 = plane.altitude(xyz0);
-      for (const xyz1 of xyz) {
-        const a1 = plane.altitude(xyz1);
-        if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          crossings.push(xyz0.interpolate(f, xyz1));
-        }
-        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
-          crossings.push(xyz1.clone());
-        }
-        xyz0.setFromPoint3d(xyz1);
-        a0 = a1;
-      }
-    }
+  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void {
+    const xyzSource = new Point3dArrayCarrier(xyz);
+    return IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(plane, xyzSource, crossings);
   }
   /**
    * Clip a polygon, returning the clip result in the same object.

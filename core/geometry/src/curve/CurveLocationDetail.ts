@@ -76,8 +76,8 @@ export class CurveLocationDetail {
   /** A context-specific numeric value. (e.g. a distance) */
   public a: number;
   /**
-   * Optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
-   * a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
+   * Optional CurveLocationDetail with more detail of location. For instance, a detail for fractional position
+   * within a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
    * further detail of the particular curve within the chain in the childDetail.
    */
   public childDetail?: CurveLocationDetail;
@@ -205,7 +205,7 @@ export class CurveLocationDetail {
     result.curve = curve;
     return result;
   }
-  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
+  /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
     curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
   ): CurveLocationDetail {
@@ -416,9 +416,9 @@ export enum CurveCurveApproachType {
  * @public
  */
 export class CurveLocationDetailPair {
-  /** The first of the two details ... */
+  /** The first of the two details. */
   public detailA: CurveLocationDetail;
-  /** The second of the two details ... */
+  /** The second of the two details. */
   public detailB: CurveLocationDetail;
   /**
    * Enumeration of how the detail pairs relate.
@@ -470,5 +470,21 @@ export class CurveLocationDetailPair {
     const q = this.detailA;
     this.detailA = this.detailB;
     this.detailB = q;
+  }
+}
+
+/**
+ * Data bundle for a pair of arrays of CurveLocationDetail structures.
+ * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
+ * @public
+ */
+export class CurveLocationDetailArrayPair {
+  /** First array of details. */
+  public dataA: CurveLocationDetail[];
+  /** Second array of details. */
+  public dataB: CurveLocationDetail[];
+  public constructor() {
+    this.dataA = [];
+    this.dataB = [];
   }
 }

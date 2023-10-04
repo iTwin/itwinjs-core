@@ -18,7 +18,7 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveCurve } from "./CurveCurve";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { Geometry } from "../Geometry";
-import { AnyRegion } from "./CurveChain";
+import { AnyRegion } from "./CurveTypes";
 import { UnionRegion } from "./UnionRegion";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { XAndY } from "../geometry3d/XYZProps";
@@ -276,14 +276,14 @@ export class RegionOpsFaceToFaceSearch {
 
     // Add all the members in groupA ..
     for (const data of dataA) {
-      if (data.length > 2){
-      const member = new RegionGroupMember(data, callbacks.groupA);
+      if (data.length > 2) {
+        const member = new RegionGroupMember(data, callbacks.groupA);
         RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
       }
     }
     for (const data of dataB) {
-      if (data.length > 2){
-      const member = new RegionGroupMember(data, callbacks.groupB);
+      if (data.length > 2) {
+        const member = new RegionGroupMember(data, callbacks.groupB);
         RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
       }
     }
@@ -459,7 +459,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.groupB.addMember(dataB);
     // const doConnectives = 1;
     // if (doConnectives !== 0)
-      this.addConnectives();
+    this.addConnectives();
   }
 
   private _workSegment?: LineSegment3d;

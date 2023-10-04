@@ -480,6 +480,7 @@ public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
 beta;MapFeatureInfo
+beta;MapFeatureInfoOptions
 beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
@@ -502,6 +503,7 @@ internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
+public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
@@ -561,6 +563,7 @@ internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutpu
 internal;MockRender
 public;ModalOptions
 public;ModalReturn
+beta;ModelDisplayTransform
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
