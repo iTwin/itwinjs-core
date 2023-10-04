@@ -544,7 +544,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return BSplineCurveOps.createThroughPoints(options.fitPoints, 4);  // temporary
   }
 
-  /** Create a bspline with given knots.
+  /**
+   * Create a bspline with given knots.
    * * The poles have several variants:
    *    * Float64Array(3 * numPoles) in blocks of [x,y,z]
    *    * Point3d[]

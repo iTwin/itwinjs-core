@@ -215,7 +215,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * @param j index in [0, numPolesV)
    */
   public getPoint4dPole(i: number, j: number, result?: Point4d): Point4d | undefined {
-    return Point4d.createFromPackedXYZW(this.coffs, (i + j * this._numPoles[0]) * 4, result);
+    return Point4d.createFromPacked(this.coffs, (i + j * this._numPoles[0]) * 4, result);
   }
   /**
    * Return 0 for 0 input, 1 for any nonzero input.
@@ -528,14 +528,16 @@ export abstract class BSpline2dNd extends GeometryQuery {
       return BSpline2dNd.isWrappedGrid(this.coffs, this.numPolesUV(UVSelect.vDirection), this.numPolesUV(UVSelect.uDirection), this.poleDimension, 1, select);
     return false;
   }
-  /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
+  /**
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
    * @param select select U or V direction
    * @return whether the surface can be wrapped in the given parametric direction.
    */
   public isClosable(select: UVSelect): boolean {
     return BSplineWrapMode.None !== this.isClosableSurface(select);
   }
-  /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
+  /**
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
    * @param select select U or V direction
    * @return the manner of closing. See `BSplineWrapMode` for particulars of each mode.
    */
@@ -591,6 +593,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
   public getPointGridJSON(): PackedPointGrid {
     const result = {
       points: Point3dArray.unpackNumbersToNestedArraysIJK(this.coffs, 3, this.numPolesUV(0)),
+      weighStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates, // @deprecated in 4.x. Use weightStyle instead.
       weightStyle: WeightStyle.UnWeighted,
       numCartesianDimensions: 3,
     };
@@ -605,7 +608,8 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    */
   public copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[] { return this.knots[select].copyKnots(includeExtraEndKnot); }
 
-  /** Create a bspline surface.
+  /**
+   * Create a bspline surface.
    * * This `create` variant takes control points in a "flattened" array, with
    *  points from succeeding U rows packed together in one array.  Use `createGrid` if the points are in
    *  a row-by-row grid structure
@@ -663,7 +667,8 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     return surface;
   }
 
-  /** Create a bspline surface.
+  /**
+   * Create a bspline surface.
    * * This `create` variant takes control points in a "grid" array, with the points from
    *   each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z]`
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
@@ -881,7 +886,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    */
   public copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[] { return this.knots[select].copyKnots(includeExtraEndKnot); }
 
-  /** Create a weighted bspline surface, with control points and weights each organized as flattened arrays continuing from one U row to the next.
+  /**
+   * Create a weighted bspline surface, with control points and weights each organized as flattened arrays continuing from one U row to the next.
    * * Use `createGrid` if the control points are in a deeper grid array structure.
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
    * * When knots are given, two knot count conditions are recognized:
@@ -931,7 +937,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return surface;
   }
 
-  /** Create a bspline surface with given knots.
+  /**
+   * Create a bspline surface with given knots.
    * * This `create` variant takes control points in a "grid" array, with the points from
    *   each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z,w]`
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
@@ -1052,10 +1059,11 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return result;
   }
 
-  /** Evaluate at a position given by a knot value.  */
-  public knotToPoint4d(u: number, v: number): Point4d {
+  /** Evaluate at a position given by a knot value. If deweight fails, returns 000. */
+  public knotToPoint4d(u: number, v: number, result?: Point4d): Point4d {
     this.evaluateBuffersAtKnot(u, v);
-    return Point4d.createFromPackedXYZW(this._poleBuffer, 0)!;
+    result = Point4d.createFromPacked(this._poleBuffer, 0, result);
+    return result ? result : Point4d.createZero();
   }
   /** Evaluate at a position given by a knot value.  */
   public knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
@@ -1063,9 +1071,10 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return Plane3dByOriginAndVectors.createOriginAndVectorsWeightedArrays(this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
 
-  /** Evaluate the Point4d (leaving weights in the point) at given fractional coordinates. */
-  public fractionToPoint4d(fractionU: number, fractionV: number): Point4d {
-    return this.knotToPoint4d(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV));
+  /** Evaluate the Point4d (leaving weights in the point) at given fractional coordinates. If deweight fails, returns 000. */
+  public fractionToPoint4d(fractionU: number, fractionV: number, result?: Point4d): Point4d {
+    result = this.knotToPoint4d(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV), result);
+    return result ? result : Point4d.createZero();
   }
   /**
    * Evaluate the surface and return the Cartesian point (weight = 1).

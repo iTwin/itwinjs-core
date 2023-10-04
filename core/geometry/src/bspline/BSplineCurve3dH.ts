@@ -267,14 +267,14 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return packedPoints;
   }
 
-  /** Create a bspline with given knots.
+  /**
+   * Create a bspline with given knots.
    * * The poles have several variants:
    *    * Float64Array(4 * numPoles) in blocks of [wx,xy,wz,w]
    *    * Point4d[numPoles]
    *    * Point3d[], with implied unit weight to be added
    *    * number[][], with inner dimension 4
    *    * {xyz: Float64Array(3 * numPoles), weights: Float64Array (numPoles)}
-   *
    * * Two count conditions are recognized:
    *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
    *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
@@ -441,7 +441,8 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     }
     CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
   }
-  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+  /**
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
    * @return whether the curve can be wrapped.
    */
   public get isClosable(): boolean {

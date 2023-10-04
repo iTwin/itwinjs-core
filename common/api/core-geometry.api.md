@@ -970,7 +970,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToPoint(fractionU: number, fractionV: number, result?: Point3d): Point3d;
-    fractionToPoint4d(fractionU: number, fractionV: number): Point4d;
+    fractionToPoint4d(fractionU: number, fractionV: number, result?: Point4d): Point4d;
     fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     getPointGridJSON(): PackedPointGrid;
     getPole(i: number, j: number, result?: Point3d): Point3d | undefined;
@@ -978,7 +978,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: any): boolean;
     knotToPoint(knotU: number, knotV: number, result?: Point3d): Point3d;
-    knotToPoint4d(u: number, v: number): Point4d;
+    knotToPoint4d(u: number, v: number, result?: Point4d): Point4d;
     knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     tryTransformInPlace(transform: Transform): boolean;
     uvFractionToPoint(u: number, v: number): Point3d;
@@ -4483,7 +4483,10 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     static create(x?: number, y?: number, z?: number, w?: number, result?: Point4d): Point4d;
     static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
-    static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d | undefined;
+    static createFromPacked(data: Float64Array, xIndex?: number, result?: Point4d): Point4d | undefined;
+    static createFromPackedXYZ(data: Float64Array, xIndex?: number, result?: Point4d): Point4d | undefined;
+    // @deprecated
+    static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d;
     static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d;
     static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d;
     static createPlaneFrom(source: PlaneAltitudeEvaluator): Point4d | undefined;

@@ -66,28 +66,28 @@ export namespace SerializationHelpers {
     };
   }
 
-    /** Clone surface data */
-    export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData {
-      return {
-        poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy3d(source.poles),
-        dim: source.dim,
-        weights: source.weights ? ((source.weights instanceof Float64Array) ? source.weights.slice() : NumberArray.copy2d(source.weights)) : undefined,
-        uParams: {
-          numPoles: source.uParams.numPoles,
-          order: source.uParams.order,
-          closed: source.uParams.closed,
-          knots: source.uParams.knots.slice(),
-          wrapMode: source.uParams.wrapMode,
-        },
-        vParams: {
-          numPoles: source.vParams.numPoles,
-          order: source.vParams.order,
-          closed: source.vParams.closed,
-          knots: source.vParams.knots.slice(),
-          wrapMode: source.vParams.wrapMode,
-        },
-      };
-    }
+  /** Clone surface data */
+  export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData {
+    return {
+      poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy3d(source.poles),
+      dim: source.dim,
+      weights: source.weights ? ((source.weights instanceof Float64Array) ? source.weights.slice() : NumberArray.copy2d(source.weights)) : undefined,
+      uParams: {
+        numPoles: source.uParams.numPoles,
+        order: source.uParams.order,
+        closed: source.uParams.closed,
+        knots: source.uParams.knots.slice(),
+        wrapMode: source.uParams.wrapMode,
+      },
+      vParams: {
+        numPoles: source.vParams.numPoles,
+        order: source.vParams.order,
+        closed: source.vParams.closed,
+        knots: source.vParams.knots.slice(),
+        wrapMode: source.vParams.wrapMode,
+      },
+    };
+  }
 
   /** Copy from source to dest */
   function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
