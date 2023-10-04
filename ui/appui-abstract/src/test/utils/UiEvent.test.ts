@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeUiEvent } from "@itwin/core-bentley";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { UiEvent } from "../../appui-abstract";
 
 describe("UIEvent", () => {
 
@@ -13,7 +13,7 @@ describe("UIEvent", () => {
     testNum: number;
   }
 
-  class TestEvent extends BeUiEvent<TestEventArgs> { }
+  class TestEvent extends UiEvent<TestEventArgs> { }
 
   it("should call handler", () => {
     const testEvent: TestEvent = new TestEvent();
@@ -31,4 +31,5 @@ describe("UIEvent", () => {
 
     expect(spyMethod.calledOnce).to.be.true;
   });
+
 });
