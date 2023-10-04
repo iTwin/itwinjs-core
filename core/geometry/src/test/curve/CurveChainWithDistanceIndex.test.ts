@@ -351,8 +351,8 @@ describe("CurveChainWithDistanceIndex", () => {
     const semicircleCW = Arc3d.createXY(Point3d.createZero(), 3, AngleSweep.createStartEndDegrees(-45, -225));
     const diameter = LineSegment3d.createCapture(semicircleCW.endPoint(), semicircleCW.startPoint());
     const chainA = CurveChainWithDistanceIndex.createCapture(Loop.createArray([semicircleCW, diameter]));
-    const lowestPolygonPoint = Point3d.create(-4,-4,2);
-    const skewPlanePolygon = [Point3d.create(4,4,8), Point3d.create(-4,4,5), lowestPolygonPoint, Point3d.create(4,-4,5)];
+    const lowestPolygonPoint = Point3d.create(-4, -4, 2);
+    const skewPlanePolygon = [Point3d.create(4, 4, 8), Point3d.create(-4, 4, 5), lowestPolygonPoint, Point3d.create(4, -4, 5)];
     const chainB = CurveChainWithDistanceIndex.createCapture(Loop.createPolygon(skewPlanePolygon));
     const pairs = CurveCurve.closeApproachProjectedXYPairs(chainA, chainB, 1.5);
     // known fractions of xy close approaches

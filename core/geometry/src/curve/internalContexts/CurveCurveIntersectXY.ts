@@ -13,7 +13,7 @@ import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry } from "../../Geometry";
 import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
-import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
@@ -28,9 +28,10 @@ import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveTypes";
+import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
@@ -70,7 +71,7 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
  * * geometryB is saved for later reference.
  * @internal
  */
-export class CurveCurveIntersectXY extends NullGeometryHandler {
+export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _extendA: boolean;
   private _geometryB: AnyCurve | undefined;
   private _extendB: boolean;
@@ -124,7 +125,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this._results = [];
   }
-  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
+  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections). */
   public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
     this._extendA = extendA;
     this._geometryB = geometryB;
@@ -946,6 +947,17 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     transform.multiplyPoint3d(pointB0, this._workPointB0);
     transform.multiplyPoint3d(pointB1, this._workPointB1);
   }
+  /** Low level dispatch of curve collection. */
+  private dispatchCurveCollection(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    const geomB = this._geometryB;  // save
+    if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
+      return;
+    for (const child of geomB.children as AnyCurve[]) {
+      this.resetGeometry(this._extendA, child, this._extendB);
+      geomAHandler(geomA);
+    }
+    this._geometryB = geomB;  // restore
+  }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
@@ -967,6 +979,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
         this._geometryB, this._extendB, false,
       );
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     }
     return undefined;
   }
@@ -981,6 +995,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeArcLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchLineStringBSplineCurve(lsA, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     }
     return undefined;
   }
@@ -997,6 +1013,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchArcBsplineCurve3d(arc0, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
     }
     return undefined;
   }
@@ -1013,6 +1031,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
   }
