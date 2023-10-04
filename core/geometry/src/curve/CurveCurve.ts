@@ -50,7 +50,7 @@ export class CurveCurve {
   }
   /**
    * Return xy intersections of 2 projected curves.
-   * @param worldToLocal transform (possibly perspective) to project to xy plane for intersection.
+   * @param worldToLocal transform (possibly perspective) defining the local coordinates in which to compute xy intersections.
    * @param curveA first curve
    * @param extendA true to allow curveA to extend
    * @param curveB second curve

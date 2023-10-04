@@ -166,17 +166,17 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     return cp === detail.curve && Geometry.isAlmostEqualNumber(fraction, detail.fraction);
   }
   /**
-   * Compute intersection of two line segments. Filter by extension rules. Record with fraction mapping.
-   * @param localFractionA a fraction on first curve
+   * Record the pre-computed intersection between two curves. Filter by extension rules. Record with fraction mapping.
+   * @param localFractionA intersection fraction local to the subcurve of cpA between fractionA0 and fractionA1
    * @param cpA the first curve
-   * @param fractionA0 start of the first curve
-   * @param fractionA1 end of the first curve
-   * @param localFractionB a fraction on second curve
+   * @param fractionA0 start of the subcurve of cpA
+   * @param fractionA1 end of the subcurve of cpA
+   * @param localFractionB intersection fraction local to the subcurve of cpB between fractionB0 and fractionB1
    * @param cpB the second curve
-   * @param fractionB0 start of the second curve
-   * @param fractionB1 end of the second curve
-   * @param reversed true to have order reversed in final structures
-   * @param intervalDetails optional CurveLocationDetailPair
+   * @param fractionB0 start of the subcurve of cpB
+   * @param fractionB1 end of the subcurve of cpB
+   * @param reversed whether to reverse the details in the recorded intersection pair
+   * @param intervalDetails optional data for a coincident segment intersection
    */
   private recordPointWithLocalFractions(
     localFractionA: number,

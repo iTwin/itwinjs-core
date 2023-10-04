@@ -24,7 +24,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
  * CurveCurve.intersectionProjectedXYPairs along with 2 curves. "worldToLocal" is used to transform the input curves.
  * Therefore, the intersection is found after applying the "worldToLocal" transform to both input curves.
  * That means the intersection that is found is not the intersection of non-transformed curves. That's why the
- * intersection marker is not at the expected intersection between curves in some of visualizations.
+ * intersection marker in output geometry does not always sit at virtual xy-intersections seen in the top view.
  * * Note that on the first row of visuals, the intersection marker matches the actual intersection because
  * the "worldToLocal" is identity.
  */
