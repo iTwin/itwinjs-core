@@ -2210,7 +2210,13 @@ export class Sample {
    * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
-    const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
+    const pointsA = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 3, 0),
+      Point3d.create(2, 4, 0),
+      Point3d.create(3, 3, 0),
+      Point3d.create(4, 0, 0),
+    ];
     const result = [];
     // one singleton per basic curve type ...
     result.push(

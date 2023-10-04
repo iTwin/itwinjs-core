@@ -59,7 +59,6 @@ import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
  * A FacetSector
  * * initially holds coordinate data for a place where xyz and sectionDerivative are known
@@ -1257,15 +1256,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.createIndicesInLineString(strokeB, vB);
       this.addBetweenLineStringsWithStoredIndices(strokeA, strokeB);
     } else if (stroke0 instanceof ParityRegion) {
-      for (let i = 0; i < stroke0.children.length; i++) {  // eslint-disable-line @typescript-eslint/prefer-for-of
-        this.addBetweenRotatedStrokeSets(stroke0.children[i], transformA, vA, transformB, vB);
+      for (const child of stroke0.children) {
+        this.addBetweenRotatedStrokeSets(child, transformA, vA, transformB, vB);
       }
     } else if (stroke0 instanceof CurveChain) {
-      const chainA = stroke0.children;
-      for (let i = 0; i < chainA.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
-        const cpA = chainA[i];
-        if (cpA instanceof LineString3d) {
-          this.addBetweenRotatedStrokeSets(cpA, transformA, vA, transformB, vB);
+      for (const child of stroke0.children) {
+        if (child instanceof LineString3d) {
+          this.addBetweenRotatedStrokeSets(child, transformA, vA, transformB, vB);
         }
       }
     }
@@ -1303,8 +1300,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke0: AnyCurve | undefined;
     let stroke1: AnyCurve;
     const sectionMaps = [];
-    for (let i = 0; i < contours.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
-      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contours[i].curves, this._options));
+    for (const contour of contours) {
+      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contour.curves, this._options));
     }
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {
       StrokeCountSection.enforceCompatibleDistanceSums(sectionMaps);
