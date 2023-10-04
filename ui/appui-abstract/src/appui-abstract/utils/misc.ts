@@ -7,7 +7,7 @@
  */
 
 /** Gets the class name for an object.
- * @internal
+ * @internal @deprecated in 4.2. Even though this is internal, it is consumed by appui < 4.6.0. Please use your own implementation moving forward.
  */
 export const getClassName = (obj: any): string => {
   let className = "";
@@ -23,14 +23,5 @@ export const getClassName = (obj: any): string => {
   }
 
   return className;
-};
-
-/** Gets category to use for adding Log entries
- *  @internal
- */
-export const loggerCategory = (obj: any): string => {
-  const className = getClassName(obj);
-  const category = `appui-abstract${(className ? `.${className}` : "")}`;
-  return category;
 };
 

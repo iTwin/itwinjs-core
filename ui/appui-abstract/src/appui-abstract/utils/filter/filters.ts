@@ -11,13 +11,14 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-restricted-syntax */
+/* eslint-disable deprecation/deprecation */
 
 import { CharCode } from "./charCode";
 import { LRUCache } from "./map";
 import * as strings from "./strings";
 
 /** Interface that returns indices of matches
- * @public
+ * @public @deprecated in 4.2. Use `IMatch` from @itwin/core-react instead
  */
 export interface IMatch {
   start: number;
