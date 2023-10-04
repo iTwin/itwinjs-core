@@ -742,7 +742,7 @@ export class BSpline1dNd {
     sumPoleBuffer2ForSpan(spanIndex: number): void;
     sumPoleBufferForSpan(spanIndex: number): void;
     testClosablePolygon(mode?: BSplineWrapMode): boolean;
-    // @deprecated (undocumented)
+    // @deprecated
     testCloseablePolygon(mode?: BSplineWrapMode): boolean;
 }
 
@@ -781,7 +781,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): boolean;
     spanFractionToKnot(select: UVSelect, span: number, localFraction: number): number;
     sumPoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
-    // @deprecated (undocumented)
+    // @deprecated
     sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
     sumPoleBufferForSpan(spanIndexU: number, spanIndexV: number): void;
     testClosableGrid(select: UVSelect, mode?: BSplineWrapMode): boolean;
@@ -6280,7 +6280,7 @@ export class UnivariateBezier extends BezierCoffs {
 // @public
 export enum UVSelect {
     uDirection = 0,
-    // @deprecated (undocumented)
+    // @deprecated
     VDirection = 1,
     vDirection = 1
 }

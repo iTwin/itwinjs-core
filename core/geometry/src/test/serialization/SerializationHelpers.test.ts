@@ -116,8 +116,8 @@ function almostEqualSurfaceData(data0: SerializationHelpers.BSplineSurfaceData, 
     return false;
   if (Geometry.resolveValue<BSplineWrapMode>(data0.vParams.wrapMode, BSplineWrapMode.None) !== Geometry.resolveValue<BSplineWrapMode>(data1.vParams.wrapMode, BSplineWrapMode.None))
     return false;
-  let unpacked0 = unpackPoles(data0.poles, data0.dim, data0.weights);
-  let unpacked1 = unpackPoles(data1.poles, data1.dim, data1.weights);
+  const unpacked0 = unpackPoles(data0.poles, data0.dim, data0.weights);
+  const unpacked1 = unpackPoles(data1.poles, data1.dim, data1.weights);
   // closure is allowed to differ, and if so allows extra allowable pole/weight count conditions
   const uClosed0 = Geometry.resolveValue<boolean>(data0.uParams.closed, false);
   const uClosed1 = Geometry.resolveValue<boolean>(data1.uParams.closed, false);
@@ -138,13 +138,13 @@ function almostEqualSurfaceData(data0: SerializationHelpers.BSplineSurfaceData, 
       return false;
     if (data0.vParams.numPoles !== data1.vParams.numPoles)
       return false;
-    let xyzFewerCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
-    let xyzFewerCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
+    const xyzFewerCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
+    const xyzFewerCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerCols0, unpacked1.xyz) &&
         !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerCols1))
         return false;
-    let wFewerCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
-    let wFewerCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
+    const wFewerCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
+    const wFewerCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(wFewerCols0, unpacked1.w) &&
         !NumberArray.isAlmostEqual(unpacked0.w, wFewerCols1))
         return false;
@@ -154,13 +154,13 @@ function almostEqualSurfaceData(data0: SerializationHelpers.BSplineSurfaceData, 
     if ((data0.vParams.numPoles - vDegree !== data1.vParams.numPoles) &&
         (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
       return false;
-    let xyzFewerRows0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree);
-    let xyzFewerRows1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree);
+    const xyzFewerRows0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree);
+    const xyzFewerRows1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerRows0, unpacked1.xyz) &&
         !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRows1))
       return false;
-    let wFewerRows0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree);
-    let wFewerRows1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree);
+    const wFewerRows0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree);
+    const wFewerRows1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree);
     if (!NumberArray.isAlmostEqual(wFewerRows0, unpacked1.w) &&
         !NumberArray.isAlmostEqual(unpacked0.w, wFewerRows1))
       return false;
@@ -171,13 +171,13 @@ function almostEqualSurfaceData(data0: SerializationHelpers.BSplineSurfaceData, 
     if ((data0.vParams.numPoles - vDegree !== data1.vParams.numPoles) &&
         (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
       return false;
-    let xyzFewerRowsAndCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
-    let xyzFewerRowsAndCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
+    const xyzFewerRowsAndCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
+    const xyzFewerRowsAndCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerRowsAndCols0, unpacked1.xyz) &&
         !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRowsAndCols1))
       return false;
-    let wFewerRowsAndCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
-    let wFewerRowsAndCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
+    const wFewerRowsAndCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
+    const wFewerRowsAndCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(wFewerRowsAndCols0, unpacked1.w) &&
         !NumberArray.isAlmostEqual(unpacked0.w, wFewerRowsAndCols1))
       return false;

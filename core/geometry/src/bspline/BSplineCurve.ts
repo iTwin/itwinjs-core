@@ -117,19 +117,16 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
-  /**
-   * Get the flag indicating the curve might be suitable for having wrapped "closed" interpretation.
-   */
+  /** Get the flag indicating the curve might be suitable for having wrapped "closed" interpretation. */
   public getWrappable(): BSplineWrapMode {
     return this._bcurve.knots.wrappable;
   }
-  /**
-   * Set the flag indicating the curve might be suitable for having wrapped "closed" interpretation.
-   */
+  /** Set the flag indicating the curve might be suitable for having wrapped "closed" interpretation. */
   public setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
-  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+  /**
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
    * @returns the manner in which it is possible to close the curve. See `BSplineWrapMode` for particulars of each mode.
    */
   public get isClosableCurve(): BSplineWrapMode {
@@ -552,7 +549,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    *    * Float64Array(3 * numPoles) in blocks of [x,y,z]
    *    * Point3d[]
    *    * number[][], with inner dimension 3
-   *
    * * Two count conditions are recognized:
    *    * If poleArray.length + order === knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
    *    * If poleArray.length + order === knotArray.length + 2, the knots are in modern form.
@@ -728,7 +724,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         bezier.emitStrokes(dest, options);
     }
   }
-  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+  /**
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
    * @returns the manner in which it is possible to close the curve. See `BSplineWrapMode` for particulars of each mode.
    */
    public get isClosable(): BSplineWrapMode {
