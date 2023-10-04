@@ -339,6 +339,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return `${warningSvgIcon} <b style="color:${warningRgbColor};${alignmentStyle}"> ${translateMessage("LargeProjectExtents")}</b>`;
   };
 
+  protected shouldWarningMessageBeShown = (arrowDirection: Vector3d): boolean => {
+    return (arrowDirection.isParallelTo(Vector3d.unitX(), true) && !this._extentsLengthValid) ||
+      (arrowDirection.isParallelTo(Vector3d.unitY(), true) && !this._extentsWidthValid) ||
+      (arrowDirection.isParallelTo(Vector3d.unitZ(), true) && !this._extentsHeightValid);
+  };
+
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const quantityFormatter = IModelApp.quantityFormatter;
     const toolTip = document.createElement("div");
@@ -394,12 +400,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     } else {
       const arrowIndex = this._controlIds.indexOf(hit.sourceId);
       if (-1 !== arrowIndex) {
-        toolTipHtml += `${extentsValid ? translateMessage("ModifyProjectExtents") : this.getEditExtentsWarningMessage()}<br>`;
+        const arrowControl = this._controls[arrowIndex];
+        toolTipHtml += `${this.shouldWarningMessageBeShown(arrowControl.direction) ? this.getEditExtentsWarningMessage() : translateMessage("ModifyProjectExtents")}<br>`;
 
         const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
-          const arrowControl = this._controls[arrowIndex];
-
           let arrowLabel = "";
           let arrowLength = 0.0;
           let arrowLengthMax = 0.0;
