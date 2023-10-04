@@ -10,7 +10,7 @@
 /* eslint-disable deprecation/deprecation */
 
 /** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
- * @public @deprecated in 4.2. Please use createWebComponentIconSpec() and getWebComponentSource() from @itwin/appui-react.
+ * @public @deprecated in 4.3. Please use createWebComponentIconSpec() and getWebComponentSource() from @itwin/appui-react.
  */
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec loaded with the Sprite loader */
@@ -25,7 +25,7 @@ export class IconSpecUtilities {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;
   }
   /** Create an IconSpec for an SVG loaded into web component with svg-loader
-   * @public @deprecated in 4.2. Please use createWebComponentIconSpec() from @itwin/appui-react.
+   * @public @deprecated in 4.3. Please use createWebComponentIconSpec() from @itwin/appui-react.
   */
   public static createWebComponentIconSpec(srcString: string): string {
     return `${IconSpecUtilities.WEB_COMPONENT_PREFIX}${srcString}`;
@@ -43,7 +43,7 @@ export class IconSpecUtilities {
     return undefined;
   }
   /** Get the SVG Source from an svg-loader IconSpec
-   * @public @deprecated in 4.2. Please use getWebComponentSource() from @itwin/appui-react.
+   * @public @deprecated in 4.3. Please use getWebComponentSource() from @itwin/appui-react.
   */
 
   public static getWebComponentSource(iconSpec: string): string | undefined {
