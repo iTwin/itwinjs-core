@@ -1336,7 +1336,7 @@ importers:
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@itwin/imodel-transformer': ^0.1.1
+      '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/service-authorization': ^1.0.0
@@ -1364,7 +1364,7 @@ importers:
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.1.16_weqmipkhmjm5vfy37lv47aijmu
+      '@itwin/imodel-transformer': 0.4.2_weqmipkhmjm5vfy37lv47aijmu
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 1.0.3_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.10
@@ -4222,15 +4222,15 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@itwin/imodel-transformer/0.1.16_weqmipkhmjm5vfy37lv47aijmu:
-    resolution: {integrity: sha512-TVa1bZHSgE7nZ6UzXZq0zrDtR0va0rTA265GH7QmxgFD+sXZxUzODWd3SIp55NPNH+A7F9Bs/hLY4/HlB708vA==}
+  /@itwin/imodel-transformer/0.4.2_weqmipkhmjm5vfy37lv47aijmu:
+    resolution: {integrity: sha512-uSfVKFdzMvptc634gtnorxAthflL2n2y72e4z6fXV0Q4ToXRSn25kFGPVgDtaASAptIh5VPz2xaqT1Obbq/ImA==}
     engines: {node: ^18.0.0}
     peerDependencies:
-      '@itwin/core-backend': 3.6.0 - 4.0.999
-      '@itwin/core-bentley': 3.6.0 - 4.0.999
-      '@itwin/core-common': 3.6.0 - 4.0.999
-      '@itwin/core-geometry': 3.6.0 - 4.0.999
-      '@itwin/ecschema-metadata': 3.6.0 - 4.0.999
+      '@itwin/core-backend': ^3.6.0 || ^4.0.0
+      '@itwin/core-bentley': ^3.6.0 || ^4.0.0
+      '@itwin/core-common': ^3.6.0 || ^4.0.0
+      '@itwin/core-geometry': ^3.6.0 || ^4.0.0
+      '@itwin/ecschema-metadata': ^3.6.0 || ^4.0.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
