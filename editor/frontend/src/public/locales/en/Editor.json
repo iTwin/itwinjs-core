@@ -473,7 +473,7 @@
         "NoChanges": "No changes to iTwin extents or geolocation to save",
         "Readonly": "iModel is read-only",
         "ProjectExtents": "iTwin Extents",
-        "LargeProjectExtents": "iTwin Extents Too Large",
+        "LargeProjectExtents": "Extents outside recommended range",
         "ModifyProjectExtents": "Modify iTwin Extents",
         "ModifyGeolocation": "Modify/Add Geolocation",
         "ModifyNorthDirection": "Modify North Direction",

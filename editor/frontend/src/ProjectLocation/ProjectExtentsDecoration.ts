@@ -332,10 +332,18 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     super.onManipulatorEvent(eventType);
   }
 
+  protected getEditExtentsWarningMessage = (): string => {
+    const warningRgbColor = `rgb(255 138 0)`;
+    const alignmentStyle = `vertical-align:middle;display-inline:block`;
+    const warningSvgIcon = `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" style="${alignmentStyle}"><path d="M15.868 13.267l-6.77-11.62a1.15 1.15 0 00-1.1-.67 1.17 1.17 0 00-1.1.69l-6.77 11.59a1.2 1.2 0 001.1 1.72h13.45a1.237 1.237 0 001.306-1.06 1.19 1.19 0 00-.116-.65zm-6.87-.29h-2v-2h2zm0-3h-2v-5h2z" fill="${warningRgbColor}"/></svg>`;
+    return `${warningSvgIcon} <b style="color:${warningRgbColor};${alignmentStyle}"> ${translateMessage("LargeProjectExtents")}</b>`;
+  };
+
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const quantityFormatter = IModelApp.quantityFormatter;
     const toolTip = document.createElement("div");
     let toolTipHtml = "";
+    const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
 
     if (hit.sourceId === this._monumentId) {
       toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
@@ -371,8 +379,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       }
 
     } else if (hit.sourceId === this._clipId) {
-      const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
-      toolTipHtml += `${translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents")}<br>`;
+      toolTipHtml += `${extentsValid ? translateMessage("ProjectExtents") : this.getEditExtentsWarningMessage()}<br>`;
 
       const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
       if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
@@ -387,7 +394,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     } else {
       const arrowIndex = this._controlIds.indexOf(hit.sourceId);
       if (-1 !== arrowIndex) {
-        toolTipHtml += `${translateMessage("ModifyProjectExtents")}<br>`;
+        toolTipHtml += `${extentsValid ? translateMessage("ModifyProjectExtents") : this.getEditExtentsWarningMessage()}<br>`;
 
         const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
         if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
