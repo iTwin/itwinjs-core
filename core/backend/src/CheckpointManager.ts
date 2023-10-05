@@ -360,7 +360,7 @@ export class CheckpointManager {
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
-        Logger.setLevel(NativeLoggerCategory.SQLite, prevLogLevel ?? LogLevel.None); // Set logging to what it was before we started applying changesets.
+        Logger.setLevel(NativeLoggerCategory.SQLite, prevLogLevel); // Set logging to what it was before we started applying changesets.
         db.saveChanges();
         db.close();
       }
