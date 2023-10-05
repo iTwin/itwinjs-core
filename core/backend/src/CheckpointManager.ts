@@ -332,7 +332,7 @@ export class CheckpointManager {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
-      const prevLogLevel = Logger.getLevel(NativeLoggerCategory.SQLite); // Get log level before we set it to None.
+      const prevLogLevel = Logger.getLevel(NativeLoggerCategory.SQLite) ?? LogLevel.Error; // Get log level before we set it to None.
       Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
