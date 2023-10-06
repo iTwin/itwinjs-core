@@ -1549,6 +1549,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
 export abstract class CurveCollection extends GeometryQuery {
     abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
     checkForNonLinearPrimitives(): boolean;
+    abstract get children(): AnyCurve[];
     clone(): CurveCollection;
     abstract cloneEmptyPeer(): CurveCollection;
     abstract cloneStroked(options?: StrokeOptions): CurveCollection;
