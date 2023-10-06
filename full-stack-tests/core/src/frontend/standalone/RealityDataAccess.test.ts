@@ -27,8 +27,8 @@ describe("RealityDataAccess (#integration)", () => {
   const realityDataClientOptions: RealityDataClientOptions = {
     /** API Version. v1 by default */
     // version?: ApiVersion;
-    /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-    baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data */
+    baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com`,
   };
   let realityDataAccess: RealityDataAccessClient;
   before(async () => {
