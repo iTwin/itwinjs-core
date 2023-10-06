@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -28,6 +29,7 @@ import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
@@ -958,6 +960,39 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     this._geometryB = geomB;  // restore
   }
+  /**
+ * Given a parent chain, convert the corresponding child details so that they refer to the chain's global parameterization.
+ * * It is assumed that `this._results[i].detailA.curve` is a child of chainA, and similarly for detailB/chainB.
+ * @param chainA convert each detailA to the global parameterization of chainA
+ * @param chainB convert each detailB to the global parameterization of chainB
+ */
+  private convertChildDetailToChainDetail(chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): void {
+    for (const childDetailPair of this._results) {
+      if (chainA) {
+        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
+        if (chainDetail)
+          childDetailPair.detailA = chainDetail;
+      }
+      if (chainB) {
+        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
+        if (chainDetail)
+          childDetailPair.detailB = chainDetail;
+      }
+    }
+  }
+  /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
+  private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
+      return;
+    const geomB = this._geometryB;  // save
+    for (const child of geomB.path.children) {
+      this.resetGeometry(this._extendA, child, this._extendB);
+      geomAHandler(geomA);
+    }
+    this.resetGeometry(this._extendA, geomB, this._extendB);  // restore
+    assert(!(geomA instanceof CurveChainWithDistanceIndex));
+    this.convertChildDetailToChainDetail(undefined, geomB);
+  }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
@@ -981,6 +1016,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
     }
     return undefined;
   }
@@ -997,6 +1034,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.dispatchLineStringBSplineCurve(lsA, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
     }
     return undefined;
   }
@@ -1015,6 +1054,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(arc0, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(arc0, this.handleArc3d.bind(this));
     }
     return undefined;
   }
@@ -1033,8 +1074,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curve, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
+  }
+  /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
+  public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
+    super.handleCurveChainWithDistanceIndex(chain);
+    this.convertChildDetailToChainDetail(
+      chain, this._geometryB instanceof CurveChainWithDistanceIndex ? this._geometryB : undefined,
+    );
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
