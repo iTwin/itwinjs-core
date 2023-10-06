@@ -1376,7 +1376,7 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly relationships: RelationshipClasses;
     get schemaContext(): SchemaContext;
-    // (undocumented)
+    // @internal (undocumented)
     readonly schemaItems: SchemaItems;
     setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults>;
     // (undocumented)

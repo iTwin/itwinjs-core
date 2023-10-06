@@ -73,6 +73,8 @@ export class SchemaContextEditor {
   public readonly unitSystems = new UnitSystems(this);
   public readonly propertyCategories = new PropertyCategories(this);
   public readonly invertedUnits = new InvertedUnits(this);
+
+  /** @internal */
   public readonly schemaItems = new SchemaItems(this);
 
   /**

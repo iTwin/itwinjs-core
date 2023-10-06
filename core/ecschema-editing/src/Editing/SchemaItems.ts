@@ -10,7 +10,7 @@ import { ECObjectsError, ECObjectsStatus, SchemaItemKey, SchemaItemProps } from 
 import { SchemaContextEditor } from "./Editor";
 
 /**
- * @alpha
+ * @internal
  * A class allowing you to edit the schema item base class.
  */
 export class SchemaItems {
