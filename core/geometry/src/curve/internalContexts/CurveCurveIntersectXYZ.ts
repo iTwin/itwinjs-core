@@ -757,10 +757,10 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
       return;
     const geomB = this._geometryB;  // save
     for (const child of geomB.path.children) {
-      this.resetGeometry(this._extendA, child, this._extendB);
+      this.resetGeometry(child);
       geomAHandler(geomA);
     }
-    this.resetGeometry(this._extendA, geomB, this._extendB);  // restore
+    this.resetGeometry(geomB);  // restore
     assert(!(geomA instanceof CurveChainWithDistanceIndex));
     this.convertChildDetailToChainDetail(undefined, geomB);
   }
