@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added SQ_KM to UNIT DATA",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
