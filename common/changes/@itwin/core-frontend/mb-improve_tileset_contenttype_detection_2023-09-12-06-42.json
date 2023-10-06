@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Allow creation of cross-origin web workers",
+      "comment": "Improved content type detection for 3D Tiles tilesets.",
       "type": "none"
     }
   ],
