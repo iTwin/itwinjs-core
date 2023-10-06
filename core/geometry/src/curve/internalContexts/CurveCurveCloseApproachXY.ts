@@ -914,7 +914,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
   public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
     super.handleCurveChainWithDistanceIndex(chain);
-    this.convertChildDetailToChainDetail(chain, this._geometryB instanceof CurveChainWithDistanceIndex ? this._geometryB : undefined);
+    this.convertChildDetailToChainDetail(
+      chain, this._geometryB instanceof CurveChainWithDistanceIndex ? this._geometryB : undefined,
+    );
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
