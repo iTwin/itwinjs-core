@@ -858,7 +858,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
-    const numExpected = 4; // BUG! number of expected intersections is 4
+    const numExpected = 4; // BUG! number of expected intersections is 3
     ck.testExactNumber(numExpected, intersections.length);
     // for (const i of intersections) {
     //   const i1 = i.detailA.point;
