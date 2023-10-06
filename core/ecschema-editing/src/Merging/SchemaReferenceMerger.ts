@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaMergeContext } from "./SchemaMerger";
 
@@ -20,7 +19,7 @@ export default async function mergeSchemaReferences(mergeContext: SchemaMergeCon
   // but should be checked if it's schema references have collisions with existing references.
   for(const missingSchemaReference of changes.missingSchemaReferences) {
     const [referencedSchema] = missingSchemaReference.diagnostic.messageArgs! as [Schema];
-    await addSchemaReference(targetSchema, referencedSchema);
+    await mergeContext.editor.addSchemaReference(targetSchema.schemaKey, referencedSchema);
   }
 
   // If the source schema referenced a schema that is also referenced by the target
@@ -42,21 +41,16 @@ export default async function mergeSchemaReferences(mergeContext: SchemaMergeCon
     const index = targetSchema.references.findIndex((reference) => reference === existingSchema);
     targetSchema.references.splice(index, 1);
 
-    await addSchemaReference(targetSchema, referencedSchema);
+    await mergeContext.editor.addSchemaReference(targetSchema.schemaKey, referencedSchema);
   }
 }
 
-async function addSchemaReference(targetSchema: Schema, referencedSchema: Schema) {
-  const mutableSchema = targetSchema as MutableSchema;
-
-  // TODO: Collision Check
-
-  await mutableSchema.addReference(referencedSchema);
-  if(! await targetSchema.context.getSchema(referencedSchema.schemaKey)) {
-    await targetSchema.context.addSchema(referencedSchema);
-  }
-}
-
+/**
+ * Compares the schemas and return them in order of their versions [older, latest].
+ * @param left    The first schema to be added.
+ * @param right   The second schema to be added.
+ * @returns       The schemas in order.
+ */
 function compareSchemas(left: Schema, right: Schema): [Schema, Schema] {
   return left.schemaKey.compareByVersion(right.schemaKey) < 0
     ? [left, right]
