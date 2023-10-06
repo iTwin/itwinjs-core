@@ -118,9 +118,9 @@ export abstract class BezierCoffs {
     for (let i = 0; i < this.coffs.length; i++)
       this.coffs[i] += a;
   }
-  /** Compute parameter values where the bezier value matches _targetValue.
+  /** Compute parameter values where the bezier value matches targetValue.
    * * The base class finds roots only in 01.  (i.e. ignores _restrictTo01)
-   * * Order-specific implementations apply special case  analytic logic, e.g. for degree 1,2,3,4.
+   * * Order-specific implementations apply special case analytic logic, e.g. for degree 1,2,3,4.
    */
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
@@ -395,7 +395,8 @@ export class UnivariateBezier extends BezierCoffs {
       result = new UnivariateBezier(order);
     else if (result.order !== order)
       result.allocateToOrder(order);
-    for (let i = 0; i < order; i++)result.coffs[i] = coffs[index0 + i];
+    for (let i = 0; i < order; i++)
+      result.coffs[i] = coffs[index0 + i];
     return result;
   }
 

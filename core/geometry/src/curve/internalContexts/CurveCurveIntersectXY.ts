@@ -821,8 +821,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, curvePointH);
       if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
         this.acceptFraction(extendB, fractionB, extendB)) {
-        this.recordPointWithLocalFractions(
-          lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed,
+          this.recordPointWithLocalFractions(
+            lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed,
         );
       }
     }
