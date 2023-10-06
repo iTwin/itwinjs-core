@@ -58,10 +58,11 @@ The following rules may be helpful:
 - If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid in the `CodeService`.
 - Elements in different iModels of an iTwin *may* have the same Code. The `CodeService` does *not* record where/if Codes are used, and cannot be used to "find" elements. However, the `CodeService` does record the "origin" of a Code. If the origin was an iModel, there's a good chance that there is (or was) an element in that iModel with that Code.
 
+Reserving codes is distinct from inserting elements with codes into the iModel. An application or user may reserve codes (e.g. a range of sequential codes) ahead of time and then use them as needed.
+
 ### Internal Codes
 
 Internal CodeSpecs identify elements within an iModel that must have unique names. The internal CodeService index holds the set of extant values across all briefcase and (potentially) branches of an iModel to avoid conflicts. Before a new element that uses an Internal CodeSpec may be added, the Code value must first be *reserved* in the Internal Code index of the `CodeService`.
-
 
 ## CodeService's Role in the "Code Ecosystem"
 
@@ -125,15 +126,67 @@ Generally it is a good idea to reserve a group of codes together rather than one
 - `reserveCode` to reserve a single code
 - `reserveCodes` to reserve a set of codes
 
+Here are the steps to follow.
+
+The identity of the code service and information about how to connect are stored in the iModel persistently. When an app opens a briefcase for editing, the briefcase will connect to the code service using the connection information stored in the iModel and the user's credentials. The briefcase `.codeService` property will refer to the connected CodeService client, and apps must use that to reserve, update, and query codes and CodeSpecs.
+
+Here is an example of using codeService to reserve a new internal code.
+
+``` ts
+const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId, asOf: { afterChangeSetId }, briefcaseId: 0, fileName });
+const iModel = await BriefcaseDb.open({ fileName: props.fileName });
+```
+
+``` ts
+[[include:CodeService.reserveInternalCodeForNewElement]]
+```
+
+The logic to reserve an external code is similar - just use the `externalCodes` property instead.
+
+Note that reserveCode is asynchronous and must be `await`ed. It updates the code index in the cloud.
+
+Note the use of the `CodeService.makeProposedCode` helper function.
+
+The `reserveCode` function will throw if the code is already reserved. If that happens when you are trying to insert a new element, it means that someone else has already reserved that code and you should choose a different one.
+
+Don't call reserveCode when updating an existing element. If the element's code is changing, call `updateCode` before updating it.
+
+In general, to find out if a code has been reserved, call findCode.
+
+```ts
+[[include:CodeService.findCode]]
+```
+
 There are also `CodeService` apis for updating properties of and deleting codes. They have the same rules for authentication and serialization as reserving Codes. They are:
 
 - `updateCode` to modify the properties of a code
 - `updateCodes` to modify the properties of a set of codes
 - `deleteCodes` to delete a set of codes
 
+For example,
+
+``` ts
+[[include:CodeService.updateInternalCodeForExistinglement]]
+```
+
+Note that the element's `federationGuid` is the Code's Guid.
+
+### Managing and Creating CodeSpecs via the CodeService API
+
+CodeService has an API for managing and creating CodeSpecs.
+
+- `getCodeSpec`
+- `addCodeSpec`
+
+Here is an example of creating an internal CodeSpec that is scoped to a model.
+
+```ts
+[[include:CodeService.addInternalCodeSpec]]
+```
+
 ### Code Sequences
 
-Some types of Codes follow a *sequential* pattern wherein the value of a new Code is be determined by applying a sequencing algorithm to the previous value.
+Some types of Codes follow a *sequential* pattern wherein the value of a new Code is to be determined by applying a sequencing algorithm to the previous value.
 
 Applications may supply their own code sequencing algorithm by implementing the interface `CodeService.CodeSequence`, supplying methods to get the first and last valid values, and a method to get the next value given another valid value. `CodeSequences` have a name, and can be registered with the `CodeService.registerSequence` and found via `CodeService.getSequence`.
 
