@@ -55,11 +55,9 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     this._extendB = extendB;
     this._results = [];
   }
-  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections). */
-  public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
-    this._extendA = extendA;
+  /** Reset the geometry, leaving all other parts unchanged (and preserving accumulated intersections). */
+  public resetGeometry(geometryB: AnyCurve): void {
     this._geometryB = geometryB;
-    this._extendB = extendB;
   }
   /**
    * Return the results structure for the intersection calculation, structured as an array of CurveLocationDetailPair.
@@ -728,7 +726,7 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
     for (const child of geomB.children) {
-      this.resetGeometry(this._extendA, child, this._extendB);
+      this.resetGeometry(child);
       geomAHandler(geomA);
     }
     this._geometryB = geomB;  // restore

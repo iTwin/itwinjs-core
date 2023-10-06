@@ -88,7 +88,7 @@ export class CurveCurve {
     for (let i = 0; i < primitives.length; i++) {
       const curveA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {
-        handler.resetGeometry(false, primitives[j], false);
+        handler.resetGeometry(primitives[j]);
         curveA.dispatchToGeometryHandler(handler);
       }
     }
