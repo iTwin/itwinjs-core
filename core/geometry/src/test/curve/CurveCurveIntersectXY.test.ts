@@ -858,13 +858,13 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
-    const numExpected = 4; // BUG! number of expected intersections is 3
+    const numExpected = 3;
     ck.testExactNumber(numExpected, intersections.length);
-    // for (const i of intersections) {
-    //   const i1 = i.detailA.point;
-    //   const i2 = i.detailB.point;
-    //   ck.testPoint3dXY(i1, i2);
-    // }
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3dXY(i1, i2);
+    }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineLineString");
     expect(ck.getNumErrors()).equals(0);
@@ -927,13 +927,13 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
-    const numExpected = 5; // BUG! number of expected intersections is 4
+    const numExpected = 4;
     ck.testExactNumber(numExpected, intersections.length);
-    // for (const i of intersections) {
-    //   const i1 = i.detailA.point;
-    //   const i2 = i.detailB.point;
-    //   ck.testPoint3dXY(i1, i2);
-    // }
+    for (const i of intersections) {
+      const i1 = i.detailA.point;
+      const i2 = i.detailB.point;
+      ck.testPoint3dXY(i1, i2);
+    }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineBspline");
     expect(ck.getNumErrors()).equals(0);

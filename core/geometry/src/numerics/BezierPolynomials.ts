@@ -125,7 +125,8 @@ export abstract class BezierCoffs {
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
     bezier.addInPlace(- targetValue);
-    return UnivariateBezier.deflateRoots01(bezier);
+    const roots = UnivariateBezier.deflateRoots01(bezier);
+    return this.filter01(roots, true);
   }
   /** Given an array of numbers, optionally remove those not in the 0..1 interval.
    * @param roots candidate values
@@ -137,17 +138,25 @@ export abstract class BezierCoffs {
       return roots;
     let anyFound = false;
     for (const r of roots) {
-      if (Geometry.isIn01(r)) { anyFound = true; break; }
+      if (Geometry.isIn01(r)) {
+        anyFound = true;
+        break;
+      }
     }
     if (anyFound) {
       const roots01: number[] = [];
-      for (const r of roots) { if (Geometry.isIn01(r)) roots01.push(r); }
+      for (const r of roots) {
+        if (Geometry.isIn01(r))
+          roots01.push(r);
+      }
       return roots01;
     }
     return undefined;
   }
   /** zero out all coefficients. */
-  public zero(): void { this.coffs.fill(0); }
+  public zero(): void {
+    this.coffs.fill(0);
+  }
   /** Subdivide -- write results into caller-supplied bezier coffs (which must be of the same order) */
   public subdivide(u: number, left: BezierCoffs, right: BezierCoffs): boolean {
     const order = this.order;
@@ -641,9 +650,13 @@ export class UnivariateBezier extends BezierCoffs {
     const orderD = order - 1;
     for (let iterations = 0; iterations++ < 10;) {
       UnivariateBezier._basisBuffer = PascalCoefficients.getBezierBasisValues(order, u, UnivariateBezier._basisBuffer);
-      f = 0; for (let i = 0; i < order; i++) f += coffs[i] * UnivariateBezier._basisBuffer[i];
+      f = 0;
+      for (let i = 0; i < order; i++)
+        f += coffs[i] * UnivariateBezier._basisBuffer[i];
       UnivariateBezier._basisBuffer1 = PascalCoefficients.getBezierBasisValues(orderD, u, UnivariateBezier._basisBuffer1);
-      df = 0; for (let i = 0; i < orderD; i++) df += (coffs[i + 1] - coffs[i]) * UnivariateBezier._basisBuffer1[i];
+      df = 0;
+      for (let i = 0; i < orderD; i++)
+        df += (coffs[i + 1] - coffs[i]) * UnivariateBezier._basisBuffer1[i];
       df *= derivativeFactor;
       if (Math.abs(f) > bigStep * Math.abs(df))
         return undefined;
