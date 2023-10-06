@@ -952,7 +952,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const geomB = this._geometryB;  // save
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
-    for (const child of geomB.children as AnyCurve[]) {
+    for (const child of geomB.children) {
       this.resetGeometry(this._extendA, child, this._extendB);
       geomAHandler(geomA);
     }

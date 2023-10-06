@@ -1198,7 +1198,7 @@ function captureStroked(allGeometry: GeometryQuery[], data: any, dx: number = 0,
     }
     numStroked++;
   } else if (data instanceof CurveCollection) {
-    for (const child of data.children!)
+    for (const child of data.children)
       numStroked += captureStroked(allGeometry, child, dx, dy, dz);
   }
   return numStroked;

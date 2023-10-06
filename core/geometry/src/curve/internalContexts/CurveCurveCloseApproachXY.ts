@@ -720,7 +720,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const geomB = this._geometryB;  // save
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
-    for (const child of geomB.children as AnyCurve[]) {
+    for (const child of geomB.children) {
       this.resetGeometry(child);
       geomAHandler(geomA);
     }
