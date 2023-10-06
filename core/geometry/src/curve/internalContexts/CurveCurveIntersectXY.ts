@@ -125,11 +125,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this._results = [];
   }
-  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections). */
-  public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
-    this._extendA = extendA;
+  /** Reset the geometry, leaving all other parts unchanged (and preserving accumulated intersections). */
+  public resetGeometry(geometryB: AnyCurve): void {
     this._geometryB = geometryB;
-    this._extendB = extendB;
   }
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean, fractionTol: number = 1.0e-12): boolean {
     if (!extend0 && fraction < -fractionTol)
@@ -953,7 +951,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
     for (const child of geomB.children) {
-      this.resetGeometry(this._extendA, child, this._extendB);
+      this.resetGeometry(child);
       geomAHandler(geomA);
     }
     this._geometryB = geomB;  // restore
