@@ -30,7 +30,7 @@ export class PopupToolbarManager {
       return false;
 
     const admin = IModelApp.uiAdmin;
-    if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, admin.createXAndY(0, 0), this._itemExecuted, this._cancel, undefined, prov.htmlElement))
+    if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, { x: 0, y: 0 }, this._itemExecuted, this._cancel, undefined, prov.htmlElement))
       return false;
 
     this._current = this._provider;
