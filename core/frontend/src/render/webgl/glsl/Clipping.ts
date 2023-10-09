@@ -70,11 +70,9 @@ const applyClipPlanesPostlude = `
       clippedByCurrentPlaneSet = true;
     }
 
-    //avoiding near and far clip planes
-    if ((i <= u_clipParams[1] - 2) && (!clippedByCurrentPlaneSet)) {
-
-      /* 
-      * The closest point on a plane from a point, p,  will be: p minus the distance between p and the plane, in the direction of the plane's normal vector.
+    if ((u_clipHighlight.a > 0.0) && (i <= u_clipParams[1] - 2) && (!clippedByCurrentPlaneSet)) {
+ 
+      /* The closest point on a plane from a point, p,  will be: p minus the distance between p and the plane, in the direction of the plane's normal vector.
       * We have normal as plane.xyz, and our point as v_eyeSpace.
       * We can find the distance from the plane using calcClipPlaneDist, then multiply that by the plane's normal.
       * Subtract the result from the original point to obtain the location of the closest point on the clip plane to v_eyeSpace.
@@ -92,7 +90,7 @@ const applyClipPlanesPostlude = `
       pointOnPlane.x = ((pointOnPlane.x + 1.0) * 0.5 * u_viewport.x);
       pointOnPlane.y = ((pointOnPlane.y + 1.0) * 0.5 * u_viewport.y);   //Now in window coords
 
-      if (distance(gl_FragCoord.xy, pointOnPlane.xy) <= 3.0) {
+      if (distance(gl_FragCoord.xy, pointOnPlane.xy) <= u_clipHighlight.a) {
         highlightedEdge = true;
       }
     }
@@ -100,7 +98,7 @@ const applyClipPlanesPostlude = `
 
   //Need to pull this condition out of the loop for when there are multiple clip planes defined
   if (highlightedEdge && !clippedByCurrentPlaneSet) {
-    g_clipColor = vec3(1.0, 0.0, 0.0);
+    g_clipColor = u_clipHighlight.rgb;
     return true;
   }
   
@@ -166,6 +164,12 @@ export function addClipping(prog: ProgramBuilder) {
   prog.addUniform("u_insideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_insideRgba", (uniform, params) => {
       params.target.uniforms.branch.clipStack.insideColor.bind(uniform);
+    });
+  });
+
+  prog.addUniform("u_clipHighlight", VariableType.Vec4, (program) => {
+    program.addGraphicUniform("u_clipHighlight", (uniform, params) => {
+      params.target.uniforms.branch.clipStack.clipHighlight.bind(uniform);
     });
   });
 

@@ -11,6 +11,7 @@ import { ViewFlagOverrides } from "./ViewFlags";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { ColorDef } from "./ColorDef";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($core-geometry).
  * @see [[ClipStyleProps.cutStyle]].
@@ -97,6 +98,62 @@ export class CutStyle {
   }
 }
 
+/** Wire format describing a [[ClipHighlight]].
+ * @see [[ClipStyleProps.ClipHighlight]].
+ * @public
+ * @extensions
+ */
+export interface ClipHighlightProps {
+  /**Color to highlight the edge */
+  color?: RgbColorProps; // default white
+  /**Width of highlight in pixels */
+  width?: number; // in pixels, default 1
+}
+
+/** As part of a [[ClipStyle]], describes if/how edges of cut geometry should be highlighted.
+ * @note Edges are highlighted only if [[ClipStyle.ClipHighlight]] is `true`.
+ * @public
+ */
+export class ClipHighlight {
+  /**Color to highlight the edge, default to white */
+  public color?: RgbColor; 
+  /**Number of pixels to highlight, default 1 */
+  public width?: number; 
+
+  private constructor(color: RgbColor = RgbColor.fromColorDef(ColorDef.white), width: number = 1) {
+      this.color = color;
+      this.width = width;
+  }
+  /** Create a highlight  from its components. */
+  public static create(color: RgbColor, width: number): ClipHighlight {
+    if (!color && !width)
+      return this.defaults;
+
+    return new ClipHighlight(color, width);
+  }
+
+  public static readonly defaults = new ClipHighlight();
+
+  public static fromJSON(props?: ClipHighlightProps): ClipHighlight {
+    const color = props?.color ? RgbColor.fromJSON(props.color) : RgbColor.fromColorDef(ColorDef.white);
+    const width = props?.width ? props.width : 1;
+    return new ClipHighlight(color, width);
+  }
+
+  /** The JSON representation of this style. It is `undefined` if this style matches the defaults. */
+  public toJSON(): ClipHighlightProps | undefined {
+    const props: ClipHighlightProps = {};
+
+    if (this.color)
+      props.color = this.color.toJSON();
+
+    if (this.width)
+      props.width = this.width;
+
+    return props;
+  }
+}
+
 /** Wire format describing a [[ClipStyle]].
  * @see [[DisplayStyleSettingsProps.clipStyle]].
  * @public
@@ -115,6 +172,8 @@ export interface ClipStyleProps {
   insideColor?: RgbColorProps;
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
   outsideColor?: RgbColorProps;
+  /** If defined, pixels inside the clip planes within a width will be highlighted */
+  clipHighlight?: ClipHighlightProps;
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($core-geometry) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
@@ -134,23 +193,26 @@ export class ClipStyle {
   public readonly insideColor?: RgbColor;
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
   public readonly outsideColor?: RgbColor;
+  /** If defined, pixels inside the clip planes within a width will be highlighted */
+  public readonly clipHighlight?: ClipHighlight;
 
   /** The default style, which overrides none of the view's settings. */
-  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined);
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined, undefined);
 
-  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined) {
+  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined, clipHighlight: ClipHighlight | undefined) {
     this.produceCutGeometry = produceCutGeometry;
     this.cutStyle = cutStyle;
     this.insideColor = inside;
     this.outsideColor = outside;
+    this.clipHighlight = clipHighlight;
   }
 
   /** Create a style from its components. */
-  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle {
-    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor)
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, clipHighlight?: ClipHighlight | undefined): ClipStyle {
+    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor && !clipHighlight)
       return this.defaults;
 
-    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor);
+    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor, clipHighlight);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
@@ -159,8 +221,9 @@ export class ClipStyle {
       const cutStyle = CutStyle.fromJSON(props.cutStyle);
       const inside = props.insideColor ? RgbColor.fromJSON(props.insideColor) : undefined;
       const outside = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
+      const intersectStyle = props.clipHighlight ? ClipHighlight.fromJSON(props.clipHighlight) : undefined;
 
-      return this.create(produceCutGeometry, cutStyle, inside, outside);
+      return this.create(produceCutGeometry, cutStyle, inside, outside, intersectStyle);
     }
 
     return this.defaults;
@@ -187,6 +250,9 @@ export class ClipStyle {
     if (this.outsideColor)
       props.outsideColor = this.outsideColor.toJSON();
 
+    if (this.clipHighlight)
+      props.clipHighlight = this.clipHighlight.toJSON();
+
     return props;
   }
 
@@ -195,6 +261,6 @@ export class ClipStyle {
     if (this === ClipStyle.defaults)
       return true;
 
-    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults;
+    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults && !this.clipHighlight;
   }
 }
