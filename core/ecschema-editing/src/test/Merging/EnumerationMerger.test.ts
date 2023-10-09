@@ -249,7 +249,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Merged enumeration TestEnumeration types not equal: string -> int");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
     });
 
     it("should throw an error if enumerator value attribute conflict exist", async () => {
@@ -290,7 +290,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merge enumerator attribute, Value: 100 -> 200 in EnumeratorOne");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
 
     });
   });

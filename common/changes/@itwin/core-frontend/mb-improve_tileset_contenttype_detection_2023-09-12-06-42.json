@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improved content type detection for 3D Tiles tilesets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

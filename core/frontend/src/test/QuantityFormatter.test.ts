@@ -459,6 +459,7 @@ describe("Quantity formatter", async () => {
       await testUnitConversion(1.0, "Units.YRD", 91.44, "Units.CM");
       await testUnitConversion(1.0, "Units.CHAIN", 66.0 * 30.48, "Units.CM");
       await testUnitConversion(1.0, "Units.MILE", 160934.4, "Units.CM");
+      await testUnitConversion(1.0, "Units.SQ_KM", 1000000, "Units.SQ_M");
     });
 
     it("UnitConversionTests, UsSurveyLengths", async () => {

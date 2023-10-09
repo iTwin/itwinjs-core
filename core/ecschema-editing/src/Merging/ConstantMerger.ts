@@ -1,57 +1,45 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { Constant, DelayedPromiseWithProps, LazyLoadedPhenomenon, Phenomenon, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { SchemaItemChanges } from "../Validation/SchemaChanges";
-import { getItemNameAndSchemaRef, mergeSchemaItemProperties } from "./SchemaItemMerger";
-import { MutableConstant } from "../Editing/Mutable/MutableConstant";
+// /*---------------------------------------------------------------------------------------------
+// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+// * See LICENSE.md in the project root for license terms and full copyright notice.
+// *--------------------------------------------------------------------------------------------*/
+import { Constant, SchemaItem } from "@itwin/ecschema-metadata";
+import { PropertyValueResolver, SchemaItemMerger } from "./SchemaItemMerger";
 
 /**
  * @internal
- * @param target The constant the differences get merged into
- * @param source The constant to compare
- * @param changes Gets the @see SchemaItemChanges between the two constants.
- * For example, if source constant has an attribute/property that it missing in
- * target one, it would be listed in propertyValueChanges.
  */
-export default async function mergeConstant(target: Constant, source: Constant, changes: SchemaItemChanges) {
-  const mutableConstant = target as MutableConstant;
-
-  // Get referenced higher level phenomenon
-  const [refSchema, itemName] = await getItemNameAndSchemaRef(source, source.phenomenon!.fullName);
-
-  await mergeSchemaItemProperties(mutableConstant, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
-    switch (propertyName) {
-      case "definition": {
-        if (item.definition === "")
-          return item.setDefinition(propertyValue);
-        throw Error(`Failed to merged, constant definition conflict: ${propertyValue} -> ${item.definition}`);
-      }
-      case "numerator": {
-        if (!item.hasNumerator)
-          return item.setNumerator(propertyValue);
-        throw Error(`Failed to merged, constant numerator conflict: ${propertyValue} -> ${item.numerator}`);
-      }
-      case "denominator": {
-        if (!item.hasDenominator)
-          return item.setDenominator(propertyValue);
-        throw Error(`Failed to merged, constant denominator conflict: ${propertyValue} -> ${item.denominator}`);
-      }
-      case "phenomenon": {
-        if (item.phenomenon === undefined) {
-          // A lazy loaded phenomenon with the correct reference schema is needed, if reference schema is undefined then item schema.
-          const schemaItemKey = new SchemaItemKey(itemName, refSchema ? refSchema.schemaKey : target.schema.schemaKey);
-          const lazyTargetPhenomenon: LazyLoadedPhenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => {
-            const phenomenon = (await target.schema.context.getSchemaItem<Phenomenon>(schemaItemKey));
-            // At this point, higher level phenomenon item should not be undefined
-            if (phenomenon === undefined)
-              throw Error(`Unable to locate phenomenon item in schema ${schemaItemKey.schemaName}`);
-            return phenomenon;
-          });
-          return item.setPhenomenon(lazyTargetPhenomenon);
+export default class ConstantsMerger extends SchemaItemMerger<Constant> {
+  /**
+   * Creates the property value resolver for [[Constant]] items.
+   */
+  protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<Constant>> {
+    return {
+      phenomenon: (phenomenonFullName, targetItemKey) => {
+        // There are two options, either the phenomenon was referenced from another
+        // schema or it is defined in the same schema as the constant to be merged.
+        // In the latter case, the changes would report a different property value that
+        // refers to the source schema. So that needs to be changed here.
+        const [schemaName, phenomenonName] = SchemaItem.parseFullName(phenomenonFullName);
+        if(this.context.targetSchema.getReferenceSync(schemaName) === undefined) {
+          return `${targetItemKey.schemaName}.${phenomenonName}`;
         }
-      }
-    }
-  });
+        return phenomenonFullName;
+      },
+      numerator: (value, targetItemKey) => {
+        const item = this.context.targetSchema.lookupItemSync<Constant>(targetItemKey);
+        if(item !== undefined && item.hasNumerator && item.numerator !== value) {
+          throw new Error(`Failed to merged, constant numerator conflict: ${value} -> ${item.numerator}`);
+        }
+        return value;
+      },
+      denominator: (value, targetItemKey) => {
+        const item = this.context.targetSchema.lookupItemSync<Constant>(targetItemKey);
+        if(item !== undefined && item.hasDenominator && item.denominator !== value) {
+          throw new Error(`Failed to merged, constant denominator conflict: ${value} -> ${item.denominator}`);
+        }
+        return value;
+      },
+    };
+  }
 }
+
