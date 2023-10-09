@@ -98,15 +98,15 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     // ignore duplicate of most recent point
     const numPrevious = this._results.length;
     if (numPrevious > 0) {
-      const topFractionA = this._results[numPrevious - 1].detailA.fraction;
-      const topFractionB = this._results[numPrevious - 1].detailB.fraction;
+      const oldDetailA = this._results[numPrevious - 1].detailA;
+      const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionB) &&
-          Geometry.isAlmostEqualNumber(topFractionB, globalFractionA))
+        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
+          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
           return;
       } else {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionA) &&
-          Geometry.isAlmostEqualNumber(topFractionB, globalFractionB))
+        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
+          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
           return;
       }
     }
@@ -731,38 +731,22 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     }
     this._geometryB = geomB;  // restore
   }
-  /**
-* Given a parent chain, convert the corresponding child details so that they refer to the chain's global parameterization.
-* * It is assumed that `this._results[i].detailA.curve` is a child of chainA, and similarly for detailB/chainB.
-* @param chainA convert each detailA to the global parameterization of chainA
-* @param chainB convert each detailB to the global parameterization of chainB
-*/
-  private convertChildDetailToChainDetail(chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex): void {
-    for (const childDetailPair of this._results) {
-      if (chainA) {
-        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
-        if (chainDetail)
-          childDetailPair.detailA = chainDetail;
-      }
-      if (chainB) {
-        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
-        if (chainDetail)
-          childDetailPair.detailB = chainDetail;
-      }
-    }
-  }
   /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
   private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
+    if (geomA instanceof CurveChainWithDistanceIndex) {
+      assert(!!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      return;
+    }
+    const index0 = this._results.length;
     const geomB = this._geometryB;  // save
     for (const child of geomB.path.children) {
       this.resetGeometry(child);
       geomAHandler(geomA);
     }
     this.resetGeometry(geomB);  // restore
-    assert(!(geomA instanceof CurveChainWithDistanceIndex));
-    this.convertChildDetailToChainDetail(undefined, geomB);
+    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(this._results, index0, undefined, geomB, true);
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
@@ -853,9 +837,8 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
   public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
     super.handleCurveChainWithDistanceIndex(chain);
-    this.convertChildDetailToChainDetail(
-      chain, this._geometryB instanceof CurveChainWithDistanceIndex ? this._geometryB : undefined,
-    );
+    // if _geometryB is also a CurveChainWithDistanceIndex, it will already have been converted by dispatchCurveChainWithDistanceIndex
+    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(this._results, 0, chain, undefined, true);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {

@@ -1512,6 +1512,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    // @internal
+    static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[];
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
     curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
@@ -1667,6 +1669,10 @@ export class CurveLocationDetail {
     intervalRole?: CurveIntervalRole;
     inverseInterpolateFraction(f: number, defaultFraction?: number): number;
     get isIsolated(): boolean;
+    isSameCurveAndFraction(other: CurveLocationDetail | {
+        curve: CurvePrimitive;
+        fraction: number;
+    }): boolean;
     point: Point3d;
     point1?: Point3d;
     pointQ: Point3d;
@@ -1697,6 +1703,8 @@ export class CurveLocationDetailPair {
     static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
     detailB: CurveLocationDetail;
+    // @internal
+    static removeAdjacentDuplicates(pairs: CurveLocationDetailPair[], index0?: number): CurveLocationDetailPair[];
     swapDetails(): void;
 }
 

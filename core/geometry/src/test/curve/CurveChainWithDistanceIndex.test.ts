@@ -204,18 +204,18 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test closest approach global fractions
-    const intersectionXYAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
+    const closestApproachAB = CurveCurve.closestApproachProjectedXYPair(geometryA, geometryB);
     const closestApproachBA = CurveCurve.closestApproachProjectedXYPair(geometryB, geometryA);
     // AB
-    ck.testDefined(intersectionXYAB);
+    ck.testDefined(closestApproachAB);
     const closestApproachSegmentAB = LineSegment3d.create(
-      intersectionXYAB!.detailA.point, intersectionXYAB!.detailB.point,
+      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
-    ck.testCoordinate(intersectionXYAB!.detailA.fraction, 0.2, "AB detailA");
-    ck.testCoordinate(intersectionXYAB!.detailB.fraction, 0, "AB detailB");
+    ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.2, "AB detailA");
+    ck.testCoordinate(closestApproachAB!.detailB.fraction, 0, "AB detailB");
     // BA
-    ck.testDefined(intersectionXYAB);
+    ck.testDefined(closestApproachAB);
     const closestApproachSegmentBA = LineSegment3d.create(
       closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
     );
@@ -501,7 +501,7 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionXYAB, 0.05);
     ck.testDefined(intersectionXYAB);
     ck.testDefined(intersectionXYBA);
-    const numExpected = 3; // BUG! number of expected intersections is 2
+    const numExpected = 2;
     ck.testExactNumber(numExpected, intersectionXYAB.length);
     // intersection 1
     ck.testPoint3d(intersectionXYAB[0].detailA.point, intersectionXYBA[0].detailA.point);
@@ -638,7 +638,7 @@ describe("CurveChainWithDistanceIndex", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionXYAB, 0.05);
     ck.testDefined(intersectionXYAB);
     ck.testDefined(intersectionXYBA);
-    const numExpected = 3; // BUG! number of expected intersections is 2
+    const numExpected = 2;
     ck.testExactNumber(numExpected, intersectionXYAB.length);
     // intersection 1
     ck.testPoint3d(intersectionXYAB[0].detailA.point, intersectionXYBA[0].detailA.point);
@@ -656,6 +656,17 @@ describe("CurveChainWithDistanceIndex", () => {
     ck.testCoordinate(intersectionXYBA[1].detailB.fraction, 11 / 19, "BA1 detailB");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "intersectXYZChainChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("recursionAvoidance", () => {
+    const ck = new Checker();
+    const pts: Point3d[] = Array(7).fill(null).map((_v: Point3d, i: number) => { return Point3d.create(i, i, i); });
+    const childChain0 = CurveChainWithDistanceIndex.createCapture(Path.create([pts[1], pts[2], pts[3]]));
+    const childChain1 = CurveChainWithDistanceIndex.createCapture(Path.create([pts[4], pts[5], pts[6]]));
+    const path = Path.create(LineSegment3d.create(pts[0], pts[1]), childChain0, LineSegment3d.create(pts[3], pts[4]), childChain1);
+    const chain = CurveChainWithDistanceIndex.createCapture(path);
+    for (const child of chain.path.children)
+      ck.testFalse(child instanceof CurveChainWithDistanceIndex, "no embedded chains");
     expect(ck.getNumErrors()).equals(0);
   });
 });
