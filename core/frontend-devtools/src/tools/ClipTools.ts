@@ -8,7 +8,7 @@
  */
 
 import {
-  ClipStyle, ClipStyleProps, ColorByName, ColorDef, ClipHighlight, LinePixels, RenderMode, RgbColor,
+  ClipHighlight, ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
 } from "@itwin/core-common";
 import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
@@ -142,7 +142,7 @@ export class ClipHighlightTool extends Tool {
         props.clipHighlight.width = width;
       }
 
-    vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
+      vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
 
@@ -181,7 +181,6 @@ export class ClipHighlightTool extends Tool {
     return true;
   }
 }
-
 
 /** Controls a view state's view details' flag for producing cut geometry for a clip style.
  * @beta

@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { RgbColor, ClipHighlight } from "@itwin/core-common";
+import { ClipHighlight, RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";

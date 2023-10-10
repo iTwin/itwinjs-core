@@ -104,9 +104,9 @@ export class CutStyle {
  * @extensions
  */
 export interface ClipHighlightProps {
-  /**Color to highlight the edge */
+  /** Color to highlight the edge */
   color?: RgbColorProps; // default white
-  /**Width of highlight in pixels */
+  /** Width of highlight in pixels */
   width?: number; // in pixels, default 1
 }
 
@@ -115,14 +115,14 @@ export interface ClipHighlightProps {
  * @public
  */
 export class ClipHighlight {
-  /**Color to highlight the edge, default to white */
-  public color?: RgbColor; 
-  /**Number of pixels to highlight, default 1 */
-  public width?: number; 
+  /** Color to highlight the edge, default to white */
+  public color?: RgbColor;
+  /** Number of pixels to highlight, default 1 */
+  public width?: number;
 
   private constructor(color: RgbColor = RgbColor.fromColorDef(ColorDef.white), width: number = 1) {
-      this.color = color;
-      this.width = width;
+    this.color = color;
+    this.width = width;
   }
   /** Create a highlight  from its components. */
   public static create(color: RgbColor, width: number): ClipHighlight {
