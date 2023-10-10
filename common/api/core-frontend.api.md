@@ -44,6 +44,7 @@ import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
+import { ClipHighlight } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipStyle } from '@itwin/core-common';

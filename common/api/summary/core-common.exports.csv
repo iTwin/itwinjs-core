@@ -109,6 +109,8 @@ public;ChangesetType
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
+public;ClipHighlight
+public;ClipHighlightProps
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri

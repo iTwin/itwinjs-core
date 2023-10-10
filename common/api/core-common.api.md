@@ -1169,8 +1169,27 @@ export interface ClassifierTileTreeId {
 }
 
 // @public
+export class ClipHighlight {
+    color?: RgbColor;
+    static create(color: RgbColor, width: number): ClipHighlight;
+    // (undocumented)
+    static readonly defaults: ClipHighlight;
+    // (undocumented)
+    static fromJSON(props?: ClipHighlightProps): ClipHighlight;
+    toJSON(): ClipHighlightProps | undefined;
+    width?: number;
+}
+
+// @public
+export interface ClipHighlightProps {
+    color?: RgbColorProps;
+    width?: number;
+}
+
+// @public
 export class ClipStyle {
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
+    readonly clipHighlight?: ClipHighlight;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, clipHighlight?: ClipHighlight | undefined): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
@@ -1184,6 +1203,7 @@ export class ClipStyle {
 
 // @public
 export interface ClipStyleProps {
+    clipHighlight?: ClipHighlightProps;
     cutStyle?: CutStyleProps;
     insideColor?: RgbColorProps;
     outsideColor?: RgbColorProps;
