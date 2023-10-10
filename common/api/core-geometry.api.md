@@ -6254,7 +6254,7 @@ export class UnivariateBezier extends BezierCoffs {
     deflateLeft(): void;
     deflateRight(): void;
     deflateRoot(root: number): number;
-    static deflateRoots01(bezier: UnivariateBezier): number[] | undefined;
+    static deflateRoots(bezier: UnivariateBezier): number[] | undefined;
     evaluate(u: number): number;
     get order(): number;
     runNewton(startFraction: number, tolerance?: number): number | undefined;
