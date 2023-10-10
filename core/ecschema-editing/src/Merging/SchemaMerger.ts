@@ -6,7 +6,7 @@
  * @module Merging
  */
 
-import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaContextEditor } from "../Editing/Editor";
@@ -62,10 +62,14 @@ export class SchemaMerger {
    * @returns             The merged target schema.
    */
   public async merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
-    const schemaChanges = await this.getSchemaChanges(targetSchema, sourceSchema);
+
+    // Create a memory copy of the target schema, that the merging does not
+    // alter the existing schema.
+    const mergedSchema  = await copySchema(targetSchema);
+    const schemaChanges = await this.getSchemaChanges(mergedSchema, sourceSchema);
     const mergeContext: SchemaMergeContext = {
-      editor: new SchemaContextEditor(targetSchema.context),
-      targetSchema,
+      editor: new SchemaContextEditor(mergedSchema.context),
+      targetSchema: mergedSchema,
       sourceSchema,
     };
 
@@ -84,9 +88,7 @@ export class SchemaMerger {
     await CAClassMerger.mergeChanges(mergeContext, itemChanges.customAttributeClasses);
     await ClassMerger.mergeChanges(mergeContext, itemChanges.classes);
 
-    // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
-    //       merge into a temporary schema and eventually swap that with the given instance.
-    return targetSchema;
+    return mergedSchema;
   }
 }
 
@@ -118,4 +120,19 @@ function * filterChangesByItemType<TChange extends SchemaItemChanges>(changes: M
       yield change;
     }
   }
+}
+
+/**
+ * Creates a copy of the given schema instance. The schema is copied using
+ * JSON serialization. On deserialization a new context is created with the
+ * original schemas context as reference resolver.
+ * @param schemaToCopy  The schema to copy
+ * @returns             The copied schema.
+ */
+async function copySchema(schemaToCopy: Schema): Promise<Schema> {
+  const schemaJson = schemaToCopy.toJSON();
+  const schemaContext = new SchemaContext();
+  schemaContext.addLocater(schemaToCopy.context);
+
+  return Schema.fromJson(schemaJson, schemaContext);
 }
