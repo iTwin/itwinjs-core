@@ -9,12 +9,12 @@
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveCollection } from "./CurveCollection";
+import { CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyCurve } from "./CurveTypes";
 import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY";
 import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY";
 import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
-import { CurveLocationDetailArrayPair, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveTypes";
 
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
@@ -50,6 +50,7 @@ export class CurveCurve {
   }
   /**
    * Return xy intersections of 2 projected curves.
+   * @param worldToLocal transform (possibly perspective) defining the local coordinates in which to compute xy intersections.
    * @param curveA first curve
    * @param extendA true to allow curveA to extend
    * @param curveB second curve
@@ -69,21 +70,22 @@ export class CurveCurve {
     return handler.grabPairedResults();
   }
   /**
-   * Return full 3d xyz intersections of 2 curves.
-   *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
-   *  * Not Implemented for bspline and bezier curves.
-   * @beta
-   * @param curveA first curve
-   * @param extendA true to allow curveA to extend
-   * @param curveB second curve
-   * @param extendB true to allow curveB to extend
-   */
-  public static intersectionXYZ(
+ * Return full 3d xyz intersections of 2 curves.
+ *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
+ *  * Not Implemented for bspline and bezier curves.
+ * @beta
+ * @param curveA first curve
+ * @param extendA true to allow curveA to extend
+ * @param curveB second curve
+ * @param extendB true to allow curveB to extend
+ * @returns array of intersections structured as CurveLocationDetailPair[]
+ */
+  public static intersectionXYZPairs(
     curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean,
-  ): CurveLocationDetailArrayPair {
+  ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXYZ(extendA, curveB, extendB);
     curveA.dispatchToGeometryHandler(handler);
-    return handler.grabResults();
+    return handler.grabPairedResults();
   }
   /**
    * Return xy intersections of input curves.

@@ -108,7 +108,6 @@ public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEdi
 public;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
 public;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
 public;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
-alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
@@ -139,6 +138,7 @@ public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
 public;PointProps
+deprecated;PointProps
 public;Primitives
 public;PrimitiveValue 
 public;PropertyChangeResult
@@ -197,7 +197,9 @@ public;UiAdmin
 public;class UiDataProvider
 public;UiError 
 public;UiEvent
+deprecated;UiEvent
 public;UiEventDispatcher
+deprecated;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 deprecated;UiItemProviderRegisteredEventArgs
@@ -209,6 +211,8 @@ public;UiItemsProvider
 deprecated;UiItemsProvider
 public;class UiLayoutDataProvider 
 public;UiSyncEvent 
+deprecated;UiSyncEvent 
 public;UiSyncEventArgs
+deprecated;UiSyncEventArgs
 public;WidgetState
 deprecated;WidgetState

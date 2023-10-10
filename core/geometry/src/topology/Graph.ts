@@ -425,8 +425,8 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /**
-   * Apply a mask to both sides of an edge.
-   * @param mask mask to apply to this edge and its `edgeMate`
+   * Clear a mask on both sides of an edge.
+   * @param mask mask to clear on this edge and its `edgeMate`
    */
   public clearMaskAroundEdge(mask: HalfEdgeMask) {
     this.clearMask(mask);
@@ -822,33 +822,52 @@ export class HalfEdge implements HalfEdgeUserData {
   }
 
   /**
-   * @return whether the sector represented by the 2D vectors from nodeA to nodeB and nodeB to nodeC is convex.
+   * Compute whether the sector defined by the chain of nodes is convex.
+   * * This computation ignores z-coordinates and connectivity, so the nodes are not required to be in the same face loop.
+   * @param nodeA the first node in the chain, nominally the face predecessor of nodeB
+   * @param nodeB the second node in the chain; the node at the sector vertex
+   * @param nodeC the third node in the chain, nominally the face successor of nodeB
+   * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors.
+   *   Typically this is a fraction of the sector's face's signed area. We can't compute area here, so if undefined, zero tolerance is used.
+   * @returns true iff the sector is convex
    */
-  public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): boolean {
-    const cross = HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);
-    if (cross > 0.0)
-      return true;
-    if (cross < 0.0)
-      return false;
-    return HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0;
+  public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, signedAreaTol: number = 0): boolean {
+    const signedSectorArea = 0.5 * HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);
+    signedAreaTol = signedAreaTol ?? 0.0;
+    if (Math.abs(signedSectorArea) <= Math.abs(signedAreaTol)) {
+      // the sector vectors are nearly parallel or antiparallel; only the former is deemed convex.
+      return HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0;
+    }
+    return signedSectorArea > -signedAreaTol; // call it convex even if we are a little bit on the other side of zero
   }
 
   /**
-   * @return whether the sector of the face is convex.
+   * Compute whether the sector at this node is convex.
+   * * This computation ignores z-coordinates.
+   * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors.
+   *   If undefined, a fraction ([[Geometry.smallMetricDistanceSquared]]) of the computed signed area is used.
+   *   Pass zero to skip toleranced computation.
+   * @returns true iff the sector is convex and its two edges are not antiparallel.
    */
-  // eslint-disable-next-line @itwin/prefer-get
-  public isSectorConvex(): boolean {
-    return HalfEdge.isSectorConvex(this.facePredecessor, this, this.faceSuccessor);
+  public isSectorConvex(signedAreaTol?: number): boolean {
+    if (signedAreaTol === undefined)
+      signedAreaTol = Geometry.smallMetricDistanceSquared * this.signedFaceArea();
+    return HalfEdge.isSectorConvex(this.facePredecessor, this, this.faceSuccessor, signedAreaTol);
   }
 
   /**
-   * @return whether the face is convex.
+   * Compute whether this face is convex.
+   * * This computation ignores z-coordinates.
+   * @param tolerance optional relative tolerance to use in test for parallel vectors.
+   *   Default value is [[Geometry.smallMetricDistanceSquared]].
+   *   Pass zero to skip toleranced computation.
+   * @returns true iff this face is convex.
    */
-  // eslint-disable-next-line @itwin/prefer-get
-  public isFaceConvex(): boolean {
+  public isFaceConvex(tolerance: number = Geometry.smallMetricDistanceSquared): boolean {
     let node: HalfEdge = this;
+    const signedAreaTol = tolerance > 0.0 ? tolerance * node.signedFaceArea() : 0.0;
     do {
-      if (!node.isSectorConvex())
+      if (!node.isSectorConvex(signedAreaTol))
         return false;
       node = node.faceSuccessor;
     } while (node !== this);
@@ -889,7 +908,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
-  /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  /** Returns Returns true if the edge mate has Mask.EXTERIOR_MASK set. */
   public static testMateMaskExterior(node: HalfEdge) { return node.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
   /** Returns radians between this edge and its face predecessor edge, using all three coordinates x,y,z and given normal to resolve sweep direction.
@@ -1026,15 +1045,16 @@ export class HalfEdge implements HalfEdgeUserData {
       node = node.vertexSuccessor;
     } while (node !== this);
   }
-  /** Returns the signed sum of xy areas of triangles from first node to edges.
-   *
+  /**
+   * Compute the signed sum of xy areas of triangles from first node to edges.
    * * A positive area is counterclockwise.
    * * A negative area is clockwise.
+   * @returns signed area of this node's face
    */
   public signedFaceArea(): number {
     let sum = 0;
     // sum area of trapezoids.
-    // * the formula in the loop gives twice the area (because it does nto average the y values).
+    // * the formula in the loop gives twice the area (because it does not average the y values).
     // * this is fixed up at the end by a single multiply by 0.5
     // * individual trapezoid heights are measured from y at the start node to keep area values numerical smaller.
     const y0 = this.y;
@@ -1578,10 +1598,10 @@ export class HalfEdgeGraph {
     let numAccepted = 0;
     for (let i = 0; i < numTotal; i++) {
       const candidate = this.allHalfEdges[i];
-      if (!deleteThisNode(candidate)) {
+      if (!deleteThisNode(candidate))
         this.allHalfEdges[numAccepted++] = candidate;
-      } else
-        candidate.isolateEdge();
+      else
+        candidate.yankFromVertexLoop(); // ASSUME callback symmetry so we eventually yank the mate!
     }
     const numDeleted = numTotal - numAccepted;
     this.allHalfEdges.length = numAccepted;
