@@ -76,8 +76,8 @@ export class CurveLocationDetail {
   /** A context-specific numeric value. (e.g. a distance) */
   public a: number;
   /**
-   * Optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
-   * a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
+   * Optional CurveLocationDetail with more detail of location. For instance, a detail for fractional position
+   * within a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
    * further detail of the particular curve within the chain in the childDetail.
    */
   public childDetail?: CurveLocationDetail;
@@ -416,9 +416,9 @@ export enum CurveCurveApproachType {
  * @public
  */
 export class CurveLocationDetailPair {
-  /** The first of the two details ... */
+  /** The first of the two details. */
   public detailA: CurveLocationDetail;
-  /** The second of the two details ... */
+  /** The second of the two details. */
   public detailB: CurveLocationDetail;
   /**
    * Enumeration of how the detail pairs relate.
@@ -474,13 +474,14 @@ export class CurveLocationDetailPair {
 }
 
 /**
- * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by [[CurveCurve.intersectionXYZ]].
+ * Data bundle for a pair of arrays of CurveLocationDetail structures.
+ * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {
-  /** First array of details ... */
+  /** First array of details. */
   public dataA: CurveLocationDetail[];
-  /** Second array of details ... */
+  /** Second array of details. */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];
