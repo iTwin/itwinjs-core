@@ -106,10 +106,9 @@ export class MultiChainCollector {
   public captureCurve(candidate: AnyCurve) {
     if (candidate instanceof CurvePrimitive)
       this.captureCurvePrimitive(candidate);
-    else if (candidate instanceof CurveCollection && candidate.children !== undefined) {
-      for (const c of candidate.children) {
-        this.captureCurve(c as AnyCurve);
-      }
+    else if (candidate instanceof CurveCollection) {
+      for (const c of candidate.children)
+        this.captureCurve(c);
     }
   }
   /** If allowed by the geometry type, move an endpoint. */

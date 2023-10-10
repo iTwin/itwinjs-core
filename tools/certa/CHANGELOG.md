@@ -1,6 +1,6 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Tue, 10 Oct 2023 18:51:27 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Oct 2023 20:02:00 GMT and should not be manually modified.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -99,6 +99,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Update to eslint@8
 - Add support for Electron 24.
 - Drop Electron 14, 15, 16, 17, 22. Start supporting Electron 23.
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT
