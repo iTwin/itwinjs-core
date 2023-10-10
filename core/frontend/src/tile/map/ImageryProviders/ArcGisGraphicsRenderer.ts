@@ -8,6 +8,7 @@ import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps 
 import { ArcGisAttributeDrivenSymbology, ArcGisGeometryBaseRenderer, WebMercator } from "../../internal";
 import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { IModelConnection } from "../../../IModelConnection";
+import { Viewport } from "../../../Viewport";
 
 const loggerCategory = "MapLayerImageryProvider.ArcGisGraphicsRenderer";
 
@@ -20,12 +21,14 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
   private _iModel: IModelConnection;
+  private _viewport: Viewport;
 
   public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
-  constructor(iModel: IModelConnection) {
+  constructor(viewport: Viewport) {
     super();
-    this._iModel = iModel;
+    this._viewport = viewport;
+    this._iModel = viewport.iModel;
   }
 
   public moveGraphics() {
@@ -63,20 +66,15 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   protected async fill() {
     if (this._scratchPaths.length > 0) {
       const loops = [];
-      if (this._iModel.noGcsDefined) {
-        for (const points of this._scratchPaths) {
-          loops.push(Loop.create(LineString3d.create(this.toSpatialFromEcf(points))));
-        }
-      } else {
-        const pathPromises = [];
-        for (const points of this._scratchPaths) {
-          pathPromises.push(this.toSpatialFromGcs(points));
-        }
 
-        const pathsArray = await Promise.all(pathPromises);
-        for (const pointsArray of pathsArray) {
-          loops.push(Loop.create(LineString3d.create(pointsArray)));
-        }
+      const pathPromises = [];
+      for (const points of this._scratchPaths) {
+        pathPromises.push(this.toSpatial(points));
+      }
+
+      const pathsArray = await Promise.all(pathPromises);
+      for (const pointsArray of pathsArray) {
+        loops.push(Loop.create(LineString3d.create(pointsArray)));
       }
 
       const mergedLoops = RegionOps.constructAllXYRegionLoops(loops);
@@ -91,27 +89,21 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   }
 
   protected async stroke() {
-
     if (this._scratchPointsArray.length > 0) {
       this._scratchPaths.push(this._scratchPointsArray.getArray());
       this._scratchPointsArray.clear();
     }
 
-    if (this._iModel.noGcsDefined) {
-      for (const linestring of this._scratchPaths) {
-        this._graphics.push({ type: "linestring", points: this.toSpatialFromEcf(linestring) });
-      }
-    } else {
-      const pathPromises = [];
-      for (const noGcsDefined of this._scratchPaths) {
-        pathPromises.push(this.toSpatialFromGcs(noGcsDefined));
-      }
-
-      const reprojectedPaths = await Promise.all(pathPromises);
-      for (const path of reprojectedPaths) {
-        this._graphics.push({ type: "linestring", points: Point3dArray.clonePoint3dArray(path) });
-      }
+    const pathPromises = [];
+    for (const geoPt of this._scratchPaths) {
+      pathPromises.push(this.toSpatial(geoPt));
     }
+
+    const reprojectedPaths = await Promise.all(pathPromises);
+    for (const path of reprojectedPaths) {
+      this._graphics.push({ type: "linestring", points: Point3dArray.clonePoint3dArray(path) });
+    }
+
     this._scratchPaths = [];
   }
 
@@ -122,32 +114,26 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   protected override async finishPoints() {
     if (this._scratchPointsArray.length > 0) {
 
-      if (this._iModel.noGcsDefined) {
-        this._graphics.push({ type: "pointstring", points: this.toSpatialFromEcf(this._scratchPointsArray.getArray()) });
-      } else {
-        // Backend reprojection
-        const pointsArray = this._scratchPointsArray.getArray();
-        try {
-          const spatialPoints = await this.toSpatialFromGcs(pointsArray);
-          this._graphics.push({ type: "pointstring", points: spatialPoints });
-        } catch (error) {
-          Logger.logError(loggerCategory, "ArcGisFeatureGraphicsRenderer: Could not reproject points");
-        }
+      // Backend reprojection
+      const pointsArray = this._scratchPointsArray.getArray();
+      try {
+        const spatialPoints = await this.toSpatial(pointsArray);
+        this._graphics.push({ type: "pointstring", points: spatialPoints });
+      } catch (error) {
+        Logger.logError(loggerCategory, "ArcGisFeatureGraphicsRenderer: Could not reproject points");
       }
+
       this._scratchPointsArray.clear();
     }
   }
 
-  private async toSpatialFromGcs(geoPoints: Point3d[]) {
-    return this._iModel.toSpatialFromGcs(geoPoints, { horizontalCRS: { epsg: 3857 }, verticalCRS: { id: "ELLIPSOID" } });
-  }
-
-  private toSpatialFromEcf(geoPoints: Point3d[]) {
-    const spatials = [];
-    for (const pt of geoPoints) {
-      const carto = { longitude: WebMercator.getEPSG4326Lon(pt.x), latitude: WebMercator.getEPSG4326Lat(pt.y), height: pt.z };
-      spatials.push(this._iModel.cartographicToSpatialFromEcef(Cartographic.fromDegrees(carto)));
+  private async toSpatial(geoPoints: Point3d[]) {
+    const bgMapGeom = this._viewport.displayStyle.getBackgroundMapGeometry();
+    if (bgMapGeom) {
+      const cartoPts = geoPoints.map((pt) => Cartographic.fromDegrees({longitude: WebMercator.getEPSG4326Lon(pt.x), latitude: WebMercator.getEPSG4326Lat(pt.y), height: pt.z }));
+      return bgMapGeom.cartographicToDbFromWgs84Gcs(cartoPts);
     }
-    return spatials;
+
+    return [];
   }
 }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
+import { Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
@@ -12,11 +12,13 @@ import {
   ArcGisGraphicsRenderer,
 
 } from "../../../tile/internal";
-import { BlankConnection } from "../../../IModelConnection";
+import { BlankConnection, IModelConnection } from "../../../IModelConnection";
 import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
 import { Guid, Mutable } from "@itwin/core-bentley";
 import { Loop, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { GraphicLineString } from "../../../core-frontend";
+import { BackgroundMapGeometry, DisplayStyle3dState, GraphicLineString, ScreenViewport, ViewState3d } from "../../../core-frontend";
+
+import * as moq from "typemoq";
 
 chai.use(chaiAsPromised);
 
@@ -73,22 +75,79 @@ const createImodelProps = () => {
   };
 };
 
+const styleProps: DisplayStyle3dProps = {
+  classFullName: "BisCore:DisplayStyle3d",
+  model: "0",
+  code: {
+    spec: "0x1",
+    scope: "0x1",
+    value: "",
+  },
+};
+
+export class ViewportMock {
+  public viewportMock = moq.Mock.ofType<ScreenViewport>();
+  public viewMock = moq.Mock.ofType<ViewState3d>();
+
+  public imodel: IModelConnection = new TestConnection(createImodelProps(), {});
+
+  public displayStyle = new DisplayStyle3dState(styleProps, this.imodel);
+
+  public get object() {
+    return this.viewportMock.object;
+  }
+
+  public setup() {
+    //
+    this.viewMock.setup((view) => view.iModel).returns(() => this.imodel);
+    this.viewportMock.setup((viewport) => viewport.iModel).returns(() => this.viewMock.object.iModel);
+    this.viewportMock.setup((viewport) => viewport.displayStyle).returns(() => this.displayStyle);
+  }
+
+  public reset() {
+    this.viewMock.reset();
+    this.viewportMock.reset();
+  }
+}
+
+const cloneCoords = (coords: XYZProps[]) => {
+  const result: PointWithStatus[] = [];
+  for (const coord of coords)
+    result.push({ p: coord, s: 0 });
+
+  return result;
+};
+
+const sampleGeoServicesProps = {
+  toIModelCoords: async ( request: IModelCoordinatesRequestProps) => cloneCoords(request.geoCoords),
+  fromIModelCoords: async ( request: GeoCoordinatesRequestProps) => cloneCoords(request.iModelCoords),
+};
+
+const sampleiModelProps = {
+  rootSubject: { name: "test-connection" },
+  projectExtents: new Range3d(-10, 10, -10, -10, 10, 100),
+  ecefLocation:  EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 })),
+  key: "",
+  iTwinId: Guid.createValue(),
+};
+
 describe("ArcGisGraphicsRenderer", () => {
   const sandbox = sinon.createSandbox();
-
+  let viewportMock: ViewportMock|undefined;
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
+    viewportMock = new ViewportMock();
   });
 
   afterEach(async () => {
     sandbox.restore();
     if (IModelApp.initialized)
       await IModelApp.shutdown();
+    viewportMock!.reset();
   });
 
   it("render non-filled paths correctly", async () => {
-    const connection = new TestConnection(createImodelProps(), {});
-    const renderer = new ArcGisGraphicsRenderer(connection);
+    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
     const testLengths = [2,2];
     const testCoords = [
       -8368830.26, 4866490.12,
@@ -99,7 +158,7 @@ describe("ArcGisGraphicsRenderer", () => {
 
     // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialFromEcfStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatialFromEcf" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -122,16 +181,15 @@ describe("ArcGisGraphicsRenderer", () => {
     }
     expect(graphics[0].type).to.equals("linestring");
     expect((graphics[0] as any).points.length ).to.equals(2);
-    expect(toSpatialFromEcfStub.called).to.be.true;
+    expect(toSpatialStub.called).to.be.true;
   });
 
   it("render filled paths correctly", async () => {
-    const connection = new TestConnection(createImodelProps(), {});
-    const renderer = new ArcGisGraphicsRenderer(connection);
+    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
 
     // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialFromEcfStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatialFromEcf" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -162,42 +220,16 @@ describe("ArcGisGraphicsRenderer", () => {
       expect(Math.abs(child.endPoint().y -  testCoords[i+1])).to.be.lessThan(tolerance);
     }
 
-    expect(toSpatialFromEcfStub.called).to.be.true;
-
-  });
-
-  it("coordinates reprojection uses ECF transformation when no GCS defined", async () => {
-    const connection = new TestConnection(createImodelProps(), {});
-    const renderer = new ArcGisGraphicsRenderer(connection);
-    const cartoToSpatialSpy = sinon.spy(connection, "cartographicToSpatialFromEcef");
-
-    const testLengths = [2,2];
-    const testCoords = [
-      0,0,
-      1,1,
-      2,2,
-      3,3,
-    ];
-
-    // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
-    await renderer.renderPath(testLengths, testCoords, false, 2, false);
-    expect(cartoToSpatialSpy.getCalls().length).to.equals(testCoords.length/2);
-
-    // filled paths
-    await renderer.renderPath(testLengths, testCoords, true, 2, false);
-
-    // filled paths
-    await renderer.renderPoint(testLengths, testCoords, 2, false);
+    expect(toSpatialStub.called).to.be.true;
 
   });
 
   it("render point correctly", async () => {
-    const connection = new TestConnection(createImodelProps(), {});
-    const renderer = new ArcGisGraphicsRenderer(connection);
+    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
 
     // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialFromEcfStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatialFromEcf" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = sandbox.stub(ArcGisGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -217,44 +249,29 @@ describe("ArcGisGraphicsRenderer", () => {
     expect(Math.abs(points[0].x -  testCoords[i++])).to.be.lessThan(tolerance);
     expect(Math.abs(points[0].y -  testCoords[i++])).to.be.lessThan(tolerance);
 
-    expect(toSpatialFromEcfStub.called).to.be.true;
+    expect(toSpatialStub.called).to.be.true;
 
   });
 
   it("coordinates reprojection RPC calls get batched if GCS defined", async () => {
-    const cloneCoords = (coords: XYZProps[]) => {
-      const result: PointWithStatus[] = [];
-      for (const coord of coords)
-        result.push({ p: coord, s: 0 });
+    viewportMock?.reset();
+    const connection = new TestConnection(sampleiModelProps, sampleGeoServicesProps, false);
+    viewportMock!.imodel = connection;
+    viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
+    viewportMock!.setup();
+    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
 
-      return result;
-    };
-
-    const geoservicesProps = {
-      toIModelCoords: async ( request: IModelCoordinatesRequestProps) => cloneCoords(request.geoCoords),
-      fromIModelCoords: async ( request: GeoCoordinatesRequestProps) => cloneCoords(request.iModelCoords),
-    };
-
-    const iModelProps = {
-      rootSubject: { name: "test-connection" },
-      projectExtents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      ecefLocation:  EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 })),
-      key: "",
-      iTwinId: Guid.createValue(),
-    };
-    const connection = new TestConnection(iModelProps, geoservicesProps, false);
-    const renderer = new ArcGisGraphicsRenderer(connection);
-
-    const testLengths = [4, 4];
+    const testLengths = [4,4];
     const testCoords = [
-      0,0,
-      1,1,
-      2,2,
-      3,3,
-      0,0,
-      1,1,
-      2,2,
-      3,3,
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
+      // duplicate
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
     ];
 
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
@@ -262,11 +279,43 @@ describe("ArcGisGraphicsRenderer", () => {
     expect(connection.toIModelCoordsCount).to.equals(1);
 
     // filled paths
+    connection.toIModelCoordsCount = 0;
     await renderer.renderPath(testLengths, testCoords, true, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(2);
+    expect(connection.toIModelCoordsCount).to.equals(1);
 
     // filled paths
+    connection.toIModelCoordsCount = 0;
     await renderer.renderPoint(testLengths, testCoords, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(3);
+    expect(connection.toIModelCoordsCount).to.equals(1);
+
+  });
+
+  it("coordinates reprojection RPC calls get batched if GCS defined", async () => {
+    viewportMock?.reset();
+
+    const connection = new TestConnection(sampleiModelProps, sampleGeoServicesProps, false);
+    // !Important: tweak this value to ensure coordinates will fit outside cartesianRange,
+    // and therefore make the reprojection code skip the reprojection backend.
+    BackgroundMapGeometry.maxCartesianDistance = 0;
+    viewportMock!.imodel = connection;
+    viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
+    viewportMock!.setup();
+    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+
+    const testLengths = [4,4];
+    const testCoords = [
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
+      // duplicate
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
+    ];
+
+    await renderer.renderPath(testLengths, testCoords, false, 2, false);
+    expect(connection.toIModelCoordsCount).to.equals(0);
   });
 });

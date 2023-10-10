@@ -163,7 +163,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
-      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
@@ -593,14 +593,15 @@ importers:
       rimraf: ^3.0.2
       sinon: ^15.0.4
       source-map-loader: ^4.0.0
+      typemoq: ^2.1.0
       typescript: ~5.0.2
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.1.0
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.4.7
       '@loaders.gl/draco': 3.4.7
@@ -633,6 +634,7 @@ importers:
       rimraf: 3.0.2
       sinon: 15.2.0
       source-map-loader: 4.0.1_webpack@5.88.2
+      typemoq: 2.1.0
       typescript: 5.0.4
       webpack: 5.88.2
 
@@ -1364,7 +1366,7 @@ importers:
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.1.16_ldn7mm7njkdg5fypcar6myqs34
+      '@itwin/imodel-transformer': 0.1.16_weqmipkhmjm5vfy37lv47aijmu
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 0.6.3_mdtbcqczpmeuv6yjzfaigjndwi
       '@xmldom/xmldom': 0.8.10
@@ -1784,7 +1786,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 4.0.0-dev.44_xaiy4vqh4w4prx7ej54h3ywmza
       '@itwin/itwins-client': 1.2.0
-      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/oidc-signin-tool': 3.6.1_y7qbfqj25iik67jw2wovgyleam
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2522,12 +2524,12 @@ importers:
       rimraf: 3.0.2
       rollup-plugin-copy: 3.4.0
       rollup-plugin-ignore: 1.0.10
-      rollup-plugin-visualizer: 5.9.2_rollup@3.28.0
-      rollup-plugin-webpack-stats: 0.2.0_rollup@3.28.0
+      rollup-plugin-visualizer: 5.9.2
+      rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.0.4
       vite: 4.4.9_@types+node@18.16.1
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_rollup@3.28.0+vite@4.4.9
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/display-test-app:
@@ -2625,7 +2627,7 @@ importers:
       '@itwin/imodels-client-authoring': 3.1.0
       '@itwin/imodels-client-management': 3.1.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.1.0
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
@@ -2658,13 +2660,13 @@ importers:
       rimraf: 3.0.2
       rollup-plugin-copy: 3.4.0
       rollup-plugin-ignore: 1.0.10
-      rollup-plugin-visualizer: 5.9.2_rollup@3.28.0
-      rollup-plugin-webpack-stats: 0.2.0_rollup@3.28.0
+      rollup-plugin-visualizer: 5.9.2
+      rollup-plugin-webpack-stats: 0.2.0
       ts-node: 10.9.1_typescript@5.0.4
       typescript: 5.0.4
       vite: 4.4.9
       vite-plugin-env-compatible: 1.1.1
-      vite-plugin-inspect: 0.7.33_rollup@3.28.0+vite@4.4.9
+      vite-plugin-inspect: 0.7.33_vite@4.4.9
       webpack: 5.88.2
 
   ../../test-apps/export-gltf:
@@ -4202,6 +4204,13 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
+  /@itwin/cloud-agnostic-core/2.1.0:
+    resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
+    engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+      reflect-metadata: ^0.1.13
+
   /@itwin/cloud-agnostic-core/2.1.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-nVFJ55+sj3IExsXwPXJwtud2cK1+5gYsS1Q96Vz6pBQ1rn84i22JUwGmlBrvf3Em6obseBaDQ6GCRA4aUpAjgQ==}
     engines: {node: '>=12.20 <19.0.0'}
@@ -4211,6 +4220,7 @@ packages:
     dependencies:
       inversify: 6.0.1
       reflect-metadata: 0.1.13
+    dev: false
 
   /@itwin/core-common/4.0.6_67wltvhdskk2oee2c3z2o4tfly:
     resolution: {integrity: sha512-1N92kv3bqY/01Mdto/GCKgO5dG6dli9d06lp1KpHTUuwPpWVob1oIF/w5ij+0C4QvHq54SZlCxDfNaC7FH6lKQ==}
@@ -4222,14 +4232,6 @@ packages:
       '@itwin/core-geometry': link:../../core/geometry
       flatbuffers: 1.12.0
       js-base64: 3.7.5
-    dev: false
-
-  /@itwin/core-quantity/4.0.7_mdtbcqczpmeuv6yjzfaigjndwi:
-    resolution: {integrity: sha512-2X+w5/w/Gx0KwKW61BwB2NM0t1NGbM/8F0UqW41jdG+t9IB9GEZiCpc86E8bmzfYRItB858rytgFWrNLtnWlWg==}
-    peerDependencies:
-      '@itwin/core-bentley': ^4.0.7
-    dependencies:
-      '@itwin/core-bentley': link:../../core/bentley
     dev: false
 
   /@itwin/electron-authorization/0.14.1_jyyqjsjn3zzjkls5batjdji7ni:
@@ -4273,7 +4275,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@itwin/imodel-transformer/0.1.16_ldn7mm7njkdg5fypcar6myqs34:
+  /@itwin/imodel-transformer/0.1.16_weqmipkhmjm5vfy37lv47aijmu:
     resolution: {integrity: sha512-TVa1bZHSgE7nZ6UzXZq0zrDtR0va0rTA265GH7QmxgFD+sXZxUzODWd3SIp55NPNH+A7F9Bs/hLY4/HlB708vA==}
     engines: {node: ^18.0.0}
     peerDependencies:
@@ -4281,14 +4283,13 @@ packages:
       '@itwin/core-bentley': 3.6.0 - 4.0.999
       '@itwin/core-common': 3.6.0 - 4.0.999
       '@itwin/core-geometry': 3.6.0 - 4.0.999
-      '@itwin/core-quantity': 3.6.0 - 4.0.999
       '@itwin/ecschema-metadata': 3.6.0 - 4.0.999
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-quantity': 4.0.7_mdtbcqczpmeuv6yjzfaigjndwi
+      '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       semver: 7.5.4
     dev: false
@@ -4398,6 +4399,18 @@ packages:
       - debug
     dev: false
 
+  /@itwin/object-storage-core/2.1.0:
+    resolution: {integrity: sha512-0zapV7KDn3NXeOAMoTUoiSiIuQQXUIn8IuLxLExEMoJ8xiG7JsFRWW1tm0Q9Lj095f/stT3V0TOvl4dw1G8pAA==}
+    engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+      reflect-metadata: ^0.1.13
+    dependencies:
+      '@itwin/cloud-agnostic-core': 2.1.0
+      axios: 0.27.2
+    transitivePeerDependencies:
+      - debug
+
   /@itwin/object-storage-core/2.1.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-0zapV7KDn3NXeOAMoTUoiSiIuQQXUIn8IuLxLExEMoJ8xiG7JsFRWW1tm0Q9Lj095f/stT3V0TOvl4dw1G8pAA==}
     engines: {node: '>=12.20 <19.0.0'}
@@ -4411,6 +4424,7 @@ packages:
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
+    dev: false
 
   /@itwin/oidc-signin-tool/3.6.1_mdtbcqczpmeuv6yjzfaigjndwi:
     resolution: {integrity: sha512-4M391FMMwPuRVZSC8DAtLlWlWMDwAVigI8ZY5gvPkHTOOHSAKPxFxZD/zXsySJ3Rn+tFNpP6DctU6OVxrYolRQ==}
@@ -4675,7 +4689,7 @@ packages:
       '@babel/runtime': 7.22.6
     dev: false
 
-  /@rollup/pluginutils/5.0.2_rollup@3.28.0:
+  /@rollup/pluginutils/5.0.2:
     resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
@@ -4687,7 +4701,6 @@ packages:
       '@types/estree': 1.0.1
       estree-walker: 2.0.2
       picomatch: 2.3.1
-      rollup: 3.28.0
     dev: true
 
   /@rushstack/node-core-library/3.59.7_@types+node@18.16.1:
@@ -5563,10 +5576,8 @@ packages:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  /ajv-formats/2.1.1_ajv@8.12.0:
+  /ajv-formats/2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
-    peerDependencies:
-      ajv: ^8.0.0
     peerDependenciesMeta:
       ajv:
         optional: true
@@ -8626,6 +8637,7 @@ packages:
 
   /inversify/6.0.1:
     resolution: {integrity: sha512-B3ex30927698TJENHR++8FfEaJGqoWOgI6ZY5Ht/nLUsFCwHn6akbwtnUAPCgUepAnTpe2qHxhDNjoKLyz6rgQ==}
+    dev: false
 
   /ipaddr.js/1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -10748,6 +10760,7 @@ packages:
 
   /reflect-metadata/0.1.13:
     resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
+    dev: false
 
   /regenerator-runtime/0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
@@ -10891,7 +10904,7 @@ packages:
     resolution: {integrity: sha512-VsbnfwwaTv2Dxl2onubetX/3RnSnplNnjdix0hvF8y2YpqdzlZrjIq6zkcuVJ08XysS8zqW3gt3ORBndFDgsrg==}
     dev: true
 
-  /rollup-plugin-visualizer/5.9.2_rollup@3.28.0:
+  /rollup-plugin-visualizer/5.9.2:
     resolution: {integrity: sha512-waHktD5mlWrYFrhOLbti4YgQCn1uR24nYsNuXxg7LkPH8KdTXVWR9DNY1WU0QqokyMixVXJS4J04HNrVTMP01A==}
     engines: {node: '>=14'}
     hasBin: true
@@ -10903,18 +10916,15 @@ packages:
     dependencies:
       open: 8.4.2
       picomatch: 2.3.1
-      rollup: 3.28.0
       source-map: 0.7.4
       yargs: 17.7.2
     dev: true
 
-  /rollup-plugin-webpack-stats/0.2.0_rollup@3.28.0:
+  /rollup-plugin-webpack-stats/0.2.0:
     resolution: {integrity: sha512-WDQ9ra6qWjeH/7D3q7lY/r5i9/HPt8OlZvvoQzS7Jdarh2v5+Fgw1BdAU2pBW0LB26J+vNYwdEdyJnkBhbQ2PQ==}
     engines: {node: '>=14'}
     peerDependencies:
       rollup: ^3.0.0
-    dependencies:
-      rollup: 3.28.0
     dev: true
 
   /rollup/3.28.0:
@@ -11010,7 +11020,7 @@ packages:
     dependencies:
       '@types/json-schema': 7.0.12
       ajv: 8.12.0
-      ajv-formats: 2.1.1_ajv@8.12.0
+      ajv-formats: 2.1.1
       ajv-keywords: 5.1.0_ajv@8.12.0
     dev: false
 
@@ -12216,14 +12226,14 @@ packages:
     resolution: {integrity: sha512-4lqhBWhOzP+SaCPoCVdmpM5cXzjKQV5jgFauxea488oOeElXo/kw6bXkMIooZhrh9q7gclTl8en6N9NmnqUwRQ==}
     dev: true
 
-  /vite-plugin-inspect/0.7.33_rollup@3.28.0+vite@4.4.9:
+  /vite-plugin-inspect/0.7.33_vite@4.4.9:
     resolution: {integrity: sha512-cQRLQKa/+Ua++5hN0IZfqNn1JYXBg2eCQOSUatPTwhXMO7nwfSvhhSc45E1nXfBBEhzLLOxgr1OdbDu55PiDDA==}
     engines: {node: '>=14'}
     peerDependencies:
       vite: ^3.1.0 || ^4.0.0
     dependencies:
       '@antfu/utils': 0.7.5
-      '@rollup/pluginutils': 5.0.2_rollup@3.28.0
+      '@rollup/pluginutils': 5.0.2
       debug: 4.3.4
       fs-extra: 11.1.1
       open: 9.1.0
