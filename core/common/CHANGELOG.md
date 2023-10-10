@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 06 Oct 2023 04:00:18 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Oct 2023 18:48:12 GMT and should not be manually modified.
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
 
 ## 4.1.8
 Fri, 06 Oct 2023 04:00:18 GMT
