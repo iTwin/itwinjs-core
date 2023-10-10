@@ -125,7 +125,7 @@ export abstract class BezierCoffs {
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
     bezier.addInPlace(- targetValue);
-    const roots = UnivariateBezier.deflateRoots01(bezier);
+    const roots = UnivariateBezier.deflateRoots(bezier);
     return this.filter01(roots, true);
   }
   /** Given an array of numbers, optionally remove those not in the 0..1 interval.
@@ -688,11 +688,10 @@ export class UnivariateBezier extends BezierCoffs {
   // first c0*b0 = a0
   // last c[orderC-1]*b1 = a[orderA-1]
   /** Find roots of a bezier polynomial
-   * * Only look for roots in 0..1
    * * As roots are found, deflate the polynomial.
    * * bezier coffs are changed (and order reduced) at each step.
    */
-  public static deflateRoots01(bezier: UnivariateBezier): number[] | undefined {
+  public static deflateRoots(bezier: UnivariateBezier): number[] | undefined {
     const roots = [];
     const coffs = bezier.coffs;
     let a0, a1, segmentFraction, globalStartFraction, newtonFraction;
