@@ -19,7 +19,7 @@ const loggerCategory = "ArcGISFeatureProvider";
  * When creating an [[ImageMapLayerSettings]] object, a format needs to be specified this 'formatId'.
  * The MapLayerFormat object can later be used to validate a source, or create a provider.
  *
- * Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+ * Subclasses should override formatId, [[MapLayerFormat.createImageryProvider]], and [[MapLayerFormat.createMapLayerTree]].
  * @public
  */
 export class MapLayerFormat {
@@ -44,7 +44,10 @@ export class MapLayerFormat {
    * @returns Returns the new imagery provider.
    * @beta
    */
-  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+    assert(false, "Subclasses must override this method.");
+    return undefined;
+  }
 
   /**
    * Creates a MapLayerTileTreeReference for this map layer format.
@@ -55,7 +58,7 @@ export class MapLayerFormat {
    * @beta
    */
   public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
-    assert(false);
+    assert(false, "Subclasses must override this method.");
     return undefined;
   }
 
