@@ -147,7 +147,7 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render non-filled paths correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
     const testLengths = [2,2];
     const testCoords = [
       -8368830.26, 4866490.12,
@@ -185,7 +185,7 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render filled paths correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
 
     // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -225,7 +225,7 @@ describe("ArcGisGraphicsRenderer", () => {
   });
 
   it("render point correctly", async () => {
-    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
 
     // We stub 'ArcGisGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -259,7 +259,7 @@ describe("ArcGisGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
 
     const testLengths = [4,4];
     const testCoords = [
@@ -300,7 +300,7 @@ describe("ArcGisGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new ArcGisGraphicsRenderer(viewportMock!.object);
+    const renderer = new ArcGisGraphicsRenderer({viewport: viewportMock!.object});
 
     const testLengths = [4,4];
     const testCoords = [

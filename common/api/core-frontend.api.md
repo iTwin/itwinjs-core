@@ -1244,7 +1244,7 @@ export interface ArcGisGeometryRenderer {
 
 // @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
-    constructor(iModel: IModelConnection);
+    constructor(props: ArcGisGraphicsRendererProps);
     // (undocumented)
     get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
     // (undocumented)
@@ -1265,6 +1265,11 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     protected moveTo(x: number, y: number): Promise<void>;
     // (undocumented)
     protected stroke(): Promise<void>;
+}
+
+// @internal
+export interface ArcGisGraphicsRendererProps {
+    viewport: Viewport;
 }
 
 // @internal (undocumented)
@@ -1620,6 +1625,8 @@ export class BackgroundMapGeometry {
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     cartographicToDbFromGcs(cartographic: Cartographic[]): Promise<Point3d[]>;
+    // (undocumented)
+    cartographicToDbFromWgs84Gcs(cartographic: Cartographic[]): Promise<Point3d[]>;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)

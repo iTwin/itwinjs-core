@@ -12,6 +12,15 @@ import { Viewport } from "../../../Viewport";
 
 const loggerCategory = "MapLayerImageryProvider.ArcGisGraphicsRenderer";
 
+/**
+ * Properties of [[ArcGisGraphicsRenderer]]
+ * @internal
+ */
+export interface ArcGisGraphicsRendererProps {
+  /** The viewport in which the resultant [GraphicPrimitive]($frontend) is to be drawn. */
+  viewport: Viewport;
+}
+
 /** ArcGIS geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
  * This renderer initial objective is to read geometries when a call to [[MapLayerImageryProvider.getFeatureInfo]] is performed.
  * @internal
@@ -25,10 +34,10 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
 
   public override get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined {return undefined;}   // No symbology is applied in this renderer
 
-  constructor(viewport: Viewport) {
+  constructor(props: ArcGisGraphicsRendererProps) {
     super();
-    this._viewport = viewport;
-    this._iModel = viewport.iModel;
+    this._viewport = props.viewport;
+    this._iModel = props.viewport.iModel;
   }
 
   public moveGraphics() {
