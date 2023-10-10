@@ -122,6 +122,12 @@
       }
     },
     {
+      "version": "3.7.15",
+      "tag": "@itwin/core-markup_v3.7.15",
+      "date": "Tue, 10 Oct 2023 19:58:35 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.14",
       "tag": "@itwin/core-markup_v3.7.14",
       "date": "Fri, 29 Sep 2023 16:57:16 GMT",
