@@ -1,6 +1,16 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Fri, 29 Sep 2023 18:24:48 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Oct 2023 18:51:27 GMT and should not be manually modified.
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT

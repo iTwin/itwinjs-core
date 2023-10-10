@@ -1587,7 +1587,7 @@ export class CurveCurve {
     static intersectionProjectedXYPairs(worldToLocal: Matrix4d, curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     static intersectionXYPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean, tolerance?: number): CurveLocationDetailPair[];
     // @beta
-    static intersectionXYZ(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean): CurveLocationDetailArrayPair;
+    static intersectionXYZPairs(curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean): CurveLocationDetailPair[];
 }
 
 // @public
@@ -1680,7 +1680,7 @@ export class CurveLocationDetail {
     vectorInCurveLocationDetail?: Vector3d;
 }
 
-// @public
+// @public @deprecated
 export class CurveLocationDetailArrayPair {
     constructor();
     dataA: CurveLocationDetail[];

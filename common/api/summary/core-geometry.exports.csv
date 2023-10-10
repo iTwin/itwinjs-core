@@ -97,6 +97,7 @@ public;CurveFactory
 public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair
+deprecated;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;CurveOps
 public;class CurvePrimitive 
