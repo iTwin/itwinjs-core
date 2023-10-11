@@ -109,6 +109,7 @@ async function main() {
 
   const args = ["IMJS_EXIT_AFTER_MODEL_OPENED=1"];
   const env = process.env;
+  log(`Environment:\n${JSON.stringify(env, undefined, 2)}`);
   const clientID = env.IMJS_OIDC_CLIENT_ID;
   const scope = env.IMJS_OIDC_SCOPE;
   const clientSecret = env.IMJS_OIDC_CLIENT_SECRET;
