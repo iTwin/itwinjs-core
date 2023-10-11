@@ -129,7 +129,7 @@ async function main() {
     // Copy the model to the simulator's Documents dir
     const container = await simctl.getAppContainer(bundleId, "data");
     log(`Copying ${bimFile} model into the app's Documents.`);
-    await copyFile(`${__dirname}/${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
+    await copyFile(`${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
   }
   // Launch the app instructing it to open the model and exit
   log("Launching app");
