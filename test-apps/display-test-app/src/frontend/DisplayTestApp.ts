@@ -256,6 +256,7 @@ const dtaFrontendMain = async () => {
         setTitle(iModel);
       } catch (error) {
         configuration.standalone = origStandalone;
+        // eslint-disable-next-line no-console
         console.error(`Error opening snapshot iModel: ${error}`);
         alert(`Error opening snapshot iModel: ${error}`);
       }
@@ -270,6 +271,7 @@ const dtaFrontendMain = async () => {
         }
       } catch (error) {
         configuration.standalone = origStandalone;
+        // eslint-disable-next-line no-console
         console.error(`Error getting hub iModel: ${error}`);
         alert(`Error getting hub iModel: ${error}`);
       }
