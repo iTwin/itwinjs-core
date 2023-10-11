@@ -113,7 +113,7 @@ export class BGFBWriter {
 
   public writeCurveCollectionAsFBCurveVector(cv: CurveCollection): number | undefined {
     const childrenOffsets: flatbuffers.Offset[] = [];
-    for (const child of cv.children!) {
+    for (const child of cv.children) {
       if (child instanceof CurvePrimitive) {
         const childOffset = this.writeCurvePrimitiveAsFBVariantGeometry(child);
         if (childOffset)
