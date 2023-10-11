@@ -10,6 +10,13 @@ import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui
 import { Cartographic } from "@itwin/core-common";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 
+/** Options supplied to a `Viewport.getMapFeatureInfo` .
+ * @beta
+  */
+export interface MapFeatureInfoOptions {
+  /** The distance in screen pixels from the specified geometry within which the query operation should be performed. */
+  tolerance?: number;
+}
 /** Contains record data of a [[MapLayerFeature]] instance .
  * @beta
  */

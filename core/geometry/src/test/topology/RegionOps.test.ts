@@ -23,6 +23,7 @@ import { Loop } from "../../curve/Loop";
 import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -32,6 +33,7 @@ import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVe
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -1222,6 +1224,8 @@ describe("RegionOps2", () => {
       "./src/test/testInputs/curve/michelLoops.imjs",  // has a small island in a hole
       "./src/test/testInputs/curve/michelLoops2.imjs", // 339 loops
     ];
+    const options = new StrokeOptions();
+    options.maximizeConvexFacets = true;
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
@@ -1235,13 +1239,13 @@ describe("RegionOps2", () => {
           x += xDelta;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x, y);
           // facet the region
-          const builder = PolyfaceBuilder.create();
+          let builder = PolyfaceBuilder.create();
           builder.addGeometryQuery(region);
-          const mesh = builder.claimPolyface();
-          if (ck.testFalse(mesh.isEmpty, "triangulation not empty")) {
+          let mesh = builder.claimPolyface();
+          if (ck.testFalse(mesh.isEmpty, "triangulated mesh not empty")) {
             x += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x, y);
-            // verify no degenerate triangles
+            // verify triangulation with no degenerate triangles
             const visitor = mesh.createVisitor() as IndexedPolyfaceVisitor;
             for (; visitor.moveToNextFacet();) {
               ck.testExactNumber(3, visitor.numEdgesThisFacet, "facet is triangular");
@@ -1250,12 +1254,82 @@ describe("RegionOps2", () => {
               ck.testFalse(visitor.pointIndex[1] === visitor.pointIndex[2], "last two point indices are different");
             }
           }
-          x = 0;
+          // again, with maximal convex facets
+          builder = PolyfaceBuilder.create(options);
+          builder.addGeometryQuery(region);
+          mesh = builder.claimPolyface();
+          if (ck.testFalse(mesh.isEmpty, "maximal-facet mesh not empty")) {
+            x += xDelta;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x, y);
+            for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();) {
+              if (!ck.testTrue(PolygonOps.isConvex(visitor.point), `facet is convex in ${testCase}`))
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, visitor.point, x, y, 400);
+            }
+          }
           y += yDelta;
         }
       }
+      x = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "TriangulateSortedLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MaximallyConvexFacets", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x = 0;
+    const testCases: {filename: string, numTriangles: number, numFacets: number}[] = [
+      { filename: "./src/test/testInputs/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
+      { filename: "./src/test/testInputs/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
+      { filename: "./src/test/testInputs/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },
+    ];
+    const options = new StrokeOptions();
+    options.maximizeConvexFacets = true;
+    for (const testCase of testCases) {
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.filename, "utf8"))) as Loop[];
+      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x);
+        const region = RegionOps.sortOuterAndHoleLoopsXY(inputs);
+        const area = RegionOps.computeXYArea(region)!;
+        const range = region.range();
+        const xDelta = 1.5 * range.xLength();
+        x += xDelta;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x);
+        // triangulate
+        let builder = PolyfaceBuilder.create();
+        builder.addGeometryQuery(region);
+        let mesh = builder.claimPolyface();
+        if (ck.testFalse(mesh.isEmpty, "triangulated mesh not empty")) {
+          x += xDelta;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x);
+          ck.testExactNumber(testCase.numTriangles, mesh.facetCount, "mesh has expected number of triangles");
+        }
+        // maximal convex facets
+        builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(region);
+        mesh = builder.claimPolyface();
+        if (ck.testFalse(mesh.isEmpty, "maximal-facet mesh not empty")) {
+          x += xDelta;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x);
+          ck.testExactNumber(testCase.numFacets, mesh.facetCount, "mesh has expected number of maximally convex facets");
+        }
+        // test polygon decomposition
+        if (region instanceof Loop) {
+          const convexPolygons = RegionOps.convexDecomposePolygonXY(region.getPackedStrokes()!, true);
+          if (ck.testDefined(convexPolygons, "decomposition succeeded") && convexPolygons) {
+            ck.testExactNumber(testCase.numFacets, convexPolygons.length, "decomposition has expected number of polygons");
+            const convexPolygonsPoint3dArrays = Point3dArray.cloneDeepXYZPoint3dArrays(convexPolygons);
+            const polygonArea = PolygonOps.sumAreaXY(convexPolygonsPoint3dArrays);
+            ck.testCoordinateWithToleranceFactor(area, polygonArea, range.maxAbs(), "region and decomposed areas are same");
+            for (const convexPolygon of convexPolygons)
+              ck.testTrue(PolygonOps.isConvex(convexPolygon), "decomposed polygon is convex");
+          }
+        }
+      }
+      x = 0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "MaximallyConvexFacets");
     expect(ck.getNumErrors()).equals(0);
   });
 });
