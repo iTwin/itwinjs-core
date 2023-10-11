@@ -2582,7 +2582,7 @@ importers:
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
       internal-tools: workspace:*
-      node-simctl: ~7.1.4
+      node-simctl: ~7.2.1
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
       react: ^18.0.0
@@ -2651,7 +2651,7 @@ importers:
       express-ws: 5.0.2_express@4.18.2
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
-      node-simctl: 7.1.17
+      node-simctl: 7.2.1
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.88.2
       react: 18.2.0
@@ -9976,8 +9976,8 @@ packages:
   /node-releases/2.0.13:
     resolution: {integrity: sha512-uYr7J37ae/ORWdZeQ1xxMJe3NtdmqMC/JZK+geofDrkLUApKRHPd18/TxtBOJ4A0/+uUIliorNrfYV6s1b02eQ==}
 
-  /node-simctl/7.1.17:
-    resolution: {integrity: sha512-Wjxd8ycizPwSjaoNBlCLxSyixEWv0dWLaRpU5WuMVEOMAgc3FiFpj8XHLPKQ8B68AWSBWMeZcDCDuN03hoJJmA==}
+  /node-simctl/7.2.1:
+    resolution: {integrity: sha512-P1eEE1e8A9TnieXl5gGHyKslC5au24RW80mBine9rOsfXW2iEeRYUMvG7xFgGupq8FySbhYOJYRXB2Oo5FuN+Q==}
     engines: {node: '>=14', npm: '>=8'}
     dependencies:
       '@babel/runtime': 7.23.1
