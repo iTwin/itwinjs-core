@@ -7,13 +7,14 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry } from "../../Geometry";
 import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
-import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
@@ -28,9 +29,11 @@ import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveTypes";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
+import { CurveCollection } from "../CurveCollection";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
@@ -70,7 +73,7 @@ export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
  * * geometryB is saved for later reference.
  * @internal
  */
-export class CurveCurveIntersectXY extends NullGeometryHandler {
+export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _extendA: boolean;
   private _geometryB: AnyCurve | undefined;
   private _extendB: boolean;
@@ -124,11 +127,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create(tolerance);
     this._results = [];
   }
-  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
-  public resetGeometry(extendA: boolean, geometryB: AnyCurve, extendB: boolean): void {
-    this._extendA = extendA;
+  /** Reset the geometry, leaving all other parts unchanged (and preserving accumulated intersections). */
+  public resetGeometry(geometryB: AnyCurve): void {
     this._geometryB = geometryB;
-    this._extendB = extendB;
   }
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean, fractionTol: number = 1.0e-12): boolean {
     if (!extend0 && fraction < -fractionTol)
@@ -161,9 +162,6 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     if (reinitialize)
       this._results = [];
     return result;
-  }
-  private sameCurveAndFraction(cp: CurvePrimitive, fraction: number, detail: CurveLocationDetail): boolean {
-    return cp === detail.curve && Geometry.isAlmostEqualNumber(fraction, detail.fraction);
   }
   /**
    * Record the pre-computed intersection between two curves. Filter by extension rules. Record with fraction mapping.
@@ -210,12 +208,12 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) &&
-          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
+        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
+          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
           return;
       } else {
-        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) &&
-          this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
+        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
+          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
           return;
       }
     }
@@ -822,8 +820,8 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, curvePointH);
       if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
         this.acceptFraction(extendB, fractionB, extendB)) {
-        this.recordPointWithLocalFractions(
-          lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed,
+          this.recordPointWithLocalFractions(
+            lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed,
         );
       }
     }
@@ -946,6 +944,34 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     transform.multiplyPoint3d(pointB0, this._workPointB0);
     transform.multiplyPoint3d(pointB1, this._workPointB1);
   }
+  /** Low level dispatch of curve collection. */
+  private dispatchCurveCollection(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    const geomB = this._geometryB;  // save
+    if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
+      return;
+    for (const child of geomB.children) {
+      this.resetGeometry(child);
+      geomAHandler(geomA);
+    }
+    this._geometryB = geomB;  // restore
+  }
+  /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
+  private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
+    if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
+      return;
+    if (geomA instanceof CurveChainWithDistanceIndex) {
+      assert(!!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      return;
+    }
+    const index0 = this._results.length;
+    const geomB = this._geometryB;  // save
+    for (const child of geomB.path.children) {
+      this.resetGeometry(child);
+      geomAHandler(geomA);
+    }
+    this.resetGeometry(geomB);  // restore
+    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(this._results, index0, undefined, geomB, true);
+  }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
@@ -967,6 +993,10 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
         segmentA, this._extendA, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA,
         this._geometryB, this._extendB, false,
       );
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(segmentA, this.handleLineSegment3d.bind(this));
     }
     return undefined;
   }
@@ -981,6 +1011,10 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.computeArcLineString(this._geometryB, this._extendB, lsA, this._extendA, true);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchLineStringBSplineCurve(lsA, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(lsA, this.handleLineString3d.bind(this));
     }
     return undefined;
   }
@@ -997,6 +1031,10 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcArc(arc0, this._extendA, this._geometryB, this._extendB, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchArcBsplineCurve3d(arc0, this._extendA, this._geometryB, this._extendB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(arc0, this.handleArc3d.bind(this));
     }
     return undefined;
   }
@@ -1013,8 +1051,18 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
+    } else if (this._geometryB instanceof CurveCollection) {
+      this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
+    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(curve, this.handleBSplineCurve3d.bind(this));
     }
     return undefined;
+  }
+  /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
+  public override handleCurveChainWithDistanceIndex(chain: CurveChainWithDistanceIndex): any {
+    super.handleCurveChainWithDistanceIndex(chain);
+    // if _geometryB is also a CurveChainWithDistanceIndex, it will already have been converted by dispatchCurveChainWithDistanceIndex
+    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(this._results, 0, chain, undefined, true);
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve .. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {

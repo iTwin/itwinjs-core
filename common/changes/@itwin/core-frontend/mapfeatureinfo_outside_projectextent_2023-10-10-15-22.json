@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Improved ArcGIS feature info coordinates rerpojection outside project extent.",
+      "comment": "Improved ArcGIS feature info coordinates reprojection outside project extent.",
       "type": "none"
     }
   ],

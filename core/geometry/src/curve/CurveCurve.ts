@@ -8,7 +8,6 @@
 
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { CurveCollection } from "./CurveCollection";
 import { CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve } from "./CurveTypes";
@@ -36,21 +35,11 @@ export class CurveCurve {
     extendB: boolean,
     tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
-    const handler = new CurveCurveIntersectXY(undefined, extendA, curveB, extendB, tolerance);
-    if (curveB instanceof CurvePrimitive) {
-      curveA.dispatchToGeometryHandler(handler);
-    } else if (curveB instanceof CurveCollection) {
-      const allCurves = curveB.collectCurvePrimitives();
-      for (const child of allCurves) {
-        handler.resetGeometry(false, child, false);
-        curveA.dispatchToGeometryHandler(handler);
-      }
-    }
-    return handler.grabPairedResults();
+    return CurveCurve.intersectionProjectedXYPairs(undefined, curveA, extendA, curveB, extendB, tolerance);
   }
   /**
    * Return xy intersections of 2 projected curves.
-   * @param worldToLocal transform (possibly perspective) defining the local coordinates in which to compute xy intersections.
+   * @param worldToLocal transform (possibly perspective) defining the local coordinates in which to compute xy intersections
    * @param curveA first curve
    * @param extendA true to allow curveA to extend
    * @param curveB second curve
@@ -58,7 +47,7 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static intersectionProjectedXYPairs(
-    worldToLocal: Matrix4d,
+    worldToLocal: Matrix4d | undefined,
     curveA: AnyCurve,
     extendA: boolean,
     curveB: AnyCurve,
@@ -99,7 +88,7 @@ export class CurveCurve {
     for (let i = 0; i < primitives.length; i++) {
       const curveA = primitives[i];
       for (let j = i + 1; j < primitives.length; j++) {
-        handler.resetGeometry(false, primitives[j], false);
+        handler.resetGeometry(primitives[j]);
         curveA.dispatchToGeometryHandler(handler);
       }
     }
