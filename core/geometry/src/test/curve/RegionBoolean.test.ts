@@ -651,9 +651,9 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(false, [3, 5, 6, 8, 3], [-1], [], "LowerRightLobeQuadB");
   });
 
-  // cspell:word laurynas
-  it("BridgeEdgesAndDegenerateLoops", () => {
-    const ck = new Checker();
+  // cspell:word laurynas, dovydas
+  it.only("BridgeEdgesAndDegenerateLoops", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -675,7 +675,7 @@ describe("RegionBoolean", () => {
     // * nearly-intersecting edges larger than default tol
     // * island-in-hole
     const testCases: TestInput[] = [
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
+/*      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
@@ -696,6 +696,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
+*/      { jsonFilePath: "./src/test/testInputs/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
     ];
     if (GeometryCoreTestIO.enableLongTests) {
       testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes

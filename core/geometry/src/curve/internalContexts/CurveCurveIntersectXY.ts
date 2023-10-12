@@ -36,6 +36,7 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 
 // cspell:word XYRR
 
@@ -277,13 +278,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     // But the transverse intersector notion of coincidence is based on the determinant ratios, which are hard
     // to relate to physical tolerance.
     //  So do the overlap first.  This should do a quick exit in non-coincident case.
-    const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1);
-    if (overlap) {
-      this.recordPointWithLocalFractions(
-        overlap.detailA.fraction, cpA, fractionA0, fractionA1,
-        overlap.detailB.fraction, cpB, fractionB0, fractionB1,
-        reversed, overlap,
-      );
+    const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
+    if (overlap) { // the lines are coincident
+      if (this._coincidentGeometryContext.clampCoincidentIntervalToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1)) {
+        this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+      }
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
       if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
         this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {

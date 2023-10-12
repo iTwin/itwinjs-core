@@ -54,9 +54,7 @@ export class CoincidentGeometryQuery {
 
   }
 
-  /** Return a curve location detail with projection of a `spacePoint` to the line segment with `pointA` and `pointB`
-   *
-   */
+  /** Return a curve location detail with projection of a `spacePoint` to the line segment with `pointA` and `pointB` */
   public projectPointToSegmentXY(spacePoint: Point3d, pointA: Point3d, pointB: Point3d): CurveLocationDetail {
     this._vectorU = Vector3d.createStartEnd(pointA, pointB, this._vectorU);
     this._vectorV = Vector3d.createStartEnd(pointA, spacePoint, this._vectorV);
@@ -67,12 +65,96 @@ export class CoincidentGeometryQuery {
       pointA.interpolate(fraction, pointB));
   }
   /**
-   * * project `pointA0` and `pointA1` onto the segment with `pointB0` and `pointB1`
-   * * In the returned detail pair, the `detailA` has fractions along segmentA, and `detailB` has fractions along segment B
+   * Given a detail pair representing the coincident interval between two unbounded line segments,
+   * clamp the details (in place) to the line segments' endpoints according to the given flags.
+   * @param interval detail pair as returned by [[coincidentSegmentRangeXY]]
    * @param pointA0 start point of segment A
    * @param pointA1 end point of segment A
    * @param pointB0 start point of segment B
    * @param pointB1 end point of segment B
+   * @param extendA0 whether to extend segment A beyond its start
+   * @param extendA1 whether to extend segment A beyond its end
+   * @param extendB0 whether to extend segment B beyond its start
+   * @param extendB1 whether to extend segment B beyond its end
+   * @return reference to the input clamped in place. Returns undefined (leaving interval untouched) if clamping would result in empty interval.
+   */
+  public clampCoincidentIntervalToSegmentBounds(
+    interval: CurveLocationDetailPair, pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d,
+    extendA0: boolean = false, extendA1: boolean = false, extendB0: boolean = false, extendB1: boolean = false,
+  ): CurveLocationDetailPair | undefined {
+    const rangeA = Segment1d.create(interval.detailA.fraction, interval.detailA.hasFraction1 ? interval.detailA.fraction1 : interval.detailA.fraction);
+    const reversedA = rangeA.signedDelta() < 0.0;
+    const rangeB = Segment1d.create(interval.detailB.fraction, interval.detailB.hasFraction1 ? interval.detailB.fraction1 : interval.detailB.fraction);
+    if ((rangeA.clampDirectedTo01(!extendA0, !extendA1) && rangeB.clampDirectedTo01(!extendB0, !extendB1) &&
+      Geometry.isAlmostEqualNumber(rangeA.absoluteDelta(), rangeB.absoluteDelta(), Geometry.smallFraction)) ||
+      rangeA.clampDirectedTo01(true, true, false) && rangeB.clampDirectedTo01(true, true, false)) { // non-trivial clamped range
+      const a0 = rangeA.x0;
+      const a1 = rangeA.x1;
+      const b0 = rangeB.x0;
+      const b1 = rangeB.x1;
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(interval.detailA, a0, a1, pointA0, pointA1, a0 > a1);
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(interval.detailB, b0, b1, pointB0, pointB1, b0 > b1);
+      return interval;
+    }
+    if (rangeA.clampDirectedTo01(true, true, true) && rangeB.clampDirectedTo01(true, true, true)) { // single point clamped range
+      // TODO: the original singleton cases.127  WRite TEST.
+      if (reversedA) {
+
+      } else {
+
+      }
+      return interval;
+    }
+    return undefined;
+
+/*
+    const segment = Segment1d.create(interval.detailA.fraction, interval.detailA.hasFraction1 ? interval.detailA.fraction1 : interval.detailA.fraction);
+    if (segment.clampDirectedTo01()) {
+      const f0 = segment.x0;
+      const f1 = segment.x1;
+      const h0 = interval.detailA.inverseInterpolateFraction(f0);
+      const h1 = interval.detailA.inverseInterpolateFraction(f1);
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(interval.detailA, f0, f1, pointA0, pointA1, f0 > f1);
+      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(interval.detailB, h0, h1, pointB0, pointB1, h0 > h1);
+      return interval;
+    }
+    // we have a single-point interval
+    if (segment.signedDelta() < 0.0) {
+      if (interval.detailA.point.isAlmostEqual(pointA0, this.tolerance)) {
+        interval.detailA.collapseToStart();
+        interval.detailB.collapseToStart();
+        return interval;
+      }
+      if (interval.detailA.point1 !== undefined && interval.detailA.point1.isAlmostEqual(pointA1, this.tolerance)) {
+        interval.detailA.collapseToEnd();
+        interval.detailB.collapseToEnd();
+        return interval;
+      }
+    } else {
+      if (interval.detailA.point.isAlmostEqual(pointA1, this.tolerance)) {
+        interval.detailA.collapseToStart();
+        interval.detailB.collapseToEnd();
+        return interval;
+      }
+      if (interval.detailA.point1 !== undefined && interval.detailA.point1.isAlmostEqual(pointA0, this.tolerance)) {
+        interval.detailA.collapseToEnd();
+        interval.detailB.collapseToStart();
+        return interval;
+      }
+    }
+    return undefined;
+  */
+  }
+  /**
+   * Compute whether two line segments have a coincident overlap in xy.
+   * * Project `pointA0` and `pointA1` onto the line formed by `pointB0` and `pointB1` and vice versa
+   * * If all projection distances are sufficiently small, return a detail pair recording the coincident interval, optionally clipped to segment bounds.
+   * @param pointA0 start point of segment A
+   * @param pointA1 end point of segment A
+   * @param pointB0 start point of segment B
+   * @param pointB1 end point of segment B
+   * @param restrictToBounds whether to clip the coincident segment details to the segment bounds
+   * @return detail pair for the coincident interval (`detailA` has fractions along segment A, and `detailB` has fractions along segment B), or undefined if no coincidence
    */
   public coincidentSegmentRangeXY(pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d, restrictToBounds: boolean = true): CurveLocationDetailPair | undefined {
     const detailA0OnB = this.projectPointToSegmentXY(pointA0, pointB0, pointB1);
@@ -93,45 +175,9 @@ export class CoincidentGeometryQuery {
     detailA0OnB.point1 = detailA1OnB.point;  // capture -- detailA1OnB is not reused.
     detailB0OnA.fraction1 = detailB1OnA.fraction;
     detailB0OnA.point1 = detailB1OnA.point;
-    if (!restrictToBounds)
-      return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
+    const interval = CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
 
-    const segment = Segment1d.create(detailB0OnA.fraction, detailB0OnA.fraction1);
-    if (segment.clampDirectedTo01()) {
-      const f0 = segment.x0;
-      const f1 = segment.x1;
-      const h0 = detailB0OnA.inverseInterpolateFraction(f0);
-      const h1 = detailB0OnA.inverseInterpolateFraction(f1);
-      // recompute fractions and points..
-      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailB0OnA, f0, f1, pointA0, pointA1, f0 > f1);
-      CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailA0OnB, h0, h1, pointB0, pointB1, h0 > h1);
-      return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
-    } else {
-      if (segment.signedDelta() < 0.0) {
-        if (detailB0OnA.point.isAlmostEqual(pointA0, this.tolerance)) {
-          detailB0OnA.collapseToStart();
-          detailA0OnB.collapseToStart();
-          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
-        }
-        if (detailB0OnA.point1.isAlmostEqual(pointA1, this.tolerance)) {
-          detailB0OnA.collapseToEnd();
-          detailA0OnB.collapseToEnd();
-          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
-        }
-      } else {
-        if (detailB0OnA.point.isAlmostEqual(pointA1, this.tolerance)) {
-          detailB0OnA.collapseToStart();
-          detailA0OnB.collapseToEnd();
-          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
-        }
-        if (detailB0OnA.point1.isAlmostEqual(pointA0, this.tolerance)) {
-          detailB0OnA.collapseToEnd();
-          detailA0OnB.collapseToStart();
-          return CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
-        }
-      }
-    }
-    return undefined;
+    return restrictToBounds ? this.clampCoincidentIntervalToSegmentBounds(interval, pointA0, pointA1, pointB0, pointB1) : interval;
   }
   /**
    * Create a CurveLocationDetailPair for a coincident interval of two overlapping curves
