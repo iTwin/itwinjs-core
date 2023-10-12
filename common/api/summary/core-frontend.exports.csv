@@ -47,6 +47,7 @@ internal;class ArcGisGeometryBaseRenderer
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
 internal;ArcGisGraphicsRenderer 
+internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
