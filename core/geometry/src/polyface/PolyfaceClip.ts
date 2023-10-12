@@ -473,7 +473,7 @@ export class PolyfaceClip {
    * * This method computes the portion of the input mesh that lies inside the clipper generated from sweeping the input region in the given direction.
    * @param mesh input mesh, untouched
    * @param region planar region to drape onto mesh
-   * @param sweepVector optional sweep direction for region; if undefined, region normal is used
+   * @param sweepVector optional sweep direction for region, magnitude unused. If undefined, sweep is along the region normal.
    * @param options how to stroke the region boundary
    * @returns clipped facets. No other mesh data but vertices appear in output.
    */
@@ -483,10 +483,13 @@ export class PolyfaceClip {
     const contour = SweepContour.createForLinearSweep(region);
     if (!contour)
       return undefined;
-    const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweepVector, false, false, options);
+    const sweep = sweepVector?.clone();
+    if (sweep && contour.localToWorld.matrix.dotColumnZ(sweep) < 0.0)
+      sweep.scaleInPlace(-1); // avoid inverted clipper
+    const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweep, false, false, options);
     if (!clipper)
       return undefined;
-    const builders = ClippedPolyfaceBuilders.create(true);
+    const builders = ClippedPolyfaceBuilders.create(true);  // we want only the facets inside the clipper
     this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh, clipper, builders, 1);
     return builders.claimPolyface(0, true);
   }
