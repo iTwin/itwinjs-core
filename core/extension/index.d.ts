@@ -416,7 +416,7 @@ export type {
 	ChangesetIndexOrId,
 	ChangesetRange,
 	ChannelRootAspectProps,
-	ClipHighlightProps,
+	ClipIntersectionStyleProps,
 	ClipStyleProps,
 	CodeProps,
 	CodeScopeProps,

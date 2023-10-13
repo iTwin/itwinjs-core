@@ -98,51 +98,60 @@ export class CutStyle {
   }
 }
 
-/** Wire format describing a [[ClipHighlight]].
- * @see [[ClipStyleProps.ClipHighlight]].
+/** Wire format describing a [[ClipIntersectionStyle]].
+ * @see [[ClipStyleProps.ClipIntersectionStyle]].
  * @public
  * @extensions
  */
-export interface ClipHighlightProps {
-  /** Color to highlight the edge */
-  color?: RgbColorProps; // default white
-  /** Width of highlight in pixels */
-  width?: number; // in pixels, default 1
+export interface ClipIntersectionStyleProps {
+  /** Color to apply to intersection of geometry and clip planes, default white */
+  color?: RgbColorProps;
+  /** Number of pixels to be considered intersecting the clip plane, default 1 */
+  width?: number;
 }
 
-/** As part of a [[ClipStyle]], describes if/how edges of cut geometry should be highlighted.
- * @note Edges are highlighted only if [[ClipStyle.ClipHighlight]] is `true`.
+/** As part of a [[ClipStyle]], describes how to colorize geometry intersecting the clip planes.
+ * @note Edges are highlighted only if [[ClipStyle.ClipIntersectionStyle]] is `true`.
  * @public
+ * @extensions
  */
-export class ClipHighlight {
-  /** Color to highlight the edge, default to white */
-  public color?: RgbColor;
-  /** Number of pixels to highlight, default 1 */
-  public width?: number;
+export class ClipIntersectionStyle {
+  /** Color to apply to intersection of geometry and clip planes, default white */
+  public readonly color?: RgbColor;
+  /** Number of pixels to be considered intersecting the clip plane, default 1 */
+  public readonly width?: number;
 
   private constructor(color: RgbColor = RgbColor.fromColorDef(ColorDef.white), width: number = 1) {
     this.color = color;
     this.width = width;
   }
   /** Create a highlight  from its components. */
-  public static create(color: RgbColor, width: number): ClipHighlight {
+  public static create(color: RgbColor, width: number): ClipIntersectionStyle {
     if (!color && !width)
       return this.defaults;
 
-    return new ClipHighlight(color, width);
+    return new ClipIntersectionStyle(color, width);
   }
 
-  public static readonly defaults = new ClipHighlight();
+  public static readonly defaults = new ClipIntersectionStyle();
 
-  public static fromJSON(props?: ClipHighlightProps): ClipHighlight {
+  public static fromJSON(props?: ClipIntersectionStyleProps): ClipIntersectionStyle {
+    if (props === undefined) {
+      return ClipIntersectionStyle.defaults;
+    }
+
     const color = props?.color ? RgbColor.fromJSON(props.color) : RgbColor.fromColorDef(ColorDef.white);
     const width = props?.width ? props.width : 1;
-    return new ClipHighlight(color, width);
+    return new ClipIntersectionStyle(color, width);
   }
 
   /** The JSON representation of this style. It is `undefined` if this style matches the defaults. */
-  public toJSON(): ClipHighlightProps | undefined {
-    const props: ClipHighlightProps = {};
+  public toJSON(): ClipIntersectionStyleProps | undefined {
+    const props: ClipIntersectionStyleProps = {};
+
+    if (this === ClipIntersectionStyle.defaults) {
+      return undefined;
+    }
 
     if (this.color)
       props.color = this.color.toJSON();
@@ -172,8 +181,10 @@ export interface ClipStyleProps {
   insideColor?: RgbColorProps;
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
   outsideColor?: RgbColorProps;
-  /** If defined, pixels inside the clip planes within a width will be highlighted */
-  clipHighlight?: ClipHighlightProps;
+  /** If 'true', intersection of geometry and clip planes will be colorized */
+  colorizeIntersection?: boolean;
+  /** Controls the style of the intersection of geometry and clip planes */
+  intersectionStyle?: ClipIntersectionStyleProps;
 }
 
 /** Describes symbology and behavior applied to a [ClipVector]($core-geometry) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
@@ -193,26 +204,29 @@ export class ClipStyle {
   public readonly insideColor?: RgbColor;
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
   public readonly outsideColor?: RgbColor;
-  /** If defined, pixels inside the clip planes within a width will be highlighted */
-  public readonly clipHighlight?: ClipHighlight;
+  /** If 'true', intersection of geometry and clip planes will be colorized */
+  public readonly colorizeIntersection?: boolean;
+  /** Controls the style of the intersection of geometry and clip planes */
+  public readonly intersectionStyle?: ClipIntersectionStyle;
 
   /** The default style, which overrides none of the view's settings. */
-  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined, undefined);
+  public static readonly defaults = new ClipStyle(false, CutStyle.defaults, undefined, undefined, undefined, undefined);
 
-  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined, clipHighlight: ClipHighlight | undefined) {
+  private constructor(produceCutGeometry: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined, colorizeIntersection: boolean | undefined, intersectionStyle: ClipIntersectionStyle | undefined) {
     this.produceCutGeometry = produceCutGeometry;
     this.cutStyle = cutStyle;
     this.insideColor = inside;
     this.outsideColor = outside;
-    this.clipHighlight = clipHighlight;
+    this.colorizeIntersection = colorizeIntersection;
+    this.intersectionStyle = intersectionStyle;
   }
 
   /** Create a style from its components. */
-  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, clipHighlight?: ClipHighlight | undefined): ClipStyle {
-    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor && !clipHighlight)
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle | undefined): ClipStyle {
+    if (!produceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor && !colorizeIntersection && !intersectionStyle)
       return this.defaults;
 
-    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor, clipHighlight);
+    return new ClipStyle(produceCutGeometry, cutStyle, insideColor, outsideColor, colorizeIntersection, intersectionStyle);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
@@ -221,9 +235,10 @@ export class ClipStyle {
       const cutStyle = CutStyle.fromJSON(props.cutStyle);
       const inside = props.insideColor ? RgbColor.fromJSON(props.insideColor) : undefined;
       const outside = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
-      const intersectStyle = props.clipHighlight ? ClipHighlight.fromJSON(props.clipHighlight) : undefined;
+      const colorizeIntersection = props.colorizeIntersection ? true : undefined;
+      const intersectStyle = props.intersectionStyle ? ClipIntersectionStyle.fromJSON(props.intersectionStyle) : undefined;
 
-      return this.create(produceCutGeometry, cutStyle, inside, outside, intersectStyle);
+      return this.create(produceCutGeometry, cutStyle, inside, outside, colorizeIntersection, intersectStyle);
     }
 
     return this.defaults;
@@ -250,8 +265,11 @@ export class ClipStyle {
     if (this.outsideColor)
       props.outsideColor = this.outsideColor.toJSON();
 
-    if (this.clipHighlight)
-      props.clipHighlight = this.clipHighlight.toJSON();
+    if (this.colorizeIntersection)
+      props.colorizeIntersection = true;
+
+    if (this.intersectionStyle)
+      props.intersectionStyle = this.intersectionStyle.toJSON();
 
     return props;
   }
@@ -261,6 +279,6 @@ export class ClipStyle {
     if (this === ClipStyle.defaults)
       return true;
 
-    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults && !this.clipHighlight;
+    return !this.produceCutGeometry && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults && !this.colorizeIntersection && !this.intersectionStyle;
   }
 }

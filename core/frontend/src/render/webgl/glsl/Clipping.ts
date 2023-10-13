@@ -45,7 +45,7 @@ const applyClipPlanesPrelude = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
   bool clippedByCurrentPlaneSet = false;
-  bool highlightedEdge = false;
+  bool colorizeIntersection = false;
 `;
 
 const applyClipPlanesLoop = `
@@ -69,35 +69,28 @@ const applyClipPlanesPostlude = `
       clippedByCurrentPlaneSet = true;
     }
 
-    if ((u_clipHighlight.a > 0.0) && (i <= u_clipParams[1] - 2) && (!clippedByCurrentPlaneSet)) {
+    if ((u_colorizeIntersection) && (i <= u_clipParams[1] - 2) && (!clippedByCurrentPlaneSet)) {
 
-      /* The closest point on a plane from a point, p,  will be: p minus the distance between p and the plane, in the direction of the plane's normal vector.
-      * We have normal as plane.xyz, and our point as v_eyeSpace.
-      * We can find the distance from the plane using calcClipPlaneDist, then multiply that by the plane's normal.
-      * Subtract the result from the original point to obtain the location of the closest point on the clip plane to v_eyeSpace.
-      * Finally, convert the point on the plane to window coords, and take the distance between that and gl_FragCoord,
-      * to determine whether or not to highlight the current fragment.
-      */
-
+      //Obtaining closest point on plane to current frag
       vec4 pointOnPlane = vec4(v_eyeSpace, 1.0);
       pointOnPlane.xyz = pointOnPlane.xyz - (abs(calcClipPlaneDist(v_eyeSpace, plane)) * plane.xyz);
 
+      //converting point to window coordinates
       pointOnPlane = u_proj * pointOnPlane;
       pointOnPlane.xyz /= pointOnPlane.w;   // Now in NDC
-
-
       pointOnPlane.x = ((pointOnPlane.x + 1.0) * 0.5 * u_viewport.x);
       pointOnPlane.y = ((pointOnPlane.y + 1.0) * 0.5 * u_viewport.y);   //Now in window coords
 
-      if (distance(gl_FragCoord.xy, pointOnPlane.xy) <= u_clipHighlight.a) {
-        highlightedEdge = true;
+      //determining whether to colorize
+      if (distance(gl_FragCoord.xy, pointOnPlane.xy) <= u_clipIntersection.a) {
+        colorizeIntersection = true;
       }
     }
   }
 
   //Need to pull this condition out of the loop for when there are multiple clip planes defined
-  if (highlightedEdge && !clippedByCurrentPlaneSet) {
-    g_clipColor = u_clipHighlight.rgb;
+  if (colorizeIntersection && !clippedByCurrentPlaneSet) {
+    g_clipColor = u_clipIntersection.rgb;
     return true;
   }
 
@@ -166,9 +159,15 @@ export function addClipping(prog: ProgramBuilder) {
     });
   });
 
-  prog.addUniform("u_clipHighlight", VariableType.Vec4, (program) => {
-    program.addGraphicUniform("u_clipHighlight", (uniform, params) => {
-      params.target.uniforms.branch.clipStack.clipHighlight.bind(uniform);
+  prog.frag.addUniform("u_colorizeIntersection", VariableType.Boolean, (program) => {
+    program.addProgramUniform("u_colorizeIntersection", (uniform, params) => {
+      uniform.setUniform1i(params.target.uniforms.branch.clipStack.colorizeIntersection ? 1 : 0);
+    });
+  });
+
+  prog.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
+    program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
+      params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
     });
   });
 

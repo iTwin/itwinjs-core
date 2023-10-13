@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "",
+      "comment": "Added support for recoloring geometry intersecting a clip volume",
       "type": "none"
     }
   ],

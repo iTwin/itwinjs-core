@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Added ClipHighlight API functionality, and 'fdt clip highlight' keyin",
+      "comment": "Added support for recoloring geometry intersecting a clip volume",
       "type": "none"
     }
   ],

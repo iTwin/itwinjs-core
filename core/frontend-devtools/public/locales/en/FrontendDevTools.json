@@ -174,8 +174,8 @@
     "ClipColorTool": {
       "keyin": "fdt clip color"
     },
-    "ClipHighlightTool": {
-      "keyin": "fdt clip highlight"
+    "ClipIntersectionTool": {
+      "keyin": "fdt clip intersection"
     },
     "TestClipStyle": {
       "keyin": "fdt test clip style"

@@ -8,7 +8,7 @@
  */
 
 import {
-  ClipHighlight, ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
+  ClipIntersectionStyle, ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
 } from "@itwin/core-common";
 import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
@@ -85,7 +85,7 @@ export class ClipColorTool extends Tool {
 
 /** This tool specifies or un-specifies a color and width to use for pixels within the specified width of a clip plane.
  * Arguments can be:
- * - clear
+ * - off
  * - default
  * - color   <color string>
  * - width   <number>
@@ -99,47 +99,47 @@ export class ClipColorTool extends Tool {
  * @see [ColorDef]
  * @beta
  */
-export class ClipHighlightTool extends Tool {
-  public static override toolId = "ClipHighlightTool";
+export class ClipIntersectionTool extends Tool {
+  public static override toolId = "ClipIntersectionTool";
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 4; }
 
-  private _clearClipHighlight() {
+  private _toggleIntersectionStyle(toggle: boolean) {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
-      props.clipHighlight = undefined;
+      props.colorizeIntersection = toggle;
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
 
-  private _defaultClipHighlight() {
+  private _defaultClipIntersection() {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
-      if (!props.clipHighlight) {
-        props.clipHighlight = ClipHighlight.defaults;
+      if (!props.intersectionStyle) {
+        props.intersectionStyle = ClipIntersectionStyle.defaults;
       } else {
-        props.clipHighlight.color = RgbColor.fromColorDef(ColorDef.white);
-        props.clipHighlight.width = 1;
+        props.intersectionStyle.color = RgbColor.fromColorDef(ColorDef.white);
+        props.intersectionStyle.width = 1;
       }
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
   }
 
-  private setClipHighlight(colStr: string, width: number) {
+  private setClipIntersection(colStr: string, width: number) {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
 
-      if (!props.clipHighlight) {
-        props.clipHighlight = ClipHighlight.defaults;
+      if (!props.intersectionStyle) {
+        props.intersectionStyle = ClipIntersectionStyle.defaults;
       }
       if (colStr) {
-        props.clipHighlight.color = RgbColor.fromColorDef(ColorDef.fromString(colStr));
+        props.intersectionStyle.color = RgbColor.fromColorDef(ColorDef.fromString(colStr));
       }
       if (width) {
-        props.clipHighlight.width = width;
+        props.intersectionStyle.width = width;
       }
 
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
@@ -148,7 +148,7 @@ export class ClipHighlightTool extends Tool {
 
   /** This runs the tool using the given arguments, specifying or unspecifying a color and width to use for pixels within the specified width of a clip plane.
    * Arguments can be:
-   * - clear
+   * - off
    * - default
    * - color   <color string>
    * - width   <number>
@@ -162,22 +162,18 @@ export class ClipHighlightTool extends Tool {
    * @beta
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    if (0 === args.length) {
-      this._defaultClipHighlight();
+    if (args[0] === "off") {
+      this._toggleIntersectionStyle(false);
       return true;
     }
 
-    if (1 === args.length) {
-      if (args[0] === "clear")
-        this._clearClipHighlight();
-
-      if (args[0] === "default")
-        this._defaultClipHighlight();
-
+    this._toggleIntersectionStyle(true);
+    if (args[0] === "default") {
+      this._defaultClipIntersection();
       return true;
     }
 
-    args[0] === "color" ? this.setClipHighlight(args[1], +args[3]) : this.setClipHighlight(args[3], +args[1]);
+    args[0] === "color" ? this.setClipIntersection(args[1], +args[3]) : this.setClipIntersection(args[3], +args[1]);
     return true;
   }
 }
