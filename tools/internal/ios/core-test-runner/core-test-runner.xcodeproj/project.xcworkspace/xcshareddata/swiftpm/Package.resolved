@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "mobile-native-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/iTwin/mobile-native-ios",
+      "state" : {
+        "revision" : "a1a9b197430f336578b511153c1351c12b7e076c",
+        "version" : "4.2.5"
+      }
+    }
+  ],
+  "version" : 2
+}
