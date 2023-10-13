@@ -7,15 +7,15 @@ import { assert, expect } from "chai";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import * as fs from "fs";
-import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, ElementAspectProps, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import {
-  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
+  BriefcaseDb, BriefcaseManager, DefinitionElement, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
 } from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
@@ -89,6 +89,74 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     sinon.restore();
+  });
+
+  it.only("corrupt changeset", async () => {
+
+    const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
+    const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
+
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "TestIModel";
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    assert.isNotEmpty(rwIModelId);
+
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId });
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
+    b1.nativeDb.startProfiler("b1");
+    b2.nativeDb.startProfiler("b2");
+    b3.nativeDb.startProfiler("b3");
+    await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });
+    await b2.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    // create and insert a new model with code1
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      b1,
+      IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
+      true);
+
+    const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+
+    await b1.locks.acquireLocks({ shared: dictionary.id });
+    const spatialCategoryId = SpatialCategory.insert(
+      dictionary.iModel,
+      dictionary.id,
+      newCategoryCode.value,
+      new SubCategoryAppearance({ color: 0xff0000 }),
+    );
+    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: `inserted element ${el1}` });
+
+    await b2.pullChanges();
+    b2.elements.insertAspect({
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: {
+        relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+        id: el1,
+      },
+      kind: "",
+      identifier: "test identifier",
+    } as ElementAspectProps);
+
+    await b1.locks.acquireLocks({ exclusive: el1 });
+    b1.elements.deleteElement(el1);
+    b1.saveChanges();
+
+    await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
+    b2.saveChanges();
+
+    await b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` });
+    await b3.pullChanges();
+
+    b1.close();
+    b2.close();
+    b3.close();
   });
 
   it("should handle undo/redo", async () => {
