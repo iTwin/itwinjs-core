@@ -15,8 +15,7 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 [ContentGroupProvider]($appui-react) describes the contents that the frontstage will contain.
 
 ```tsx
-[[include:Example_Viewport_Frontstage_Group_Provider_1]]
-[[include:Example_Viewport_Frontstage_Group_Provider_2]]
+[[include:Example_Viewport_Frontstage_Group_Provider]]
 ```
 
 ### Registering frontstage
@@ -41,8 +40,7 @@ determine if it should supply items such as tool button, widgets, or status bar 
 [FrontstageProvider]($appui-react) contains all the information about what is displayed on the frontstage. This includes the main content view as well as various side panels and tools passed as [FrontstageConfig]($appui-react) properties.
 
 ```tsx
-[[include:Example_Custom_Frontstage_Provider_1]]
-[[include:Example_Custom_Frontstage_Provider_2]]
+[[include:Example_Custom_Frontstage_Provider]]
 ```
 
 ### Implementing ContentControl
