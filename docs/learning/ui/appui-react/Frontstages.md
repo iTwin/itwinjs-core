@@ -8,6 +8,10 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 | **Nested**  | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.                                           |
 | **Modal**   | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces. |
 
+Below is an example frontstage that shows the different areas/zones.
+
+![FrontstageUi2](./images/FrontstageUi2.png "App UI Frontstage design")
+
 ## Example Frontstage definition for displaying a viewport
 
 ### Implementing ContentGroupProvider
