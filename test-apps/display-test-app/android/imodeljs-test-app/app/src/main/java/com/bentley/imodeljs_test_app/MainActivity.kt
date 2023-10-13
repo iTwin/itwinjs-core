@@ -25,6 +25,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URLConnection
+import kotlin.system.exitProcess
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -128,11 +129,19 @@ class MainActivity : AppCompatActivity() {
         const val BIM_CACHE_DIR = "bim_cache"
     }
 
+    private fun log(message: String) {
+        // Print out a message with a unique prefix so that it can be uniquely found in the TORRENT
+        // of text that comes out of adb logcat.
+        println("com.bentley.display_test_app: $message")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(true)
+        loadEnvJson()
+        val authClient = DtaServiceAuthorizationClient.create(env)
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
-        host = IModelJsHost(this, alwaysExtractAssets, true).apply {
+        host = IModelJsHost(this, alwaysExtractAssets, authClient, true).apply {
             setBackendPath("www/mobile")
             setHomePath("www/home")
             startup()
@@ -158,6 +167,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // The linter is broken, and claims that the interface functions in this class do not have
+        // the @JavascriptInterface annotation, despite the fact that they do.
+        @Suppress("JavascriptInterface")
         webView.addJavascriptInterface(
             object {
                 @JavascriptInterface
@@ -170,7 +182,14 @@ class MainActivity : AppCompatActivity() {
                 @JavascriptInterface
                 @Suppress("unused")
                 fun modelOpened(modelName: String) {
-                    println("iModel opened: $modelName")
+                    log("iModel opened: $modelName")
+                }
+
+                @JavascriptInterface
+                @Suppress("unused", "UNUSED_PARAMETER")
+                fun firstRenderFinished(_dummy: String) {
+                    log("First render finished.")
+                    exitProcess(0)
                 }
             }, "DTA_Android")
 
@@ -178,13 +197,25 @@ class MainActivity : AppCompatActivity() {
         setContentView(webView)
 
         var args = "&standalone=true"
-        loadEnvJson()
         env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
             // ensure fileName already exists in the external files
             getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
                 val fullPath = File(filesDir, fileName)
-                if (fullPath.exists())
+                if (fullPath.exists()) {
                     args += "&iModelName=${Uri.encode(fullPath.toString())}"
+                } else {
+                    log("requested imodel ($fullPath) not found!")
+                }
+            }
+        }
+
+        if (authClient != null) {
+            val remoteIds = listOfNotNull(
+                env.optStringNotEmpty("IMJS_ITWIN_ID"),
+                env.optStringNotEmpty("IMJS_IMODEL_ID")
+            )
+            if (remoteIds.size == 2) {
+                args += "&iTwinId=${Uri.encode(remoteIds[0])}&iModelId=${Uri.encode(remoteIds[1])}"
             }
         }
 
