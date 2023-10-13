@@ -483,9 +483,9 @@ export class PolyfaceClip {
     const contour = SweepContour.createForLinearSweep(region);
     if (!contour)
       return undefined;
-    const sweep = sweepVector?.clone();
-    if (sweep && contour.localToWorld.matrix.dotColumnZ(sweep) < 0.0)
-      sweep.scaleInPlace(-1); // avoid inverted clipper
+    let sweep = sweepVector;
+    if (sweepVector && contour.localToWorld.matrix.dotColumnZ(sweepVector) < 0.0)
+      sweep = sweepVector.scale(-1); // avoid inverted clipper
     const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweep, false, false, options);
     if (!clipper)
       return undefined;
