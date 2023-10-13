@@ -2654,20 +2654,20 @@ export class BriefcaseDb extends IModelDb {
    * @internal Exported strictly for tests.
    */
   public async executeWritable(func: () => Promise<void>): Promise<void> {
-    if (this.isReadonly)
-      this.closeAndReopen(OpenMode.ReadWrite);
+    const fileName = this.pathName;
 
     try {
+      if (this.isReadonly)
+        this.closeAndReopen(OpenMode.ReadWrite, fileName);
+
       await func();
     } finally {
       if (this.isReadonly)
-        this.closeAndReopen(OpenMode.Readonly);
+        this.closeAndReopen(OpenMode.Readonly, fileName);
     }
   }
 
-  private closeAndReopen(openMode: OpenMode) {
-    const fileName = this.pathName;
-
+  private closeAndReopen(openMode: OpenMode, fileName: string) {
     // Unclosed statements will produce BUSY error when attempting to close.
     this.clearCaches();
 

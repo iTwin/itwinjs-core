@@ -122,14 +122,14 @@ export class Checker {
     this._numOK++;
     return true;
   }
-  /** test if 2 Point3ds are almost equal */
+  /** Test if 2 Point3ds are almost equal. */
   public testPoint3d(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     if (Geometry.isSamePoint3d(dataA, dataB))
       return this.announceOK();
     this.announceError("expect same Point3d", dataA, dataB, params);
     return false;
   }
-  /** test if `transformAToB * dataA` matches pointB */
+  /** Test if `transformAToB * dataA` matches pointB. */
   public testTransformedPoint3d(transformAToB: Transform, dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     const dataA1 = transformAToB.multiplyPoint3d(dataA);
     if (Geometry.isSamePoint3d(dataA1, dataB))
@@ -216,12 +216,14 @@ export class Checker {
     this.announceError("expect same Range2d", dataA, dataB, params);
     return false;
   }
+  /** Test if 2 Point3ds have almost equal X and Y parts. */
   public testPoint3dXY(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     if (Geometry.isSamePoint3dXY(dataA, dataB))
       return this.announceOK();
     this.announceError("expect same Point3d XY", dataA, dataB, params);
     return false;
   }
+  /** Test if 2 Point2ds are almost equal. */
   public testPoint2d(dataA: Point2d, dataB: Point2d, ...params: any[]): boolean {
     if (Geometry.isSamePoint2d(dataA, dataB))
       return this.announceOK();

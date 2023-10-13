@@ -286,26 +286,23 @@ export class Matrix3d implements BeJSONFunctions {
     }
     // if json is Matrix3dProps and is an array of arrays
     if (Geometry.isArrayOfNumberArray(json, 3, 3)) {
-      const data = json as number[][];
       this.setRowValues(
-        data[0][0], data[0][1], data[0][2],
-        data[1][0], data[1][1], data[1][2],
-        data[2][0], data[2][1], data[2][2]);
+        json[0][0], json[0][1], json[0][2],
+        json[1][0], json[1][1], json[1][2],
+        json[2][0], json[2][1], json[2][2]);
       return;
     }
     // if json is Matrix3dProps and is an array of numbers
     if (json.length === 9) {
-      const data = json as number[];
       this.setRowValues(
-        data[0], data[1], data[2],
-        data[3], data[4], data[5],
-        data[6], data[7], data[8]);
+        json[0], json[1], json[2],
+        json[3], json[4], json[5],
+        json[6], json[7], json[8]);
       return;
     } else if (json.length === 4) {
-      const data = json as number[];
       this.setRowValues(
-        data[0], data[1], 0,
-        data[2], data[3], 0,
+        json[0], json[1], 0,
+        json[2], json[3], 0,
         0, 0, 1);
       return;
     }
@@ -2230,7 +2227,6 @@ export class Matrix3d implements BeJSONFunctions {
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
       PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
       PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
-
       return result;
     }
     if (result === undefined) {

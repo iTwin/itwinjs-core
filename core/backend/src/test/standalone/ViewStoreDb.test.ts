@@ -9,6 +9,7 @@ import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps } from "@itwin/core-common";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -17,7 +18,7 @@ describe("ViewStore", function (this: Suite) {
 
   before(async () => {
     Logger.setLevel("SQLite", LogLevel.None); // we're expecting errors
-    const dbName = join(__dirname, "output", "viewStore.db");
+    const dbName = join(KnownTestLocations.outputDir, "viewStore.db");
     ViewStore.ViewDb.createNewDb(dbName);
     vs1 = new ViewStore.ViewDb({ guidMap: {} as any });
     vs1.openDb(dbName, OpenMode.ReadWrite);

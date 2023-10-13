@@ -888,10 +888,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return this._points.isCloseToPlane(plane, Geometry.smallMetricDistance);
   }
-  /**
-   * Push a hit, fixing up the prior entry if needed.
-   * Return the incremented counter.
-   */
+  /** Push a hit, fixing up the prior entry if needed. */
   private static pushVertexHit(
     result: CurveLocationDetail[], counter: number, cp: CurvePrimitive, fraction: number, point: Point3d,
   ): void {

@@ -110,7 +110,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   /** Set this point's xyzw from a json array `[x,y,z,w]` */
   public setFromJSON(json?: Point4dProps) {
     if (Geometry.isNumberArray(json, 4))
-      this.set(json![0], json![1], json![2], json![3]);
+      this.set(json[0], json[1], json[2], json[3]);
     else
       this.set(0, 0, 0, 0);
   }
@@ -354,7 +354,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * * Return xyz projection of spacePoint to the plane of the DPoint4d (understood as coefficients, not point coordinates)
+   * * Return xyz projection of spacePoint to the plane (this Point4d is understood as plane coefficients, not point coordinates)
    * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {

@@ -17,7 +17,7 @@ packageClassification:
           "core-i18n",
           "core-quantity",
           "ecschema-editing",
-          "ecschema-locators",
+          "ecschema-locaters",
           "ecschema-metadata",
           "frontend-devtools",
           "hypermodeling-frontend",
