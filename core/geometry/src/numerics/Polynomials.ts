@@ -1611,7 +1611,7 @@ export class SmallSystem {
   }
   /**
    * Solve the pair of linear equations
-   * * `ux * x + vx + y = cx`
+   * * `ux * x + vx * y = cx`
    * * `uy * x + vy * y = cy`
    * @param ux xx coefficient
    * @param vx xy coefficient
@@ -1619,13 +1619,14 @@ export class SmallSystem {
    * @param vy yy coefficient
    * @param cx x right hand side
    * @param cy y right hand side
-   * @param result (x,y) solution.  (MUST be preallocated by caller)
+   * @param result (x,y) solution (MUST be preallocated by caller)
    */
   public static linearSystem2d(
     ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
     cx: number, cy: number, // right side
-    result: Vector2d): boolean {
+    result: Vector2d,
+  ): boolean {
     const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
     const cv = Geometry.crossProductXYXY(cx, cy, vx, vy);
     const cu = Geometry.crossProductXYXY(ux, uy, cx, cy);
