@@ -6,8 +6,6 @@
 import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
-
 /** @internal */
 export class ElectronRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
