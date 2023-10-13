@@ -24,7 +24,7 @@ Below is an example frontstage that shows the different areas/zones.
 
 ### Registering frontstage
 
-Stage contents are then provided to a [StandardFrontstageProvider]($appui-react) which is registered by [ConfigurableUiManager]($appui-react) for further use.
+Stage contents are then provided to a [StandardFrontstageProvider]($appui-react) which is registered by [UiFramework.frontstages]($appui-react) for further use.
 
 ```tsx
 [[include:Example_Register_Viewport_Frontstage]]
