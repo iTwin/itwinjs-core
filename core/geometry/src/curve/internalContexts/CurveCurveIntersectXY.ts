@@ -36,7 +36,6 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
 
 // cspell:word XYRR
 
@@ -209,12 +208,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       }
     }
@@ -280,7 +279,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     //  So do the overlap first.  This should do a quick exit in non-coincident case.
     const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
     if (overlap) { // the lines are coincident
-      if (this._coincidentGeometryContext.clampCoincidentIntervalToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1)) {
+      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1)) {
         this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
       }
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
@@ -817,11 +816,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const curvePoint = detail.point;
       const curvePointH = this.projectPoint(curvePoint);
       const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, curvePointH);
-      if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) &&
-        this.acceptFraction(extendB, fractionB, extendB)) {
-          this.recordPointWithLocalFractions(
-            lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed,
-        );
+      if (lineFraction !== undefined) {
+        if (this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB, fractionB, extendB)) {
+          this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, fractionB, bcurve, 0, 1, reversed);
+        }
       }
     }
   }
