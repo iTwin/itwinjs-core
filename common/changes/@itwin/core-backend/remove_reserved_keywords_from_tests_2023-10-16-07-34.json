@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Change reserved ECSql keywords from tests.",
+      "comment": "Change reserved SQLite keywords from tests.",
       "type": "none"
     }
   ],
