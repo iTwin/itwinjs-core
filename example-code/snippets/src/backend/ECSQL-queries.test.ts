@@ -32,12 +32,12 @@ describe("Useful ECSQL queries", () => {
     // and it is a child of a Subject named "Subject1".
     const partitionIds: Id64Set = iModel.withPreparedStatement(`
       select
-        physicalPartition.ecinstanceid
+        [partition].ecinstanceid
       from
-        ${PhysicalPartition.classFullName} as physicalPartition,
+        ${PhysicalPartition.classFullName} as [partition],
         (select ecinstanceid from ${Subject.classFullName} where CodeValue=:parentName) as parent
       where
-      physicalPartition.codevalue=:partitionName and physicalPartition.parent.id = parent.ecinstanceid;
+      [partition].codevalue=:partitionName and [partition].parent.id = parent.ecinstanceid;
     `, (stmt: ECSqlStatement) => {
       stmt.bindValue("parentName", "Subject1");
       stmt.bindValue("partitionName", "Physical");
