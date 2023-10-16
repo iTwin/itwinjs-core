@@ -31,6 +31,9 @@ let commitMessage = await $`git log --format=%B -n 1`;
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
 commitMessage = String(commitMessage).replace(/\n/g, '');
+const substring = " Changelogs";
+if (commitMessage.includes(substring))
+  commitMessage = commitMessage.replace(substring, '');
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
