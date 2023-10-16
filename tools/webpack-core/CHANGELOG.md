@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-webpack-tools
 
-This log was last generated on Tue, 10 Oct 2023 20:00:15 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Oct 2023 12:50:29 GMT and should not be manually modified.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -101,6 +101,11 @@ Mon, 22 May 2023 15:34:14 GMT
 
 - Update to eslint@8
 - CopyExternalsPlugin does not copy external modules marked /* webpack: external */
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
 
 ## 3.7.15
 Tue, 10 Oct 2023 19:58:35 GMT
