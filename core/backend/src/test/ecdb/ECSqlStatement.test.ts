@@ -1756,13 +1756,13 @@ describe("ECSqlStatement", () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Foo" modifier="Sealed">
-          <ECProperty propertyName="Range3d" typeName="binary"/>
+          <ECProperty propertyName="Range" typeName="binary"/>
         </ECEntityClass>
        </ECSchema>`), async (ecdb) => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Range3d) VALUES(?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo([Range]) VALUES(?)", (stmt: ECSqlStatement) => {
         stmt.bindRange3d(1, testRange);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1770,7 +1770,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
       ecdb.saveChanges();
-      ecdb.withPreparedStatement("SELECT Range3d FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT [Range] FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
