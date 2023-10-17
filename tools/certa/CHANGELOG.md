@@ -1,6 +1,14 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Mon, 16 Oct 2023 12:50:29 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Mitigate GHSA-j7hp-h8jx-5ppr by bumping electron to first patched version (26.2.1)
+- Add support for Electron 26
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT

@@ -2,6 +2,12 @@
   "name": "@itwin/ecschema-rpcinterface-tests",
   "entries": [
     {
+      "version": "4.2.0",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/ecschema-rpcinterface-tests_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",

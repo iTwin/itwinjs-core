@@ -2,6 +2,18 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "4.2.0",
+      "tag": "@itwin/frontend-tiles_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Permit visible edges and wireframe mode to be used with batched tiles."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/frontend-tiles_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",

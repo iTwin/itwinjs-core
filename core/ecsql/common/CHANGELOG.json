@@ -1,0 +1,17 @@
+{
+  "name": "@itwin/ecsql-common",
+  "entries": [
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/ecsql-common_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for ECSQL Ast"
+          }
+        ]
+      }
+    }
+  ]
+}

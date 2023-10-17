@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Mon, 16 Oct 2023 12:50:29 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Permit visible edges and wireframe mode to be used with batched tiles.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT

@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 16 Oct 2023 12:50:29 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- ECSqlReader is now public
+- ECSqlReader.formatCurrentRow and ECSqlReader.getRowInternal are now internal
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT

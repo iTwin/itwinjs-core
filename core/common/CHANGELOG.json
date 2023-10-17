@@ -2,6 +2,24 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.2.0",
+      "tag": "@itwin/core-common_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ECSqlExpr api"
+          },
+          {
+            "comment": "ECSqlReader is now public"
+          },
+          {
+            "comment": "ECSqlReader.formatCurrentRow and ECSqlReader.getRowInternal are now internal"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/core-common_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",

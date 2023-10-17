@@ -1,6 +1,15 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Mon, 16 Oct 2023 12:50:29 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Added support for ArcGIS feature line style support
+- Added support ArcGIS feature SMS (Simple Marker Symbol) symbology
+- ArcGIS Features and MapFeatureInfo tools bug fixes and improvements
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
