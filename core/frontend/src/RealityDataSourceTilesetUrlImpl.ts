@@ -115,7 +115,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
-    return url.endsWith("json") ? "tileset" : "tile";
+    return new URL(url, "https://localhost/").pathname.toLowerCase().endsWith("json") ? "tileset" : "tile";
   }
 
   /**

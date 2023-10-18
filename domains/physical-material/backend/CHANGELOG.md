@@ -1,6 +1,21 @@
 # Change Log - @itwin/physical-material-backend
 
-This log was last generated on Fri, 29 Sep 2023 18:24:48 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+_Version update only_
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT
@@ -87,6 +102,16 @@ Mon, 22 May 2023 15:34:14 GMT
 - Update to eslint@8
 - Drop Node 12 and Node 14.
 - Drop Node 16 support.
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT
