@@ -96,7 +96,7 @@ export class PolyfaceData {
     this._twoSided = twoSided;
     this._expectedClosure = 0;
   }
-  /** Return a depp clone. */
+  /** Return a deep clone. */
   public clone(): PolyfaceData {
     const result = new PolyfaceData();
     result.point = this.point.clone();
@@ -120,7 +120,7 @@ export class PolyfaceData {
       result.colorIndex = this.colorIndex.slice();
     if (this.auxData)
       result.auxData = this.auxData.clone();
-    if (this.taggedNumericData){
+    if (this.taggedNumericData) {
       result.taggedNumericData = this.taggedNumericData.clone();
     }
     return result;
