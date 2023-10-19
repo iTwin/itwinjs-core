@@ -18,7 +18,7 @@ schedules:
         - releases/*
 
 variables:
-  - group: iTwin.js ios and App Center variables
+  - group: iTwin.js ios and App Center variables - Travis Cobbs
 
 jobs:
   - job:
