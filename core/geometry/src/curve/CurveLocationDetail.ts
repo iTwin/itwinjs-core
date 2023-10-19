@@ -127,19 +127,13 @@ export class CurveLocationDetail {
    * * No action if undefined.
    */
   public collapseToEnd() {
-    if (this.fraction1 !== undefined) {
+    if (this.fraction1 !== undefined)
       this.fraction = this.fraction1;
-      this.fraction1 = undefined;
-    }
-    if (this.point1) {
+    if (this.point1)
       this.point = this.point1;
-      this.point1 = undefined;
-    }
+    this.collapseToStart();
   }
-  /**
-   * Make (fraction, point) the primary (and only) data.
-   * * No action if undefined.
-   */
+  /** Make (fraction, point) the primary (and only) data. */
   public collapseToStart() {
     this.fraction1 = undefined;
     this.point1 = undefined;

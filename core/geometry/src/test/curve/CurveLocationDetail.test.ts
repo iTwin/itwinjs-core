@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-// import { Sample } from "../serialization/GeometrySamples";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
-// import { Point3d, Transform } from "../PointVector";
 import { Checker } from "../Checker";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {
@@ -54,5 +53,29 @@ describe("CurveLocationDetail", () => {
     ck.checkpoint("CurveLocationDetail.InverseFraction");
     expect(ck.getNumErrors()).equals(0);
   });
-
+  it("CollapseToPoint", () => {
+    const ck = new Checker();
+    const detail = CurveLocationDetail.createCurveFractionPoint(undefined, 0.1, Point3d.create(1, 1, 1));
+    detail.captureFraction1Point1(0.2, Point3d.create(2, 2, 2));
+    let copy = detail.clone();
+    copy.collapseToStart();
+    ck.testExactNumber(copy.fraction, detail.fraction, "CurveLocationDetail.collapseToStart preserves fraction");
+    ck.testPoint3d(copy.point, detail.point, "CurveLocationDetail.collapseToStart preserves point");
+    ck.testUndefined(copy.fraction1, "CurveLocationDetail.collapseToStart nullifies fraction1");
+    ck.testUndefined(copy.point1, "CurveLocationDetail.collapseToStart nullifies point1");
+    copy = detail.clone();
+    copy.collapseToEnd();
+    ck.testExactNumber(copy.fraction, detail.fraction1!, "CurveLocationDetail.collapseToEnd moves fraction1 to fraction");
+    ck.testPoint3d(copy.point, detail.point1!, "CurveLocationDetail.collapseToEnd moves point1 to point");
+    if (ck.testUndefined(copy.fraction1, "CurveLocationDetail.collapseToEnd nullifies fraction1") &&
+        ck.testUndefined(copy.point1, "CurveLocationDetail.collapseToEnd nullifies point1")) {
+      const copy1 = copy.clone();
+      copy1.collapseToEnd();
+      ck.testExactNumber(copy1.fraction, copy.fraction, "CurveLocationDetail.collapseToEnd preserves fraction if fraction1 undefined");
+      ck.testPoint3d(copy1.point, copy.point, "CurveLocationDetail.collapseToEnd preserves point if point1 undefined");
+      ck.testUndefined(copy1.fraction1, "CurveLocationDetail.collapseToEnd preserves undefined fraction1");
+      ck.testUndefined(copy1.point1, "CurveLocationDetail.collapseToEnd preserves undefined point1");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

@@ -1030,10 +1030,8 @@ export class Geometry {
    * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
    */
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
-    /**
-     * Line equation is "fTarget-f0 = (f1-f0)*x" so "x = (fTarget-f0)/(f1-f0)"
-     */
-    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // x = (fTarget-f0)/(f1-f0)
+    // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
+    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including

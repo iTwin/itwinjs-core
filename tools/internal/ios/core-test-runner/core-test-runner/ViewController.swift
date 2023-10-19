@@ -22,6 +22,20 @@ class ViewController: ObservableObject {
         try fm.copyItem(atPath: srcPath, toPath: dstPath)
     }
 
+    func trimResults(_ documentsDir: String, _ maxResults: Int = 10) {
+        let fm = FileManager.default
+        do {
+            let files = try fm.contentsOfDirectory(atPath: documentsDir).filter { $0.hasPrefix("mocha_test_results-") }
+            if files.count > maxResults {
+                let documentsURL = URL(fileURLWithPath: documentsDir)
+                let deleteNum = files.count - maxResults
+                for file in files.sorted()[..<deleteNum] {
+                    try fm.removeItem(at: documentsURL.appendingPathComponent(file))
+                }
+            }
+        } catch {}
+    }
+
     func runTests() {
         testStatus = "Starting tests..."
         do {
@@ -32,7 +46,17 @@ class ViewController: ObservableObject {
             return
         }
         // Environment variable is read in configureMocha.js and passed to BentleyMochaReporter.
-        let testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("mocha_test_results.xml")
+        let documentsDirs = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+        guard documentsDirs.count >= 1 else {
+            NSLog("Error determining documents dir")
+            self.testStatus = "Tests initialization error."
+            return
+        }
+        let documentsDir = documentsDirs[0]
+        trimResults(documentsDir)
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd HH-mm-ss-SSS"
+        let testResultsUrl = URL(fileURLWithPath: documentsDir).appendingPathComponent("mocha_test_results-\(dateFmt.string(from: Date())).xml")
         setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
 
         let host = IModelJsHost.sharedInstance()
@@ -40,7 +64,7 @@ class ViewController: ObservableObject {
         let mainPath = bundlePath.appending("/Assets/main.js")
         let main = URL(fileURLWithPath: mainPath)
         NSLog("(ios): Running tests.")
-        host.loadBackend(main) { [self] (numFailed: UInt32) in
+        host.loadBackend(main, withAuthClient: nil, withInspect: true) { [self] (numFailed: UInt32) in
             do {
                 let text = try String(contentsOf: testResultsUrl, encoding: .utf8)
                 for line in text.components(separatedBy: .newlines) {

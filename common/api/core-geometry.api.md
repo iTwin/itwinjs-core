@@ -5602,7 +5602,7 @@ export interface SectionSequenceWithPlanes {
 // @public
 export class Segment1d {
     absoluteDelta(): number;
-    clampDirectedTo01(): boolean;
+    clampDirectedTo01(clamp0?: boolean, clamp1?: boolean, allowSingleton?: boolean): boolean;
     clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
     static create(x0?: number, x1?: number, result?: Segment1d): Segment1d;
