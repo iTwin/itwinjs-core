@@ -101,12 +101,12 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       }
     }
@@ -210,7 +210,7 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   // Caller accesses data from a linestring or segment and passes it here.
-  // The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
+  // The line in question might be (a) a full line segment or (b) a fragment within a linestring.
   // The fraction and extend parameters allow all combinations to be passed in.
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
@@ -226,8 +226,10 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     reversed: boolean,
   ): void {
     const lineVector = Vector3d.createStartEnd(pointA0, pointA1);
+    const cosValue = 0.94; // cosine of 20 degrees
     const plane = this.createPlaneWithPreferredPerpendicular(
-      pointA0, lineVector, 0.94, arc.perpendicularVector, arc.vector0);
+      pointA0, lineVector, cosValue, arc.perpendicularVector, arc.vector0,
+    );
     if (plane !== undefined) {
       const candidates: CurveLocationDetail[] = [];
       arc.appendPlaneIntersectionPoints(plane, candidates);

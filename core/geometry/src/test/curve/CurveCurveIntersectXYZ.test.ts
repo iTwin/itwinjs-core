@@ -306,7 +306,7 @@ describe("CurveCurveIntersectXYZ", () => {
   it("LineArc", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const geometryA = LineSegment3d.createXYZXYZ(0, 2, -5, 0, 2, 5);
+    const geometryA = LineSegment3d.createXYZXYZ(1, 2, -3, -1, 2, 3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
@@ -314,7 +314,7 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(0, 2, 0);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
@@ -394,7 +394,7 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(3, 4);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
@@ -436,13 +436,13 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(3, 4);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
     const i2 = intersections[0].detailB.point;
     ck.testPoint3d(i1, i2);
-    // ck.testTightNumber(i1.x, expectedIntersectionXY.x); // this line fails due to the duplicate bug!
+    ck.testTightNumber(i1.x, expectedIntersectionXY.x);
     ck.testTightNumber(i1.y, expectedIntersectionXY.y);
     ck.testTightNumber(i1.z, expectedIntersectionXY.z);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
