@@ -30,7 +30,7 @@ export class TileLoadIndicator {
           setTimeout(() => {
             // attempt to send message to mobile that the model rendered
             MobileMessenger.postMessage("firstRenderFinished", "");
-          }, 3000);
+          }, 100);
         }
       }
     }
