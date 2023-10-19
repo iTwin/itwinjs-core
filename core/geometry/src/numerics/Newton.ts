@@ -113,7 +113,7 @@ export abstract class NewtonEvaluatorRtoRD {
  * Newton iterator for use when both function and derivative can be evaluated.
  * To solve `f(x) = 0`, the Newton iteration is `x_{n+1} = x_n - dx = x_n - f(x_n)/f'(x_n)`.
  * To solve `f(x) = target` which is equivalent to solving  `g(x) = f(x) - target = 0`, the Newton iteration is
- * `x_{n+1} = x_n - dx = x_n - g(x_n)/g'(x_n) = x_n - (f(x_n)-target)/func'(x_n)`.
+ * `x_{n+1} = x_n - dx = x_n - g(x_n)/g'(x_n) = x_n - (f(x_n)-target)/f'(x_n)`.
  * @internal
  */
 export class Newton1dUnbounded extends AbstractNewtonIterator {
@@ -201,7 +201,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
 
   /**
    * Constructor for 1D newton iteration with approximate derivatives.
-   * @param func function that only returns both function value (and not derivative).
+   * @param func function that only returns function value (and not derivative).
    */
   public constructor(func: NewtonEvaluatorRtoR) {
     super();
@@ -256,9 +256,20 @@ export abstract class NewtonEvaluatorRRtoRRD {
   /**
    * Most recent function evaluation as parts of the plane.
    * * See doc of [[Newton2dUnboundedWithDerivative]] class for info on 2d newton method.
-   * * `origin` of the plane is `F(X_n)`.
-   * * `vectorU` and `vectorV` of the plane are the Jacobian matrix `J(X_n)` where `vectorU.x = df/dx`,
-   * `vectorU.y = dg/dx`, `vectorV.x = df/dy`, and `vectorV.y = dg/dy`.
+   * * For current value (u,v) of the independent variable, and `F(u,v) := (x(u,v), y(u,v)), the returned plane has:
+   * * `origin.x` = x(u,v)
+   * * `origin.y` = y(u,v)
+   * * `vectorU.x` = dx/du
+   * * `vectorU.y` = dy/du
+   * * `vectorV.x` = dx/dv
+   * * `vectorV.y` = dy/dv
+   * * In other words, the plane stores the columns of the Jacobian matrix J of F: `vectorU` stores the partials
+   * of F with respect to u (the first column of J), and `vectorV` stores the partials of F with respect to v
+   * (the second column of J):
+   *
+   * `[vectorU.x   vectorV.x]`
+   *
+   * `[vectorU.y   vectorV.y]`
    */
   public currentF!: Plane3dByOriginAndVectors;
   /**
@@ -272,21 +283,21 @@ export abstract class NewtonEvaluatorRRtoRRD {
 
 /**
  * Implement evaluation steps for newton iteration in 2 dimensions, using caller supplied NewtonEvaluatorRRtoRRD object.
- * Suppose we want to solve `f(x,y) = 0` and `g(x,y) = 0`. If we define `F = [f   g]^T` where `T` is transpose and
- * `X = [x  y]^T` then the goal is to solve `F(X) = 0`. The 2d Newton method to solve it is
- * `X_{n+1} = X_n - JInv(X_n)F(X_n)` where `JInv` is the inverse of Jacobian matrix `J`
- * and Jacobian matrix is
+ * * Suppose we want to find the roots of `F(u,v) := (x(u,v), y(u,v))`. Writing `X := (u,v)` and `F(X)` as column vectors,
+ *  the 2D Newton's iteration to find a root of `F` is given by:
+ * `X_{n+1} = X_n - dX = X_n - JInv(X_n)F(X_n)`, where `JInv` is the inverse of the Jacobian matrix `J`, and `J` is
+ * defined as:
  *
- * `[df/dx   df/dy]`
+ * `[dx/du   dx/dv]`
  *
- * `[dg/dx   dg/dy]`
+ * `[dy/du   dy/dv]`
  * @internal
  */
 export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRRtoRRD;
-  /** Current step is (dx, dy). */
+  /** Current step, or dX = (du, dv). */
   private _currentStep: Vector2d;
-  /** Current UV is (x_n, y_n). */
+  /** Current uv parameters, or X_n = (u_n, v_n). */
   private _currentUV: Point2d;
   /**
    * Constructor for 2D newton iteration with derivatives.
@@ -298,28 +309,28 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     this._currentStep = Vector2d.createZero();
     this._currentUV = Point2d.createZero();
   }
-  /** Set the UV coordinates for current iteration, i.e., (x_n, y_n). */
-  public setUV(x: number, y: number): boolean {
-    this._currentUV.set(x, y);
+  /** Set the current uv parameters, i.e., `X_n = (u_n, v_n)`. */
+  public setUV(u: number, v: number): boolean {
+    this._currentUV.set(u, v);
     return true;
   }
-  /** Get the current U coordinate, i.e., x_n. */
+  /** Get the current u parameter of X_n, i.e., u_n. */
   public getU(): number {
     return this._currentUV.x;
   }
-  /** Get the current V coordinate, i.e., y_n. */
+  /** Get the current v parameter of X_n, i.e., v_n. */
   public getV(): number {
     return this._currentUV.y;
   }
-  /** Move the current UV coordinate by currentStep, i.e., `(x_n - dx, y_n - dy)`. */
+  /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {
     // print approximations for debug
     // console.log("(" + (this._currentUV.x - this._currentStep.x) + "," + (this._currentUV.y - this._currentStep.y) + ")");
     return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y);
   }
   /**
-   * Evaluate the functions and derivatives at this._currentUV, i.e., (x_n, y_n).
-   * Invert the jacobian and compute the this._currentStep, i.e., (dx, dy).
+   * Evaluate the functions and derivatives at `X_n = (u_n, v_n)`, and solve the Jacobian matrix equation to
+   * compute `dX = (du, dv)`.
    */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
@@ -337,8 +348,8 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     return false;
   }
   /**
-   * Return the largest relative step of the x,y components of the current step, i.e., max abs of
-   * `dx / (1 + |x_n|)` and `dy / (1 + |y_n|)`. */
+   * Return the current relative step size, i.e., the larger absolute component of `dX / (1 + |X_n|)`
+   */
   public currentStepSize(): number {
     return Geometry.maxAbsXY(
       this._currentStep.x / (1.0 + Math.abs(this._currentUV.x)),
