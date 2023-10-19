@@ -20,21 +20,22 @@ export class BatchedModels {
   private readonly _viewedModelIdPairs = new Id64.Uint32Set();
   private readonly _metadata = new Map<Id64String, ModelMetadata>();
   private _modelRangePromise?: Promise<void>;
+  public readonly viewedRealityModelIds = new Set<Id64String>();
 
   public constructor(view: SpatialViewState) {
     this._iModel = view.iModel;
     this.setViewedModels(view.modelSelector.models);
   }
 
-  public setViewedModels(models: Set<Id64String>): { realityModelIds?: Set<Id64String> } {
+  public setViewedModels(models: Set<Id64String>): void {
     this._viewedModels = models;
     this._viewedModelIdPairs.clear();
     this._viewedModelIdPairs.addIds(models);
     this._viewedExtents.setNull();
+    this.viewedRealityModelIds.clear();
 
     this._modelRangePromise = undefined;
     const rangeQueryModels: Id64String[] = [];
-    let realityModelIds: Set<Id64String> | undefined = undefined;
 
     for (const modelId of models) {
       let metadata = this._metadata.get(modelId);
@@ -43,12 +44,8 @@ export class BatchedModels {
         this._metadata.set(modelId, metadata = { isRealityModel: model instanceof SpatialModelState && model.isRealityModel });
       }
 
-      if (metadata.isRealityModel) {
-        if (!realityModelIds)
-          realityModelIds = new Set<Id64String>();
-
-        realityModelIds.add(modelId);
-      }
+      if (metadata.isRealityModel)
+        this.viewedRealityModelIds.add(modelId);
 
       if (undefined == metadata.extents)
         rangeQueryModels.push(modelId);
@@ -57,7 +54,7 @@ export class BatchedModels {
     }
 
     if (rangeQueryModels.length === 0)
-      return { realityModelIds };
+      return;
 
     const modelRangePromise = this._modelRangePromise = this._iModel.models.queryExtents(rangeQueryModels).then((extents: ModelExtentsProps[]) => {
       if (modelRangePromise !== this._modelRangePromise)
@@ -72,8 +69,6 @@ export class BatchedModels {
         }
       }
     }).catch(() => { });
-
-    return { realityModelIds };
   }
 
   public views(modelId: Id64String): boolean {
