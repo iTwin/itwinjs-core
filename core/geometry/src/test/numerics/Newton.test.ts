@@ -101,22 +101,22 @@ export class Simple1DFunctionEvaluator2 extends NewtonEvaluatorRtoR {
 }
 
 export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
-  public evaluate(x: number, y: number): boolean {
+  public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      x - y + 1, x * x - y + 1, 0.0, // [ f(x,y), g(x,y), 0 ]
-      1, 2 * x, 0.0,                 // [ df/dx,  dg/dx,  0 ]
-      -1, -1, 0.0,                   // [ df/dy,  dg/dy,  0 ]
+      u - v + 1, u * u - v + 1, 0.0, // [ x(u,v), y(u,v), 0 ]
+      1, 2 * u, 0.0,                 // [ dx/du,  dy/du,  0 ]
+      -1, -1, 0.0,                   // [ dx/dv,  dy/dv,  0 ]
     );
     return true;
   }
 }
 
 export class Simple2DFunctionEvaluator2 extends NewtonEvaluatorRRtoRRD {
-  public evaluate(x: number, y: number): boolean {
+  public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      x * x + y * y - 5, 3 * x - y - 5, 0.0, // [ f(x,y), g(x,y), 0 ]
-      2 * x, 3, 0.0,                         // [ df/dx,  dg/dx,  0 ]
-      2 * y, -1, 0.0,                        // [ df/dy,  dg/dy,  0 ]
+      u * u + v * v - 5, 3 * u - v - 5, 0.0, // [ x(u,v), y(u,v), 0 ]
+      2 * u, 3, 0.0,                         // [ dx/du,  dy/du,  0 ]
+      2 * v, -1, 0.0,                        // [ dx/dv,  dy/dv,  0 ]
     );
     return true;
   }
@@ -172,37 +172,37 @@ describe("Newton", () => {
     const ck = new Checker();
     const f = new Simple2DFunctionEvaluator1();
     const iterator = new Newton2dUnboundedWithDerivative(f);
-    iterator.setUV(2, 3); // initial condition (x_0,y_0) = (2,3)
-    const expectedSolution1X = 1;
-    const expectedSolution1Y = 2;
-    // find (1,2) solution of f(x,y) = x - y + 1 = 0 and g(x,y) = x^2 - y + 1 = 0
+    iterator.setUV(2, 3); // initial condition (u_0,v_0) = (2,3)
+    const expectedSolution1U = 1;
+    const expectedSolution1V = 2;
+    // find (1,2) solution of x(u,v) = u - v + 1 = 0 and y(u,v) = u^2 - v + 1 = 0
     if (ck.testTrue(iterator.runIterations())) {
-      const solutionX = iterator.getU(); // x_n
-      const solutionY = iterator.getV(); // y_n
-      ck.testCoordinate(solutionX, expectedSolution1X, "Newton converted to correct X value");
-      ck.testCoordinate(solutionY, expectedSolution1Y, "Newton converted to correct Y value");
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
       GeometryCoreTestIO.consoleLog({
-        solutionX,
-        expectedSolutionX: expectedSolution1X,
-        solutionY,
-        expectedSolutionY: expectedSolution1Y,
+        solutionU,
+        expectedSolutionU: expectedSolution1U,
+        solutionV,
+        expectedSolutionV: expectedSolution1V,
         n: iterator.numIterations,
       });
     }
-    iterator.setUV(-1, 0); // initial condition (x_0,y_0) = (-1,0)
-    const expectedSolution2X = 0;
-    const expectedSolution2Y = 1;
-    // find (0,1) solution of f(x,y) = x - y + 1 = 0 and g(x,y) = x^2 - y + 1 = 0
+    iterator.setUV(-1, 0); // initial condition (u_0,v_0) = (-1,0)
+    const expectedSolution2U = 0;
+    const expectedSolution2V = 1;
+    // find (-1,0) solution of x(u,v) = u - v + 1 = 0 and y(u,v) = u^2 - v + 1 = 0
     if (ck.testTrue(iterator.runIterations())) {
-      const solutionX = iterator.getU(); // x_n
-      const solutionY = iterator.getV(); // y_n
-      ck.testCoordinate(solutionX, expectedSolution2X, "Newton converted to correct X value");
-      ck.testCoordinate(solutionY, expectedSolution2Y, "Newton converted to correct Y value");
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
       GeometryCoreTestIO.consoleLog({
-        solutionX,
-        expectedSolutionX: expectedSolution2X,
-        solutionY,
-        expectedSolutionY: expectedSolution2Y,
+        solutionU,
+        expectedSolutionU: expectedSolution2U,
+        solutionV,
+        expectedSolutionV: expectedSolution2V,
         n: iterator.numIterations,
       });
     }
@@ -212,37 +212,37 @@ describe("Newton", () => {
     const ck = new Checker();
     const f = new Simple2DFunctionEvaluator2();
     const iterator = new Newton2dUnboundedWithDerivative(f);
-    iterator.setUV(3, 2); // initial condition (x_0,y_0) = (3,2)
-    const expectedSolution1X = 2;
-    const expectedSolution1Y = 1;
-    // find (2,1) solution of f(x,y) = x^2 + y^2 - 5 = 0 and g(x,y) = 3*x - y - 5 = 0
+    iterator.setUV(3, 2); // initial condition (u_0,v_0) = (3,2)
+    const expectedSolution1U = 2;
+    const expectedSolution1V = 1;
+    // find (2,1) solution of x(u,v) = u^2 + v^2 - 5 = 0 and y(u,v) = 3*u - v - 5 = 0
     if (ck.testTrue(iterator.runIterations())) {
-      const solutionX = iterator.getU(); // x_n
-      const solutionY = iterator.getV(); // y_n
-      ck.testCoordinate(solutionX, expectedSolution1X, "Newton converted to correct X value");
-      ck.testCoordinate(solutionY, expectedSolution1Y, "Newton converted to correct Y value");
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
       GeometryCoreTestIO.consoleLog({
-        solutionX,
-        expectedSolutionX: expectedSolution1X,
-        solutionY,
-        expectedSolutionY: expectedSolution1Y,
+        solutionU,
+        expectedSolutionU: expectedSolution1U,
+        solutionV,
+        expectedSolutionV: expectedSolution1V,
         n: iterator.numIterations,
       });
     }
-    iterator.setUV(0, -1); // initial condition (x_0,y_0) = (0,-1)
-    const expectedSolution2X = 1;
-    const expectedSolution2Y = -2;
-    // find (1,-2) solution of f(x,y) = x^2 + y^2 - 5 = 0 and g(x,y) = 3*x - y - 5 = 0
+    iterator.setUV(0, -1); // initial condition (u_0,v_0) = (0,-1)
+    const expectedSolution2U = 1;
+    const expectedSolution2V = -2;
+    // find (1,-2) solution of x(u,v) = u^2 + v^2 - 5 = 0 and y(u,v) = 3*u - v - 5 = 0
     if (ck.testTrue(iterator.runIterations())) {
-      const solutionX = iterator.getU(); // x_n
-      const solutionY = iterator.getV(); // y_n
-      ck.testCoordinate(solutionX, expectedSolution2X, "Newton converted to correct X value");
-      ck.testCoordinate(solutionY, expectedSolution2Y, "Newton converted to correct Y value");
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
       GeometryCoreTestIO.consoleLog({
-        solutionX,
-        expectedSolutionX: expectedSolution2X,
-        solutionY,
-        expectedSolutionY: expectedSolution2Y,
+        solutionU,
+        expectedSolutionU: expectedSolution2U,
+        solutionV,
+        expectedSolutionV: expectedSolution2V,
         n: iterator.numIterations,
       });
     }
