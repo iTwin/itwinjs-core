@@ -596,6 +596,7 @@ public;QueryBinder
 public;QueryLimit
 public;QueryOptions 
 public;QueryOptionsBuilder
+internal;QueryParamType
 public;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
