@@ -47,7 +47,7 @@ export class BatchedModels {
       if (metadata.isRealityModel)
         this.viewedRealityModelIds.add(modelId);
 
-      if (undefined == metadata.extents)
+      if (undefined === metadata.extents)
         rangeQueryModels.push(modelId);
       else
         this._viewedExtents.extendRange(metadata.extents);
