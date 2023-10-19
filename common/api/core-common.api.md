@@ -7008,6 +7008,34 @@ export class QueryOptionsBuilder {
     setUsePrimaryConnection(val: boolean): this;
 }
 
+// @internal (undocumented)
+export enum QueryParamType {
+    // (undocumented)
+    Blob = 10,
+    // (undocumented)
+    Boolean = 0,
+    // (undocumented)
+    Double = 1,
+    // (undocumented)
+    Id = 2,
+    // (undocumented)
+    IdSet = 3,
+    // (undocumented)
+    Integer = 4,
+    // (undocumented)
+    Long = 5,
+    // (undocumented)
+    Null = 6,
+    // (undocumented)
+    Point2d = 7,
+    // (undocumented)
+    Point3d = 8,
+    // (undocumented)
+    String = 9,
+    // (undocumented)
+    Struct = 11
+}
+
 // @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)

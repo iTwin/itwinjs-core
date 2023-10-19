@@ -1,6 +1,6 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Tue, 10 Oct 2023 20:02:00 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Oct 2023 12:52:11 GMT and should not be manually modified.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -102,6 +102,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Removed UI state tracking on the backend
 - Deprecate `PresentationManager.activeUnitSystem` in favor of active unit system in `QuantityFormatter`
 - Added content values formatting to `PresentationManager`
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
 
 ## 3.7.15
 Tue, 10 Oct 2023 19:58:35 GMT
