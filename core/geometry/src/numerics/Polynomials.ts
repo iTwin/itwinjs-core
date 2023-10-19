@@ -1337,8 +1337,8 @@ export class TrigPolynomial {
     return status;
   }
   /**
-   * Compute intersections of unit circle x^2 + y^2 = w^2 with the ellipse
-   *         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
+   * Compute intersections of unit circle `x^2 + y^2 = w^2` with the ellipse
+   * `(x,y) = (cx + ux Cos + vx Sin, cy + uy Cos + vy Sin) / (cw + uw Cos + vw Sin)`.
    * Solutions are returned as angles in the ellipse space.
    * @param cx center x
    * @param cy center y
@@ -1352,10 +1352,12 @@ export class TrigPolynomial {
    * @param ellipseRadians solution angles in ellipse parameter space
    * @param circleRadians solution angles in circle parameter space
    */
-  public static solveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
+  public static solveUnitCircleHomogeneousEllipseIntersection(
+    cx: number, cy: number, cw: number,
     ux: number, uy: number, uw: number,
     vx: number, vy: number, vw: number,
-    ellipseRadians: number[], circleRadians: number[]): boolean {
+    ellipseRadians: number[], circleRadians: number[],
+  ): boolean {
     circleRadians.length = 0;
     const acc = ux * ux + uy * uy - uw * uw;
     const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
