@@ -62,20 +62,18 @@ function testVaryingLineSegments(
         const circleA1 = Arc3d.createXY(geometryAEnd, maxDistance);
         const circleB0 = Arc3d.createXY(lineB.startPoint(), maxDistance);
         const circleB1 = Arc3d.createXY(lineB.endPoint(), maxDistance);
-        if (!(geometryA instanceof Arc3d)) { // due to the "NO NO NO" bug in testAndRecordProjection
-          _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleA0, false, lineB, false).length, "expect no intersection",
-          );
-          _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleA1, false, lineB, false).length, "expect no intersection",
-          );
-          _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
-          );
-          _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
-          );
-        }
+        _ck.testCoordinate(
+          0, CurveCurve.intersectionXYPairs(circleA0, false, lineB, false).length, "expect no intersection",
+        );
+        _ck.testCoordinate(
+          0, CurveCurve.intersectionXYPairs(circleA1, false, lineB, false).length, "expect no intersection",
+        );
+        _ck.testCoordinate(
+          0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
+        );
+        _ck.testCoordinate(
+          0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
+        );
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryAStart, maxDistance, x0, y0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryAEnd, maxDistance, x0, y0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, lineB.startPoint(), maxDistance, x0, y0);
@@ -125,7 +123,7 @@ function testVaryingSubsets(
           const circleA1 = Arc3d.createXY(geometryA.endPoint(), maxDistance);
           const circleB0 = Arc3d.createXY(partialB.startPoint(), maxDistance);
           const circleB1 = Arc3d.createXY(partialB.endPoint(), maxDistance);
-          if (!(geometryA instanceof Arc3d)) { // due to the "NO NO NO" bug in testAndRecordProjection
+          if (!(geometryA instanceof Arc3d)) { // due to the TODO in dispatchCircularCircularOrdered (intersection between arcs)
             _ck.testCoordinate(
               0, CurveCurve.intersectionXYPairs(circleA0, false, partialB, false).length, "expect no intersection",
             );
@@ -407,8 +405,8 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
     );
-    // const expectedMinLenSqr = 1;
-    // ck.testCoordinate(minLenSqr, expectedMinLenSqr); // fails due to the "NO NO NO" bug in testAndRecordProjection
+    const expectedMinLenSqr = 1;
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc2");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -488,8 +486,8 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
     );
-    // const expectedMinLenSqr = 0.25; // 0.5 * 0.5
-    // ck.testCoordinate(minLenSqr, expectedMinLenSqr); // fails due to the "NO NO NO" bug in testAndRecordProjection
+    const expectedMinLenSqr = 0.25; // 0.5 * 0.5
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc4");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -974,8 +972,8 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
     );
-    // const expectedMinLenSqr = 0.25; // 0.5 * 0.5
-    // ck.testCoordinate(minLenSqr, expectedMinLenSqr); // fails due to the "NO NO NO" bug in testAndRecordProjection
+    const expectedMinLenSqr = 0.25; // 0.5 * 0.5
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcLineString");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1198,8 +1196,8 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
     );
-    // const expectedMinLenSqr = 36; // 6 * 6
-    // ck.testCoordinate(minLenSqr, expectedMinLenSqr); // fails due to the "NO NO NO" bug in testAndRecordProjection
+    const expectedMinLenSqr = 36; // 6 * 6
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineUnionRegion");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1246,8 +1244,8 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testLE(
       Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
     );
-    // const expectedMinLenSqr = 36; // 6 * 6
-    // ck.testCoordinate(minLenSqr, expectedMinLenSqr); // fails due to the "NO NO NO" bug in testAndRecordProjection
+    const expectedMinLenSqr = 36; // 6 * 6
+    ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineParityRegion");
     expect(ck.getNumErrors()).equals(0);
   });

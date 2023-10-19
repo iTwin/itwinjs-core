@@ -91,6 +91,8 @@ public;class CurveCollection
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
 public;CurveCurve
 public;CurveCurveApproachType
+internal;CurveCurveCloseApproachXYRRtoRRD 
+internal;CurveCurveIntersectionXYRRToRRD 
 public;CurveExtendMode
 public;CurveExtendOptions
 public;CurveFactory
@@ -100,6 +102,7 @@ public;CurveLocationDetailArrayPair
 deprecated;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;CurveOps
+internal;CurvePointCloseApproachXYRtoRD 
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"

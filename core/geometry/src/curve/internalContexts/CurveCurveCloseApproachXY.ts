@@ -15,6 +15,7 @@ import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
+import { CurvePointCloseApproachXYRtoRD, Newton1dUnbounded } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
@@ -25,7 +26,7 @@ import { AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
-// cspell:word XYRR
+// cspell:word XYRR currentdFdX
 
 /**
  * Handler class for XY close approach between _geometryB and another geometry.
@@ -184,12 +185,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       }
     }
@@ -246,12 +247,12 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailA.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({curve: cpA, fraction: globalFractionA}) &&
-          oldDetailB.isSameCurveAndFraction({curve: cpB, fraction: globalFractionB}))
+        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
           return;
       }
     }
@@ -440,8 +441,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private testAndRecordProjection(
     cpA: CurvePrimitive, fA: number, pointA: Point3d, cpB: CurvePrimitive, fB0: number, fB1: number, reversed: boolean,
   ) {
-    // NO NO NO -- this is 3D closest point --- need 2d !!
-    const detail = cpB.closestPoint(pointA, false);
+    const detail = this.getPointCurveClosestApproachXYNewton(cpB, pointA);
     if (detail) {
       const fB = Geometry.restrictToInterval(detail.fraction, fB0, fB1);
       if (fB === detail.fraction) { // if fraction is within fB0 and fB1
@@ -500,13 +500,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     );
   }
   /**
-   * Low level dispatch of segment with arc.
+   * Low level dispatch of line segment with arc.
    * Find close approaches within maxDistance between a line segments (pointA0, pointA1) and an arc.
    * To consider:
    * 1) intersection between arc and segment.
-   * 2) arc endpoints to segment endpoints or arc endpoints projection to the segment.
-   * 3) line parallel to arc tangent.
-   * @param cpA curve A (line segment or line string)
+   * 2) endpoints to endpoints or endpoints projection to the other curve.
+   * 3) arc tangent parallel to line segment (or line string).
+   * @param cpA curve A (line segment or line string; if it is a line string, then the fractions must specify a segment)
    * @param pointA0 start point of the segment
    * @param fractionA0 fraction of the start of the segment
    * @param pointA1 end point of the segment
@@ -523,7 +523,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     arc: Arc3d,
     reversed: boolean,
   ): void {
-    // 1) intersection between arc and segment
+    // 1) intersection between arc and line segment (or string).
     // Suppose:
     // Arc: X = C + cU + sV where c = cos(theta) and s = sin(theta)
     // Line: contains points A0 and A1
@@ -561,9 +561,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     if (intersectionFound)
       return;
-    // 2) endpoints to endpoints or endpoints projection to the other curve
-    this.testAndRecordFractionalPairApproach(cpA, fractionA0, fractionA1, true, arc, 0, 1, false, reversed);
-    // 3) line parallel to arc tangent.
+    // 2) endpoints to endpoints or endpoints projection to the other curve.
+    this.testAndRecordFractionalPairApproach(cpA, fractionA0, fractionA1, true, arc, 0, 1, true, reversed);
+    // 3) arc tangent parallel to line segment (or string).
     // If line does not intersect the arc, then the closest (and/or the furthest) point on arc to the line is a
     // point where the tangent line on arc at that point is parallel to the line.
     const dotUT = data.vector0.crossProductStartEndXY(pointA0, pointA1);
@@ -591,7 +591,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       return;
     // TODO: 1) intersection between arcs
     // 2) endpoints to endpoints
-    this.testAndRecordFractionalPairApproach(cpA, 0, 1, false, cpB, 0, 1, false, reversed);
+    this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
     // 3) line from one arc to another (perpendicular to arc tangents along center-center line)
     if (!Geometry.isSmallMetricDistance(c)) {
       const vectorAB = Vector3d.createStartEnd(cpA.center, cpB.center);
@@ -912,6 +912,42 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
     }
     */
+    return undefined;
+  }
+
+  /**
+   * Return XY closest approach between a curve primitive and a point.
+   * Currently, this function only supports Arc3d and LineSegment.
+   * Note that this function doesn't handle endpoints.
+   */
+  private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
+    if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
+      assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
+      return undefined;
+    }
+    const seeds = [0.2, 0.4, 0.6, 0.8];
+    const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
+    const newtonSearcher = new Newton1dUnbounded(newtonEvaluator);
+    let minCloseApproachLength = Geometry.largeCoordinateResult;
+    let minCurvePFraction: number | undefined;
+    let minPointP: Point3d | undefined;
+    for (const seed of seeds) {
+      newtonSearcher.setX(seed);
+      if (newtonSearcher.runIterations()) {
+        const curvePFraction = newtonSearcher.getX();
+        if (this.acceptFraction(curvePFraction)) {
+          const pointP = curveP.fractionToPoint(curvePFraction);
+          const closeApproachLength = pointP.distanceXY(pointQ);
+          if (closeApproachLength < minCloseApproachLength) {
+            minCloseApproachLength = closeApproachLength;
+            minCurvePFraction = curvePFraction;
+            minPointP = pointP;
+          }
+        }
+      }
+    }
+    if (minCurvePFraction && minPointP)
+      return CurveLocationDetail.createCurveFractionPoint(curveP, minCurvePFraction, minPointP);
     return undefined;
   }
 }

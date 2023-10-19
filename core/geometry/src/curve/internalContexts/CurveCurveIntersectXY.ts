@@ -20,13 +20,12 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { UnivariateBezier } from "../../numerics/BezierPolynomials";
-import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
+import { CurveCurveIntersectionXYRRToRRD, Newton2dUnboundedWithDerivative } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
@@ -38,35 +37,6 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
-
-/**
- * Private class for refining bezier-bezier intersections.
- * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
- * @internal
- */
-export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
-  private _curveA: BezierCurveBase;
-  private _curveB: BezierCurveBase;
-  private _rayA: Ray3d;
-  private _rayB: Ray3d;
-  constructor(curveA: BezierCurveBase, curveB: BezierCurveBase) {
-    super();
-    this._curveA = curveA;
-    this._curveB = curveB;
-    this._rayA = Ray3d.createZero();
-    this._rayB = Ray3d.createZero();
-  }
-  public evaluate(fractionA: number, fractionB: number): boolean {
-    this._curveA.fractionToPointAndDerivative(fractionA, this._rayA);
-    this._curveB.fractionToPointAndDerivative(fractionB, this._rayB);
-    this.currentF.setOriginAndVectorsXYZ(
-      this._rayB.origin.x - this._rayA.origin.x, this._rayB.origin.y - this._rayA.origin.y, 0.0,
-      -this._rayA.direction.x, -this._rayA.direction.y, 0.0,
-      this._rayB.direction.x, this._rayB.direction.y, 0.0,
-    );
-    return true;
-  }
-}
 /**
  * Handler class for XY intersections between _geometryB and another geometry.
  * * Instances are initialized and called from CurveCurve.
@@ -279,8 +249,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     //  So do the overlap first.  This should do a quick exit in non-coincident case.
     const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
     if (overlap) { // the lines are coincident
-      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1)) {
-        this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(
+        overlap, pointA0, pointA1, pointB0, pointB1,
+        extendA0, extendA1, extendB0, extendB1,
+      )) {
+        this.recordPointWithLocalFractions(
+          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
+          overlap.detailB.fraction, cpB, fractionB0, fractionB1,
+          reversed, overlap,
+        );
       }
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
       if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
@@ -693,7 +670,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           );
           if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
-            const xyMatchingFunction = new BezierBezierIntersectionXYRRToRRD(bezierA, bezierB);
+            const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
             if (newtonSearcher.runIterations()) {
@@ -717,8 +694,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               errors++;
             if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
               errors++;
-            if (this.acceptFraction(false, bcurveAFraction, false) &&
-              this.acceptFraction(false, bcurveBFraction, false)) {
+            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
               this.recordPointWithLocalFractions(
                 bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
               );
@@ -952,7 +928,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     this._geometryB = geomB;  // restore
   }
-  /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
+  /** Low level dispatch of CurveChainWithDistanceIndex. */
   private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;

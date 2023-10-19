@@ -1620,6 +1620,20 @@ export enum CurveCurveApproachType {
     PerpendicularChord = 1
 }
 
+// @internal
+export class CurveCurveCloseApproachXYRRtoRRD extends NewtonEvaluatorRRtoRRD {
+    constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive);
+    // (undocumented)
+    evaluate(fractionU: number, fractionV: number): boolean;
+}
+
+// @internal
+export class CurveCurveIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
+    constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive);
+    // (undocumented)
+    evaluate(fractionU: number, fractionV: number): boolean;
+}
+
 // @public
 export enum CurveExtendMode {
     None = 0,
@@ -1741,6 +1755,13 @@ export class CurveOps {
     static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
     static sumLengths(curves: AnyCurve | AnyCurve[]): number;
+}
+
+// @internal
+export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
+    constructor(curveP: CurvePrimitive, pointQ: Point3d);
+    // (undocumented)
+    evaluate(fractionU: number): boolean;
 }
 
 // @public
