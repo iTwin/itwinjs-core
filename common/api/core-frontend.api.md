@@ -44,7 +44,7 @@ import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
-import { ClipHighlight } from '@itwin/core-common';
+import { ClipIntersectionStyle } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipStyle } from '@itwin/core-common';
@@ -1181,7 +1181,7 @@ export interface ArcGisAttributeDrivenSymbology {
     }) => void;
 }
 
-// @internal
+// @internal (undocumented)
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1245,7 +1245,7 @@ export interface ArcGisGeometryRenderer {
 
 // @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
-    constructor(props: ArcGisGraphicsRendererProps);
+    constructor(iModel: IModelConnection);
     // (undocumented)
     get attributeSymbology(): ArcGisAttributeDrivenSymbology | undefined;
     // (undocumented)
@@ -1266,11 +1266,6 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     protected moveTo(x: number, y: number): Promise<void>;
     // (undocumented)
     protected stroke(): Promise<void>;
-}
-
-// @internal
-export interface ArcGisGraphicsRendererProps {
-    viewport: Viewport;
 }
 
 // @internal (undocumented)
@@ -1342,7 +1337,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
-    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void>;
     // (undocumented)
@@ -1394,7 +1389,7 @@ export class ArcGISTileMap {
     tileMapRequestSize: number;
 }
 
-// @internal
+// @internal (undocumented)
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
@@ -1409,6 +1404,7 @@ export class ArcGisUtilities {
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
+    // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
@@ -1625,8 +1621,6 @@ export class BackgroundMapGeometry {
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     cartographicToDbFromGcs(cartographic: Cartographic[]): Promise<Point3d[]>;
-    // (undocumented)
-    cartographicToDbFromWgs84Gcs(cartographic: Cartographic[]): Promise<Point3d[]>;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)
@@ -2427,7 +2421,7 @@ export function createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgePar
 // @internal (undocumented)
 export function createEmptyRenderPlan(): RenderPlan;
 
-// @internal
+// @internal (undocumented)
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 
 // @internal (undocumented)
@@ -5846,13 +5840,9 @@ export class ImageryMapLayerFormat extends MapLayerFormat {
     static createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 }
 
-// @beta
+// @internal
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-    constructor(args: {
-        layerSettings: MapLayerSettings;
-        layerIndex: number;
-        iModel: IModelConnection;
-    });
+    constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
@@ -7745,9 +7735,9 @@ export class MapLayerFeatureRecord {
 
 // @public
 export class MapLayerFormat {
-    // @beta
+    // @internal
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // @beta
+    // @internal (undocumented)
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
@@ -7790,6 +7780,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 // @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
+    // @internal (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
@@ -7797,16 +7788,17 @@ export abstract class MapLayerImageryProvider {
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-    // @internal
+    // @internal (undocumented)
     protected readonly defaultMaximumZoomLevel = 22;
-    // @internal
+    // @internal (undocumented)
     protected readonly defaultMinimumZoomLevel = 0;
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
-    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
-    // @internal
+    // @internal (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // @internal (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -7815,11 +7807,11 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG3857ExtentString(row: number, column: number, zoomLevel: number): string;
-    // @internal
+    // @internal (undocumented)
     getEPSG3857X(longitude: number): number;
-    // @internal
+    // @internal (undocumented)
     getEPSG3857Y(latitude: number): number;
-    // @internal
+    // @internal (undocumented)
     getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
         longitudeLeft: number;
         longitudeRight: number;
@@ -7828,20 +7820,21 @@ export abstract class MapLayerImageryProvider {
     };
     // @internal (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
-    // @internal
+    // @internal (undocumented)
     getEPSG4326Lat(y3857: number): number;
-    // @internal
+    // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void>;
     // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
-    getPotentialChildIds(quadId: QuadId): QuadId[];
-    // @internal
+    getPotentialChildIds(tile: ImageryMapTile): QuadId[];
+    // @internal (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
+    // @internal (undocumented)
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -8011,25 +8004,29 @@ export interface MapLayerSourceValidation {
     subLayers?: MapSubLayerProps[];
 }
 
-// @beta
+// @internal (undocumented)
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
-    // @internal
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
     // (undocumented)
     iModel: IModelConnection;
+    // (undocumented)
     get isOpaque(): boolean;
+    // (undocumented)
     get layerIndex(): number;
     // (undocumented)
     protected _layerIndex: number;
     // (undocumented)
     get layerName(): string;
     set layerSettings(layerSettings: MapLayerSettings);
+    // (undocumented)
     get layerSettings(): MapLayerSettings;
     // (undocumented)
     protected _layerSettings: MapLayerSettings;
+    // (undocumented)
     get transparency(): number | undefined;
     // (undocumented)
     protected get _transparency(): number | undefined;
@@ -17630,7 +17627,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     displayedLayerName: string;
     // (undocumented)
-    protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)

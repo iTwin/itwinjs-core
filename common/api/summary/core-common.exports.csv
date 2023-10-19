@@ -109,8 +109,8 @@ public;ChangesetType
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
-public;ClipHighlight
-public;ClipHighlightProps
+public;ClipIntersectionStyle
+public;ClipIntersectionStyleProps
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
@@ -596,7 +596,6 @@ public;QueryBinder
 public;QueryLimit
 public;QueryOptions 
 public;QueryOptionsBuilder
-internal;QueryParamType
 public;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat

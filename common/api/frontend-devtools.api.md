@@ -486,7 +486,7 @@ export class ClipColorTool extends Tool {
 }
 
 // @beta
-export class ClipHighlightTool extends Tool {
+export class ClipIntersectionTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)

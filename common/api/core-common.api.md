@@ -1169,32 +1169,35 @@ export interface ClassifierTileTreeId {
 }
 
 // @public
-export class ClipHighlight {
-    color?: RgbColor;
-    static create(color: RgbColor, width: number): ClipHighlight;
+export class ClipIntersectionStyle {
+    readonly color?: RgbColor;
+    static create(color?: RgbColor, width?: number): ClipIntersectionStyle;
     // (undocumented)
-    static readonly defaults: ClipHighlight;
+    static readonly defaults: ClipIntersectionStyle;
     // (undocumented)
-    static fromJSON(props?: ClipHighlightProps): ClipHighlight;
-    toJSON(): ClipHighlightProps | undefined;
-    width?: number;
+    static fromJSON(props?: ClipIntersectionStyleProps): ClipIntersectionStyle;
+    // (undocumented)
+    get matchesDefaults(): boolean;
+    toJSON(): ClipIntersectionStyleProps | undefined;
+    readonly width?: number;
 }
 
 // @public
-export interface ClipHighlightProps {
+export interface ClipIntersectionStyleProps {
     color?: RgbColorProps;
     width?: number;
 }
 
 // @public
 export class ClipStyle {
-    readonly clipHighlight?: ClipHighlight;
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, clipHighlight?: ClipHighlight | undefined): ClipStyle;
+    readonly colorizeIntersection?: boolean;
+    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle | undefined): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
     readonly insideColor?: RgbColor;
+    readonly intersectionStyle?: ClipIntersectionStyle;
     get matchesDefaults(): boolean;
     readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
@@ -1203,9 +1206,10 @@ export class ClipStyle {
 
 // @public
 export interface ClipStyleProps {
-    clipHighlight?: ClipHighlightProps;
+    colorizeIntersection?: boolean;
     cutStyle?: CutStyleProps;
     insideColor?: RgbColorProps;
+    intersectionStyle?: ClipIntersectionStyleProps;
     outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
@@ -7006,34 +7010,6 @@ export class QueryOptionsBuilder {
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
     setUsePrimaryConnection(val: boolean): this;
-}
-
-// @internal (undocumented)
-export enum QueryParamType {
-    // (undocumented)
-    Blob = 10,
-    // (undocumented)
-    Boolean = 0,
-    // (undocumented)
-    Double = 1,
-    // (undocumented)
-    Id = 2,
-    // (undocumented)
-    IdSet = 3,
-    // (undocumented)
-    Integer = 4,
-    // (undocumented)
-    Long = 5,
-    // (undocumented)
-    Null = 6,
-    // (undocumented)
-    Point2d = 7,
-    // (undocumented)
-    Point3d = 8,
-    // (undocumented)
-    String = 9,
-    // (undocumented)
-    Struct = 11
 }
 
 // @public (undocumented)

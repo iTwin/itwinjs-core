@@ -47,7 +47,6 @@ internal;class ArcGisGeometryBaseRenderer
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
 internal;ArcGisGraphicsRenderer 
-internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
@@ -374,7 +373,7 @@ public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): st
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 beta;ImageryMapLayerFormat 
-beta;ImageryMapLayerTreeReference 
+internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
@@ -508,7 +507,7 @@ public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
-beta;class MapLayerTileTreeReference 
+internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 beta;MapSubLayerFeatureInfo
 public;MapTile 

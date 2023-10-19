@@ -327,6 +327,7 @@ export {
 	ChangeOpCode,
 	ChangedValueState,
 	ChangesetType,
+	ClipIntersectionStyle,
 	ColorByName,
 	ColorDef,
 	CommonLoggerCategory,

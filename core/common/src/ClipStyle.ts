@@ -126,7 +126,7 @@ export class ClipIntersectionStyle {
     this.width = width;
   }
   /** Create a highlight  from its components. */
-  public static create(color: RgbColor, width: number): ClipIntersectionStyle {
+  public static create(color?: RgbColor, width?: number): ClipIntersectionStyle {
     if (!color && !width)
       return this.defaults;
 
@@ -160,6 +160,13 @@ export class ClipIntersectionStyle {
       props.width = this.width;
 
     return props;
+  }
+
+  public get matchesDefaults(): boolean {
+    if (this === ClipIntersectionStyle.defaults)
+      return true;
+
+    return !this.color && !this.width;
   }
 }
 
