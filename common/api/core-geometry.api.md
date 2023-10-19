@@ -3857,7 +3857,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     currentStepSize(): number;
     getU(): number;
     getV(): number;
-    setUV(x: number, y: number): boolean;
+    setUV(u: number, v: number): boolean;
 }
 
 // @internal
@@ -5602,7 +5602,7 @@ export interface SectionSequenceWithPlanes {
 // @public
 export class Segment1d {
     absoluteDelta(): number;
-    clampDirectedTo01(clamp0?: boolean, clamp1?: boolean, allowSingleton?: boolean): boolean;
+    clampDirectedTo01(): boolean;
     clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
     static create(x0?: number, x1?: number, result?: Segment1d): Segment1d;
