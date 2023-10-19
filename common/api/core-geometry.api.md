@@ -3857,7 +3857,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     currentStepSize(): number;
     getU(): number;
     getV(): number;
-    setUV(x: number, y: number): boolean;
+    setUV(u: number, v: number): boolean;
 }
 
 // @internal
