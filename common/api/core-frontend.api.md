@@ -17683,6 +17683,7 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
 
 // @public
 export interface ZoomToOptions {
+    minimumDimension?: number;
     placementRelativeId?: StandardViewId;
     standardViewId?: StandardViewId;
     viewRotation?: Matrix3d;
