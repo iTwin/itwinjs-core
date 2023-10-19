@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Add optional onAccesTokenChanged BeEvent to AuthorizationClient",
+      "comment": "Add optional onAccessTokenChanged BeEvent to AuthorizationClient",
       "type": "none"
     }
   ],
