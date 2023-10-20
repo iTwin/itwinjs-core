@@ -126,7 +126,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
         ProcessInfo.processInfo.arguments[1...].forEach { arg in
             if arg.hasPrefix("IMJS_") {
-                let split = arg.split(separator: "=")
+                let split = arg.split(separator: "=", maxSplits: 1)
                 if split.count == 2 {
                     configData[String(split[0])] = String(split[1])
                 }
