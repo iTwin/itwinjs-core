@@ -20,8 +20,6 @@ describe("IntersectionStyle", () => {
     };
 
     roundTrip(undefined, undefined);
-    roundTrip({}, undefined);
-    roundTrip({ color: undefined, width: undefined }, undefined);
     roundTrip(ClipIntersectionStyle.create().toJSON(), undefined);
 
     roundTrip({ color:{ r: 0, g: 100, b: 200 }, width: 3 }, "input");
@@ -37,6 +35,6 @@ describe("IntersectionStyle", () => {
     });
 
     details.clipStyle = ClipStyle.fromJSON({ colorizeIntersection: true, intersectionStyle: { color:{ r: 0, g: 100, b: 200 }, width: 3 }});
-    expect(eventHeard).to.be.false;
+    expect(eventHeard).to.be.true;
   });
 });

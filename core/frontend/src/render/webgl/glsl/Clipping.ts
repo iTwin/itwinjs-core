@@ -165,7 +165,7 @@ export function addClipping(prog: ProgramBuilder) {
     });
   });
 
-  prog.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
+  prog.frag.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
       params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
     });
