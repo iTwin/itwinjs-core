@@ -169,6 +169,9 @@ export class MapFeatureInfoDecorator implements Decorator {
   private _markerImage: HTMLImageElement;
   private _markerSet = new PinMarkerSet();
 
+  // Extra markers can be added outside the normal state
+  public extraMarkers: Point3d[]|undefined;
+
   private _state: MapFeatureInfoToolData | undefined;
 
   private readonly _graphicType = GraphicType.WorldOverlay;
@@ -340,6 +343,14 @@ export class MapFeatureInfoDecorator implements Decorator {
       }
     }
 
+    // Add extra markers if any specified
+    if ( this.extraMarkers !== undefined) {
+      this.extraMarkers.forEach((markerPoint)=> {
+        builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
+        this._markerSet.markers.add(new PinMarker(markerPoint, this.markerSize, this._markerImage));
+      });
+    }
+
     return builder.finish();
   }
 
@@ -359,5 +370,4 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._markerSet.addDecoration(context);
     return;
   }
-
 }
