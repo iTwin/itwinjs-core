@@ -250,7 +250,7 @@ export class PolyfaceQuery {
     return result;
   }
   /** Return the sum of all facet areas.
-   * @param vectorToEye compute facet area projected to a view plane perpendicular to this vector
+   * @param vectorToEye compute sum of *signed* facet areas projected to a view plane perpendicular to this vector
   */
   public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number {
     let s = 0;
