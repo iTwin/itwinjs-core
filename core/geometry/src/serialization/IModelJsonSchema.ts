@@ -825,7 +825,7 @@ export namespace IModelJson {
     public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
       if (data === undefined)
         return undefined;
-      if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order) && data.closed !== undefined) {
+      if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order)) {
         if (data.points[0].length === 4) {
           const hPoles: Point4d[] = [];
           for (const p of data.points) hPoles.push(Point4d.fromJSON(p));
