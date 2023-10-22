@@ -1819,7 +1819,6 @@ export namespace IModelJson {
         bcurve: {
           points: curve.copyPolesAsJsonArray(),
           knots,
-          closed: false,
           order: curve.order,
         },
       };
@@ -1845,7 +1844,6 @@ export namespace IModelJson {
         bcurve: {
           points: curve.copyPolesAsJsonArray(),
           knots,
-          closed: false,
           order: curve.order,
         },
       };
