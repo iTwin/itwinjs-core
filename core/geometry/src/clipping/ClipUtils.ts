@@ -628,10 +628,10 @@ export class ClipUtilities {
   /**
    * Test for intersection of two ranges in different local coordinates.
    * * Useful for clash detection of elements in iModels, using their stored (tight) local ranges and placement transforms.
-   * @param range0 range in local coordinates of first geometry
-   * @param local0ToWorld placement transform for first geometry
-   * @param range1 range in local coordinates of second geometry
-   * @param local1ToWorld placement transform for second geometry. Assumed to be invertible.
+   * @param range0 first range in local coordinates
+   * @param local0ToWorld placement transform for first range
+   * @param range1 second range in local coordinates
+   * @param local1ToWorld placement transform for second range. Assumed to be invertible.
    * @param range1Margin optional signed local distance to expand/contract the second range before intersection. Positive expands.
    * @return whether the local ranges are adjacent or intersect. Also returns false if local1ToWorld is singular.
    */
@@ -653,6 +653,29 @@ export class ClipUtilities {
     const mesh0 = builder.claimPolyface();
     const clipper = ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh0, ClipUtilities._workClipper).clipper;
     return ClipUtilities.doesClipperIntersectRange(clipper, myRange1);
+  }
+  /**
+   * Compute the range of the intersection between two local (e.g., element-aligned) ranges.
+   * @param range0 first range in local coordinates
+   * @param local0ToWorld placement transform for first range
+   * @param range1 second range in local coordinates
+   * @param local1ToWorld placement transform for second range. Assumed to be invertible.
+   * @param result optional pre-allocated range to fill and return
+   * @return range of the intersection (aligned to world axes). Returns null range if local1ToWorld is singular.
+   */
+  public static rangeOfIntersectionOfLocalRanges(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, result?: Range3d): Range3d {
+    const myResult = Range3d.createNull(result);
+    const worldToLocal1 = ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform);
+    if (!worldToLocal1)
+      return myResult;
+    // convert range0 into a clipper in local1 coordinates, then intersect with range1
+    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
+    const builder = PolyfaceBuilder.create();
+    builder.addTransformedRangeMesh(local0ToLocal1, range0);
+    const mesh0 = builder.claimPolyface();
+    const clipper = ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh0, ClipUtilities._workClipper).clipper;
+    this.announceLoopsOfConvexClipPlaneSetIntersectRange(clipper, range1, (loopPoints: GrowableXYZArray) => { loopPoints.extendRange(myResult, local1ToWorld); });
+    return myResult;
   }
   /**
    * Test if `obj` is a `Clipper` object.
