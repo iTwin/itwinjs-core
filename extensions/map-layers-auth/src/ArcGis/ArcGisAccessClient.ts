@@ -139,6 +139,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     return undefined;
   }
 
+  /** @internal */
   public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
     const data = await fetch(endpointUrl, { method: "GET" });
     return data.status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters

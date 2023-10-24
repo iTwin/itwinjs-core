@@ -41,6 +41,8 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     setEnterpriseClientId(serviceBaseUrl: string, clientId: string): void;
     // (undocumented)
     unInitialize(): void;
+    // (undocumented)
+    static validateOAuth2Endpoint(endpointUrl: string): Promise<boolean>;
 }
 
 // @beta (undocumented)
