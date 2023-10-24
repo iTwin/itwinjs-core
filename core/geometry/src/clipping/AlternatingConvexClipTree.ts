@@ -542,7 +542,7 @@ export class AlternatingCCTreeNodeCurveClipper {
    */
   public appendCurveCollectionClip(root: AlternatingCCTreeNode, curve: CurveCollection,
     insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]) {
-    for (const cp of curve.children!) {
+    for (const cp of curve.children) {
       if (cp instanceof CurvePrimitive)
         this.appendSingleClipPrimitive(root, cp, insideIntervals, outsideIntervals);
       else if (cp instanceof CurveCollection)

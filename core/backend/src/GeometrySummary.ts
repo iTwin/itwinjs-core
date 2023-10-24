@@ -253,11 +253,11 @@ class ResponseGenerator {
         return `${summary}'
         ' poleDimension: ${query.poleDimension}'
         ' numPolesTotal: ${query.numPolesTotal()}'
-        ' degree[U,V]: ${JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])}'
-        ' order[U,V]: ${JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])}'
-        ' numSpan[U,V]: ${JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])}'
-        ' numPoles[U,V]: ${JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])}'
-        ' poleStep[U,V]: ${JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)])}`;
+        ' degree[U,V]: ${JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.vDirection)])}'
+        ' order[U,V]: ${JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.vDirection)])}'
+        ' numSpan[U,V]: ${JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.vDirection)])}'
+        ' numPoles[U,V]: ${JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.vDirection)])}'
+        ' poleStep[U,V]: ${JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.vDirection)])}`;
       case "polyface": {
         const data = query.data;
         summary = `${summary} pointCount: ${data.point.length}'

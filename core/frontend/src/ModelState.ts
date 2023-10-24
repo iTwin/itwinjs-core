@@ -278,6 +278,7 @@ export class SpatialModelState extends GeometricModel3dState {
   public readonly classifiers?: SpatialClassifiers;
 
   public static override get className() { return "SpatialModel"; }
+
   /** @internal */
   public override get asSpatialModel(): SpatialModelState { return this; }
 
@@ -286,9 +287,10 @@ export class SpatialModelState extends GeometricModel3dState {
     if (this.isRealityModel)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
+
   /** Return true if this is a reality model (represented by a 3d tile set). */
   public get isRealityModel(): boolean {
-    return undefined !== this.jsonProperties.tilesetUrl;
+    return !!this.jsonProperties.tilesetUrl || !!this.jsonProperties.rdSourceKey || !!this.jsonProperties.orbitGtBlob;
   }
 }
 

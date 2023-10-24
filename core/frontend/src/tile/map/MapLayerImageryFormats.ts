@@ -35,7 +35,7 @@ import {
 export class ImageryMapLayerFormat extends MapLayerFormat {
   /** @internal */
   public static override createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
-    return new ImageryMapLayerTreeReference(layerSettings, layerIndex, iModel);
+    return new ImageryMapLayerTreeReference({ layerSettings, layerIndex, iModel });
   }
 }
 

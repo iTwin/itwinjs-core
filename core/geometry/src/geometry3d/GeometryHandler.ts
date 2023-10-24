@@ -17,6 +17,7 @@ import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -72,31 +73,36 @@ export abstract class GeometryHandler {
   public abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
   /** Handle strongly typed  [[IndexedPolyface]]  */
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
-  /**
-   * Handle strongly typed [[TransitionSpiral3d]]
-   * @alpha
-   */
+  /** handle strongly typed [[TransitionSpiral3d]] */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
-  /** Handle strongly typed Path (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[Path]] (base class method calls [[handleCurveCollection]]) */
   public handlePath(g: Path): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  Loop (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[Loop]] (base class method calls [[handleCurveCollection]]) */
   public handleLoop(g: Loop): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  ParityRegion (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[ParityRegion]] (base class method calls [[handleCurveCollection]]) */
   public handleParityRegion(g: ParityRegion): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  UnionRegion (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[UnionRegion]] (base class method calls [[handleCurveCollection]]) */
   public handleUnionRegion(g: UnionRegion): any {
     return this.handleCurveCollection(g);
   }
-  /** Handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
+  /** Handle strongly typed [[BagOfCurves]] (base class method calls [[handleCurveCollection]]) */
   public handleBagOfCurves(g: BagOfCurves): any {
     return this.handleCurveCollection(g);
   }
+  /** Handle strongly typed [[CurveChainWithDistanceIndex]] (base class method calls [[handlePath]] or [[handleLoop]]) */
+  public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
+    if (g.path instanceof Path)
+      return this.handlePath(g.path);
+    if (g.path instanceof Loop)
+      return this.handleLoop(g.path);
+    return this.handleCurveCollection(g.path);
+   }
   /** Handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
   /** Handle strongly typed  Cone */
@@ -148,6 +154,10 @@ export class NullGeometryHandler extends GeometryHandler {
     return undefined;
   }
   /** No-action implementation */
+  public override handleCurveChainWithDistanceIndex(_g: CurveChainWithDistanceIndex): any {
+    return undefined;
+  }
+  /** No-action implementation */
   public handleBSplineCurve3d(_g: BSplineCurve3d): any {
     return undefined;
   }
@@ -179,9 +189,7 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleIndexedPolyface(_g: IndexedPolyface): any {
     return undefined;
   }
-  /** No-action implementation
-   * @alpha
-   */
+  /** No-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any {
     return undefined;
   }
@@ -247,7 +255,8 @@ export class NullGeometryHandler extends GeometryHandler {
   }
 }
 /**
- * Implement GeometryHandler methods, with all curve collection methods recursing to children.
+ * Implement GeometryHandler methods, but override `handleCurveCollection` so that all methods
+ * that operate on a [[CurveCollection]] recurse to their children.
  * @public
  */
 export class RecurseToCurvesGeometryHandler extends GeometryHandler {
@@ -295,9 +304,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleIndexedPolyface(_g: IndexedPolyface): any {
     return undefined;
   }
-  /** No-action implementation
-   * @alpha
-   */
+  /** No-action implementation */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any {
     return undefined;
   }
@@ -311,26 +318,6 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   }
   /** Recurse to children */
   public override handleCurveCollection(g: CurveCollection): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handlePath(g: Path): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleLoop(g: Loop): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleParityRegion(g: ParityRegion): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleUnionRegion(g: UnionRegion): any {
-    return this.handleChildren(g);
-  }
-  /** Recurse to children */
-  public override handleBagOfCurves(g: BagOfCurves): any {
     return this.handleChildren(g);
   }
   /** No-action implementation */
@@ -417,10 +404,8 @@ export interface IStrokeHandler {
    * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
   */
   announceIntervalForUniformStepStrokes(
-    cp: CurvePrimitive,
-    numStrokes: number,
-    fraction0: number,
-    fraction1: number): void;
+    cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
+  ): void;
   /**
    * OPTIONAL method for a handler to indicate that it wants primary geometry (e.g. spirals) rather than strokes.
    * @returns true if primary geometry should be passed (rather than stroked or otherwise simplified)

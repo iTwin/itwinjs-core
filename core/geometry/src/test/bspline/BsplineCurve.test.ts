@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-// import { prettyPrint } from "./testFunctions";
+import { CurveChain } from "../../curve/CurveCollection";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -23,6 +24,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
@@ -30,6 +32,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
 
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
@@ -254,7 +257,6 @@ describe("BsplineCurve", () => {
       const leftKnotFromArray = knots.knots[spanIndex + knots.leftKnotIndex];
       ck.testCoordinate(leftKnotFromArray, leftKnotFromSpan, "left of span reproduces knots");
       ck.testCoordinate(knots.spanIndexToSpanLength(spanIndex), rightKnotFromSpan - leftKnotFromSpan, "span length");
-
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -428,8 +430,10 @@ describe("BsplineCurve", () => {
 
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
 
-    ck.testUndefined(BSplineCurve3dH.createUniformKnots(poleBuffer, 10));
-    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 10));
+    ck.testUndefined(BSplineCurve3dH.createUniformKnots(poleBuffer, 10), "createUniformKnots with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 10), "create with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 1), "create with order too small returns undefined");
+    ck.testUndefined(BSplineCurve3dH.create([] as Point3d[], myKnots, 4), "create with empty array returns undefined");
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
     const poleArray = bcurve.copyPoints();
@@ -469,9 +473,11 @@ describe("BsplineCurve", () => {
     const bcurve = BSplineCurve3d.create(poleBuffer, myKnots, 4)!;
     const bcurveB = BSplineCurve3d.createUniformKnots(poleBuffer, 4);
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
-    ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10));
-    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10));
-    ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4));
+    ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10), "createUniformKnots with invalid order returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10), "create with order too large returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 1), "create with order too small returns undefined");
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4), "create with empty knots returns undefined");
+    ck.testUndefined(BSplineCurve3d.create([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]], myKnots, 4), "create with pole input as 2D number array of invalid dimension returns undefined");
     ck.testDefined(BSplineCurve3d.create(poleBuffer, myKnotsClassic, 4));
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
@@ -483,12 +489,23 @@ describe("BsplineCurve", () => {
         ck.testExactNumber(poleArray[i][2], poleBufferA[k++]);
       }
     }
+    const bcurveC = BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 4);
+    const poleGrowableArray = GrowableXYZArray.create(poleBuffer);
+    const bcurveD = BSplineCurve3d.createPeriodicUniformKnots(poleGrowableArray, 4);
+    if (
+      ck.testType(bcurveC, BSplineCurve3d, "createPeriodicUniformKnots with Float64Array input returns valid curve") &&
+      ck.testType(bcurveD, BSplineCurve3d, "createPeriodicUniformKnots with GrowableXYZArray input returns valid curve")
+      ) {
+      ck.testTrue(bcurveC.isAlmostEqual(bcurveD), "createPeriodicUniformKnots returns same output on different input type");
+    }
+    ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 10), "createPeriodicUniformKnots with invalid numPoles returns undefined");
+    ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 1), "createPeriodicUniformKnots with invalid order returns undefined");
 
     let n = 0;
     const myPole = Point3d.create();
     const myPoleH = Point4d.create();
-    ck.testUndefined(bcurve.getPolePoint4d(100));
-    ck.testUndefined(bcurve.getPolePoint3d(100));
+    ck.testUndefined(bcurve.getPolePoint4d(100), "getPolePoint4d with invalid index returns undefined");
+    ck.testUndefined(bcurve.getPolePoint3d(100), "getPolePoint3d with invalid index returns undefined");
     for (; bcurve.getPolePoint3d(n, myPole) !== undefined; n++) {
       const q = bcurve.getPolePoint4d(n, myPoleH);
       if (ck.testPointer(q)) {
@@ -688,6 +705,101 @@ describe("BsplineCurve", () => {
       x0Out += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "StrokeParabola");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  function roundTripBSplineCurve(ck: Checker, curve: BSplineCurve3dBase) {
+    ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
+    testGeometryQueryRoundTrip(ck, curve);
+    // test a curve with the opposite rationality
+    let curve2: BSplineCurve3dBase | undefined;
+    if (curve instanceof BSplineCurve3dH) {
+      const poles = curve.copyXYZFloat64Array(true);
+      curve2 = BSplineCurve3d.create(poles, curve.knotsRef, curve.order);
+    } else {
+      const poles = Point3dArray.unpackNumbersToNestedArrays(curve.polesRef, 3);
+      curve2 = BSplineCurve3dH.create(poles, curve.knotsRef, curve.order); // unit weights
+    }
+    if (ck.testDefined(curve2, "curve has valid pole dimension"))
+      testGeometryQueryRoundTrip(ck, curve2);
+  }
+
+  it("LegacyClosureRoundTrip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    for (const filename of ["./src/test/testInputs/curve/openAndClosedCurves.imjs",
+      "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
+      const json = fs.readFileSync(filename, "utf8");
+      const inputs = IModelJson.Reader.parse(JSON.parse(json));
+      if (ck.testDefined(inputs)) {
+        if (ck.testTrue(Array.isArray(inputs)) && Array.isArray(inputs) && inputs.length > 0) {
+          if (ck.testTrue(inputs[0] instanceof GeometryQuery)) {
+            const options = StrokeOptions.createForCurves();
+            options.angleTol = Angle.createDegrees(0.5);
+            for (const input of inputs) {
+              let curve = input;
+              if (input instanceof CurveChain && input.children.length === 1)
+                curve = input.children[0];  // assume input chains have only one child
+              if (curve instanceof BSplineCurve3dBase) {
+                const strokes = LineString3d.create();
+                curve.emitStrokes(strokes, options);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [curve, strokes]);
+                roundTripBSplineCurve(ck, curve);
+              }
+            }
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("KnotVectorCoverage", () => {
+    const ck = new Checker();
+    const degree = 4;
+    const order = degree + 1;
+    const numPoles = 15;
+    const numKnots = numPoles + order - 2;
+    const numInteriorKnots = numKnots - 2 * degree;
+    const numKnotIntervals = numInteriorKnots + 1;
+    const startKnot = 1;
+    const endKnot = 10;
+
+    const wrappedKnots = KnotVector.createUniformWrapped(numKnotIntervals, degree, startKnot, endKnot);
+    ck.testTrue(wrappedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "wrapped knots are closable with wrap mode OpenByAddingControlPoints");
+    ck.testFalse(wrappedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "wrapped knots are not closable with wrap mode OpenByRemovingKnots");
+    wrappedKnots.wrappable = BSplineWrapMode.OpenByAddingControlPoints; // simulate B-spline imported from legacy data closed with full continuity
+    const wrappedKnotsLegacy = wrappedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, wrappedKnotsLegacy.length, "copyKnots with wrapMode OpenByAddingControlPoints added two extra knots");
+    ck.testLT(wrappedKnotsLegacy[0], wrappedKnotsLegacy[1], "copyKnots with wrapMode OpenByAddingControlPoints prepended first knot less than second");
+    ck.testLT(wrappedKnotsLegacy[wrappedKnotsLegacy.length - 2], wrappedKnotsLegacy[wrappedKnotsLegacy.length - 1], "copyKnots appended last knot greater than penultimate");
+
+    const clampedKnots = KnotVector.createUniformClamped(numPoles, degree, startKnot, endKnot);
+    ck.testTrue(clampedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "clamped knots are closable with wrap mode OpenByRemovingKnots");
+    ck.testFalse(clampedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "clamped knots are not closable with wrap mode OpenByAddingControlPoints");
+    let clampedKnotsLegacy = clampedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, clampedKnotsLegacy.length, "copyKnots without wrapMode added two extra knots");
+    ck.testExactNumber(clampedKnotsLegacy[0], startKnot, "copyKnots without wrapMode prepended start knot");
+    ck.testExactNumber(clampedKnotsLegacy[clampedKnotsLegacy.length - 1], endKnot, "copyKnots without wrapMode appended end knot");
+    clampedKnots.wrappable = BSplineWrapMode.OpenByRemovingKnots; // simulate B-spline imported from legacy "fake" closed data
+    clampedKnotsLegacy = clampedKnots.copyKnots(true);
+    ck.testExactNumber(numKnots + 2, clampedKnotsLegacy.length, "copyKnots with wrapMode OpenByRemovingKnots added two extra knots");
+    ck.testExactNumber(clampedKnotsLegacy[0], startKnot, "copyKnots with wrapMode OpenByRemovingKnots prepended start knot");
+    ck.testExactNumber(clampedKnotsLegacy[clampedKnotsLegacy.length - 1], endKnot, "copyKnots with wrapMode OpenByRemovingKnots appended end knot");
+
+    let clampedKnotsCopy = NumberArray.cloneWithStartAndEndMultiplicity(clampedKnotsLegacy, degree, degree);
+    ck.testTrue(NumberArray.isExactEqual(clampedKnots.knots, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity trims knots");
+    clampedKnotsCopy = NumberArray.cloneWithStartAndEndMultiplicity(clampedKnotsCopy, order, order);
+    ck.testTrue(NumberArray.isExactEqual(clampedKnotsLegacy, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity adds knots");
+
+    // related array coverage
+    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity(undefined, degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on undefined input");
+    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity([], degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on empty input");
+    ck.testUndefined(NumberArray.unpack2d(wrappedKnots.knots, 0), "unpack2d on invalid numPerBlock");
+    ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
+    ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
+
     expect(ck.getNumErrors()).equals(0);
   });
 });

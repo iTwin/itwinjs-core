@@ -651,7 +651,7 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(false, [3, 5, 6, 8, 3], [-1], [], "LowerRightLobeQuadB");
   });
 
-  // cspell:word laurynas
+  // cspell:word laurynas, dovydas
   it("BridgeEdgesAndDegenerateLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -696,6 +696,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
+      { jsonFilePath: "./src/test/testInputs/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
     ];
     if (GeometryCoreTestIO.enableLongTests) {
       testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
@@ -710,16 +711,11 @@ describe("RegionBoolean", () => {
         yDelta = 1.5 * range.yLength();
         let merged: Loop[] | AnyRegion | undefined = inputs;
         if (!testCase.skipBoolean) {
-          // Do a Boolean union of the inputs. This means holes will be lost! But that's OK, as we're only interested in the outer loop.
-          // It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate the loops into arrays
-          //    of solids and holes because both arrays undergo a hole-destroying Boolean union before the main (RegionBinaryOpType.Parity) operation.
-          // RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which loops are "holes".
-          //    But if a hole loop intersects any other loop, you don't know its parity-rule-defined subregions because intersections aren't computed.
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
           if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
             x0 += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
-            ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion"); // note that merged preserves the constituents of the union!
+            ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion");
           }
         }
         if (merged) {

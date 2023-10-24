@@ -10,38 +10,34 @@ import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
 /**
- * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
- * None (0) ==> no wrap possible
- * OpenByAddingControlPoints (1)  ==> wrapped by adding poles
- * OpenByRemovingKnots (2)  ==> wrapped by deleting extreme knots.
+ * B-spline curve and surface types in this library are non-periodic. But they can be created from legacy periodic data.
+ * This enumeration lists the possible ways a B-spline object can have been created from legacy periodic data.
  * @public
  */
 export enum BSplineWrapMode {
-  /** No conversion to periodic */
+  /** No conversion performed. */
   None = 0,
-  /** Convert to periodic by removing control points.  This is typical for closed bcurve constructed by control points with maximum continuity.
-   * * Knots stay the same in open and periodic form.
-   * * Periodic form omits {degree} control points.
+  /** The B-spline was opened up by adding degree wrap-around control points to the legacy periodic data.
+   * * This is typical of B-splines constructed with maximum (degree - 1) continuity.
+   * * Knots are unaffected by this conversion.
    */
   OpenByAddingControlPoints = 1,
-  /** Convert to periodic by adding special knots.  This is typical of closed bcurve constructed as exact circular or elliptic arc
-   * * 2 knots on each end are omitted in open form
-   * * poles stay the same.
+  /** The B-spline was opened up by removing degree extreme knots from the legacy periodic data.
+   * * This is typical of rational B-spline curves representing full circles and ellipses.
+   * * Poles are unaffected by this conversion.
    */
   OpenByRemovingKnots = 2,
 }
 /**
- * Array of non-decreasing numbers acting as a knot array for bsplines.
+ * Array of non-decreasing numbers acting as a knot array for B-splines.
  *
  * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
- * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including MicroStation)
- *     incorrectly demand "order" knots at each end for clamping.   But only "order - 1" are really needed.
- * * This class uses the "order-1" convention.
- * * This class provides queries to convert among spanIndex and knotIndex
+ * * Various B-spline libraries have confusion over how many "end knots" are needed. Many libraries (including MicroStation and Parasolid)
+ * demand order knots at each end for clamping. But only order-1 are really needed. This class uses the order-1 convention.
  * * A span is a single interval of the knots.
- * * The left knot of span {k} is knot {k+degree-1}
- * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
- * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
+ * * The left knot of span {k} is knot {k+degree-1}.
+ * * This class provides queries to convert among spanIndex, knotIndex, spanFraction, fraction of knot range, and knot.
+ * * Core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
  * know their primary values (global knot, spanFraction).
  * @public
  */
@@ -64,7 +60,7 @@ export class KnotVector {
   public get leftKnotIndex() { return this.degree - 1; }
   /** Return the index of the rightmost knot of the active interval */
   public get rightKnotIndex() { return this.knots.length - this.degree; }
-  /** Whether the bspline was created by adding poles into "closed" structure. This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
+  /** Whether this KnotVector was created by converting legacy periodic data during deserialization. The conversion used is specified by BSplineWrapMode, and is reversed at serialization time. */
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
   /** Return the number of bezier spans.  Note that this includes zero-length spans if there are repeated knots. */
@@ -79,7 +75,7 @@ export class KnotVector {
   private constructor(knots: number[] | Float64Array | number, degree: number, wrapMode?: BSplineWrapMode) {
     this.degree = degree;
     this._wrapMode = wrapMode;
-    // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
+    // default values to satisfy compiler -- real values happen in setupFixedValues, or final else defers to user
     this._knot0 = 0.0;
     this._knot1 = 1.0;
     // satisfy the initialize checker ..
@@ -97,48 +93,47 @@ export class KnotVector {
   /** copy degree and knots to a new KnotVector. */
   public clone(): KnotVector { return new KnotVector(this.knots, this.degree, this.wrappable); }
   private setupFixedValues() {
-    // These should be read-only . ..
-    this._knot0 = this.knots[this.degree - 1];
-    this._knot1 = this.knots[this.knots.length - this.degree];
+    if (this.degree > 0 && this.knots.length > this.degree) {
+      this._knot0 = this.knots[this.degree - 1];
+      this._knot1 = this.knots[this.knots.length - this.degree];
+    }
   }
   /** Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
   /**
-   * Returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
-   * @param mode optional test mode.  If undefined, use the this.wrappable.
+   * Returns true if all numeric values have wraparound conditions that allow the knots to be closed with specified wrap mode.
+   * @param mode optional test mode.  If undefined, use this.wrappable.
    */
   public testClosable(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.wrappable;
+    const degree = this.degree;
     const leftKnotIndex = this.leftKnotIndex;
     const rightKnotIndex = this.rightKnotIndex;
-    const period = this.rightKnot - this.leftKnot;
-    const degree = this.degree;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    // maximum continuity mode .  . .
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
+      // maximum continuity mode: we expect degree periodically extended knots at each end
+      const period = this.rightKnot - this.leftKnot;
+      const indexDelta = rightKnotIndex - leftKnotIndex;
+      for (let k0 = 0; k0 < leftKnotIndex + degree; k0++) {
         const k1 = k0 + indexDelta;
-        if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
+        if (Math.abs(this.knots[k0] + period - this.knots[k1]) >= KnotVector.knotTolerance)
           return false;
       }
       return true;
     }
-    // arc mode ...
     if (mode === BSplineWrapMode.OpenByRemovingKnots) {
-      // we expect {degree} replicated knots at each end . . .
+      // legacy periodic mode: we expect multiplicity degree knots at each end
       const numRepeated = degree - 1;
-      const leftKnot = this.knots[leftKnotIndex];
-      const rightKnot = this.knots[rightKnotIndex];
+      const leftKnot = this.leftKnot;
+      const rightKnot = this.rightKnot;
       for (let i = 0; i < numRepeated; i++) {
-        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i - 1]))
+        if (Math.abs(leftKnot - this.knots[leftKnotIndex - i - 1]) >= KnotVector.knotTolerance)
           return false;
-        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i + 1]))
+        if (Math.abs(rightKnot - this.knots[rightKnotIndex + i + 1]) >= KnotVector.knotTolerance)
           return false;
       }
       return true;
     }
-
     return false;
   }
   /** Test matching degree and knot values */
@@ -218,7 +213,7 @@ export class KnotVector {
     this.setupFixedValues();
   }
 
-  /** install knot values from an array, optionally ignoring first and last. */
+  /** Set knots to input array (CAPTURED)  */
   public setKnotsCapture(knots: Float64Array) {
     this.knots = knots;
     this.setupFixedValues();
@@ -311,18 +306,22 @@ export class KnotVector {
    * Evaluate basis functions f[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of order basis function values
+   * @param f preallocated output array of order basis function values
+   * @returns true if and only if output array is sufficiently sized
    */
-  public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array) {
+  public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean {
+    if (f.length < this.degree + 1)
+      return false;
     f[0] = 1.0;
-    if (this.degree < 1) return;
+    if (this.degree < 1)
+      return true;
     // direct compute for linear part ...
     const u0 = this.knots[knotIndex0];
     const u1 = this.knots[knotIndex0 + 1];
     f[1] = (u - u0) / (u1 - u0);
     f[0] = 1.0 - f[1];
-    if (this.degree < 2) return;
-
+    if (this.degree < 2)
+      return true;
     for (let depth = 1; depth < this.degree; depth++) {
       let kLeft = knotIndex0 - depth;
       let kRight = kLeft + depth + 1;
@@ -338,19 +337,28 @@ export class KnotVector {
       }
       f[depth + 1] = gCarry;
     }
+    return true;
   }
 
   /**
    * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of order basis function values
-   * @param df array of order basis derivative values
-   * @param ddf array of order basis second derivative values
+   * @param f preallocated output array of order basis function values
+   * @param df preallocated output array of order basis derivative values
+   * @param ddf optional preallocated output array of order basis second derivative values
+   * @returns true if and only if output arrays are sufficiently sized
    */
-  public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array) {
+  public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): boolean {
+    if (f.length < this.degree + 1)
+      return false;
+    if (df.length < this.degree + 1)
+      return false;
+    if (ddf && ddf.length < this.degree + 1)
+      return false;
     f[0] = 1.0; df[0] = 0.0;
-    if (this.degree < 1) return;
+    if (this.degree < 1)
+      return true;
     // direct compute for linear part ...
     const u0 = this.knots[knotIndex0];
     const u1 = this.knots[knotIndex0 + 1];
@@ -363,7 +371,8 @@ export class KnotVector {
     if (ddf) {  // first derivative started constant, second derivative started zero.
       ddf[0] = 0.0; ddf[1] = 0.0;
     }
-    if (this.degree < 2) return;
+    if (this.degree < 2)
+      return true;
     for (let depth = 1; depth < this.degree; depth++) {
       let kLeft = knotIndex0 - depth;
       let kRight = kLeft + depth + 1;
@@ -405,6 +414,7 @@ export class KnotVector {
       if (ddf)
         ddf[depth + 1] = ddgCarry;
     }
+    return true;
   }
   /** Find the knot span bracketing knots[i] <= u < knots[i+1] and return i.
    * * If u has no such bracket, return the smaller index of the closest nontrivial bracket.
@@ -455,33 +465,37 @@ export class KnotVector {
       this.knots[i] = a + (b - this.knots[i]);
     this.knots.reverse();
   }
-  /**
-   * return a simple array form of the knots.  optionally replicate the first and last
-   * in classic over-clamped manner
-   */
-  public copyKnots(includeExtraEndKnot: boolean): number[] {
-    const wrap = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
-    const leftIndex = this.leftKnotIndex;
-    const rightIndex = this.rightKnotIndex;
-    const a0 = this.leftKnot;
-    const a1 = this.rightKnot;
+
+  /** Return a simple array form of the knots. Optionally replicate the first and last in classic over-clamped manner. */
+  public static copyKnots(knots: number[] | Float64Array, degree: number, includeExtraEndKnot?: boolean, wrapMode?: BSplineWrapMode): number[] {
+    const isExtraEndKnotPeriodic = (includeExtraEndKnot && wrapMode === BSplineWrapMode.OpenByAddingControlPoints);
+    const leftIndex = degree - 1;
+    const rightIndex = knots.length - degree;
+    const a0 = knots[leftIndex];
+    const a1 = knots[rightIndex];
     const delta = a1 - a0;
-    const degree = this.degree;
     const values: number[] = [];
     if (includeExtraEndKnot) {
-      if (wrap) {
-        values.push(this.knots[rightIndex - degree] - delta);
-      } else {
-        values.push(this.knots[0]);
-      }
+      if (isExtraEndKnotPeriodic)
+        values.push(knots[rightIndex - degree] - delta);
+      else
+        values.push(knots[0]);
     }
-    for (const u of this.knots) values.push(u);
+    for (const u of knots) {
+      values.push(u);
+    }
     if (includeExtraEndKnot) {
-      if (wrap) {
-        values.push(this.knots[leftIndex + degree] + delta);
-      } else
-        values.push(values[values.length - 1]);
+      if (isExtraEndKnotPeriodic)
+        values.push(knots[leftIndex + degree] + delta);
+      else
+        values.push(knots[knots.length - 1]);
     }
     return values;
+  }
+
+  /** Return a simple array form of the knots. Optionally replicate the first and last in classic over-clamped manner. */
+  public copyKnots(includeExtraEndKnot: boolean): number[] {
+    const wrapMode = (includeExtraEndKnot && this.testClosable()) ? this.wrappable : undefined;
+    return KnotVector.copyKnots(this.knots, this.degree, includeExtraEndKnot, wrapMode);
   }
 }

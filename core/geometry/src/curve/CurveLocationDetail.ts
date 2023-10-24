@@ -76,8 +76,8 @@ export class CurveLocationDetail {
   /** A context-specific numeric value. (e.g. a distance) */
   public a: number;
   /**
-   * Optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
-   * a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
+   * Optional CurveLocationDetail with more detail of location. For instance, a detail for fractional position
+   * within a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
    * further detail of the particular curve within the chain in the childDetail.
    */
   public childDetail?: CurveLocationDetail;
@@ -127,19 +127,13 @@ export class CurveLocationDetail {
    * * No action if undefined.
    */
   public collapseToEnd() {
-    if (this.fraction1 !== undefined) {
+    if (this.fraction1 !== undefined)
       this.fraction = this.fraction1;
-      this.fraction1 = undefined;
-    }
-    if (this.point1) {
+    if (this.point1)
       this.point = this.point1;
-      this.point1 = undefined;
-    }
+    this.collapseToStart();
   }
-  /**
-   * Make (fraction, point) the primary (and only) data.
-   * * No action if undefined.
-   */
+  /** Make (fraction, point) the primary (and only) data. */
   public collapseToStart() {
     this.fraction1 = undefined;
     this.point1 = undefined;
@@ -394,6 +388,10 @@ export class CurveLocationDetail {
     }
     return detailB;
   }
+  /** Compare only the curve and fraction of this detail with `other`. */
+  public isSameCurveAndFraction(other: CurveLocationDetail | {curve: CurvePrimitive, fraction: number}): boolean {
+    return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
+  }
 }
 
 /**
@@ -416,9 +414,9 @@ export enum CurveCurveApproachType {
  * @public
  */
 export class CurveLocationDetailPair {
-  /** The first of the two details ... */
+  /** The first of the two details. */
   public detailA: CurveLocationDetail;
-  /** The second of the two details ... */
+  /** The second of the two details. */
   public detailB: CurveLocationDetail;
   /**
    * Enumeration of how the detail pairs relate.
@@ -471,16 +469,43 @@ export class CurveLocationDetailPair {
     this.detailA = this.detailB;
     this.detailB = q;
   }
+  /**
+   * Mutate the input array by removing the second of two adjacent duplicate pairs.
+   * * Ignores details representing coincident intervals (e.g., for which `fraction1` is defined).
+   * * Comparison is performed by [[CurveLocationDetail.isSameCurveAndFraction]].
+   * * No sorting is performed.
+   * @param pairs array to de-duplicate in place
+   * @param index0 look for duplicates in the tail of the array starting at index0
+   * @return reference to input array
+   * @internal
+   */
+  public static removeAdjacentDuplicates(pairs: CurveLocationDetailPair[], index0: number = 0): CurveLocationDetailPair[] {
+    return pairs.flatMap(
+      (pair: CurveLocationDetailPair, i: number, arr: CurveLocationDetailPair[]) => {
+        if (i >= index0 && i > 0) {
+          if (!pair.detailA.hasFraction1 && !pair.detailB.hasFraction1) {
+            if (pair.detailA.isSameCurveAndFraction(arr[i - 1].detailA)) {
+              if (pair.detailB.isSameCurveAndFraction(arr[i - 1].detailB)) {
+                return [];  // remove the i_th pair
+              }
+            }
+          }
+        }
+        return [pair];  // preserve the i_th pair
+      },
+    );
+  }
 }
 
 /**
- * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by [[CurveCurve.intersectionXYZ]].
+ * Data bundle for a pair of arrays of CurveLocationDetail structures.
+ * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {
-  /** First array of details ... */
+  /** First array of details. */
   public dataA: CurveLocationDetail[];
-  /** Second array of details ... */
+  /** Second array of details. */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];

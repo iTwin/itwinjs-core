@@ -9,7 +9,6 @@
 
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -205,10 +204,10 @@ export class Triangulator {
   /**
    * * Only one outer loop permitted.
    * * Largest area loop is assumed outer.
-   * @param loops an array of loops as GrowableXYZArray or XAndY[]
+   * @param loops an array of loops
    * @returns triangulated graph, or undefined if bad data.
    */
-  public static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromLoops(loops: LineStringDataVariant[]): HalfEdgeGraph | undefined {
     if (loops.length < 1)
       return undefined;
     const mask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
@@ -277,17 +276,18 @@ export class Triangulator {
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromSingleLoop(data: LineStringDataVariant): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
-    if (!startingNode || graph.countNodes() < 6) return graph;
+    if (!startingNode || graph.countNodes() < 6)
+      return undefined;
 
-    if (Triangulator.triangulateSingleFace(graph, startingNode)) {
-      Triangulator.flipTriangles(graph);
-      return graph;
-    }
-    return undefined;
+    if (!Triangulator.triangulateSingleFace(graph, startingNode))
+      return undefined;
+
+    Triangulator.flipTriangles(graph);
+    return graph;
   }
 
   /**
@@ -312,40 +312,64 @@ export class Triangulator {
       return graph.splitEdge(baseNode, x, y, z);
     if (Triangulator.isAlmostEqualXAndYXY(baseNode, x, y))
       return baseNode;
-    if (Triangulator.isAlmostEqualXAndYXY(baseNode.faceSuccessor, x, y))
-      return baseNode;
     return graph.splitEdge(baseNode, x, y, z);
+  }
+  /** Return length of data without wraparound point(s), if present */
+  private static getUnwrappedLength(data: LineStringDataVariant): number {
+    let n = data.length;
+    let x0: number, y0: number, x1: number, y1: number;
+    while (n > 1) {
+      if (data instanceof IndexedXYZCollection) {
+        x0 = data.getXAtUncheckedPointIndex(0);
+        y0 = data.getYAtUncheckedPointIndex(0);
+        x1 = data.getXAtUncheckedPointIndex(n - 1);
+        y1 = data.getYAtUncheckedPointIndex(n - 1);
+      } else if (Geometry.isArrayOfNumberArray(data, n, 2)) {
+        x0 = data[0][0];
+        y0 = data[0][1];
+        x1 = data[n - 1][0];
+        y1 = data[n - 1][1];
+      } else {
+        x0 = data[0].x;
+        y0 = data[0].y;
+        x1 = data[n - 1].x;
+        y1 = data[n - 1].y;
+      }
+      if (Geometry.isAlmostEqualNumber(x0, x1) && Geometry.isAlmostEqualNumber(y0, y1))
+        --n;
+      else
+        break;
+    }
+    return n;
   }
   /** Create a loop from coordinates.
    * * Return a pointer to any node on the loop.
    * * no masking or other markup is applied.
    */
   public static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined {
-    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
+    const n = this.getUnwrappedLength(data);  // open it up to allow starting at a bridge edge
     let baseNode: HalfEdge | undefined;
     if (data instanceof IndexedXYZCollection) {
       const xyz = Point3d.create();
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < n; i++) {
         data.getPoint3dAtCheckedPointIndex(i, xyz);
         baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, xyz);
       }
     } else {
-      for (const xy of data) {
-        baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, xy);
-      }
+      for (let i = 0; i < n; i++)
+        baseNode = Triangulator.interiorEdgeSplit(graph, baseNode, data[i]);
     }
     return baseNode;
   }
 
   /** Create chains from coordinates.
    * * Return array of pointers to base node of the chains.
-   * * no masking or other markup is applied.
+   * * no masking or other markup is applied (save id).
    * @param graph New edges are built in this graph
    * @param data coordinate data
    * @param id id to attach to (both side of all) edges
    */
   public static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id: number = 0): HalfEdge[] {
-    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     const assembler = new AssembleXYZXYZChains(graph, id);
     VariantPointDataStream.streamXYZ(data, assembler);
     return assembler.claimSeeds();
@@ -520,15 +544,19 @@ export class Triangulator {
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
         return true;
       }
-      // earcut does not support self intersections.
-      // BUT  .. maybe if we watch from the simplest case of next2 returning to pred it will catch some . . .
-      // (no need to do flips -- we know it's already a triangle)
-      // EDL Sept 2021 NO... coordinate test is fooled into early exit when large outer triangle has
-      // edges going in from pred.
-      // Hence add the around vertex test.  But this is possibly vulnerable to a variant false positive ..
+      // The earcut algorithm does not support self intersections, however we do handle the re-entrant triangle
+      // case by pinching a bridge/hole into existence when vertices i and i+3 live in the same face loop, but not
+      // the same vertex loop. Earcut whittles larger faces down into triangles, so this is the only case needed.
       if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
-        HalfEdge.pinch(pred, next2);
-        ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
+        const next3 = next2.faceSuccessor;
+        const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
+        if (hasBridgeEdgeOrHoleInside) {
+          const nullOrHoleFace = next2.vertexPredecessor;
+          HalfEdge.pinch(pred.vertexSuccessor, nullOrHoleFace); // keep pred and next2 in their face loop
+        } else {
+          HalfEdge.pinch(pred, next2);  // pred and next2 split into different face loops
+          ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
+        }
         ear = next2;
         continue;
       }
@@ -595,6 +623,16 @@ export class Triangulator {
     Triangulator.sDebugGraph = undefined;
   }
 
+  /**
+   * Whether a and b are in same vertex loop, or at the same xy location.
+   * @internal
+   */
+  private static findAroundOrAtVertex(a: HalfEdge, b: HalfEdge): boolean {
+    if (a.findAroundVertex(b))
+      return true;
+    return Geometry.isAlmostEqualXAndY(a, b);
+  }
+
   // for reuse over all calls to isEar ....
   private static _edgeInterval = Range1d.createNull();
   private static _earRange = Range2d.createNull();
@@ -634,28 +672,28 @@ export class Triangulator {
       const q = p.faceSuccessor;
       Range2d.createXYXY(p.x, p.y, q.x, q.y, edgeRange);
       if (earRange.intersectsRange(edgeRange)) {
-        // Does pq impinge on the triangle?
+        // Does pq impinge on the triangle abc?
         Range1d.createXX(zeroMinus, onePlus, edgeInterval);
         ClipUtilities.clipSegmentBelowPlanesXY(planes, p, q, edgeInterval, clipTolerance);
         if (!edgeInterval.isNull) {
-          const mate = p.edgeMate;
-          if (mate === a || mate === b) {
-            // this is the back side of a bridge edge
-          } else if (edgeInterval.low > oneMinus) {
-            // the endpoint (q) just touches ... if it is at one of the vertex loops it's ok ...
-            if (!a.findAroundVertex(q)
-              && !b.findAroundVertex(q)
-              && !c.findAroundVertex(q))
+          if (edgeInterval.low > oneMinus) {
+            // only q touches triangle abc, so b might still be an ear if q lies at a vertex
+            if (!this.findAroundOrAtVertex(a, q)
+              && !this.findAroundOrAtVertex(b, q)
+              && !this.findAroundOrAtVertex(c, q))
               return false;
           } else if (edgeInterval.high < zeroPlus) {
-            // the start (p) just touches ... if it is at one of the vertex loops it's ok ...
-            if (!a.findAroundVertex(p)
-              && !b.findAroundVertex(p)
-              && !c.findAroundVertex(p))
+            // only p touches triangle abc, so b might still be an ear if p lies at a vertex
+            if (!this.findAroundOrAtVertex(a, p)
+              && !this.findAroundOrAtVertex(b, p)
+              && !this.findAroundOrAtVertex(c, p))
               return false;
+          } else if (this.findAroundOrAtVertex(b, q) && this.findAroundOrAtVertex(c, p)) {
+            // edge pq is the back side of bridge edge bc, so b might still be an ear
+          } else if (this.findAroundOrAtVertex(a, q) && this.findAroundOrAtVertex(b, p)) {
+            // edge pq is the back side of bridge edge ab, so b might still be an ear
           } else {
-            // significant internal intersection -- this edge really intrudes on the  into the triangle
-            return false;
+            return false; // edge pq intrudes into triangle abc, so b cannot be an ear
           }
         }
       }
@@ -728,9 +766,9 @@ export class Triangulator {
 
     if (hx === qx) return m.facePredecessor; // hole touches outer segment; pick lower endpoint
 
-    // look for points inside the triangle of hole point, segment intersection and endpoint;
-    // if there are no points found, we have a valid connection;
-    // otherwise choose the point of the minimum angle with the ray as connection point
+    // look for outer loop points p inside the triangle of hole point h, outer segment intersection (qx,hy), and outer segment endpoint m;
+    // if there are no points found, we have a valid connection (m);
+    // otherwise choose the point p with minimum angle with the ray as connection point
 
     const stop = m;
     const mx = m.x;
@@ -770,18 +808,20 @@ export class Triangulator {
     return leftmost;
   }
 
-  /** check if a point lies within a convex triangle.
-   * i.e. areas of 3 triangles with an edge of abc and p all have zero or positive area.  (abp, bcp, cap)
+  /**
+   * Check if a point lies within a triangle.
+   * * In other words, the areas of the 3 triangles formed by an edge of abc and p all have zero or positive area.
    */
   private static pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
     return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
       (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
       (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
   }
+  /** Check if node p lies strictly inside the triangle abc. */
   private static nodeInTriangle(a: HalfEdge, b: HalfEdge, c: HalfEdge, p: HalfEdge) {
     return Triangulator.signedTolerancedCCWTriangleArea(a, b, p) > 0
-      && Triangulator.signedTolerancedCCWTriangleArea(b, c, p) > 0.0
-      && Triangulator.signedTolerancedCCWTriangleArea(c, a, p) > 0.0;
+      && Triangulator.signedTolerancedCCWTriangleArea(b, c, p) > 0
+      && Triangulator.signedTolerancedCCWTriangleArea(c, a, p) > 0;
   }
   /** signed area of a triangle
    * EDL 2/21 This is negative of usual CCW area.  Beware in callers !!!

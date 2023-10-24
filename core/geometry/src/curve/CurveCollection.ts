@@ -13,10 +13,10 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { AnyCurve } from "./CurveTypes";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
@@ -28,6 +28,9 @@ import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceCont
 import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { Path } from "./Path";
+import type { Loop } from "./Loop";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
@@ -45,15 +48,13 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 
 /**
  * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
- * - `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive` joining head-to-tail.
- * The two instantiable forms of `CurveChain` are
- *   - `Path` - A chain not required to close and not enclosing a planar area (so curves do not have to be on the
- * same plane).
- *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed (so curves have to
- * be on the same plane).
- * - `ParityRegion` -- a collection of coplanar `Loop`, with "in/out" classification by parity rules.
- * - `UnionRegion` -- a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
- * - `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ * - [[CurveChain]] - a non-instantiable intermediate class for a sequence of [[CurvePrimitive]] joining head-to-tail.
+ * The two instantiable forms of `CurveChain` are:
+ *   - [[Path]] - a chain of curves. Does not have to be closed or planar. A closed `Path` is not treated as bounding a surface.
+ *   - [[Loop]] - a closed and planar chain of curves. A `Loop` is treated as bounding a planar area.
+ * - [[ParityRegion]] - a collection of coplanar `Loop`, with "in/out" classification by parity rules.
+ * - [[UnionRegion]] - a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
+ * - [[BagOfCurves]] - a collection of [[AnyCurve]] with no implied structure.
  *
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
@@ -63,9 +64,10 @@ export abstract class CurveCollection extends GeometryQuery {
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
-  /* eslint-disable @typescript-eslint/naming-convention, no-empty */
   /** Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
+  /** Return the curve children. */
+  public abstract override get children(): AnyCurve[];
   /** Return the sum of the lengths of all contained curves. */
   public sumLengths(): number {
     return SumLengthsContext.sumLengths(this);
@@ -154,23 +156,41 @@ export abstract class CurveCollection extends GeometryQuery {
    * * `Loop`
    * * `ParityRegion`
    * * `UnionRegion`
+   * @see isAnyRegion
    */
   public get isAnyRegionType(): boolean {
     return this.dgnBoundaryType() === 2 || this.dgnBoundaryType() === 4 || this.dgnBoundaryType() === 5;
   }
-  /** Return true for a `Path`, i.e. a chain of curves joined head-to-tail */
+  /** Type guard for AnyRegion */
+  public isAnyRegion(): this is AnyRegion {
+    return this.isAnyRegionType;
+  }
+  /**
+   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail
+   * @see isPath
+   */
   public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
+  }
+  /** Type guard for Path */
+  public isPath(): this is Path {
+    return this.isOpenPath;
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
    * * This is NOT a test for physical closure of a `Path`.
+   * @see isLoop
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
+  /** Type guard for Loop */
+  public isLoop(): this is Loop {
+    return this.isClosedPath;
+  }
+
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
-  public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract cloneStroked(options?: StrokeOptions): CurveCollection;
   /** Support method for ICurvePrimitive ... one line call to specific announce method . . */
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** Clone an empty collection. */
@@ -296,7 +316,7 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
-  public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
+  public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
   /**
    * Add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
