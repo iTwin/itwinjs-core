@@ -194,26 +194,23 @@ export class SchemaComparer {
 
     const baseClassA = classA.baseClass;
     const baseClassB = classB ? classB.baseClass : undefined;
+    if (baseClassA || baseClassB) {
 
-    const fullNameA = baseClassA ? baseClassA.fullName : undefined;
-    const fullNameB = baseClassB ? baseClassB.fullName : undefined;
+      const fullNameA = baseClassA ? baseClassA.fullName : undefined;
+      const fullNameB = baseClassB ? baseClassB.fullName : undefined;
 
-    if (fullNameA !== fullNameB) {
-      // Need to look at the name
-      const nameA = baseClassA ? baseClassA.name : undefined;
-      const nameB = baseClassB ? baseClassB.name : undefined;
-      const schemaB = classB?.schema;
+      if (fullNameA !== fullNameB) {
+        // Getting the schema name of the baseClass
+        const [schemaNameA, baseClassNameA] = SchemaItem.parseFullName(fullNameA ?? "");
+        const [schemaNameB, baseClassNameB] = SchemaItem.parseFullName(fullNameB ?? "");
 
-      if (baseClassB) {
-        const classItem = await schemaB?.lookupItem(nameA ?? "");
-        if (!classItem || nameA !== nameB) {
-          const baseA = await baseClassA as AnyClass;
-          const baseB = await baseClassB as AnyClass;
+        if ( baseClassNameA !== baseClassNameB ||
+          schemaNameA !== schemaNameB && schemaNameA !== classA.schema.name ||
+          schemaNameA !== schemaNameB && schemaNameB !== classB?.schema.name ) {
+          const baseA = await classA.baseClass as AnyClass;
+          const baseB = baseClassB ? await baseClassB as AnyClass : undefined;
           promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
         }
-      } else {
-        const baseA = await baseClassA as AnyClass;
-        promises.push(this._reporter.reportBaseClassDelta(classA, baseA, undefined, this._compareDirection));
       }
     }
 

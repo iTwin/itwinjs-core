@@ -244,8 +244,8 @@ describe("Schema comparison tests to filter out cases", () => {
     /**
      * Linear draft schema example, typeName are identical, should not report a difference
      */
-    describe.skip("Struct Class comparisons", () => {
-      it("should compare struct classes with properties and only register schema props differences", async () => {
+    describe("Struct Class comparisons", () => {
+      it.skip("should compare struct classes with properties and only register schema props differences", async () => {
         const schemaA = await Schema.fromJson({
           ...schemaAJson,
           items: {
