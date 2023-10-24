@@ -250,7 +250,7 @@ export class PolyfaceQuery {
     return result;
   }
   /** Return the sum of all facet areas.
-   * @param vectorToEye compute facet area projected to a view plane perpendicular to this vector
+   * @param vectorToEye compute sum of *signed* facet areas projected to a view plane perpendicular to this vector
   */
   public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number {
     let s = 0;
@@ -263,13 +263,7 @@ export class PolyfaceQuery {
       source.reset();
       while (source.moveToNextFacet()) {
         const scaledNormal = PolygonOps.areaNormal(source.point.getPoint3dArray());
-        let area = scaledNormal.magnitude();
-        if (unitVectorToEye !== undefined) {
-          const scale = Geometry.conditionalDivideCoordinate(1.0, area);
-          if (scale !== undefined)
-            area *= scaledNormal.dotProduct(unitVectorToEye) * scale;
-        }
-        s += area;
+        s += unitVectorToEye ? scaledNormal.dotProduct(unitVectorToEye) : scaledNormal.magnitude();
       }
     }
     return s;
@@ -551,13 +545,13 @@ export class PolyfaceQuery {
 * If not, extract the boundary edges as lines.
 * @param source polyface or visitor
 * @param announceEdge function to be called with each boundary edge. The announcement is start and end points, start and end indices, and facet index.
-* @param includeDanglers true to in include typical boundary edges with a single incident facet
-* @param includeMismatch true to include edges with more than 2 incident facets
-* @param includeNull true to include edges with identical start and end vertex indices.
+* @param includeTypical true to announce typical boundary edges with a single incident facet
+* @param includeMismatch true to announce edges with more than 2 incident facets
+* @param includeNull true to announce edges with identical start and end vertex indices.
 */
   public static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
     announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
-    includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): void {
+    includeTypical: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): void {
     if (source === undefined)
       return undefined;
     const edges = new IndexedEdgeMatcher();
@@ -575,7 +569,7 @@ export class PolyfaceQuery {
     const bad0: SortableEdgeCluster[] = [];
     edges.sortAndCollectClusters(undefined, bad1, bad0, bad2);
     const badList = [];
-    if (includeDanglers && bad1.length > 0)
+    if (includeTypical && bad1.length > 0)
       badList.push(bad1);
     if (includeMismatch && bad2.length > 0)
       badList.push(bad2);
@@ -767,13 +761,14 @@ export class PolyfaceQuery {
    *  * clusters of adjacent, coplanar facets merged into larger facets.
    *  * other facets included unchanged.
    * @param mesh existing mesh or visitor
+   * @param maxSmoothEdgeAngle maximum dihedral angle across an edge between facets deemed coplanar. If undefined, uses `Geometry.smallAngleRadians`.
    * @returns
    */
-  public static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor): IndexedPolyface | undefined {
+  public static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle): IndexedPolyface | undefined {
     if (mesh instanceof Polyface)
-      return this.cloneWithMaximalPlanarFacets(mesh.createVisitor(0));
+      return this.cloneWithMaximalPlanarFacets(mesh.createVisitor(0), maxSmoothEdgeAngle);
     const numFacets = PolyfaceQuery.visitorClientFacetCount(mesh);
-    const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh);
+    const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, maxSmoothEdgeAngle);
     const partitions = PolyfaceQuery.partitionFacetIndicesBySortableEdgeClusters(smoothEdges, numFacets);
     const builder = PolyfaceBuilder.create();
     const visitor = mesh;
@@ -901,10 +896,8 @@ export class PolyfaceQuery {
     }
     return polyfaces;
   }
-
-  /** Clone facets that pass an filter function
-   */
-  public static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface {
+  /** Clone facets that pass a filter function */
+  public static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): IndexedPolyface {
     if (source instanceof Polyface) {
       return this.cloneFiltered(source.createVisitor(0), filter);
     }
@@ -919,6 +912,59 @@ export class PolyfaceQuery {
     for (; source.moveToNextFacet();) {
       if (filter(source))
         builder.addFacetFromVisitor(source);
+    }
+    return builder.claimPolyface(true);
+  }
+  /** Clone the facets with in-facet dangling edges removed. */
+  public static cloneWithDanglingEdgesRemoved(source: Polyface | PolyfaceVisitor): IndexedPolyface {
+    if (source instanceof Polyface)
+      return this.cloneWithDanglingEdgesRemoved(source.createVisitor(0));
+
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = source.normal !== undefined;
+    options.needParams = source.param !== undefined;
+    options.needColors = source.color !== undefined;
+    options.needTwoSided = source.twoSided;
+    const builder = PolyfaceBuilder.create(options);
+
+    // Finds an odd palindrome in data as indexed by indices.
+    // An odd palindrome in a face loop corresponds to dangling edges in the face.
+    // If one is found, indices is mutated to excise the palindrome (data is untouched).
+    // @returns whether indices array was mutated
+    const removeFirstOddPalindrome = (indices: number[], data: number[]): boolean => {
+      const n = indices.length;
+      for (let i = 0; i < n; ++i) {
+        let palLength = 1;
+        let i0 = i; // look for odd palindrome centered at i
+        let i1 = i; // and with extents i0..i1
+        while (palLength + 2 <= n) {
+          const iPrev = (i0 === 0) ? n - 1 : i0 - 1;
+          const iNext = (i1 === n - 1) ? 0 : i1 + 1;
+          if (data[indices[iPrev]] !== data[indices[iNext]])
+            break;  // the maximal odd palindrome centered at i has length palLength and spans [i0,i1]
+          i0 = iPrev;
+          i1 = iNext;
+          palLength += 2;
+        }
+        if (palLength > 1) { // excise the palindrome (but keep i1)
+          if (i0 < i1) {
+            indices.splice(i0, palLength - 1);  // remove entries [i0,i1)
+          } else if (i0 > i1) {
+            indices.splice(i0);     // remove entries [i0,n)
+            indices.splice(0, i1);  // remove entries [0,i1)
+          }
+          return true;
+        }
+      }
+      return false;
+    };
+
+    source.setNumWrap(0);
+    source.reset();
+    while (source.moveToNextFacet()) {
+      const localIndices = [...Array(source.pointIndex.length).keys()]; // 0, 1, ... n-1;
+      while (removeFirstOddPalindrome(localIndices, source.pointIndex)) {}
+      builder.addFacetFromIndexedVisitor(source, localIndices);
     }
     return builder.claimPolyface(true);
   }
@@ -1221,12 +1267,13 @@ export class PolyfaceQuery {
         let detailArray: CurveLocationDetail[] | undefined;
         edgeRange.extend(point0);
         edgeRange.extend(point1);
+        edgeRange.ensureMinLengths(Geometry.smallMetricDistance); // add some slop in case segment is axis-aligned
         rangeSearcher.announcePointsInRange(edgeRange, (index: number, _x: number, _y: number, _z: number) => {
           // x,y,z has x,y within the range of the search ... test for exact on (in full 3d!)
           polyface.data.point.getPoint3dAtUncheckedPointIndex(index, spacePoint);
           const detail = segment.closestPoint(spacePoint, false);
           if (undefined !== detail) {
-            if (detail.fraction >= 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)
+            if (detail.fraction > 0.0 && detail.fraction < 1.0 && !detail.point.isAlmostEqual(point0) && !detail.point.isAlmostEqual(point1)
               && spacePoint.isAlmostEqual(detail.point)) {
               if (detailArray === undefined)
                 detailArray = [];

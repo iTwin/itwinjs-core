@@ -143,7 +143,7 @@ describe("ParityRegionSweep", () => {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid10, x0, y0 + a);
 
             const builder = PolyfaceBuilder.create();
-            builder.addGraph(graph, false);
+            builder.addGraph(graph);
             const polyfaceA = builder.claimPolyface();
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + 2 * a);
           }
@@ -186,6 +186,7 @@ describe("ParityRegionSweep", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  // cspell:word Karolis
   it("KarolisRegion", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

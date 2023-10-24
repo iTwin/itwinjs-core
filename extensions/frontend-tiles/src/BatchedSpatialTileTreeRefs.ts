@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
-  AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  AttachToViewportArgs, IModelConnection, SpatialModelState, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
@@ -20,6 +20,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private _currentScript?: RenderSchedule.Script;
   private _primaryRef!: PrimaryBatchedTileTreeReference;
   private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
+  private _realityTreeRefs = new Map<Id64String, TileTreeReference>();
   private _onModelSelectorChanged?: () => void;
 
   public constructor(baseUrl: URL, view: SpatialViewState) {
@@ -39,6 +40,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._primaryRef = new PrimaryBatchedTileTreeReference(treeOwner, this._models);
 
     this.populateAnimatedReferences(treeOwner);
+    this.populateRealityModels();
 
     const onScriptChanged = (newScript: RenderSchedule.Script | undefined) => {
       if (!newScript?.requiresBatching)
@@ -65,6 +67,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     for (const animatedRef of this._animatedRefs)
       yield animatedRef;
+
+    for (const realityTreeRef of this._realityTreeRefs.values())
+      yield realityTreeRef;
   }
 
   private populateAnimatedReferences(treeOwner: TileTreeOwner): void {
@@ -86,8 +91,27 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
+  private populateRealityModels(): void {
+    const prevRefs = this._realityTreeRefs;
+    this._realityTreeRefs = new Map<Id64String, TileTreeReference>();
+    for (const modelId of this._models.viewedRealityModelIds) {
+      let ref = prevRefs.get(modelId);
+      if (!ref) {
+        const model = this._view.iModel.models.getLoaded(modelId);
+        if (model && model instanceof SpatialModelState) {
+          assert(model.isRealityModel);
+          ref = model.createTileTreeReference(this._view);
+        }
+      }
+
+      if (ref)
+        this._realityTreeRefs.set(modelId, ref);
+    }
+  }
+
   public update(): void {
     this._models.setViewedModels(this._view.modelSelector.models);
+    this.populateRealityModels();
     if (this._onModelSelectorChanged)
       this._onModelSelectorChanged();
   }

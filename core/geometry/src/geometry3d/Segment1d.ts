@@ -148,23 +148,30 @@ export class Segment1d {
    * * On output, it is restricted to (0,1) while maintaining direction
    * * If the clip leaves nothing, leave this segment alone and return false.
    * * If the clip leaves something, update this segment and return true.
+   * @param clamp0 whether to clamp the smaller number to 0. Default value is true.
+   * @param clamp1 whether to clamp the larger number to 1. Default value is true.
+   * @param allowSingleton whether to return true for an interval clipped to a single number (x0 === x1). Default value is false.
+   * @return whether this interval was clipped
    */
-  public clampDirectedTo01(): boolean {
+  public clampDirectedTo01(clamp0: boolean = true, clamp1: boolean = true, allowSingleton: boolean = false): boolean {
     let x0 = this.x0;
     let x1 = this.x1;
     if (x1 > x0) {
-      if (x0 < 0) x0 = 0;
-      if (x1 > 1) x1 = 1;
-      if (x0 >= x1)
+      if (x0 < 0 && clamp0)
+        x0 = 0;
+      if (x1 > 1 && clamp1)
+        x1 = 1;
+      if (x0 > x1 || (x0 === x1 && !allowSingleton))
         return false;
     } else {
-      if (x0 > 1) x0 = 1;
-      if (x1 < 0) x1 = 0;
-      if (x0 <= x1)
+      if (x0 > 1 && clamp1)
+        x0 = 1;
+      if (x1 < 0 && clamp0)
+        x1 = 0;
+      if (x0 < x1 || (x0 === x1 && !allowSingleton))
         return false;
     }
     this.set(x0, x1);
     return true;
   }
-
 }
