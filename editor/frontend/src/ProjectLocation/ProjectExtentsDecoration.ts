@@ -569,25 +569,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     context.addDecorationFromBuilder(monumentPointBuilder);
   }
 
-  protected drawAreaTooLargeIndicator(context: DecorateContext): void {
-    if ((this._extentsLengthValid && this._extentsWidthValid) || undefined === this._clipRange)
-      return;
-
-    const corners = this._clipRange.corners();
-    const indices = Range3d.faceCornerIndices(5);
-    const points: Point3d[] = [];
-
-    for (const index of indices)
-      points.push(corners[index]);
-
-    const areaWarnColor = ColorDef.red.withAlpha(50);
-    const areaWarnBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-
-    areaWarnBuilder.setSymbology(areaWarnColor, areaWarnColor, 1);
-    areaWarnBuilder.addShape(points);
-    context.addDecorationFromBuilder(areaWarnBuilder);
-  }
-
   private getCustomArrow(baseStart: number = 0.0, baseWidth: number = 0.3, tipStart: number = baseWidth / 2): Point3d[] {
     const shapePts: Point3d[] = [];
     shapePts[0] = Point3d.create(tipStart, 0);
@@ -620,7 +601,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
     ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
-    this.drawAreaTooLargeIndicator(context);
 
     if (!this._isActive)
       return;
