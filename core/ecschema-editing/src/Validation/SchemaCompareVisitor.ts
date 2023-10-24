@@ -9,9 +9,10 @@
 import { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps,
   ECClass, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
   Phenomenon, Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
+  SchemaItemKey,
   StructClass, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { ISchemaComparer, SchemaComparerOptions } from "./SchemaComparer";
+import { ISchemaComparer } from "./SchemaComparer";
 
 /**
  * An ISchemaPartVisitor interface implementation that is used to compare to Schemas.
@@ -20,21 +21,24 @@ import { ISchemaComparer, SchemaComparerOptions } from "./SchemaComparer";
 export class SchemaCompareVisitor implements ISchemaPartVisitor {
   private _schemaB: Schema;
   private _schemaComparer: ISchemaComparer;
-  private _lookupFullName: boolean;
 
   /**
    * Initializes a new SchemaCompareVisitor instance.
    * @param schemaComparer The [[SchemaComparer]] to use to compare each item of the schema.
    * @param schemaToCompare The second or 'B' schema to compare against the schema being traversed (Schema A).
    */
-  constructor(schemaComparer: ISchemaComparer, schemaToCompare: Schema, options?: SchemaComparerOptions) {
+  constructor(schemaComparer: ISchemaComparer, schemaToCompare: Schema) {
     this._schemaComparer = schemaComparer;
     this._schemaB = schemaToCompare;
-    this._lookupFullName = options?.compareItemFullName ?? true;
   }
 
+  // Needs more work
   private async lookupItem<T extends SchemaItem = SchemaItem>(item: SchemaItem) {
-    return this._schemaB.lookupItem<T>(this._lookupFullName ? item.key : item.name);
+    let key: SchemaItemKey | string = item.key;
+    if (item.schema.name !== this._schemaB.name){
+      key = item.name;
+    }
+    return this._schemaB.lookupItem<T>(key);
   }
 
   /**

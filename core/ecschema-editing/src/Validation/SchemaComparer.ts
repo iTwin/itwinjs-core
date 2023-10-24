@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
+  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedECClass, Mixin, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, schemaItemTypeToString, strengthDirectionToString, strengthToString, StructProperty, Unit,
 } from "@itwin/ecschema-metadata";
@@ -90,17 +90,16 @@ export class SchemaComparer {
    * Compares two schemas to identify differences.
    * @param schemaA The first Schema.
    * @param schemaB The second Schema.
-   * @param options Additional optional settings to manipulate the comparison.
    */
-  public async compareSchemas(schemaA: Schema, schemaB: Schema, options?: SchemaComparerOptions) {
+  public async compareSchemas(schemaA: Schema, schemaB: Schema) {
     this._reporter = new SchemaCompareResultDelegate(schemaA, schemaB, ...this._reporters);
-    let visitor = new SchemaCompareVisitor(this, schemaB, options);
+    let visitor = new SchemaCompareVisitor(this, schemaB);
     let walker = new SchemaWalker(visitor);
     await walker.traverseSchema(schemaA);
 
     this._compareDirection = SchemaCompareDirection.Backward;
 
-    visitor = new SchemaCompareVisitor(this, schemaA, options);
+    visitor = new SchemaCompareVisitor(this, schemaA);
     walker = new SchemaWalker(visitor);
     await walker.traverseSchema(schemaB);
 
@@ -193,16 +192,31 @@ export class SchemaComparer {
       promises.push(this._reporter.reportClassDelta(classA, "modifier", aMod, bMod, this._compareDirection));
     }
 
+    const baseClassA = classA.baseClass;
     const baseClassB = classB ? classB.baseClass : undefined;
-    if (classA.baseClass || baseClassB) {
-      const nameA = classA.baseClass ? classA.baseClass.fullName : undefined;
-      const nameB = baseClassB ? baseClassB.fullName : undefined;
-      if (nameA !== nameB) {
-        const baseA = await classA.baseClass as AnyClass;
-        const baseB = baseClassB ? await baseClassB as AnyClass : undefined;
-        promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
+
+    const fullNameA = baseClassA ? baseClassA.fullName : undefined;
+    const fullNameB = baseClassB ? baseClassB.fullName : undefined;
+
+    if (fullNameA !== fullNameB) {
+      // Need to look at the name
+      const nameA = baseClassA ? baseClassA.name : undefined;
+      const nameB = baseClassB ? baseClassB.name : undefined;
+      const schemaB = classB?.schema;
+
+      if (baseClassB) {
+        const classItem = await schemaB?.lookupItem(nameA ?? "");
+        if (!classItem || nameA !== nameB) {
+          const baseA = await baseClassA as AnyClass;
+          const baseB = await baseClassB as AnyClass;
+          promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
+        }
+      } else {
+        const baseA = await baseClassA as AnyClass;
+        promises.push(this._reporter.reportBaseClassDelta(classA, baseA, undefined, this._compareDirection));
       }
     }
+
     await Promise.all(promises);
   }
 
@@ -274,7 +288,7 @@ export class SchemaComparer {
       }
     }
 
-    promises.push(this.comparePropertyType(propertyA, propertyB));
+    promises.push(this.comparePropertyType(propertyA, propertyB)); // LOOK HERE FOR typeName
     await Promise.all(promises);
   }
 
@@ -837,5 +851,15 @@ export class SchemaComparer {
     }
 
     await Promise.all(promises);
+  }
+
+  /**
+   * This function is meant to compare items with different full name that could potentially be identical.
+   * @returns boolean to flag whether to report if two items are different or not.
+   */
+  private async reportDiagnostic(_itemA: LazyLoadedECClass | undefined, _itemB: LazyLoadedECClass | undefined): Promise<boolean> {
+    const shouldReport = false;
+
+    return shouldReport;
   }
 }
