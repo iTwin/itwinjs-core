@@ -50,6 +50,13 @@ export interface ArcGisOAuthConfig {
   clientIds: ArcGisOAuthClientIds;
 }
 
+interface EndPointsCacheEntry {
+  authorizeEndpoint?: ArcGisOAuth2Endpoint;
+  tokenEndpoint?: ArcGisOAuth2Endpoint;
+}
+
+type MapLayerUrl = string;
+
 /** @beta */
 export class ArcGisAccessClient implements MapLayerAccessClient {
   public readonly onOAuthProcessEnd = new BeEvent();
@@ -132,22 +139,17 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     return undefined;
   }
 
+  public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
+    const data = await fetch(endpointUrl, { method: "GET" });
+    return data.status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
+  }
+
   public async getTokenServiceEndPoint(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined> {
-    let tokenEndpoint: ArcGisOAuth2Endpoint | undefined;
     if (!this._forceLegacyToken) {
-      // Note: we used to validate the endpoint by making a request, but because of CORS isssues with some servers
-      // we could not make a reliable validation.
-      try {
-        tokenEndpoint = await this.getOAuth2Endpoint(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
-        if (tokenEndpoint) {
-
-        }
-      } catch {
-
-      }
+      return this.getOAuth2Endpoint(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
     }
 
-    return tokenEndpoint;
+    return undefined;
   }
 
   public invalidateToken(token: MapLayerAccessToken): boolean {
@@ -245,32 +247,29 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     return undefined;
   }
 
-  // Derive the Oauth URL from a typical MapLayerURL
+  // Mapping between a map-layer URL and its corresponding Oauth endpoint
   // i.e. 	  https://hostname/server/rest/services/NewYork/NewYork3857/MapServer
   //      =>  https://hostname/portal/sharing/oauth2/authorize
-  private _oauthAuthorizeEndPointsCache = new Map<string, any>();
-  private _oauthTokenEndPointsCache = new Map<string, any>();
+
+  private _endPointsCache = new Map<MapLayerUrl, EndPointsCacheEntry>();
 
   /**
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
-  private cacheEndpoint(url: string, endpoint: ArcGisOAuth2EndpointType, obj: ArcGisOAuth2Endpoint) {
-    if (endpoint === ArcGisOAuth2EndpointType.Authorize) {
-      this._oauthAuthorizeEndPointsCache.set(url, obj);
-    } else {
-      this._oauthTokenEndPointsCache.set(url, obj);
-    }
+  private cacheEndpoint(url: MapLayerUrl, endpointType: ArcGisOAuth2EndpointType, endPoint: ArcGisOAuth2Endpoint) {
+    const entry = endpointType === ArcGisOAuth2EndpointType.Authorize ? {authorizeEndpoint: endPoint} : {tokenEndpoint: endPoint};
+    this._endPointsCache.set(url, entry);
   }
 
   /**
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
-  private async createEndpoint(url: string, endpoint: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
+  private async createEndpoint(mapLayerUrl: MapLayerUrl, oauthEndpointUrl: string, endpointType: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
     // Validate the URL we just composed
-    const oauthEndpoint = new ArcGisOAuth2Endpoint(url, this.constructLoginUrl(url, false), false);
-    this.cacheEndpoint(url, endpoint, oauthEndpoint);
+    const oauthEndpoint = new ArcGisOAuth2Endpoint(oauthEndpointUrl, this.constructLoginUrl(oauthEndpointUrl, false), false);
+    this.cacheEndpoint(mapLayerUrl, endpointType, oauthEndpoint);
     return oauthEndpoint;
   }
 
@@ -286,20 +285,32 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     return allowedHosts.some((host: string) => url.hostname.toLowerCase().endsWith(host));
   }
 
+  private async validateEndpointUrl(url: string) {
+    let valid: boolean|undefined;
+    try {
+      valid = await ArcGisAccessClient.validateOAuth2Endpoint(url.toString());
+    } catch {
+      // If we reach here, this means we could not validate properly the endpoint;
+      // we cannot conclude the endpoint is invalid though; it might happen endpoint doesn't support CORS requests,
+      // but still valid for Oauth process.
+    }
+    return valid;
+  }
+
   /**
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
-  private async getOAuth2Endpoint(url: string, endpointType: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
+  private async getOAuth2Endpoint(mapLayerUrl: string, endpointType: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
     // Return from cache if available
-    const cachedEndpoint = (endpointType === ArcGisOAuth2EndpointType.Authorize ? this._oauthAuthorizeEndPointsCache.get(url) : this._oauthTokenEndPointsCache.get(url));
+    const cachedEndpoint = this._endPointsCache.get(mapLayerUrl);
     if (cachedEndpoint !== undefined) {
-      return cachedEndpoint;
+      return (endpointType === ArcGisOAuth2EndpointType.Authorize ? cachedEndpoint.authorizeEndpoint : cachedEndpoint.authorizeEndpoint);
     }
 
     const endpointStr = (endpointType === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token");
 
-    const urlObj = new URL(url);
+    const urlObj = new URL(mapLayerUrl);
 
     if (this.isArcGisHostValid(urlObj)) {
       // ArcGIS Online (fixed)
@@ -316,28 +327,39 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
       try {
         const restUrlFromTokenService = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(urlObj);
+
         if (restUrlFromTokenService === undefined) {
           // We could not derive the token endpoint from 'tokenServicesUrl'.
           // ArcGIS Enterprise Format https://<host>:<port>/<subdirectory>/sharing/rest/oauth2/authorize
-          const regExMatch = url.match(new RegExp(/([^&\/]+)\/rest\/services\/.*/, "i"));
+          const regExMatch = mapLayerUrl.match(new RegExp(/([^&\/]+)\/rest\/services\/.*/, "i"));
           if (regExMatch !== null && regExMatch.length >= 2) {
             const subdirectory = regExMatch[1];
             const port = (urlObj.port !== "80" && urlObj.port !== "443") ? `:${urlObj.port}` : "";
             const newUrlObj = new URL(`${urlObj.protocol}//${urlObj.hostname}${port}/${subdirectory}/sharing/rest/oauth2/${endpointStr}`);
 
             // Check again the URL we just composed
-            return await this.createEndpoint(newUrlObj.toString(), endpointType);
+            const isValidUrl = await this.validateEndpointUrl(newUrlObj.toString());
+            if (isValidUrl === undefined || isValidUrl ) {
+              const endpoint = await this.createEndpoint(mapLayerUrl, newUrlObj.toString(), endpointType);
+              if (endpoint)
+                return endpoint;
+            }
           }
         } else {
-          const endpoint = await this.createEndpoint(`${restUrlFromTokenService.toString()}oauth2/${endpointStr}`, endpointType);
-          if (endpoint)
-            return endpoint;
+          const isValidUrl = await this.validateEndpointUrl(restUrlFromTokenService.toString());
+          if (isValidUrl === undefined || isValidUrl ) {
+            const endpoint = await this.createEndpoint(mapLayerUrl, `${restUrlFromTokenService.toString()}oauth2/${endpointStr}`, endpointType);
+            if (endpoint)
+              return endpoint;
+          }
         }
       } catch {
-
       }
-
     }
+
+    // If we reach here, we were not successful creating an endpoint
+    this._endPointsCache.set(mapLayerUrl, {});  // Cache an empty entry, and avoid making repeated failing requests.
+
     return undefined;   // we could not find any valid oauth2 endpoint
   }
 
