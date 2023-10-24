@@ -385,6 +385,7 @@ export class SheetViewState extends ViewState2d {
     });
   }
 
+  /** Strictly for testing. @internal */
   public get viewAttachmentInfos(): Id64Array | Array<{ attachedView: ViewState }> {
     return this._attachmentsInfo.attachments;
   }
