@@ -212,7 +212,7 @@ export class ClipStyle {
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
   public readonly outsideColor?: RgbColor;
   /** If 'true', intersection of geometry and clip planes will be colorized */
-  public readonly colorizeIntersection?: boolean;
+  public readonly colorizeIntersection: boolean;
   /** Controls the style of the intersection of geometry and clip planes */
   public readonly intersectionStyle?: ClipIntersectionStyle;
 
