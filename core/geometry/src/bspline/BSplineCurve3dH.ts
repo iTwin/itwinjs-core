@@ -23,7 +23,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BSplineCurve3dBase } from "./BSplineCurve";
-import { KnotVector } from "./KnotVector";
+import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
  * Weighted (Homogeneous) BSplineCurve in 3d
@@ -101,13 +101,13 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return result;
   }
 
-  /** Create a bspline with uniform knots.
+  /** Create a homogeneous B-spline curve with uniform knots.
    * * Control points may be supplied as:
    *   * array of Point4d, with weight already multiplied into the `[wx,wy,wz,w]`
    *   * array of Point3d, with implied weight 1.
-   *   * Float64Array, blocked as xyzw, i.e. 4 doubles per control point.
+   *   * Float64Array, blocked as [wx,wy,wz,w], i.e. 4 numbers per control point.
    * @param controlPoints pole data in array form as noted above.
-   * @param order  curve order (1 more than degree)
+   * @param order curve order (1 more than degree)
    */
   public static createUniformKnots(controlPoints: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined {
     const numPoles = (controlPoints instanceof Float64Array) ? controlPoints.length / 4 : controlPoints.length;
@@ -116,17 +116,92 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const knots = KnotVector.createUniformClamped(controlPoints.length, order - 1, 0.0, 1.0);
     const curve = new BSplineCurve3dH(numPoles, order, knots);
     let i = 0;
-    if (controlPoints[0] instanceof Point3d) {
-      for (const p of (controlPoints as Point3d[])) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; curve._bcurve.packedData[i++] = 1.0; }
-    } else if (controlPoints[0] instanceof Point4d) {
-      for (const p of (controlPoints as Point4d[])) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; curve._bcurve.packedData[i++] = p.w; }
-    } else if (controlPoints instanceof Float64Array) {
-      const numQ = controlPoints.length;
-      for (let k = 0; k < numQ; k++) {
-        curve._bcurve.packedData[k] = controlPoints[k];
+    if (Array.isArray(controlPoints)) {
+      if (controlPoints[0] instanceof Point3d) {
+        for (const p of (controlPoints as Point3d[])) {
+          curve._bcurve.packedData[i++] = p.x;
+          curve._bcurve.packedData[i++] = p.y;
+          curve._bcurve.packedData[i++] = p.z;
+          curve._bcurve.packedData[i++] = 1.0;
+        }
+      } else if (controlPoints[0] instanceof Point4d) {
+        for (const p of (controlPoints as Point4d[])) {
+          curve._bcurve.packedData[i++] = p.x;
+          curve._bcurve.packedData[i++] = p.y;
+          curve._bcurve.packedData[i++] = p.z;
+          curve._bcurve.packedData[i++] = p.w;
+        }
       }
     } else {
+      const numQ = controlPoints.length;
+      for (let k = 0; k < numQ; k++)
+        curve._bcurve.packedData[k] = controlPoints[k];
+    }
+    return curve;
+  }
+
+  /** Create a smoothly closed homogeneous B-spline curve with uniform knots.
+   * * Note that the curve does not start at the first pole!
+   * * Control points (poles) may be supplied as:
+   *   * array of Point4d, with weight already multiplied into the `[wx,wy,wz,w]`
+   *   * array of Point3d, with implied weight 1.
+   *   * Float64Array, blocked as [wx,wy,wz,w], i.e. 4 numbers per control point.
+   * @param poles control point data in array form as noted above.
+   * @param order curve order (1 more than degree)
+   */
+  public static createPeriodicUniformKnots(poles: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined {
+    if (order < 2)
       return undefined;
+
+    let numPoles = poles instanceof Float64Array ? poles.length / 4 : poles.length;
+    if (numPoles < 2)
+      return undefined;
+
+    const is4d = poles[0] instanceof Point4d;
+    const startPoint = Point4d.createZero();
+    const endPoint = Point4d.createZero();
+    let hasClosurePoint = false;
+    do {
+      if (poles instanceof Float64Array) {
+        startPoint.set(poles[0], poles[1], poles[2], poles[3]);
+        endPoint.set(poles[4 * numPoles - 4], poles[4 * numPoles - 3], poles[4 * numPoles - 2], poles[4 * numPoles - 1]);
+      } else {
+        startPoint.set(poles[0].x, poles[0].y, poles[0].z, is4d ? (poles[0] as Point4d).w : 1.0);
+        endPoint.set(poles[numPoles - 1].x, poles[numPoles - 1].y, poles[numPoles - 1].z, is4d ? (poles[numPoles - 1] as Point4d).w : 1.0);
+      }
+      if (hasClosurePoint = startPoint.isAlmostEqual(endPoint))
+        --numPoles;   // remove wraparound pole if found
+    } while (hasClosurePoint && numPoles > 1);
+
+    if (numPoles < order)
+      return undefined;
+
+    const degree = order - 1;
+    const numIntervals = numPoles;
+    const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
+    knots.wrappable = BSplineWrapMode.OpenByAddingControlPoints;
+    // append degree wraparound poles
+    const curve = new BSplineCurve3dH(numPoles + degree, order, knots);
+    if (poles instanceof Float64Array) {
+      let i = 0;
+      for (let j = 0; j < 4 * numPoles; j++)
+        curve._bcurve.packedData[i++] = poles[j];
+      for (let j = 0; j < 4 * degree; j++)
+        curve._bcurve.packedData[i++] = poles[j];
+    } else {
+      let i = 0;
+      for (let j = 0; j < numPoles; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+        curve._bcurve.packedData[i++] = is4d ? (poles[j] as Point4d).w : 1.0;
+      }
+      for (let j = 0; j < degree; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+        curve._bcurve.packedData[i++] = is4d ? (poles[j] as Point4d).w : 1.0;
+      }
     }
     return curve;
   }
@@ -135,40 +210,50 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    * Assemble a variously structured control points into packed array of [xyzw].
    * @param controlPoints
    */
-  public static assemblePackedXYZW(controlPoints: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[]): Float64Array | undefined {
-    if (controlPoints instanceof Float64Array) {
+  public static assemblePackedXYZW(controlPoints: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][]): Float64Array | undefined {
+    if (controlPoints instanceof Float64Array)
       return controlPoints.slice();
-    } else if (Array.isArray(controlPoints)) {
-      const cpArray = controlPoints as any[];   // This should not be necessary -- but the predicate controlPoints[0] is not recognized even though Array.isArray(controlPoints) was just passed.
-      if (cpArray[0] instanceof Point4d) {
-        const numPoints = cpArray.length;
-        const packedPoints = new Float64Array(4 * numPoints);
-        let i = 0;
+
+    let packedPoints: Float64Array | undefined;
+    if (Array.isArray(controlPoints) && controlPoints.length > 0) {
+      const numPoints = controlPoints.length;
+      let i = 0;
+      if (controlPoints[0] instanceof Point4d) {
+        packedPoints = new Float64Array(4 * numPoints);
         for (const p of (controlPoints as Point4d[])) {
           packedPoints[i++] = p.x;
           packedPoints[i++] = p.y;
           packedPoints[i++] = p.z;
           packedPoints[i++] = p.w;
         }
-        return packedPoints;
-      } else if (cpArray[0] instanceof Point3d) {
-        const numPoints = cpArray.length;
-        const packedPoints = new Float64Array(4 * numPoints);
-        let i = 0;
+      } else if (controlPoints[0] instanceof Point3d) {
+        packedPoints = new Float64Array(4 * numPoints);
         for (const p of (controlPoints as Point3d[])) {
           packedPoints[i++] = p.x;
           packedPoints[i++] = p.y;
           packedPoints[i++] = p.z;
           packedPoints[i++] = 1.0;
         }
-        return packedPoints;
+      } else if (Array.isArray(controlPoints[0])) {
+        if (controlPoints[0].length === 4) {
+          packedPoints = new Float64Array(4 * numPoints);
+          for (const point of controlPoints as number[][])
+            for (const coord of point)
+              packedPoints[i++] = coord;
+        } else if (controlPoints[0].length === 3) {
+          packedPoints = new Float64Array(4 * numPoints);
+          for (const point of controlPoints as number[][]) {
+            for (const coord of point)
+              packedPoints[i++] = coord;
+            packedPoints[i++] = 1.0;
+          }
+        }
       }
-    } else {
+    } else { // controlPoints is NOT an array
       const obj = controlPoints as any;
       if (obj.xyz instanceof Float64Array && obj.weights instanceof Float64Array && obj.xyz.length === 3 * obj.weights.length) {
         const numPoints = obj.weights.length;
-        const packedPoints = new Float64Array(4 * numPoints);
-
+        packedPoints = new Float64Array(4 * numPoints);
         let m = 0;
         for (let i = 0; i < obj.weights.length; i++) {
           const k = 3 * i;
@@ -177,44 +262,49 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
           packedPoints[m++] = obj.xyz[k + 2];
           packedPoints[m++] = obj.weights[i];
         }
-        return packedPoints;
       }
     }
-    return undefined;
+    return packedPoints;
   }
-  /** Create a bspline with given knots.
+
+  /**
+   * Create a bspline with given knots.
    * * The poles have several variants:
-   *   * Float64Array(4 * numPoles) in blocks of [wx,xy,wz,w]
-   *   * Point4d[numPoles]
-   *   * Point3d[], with implied unit weight to be added.
-   *   * {xyz: Float64Array(3 * numPoles), weights: Float64Array (numPoles)}
-   *
-   * *  Two count conditions are recognized:
-   *
-   * ** If poleArray.length + order == knotArray.length, the first and last are assumed to be the
-   *      extraneous knots of classic clamping.
-   * ** If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
-   *
+   *    * Float64Array(4 * numPoles) in blocks of [wx,xy,wz,w]
+   *    * Point4d[numPoles]
+   *    * Point3d[], with implied unit weight to be added
+   *    * number[][], with inner dimension 4
+   *    * {xyz: Float64Array(3 * numPoles), weights: Float64Array (numPoles)}
+   * * Two count conditions are recognized:
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
+   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
    */
-  public static create(controlPointData: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined {
+  public static create(controlPointData: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined {
     if (order < 2)
       return undefined;
+
     const controlPoints = this.assemblePackedXYZW(controlPointData);
-    if (controlPoints instanceof Float64Array) {
-      const numPoles = Math.floor(controlPoints.length / 4);
-      const numKnots = knotArray.length;
-      // shift knots-of-interest limits for overclamped case ...
-      const skipFirstAndLast = (numPoles + order === numKnots);
-      const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
-      if (numPoles < order)
-        return undefined;
-      const curve = new BSplineCurve3dH(numPoles, order, knots);
-      let i = 0;
-      for (const coordinate of controlPoints) { curve._bcurve.packedData[i++] = coordinate; }
-      return curve;
-    }
-    return undefined;
+    if (undefined === controlPoints)
+      return undefined;
+
+    const numPoles = Math.floor(controlPoints.length / 4);
+    if (numPoles < order)
+      return undefined;
+
+    const numKnots = knotArray.length;
+    const skipFirstAndLast = (numPoles + order === numKnots);   // classic over-clamped input knots
+    if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern knots
+      return undefined;
+    const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
+
+    const curve = new BSplineCurve3dH(numPoles, order, knots);
+
+    let i = 0;
+    for (const coordinate of controlPoints)
+      curve._bcurve.packedData[i++] = coordinate;
+    return curve;
   }
+
   /** Return a deep clone of this curve. */
   public override clone(): BSplineCurve3dH {
     const knotVector1 = this._bcurve.knots.clone();
@@ -352,30 +442,11 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
   }
   /**
-   * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
-   * (b) (degree-1) wrapped points,
-   * (c) marked wrappable from construction time.
+   * Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+   * @return whether the curve can be wrapped.
    */
   public get isClosable(): boolean {
-    if (!this._bcurve.knots.wrappable)
-      return false;
-    const degree = this.degree;
-    const leftKnotIndex = this._bcurve.knots.leftKnotIndex;
-    const rightKnotIndex = this._bcurve.knots.rightKnotIndex;
-    const period = this._bcurve.knots.rightKnot - this._bcurve.knots.leftKnot;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(this._bcurve.knots.knots[k0] + period, this._bcurve.knots.knots[k1]))
-        return false;
-    }
-    const poleIndexDelta = this.numPoles - this.degree;
-    for (let p0 = 0; p0 < degree; p0++) {
-      const p1 = p0 + poleIndexDelta;
-      if (!Geometry.isSamePoint3d(this.getPolePoint3d(p0) as Point3d, this.getPolePoint3d(p1) as Point3d))
-        return false;
-    }
-    return true;
+    return BSplineWrapMode.None !== this.isClosableCurve;
   }
   /**
    * Return a CurvePrimitive (which is a BezierCurve3dH) for a specified span of this curve.

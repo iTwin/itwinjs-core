@@ -238,7 +238,7 @@ describe("Point4d", () => {
     const unitVectors = [Point4d.unitX(), Point4d.unitY(), Point4d.unitZ(), Point4d.unitW()];
     for (let i = 0; i < 3; i++) {
       const i0 = 4 * i;
-      const pointI = Point4d.createFromPackedXYZW(packedData, i0);
+      const pointI = Point4d.createFromPacked(packedData, i0)!;
       const q = 10 * i;
       ck.testPoint4d(pointI, Point4d.create(q + 1, q + 2, q + 3, q + 4));
       for (let k = 0; k < 3; k++) {
