@@ -204,9 +204,9 @@ export class SchemaComparer {
         const [schemaNameA, baseClassNameA] = SchemaItem.parseFullName(fullNameA ?? "");
         const [schemaNameB, baseClassNameB] = SchemaItem.parseFullName(fullNameB ?? "");
 
-        if ( baseClassNameA !== baseClassNameB ||
+        if (baseClassNameA !== baseClassNameB ||
           schemaNameA !== schemaNameB && schemaNameA !== classA.schema.name ||
-          schemaNameA !== schemaNameB && schemaNameB !== classB?.schema.name ) {
+          schemaNameA !== schemaNameB && schemaNameB !== classB?.schema.name) {
           const baseA = await classA.baseClass as AnyClass;
           const baseB = baseClassB ? await baseClassB as AnyClass : undefined;
           promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
@@ -793,8 +793,15 @@ export class SchemaComparer {
       if (structA || structB) {
         const structNameA = structA ? structA.fullName : undefined;
         const structNameB = structB ? structB.fullName : undefined;
-        if (structNameA !== structNameB)
-          promises.push(this._reporter.reportPropertyDelta(propertyA, "structClass", structNameA, structNameB, this._compareDirection));
+        if (structNameA !== structNameB) {
+          const [schemaNameA, nameA] = SchemaItem.parseFullName(structNameA ?? "");
+          const [schemaNameB, nameB] = SchemaItem.parseFullName(structNameB ?? "");
+          if (nameA !== nameB ||
+            schemaNameA !== schemaNameB && schemaNameA !== propertyA.schema.name ||
+            schemaNameA !== schemaNameB && schemaNameB !== propertyB?.schema.name) {
+            promises.push(this._reporter.reportPropertyDelta(propertyA, "structClass", structNameA, structNameB, this._compareDirection));
+          }
+        }
       }
     }
 
