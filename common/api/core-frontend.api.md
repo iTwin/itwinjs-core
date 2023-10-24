@@ -3067,7 +3067,9 @@ export class DrawingViewState extends ViewState2d {
     // @internal
     get attachment(): Object | undefined;
     // @internal
-    get attachmentInfo(): Object;
+    get attachmentInfo(): {
+        spatialView: Id64String | ViewState3d;
+    };
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
@@ -12730,6 +12732,10 @@ export class SheetViewState extends ViewState2d {
     readonly sheetSize: Point2d;
     // (undocumented)
     toProps(): ViewStateProps;
+    // @internal
+    get viewAttachmentInfos(): Id64Array | Array<{
+        attachedView: ViewState;
+    }>;
     // @internal
     get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>>;
 }
