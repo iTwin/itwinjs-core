@@ -158,6 +158,7 @@ describe("PerformanceElementsTests", () => {
   after(() => {
     const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
+    IModelHost.shutdown();
   });
 
   it("ElementsInsert", async () => {
