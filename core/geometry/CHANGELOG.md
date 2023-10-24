@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Tue, 17 Oct 2023 15:14:32 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Oct 2023 15:09:13 GMT and should not be manually modified.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+### Updates
+
+- restore open bcurve json import
 
 ## 4.2.0
 Tue, 17 Oct 2023 15:14:32 GMT
