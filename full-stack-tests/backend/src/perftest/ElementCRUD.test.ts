@@ -155,7 +155,7 @@ describe("PerformanceElementsTests", () => {
       }
     }
   });
-  after(() => {
+  after(async () => {
     const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
     await IModelHost.shutdown();
