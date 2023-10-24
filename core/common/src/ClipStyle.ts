@@ -149,7 +149,7 @@ export class ClipIntersectionStyle {
   public toJSON(): ClipIntersectionStyleProps | undefined {
     const props: ClipIntersectionStyleProps = {};
 
-    if (this === ClipIntersectionStyle.defaults) {
+    if (this.matchesDefaults) {
       return undefined;
     }
 
