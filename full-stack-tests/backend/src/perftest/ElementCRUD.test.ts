@@ -340,6 +340,8 @@ describe("PerformanceElementsTests2d", () => {
         if (IModelJsFs.existsSync(pathname))
           return;
 
+        await IModelHost.startup();
+
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
@@ -366,9 +368,11 @@ describe("PerformanceElementsTests2d", () => {
       }
     }
   });
-  after(() => {
+  after(async () => {
     const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
+
+    await IModelHost.shutdown();
   });
 
   it("ElementsInsert2d", async () => {
