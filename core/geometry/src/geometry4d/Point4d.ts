@@ -223,9 +223,30 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return Point4d.create(pointA.y * pointB.w - pointA.w * pointB.y, pointA.w * pointB.x - pointA.x * pointB.w, 0.0, pointA.x * pointB.y - pointA.y * pointB.x, result);
   }
   /**
+   * extract 3 consecutive numbers from a Float64Array into the xyz values of a Point4d with w = 1.
+   * @param data buffer of numbers
+   * @param xIndex first index for x,y,z sequence
+   */
+  public static createFromPackedXYZ(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d | undefined {
+    if (xIndex >= 0 && xIndex + 2 < data.length)
+      return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], 1.0, result);
+    return undefined;
+  }
+  /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
+   */
+  public static createFromPacked(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d | undefined {
+    if (xIndex >= 0 && xIndex + 3 < data.length)
+      return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
+    return undefined;
+  }
+  /**
+   * extract 4 consecutive numbers from a Float64Array into a Point4d.
+   * @param data buffer of numbers
+   * @param xIndex first index for x,y,z,w sequence. Assumed to be a valid index!
+   * @deprecated in 4.x. Use createFromPacked instead.
    */
   public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
     return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
@@ -241,7 +262,6 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * default z is 0.0
    * * default w is 1.0  (array[3] can replace)
    */
-
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d)
       return new Point4d(point.x, point.y, 0, 1);

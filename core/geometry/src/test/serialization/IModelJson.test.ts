@@ -4,9 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
+import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Path } from "../../curve/Path";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { DeepCompare } from "../../serialization/DeepCompare";
@@ -354,5 +357,22 @@ describe("BoxProps", () => {
     expect(baseOrigin?.x).to.equal(1);
     expect(baseOrigin?.y).to.equal(2);
     expect(baseOrigin?.z).to.equal(3);
+  });
+});
+
+describe("ParseCurveCollections", () => {
+  it("BSplinePathRegression", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/pathWithBSplines.imjs", "utf8"))) as Path[];
+    if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
+      for (const input of inputs) {
+        ck.testExactNumber(7, input.children.length, "path has expected number of children");
+        ck.testExactNumber(3, input.children.filter((child: CurvePrimitive): boolean => { return child instanceof BSplineCurve3dBase; }).length, "path has expected number of B-spline curve children");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ParseCurveCollection", "BSplinePathRegression");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
