@@ -2,6 +2,54 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.2.1",
+      "tag": "@itwin/core-frontend_v4.2.1",
+      "date": "Tue, 24 Oct 2023 15:09:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/core-frontend_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ECSqlExpr api"
+          },
+          {
+            "comment": "Fix failure to preserve name when creating a BlankConnection."
+          },
+          {
+            "comment": "remove `require` call preventing pure ESM usage"
+          },
+          {
+            "comment": "Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo"
+          },
+          {
+            "comment": "Fix schedule script symbology issue"
+          },
+          {
+            "comment": "Fixed ignore material not using default material params"
+          },
+          {
+            "comment": "IModelConnection.createQueryReader is now public"
+          },
+          {
+            "comment": "Improved content type detection for 3D Tiles tilesets."
+          },
+          {
+            "comment": "Add BriefcaseTxns events raised when applying external txns."
+          },
+          {
+            "comment": "Add an option to premultiply a model display transform"
+          },
+          {
+            "comment": "Allow creation of cross-origin web workers"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/core-frontend_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",
