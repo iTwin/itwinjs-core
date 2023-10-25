@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaComparer } from "../../ecschema-editing";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
@@ -13,15 +13,30 @@ class TestSchemaCompareReporter implements ISchemaCompareReporter {
   }
 }
 
-function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string, fullNameB: string) {
+function findDiagnostic(diagnostics: AnyDiagnostic[], code: string,fullNameA: string, fullNameB: string, propertyType?: string) {
   let found = false;
 
   diagnostics.find((anyDiagnostic) => {
-    if (anyDiagnostic.code === code &&
-        anyDiagnostic.messageArgs?.at(0).fullName === fullNameA &&
-        anyDiagnostic.messageArgs?.at(1).fullName === fullNameB ) {
-      found = true;
+    switch (code) {
+      case SchemaCompareCodes.BaseClassDelta : {
+        if (anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0).fullName === fullNameA &&
+          anyDiagnostic.messageArgs?.at(1).fullName === fullNameB) {
+          found = true;
+        }
+        break;
+      }
+      case SchemaCompareCodes.PropertyDelta : {
+        if (anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0) === propertyType &&
+          anyDiagnostic.messageArgs?.at(1) === fullNameA &&
+          anyDiagnostic.messageArgs?.at(2) === fullNameB) {
+          found = true;
+        }
+        break;
+      }
     }
+
   });
 
   return found;
@@ -240,59 +255,175 @@ describe("Schema comparison tests to filter out cases", () => {
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "DummyReferenceTwo.testBaseClass");
       expect(foundDiag).to.equal(true);
     });
+  });
 
-    /**
-     * Linear draft schema example, typeName are identical, should not report a difference
+  /**
+     * Linear draft schema example, typeName property has different schema but same name
+     * The item referenced exists within the schema.
      */
-    describe("Struct Class comparisons", () => {
-      it("should compare struct classes with properties and only register schema props differences", async () => {
-        const schemaA = await Schema.fromJson({
-          ...schemaAJson,
-          items: {
-            inSpan: {
-              schemaItemType: "StructClass",
-              description: "Linear draft InSpan Class",
-              properties: [
-                {
-                  name: "Address",
-                  type: "StructProperty",
-                  typeName: "SchemaA.inSpanAddress",
-                },
-              ],
-            },
-            inSpanAddress: {
-              schemaItemType: "StructClass",
-              description: "Linear draft InSpanAddress Class",
-            },
+  describe("Struct Class comparisons", () => {
+    it("should not report property delta when comparing typeName", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "SchemaA.inSpanAddress",
+              },
+            ],
           },
-        }, contextA);
-
-        const schemaB = await Schema.fromJson({
-          ...schemaBJson,
-          items: {
-            inSpan: {
-              schemaItemType: "StructClass",
-              description: "Linear draft InSpan Class",
-              properties: [
-                {
-                  name: "Address",
-                  type: "StructProperty",
-                  typeName: "SchemaB.inSpanAddress",
-                },
-              ],
-            },
-            inSpanAddress: {
-              schemaItemType: "StructClass",
-              description: "Linear draft InSpanAddress Class",
-            },
+          inSpanAddress: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpanAddress Class",
           },
-        }, contextB);
+        },
+      }, contextA);
 
-        const comparer = new SchemaComparer(reporter);
-        await comparer.compareSchemas(schemaA, schemaB);
-        expect(reporter.changes[0].allDiagnostics.length).to.equal(4);
-      });
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "SchemaB.inSpanAddress",
+              },
+            ],
+          },
+          inSpanAddress: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpanAddress Class",
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddress", "SchemaB.inSpanAddress", "structClass");
+      expect(foundDiag).to.equal(false);
     });
 
+    it("should report property delta when comparing typeName", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "SchemaA.inSpanAddressA",
+              },
+            ],
+          },
+          inSpanAddressA: {
+            schemaItemType: "StructClass",
+            label: "In span address A",
+            description: "Linear draft InSpanAddress Class A",
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "SchemaB.inSpanAddressB",
+              },
+            ],
+          },
+          inSpanAddressB: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpanAddress Class B",
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddressA", "SchemaB.inSpanAddressB", "structClass");
+      expect(foundDiag).to.equal(true);
+    });
+
+    it("should report property delta when comparing typeName that is referencing a schema", async () => {
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefOneJson,
+        items: {
+          inSpanAddress: {
+            schemaItemType: "StructClass",
+            label: "In span address Ref",
+            description: "Linear draft InSpanAddress Class Ref",
+          },
+        },
+      }, contextA);
+
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        references: [
+          {
+            name: "DummyReferenceOne",
+            version: "01.00.01",
+          },
+        ],
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "DummyReferenceOne.inSpanAddress",
+              },
+            ],
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          inSpan: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpan Class",
+            properties: [
+              {
+                name: "Address",
+                type: "StructProperty",
+                typeName: "SchemaB.inSpanAddress",
+              },
+            ],
+          },
+          inSpanAddress: {
+            schemaItemType: "StructClass",
+            description: "Linear draft InSpanAddress Class",
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.inSpanAddress", "SchemaB.inSpanAddress", "structClass");
+      expect(foundDiag).to.equal(true);
+    });
   });
 });

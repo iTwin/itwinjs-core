@@ -32,7 +32,11 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     this._schemaB = schemaToCompare;
   }
 
-  // Needs more work
+  /**
+   * Called to look up higher level schema items.
+   * @param item
+   * @returns
+   */
   private async lookupItem<T extends SchemaItem = SchemaItem>(item: SchemaItem) {
     let key: SchemaItemKey | string = item.key;
     if (item.schema.name !== this._schemaB.name){

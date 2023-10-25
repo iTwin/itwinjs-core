@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedECClass, Mixin, Phenomenon,
+  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, schemaItemTypeToString, strengthDirectionToString, strengthToString, StructProperty, Unit,
 } from "@itwin/ecschema-metadata";
@@ -201,13 +201,9 @@ export class SchemaComparer {
 
       if (fullNameA !== fullNameB) {
         // Getting the schema name of the baseClass
-        const [schemaNameA, baseClassNameA] = SchemaItem.parseFullName(fullNameA ?? "");
-        const [schemaNameB, baseClassNameB] = SchemaItem.parseFullName(fullNameB ?? "");
-
-        if (baseClassNameA !== baseClassNameB ||
-          schemaNameA !== schemaNameB && schemaNameA !== classA.schema.name ||
-          schemaNameA !== schemaNameB && schemaNameB !== classB?.schema.name) {
-          const baseA = await classA.baseClass as AnyClass;
+        const reportFlag = this.reportDiagnosticFlag(fullNameA ?? "", fullNameB ?? "", classA, classB);
+        if(reportFlag){
+          const baseA = await baseClassA as AnyClass;
           const baseB = baseClassB ? await baseClassB as AnyClass : undefined;
           promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
         }
@@ -794,11 +790,8 @@ export class SchemaComparer {
         const structNameA = structA ? structA.fullName : undefined;
         const structNameB = structB ? structB.fullName : undefined;
         if (structNameA !== structNameB) {
-          const [schemaNameA, nameA] = SchemaItem.parseFullName(structNameA ?? "");
-          const [schemaNameB, nameB] = SchemaItem.parseFullName(structNameB ?? "");
-          if (nameA !== nameB ||
-            schemaNameA !== schemaNameB && schemaNameA !== propertyA.schema.name ||
-            schemaNameA !== schemaNameB && schemaNameB !== propertyB?.schema.name) {
+          const reportFlag = this.reportDiagnosticFlag(structNameA ?? "", structNameB ?? "", propertyA, propertyB);
+          if(reportFlag){
             promises.push(this._reporter.reportPropertyDelta(propertyA, "structClass", structNameA, structNameB, this._compareDirection));
           }
         }
@@ -858,12 +851,16 @@ export class SchemaComparer {
   }
 
   /**
-   * This function is meant to compare items with different full name that could potentially be identical.
-   * @returns boolean to flag whether to report if two items are different or not.
+   * Compares properties with different full name that could potentially be the same in the context of comparing different schemas.
+   * @returns flag to indicate whether to report or not.
    */
-  private async reportDiagnostic(_itemA: LazyLoadedECClass | undefined, _itemB: LazyLoadedECClass | undefined): Promise<boolean> {
-    const shouldReport = false;
+  private reportDiagnosticFlag(fullNameA: string, fullNameB: string, itemA: SchemaItem | AnyProperty |undefined, itemB: SchemaItem | AnyProperty | undefined): boolean {
+    // Getting the schema name of the property to compare
+    const [schemaNameA, nameA] = SchemaItem.parseFullName(fullNameA);
+    const [schemaNameB, nameB] = SchemaItem.parseFullName(fullNameB);
 
-    return shouldReport;
+    return nameA !== nameB ||
+         schemaNameA !== schemaNameB && schemaNameA !== itemA?.schema.name ||
+         schemaNameA !== schemaNameB && schemaNameB !== itemB?.schema.name;
   }
 }
