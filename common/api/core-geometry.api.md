@@ -722,7 +722,7 @@ export class BSpline1dNd {
     basisBuffer2: Float64Array;
     static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined;
     get degree(): number;
-    evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): void;
+    evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean;
     evaluateBuffersAtKnot(u: number, numDerivative?: number): void;
     evaluateBuffersInSpan(spanIndex: number, spanFraction: number): void;
     evaluateBuffersInSpan1(spanIndex: number, spanFraction: number): void;
@@ -741,6 +741,8 @@ export class BSpline1dNd {
     sumPoleBuffer1ForSpan(spanIndex: number): void;
     sumPoleBuffer2ForSpan(spanIndex: number): void;
     sumPoleBufferForSpan(spanIndex: number): void;
+    testClosablePolygon(mode?: BSplineWrapMode): boolean;
+    // @deprecated
     testCloseablePolygon(mode?: BSplineWrapMode): boolean;
 }
 
@@ -759,7 +761,11 @@ export abstract class BSpline2dNd extends GeometryQuery {
     readonly geometryCategory = "bsurf";
     getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined;
     getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined;
+    getPoint4dPole(i: number, j: number, result?: Point4d): Point4d | undefined;
+    getWrappable(select: UVSelect): BSplineWrapMode;
     isClosable(select: UVSelect): boolean;
+    isClosableSurface(select: UVSelect): BSplineWrapMode;
+    static isWrappedGrid(data: Float64Array, numRows: number, numColumns: number, dimension: number, blockLength: number, select: UVSelect): boolean;
     knots: KnotVector[];
     numberToUVSelect(value: number): UVSelect;
     numPolesTotal(): number;
@@ -772,10 +778,13 @@ export abstract class BSpline2dNd extends GeometryQuery {
     poleStepUV(select: UVSelect): number;
     reverseInPlace(select: UVSelect): void;
     setWrappable(select: UVSelect, value: BSplineWrapMode): void;
-    spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): void;
+    spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array): boolean;
     spanFractionToKnot(select: UVSelect, span: number, localFraction: number): number;
+    sumPoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
+    // @deprecated
     sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
     sumPoleBufferForSpan(spanIndexU: number, spanIndexV: number): void;
+    testClosableGrid(select: UVSelect, mode?: BSplineWrapMode): boolean;
     static validOrderAndPoleCounts(orderU: number, numPolesU: number, orderV: number, numPolesV: number, numUV: number): boolean;
 }
 
@@ -788,7 +797,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyKnots(includeExtraEndKnot: boolean): number[];
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
-    static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
+    static create(poleArray: Float64Array | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
@@ -813,7 +822,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d;
     quickLength(): number;
-    setWrappable(value: BSplineWrapMode): void;
     spanFractionToKnot(span: number, localFraction: number): number;
     tryTransformInPlace(transform: Transform): boolean;
 }
@@ -844,13 +852,18 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     abstract getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined;
     abstract getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
     abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
+    getWrappable(): BSplineWrapMode;
+    get isClosableCurve(): BSplineWrapMode;
+    get knotsRef(): Float64Array;
     abstract knotToPoint(knot: number, result?: Point3d): Point3d;
     abstract knotToPointAnd2Derivatives(knot: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     abstract knotToPointAndDerivative(knot: number, result?: Ray3d): Ray3d;
     get numPoles(): number;
     get numSpan(): number;
     get order(): number;
+    get poleDimension(): number;
     poleIndexToDataIndex(poleIndex: number): number | undefined;
+    get polesRef(): Float64Array;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     reverseInPlace(): void;
     setWrappable(value: BSplineWrapMode): void;
@@ -862,7 +875,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     static assemblePackedXYZW(controlPoints: Float64Array | Point4d[] | {
         xyz: Float64Array;
         weights: Float64Array;
-    } | Point3d[]): Float64Array | undefined;
+    } | Point3d[] | number[][]): Float64Array | undefined;
     clone(): BSplineCurve3dH;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
@@ -874,7 +887,8 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     static create(controlPointData: Float64Array | Point4d[] | {
         xyz: Float64Array;
         weights: Float64Array;
-    } | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined;
+    } | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined;
+    static createPeriodicUniformKnots(poles: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined;
     static createUniformKnots(controlPoints: Point3d[] | Point4d[] | Float64Array, order: number): BSplineCurve3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -918,7 +932,7 @@ export namespace BSplineCurveOps {
 }
 
 // @public
-export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
     clone(): BSplineSurface3d;
     cloneTransformed(transform: Transform): BSplineSurface3d;
     copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[];
@@ -938,10 +952,12 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     knotToPoint(u: number, v: number): Point3d;
     knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     tryTransformInPlace(transform: Transform): boolean;
+    uvFractionToPoint(u: number, v: number): Point3d;
+    uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
 
 // @public
-export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
     clone(): BSplineSurface3dH;
     cloneTransformed(transform: Transform): BSplineSurface3dH;
     copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[];
@@ -949,12 +965,12 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     copyPointsAndWeights(points: Point3d[], weights: number[], formatter?: (x: number, y: number, z: number) => any): void;
     copyWeightsToFloat64Array(): Float64Array;
     copyXYZToFloat64Array(unweight: boolean): Float64Array;
-    static create(controlPointArray: Point3d[] | Float64Array, weightArray: number[] | Float64Array, numPolesU: number, orderU: number, knotArrayU: number[] | Float64Array | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
-    static createGrid(xyzwGrid: number[][][], weightStyle: WeightStyle, orderU: number, knotArrayU: number[], orderV: number, knotArrayV: number[]): BSplineSurface3dH | undefined;
+    static create(controlPointArray: Point3d[] | Float64Array, weightArray: number[] | Float64Array | undefined, numPolesU: number, orderU: number, knotArrayU: number[] | Float64Array | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
+    static createGrid(xyzwGrid: number[][][], weightStyle: WeightStyle, orderU: number, knotArrayU: number[] | Float64Array | undefined, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToPoint(fractionU: number, fractionV: number, result?: Point3d): Point3d;
-    fractionToPoint4d(fractionU: number, fractionV: number): Point4d;
+    fractionToPoint4d(fractionU: number, fractionV: number, result?: Point4d): Point4d;
     fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     getPointGridJSON(): PackedPointGrid;
     getPole(i: number, j: number, result?: Point3d): Point3d | undefined;
@@ -962,9 +978,11 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: any): boolean;
     knotToPoint(knotU: number, knotV: number, result?: Point3d): Point3d;
-    knotToPoint4d(u: number, v: number): Point4d;
+    knotToPoint4d(u: number, v: number, result?: Point4d): Point4d;
     knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     tryTransformInPlace(transform: Transform): boolean;
+    uvFractionToPoint(u: number, v: number): Point3d;
+    uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
 
 // @public
@@ -974,7 +992,7 @@ export interface BSplineSurface3dQuery {
     degreeUV(select: UVSelect): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     fractionToPoint(uFraction: number, vFraction: number): Point3d;
-    fractionToRigidFrame(uFraction: number, vFraction: number): Transform | undefined;
+    fractionToRigidFrame(uFraction: number, vFraction: number, result?: Transform): Transform | undefined;
     getPointGridJSON(): PackedPointGrid;
     isAlmostEqual(other: any): boolean;
     isClosable(select: UVSelect): boolean;
@@ -3239,14 +3257,15 @@ export class JointOptions {
 export class KnotVector {
     baseKnotFractionToKnot(knotIndex0: number, localFraction: number): number;
     clone(): KnotVector;
+    static copyKnots(knots: number[] | Float64Array, degree: number, includeExtraEndKnot?: boolean, wrapMode?: BSplineWrapMode): number[];
     copyKnots(includeExtraEndKnot: boolean): number[];
     static create(knotArray: number[] | Float64Array, degree: number, skipFirstAndLast?: boolean): KnotVector;
     createBasisArray(): Float64Array;
     static createUniformClamped(numPoles: number, degree: number, a0: number, a1: number): KnotVector;
     static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector;
     degree: number;
-    evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): void;
-    evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): void;
+    evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean;
+    evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array): boolean;
     fractionToKnot(fraction: number): number;
     getKnotMultiplicity(knot: number): number;
     getKnotMultiplicityAtIndex(knotIndex: number): number;
@@ -3950,9 +3969,11 @@ export class NullGeometryHandler extends GeometryHandler {
 // @public
 export class NumberArray {
     static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[];
+    static copy2d(source: number[][]): number[][];
+    static copy3d(source: number[][][]): number[][][];
     static create(source: number[] | Float64Array): number[];
     static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
-    static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance: number): boolean;
+    static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance?: number): boolean;
     static isCoordinateInArray(x: number, data: number[] | undefined): boolean;
     static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean;
     static linearCombination(data: number[], scales: number[]): number;
@@ -3961,8 +3982,11 @@ export class NumberArray {
     static maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number;
     static maxAbsDiffFloat64(dataA: Float64Array, dataB: Float64Array): number;
     static maxAbsTwo(a1: number, a2: number): number;
+    static pack(source: number[] | number[][] | number[][][]): Float64Array;
     static preciseSum(data: number[]): number;
     static sum(data: number[] | Float64Array): number;
+    static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined;
+    static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined;
 }
 
 // @public
@@ -4364,7 +4388,7 @@ export class Point3d extends XYZ {
     static createArrayFromPackedXYZ(data: Float64Array): Point3d[];
     static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Point3d): Point3d;
     static createFromPacked(xyzData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined;
-    static createFromPackedXYZW(xyzData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined;
+    static createFromPackedXYZW(xyzwData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined;
     static createScale(source: XYAndZ, scale: number, result?: Point3d): Point3d;
     static createZero(result?: Point3d): Point3d;
     crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d;
@@ -4413,7 +4437,7 @@ export class Point3dArray {
         maxYPoint: Point3d;
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
-    static packToFloat64Array(data: Point3d[]): Float64Array;
+    static packToFloat64Array(data: Point3d[], result?: Float64Array): Float64Array;
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
@@ -4469,6 +4493,9 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     static create(x?: number, y?: number, z?: number, w?: number, result?: Point4d): Point4d;
     static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
+    static createFromPacked(data: Float64Array, xIndex?: number, result?: Point4d): Point4d | undefined;
+    static createFromPackedXYZ(data: Float64Array, xIndex?: number, result?: Point4d): Point4d | undefined;
+    // @deprecated
     static createFromPackedXYZW(data: Float64Array, xIndex?: number, result?: Point4d): Point4d;
     static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d;
     static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d;
@@ -6266,7 +6293,9 @@ export class UnivariateBezier extends BezierCoffs {
 // @public
 export enum UVSelect {
     uDirection = 0,
-    VDirection = 1
+    // @deprecated
+    VDirection = 1,
+    vDirection = 1
 }
 
 // @public
