@@ -657,7 +657,7 @@ export class ClipUtilities {
   /**
    * Handle pathological cases of range-range intersection, where one of the ranges defines no area or volume (is a line segment or single point).
    * @param range local range to intersect with the point/segment
-   * @param points isolated local point, or local segment
+   * @param points isolated local point, or local segment's start and end
    * @param localToWorld optional transform for output range
    * @param intersection optional range of the intersection, in world coordinates, or null range if no intersection.
    * @returns whether the point/segment intersects the range
