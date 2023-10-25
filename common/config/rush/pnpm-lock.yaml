@@ -1379,6 +1379,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
+      '@types/node': 20.8.8
       '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -1403,6 +1404,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.6
       '@types/mocha': 8.2.3
+      '@types/node': 20.8.8
       '@types/sinon': 10.0.19
       babel-loader: 8.2.5_webpack@5.89.0
       babel-plugin-istanbul: 6.1.1
