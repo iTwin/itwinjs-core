@@ -42,7 +42,7 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
-    "@types/node": "20.6.0",
+    "@types/node": "20.8.8",
     "@types/mocha": "^8.2.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

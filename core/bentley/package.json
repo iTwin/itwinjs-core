@@ -39,7 +39,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "20.6.0",
+    "@types/node": "20.8.8",
     "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "eslint": "^8.44.0",
