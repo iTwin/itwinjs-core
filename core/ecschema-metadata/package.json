@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.2.0-dev.20",
+  "version": "4.3.0-dev.15",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -48,7 +48,7 @@
     "@types/sinon": "^10.0.15",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
@@ -59,8 +59,8 @@
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.20",
-    "@itwin/core-quantity": "workspace:^4.2.0-dev.20"
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.15",
+    "@itwin/core-quantity": "workspace:^4.3.0-dev.15"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

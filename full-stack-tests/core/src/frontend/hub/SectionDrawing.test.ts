@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
+import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState, ViewState3d } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
@@ -115,9 +115,24 @@ describe("Section Drawings (#integration)", () => {
 
   it("clones attachment info when view is cloned", async () => {
     const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    expect(typeof v1.attachmentInfo.spatialView).to.equal("string");
+
     const v2 = v1.clone();
     expect(v2.attachmentInfo).not.to.equal(v1.attachmentInfo);
     expect(v2.attachmentInfo).to.deep.equal(v1.attachmentInfo);
+  });
+
+  it("clones attached spatial view when cloned", async () => {
+    DrawingViewState.alwaysDisplaySpatialView = true;
+
+    const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    expect(v1.attachmentInfo.spatialView).instanceof(ViewState3d);
+
+    const v2 = v1.clone();
+    expect(v2.attachmentInfo.spatialView).instanceof(ViewState3d);
+    expect(v2.attachmentInfo.spatialView).not.to.equal(v1.attachmentInfo.spatialView);
+
+    DrawingViewState.alwaysDisplaySpatialView = false;
   });
 
   it("only allocates attachment if attachment is to be displayed", async () => {

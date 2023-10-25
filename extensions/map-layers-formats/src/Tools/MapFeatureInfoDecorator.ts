@@ -144,7 +144,7 @@ interface DrapePointState {
 
 /** @internal */
 export class MapFeatureInfoDecorator implements Decorator {
-
+  public hidden = false;
   public readonly useCachedDecorations = true;
   public readonly disableTerrainDraper = true;
   public markerSize = new Point2d(32, 32);
@@ -168,6 +168,9 @@ export class MapFeatureInfoDecorator implements Decorator {
   private _draper?: TerrainDraper;
   private _markerImage: HTMLImageElement;
   private _markerSet = new PinMarkerSet();
+
+  // Extra markers can be added outside the normal state
+  public extraMarkers: Point3d[]|undefined;
 
   private _state: MapFeatureInfoToolData | undefined;
 
@@ -196,10 +199,15 @@ export class MapFeatureInfoDecorator implements Decorator {
     return pixelSize * 0.25;
   }
 
+  public clearState = () => {
+    this._state = undefined;
+  };
+
   public setState = (state: MapFeatureInfoToolData) => {
 
     this._drapedStrings = undefined;
     this._allGeomDraped = false;
+    this.hidden = false;
 
     this._state = state;
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
@@ -241,11 +249,16 @@ export class MapFeatureInfoDecorator implements Decorator {
   protected renderGraphics(context: DecorateContext) {
     this._markerSet.markers.clear();
 
-    if (this._state?.mapInfo?.layerInfos === undefined) {
+    if (this._state?.mapInfo?.layerInfos === undefined || this.hidden) {
       return undefined;
     }
 
-    const builder = context.createGraphicBuilder(this._graphicType);
+    let transform: Transform|undefined;
+    const groundBias = context.viewport.displayStyle.backgroundMapSettings.groundBias;
+    if (groundBias !== 0) {
+      transform = Transform.createTranslationXYZ(0, 0 , groundBias);
+    }
+    const builder = context.createGraphicBuilder(this._graphicType, transform);
 
     if (this._draper) {
       if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
@@ -330,6 +343,14 @@ export class MapFeatureInfoDecorator implements Decorator {
       }
     }
 
+    // Add extra markers if any specified
+    if ( this.extraMarkers !== undefined) {
+      this.extraMarkers.forEach((markerPoint)=> {
+        builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
+        this._markerSet.markers.add(new PinMarker(markerPoint, this.markerSize, this._markerImage));
+      });
+    }
+
     return builder.finish();
   }
 
@@ -349,5 +370,4 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._markerSet.addDecoration(context);
     return;
   }
-
 }

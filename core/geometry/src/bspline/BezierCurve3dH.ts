@@ -157,7 +157,8 @@ export class BezierCurve3dH extends BezierCurveBase {
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint4d(fraction: number, result?: Point4d): Point4d {
     this._polygon.evaluate(fraction, this._workData0);
-    return Point4d.createFromPackedXYZW(this._workData0, 0, result);
+    result = Point4d.createFromPacked(this._workData0, 0, result);
+    return result ? result : Point4d.createZero();
   }
   /** Return the cartesian point and derivative vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {

@@ -76,10 +76,8 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
     if (root instanceof CurvePrimitive)
       root.emitStrokableParts(this);
     else if (root instanceof CurveCollection) {
-      if (root.children !== undefined)
-        for (const child of root.children) {
-          this.visitLeaves(child as AnyCurve);
-        }
+      for (const child of root.children)
+        this.visitLeaves(child);
     }
   }
 }

@@ -13,7 +13,7 @@ import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
-import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, UVSelect, WeightStyle } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
 import { BSplineWrapMode } from "../bspline/KnotVector";
 import { Arc3d } from "../curve/Arc3d";
@@ -42,7 +42,6 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { XYProps, XYZProps } from "../geometry3d/XYZProps";
 import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
-import { Point4d } from "../geometry4d/Point4d";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
@@ -53,6 +52,7 @@ import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
+import { SerializationHelpers } from "./SerializationHelpers";
 
 // cspell:word bagof
 /**
@@ -791,104 +791,42 @@ export namespace IModelJson {
       }
       return undefined;
     }
-    /**
-     * Special closed case if the input was forced to bezier . . . (e.g. arc)
-     *       (b-1) 0 0 0  a . . . b 111 (a+1)
-     *       with {order} clamp-like values .. no pole duplication needed, but throw out 2 knots at each end . ..
-     * @param numPoles number of poles
-     * @param knots knot vector
-     * @param order curve order
-     * @param newKnots array to receive new knots.
-     * @returns true if this is a closed-but-clamped case and corrected knots are filled in.
-     */
-    private static getCorrectedKnotsForClosedClamped(numPoles: number, knots: number[], order: number, newKnots: number[]): boolean {
-      const numKnots = knots.length;
-      if (numPoles + 2 * order - 1 === numKnots
-        && knots[0] < knots[1]
-        && knots[numKnots - 2] < knots[numKnots - 1]) {
-        const a0 = knots[1];
-        const a1 = knots[numKnots - 2];
-        for (let i = 2; i <= order; i++) {
-          if (knots[i] !== a0)
-            return false;
-          if (knots[numKnots - 1 - i] !== a1)
-            return false;
-        }
-        // copy only the "minimal" set - without the typical extra knots from microstation and psd.
-        for (let i = 2; i + 2 < numKnots; i++)
-          newKnots.push(knots[i]);
-        return true;
-      }
-      return false;
-    }
-    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
+
+    /** Parse `bcurve` content to BSplineCurve3d or BSplineCurve3dH object. */
     public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
-      if (data === undefined)
-        return undefined;
-      if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order) && data.closed !== undefined) {
-        if (data.points[0].length === 4) {
-          const hPoles: Point4d[] = [];
-          for (const p of data.points) hPoles.push(Point4d.fromJSON(p));
-          const knots: number[] = [];
-          let wrapMode = BSplineWrapMode.None;
-          if (data.closed && this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)) {
-            // leave the poles alone -- knots are fixed.
-            wrapMode = BSplineWrapMode.OpenByRemovingKnots;
-          } else if (data.closed) {
-            for (const knot of data.knots) knots.push(knot);
-            for (let i = 0; i + 1 < data.order; i++) {
-              hPoles.push(hPoles[i].clone());
-            }
-            wrapMode = BSplineWrapMode.OpenByAddingControlPoints;
-          } else {
-            // simple case .. just copy
-            for (const knot of data.knots) knots.push(knot);
-          }
-          const newCurve = BSplineCurve3dH.create(hPoles, knots, data.order);
-          if (newCurve) {
-            if (data.closed === true)
-              newCurve.setWrappable(wrapMode);
-            return newCurve;
-          }
-        } else if (data.points[0].length === 3 || data.points[0].length === 2) {
-
-          const poles: Point3d[] = [];
-          for (const p of data.points) poles.push(Point3d.fromJSON(p));
-          const knots: number[] = [];
-          let wrapMode = BSplineWrapMode.None;
-          if (data.closed && this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)) {
-            wrapMode = BSplineWrapMode.OpenByRemovingKnots;
-            // leave the poles alone -- knots are fixed.
-          } else if (data.closed) {
-            for (const knot of data.knots) knots.push(knot);
-            for (let i = 0; i + 1 < data.order; i++) {
-              poles.push(poles[i].clone());
-            }
-            wrapMode = BSplineWrapMode.OpenByAddingControlPoints;
-          } else {
-            // simple case .. just copy
-            for (const knot of data.knots) knots.push(knot);
-          }
-          const newCurve = BSplineCurve3d.create(poles, knots, data.order);
-          if (newCurve) {
-            if (data.closed === true)
-              newCurve.setWrappable(wrapMode);
-            return newCurve;
+      let newCurve: BSplineCurve3d | BSplineCurve3dH | undefined;
+      let dim: number;
+      if (data !== undefined
+          && data.hasOwnProperty("knots") && Array.isArray(data.knots)
+          && data.hasOwnProperty("order") && Number.isFinite(data.order)
+          && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0])
+          && (dim = data.points[0].length) >= 3 && dim <= 4
+         ) {
+        const myData = SerializationHelpers.createBSplineCurveData(data.points, dim, data.knots, data.points.length, data.order);
+        if (data.hasOwnProperty("closed") && true === data.closed)
+          myData.params.closed = true;
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData)) {
+          if (dim === 3)
+            newCurve = BSplineCurve3d.create(myData.poles, myData.params.knots, myData.params.order);
+          else
+            newCurve = BSplineCurve3dH.create(myData.poles, myData.params.knots, myData.params.order);
+          if (undefined !== newCurve) {
+            if (undefined !== myData.params.wrapMode)
+              newCurve.setWrappable(myData.params.wrapMode);
           }
         }
-
       }
-      return undefined;
+      return newCurve;
     }
 
-    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
+    /** Parse `bcurve` content to an InterpolationCurve3d object. */
     public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
       if (data === undefined)
         return undefined;
       return InterpolationCurve3d.create(data);
     }
 
-    /** Parse `bcurve` content (right side)to an Akima curve object. */
+    /** Parse `bcurve` content to an Akima curve object. */
     public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
       if (data === undefined)
         return undefined;
@@ -1050,35 +988,40 @@ export namespace IModelJson {
       }
       return undefined;
     }
+
     /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
     public static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined {
-      if (data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
-        && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
-        && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
-        && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
-        && data.hasOwnProperty("points") && Array.isArray(data.points)
-      ) {
-        const orderU = data.orderU;
-        const orderV = data.orderV;
-        if (Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])) {
-          const d = data.points[0][0].length;
-          /** xyz surface (no weights) */
-          if (d === 3) {
-            return BSplineSurface3d.createGrid(data.points,
-              orderU, data.uKnots,
-              orderV, data.vKnots);
-          }
-          /** xyzw surface (weights already applied) */
-          if (d === 4) {
-            return BSplineSurface3dH.createGrid(data.points,
-              WeightStyle.WeightsAlreadyAppliedToCoordinates,
-              orderU, data.uKnots,
-              orderV, data.vKnots);
+      let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined;
+      let dim: number;
+      if (data !== undefined
+          && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
+          && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
+          && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
+          && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
+          && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])
+          && (dim = data.points[0][0].length) >= 3 && dim <= 4
+         ) {
+        const myData = SerializationHelpers.createBSplineSurfaceData(data.points, dim, data.uKnots, data.points[0].length, data.orderU, data.vKnots, data.points.length, data.orderV);
+        if (data.hasOwnProperty("closedU") && true === data.closedU)
+          myData.uParams.closed = true;
+        if (data.hasOwnProperty("closedV") && true === data.closedV)
+          myData.vParams.closed = true;
+        if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: true})) {
+          if (dim === 3)
+            newSurface = BSplineSurface3d.createGrid(myData.poles as number[][][], myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
+          else
+            newSurface = BSplineSurface3dH.createGrid(myData.poles as number[][][], WeightStyle.WeightsAlreadyAppliedToCoordinates, myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
+          if (undefined !== newSurface) {
+            if (undefined !== myData.uParams.wrapMode)
+              newSurface.setWrappable(UVSelect.uDirection, myData.uParams.wrapMode);
+            if (undefined !== myData.vParams.wrapMode)
+              newSurface.setWrappable(UVSelect.vDirection, myData.vParams.wrapMode);
           }
         }
       }
-      return undefined;
+      return newSurface;
     }
+
     /** Parse `cone` contents to `Cone` instance  */
     public static parseConeProps(json?: ConeProps): Cone | undefined {
       const axes = Reader.parseOrientation(json, false);
@@ -1831,67 +1774,27 @@ export namespace IModelJson {
       return { indexedMesh: contents };
     }
 
+    private handleBSplineCurve(curve: BSplineCurve3d | BSplineCurve3dH): any {
+      const data = SerializationHelpers.createBSplineCurveData(curve.polesRef, curve.poleDimension, curve.knotsRef, curve.numPoles, curve.order);
+
+      const wrapMode = curve.getWrappable();
+      if (BSplineWrapMode.None !== wrapMode)
+        data.params.wrapMode = wrapMode;
+
+      if (!SerializationHelpers.Export.prepareBSplineCurveData(data, {jsonPoles: true, jsonKnots: true}))
+        return undefined;
+
+      return { bcurve: {
+        points: data.poles as number[][],
+        knots: data.params.knots as number[],
+        order: data.params.order,
+        closed: data.params.closed ? true : undefined,
+      }};
+    }
+
     /** Convert strongly typed instance to tagged json */
     public handleBSplineCurve3d(curve: BSplineCurve3d): any {
-      // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
-      // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      const wrapMode = curve.isClosable;
-      if (wrapMode === BSplineWrapMode.OpenByAddingControlPoints) {
-        const knots = curve.copyKnots(true);
-        const poles = curve.copyPoints();
-        const degree = curve.degree;
-        for (let i = 0; i < degree; i++) poles.pop();
-        // knots have replicated first and last.  Change the values to be periodic.
-        const leftIndex = degree;
-        const rightIndex = knots.length - degree - 1;
-        const knotPeriod = knots[rightIndex] - knots[leftIndex];
-        knots[0] = knots[rightIndex - degree] - knotPeriod;
-        knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
-        return {
-          bcurve: {
-            points: poles,
-            knots,
-            closed: true,
-            order: curve.order,
-          },
-        };
-      } else if (curve.isClosable === BSplineWrapMode.OpenByRemovingKnots) {
-        // special case to re-close the case that originated as :    a a0 a0 .. a0 knot0 knot1 knot2 ... b1 b1 .. b1 b
-        // with (order) copies of a0 and b1 (usually 0 and 1)
-        // and a,b are related to the interior knots
-        // (This is the "bezier saturated arc")
-        const rawKnots = curve.copyKnots(false); // unchanged knots . . .
-        const poles = curve.copyPoints();
-        const degree = curve.degree;
-        const leftIndex = degree - 1;
-        const rightIndex = rawKnots.length - degree;
-        const leftKnot = rawKnots[leftIndex];
-        const rightKnot = rawKnots[rightIndex];
-        const knotPeriod = rightKnot - leftKnot;
-        const knots = [];
-        knots.push(rawKnots[rightIndex - 1] - knotPeriod);
-        knots.push(leftKnot);
-        for (const k of rawKnots) knots.push(k);
-        knots.push(rightKnot);
-        knots.push(rawKnots[leftIndex + 1] + knotPeriod);
-        return {
-          bcurve: {
-            points: poles,
-            knots,
-            closed: true,
-            order: curve.order,
-          },
-        };
-      } else {
-        return {
-          bcurve: {
-            points: curve.copyPoints(),
-            knots: curve.copyKnots(true),
-            closed: false,
-            order: curve.order,
-          },
-        };
-      }
+      return this.handleBSplineCurve(curve);
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1916,7 +1819,6 @@ export namespace IModelJson {
         bcurve: {
           points: curve.copyPolesAsJsonArray(),
           knots,
-          closed: false,
           order: curve.order,
         },
       };
@@ -1924,82 +1826,12 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleBSplineCurve3dH(curve: BSplineCurve3dH): any {
-      // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
-      // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (curve.isClosable) {
-        const knots = curve.copyKnots(true);
-        const poles = curve.copyPoints();
-        const degree = curve.degree;
-        for (let i = 0; i < degree; i++) poles.pop();
-        // knots have replicated first and last.  Change the values to be periodic.
-        const leftIndex = degree;
-        const rightIndex = knots.length - degree - 1;
-        const knotPeriod = knots[rightIndex] - knots[leftIndex];
-        knots[0] = knots[rightIndex - degree] - knotPeriod;
-        knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
-        return {
-          bcurve: {
-            points: poles,
-            knots,
-            closed: true,
-            order: curve.order,
-          },
-        };
-      } else {
-        return {
-          bcurve: {
-            points: curve.copyPoints(),
-            knots: curve.copyKnots(true),
-            closed: false,
-            order: curve.order,
-          },
-        };
-      }
+      return this.handleBSplineCurve(curve);
     }
 
     /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
-      // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
-      // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      const periodicU = surface.isClosable(0);
-      const periodicV = surface.isClosable(1);
-      if (periodicU || periodicV) {
-        let numUPoles = surface.numPolesUV(0);
-        let numVPoles = surface.numPolesUV(1);
-        if (periodicU) numUPoles -= surface.degreeUV(0);
-        if (periodicV) numVPoles -= surface.degreeUV(1);
-        const xyz = Point3d.create();
-        const grid = [];
-        for (let j = 0; j < numVPoles; j++) {
-          const stringer = [];
-          for (let i = 0; i < numUPoles; i++) {
-            surface.getPoint3dPole(i, j, xyz)!;
-            stringer.push([xyz.x, xyz.y, xyz.z]);
-          }
-          grid.push(stringer);
-        }
-        return {
-          bsurf: {
-            points: grid,
-            uKnots: surface.copyKnots(0, true),
-            vKnots: surface.copyKnots(1, true),
-            orderU: surface.orderUV(0),
-            orderV: surface.orderUV(1),
-            closedU: periodicU,
-            closedV: periodicV,
-          },
-        };
-      } else {
-        return {
-          bsurf: {
-            points: surface.getPointArray(false),
-            uKnots: surface.copyKnots(0, true),
-            vKnots: surface.copyKnots(1, true),
-            orderU: surface.orderUV(0),
-            orderV: surface.orderUV(1),
-          },
-        };
-      }
+      return this.handleBSplineSurface(surface);
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -2012,24 +1844,41 @@ export namespace IModelJson {
         bcurve: {
           points: curve.copyPolesAsJsonArray(),
           knots,
-          closed: false,
           order: curve.order,
         },
       };
     }
 
     /** Convert strongly typed instance to tagged json */
+    private handleBSplineSurface(surface: BSplineSurface3d | BSplineSurface3dH): any {
+      const data = SerializationHelpers.createBSplineSurfaceData(surface.coffs, surface.poleDimension,
+        surface.knots[UVSelect.uDirection].knots, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection),
+        surface.knots[UVSelect.vDirection].knots, surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection));
+
+      const wrapModeU = surface.getWrappable(UVSelect.uDirection);
+      const wrapModeV = surface.getWrappable(UVSelect.vDirection);
+      if (BSplineWrapMode.None !== wrapModeU)
+        data.uParams.wrapMode = wrapModeU;
+      if (BSplineWrapMode.None !== wrapModeV)
+        data.vParams.wrapMode = wrapModeV;
+
+      if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, {jsonPoles: true, jsonKnots: true}))
+        return undefined;
+
+      return { bsurf: {
+        points: data.poles as number[][][],
+        uKnots: data.uParams.knots as number[],
+        vKnots: data.vParams.knots as number[],
+        orderU: data.uParams.order,
+        orderV: data.vParams.order,
+        closedU: data.uParams.closed ? true : undefined,
+        closedV: data.vParams.closed ? true : undefined,
+      }};
+    }
+
+    /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3dH(surface: BSplineSurface3dH): any {
-      const data = surface.getPointGridJSON();
-      return {
-        bsurf: {
-          points: data.points,
-          uKnots: surface.copyKnots(0, true),
-          vKnots: surface.copyKnots(1, true),
-          orderU: surface.orderUV(0),
-          orderV: surface.orderUV(1),
-        },
-      };
+      return this.handleBSplineSurface(surface);
     }
 
     /** Convert an array of strongly typed instances to an array of tagged json */

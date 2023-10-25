@@ -18,7 +18,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 
 describe("IModelHost", () => {
-  const opts = { cacheDir: path.join(__dirname, ".cache") };
+  const opts = { cacheDir: TestUtils.getCacheDir() };
   beforeEach(async () => {
     await TestUtils.shutdownBackend();
   });

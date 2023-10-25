@@ -63,13 +63,7 @@ A [WidgetDef]($appui-react) object is created for each Widget component in the f
 The following example demonstrates how to open a widget programmatically. The example assumes an `id` prop of "VerticalPropertyGrid" has been provided on the Widget component.
 
 ```ts
-const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-if (activeFrontstageDef) {
-  const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-  if (widgetDef) {
-    widgetDef.setWidgetState(WidgetState.Open);
-  }
-}
+[[include:AppUI.WidgetDef.setWidgetState]]
 ```
 
 ## Tool Widget

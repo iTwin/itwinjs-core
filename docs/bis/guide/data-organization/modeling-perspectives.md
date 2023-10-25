@@ -45,15 +45,6 @@ Each `InformationPartitionElement` has a sub-`Model` that is of the same modelin
 
 These modeling perspective rules enforce a minimum level of logical data consistency. For example, they prevent the placement of a physical fire hydrant `Element` into a section drawing `Model`.
 
-<!-- I have intentionally avoided complicating this discussion with Elements of a compatible modeling perspective. Until we decide what that is, I don't think we should attempt to document it -->
-
-<!--
-We will need to document 3 cases:
-- Element of exactly the same modeling perspective
-- Element of compatible modeling perspective via modeling perspective abstraction/inheritance
-- Element of compatible modeling perspective via mixins or some other mechanism
--->
-
 ### Abstract, Concrete and Sealed Modeling Perspectives
 
 Modeling Perspectives can be considered to be abstract, concrete, or sealed to correspond with the `InformationPartitionElement` and `Model` subclasses that implement them:
@@ -68,20 +59,21 @@ Modeling Perspectives can be considered to be abstract, concrete, or sealed to c
 
 It is not possible to predict all of the modeling perspectives that may eventually be needed in BIS. BIS does, however, provide a core set of modeling perspectives from which other modeling perspectives must derive.
 
-The core modeling perspectives are:
+The following table shows the core modeling perspectives, which subclass the abstract `InformationPartitionElement` class, as well as the expected kind of `Model` subclass that implement them for each case.
 
-* InformationPartitionElement (abstract)
-  * AnalyticalPartition (abstract)
-  * DefinitionPartition (sealed)
-  * DocumentPartition (sealed)
-  * FunctionalPartition (concrete but considered abstract)
-  * GraphicalPartition3d (sealed)
-  * GroupInformationPartition (sealed)
-  * InformationRecordPartition (sealed)
-  * LinkPartition (sealed)
-  * PhysicalPartition (sealed)
-  * PhysicalSystemPartition (sealed)
-  * SpatialLocationPartition (sealed)
+| `InformationPartitionElement` subclass | `Model` subclass implementer |
+| --- | --- |
+| AnalyticalPartition (abstract) | appropriate subclass of AnalyticalModel |
+| DefinitionPartition (sealed) | DefinitionModel |
+  DocumentPartition (sealed) | DocumentListModel |
+  FunctionalPartition (concrete but considered abstract) | appropriate subclass of FunctionalModel |
+  GraphicalPartition3d (sealed) | appropriate subclass of GraphicalModel3d |
+  GroupInformationPartition (sealed) | appropriate subclass of GroupInformationModel |
+  InformationRecordPartition (sealed) | InformationRecordModel |
+  LinkPartition (sealed) | LinkModel |
+  PhysicalPartition (sealed) | PhysicalModel |
+  PhysicalSystemPartition (sealed) | PhysicalSystemModel |
+  SpatialLocationPartition (sealed) | SpatialLocationModel |
 
 If the need for a new core modeling perspective is discovered (none of the existing core modeling perspectives is appropriate as a parent perspective), new ones can be added.
 
@@ -136,8 +128,7 @@ See [Analytical Models and Elements](../other-perspectives/analysis-models-and-e
 
 The top of a definition hierarchy starts with a `DefinitionModel` that models a `DefinitionPartition`.
 This allows `DefinitionElements` to be organized by how they relate to the parent `Subject` of the `DefinitionPartition`.
-The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
-Each `DefinitionPartition` is identified by its [Code](../references/glossary.md#code).
+There can be multiple `DefinitionContainer` Elements in the `DefinitionPartition`'s `DefinitionModel`, each with a corresponding `DefinitionModel` that sub-models it. That way, definitions (instances of `DefinitionElement`) can be hierarchically organized by source, discipline, or other criteria. Each `DefinitionPartition` is identified by its [Code](../references/glossary.md#code).
 
 See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the *DictionaryModel*.
 
@@ -161,6 +152,37 @@ A domain may or may not require a custom modeling perspective. The need for a cu
 Structural Steel Detailing is an example of a domain that does ***not*** require its own modeling perspective. That domain will require custom classes to represent the physical items that are important to it, but all of those items are viewed from the Physical modeling perspective. Structural Steel Detailing might also need some scheduling or costing information; that information is unlikely to require a custom modeling perspective, as costing and scheduling are common needs.
 
 Hydraulic Analysis, on the other hand, does require a custom modeling perspective. This perspective will model reality as a system that transports and stores water. Reality will be simplified into a network of conduits and other items, with properties and relationships appropriate for hydraulic analysis.
+
+## Codes for InformationPartition instances
+
+As implementers of the `ISubModeledElement` mix-in, each `InformationPartitionElement` carries the _name_ of its submodel in its Code.
+
+Generally, the different parts of the Code of `InformationPartitionElement` instances shall be setup as follows:
+
+* CodeSpec: "bis:InformationPartitionElement".
+* CodeScope: Per parent (Code values expected to be unique per parent `Subject`).
+* CodeValue: According to the kind of `InformationPartitionElement`.
+
+The following table provides a default Code Value for each `InformationPartitionElement` subclass to be used for cases in which there is not a more appropriate one.
+
+| InformationPartition sub-class | Default Code Value |
+| --- | --- |
+| AnalyticalPartition subclass | \<_Appropriate CodeValue per specialized kind of Analysis_\> |
+| DefinitionPartition | "Definitions" |
+| DocumentPartition | "Documents" |
+| FunctionalPartition subclass | \<_Appropriate CodeValue per Functional specialization_\> |
+| GraphicalPartition3d | "Graphics" |
+| GroupInformationPartition | "Groups" |
+| InformationRecordPartition | "InformationRecords" |
+| LinkPartition | "Links" |
+| PhysicalPartition | "Physical" |
+| PhysicalSystemPartition | "PhysicalSystems" |
+| SpatialLocationPartition | "SpatialLocation" |
+
+Examples of cases with a more appropriate Code Value than the default ones listed above include:
+
+* "BisCore.DictionaryModel" for the `DefinitionPartition` leading into the global DictionaryModel from a Root `Subject`.
+* "BisCore.RealityDataSources" for the `LinkPartition` leading into the global LinkModel from a Root `Subject`.
 
 ---
 | Next: [Top of the World](./top-of-the-world.md)
