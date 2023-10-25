@@ -631,7 +631,7 @@ export class ClipUtilities {
    * Create a clipper from the transformed range.
    * @param range input range to create clipper from
    * @param transform how to transform the range (NOTE: applied to the range faces without swelling the range volume)
-   * @param degeneratePoints optionally populated with the 1 or 2 transformed points defining a degenerate 1-D range; otherwise untouched
+   * @param degeneratePoints optionally populated with the 1 or 2 points defining the transformed range if it is degenerate (all points colinear/coincident); otherwise untouched
    * @returns newly constructed clipper. If no clip planes could be computed, fill `degeneratePoints` and return undefined.
   */
   private static createClipperFromTransformedRange3d(range: Range3d, transform: Transform, degeneratePoints?: Point3d[]): ConvexClipPlaneSet | undefined {
