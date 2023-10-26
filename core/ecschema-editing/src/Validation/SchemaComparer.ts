@@ -200,9 +200,8 @@ export class SchemaComparer {
       const fullNameB = baseClassB ? baseClassB.fullName : undefined;
 
       if (fullNameA !== fullNameB) {
-        // Getting the schema name of the baseClass
         const reportFlag = this.reportDiagnosticFlag(fullNameA ?? "", fullNameB ?? "", classA, classB);
-        if(reportFlag){
+        if (reportFlag) {
           const baseA = await baseClassA as AnyClass;
           const baseB = baseClassB ? await baseClassB as AnyClass : undefined;
           promises.push(this._reporter.reportBaseClassDelta(classA, baseA, baseB, this._compareDirection));
@@ -312,8 +311,11 @@ export class SchemaComparer {
     if (mixinA.appliesTo) {
       const appliesToA = mixinA.appliesTo.fullName;
       const appliesToB = mixinB ? mixinB.appliesTo ? mixinB.appliesTo.fullName : undefined : undefined;
-      if (appliesToA !== appliesToB)
-        await this._reporter.reportMixinDelta(mixinA, "appliesTo", appliesToA, appliesToB, this._compareDirection);
+      if (appliesToA !== appliesToB) {
+        const reportFlag = this.reportDiagnosticFlag(appliesToA, appliesToB ?? "", mixinA, mixinB);
+        if (reportFlag)
+          await this._reporter.reportMixinDelta(mixinA, "appliesTo", appliesToA, appliesToB, this._compareDirection);
+      }
     }
   }
 
@@ -791,7 +793,7 @@ export class SchemaComparer {
         const structNameB = structB ? structB.fullName : undefined;
         if (structNameA !== structNameB) {
           const reportFlag = this.reportDiagnosticFlag(structNameA ?? "", structNameB ?? "", propertyA, propertyB);
-          if(reportFlag){
+          if (reportFlag) {
             promises.push(this._reporter.reportPropertyDelta(propertyA, "structClass", structNameA, structNameB, this._compareDirection));
           }
         }
@@ -854,13 +856,13 @@ export class SchemaComparer {
    * Compares properties with different full name that could potentially be the same in the context of comparing different schemas.
    * @returns flag to indicate whether to report or not.
    */
-  private reportDiagnosticFlag(fullNameA: string, fullNameB: string, itemA: SchemaItem | AnyProperty |undefined, itemB: SchemaItem | AnyProperty | undefined): boolean {
+  private reportDiagnosticFlag(fullNameA: string, fullNameB: string, itemA: SchemaItem | AnyProperty | undefined, itemB: SchemaItem | AnyProperty | undefined): boolean {
     // Getting the schema name of the property to compare
     const [schemaNameA, nameA] = SchemaItem.parseFullName(fullNameA);
     const [schemaNameB, nameB] = SchemaItem.parseFullName(fullNameB);
 
     return nameA !== nameB ||
-         schemaNameA !== schemaNameB && schemaNameA !== itemA?.schema.name ||
-         schemaNameA !== schemaNameB && schemaNameB !== itemB?.schema.name;
+      schemaNameA !== schemaNameB && schemaNameA !== itemA?.schema.name ||
+      schemaNameA !== schemaNameB && schemaNameB !== itemB?.schema.name;
   }
 }
