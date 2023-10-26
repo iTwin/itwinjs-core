@@ -19,6 +19,10 @@
     "docSiteId": 5,
     "displayName": "Presentation"
   },
+  "ui": {
+    "docSiteId": 6,
+    "displayName": "User Interface"
+  },
   "metadata": {
     "customIndex": "index.html",
     "logo": "assets/itwinjs-logo.svg",
