@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-opentelemetry",
+      "comment": "address missing properties in Diagnostics.ts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-opentelemetry"
+}
