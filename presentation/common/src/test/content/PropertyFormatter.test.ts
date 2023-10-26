@@ -178,14 +178,28 @@ describe("ContentPropertyValueFormatter", () => {
 
     it("KOQ property value", async () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "double" });
-      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Lable", name: "KOQProp", persistenceUnit: "Unit" } }) }];
-      koqFormatterMock.setup(async (x) => x.format(1.5, moq.It.is((options) => options.unitSystem === "metric"))).returns(async () => "1.5 M");
-      expect(await formatter.formatPropertyValue(field, 1.5, "metric")).to.be.eq("1.5 M");
+      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Label", name: "KOQProp", persistenceUnit: "Unit" } }) }];
+      koqFormatterMock.setup(async (x) => x.format(moq.It.isAny(), moq.It.is((options) => options.unitSystem === "metric"))).returns(async (raw: number) => `${raw.toFixed(2)} M`);
+      expect(await formatter.formatPropertyValue(field, 1.5, "metric")).to.be.eq("1.50 M");
+    });
+
+    it("KOQ point2d property value", async () => {
+      const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" });
+      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Label", name: "KOQProp", persistenceUnit: "Unit" } }) }];
+      koqFormatterMock.setup(async (x) => x.format(moq.It.isAny(), moq.It.is((options) => options.unitSystem === "metric"))).returns(async (raw: number) => `${raw.toFixed(2)} M`);
+      expect(await formatter.formatPropertyValue(field, { x: 1.234, y: 5.678 }, "metric")).to.be.eq("X: 1.23 M Y: 5.68 M");
+    });
+
+    it("KOQ point3d property value", async () => {
+      const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "point3d" });
+      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Label", name: "KOQProp", persistenceUnit: "Unit" } }) }];
+      koqFormatterMock.setup(async (x) => x.format(moq.It.isAny(), moq.It.is((options) => options.unitSystem === "metric"))).returns(async (raw: number) => `${raw.toFixed(2)} M`);
+      expect(await formatter.formatPropertyValue(field, { x: 1.234, y: 5.678, z: 1.234 }, "metric")).to.be.eq("X: 1.23 M Y: 5.68 M Z: 1.23 M");
     });
 
     it("KOQ property value without KOQ metadata", async () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "double" });
-      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Lable", name: "KOQProp", persistenceUnit: "Unit" } }) }];
+      field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Label", name: "KOQProp", persistenceUnit: "Unit" } }) }];
       koqFormatterMock.setup(async (x) => x.format(1.5, moq.It.isAny())).returns(async () => undefined);
       expect(await formatter.formatPropertyValue(field, 1.5)).to.be.eq("1.50");
     });
