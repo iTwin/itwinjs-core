@@ -17,8 +17,7 @@
     }
   },
   "globalOverrides": {
-    "dottie": "^2.0.4",
-    "@babel/traverse": "7.23.2"
+    "dottie": "^2.0.4"
   },
   "globalPackageExtensions": {
     "@bentley/react-scripts": {
