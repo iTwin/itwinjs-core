@@ -173,7 +173,7 @@ export class ArcGisUtilities {
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        return { status: MapLayerSourceStatus.RequireAuth};
+        return (userName || password) ? {status: MapLayerSourceStatus.InvalidCredentials} : {status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials};
     }

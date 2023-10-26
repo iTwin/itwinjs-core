@@ -115,7 +115,8 @@ export class RegionOps {
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
   /**
-   * Return an xy area for a loop, parity region, or union region.
+   * Return a (signed) xy area for a region.
+   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
    * @param root any Loop, ParityRegion, or UnionRegion.
    */
   public static computeXYArea(root: AnyRegion): number | undefined {

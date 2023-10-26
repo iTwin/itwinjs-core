@@ -238,6 +238,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Add facets for a transformed range box.
+   * * For best results, the transformed range corners should define a nonzero volume or area.
    * @param transform applied to the range points before adding to the polyface
    * @param range sides become 6 quad polyface facets
    * @param faceSelector for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
