@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../ecschema-editing";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -19,9 +19,9 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
     switch (code) {
       case SchemaCompareCodes.MixinDelta: {
         if (anyDiagnostic.code === code &&
-                    anyDiagnostic.messageArgs?.at(0) === propertyType &&
-                    anyDiagnostic.messageArgs?.at(1) === fullNameA &&
-                    anyDiagnostic.messageArgs?.at(2) === fullNameB) {
+          anyDiagnostic.messageArgs?.at(0) === propertyType &&
+          anyDiagnostic.messageArgs?.at(1) === fullNameA &&
+          anyDiagnostic.messageArgs?.at(2) === fullNameB) {
           found = true;
         }
         break;
@@ -74,16 +74,16 @@ describe("Mixin comparison tests", () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
-          testBaseClass: {
+          testClass: {
             schemaItemType: "EntityClass",
-            description: "Test base class",
+            description: "Test class",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaA.testBaseClass",
+            appliesTo: "SchemaA.testClass",
           },
         },
       }, contextA);
@@ -91,16 +91,16 @@ describe("Mixin comparison tests", () => {
       const schemaB = await Schema.fromJson({
         ...schemaBJson,
         items: {
-          testBaseClass: {
+          testClass: {
             schemaItemType: "EntityClass",
-            description: "Test base class",
+            description: "Test class",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaB.testBaseClass",
+            appliesTo: "SchemaB.testClass",
           },
         },
       }, contextB);
@@ -108,7 +108,7 @@ describe("Mixin comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testBaseClass", "SchemaB.testBaseClass", "appliesTo");
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testClass", "SchemaB.testClass", "appliesTo");
       expect(foundDiag).to.equal(false);
     });
 
@@ -116,16 +116,16 @@ describe("Mixin comparison tests", () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
-          testBaseClassA: {
+          testClassA: {
             schemaItemType: "EntityClass",
-            description: "Test base class",
+            description: "Test class A",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaA.testBaseClassA",
+            appliesTo: "SchemaA.testClassA",
           },
         },
       }, contextA);
@@ -133,16 +133,16 @@ describe("Mixin comparison tests", () => {
       const schemaB = await Schema.fromJson({
         ...schemaBJson,
         items: {
-          testBaseClassB: {
+          testClassB: {
             schemaItemType: "EntityClass",
-            description: "Test base class",
+            description: "Test class B",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaB.testBaseClassB",
+            appliesTo: "SchemaB.testClassB",
           },
         },
       }, contextB);
@@ -150,7 +150,7 @@ describe("Mixin comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testBaseClassA", "SchemaB.testBaseClassB", "appliesTo");
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testClassA", "SchemaB.testClassB", "appliesTo");
       expect(foundDiag).to.equal(true);
     });
 
@@ -158,16 +158,16 @@ describe("Mixin comparison tests", () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
-          testBaseClass: {
+          testClass: {
             schemaItemType: "EntityClass",
-            description: "Test base class",
+            description: "Test class",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaA.testBaseClass",
+            appliesTo: "SchemaA.testClass",
           },
         },
       }, contextA);
@@ -175,16 +175,16 @@ describe("Mixin comparison tests", () => {
       const schemaA2 = await Schema.fromJson({
         ...schemaAJson,
         items: {
-          testBaseClassB: {
+          testClassB: {
             schemaItemType: "EntityClass",
-            description: "Test base class B",
+            description: "Test class B",
           },
           testMixinClass: {
             schemaItemType: "Mixin",
             description: "mixin class for testing",
             label: "test mixin class",
             modifier: "None",
-            appliesTo: "SchemaA.testBaseClassB",
+            appliesTo: "SchemaA.testClassB",
           },
         },
       }, contextB);
@@ -192,7 +192,7 @@ describe("Mixin comparison tests", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaA2);
 
-      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testBaseClass", "SchemaA.testBaseClassB", "appliesTo");
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testClass", "SchemaA.testClassB", "appliesTo");
       expect(foundDiag).to.equal(true);
     });
   });
