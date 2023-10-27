@@ -177,7 +177,7 @@ export function MultiValueFilter(props: MultiValueFilterProps) {
     setSelectAllState(newSelectAllState);
   }, [checkedDistinctValues, distinctValues]);
 
-  const checkBoxItems = React.useMemo((): JSX.Element[] => {
+  const checkBoxItems = React.useMemo((): React.ReactElement[] => {
     const items = distinctValues
       .filter((distinctValue: TableDistinctValue) => {
         return (searchText.length === 0 || contains(distinctValue.label, searchText, filterCaseSensitive));

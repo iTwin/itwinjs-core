@@ -38,7 +38,7 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
     return category ? ActiveSettingsManager.categories.getNameFromId(category) ?? "" : "";
   }
 
-  private getAllModels(): JSX.Element[] {
+  private getAllModels(): React.ReactElement[] {
     return ActiveSettingsManager.models.cache.map((nid) =>
       <option id={nid.id} key={nid.id}>{nid.name}</option>,
     );
@@ -51,7 +51,7 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
     this.updateState();
   }
 
-  private getAllCategories(): JSX.Element[] {
+  private getAllCategories(): React.ReactElement[] {
     return ActiveSettingsManager.categories.cache.map((nid) =>
       <option id={nid.id} key={nid.id}>{nid.name}</option>,
     );

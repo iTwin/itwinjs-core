@@ -464,7 +464,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     messageBoxOpened: false,
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     return (
       <div className="components-breadcrumb-input-root" data-testid="components-breadcrumb-input-root">
         <input
@@ -519,7 +519,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     event.stopPropagation();
                   }
                 }}>
-                <span className="components-breadcrumb-selected">{listItem.substr(0, l)}</span>{listItem.substr(l)}
+                <span className="components-breadcrumb-selected">{listItem.substring(0, l)}</span>{listItem.substring(l)}
               </ContextMenuItem>
             );
           })}
@@ -569,19 +569,19 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       const children = node.getChildren();
       const parentChildren = this.props.parentsOnly ? children.filter((child) => child.hasOrWillHaveChildren()) : children;
       const strList = parentChildren.map((n) => baseString + this.props.delimiter! + n.toString());
-      return strList.filter((e) => e.substr(0, path.length) === path);
+      return strList.filter((e) => e.substring(0, path.length) === path);
     } else {
       const nodes = this.props.tree.nodes();
       const parentRoots = this.props.parentsOnly ? nodes.filter((child) => child.hasOrWillHaveChildren()) : nodes;
       const strList = parentRoots.map((n) => n.toString() + this.props.delimiter!);
-      return strList.filter((e) => e.substr(0, path.length) === path);
+      return strList.filter((e) => e.substring(0, path.length) === path);
     }
   };
 
   private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
     if (p.endsWith(delimiter)) // strip last delimiter if at end
-      p = p.substr(0, p.length - delimiter.length);
+      p = p.substring(0, p.length - delimiter.length);
     const root = this.props.tree.nodes();
     for (const node of root) {
       const found = await this._find(node, p);
@@ -609,7 +609,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     const delimiter = this.props.delimiter!;
     // remove leading delimiter
     if (p.indexOf(delimiter) === 0)
-      p = p.substr(delimiter.length);
+      p = p.substring(delimiter.length);
     const { text } = node;
     if (text === p) {
       return node;
@@ -617,7 +617,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     if (p.indexOf(text) === 0 && node.hasOrWillHaveChildren()) {
       const children = node.getChildren();
       for (const child of children) {
-        const n = await this._find(child as BeInspireTreeNode<TreeNodeItem>, p.substr(text.length));
+        const n = await this._find(child as BeInspireTreeNode<TreeNodeItem>, p.substring(text.length));
         if (n)
           return n;
       }
@@ -746,7 +746,7 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
       this.props.renderNode !== nextProps.renderNode;
   }
 
-  public override render(): JSX.Element | null {
+  public override render(): React.ReactElement | null {
     const node = this.props.node;
     let nodes: BeInspireTreeNodes<TreeNodeItem> | undefined;
     if (node) {

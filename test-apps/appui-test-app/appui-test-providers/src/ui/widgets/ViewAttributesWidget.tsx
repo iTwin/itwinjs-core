@@ -83,7 +83,7 @@ export function ViewAttributesWidgetComponent() {
     // using setTimeout to give time for frontstage to load before calling setWidgetState
     setTimeout(() => widgetDef?.setWidgetState(WidgetState.Floating));
   }, [widgetDef]);
-  const items: JSX.Element[] = [];
+  const items: React.ReactElement[] = [];
   items.push(ViewFlagItem("acs"));
   items.push(ToggleCameraItem());
   items.push(ViewFlagItem("noConstruct"));

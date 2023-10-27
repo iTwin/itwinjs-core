@@ -132,7 +132,7 @@ interface LoaderProps {
   noData: boolean;
   spinnerRenderer?: () => React.ReactElement;
   noDataRenderer?: () => React.ReactElement;
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 function Loader(props: LoaderProps) {

@@ -94,7 +94,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   private getViewFlags() {
-    const items: JSX.Element[] = [];
+    const items: React.ReactElement[] = [];
     items.push(this.getViewFlagItem("acs", this.getFlagState("acs"), "UiFramework:listTools.acs"));
     items.push(this.getToggleCameraItem());
     items.push(this.getViewFlagItem("noConstruct", !this.getFlagState("noConstruct"), "UiFramework:listTools.constructions"));

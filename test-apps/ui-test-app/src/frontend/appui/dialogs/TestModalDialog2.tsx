@@ -61,7 +61,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
 
     return (
       <Dialog

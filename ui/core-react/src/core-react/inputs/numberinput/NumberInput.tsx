@@ -219,4 +219,4 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
 /** Input component for numbers with up and down buttons to increment and decrement the value.
  * @public
  */
-export const NumberInput: (props: NumberInputProps) => JSX.Element | null = ForwardRefNumberInput;
+export const NumberInput: (props: NumberInputProps) => React.ReactElement | null = ForwardRefNumberInput;

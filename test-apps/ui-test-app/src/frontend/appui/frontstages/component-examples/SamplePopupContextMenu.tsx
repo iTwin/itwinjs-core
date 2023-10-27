@@ -114,7 +114,7 @@ export function ButtonWithContextMenu({ label, direction }: { label?: string, di
   );
 }
 
-export function ButtonWithDropdownMenu({ label, placement}: { label?: string, placement?: "top-start"|"top-end"|"bottom-start"|"bottom-end" }) {
+export function ButtonWithDropdownMenu({ label, placement }: { label?: string, placement?: "top-start" | "top-end" | "bottom-start" | "bottom-end" }) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const toggleMenu = React.useCallback(() => {
@@ -122,7 +122,7 @@ export function ButtonWithDropdownMenu({ label, placement}: { label?: string, pl
     setIsMenuOpen(show);
   }, [isMenuOpen]);
 
-  const createMenuItemNodes = React.useCallback((close: () => void): JSX.Element[] => {
+  const createMenuItemNodes = React.useCallback((close: () => void): React.ReactElement[] => {
     const itemNodes = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"].map((listItem, index) => {
       return (
         <MenuItem
@@ -139,7 +139,7 @@ export function ButtonWithDropdownMenu({ label, placement}: { label?: string, pl
 
   return (
     <div>
-      <DropdownMenu appendTo="parent" placement={placement??"bottom-start"} menuItems={createMenuItemNodes}>
+      <DropdownMenu appendTo="parent" placement={placement ?? "bottom-start"} menuItems={createMenuItemNodes}>
         {label
           ?
           <Button size="small" onClick={(e) => {
@@ -220,7 +220,7 @@ export function DropdownMenuInPopup() {
         onClose={() => setShowPopup(false)} showArrow={true} showShadow={true} closeOnNestedPopupOutsideClick={false}>
         <div style={{ width: "150px", height: "200px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           <div style={{ display: "flex" }}>
-            <ButtonWithDropdownMenu label="TR" placement="top-end"/>
+            <ButtonWithDropdownMenu label="TR" placement="top-end" />
             <ButtonWithDropdownMenu label="TL" placement="top-start" />
           </div>
           <div style={{ display: "flex" }}>

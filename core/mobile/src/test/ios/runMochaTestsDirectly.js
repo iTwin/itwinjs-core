@@ -10,7 +10,7 @@ require("mocha"); // puts the symbol "mocha" in global.
 require("chai"); // puts 'assert', etc. into global
 
 const configs = eval('require("./config.json");');
-process.env = {...process.env, ...configs};
+process.env = { ...process.env, ...configs };
 
 const xunit = require("mocha/lib/reporters/xunit");
 function MobileReporter(runner) {
@@ -36,7 +36,7 @@ function MobileReporter(runner) {
     while (plainMsg[i] === '\n') {
       i++;
     }
-    plainMsg = plainMsg.substr(i);
+    plainMsg = plainMsg.substring(i);
     if (type === "info") {
       process.log("MOCHA INFO", plainMsg);
     } else {

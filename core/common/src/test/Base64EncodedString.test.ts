@@ -22,7 +22,7 @@ describe("Base64EncodedString", () => {
 
   it("should accept input without prefix", () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
-    const base64 = Base64EncodedString.fromUint8Array(bytes).substr(Base64EncodedString.prefix.length);
+    const base64 = Base64EncodedString.fromUint8Array(bytes).substring(Base64EncodedString.prefix.length);
     expectEqualUint8Arrays(Base64EncodedString.toUint8Array(base64), bytes);
   });
 

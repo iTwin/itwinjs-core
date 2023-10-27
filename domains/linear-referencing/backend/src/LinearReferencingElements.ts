@@ -446,7 +446,7 @@ class QueryLinearLocationsECSQLGen {
           where += `(meta.ECSchemaDef.Name='${schemaNameClassName[0]}' AND meta.ECClassDef.Name='${schemaNameClassName[1]}') OR `;
         }
 
-        where = where.substr(0, where.length - 4); // Removing last OR
+        where = where.substring(0, where.length - 4); // Removing last OR
         where += ") ";
       }
     }

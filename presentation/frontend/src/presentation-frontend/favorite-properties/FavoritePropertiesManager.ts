@@ -545,7 +545,7 @@ const getPropertyClassName = (propertyName: PropertyFullName): string | undefine
   if (parts === 2) // nested property OR nested property parent class OR regular property parent class
     return propertyNameStart;
   // regular property without parent class
-  return propertyNameStart.substr(0, propertyName.lastIndexOf(":"));
+  return propertyNameStart.substring(0, propertyName.lastIndexOf(":"));
 };
 
 /** @internal */

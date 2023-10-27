@@ -22,7 +22,7 @@ describe("CustomItemDef", () => {
       reactElement: <div>Hello!</div>,
     });
 
-    expect(item.id.substr(0, CustomItemDef.customIdPrefix.length)).to.eq(CustomItemDef.customIdPrefix);
+    expect(item.id.substring(0, CustomItemDef.customIdPrefix.length)).to.eq(CustomItemDef.customIdPrefix);
   });
 
   it("CustomItemDef with commandId should use it", () => {

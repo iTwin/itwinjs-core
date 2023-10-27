@@ -493,7 +493,7 @@ export class ShaderProgram implements WebGLDisposable {
           } else if (line.indexOf("gl_FragCoord") >= 0) {
             haveGLFragCoord = true;
           } else if ((tNdx = line.indexOf("out_FragColor")) >= 0) {
-            const c = line.substr(tNdx + 13, 1);
+            const c = line.substring(tNdx + 13, tNdx + 13 + 1);
             if (c === " " || c === "=")
               haveGLFragColorOnly = true;
             else {

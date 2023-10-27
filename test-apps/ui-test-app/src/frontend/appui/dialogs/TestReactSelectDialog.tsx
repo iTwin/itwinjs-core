@@ -60,7 +60,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       overlay: true,
     };
   }
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     return (<Dialog
       title={"React-Select Modal Dialog"}
       opened={this.state.opened}

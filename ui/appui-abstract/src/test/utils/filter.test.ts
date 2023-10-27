@@ -447,7 +447,7 @@ describe("Filters", () => {
   });
 
   it("patternPos isn't working correctly #79815", function () {
-    assertMatches(":p".substr(1), "prop", "^prop", fuzzyScore, { patternPos: 0 });
+    assertMatches(":p".substring(1), "prop", "^prop", fuzzyScore, { patternPos: 0 });
     assertMatches(":p", "prop", "^prop", fuzzyScore, { patternPos: 1 });
     assertMatches(":p", "prop", undefined, fuzzyScore, { patternPos: 2 });
     assertMatches(":p", "proP", "pro^P", fuzzyScore, { patternPos: 1, wordPos: 1 });
@@ -568,32 +568,32 @@ describe("Filters", () => {
 
   const patterns = ["ecti", "Element", "element", "Head", "head"];
   const data = [
-    "HTMLAllCollection","HTMLAnchorElement","HTMLAppletElement","HTMLAreaElement","HTMLAreasCollection",
-    "HTMLAudioElement","HTMLBRElement","HTMLBaseElement","HTMLBaseFontElement","HTMLBodyElement","HTMLBodyElementEventMap","HTMLButtonElement","HTMLCanvasElement",
-    "HTMLCollection","HTMLCollectionBase","HTMLCollectionOf","HTMLDListElement","HTMLDataElement","HTMLDataListElement","HTMLDirectoryElement","HTMLDivElement","HTMLDocument",
-    "HTMLElement","HTMLElementEventMap","HTMLElementTagNameMap","HTMLEmbedElement","HTMLFieldSetElement","HTMLFontElement","HTMLFormControlsCollection","HTMLFormElement",
-    "HTMLFrameElement","HTMLFrameElementEventMap","HTMLFrameSetElement","HTMLFrameSetElementEventMap","HTMLHRElement","HTMLHeadElement","HTMLHeadingElement","HTMLHtmlElement",
-    "HTMLIFrameElement","HTMLIFrameElementEventMap","HTMLImageElement","HTMLInputElement","HTMLLIElement","HTMLLabelElement","HTMLLegendElement","HTMLLinkElement",
-    "HTMLMapElement","HTMLMarqueeElement","HTMLMarqueeElementEventMap","HTMLMediaElement","HTMLMediaElementEventMap","HTMLMenuElement","HTMLMetaElement","HTMLMeterElement",
-    "HTMLModElement","HTMLOListElement","HTMLObjectElement","HTMLOptGroupElement","HTMLOptionElement","HTMLOptionsCollection","HTMLOutputElement","HTMLParagraphElement",
-    "HTMLParamElement","HTMLPictureElement","HTMLPreElement","HTMLProgressElement","HTMLQuoteElement","HTMLScriptElement","HTMLSelectElement","HTMLSlotElement",
-    "HTMLSourceElement","HTMLSpanElement","HTMLStyleElement","HTMLTableAlignment","HTMLTableCaptionElement","HTMLTableCellElement","HTMLTableColElement",
-    "HTMLTableDataCellElement","HTMLTableElement","HTMLTableHeaderCellElement","HTMLTableRowElement","HTMLTableSectionElement","HTMLTemplateElement",
-    "HTMLTextAreaElement","HTMLTimeElement","HTMLTitleElement","HTMLTrackElement","HTMLUListElement","HTMLUnknownElement","HTMLVideoElement","HTMLVideoElementEventMap",
+    "HTMLAllCollection", "HTMLAnchorElement", "HTMLAppletElement", "HTMLAreaElement", "HTMLAreasCollection",
+    "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBaseFontElement", "HTMLBodyElement", "HTMLBodyElementEventMap", "HTMLButtonElement", "HTMLCanvasElement",
+    "HTMLCollection", "HTMLCollectionBase", "HTMLCollectionOf", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument",
+    "HTMLElement", "HTMLElementEventMap", "HTMLElementTagNameMap", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormControlsCollection", "HTMLFormElement",
+    "HTMLFrameElement", "HTMLFrameElementEventMap", "HTMLFrameSetElement", "HTMLFrameSetElementEventMap", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement",
+    "HTMLIFrameElement", "HTMLIFrameElementEventMap", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement",
+    "HTMLMapElement", "HTMLMarqueeElement", "HTMLMarqueeElementEventMap", "HTMLMediaElement", "HTMLMediaElementEventMap", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement",
+    "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOptionsCollection", "HTMLOutputElement", "HTMLParagraphElement",
+    "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement",
+    "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableAlignment", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement",
+    "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement",
+    "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "HTMLVideoElementEventMap",
   ];
 
   function countMatches(match: IFilter, testPatterns: string[]) {
     let count = 0;
     for (const pattern of testPatterns) {
       for (const item of data) {
-        count += (match(pattern, item)?.length??0);
+        count += (match(pattern, item)?.length ?? 0);
       }
     }
     return count;
   }
 
   it("matches fuzzy simple", function () {
-    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [{start:4,end:7}]);
+    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy", function () {
@@ -602,8 +602,8 @@ describe("Filters", () => {
   });
 
   it("matches fuzzy2 simple", function () {
-    filterOk(matchesFuzzy2, "tab", "HTMLLabelElement", [{start:1,end:2},{start:5,end:7}]);
-    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [{start:4,end:7}]);
+    filterOk(matchesFuzzy2, "tab", "HTMLLabelElement", [{ start: 1, end: 2 }, { start: 5, end: 7 }]);
+    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy2", function () {

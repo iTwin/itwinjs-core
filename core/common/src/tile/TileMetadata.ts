@@ -136,7 +136,7 @@ class Parser {
     const primary = classifier ? undefined : this.parsePrimary();
     this.require((undefined === classifier) !== (undefined === primary));
 
-    const modelId = this.input.substr(this.curPos);
+    const modelId = this.input.substring(this.curPos);
     this.require(Id64.isId64(modelId));
 
     const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(this.input);

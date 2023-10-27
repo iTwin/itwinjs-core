@@ -17,7 +17,7 @@ import { SampleAppIModelApp } from "../../index";
 /* represents a tab item on the IModelIndex page */
 interface Category {
   label: string;
-  render(): JSX.Element | undefined;
+  render(): React.ReactElement | undefined;
 }
 
 /** Properties for the [[IModelIndex]] component
@@ -76,7 +76,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* register a category (tab) */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  public static RegisterCategory(_label: string, _render: () => JSX.Element | undefined) {
+  public static RegisterCategory(_label: string, _render: () => React.ReactElement | undefined) {
     IModelIndex._categories.push({ label: _label, render: _render });
   }
 

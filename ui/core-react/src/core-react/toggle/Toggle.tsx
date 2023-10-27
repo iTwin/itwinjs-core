@@ -165,4 +165,4 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(   // e
  * @public
  * @deprecated in 3.0. Use ToggleSwitch in itwinui-react instead
  */
-export const Toggle: (props: ToggleProps) => JSX.Element | null = ForwardRefToggle;   // eslint-disable-line deprecation/deprecation
+export const Toggle: (props: ToggleProps) => React.ReactElement | null = ForwardRefToggle;   // eslint-disable-line deprecation/deprecation

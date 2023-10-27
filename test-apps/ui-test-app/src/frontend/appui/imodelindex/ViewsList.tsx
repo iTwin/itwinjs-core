@@ -249,7 +249,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
 
   /** Render the view defs and/or the saved views */
   private renderViews() {
-    const views: JSX.Element[] = [];
+    const views: React.ReactElement[] = [];
     let index: number = 0;
     const isFiltering: boolean = this.state.filter.trim().length !== 0;
 

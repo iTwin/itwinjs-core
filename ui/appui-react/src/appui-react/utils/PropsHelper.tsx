@@ -41,7 +41,7 @@ export class PropsHelper {
 
   /** Get JSX element that defines an icon. If iconSpec is a string, then a web-font icon class is used otherwise a ReactNode holding an SVG icon is assumed.  */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  public static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined {
+  public static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): React.ReactElement | undefined {
     if (iconSpec instanceof ConditionalStringValue)
       return <Icon iconSpec={iconSpec.value} />;
 
@@ -62,10 +62,10 @@ export class PropsHelper {
 
     // istanbul ignore else
     if (!internalData)
-      internalData = new Map<string,any>();
+      internalData = new Map<string, any>();
 
     const icon = IconHelper.getIconData(iconSpec, internalData);
 
-    return (icon === "" ? {icon} : {icon, internalData });
+    return (icon === "" ? { icon } : { icon, internalData });
   }
 }

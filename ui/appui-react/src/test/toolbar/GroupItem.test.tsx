@@ -573,7 +573,7 @@ describe("GroupItem", () => {
         items: [tool1, tool2],
       });
 
-      expect(groupItemDef.id.substr(0, GroupItemDef.groupIdPrefix.length)).to.eq(GroupItemDef.groupIdPrefix);
+      expect(groupItemDef.id.substring(0, GroupItemDef.groupIdPrefix.length)).to.eq(GroupItemDef.groupIdPrefix);
     });
 
   });

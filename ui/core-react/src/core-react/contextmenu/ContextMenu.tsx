@@ -161,7 +161,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this.props.onOutsideClick(event);
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
       selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -351,7 +351,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   };
 
   public getRect = (): DOMRect => {
-    let clientRect = DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0});
+    let clientRect = DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 });
 
     // istanbul ignore else
     if (this._menuElement) {

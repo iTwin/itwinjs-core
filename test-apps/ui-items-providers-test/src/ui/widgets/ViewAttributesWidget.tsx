@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { useActiveFrontstageDef,useActiveViewport, WidgetState } from "@itwin/appui-react";
+import { useActiveFrontstageDef, useActiveViewport, WidgetState } from "@itwin/appui-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
 import * as React from "react";
@@ -83,7 +83,7 @@ export function ViewAttributesWidgetComponent() {
     // using setTimeout to give time for frontstage to load before calling setWidgetState
     setTimeout(() => widgetDef?.setWidgetState(WidgetState.Floating));
   }, [widgetDef]);
-  const items: JSX.Element[] = [];
+  const items: React.ReactElement[] = [];
   items.push(ViewFlagItem("acs"));
   items.push(ToggleCameraItem());
   items.push(ViewFlagItem("noConstruct"));
@@ -95,7 +95,7 @@ export function ViewAttributesWidgetComponent() {
   items.push(ViewFlagItem("backgroundMap"));
 
   return (
-    <div style={{display: "flex", flexDirection: "column", padding: "8px", overflowY: "auto"}}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "8px", overflowY: "auto" }}>
       {items}
     </div>
   );

@@ -13,8 +13,8 @@ import { DialogButtonType } from "@itwin/appui-abstract";
 interface ConfirmMessageDialogProps extends CommonProps {
 
   /** Title to show in title bar of dialog */
-  title?: string | JSX.Element;
-  message?: string | JSX.Element;
+  title?: string | React.ReactElement;
+  message?: string | React.ReactElement;
   onYesResult?: () => void;
   onNoResult?: () => void;
   onClose?: () => void;

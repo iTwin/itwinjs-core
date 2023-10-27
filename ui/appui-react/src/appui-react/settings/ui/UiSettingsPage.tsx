@@ -32,13 +32,13 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
  *
  * @beta
  */
-export function UiSettingsPage(): JSX.Element;
+export function UiSettingsPage(): React.ReactElement;
 
 /**
  * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
  * @beta
  */
-export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): React.ReactElement; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
  * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.

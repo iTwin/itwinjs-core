@@ -182,4 +182,4 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
  * @public
  */
-export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null = ForwardRefColorPickerPopup;
+export const ColorPickerPopup: (props: ColorPickerPopupProps) => React.ReactElement | null = ForwardRefColorPickerPopup;

@@ -38,7 +38,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   }
 
   public override async componentDidMount() {
-    const externalIModel = await ExternalIModel.create({iTwinName: this.props.iTwinName, iModelName: this.props.imodelName});
+    const externalIModel = await ExternalIModel.create({ iTwinName: this.props.iTwinName, iModelName: this.props.imodelName });
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {
@@ -64,7 +64,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     }
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
 
     /* Demo values */
     const width = 400;

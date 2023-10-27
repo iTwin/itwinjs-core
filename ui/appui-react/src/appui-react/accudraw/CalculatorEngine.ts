@@ -123,7 +123,7 @@ export class CalculatorEngine {
 
         case CalculatorOperator.NegPos:
           if (displayedNum.length > 0 && displayedNum[0] === "-")
-            resultString = displayedNum.substr(1);
+            resultString = displayedNum.substring(1);
           else
             resultString = `-${displayedNum}`;
           break;

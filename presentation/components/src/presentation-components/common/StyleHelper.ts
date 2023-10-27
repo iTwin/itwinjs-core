@@ -189,7 +189,7 @@ export class StyleHelper {
 
   /** Get color number from HEX format: `#ff3300` */
   private static getColorFromHex(name: string): number {
-    name = name.substr(1, 7);
+    name = name.substring(1, 7);
     return parseInt(`0x${name}`, 16);
   }
 

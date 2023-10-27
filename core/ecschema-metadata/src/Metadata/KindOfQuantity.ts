@@ -78,7 +78,7 @@ export class KindOfQuantity extends SchemaItem {
 
       // TODO need to include `,` as a valid search argument.
       while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) { // eslint-disable-line
-        tokens.push(overrideString.substr(prevPos, currPos - prevPos));
+        tokens.push(overrideString.substring(prevPos, currPos - prevPos));
         prevPos = currPos + 1;
       }
 

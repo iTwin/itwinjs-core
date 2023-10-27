@@ -141,10 +141,10 @@ export class Formatter {
         groupLength = groupLength + 3;
       }
 
-      let outString = formattedValue.substr(0, groupLength);
+      let outString = formattedValue.substring(0, groupLength);
 
       for (let i = 1; i <= numSeparators; i += 1) {
-        outString = outString + spec.format.thousandSeparator + formattedValue.substr(groupLength, 3);
+        outString = outString + spec.format.thousandSeparator + formattedValue.substring(groupLength, groupLength + 3);
         groupLength = groupLength + 3;
       }
 
@@ -166,7 +166,7 @@ export class Formatter {
       }
     }
     if (lastNonZeroCharIndex >= 0)
-      return strVal.substr(0, lastNonZeroCharIndex + 1);
+      return strVal.substring(0, lastNonZeroCharIndex + 1);
     return "";
   }
 
@@ -302,7 +302,7 @@ export class Formatter {
         fractionPart = Math.floor(fractionPart) / precisionScale;
         let fractionString = fractionPart.toFixed(spec.format.precision);
         // remove leading "0."
-        fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
+        fractionString = fractionString.substring(2).padEnd(spec.format.precision, "0");
         if (!isKeepTrailingZeroes)
           fractionString = Formatter.trimTrailingZeroes(fractionString);
 
@@ -340,9 +340,9 @@ export class Formatter {
       const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(spec.format.stationOffsetSize!, "0");
       let fractionString = "";
       if (fractionPart > 0) {
-        fractionString = (fractionPart/precisionScale).toFixed(spec.format.precision);
+        fractionString = (fractionPart / precisionScale).toFixed(spec.format.precision);
         // remove leading "0."
-        fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
+        fractionString = fractionString.substring(2).padEnd(spec.format.precision, "0");
         if (!isKeepTrailingZeroes)
           fractionString = Formatter.trimTrailingZeroes(fractionString);
 

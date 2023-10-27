@@ -402,7 +402,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       });
   };
 
-  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): JSX.Element {
+  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): React.ReactElement {
     const label = item.label;
     const checked = currentTimelineDuration === item.timelineDuration;
     const icon = checked ? <span className="icon icon-checkmark" /> : <span />;
@@ -415,7 +415,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   }
 
   private _renderSettings = () => {
-    const createMenuItemNodes = (close: () => void): JSX.Element[] => {
+    const createMenuItemNodes = (close: () => void): React.ReactElement[] => {
 
       const { totalDuration } = this.state;
       let contextMenuItems: Array<TimelineMenuItemProps> = [];
@@ -432,7 +432,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         }
       }
 
-      const itemNodes: JSX.Element[] = [];
+      const itemNodes: React.ReactElement[] = [];
       let keyIndex = 0;
       if (this.state.includeRepeat) {
         const checked = this.state.repeat;
@@ -479,7 +479,8 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
               state.attributes.popper.class = "timeline-component-max-sized-scrolling-menu";
             },
           },
-        ]}}>
+        ]
+      }}>
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2"
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>

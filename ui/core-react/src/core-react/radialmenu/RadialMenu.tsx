@@ -67,7 +67,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     super(props);
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     const width = 2 * (this.props.outerRadius + 1);
     let x = this.props.left, y = this.props.top;
 
@@ -207,7 +207,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     super(props);
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     const sector = this.props.annularSector;
     let p = new Point();
     let size = 0;

@@ -438,7 +438,7 @@ export class ECSchemaToTs {
       ++wordCount;
       if (wordCount === 20) {
         wordCount = 0;
-        outputString += ` * ${description.substr(begin, spaceIdx - begin)}\n`;
+        outputString += ` * ${description.substring(begin, spaceIdx - begin)}\n`;
         begin = spaceIdx + 1;
       }
 
@@ -450,7 +450,7 @@ export class ECSchemaToTs {
     }
 
     // append the last word
-    outputString += ` * ${description.substr(begin)}\n`;
+    outputString += ` * ${description.substring(begin)}\n`;
 
     outputString += " */";
     return outputString;

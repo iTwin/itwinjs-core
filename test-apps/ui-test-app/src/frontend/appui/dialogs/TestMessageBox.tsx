@@ -32,7 +32,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
 
   /* eslint-disable @typescript-eslint/no-floating-promises */
 
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     // cspell:disable
     return (
       <MessageBox

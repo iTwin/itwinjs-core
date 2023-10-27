@@ -61,9 +61,9 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
       return false;
 
     if (caseSensitive)
-      return (valueA.substr(0, valueB.length) === valueB);
+      return (valueA.substring(0, valueB.length) === valueB);
 
-    return (valueA.toLocaleUpperCase().substr(0, valueB.length) === valueB.toLocaleUpperCase());
+    return (valueA.toLocaleUpperCase().substring(0, valueB.length) === valueB.toLocaleUpperCase());
   }
 
   public endsWith(valueA: string, valueB: string, caseSensitive: boolean): boolean {

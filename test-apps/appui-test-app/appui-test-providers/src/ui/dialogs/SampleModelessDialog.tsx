@@ -28,7 +28,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
       opened: this.props.opened,
     };
   }
-  public override render(): JSX.Element {
+  public override render(): React.ReactElement {
     return (
       <ModelessDialog
         title={this._title}
@@ -42,7 +42,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
       >
         <div className="sample-options">
           <div>
-                        To demonstrate messagebox behaviour in modeless dialog
+            To demonstrate messagebox behaviour in modeless dialog
           </div>
           <ComboBox
             value={"hello"}
