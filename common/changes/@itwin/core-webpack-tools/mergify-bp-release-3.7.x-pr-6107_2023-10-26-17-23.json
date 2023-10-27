@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-webpack-tools",
-      "comment": "remove IModelJsOptionsDefaulter.ts",
+      "comment": "",
       "type": "none"
     }
   ],
