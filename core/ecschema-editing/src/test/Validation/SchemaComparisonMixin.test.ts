@@ -5,6 +5,7 @@
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
   public report(schemaChanges: ISchemaChanges): void {
@@ -14,7 +15,6 @@ class TestSchemaCompareReporter implements ISchemaCompareReporter {
 
 function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string, fullNameB: string, propertyType?: string) {
   let found = false;
-
   diagnostics.find((anyDiagnostic) => {
     switch (code) {
       case SchemaCompareCodes.MixinDelta: {
@@ -28,7 +28,6 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
       }
     }
   });
-
   return found;
 }
 
