@@ -16,6 +16,7 @@ export function MultiTagSelect<Option extends OptionTypeBase>(props: Props<Optio
   const selectRef = useResizeObserver(React.useCallback((newWidth) => { setWidth(newWidth); }, []));
 
   return (<div ref={selectRef}>
+    {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
     {/* @ts-ignore */}
     <Component
       {...props}

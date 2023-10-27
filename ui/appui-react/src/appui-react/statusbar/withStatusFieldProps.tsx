@@ -19,7 +19,7 @@ export const withStatusFieldProps = <P extends StatusFieldProps, C>(
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type InjectedProps = Pick<StatusFieldProps, "isInFooterMode" | "onOpenWidget" | "openWidget">;
-  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
+  type Props = React.JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
   return function WithStatusFieldProps(props: Props) {
     const statusBarContext = React.useContext(StatusBarContext);
     const { toastTargetRef, ...args } = statusBarContext; // eslint-disable-line @typescript-eslint/no-unused-vars

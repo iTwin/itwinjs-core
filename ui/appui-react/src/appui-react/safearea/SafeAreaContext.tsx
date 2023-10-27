@@ -29,7 +29,7 @@ export const withSafeArea = <P extends InjectedWithSafeAreaProps, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.JSXElementConstructor<P> & C,
 ) => {
-  type Props = JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>;
+  type Props = React.JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>;
 
   return class WithSafeArea extends React.PureComponent<Props> {
     public override render() {

@@ -479,7 +479,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
               state.attributes.popper.class = "timeline-component-max-sized-scrolling-menu";
             },
           },
-        ]
+        ],
       }}>
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2"
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
