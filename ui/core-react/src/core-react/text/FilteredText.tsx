@@ -41,14 +41,14 @@ export function FilteredText(props: FilteredTextProps) {
     for (const span of matches) {
       // istanbul ignore else
       if (span.start !== startPos)
-        spans.push(<span key={startPos} className="uicore-partial-filtered-text">{value.substring(startPos, span.start - startPos)}</span >);
-      spans.push(<span key={span.start} style={matchStyle} className={classnames("uicore-filtered-text-match", matchClassName)}>{value.substring(span.start, span.end - span.start)}</span>);
+        spans.push(<span key={startPos} className="uicore-partial-filtered-text">{value.substring(startPos, span.start)}</span >);
+      spans.push(<span key={span.start} style={matchStyle} className={classnames("uicore-filtered-text-match", matchClassName)}>{value.substring(span.start, span.end)}</span>);
       startPos = span.end;
     }
     const endPos = value.length;
     // istanbul ignore else
     if (startPos < endPos) {
-      spans.push(<span key={startPos} className="uicore-partial-filtered-text">{value.substring(startPos, endPos - startPos)}</span>);
+      spans.push(<span key={startPos} className="uicore-partial-filtered-text">{value.substring(startPos, endPos)}</span>);
     }
     return <div {...otherProps} className={classnames("uicore-filtered-text", className)} title={value}>{spans}</div>;
   }
