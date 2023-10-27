@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "fix MultiTagSelect to work with TS 4.5",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
