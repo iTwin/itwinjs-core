@@ -363,9 +363,13 @@ export class GeometryCoreTestIO {
    * @param dz z shift
    */
   public static captureRangeEdges(
-    collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0,
+    collection: GeometryQuery[], range?: Range2d | Range3d | Range2d[] | Range3d[], dx: number = 0, dy: number = 0, dz: number = 0,
   ) {
-    this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
+    if (Array.isArray(range)) {
+      for (const r of range)
+        this.captureTransformedRangeEdges(collection, r, undefined, dx, dy, dz);
+    } else
+      this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
   public static showMomentData(
     collection: GeometryQuery[],
