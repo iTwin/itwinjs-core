@@ -93,10 +93,10 @@ export class ContentPropertyValueFormatter {
     const formatDoubleValue = async (raw: number) => ctx ? ctx.doubleFormatter(raw) : formatDouble(raw);
 
     if (type.typeName === "point2d" && isPoint2d(value)) {
-      return `X: ${await formatDoubleValue(value.x)} Y: ${await formatDoubleValue(value.y)}`;
+      return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}`;
     }
     if (type.typeName === "point3d" && isPoint3d(value)) {
-      return `X: ${await formatDoubleValue(value.x)} Y: ${await formatDoubleValue(value.y)} Z: ${await formatDoubleValue(value.z)}`;
+      return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}; Z: ${await formatDoubleValue(value.z)}`;
     }
     if (type.typeName === "dateTime") {
       assert(typeof value === "string");
