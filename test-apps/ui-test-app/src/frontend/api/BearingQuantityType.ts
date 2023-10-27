@@ -99,7 +99,7 @@ class BearingParserSpec extends ParserSpec {
   public override parseToQuantityValue(inString: string): QuantityParseResult {
     let prefix: string | undefined;
     let suffix: string | undefined;
-    let adjustedString = inString.toLocaleUpperCase().trimLeft().trimRight();
+    let adjustedString = inString.toLocaleUpperCase().trimStart().trimEnd();
     if (adjustedString.startsWith("S") || adjustedString.startsWith("N")) {
       prefix = adjustedString.slice(0, 1);
       adjustedString = adjustedString.substr(1);
@@ -107,7 +107,7 @@ class BearingParserSpec extends ParserSpec {
     if (adjustedString.endsWith("E") || adjustedString.endsWith("W")) {
       suffix = adjustedString.slice(adjustedString.length - 1);
       adjustedString = adjustedString.substr(0, adjustedString.length - 1);
-      adjustedString = adjustedString.trimLeft().trimRight();
+      adjustedString = adjustedString.trimStart().trimEnd();
     }
 
     const isCCW = this.format.customProps?.angleDirection === "counter-clockwise";
