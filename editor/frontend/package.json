@@ -58,7 +58,7 @@
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "typescript": "~4.5.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

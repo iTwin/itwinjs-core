@@ -41,7 +41,7 @@
     "tree-kill": "^1.2.0",
     "typedoc": "^0.22.11",
     "typedoc-plugin-merge-modules": "^3.0.2",
-    "typescript": "~4.4.0",
+    "typescript": "~4.5.0",
     "wtfnode": "^0.9.1",
     "yargs": "^17.4.0"
   },

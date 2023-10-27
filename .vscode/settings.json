@@ -119,4 +119,5 @@
   "cSpell.words": [
     "Discoverability"
   ],
+  "typescript.tsdk": "common/temp/node_modules/typescript/lib",
 }
