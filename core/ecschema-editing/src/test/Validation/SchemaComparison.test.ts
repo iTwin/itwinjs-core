@@ -426,4 +426,131 @@ describe("Schema comparison tests to filter out cases", () => {
       expect(foundDiag).to.equal(true);
     });
   });
+
+  describe("Property comparison tests", ()=>{
+    it("should not report property delta", async ()=> {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          categoryTest: {
+            schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
+            priority: 1,
+          },
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PropertyA",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                description: "test description",
+                category: "SchemaA.categoryTest",
+              },
+            ],
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          categoryTest: {
+            schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
+            priority: 1,
+          },
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PropertyA",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                description: "test description",
+                category: "SchemaB.categoryTest",
+              },
+            ],
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.categoryTest", "SchemaB.categoryTest", "category");
+      expect(foundDiag).to.equal(false);
+    });
+
+    it("should report property delta", async ()=> {
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefOneJson,
+        items: {
+          categoryTest: {
+            schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
+            priority: 1,
+          },
+        },
+      }, contextA);
+
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        references: [
+          {
+            name: "DummyReferenceOne",
+            version: "01.00.01",
+          },
+        ],
+        items: {
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PropertyA",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                description: "test description",
+                category: "DummyReferenceOne.categoryTest",
+              },
+            ],
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          categoryTest: {
+            schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
+            priority: 1,
+          },
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "PropertyA",
+                type: "PrimitiveArrayProperty",
+                typeName: "string",
+                description: "test description",
+                category: "SchemaB.categoryTest",
+              },
+            ],
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.categoryTest", "SchemaB.categoryTest", "category");
+      expect(foundDiag).to.equal(true);
+
+    });
+  });
 });

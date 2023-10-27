@@ -60,14 +60,6 @@ function labelsMatch(label1?: string, label2?: string) {
 }
 
 /**
- * Interface for additional schema compare options.
- * @alpha
- */
-export interface SchemaComparerOptions {
-  compareItemFullName?: boolean;
-}
-
-/**
  * Compares EC Schemas and reports differences using the [[IDiagnosticReporter]] objects
  * specified.
  * @alpha
@@ -266,7 +258,9 @@ export class SchemaComparer {
       const catKeyAText = catKeyA ? catKeyA.fullName : undefined;
       const catKeyBText = catKeyB ? catKeyB.fullName : undefined;
       if (catKeyAText !== catKeyBText) {
-        promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, catKeyBText, this._compareDirection));
+        const reportDiagnostic = this.reportDiagnosticFlag(catKeyAText ?? "", catKeyBText ?? "", propertyA, propertyB);
+        if (reportDiagnostic)
+          promises.push(this._reporter.reportPropertyDelta(propertyA, "category", catKeyAText, catKeyBText, this._compareDirection));
       }
     }
 
@@ -276,11 +270,13 @@ export class SchemaComparer {
       const koqKeyAText = koqKeyA ? koqKeyA.fullName : undefined;
       const koqKeyBText = koqKeyB ? koqKeyB.fullName : undefined;
       if (koqKeyAText !== koqKeyBText) {
-        promises.push(this._reporter.reportPropertyDelta(propertyA, "kindOfQuantity", koqKeyAText, koqKeyBText, this._compareDirection));
+        const reportDiagnostic = this.reportDiagnosticFlag(koqKeyAText ?? "", koqKeyBText ?? "", propertyA, propertyB);
+        if (reportDiagnostic)
+          promises.push(this._reporter.reportPropertyDelta(propertyA, "kindOfQuantity", koqKeyAText, koqKeyBText, this._compareDirection));
       }
     }
 
-    promises.push(this.comparePropertyType(propertyA, propertyB)); // LOOK HERE FOR typeName
+    promises.push(this.comparePropertyType(propertyA, propertyB));
     await Promise.all(promises);
   }
 
@@ -754,8 +750,12 @@ export class SchemaComparer {
       if (propertyA.enumeration || enumerationB) {
         const enumA = propertyA.enumeration ? propertyA.enumeration.fullName : undefined;
         const enumB = enumerationB ? enumerationB.fullName : undefined;
-        if (enumA !== enumB)
-          promises.push(this._reporter.reportPropertyDelta(propertyA, "enumeration", enumA, enumB, this._compareDirection));
+        if (enumA !== enumB){
+          const reportFlag = this.reportDiagnosticFlag(enumA ?? "", enumB ?? "", propertyA, propertyB);
+          if(reportFlag){
+            promises.push(this._reporter.reportPropertyDelta(propertyA, "enumeration", enumA, enumB, this._compareDirection));
+          }
+        }
       }
     }
 
@@ -861,8 +861,6 @@ export class SchemaComparer {
     const [schemaNameA, nameA] = SchemaItem.parseFullName(fullNameA);
     const [schemaNameB, nameB] = SchemaItem.parseFullName(fullNameB);
 
-    return nameA !== nameB ||
-      schemaNameA !== schemaNameB && schemaNameA !== itemA?.schema.name ||
-      schemaNameA !== schemaNameB && schemaNameB !== itemB?.schema.name;
+    return nameA !== nameB || schemaNameA !== itemA?.schema.name || schemaNameB !== itemB?.schema.name;
   }
 }
