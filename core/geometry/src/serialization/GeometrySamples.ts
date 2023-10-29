@@ -2773,6 +2773,45 @@ export class Sample {
     return point0;
   }
   /**
+  * * Create a grid of lat-long points on a sphere.
+  * * If pole latitudes appear in the evaluation, a single point (not a circle) is evaluate.
+  * * circles at various latitudes proceed south to north.
+  * * if first and last angles of longitudeSweep match, that meridian is not duplicated.
+  * * longitudes can wrap freely
+   * @param transform
+   * @param numLongitude number of longitude steps
+   * @param numLatitude number of latitude steps (poles count if they are in the sweeps)
+   * @param longitudeSweep angle range for longitudes
+   * @param latitudeSweep angle range for latitudes
+   */
+  public static createGridPointsOnEllipsoid(transform: Transform,
+    numLatitudeStep: number,
+    numLongitudeStep: number,
+    longitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+    latitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(-90, 90),
+  ): Point3d[] {
+    const points: Point3d[] = [];
+    const numJ = numLatitudeStep + 1;
+    const jFractionStep = 1.0 / numJ;
+    let numI = numLongitudeStep;
+    const iFractionStep = 1.0 / numI;
+    if (longitudeSweep.isFullCircle)
+      numI--;
+    for (let j = 0; j < numJ; j++) {
+      const phi = latitudeSweep.fractionToRadians(jFractionStep * j);
+      const sinPhi = Math.sin(phi);
+      const cosPhi = Math.cos(phi);
+      const numIThisCircle = Angle.isAlmostEqualRadiansAllowPeriodShift(phi, -90) ? 1 : numI;
+      for (let i = 0; i < numIThisCircle; i++) {
+        const theta = longitudeSweep.fractionToRadians(iFractionStep * i);
+        const cosTheta = Math.cos(theta);
+        const sinTheta = Math.sin(theta);
+        points.push(transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi));
+      }
+    }
+    return points;
+  }
+  /**
    * Return an array of points on a circular arc.
    * @param edgesPerQuadrant number of edges per 90 degrees
    * @param center arc center

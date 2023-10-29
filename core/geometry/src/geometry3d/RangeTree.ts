@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -28,6 +29,22 @@ function getByIndex<T>(index: number, data: FlexData<T>) {
   }
   return undefined;
 }
+/**
+ * Get data by index from a source that may be undefined, an array of item of type T, or a singleton of the item type.
+ * @param index
+ * @param data
+ * @returns
+ */
+function getFlexDataCount<T>(data: FlexData<T>): number {
+  if (data !== undefined) {
+    if (Array.isArray(data)) {
+      return data.length;
+    } else {
+      return 1;
+    }
+  }
+  return 0;
+}
 
 export abstract class SingleTreeSearchHandler<AppDataType> {
   /** return true if appData within the range should be offered to processAppData */
@@ -49,38 +66,70 @@ export abstract class TwoTreeSearchHandler<AppDataType> {
   // eslint-disable-next-line @itwin/prefer-get
   public isAborted(): boolean { return false; }
 }
-
+let numNodeCreated = 0;
 /**
- * An entry in a range heap.
- * Data members are:
- * * range = the union of ranges below in the heap
- * * _children = undefined, singleton AppDataType, or array of AppDataType
+ * * TREE STRUCTURE
+ *   * A RangeTreeNode is part of a range tree.
+ *   * TREE is used here in a strictly _structural_ since, which has no broad promises about data members.
+ *   * Each RangeNode points to 0, 1 or many _children.
+ *   * Each child has (but does not point back to) a single parent.
+ *   * The overall tree has a single root.
+ *   * Each node is effectively the root of the tree of its children.
+ * * NON-TREE DATA MEMBERS
+ *   * Data members in each node (in addition to children) are
+ *     * _range = the union of ranges below in the heap
+ *     * _appData = application data associated with the node.
+ *       * Construction methods may place multiple _appData items in each node.
+ * * In common use, only the leaves will have _appData.   However, the class definitions allow _appData at all nodes, and search algorithms must include them.
+ * * CONSTRUCTION
+ *   * The RangeTreeNode.createByIndexSplits method constructs the tree with simple right-left splits within an array of input items.
+ *     * The appData is placed entirely in the leaves.
+ *     * caller can specify
+ *       * the number of _appData items per leaf
+ *       * the number of children per node within the tree.
+ *     * "deep" trees (2 children per node and one appData per leaf) may have (compared to shallow trees with many children per node and many appData per leaf)
+ *       * faster search because lower nodes have smaller ranges that will be skipped by search algorithms.
+ *       * larger memory use because of more nodes
+ *   * For future construction methods
+ *      * _appData "above the leaves" may allow nodes below to have smaller ranges, but add complexity to search.
+ *
  */
-export class RangeNode<AppDataType> {
+export class RangeTreeNode<AppDataType> {
   private _range: Range3d;
   private _appData: FlexData<AppDataType>;
-  private _children: undefined | RangeNode<AppDataType> | RangeNode<AppDataType>[];
+  private _children: undefined | RangeTreeNode<AppDataType> | RangeTreeNode<AppDataType>[];
+  public id: number;
   /**
-   * CAPTURE
+   * CONSTRUCTOR
+   * CAPTURE (not copy)
    * * range = range for search algorithms
    * * appData = application data relevant to this node.
    * * children = child node reference(s).
    */
-  constructor(range: Range3d, appData: FlexData<AppDataType>, children: FlexData<RangeNode<AppDataType>>) {
+  private constructor(range: Range3d, appData: FlexData<AppDataType>, children: FlexData<RangeTreeNode<AppDataType>>) {
     this._range = range;
     this._appData = appData;
     this._children = children;
+    this.id = numNodeCreated++;
+    const childIds: number[] = [];
+    if (Array.isArray(this._children))
+      for (const c of this._children) childIds.push(c.id);
+    else if (this._children instanceof RangeTreeNode)
+      childIds.push(this._children.id);
+    // const numAppData = getFlexDataCount(appData);
+    // console.log({ id: this.id, childIds, numAppData });
   }
   /**
-   * Simplest create: capture the range, appData, and children.
+   * Simplest public create: capture the range, appData, and children.
+   * *
    */
   public static createCapture<AppDataType>(
     range: Range3d,
     appData: FlexData<AppDataType>,
-    children: FlexData<RangeNode<AppDataType>>): RangeNode<AppDataType> {
-    return new RangeNode<AppDataType>(range, appData, children);
+    children: FlexData<RangeTreeNode<AppDataType>>): RangeTreeNode<AppDataType> {
+    return new RangeTreeNode<AppDataType>(range, appData, children);
   }
-  /** copy from given data into the range in this RangeEntry */
+  /** copy (not capture) from given data into the range in this RangeEntry */
   public setRange(data: Range3d) {
     this._range.setFrom(data);
   }
@@ -88,27 +137,60 @@ export class RangeNode<AppDataType> {
   public getRange(data?: Range3d): Range3d {
     return this._range.clone(data);
   }
-  public getChildByIndex(index: number): RangeNode<AppDataType> | undefined {
-    return getByIndex<RangeNode<AppDataType>>(index, this._children);
+  /**
+   * * Access a child by index.
+   * * If the child data is an array, this dereferences the array.
+   * * If the child data is a singleton, treat it as index 0.
+   * * return undefined if there are no children.
+   * @param index index of item to access.
+   */
+  public getChildByIndex(index: number): RangeTreeNode<AppDataType> | undefined {
+    return getByIndex<RangeTreeNode<AppDataType>>(index, this._children);
   }
+  /**
+   * * Access a appData by index.
+   * * If the appData data is an array, this dereferences the array.
+   * * If the appData data is a singleton, treat it as if it is at index 0 in an array
+   * * return undefined if there are no appData or for any index out of range.
+   * @param index index of item to access.
+   */
   public getAppDataByIndex(index: number): AppDataType | undefined {
     return getByIndex<AppDataType>(index, this._appData);
   }
-  public getAllChildren(): FlexData<RangeNode<AppDataType>> {
+  /**
+   * @returns the (pointer to, not copy of) the array of or singleton children.
+   */
+  public getAllChildren(): FlexData<RangeTreeNode<AppDataType>> {
     return this._children;
   }
+  /**
+   * @returns the (pointer to, not copy of) the array of or singleton appData.
+   */
   public getAllAppData(): FlexData<AppDataType> {
     return this._appData;
   }
+  /**
+   * @returns the number of children in this node of the tree.  This is NOT recursive
+   */
+  public getNumChildren(): number {
+    return getFlexDataCount(this._children);
+  }
+  /**
+   * @returns the number of appData items in this node of the tree.  This is NOT recursive
+   */
+  public getNumAppData(): number {
+    return getFlexDataCount(this._appData);
+  }
+
   public recurseIntoTree(
     /**
      * * Tell the  caller's processNode function the range and app data in a node.
      * * Caller can process the immediate application data as it wishes.
      * * Return value indicates whether this method should recurse to the various child nodes.
     */
-    announceNode: (range: Range3d, appData: FlexData<AppDataType>) => boolean,
+    announceNode: (node: RangeTreeNode<AppDataType>) => boolean,
   ) {
-    const doChildren = announceNode(this._range, this._appData);
+    const doChildren = announceNode(this);
     if (doChildren) {
       if (this._children === undefined) {
 
@@ -129,7 +211,7 @@ export class RangeNode<AppDataType> {
         if (handler.isAborted())
           return;
       }
-      let child: RangeNode<AppDataType> | undefined;
+      let child: RangeTreeNode<AppDataType> | undefined;
       for (let i = 0; undefined !== (child = this.getChildByIndex(i)); i++) {
         child.searchTopDown(handler);
       }
@@ -144,7 +226,7 @@ export class RangeNode<AppDataType> {
    */
   private static processAppDataAndAppDataStack<AppDataType>(
     leftAppData: FlexData<AppDataType>,
-    rightStack: RangeNode<AppDataType>[],
+    rightStack: RangeTreeNode<AppDataType>[],
     reverseArgs: boolean,
     handler: TwoTreeSearchHandler<AppDataType>,
   ) {
@@ -200,9 +282,9 @@ export class RangeNode<AppDataType> {
    * @param partialPath partial path, which is only extended if the tip has _appData.
    */
   private static pushPaths<AppDataType>(
-    tip: RangeNode<AppDataType>,
-    fullPath: RangeNode<AppDataType>[],
-    partialPath: RangeNode<AppDataType>[],
+    tip: RangeTreeNode<AppDataType>,
+    fullPath: RangeTreeNode<AppDataType>[],
+    partialPath: RangeTreeNode<AppDataType>[],
   ) {
     fullPath.push(tip);
     if (tip._appData !== undefined) {
@@ -215,9 +297,9 @@ export class RangeNode<AppDataType> {
    * @param partialPath partial path, which is only popped if the tip has _appData.
    */
   private static popPaths<AppDataType>(
-    tip: RangeNode<AppDataType>,
-    fullPath: RangeNode<AppDataType>[],
-    partialPath: RangeNode<AppDataType>[],
+    tip: RangeTreeNode<AppDataType>,
+    fullPath: RangeTreeNode<AppDataType>[],
+    partialPath: RangeTreeNode<AppDataType>[],
   ) {
     fullPath.pop();
     if (tip._appData !== undefined) {
@@ -238,18 +320,19 @@ export class RangeNode<AppDataType> {
    *   * If data is entirely a the leaves (or just in a few nodes), the stacks will all be empty (or very small) and not time will be wasted looking up the stacks for appData to process with the other tip.
    */
   private static recursivePairSearch<AppDataType>(
-    leftTip: RangeNode<AppDataType>,
-    leftStack: RangeNode<AppDataType>[],
-    leftStackWithAppData: RangeNode<AppDataType>[],
-    rightTip: RangeNode<AppDataType>,
-    rightStack: RangeNode<AppDataType>[],
-    rightStackWithAppData: RangeNode<AppDataType>[],
+    leftTip: RangeTreeNode<AppDataType>,
+    leftStack: RangeTreeNode<AppDataType>[],
+    leftStackWithAppData: RangeTreeNode<AppDataType>[],
+    rightTip: RangeTreeNode<AppDataType>,
+    rightStack: RangeTreeNode<AppDataType>[],
+    rightStackWithAppData: RangeTreeNode<AppDataType>[],
     handler: TwoTreeSearchHandler<AppDataType>,
   ) {
+    // console.log({ leftId: leftTip.id, rightId: rightTip.id });
     const leftTipHasAppData = leftTip._appData !== undefined;
     const rightTipHasAppData = rightTip._appData !== undefined;
-    let leftChild: RangeNode<AppDataType> | undefined;
-    let rightChild: RangeNode<AppDataType> | undefined;
+    let leftChild: RangeTreeNode<AppDataType> | undefined;
+    let rightChild: RangeTreeNode<AppDataType> | undefined;
 
     // process immediate appData from each tip node with the entire prior path of the other side.
     if (leftTipHasAppData && rightStackWithAppData.length > 0) {
@@ -265,8 +348,8 @@ export class RangeNode<AppDataType> {
       if (leftTip._children !== undefined && rightTip._children !== undefined) {
         this.pushPaths<AppDataType>(leftTip, leftStack, leftStackWithAppData);
         this.pushPaths<AppDataType>(rightTip, rightStack, rightStackWithAppData);
-        for (let leftIndex = 0; undefined !== (leftChild = getByIndex<RangeNode<AppDataType>>(leftIndex, leftTip._children)); leftIndex++) {
-          for (let rightIndex = 0; undefined !== (rightChild = getByIndex<RangeNode<AppDataType>>(rightIndex, rightTip._children)); rightIndex++) {
+        for (let leftIndex = 0; undefined !== (leftChild = getByIndex<RangeTreeNode<AppDataType>>(leftIndex, leftTip._children)); leftIndex++) {
+          for (let rightIndex = 0; undefined !== (rightChild = getByIndex<RangeTreeNode<AppDataType>>(rightIndex, rightTip._children)); rightIndex++) {
             this.recursivePairSearch(
               leftChild, leftStack, leftStackWithAppData,
               rightChild, rightStack, rightStackWithAppData,
@@ -276,9 +359,9 @@ export class RangeNode<AppDataType> {
         this.popPaths<AppDataType>(leftTip, leftStack, leftStackWithAppData);
         this.popPaths<AppDataType>(rightTip, rightStack, rightStackWithAppData);
       } else if (leftTip._children !== undefined) {
-        this.leftRecursivePairSearch<AppDataType>(leftTip, rightStackWithAppData, false, handler);
+        this.leftRecursivePairSearch<AppDataType>(leftTip, rightTip, rightStackWithAppData, false, handler);
       } else if (rightTip._children !== undefined) {
-        this.leftRecursivePairSearch<AppDataType>(rightTip, leftStackWithAppData, true, handler);
+        this.leftRecursivePairSearch<AppDataType>(rightTip, leftTip, leftStackWithAppData, true, handler);
       }
 
     }
@@ -287,27 +370,32 @@ export class RangeNode<AppDataType> {
   // Recurse below the tip of leftTip, offering each level's appData to the rightStackWithAppData.
   // (i.e. right side has reached leaf level and has no more recursion)
   private static leftRecursivePairSearch<AppDataType>(
-    leftTip: RangeNode<AppDataType>,
-    rightStackWithAppData: RangeNode<AppDataType>[],
+    leftTip: RangeTreeNode<AppDataType>,
+    rightTip: RangeTreeNode<AppDataType>,
+    rightStackWithAppData: RangeTreeNode<AppDataType>[],
     reverseAppDataLeftRight: boolean,
     handler: TwoTreeSearchHandler<AppDataType>,
   ) {
     // rightTip must have no children.
     // The (possibly deep) left children appData needs to be offered to the right path (including tip)
     // Note that there are no stack push/pop operations -- the right stack is already reaching to leaf level, so there are no range or appData nodes to add.
-    let leftChild: RangeNode<AppDataType> | undefined;
-    for (let leftIndex = 0; undefined !== (leftChild = getByIndex<RangeNode<AppDataType>>(leftIndex, leftTip._children)); leftIndex++) {
-      this.processAppDataAndAppDataStack<AppDataType>(leftChild._appData, rightStackWithAppData, reverseAppDataLeftRight, handler);
-      this.leftRecursivePairSearch<AppDataType>(
-        leftChild, rightStackWithAppData,
-        reverseAppDataLeftRight,
-        handler);
+    let leftChild: RangeTreeNode<AppDataType> | undefined;
+    for (let leftIndex = 0; undefined !== (leftChild = getByIndex<RangeTreeNode<AppDataType>>(leftIndex, leftTip._children)); leftIndex++) {
+      if (handler.isRangePairActive(leftChild._range, rightTip._range)) {
+        this.processAppDataAndAppData<AppDataType>(leftChild._appData, rightTip._appData, reverseAppDataLeftRight, handler);
+        this.processAppDataAndAppDataStack<AppDataType>(leftChild._appData, rightStackWithAppData, reverseAppDataLeftRight, handler);
+        this.leftRecursivePairSearch<AppDataType>(
+          leftChild,
+          rightTip, rightStackWithAppData,
+          reverseAppDataLeftRight,
+          handler);
+      }
     }
   }
 
   public static searchTwoTreesTopDown<AppDataType>(
-    leftRoot: RangeNode<AppDataType>,
-    rightRoot: RangeNode<AppDataType>,
+    leftRoot: RangeTreeNode<AppDataType>,
+    rightRoot: RangeTreeNode<AppDataType>,
     handler: TwoTreeSearchHandler<AppDataType>,
   ) {
     this.recursivePairSearch(leftRoot, [], [], rightRoot, [], [], handler);
@@ -320,37 +408,55 @@ export class RangeNode<AppDataType> {
    * @param index1 upper limit index for block of items.
    * @returns newly created node.
    */
-  private static createLeafInIndexRange<AppDataType>(ranges: Range3d[], appData: AppDataType[], index0: number, index1: number): RangeNode<AppDataType> {
+  private static createLeafInIndexRange<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d),
+    appData: AppDataType[], index0: number, index1: number): RangeTreeNode<AppDataType> {
     const appDataBlock: AppDataType[] = [];
     const range = Range3d.createNull();
+    index1 = Math.min(index1, appData.length);
+    // console.log({ case: "LEAF", index0, index1 });
     for (let i = index0; i < index1; i++) {
       appDataBlock.push(appData[i]);
-      range.extendRange(ranges[i]);
+      range.extendRange(Array.isArray(ranges) ? ranges[i] : ranges(appData[i]));
     }
-    return RangeNode.createCapture(range, appDataBlock, undefined);
+    return RangeTreeNode.createCapture(range, appDataBlock, undefined);
   }
 
-  private static createRecursiveByIndexSplits<AppDataType>(ranges: Range3d[], appData: AppDataType[], index0: number, index1: number,
+  private static createRecursiveByIndexSplits<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d), appData: AppDataType[], index0: number, index1: number,
     maxChildPerNode: number,
-    maxAppDataPerLeaf: number): RangeNode<AppDataType> | undefined {
-    if (index1 > ranges.length)
-      index1 = ranges.length;
-    if (index1 <= index0 + maxAppDataPerLeaf) {  // leaf node!!!
-      return RangeNode.createLeafInIndexRange(ranges, appData, index0, index1);
-    } else {
-      const num01 = index1 - index0;
-      const step = Math.ceil(num01 / maxChildPerNode);
+    maxAppDataPerLeaf: number): RangeTreeNode<AppDataType> | undefined {
+    if (index1 > appData.length)
+      index1 = appData.length;
+    const maxGrandChild = maxChildPerNode * maxAppDataPerLeaf;
+    // console.log({ index0, index1, maxGrandChild });
+    if (index1 <= index0 + maxGrandChild) {  // leaf node!!!
+      // console.log({ case: "LEAF GROUP" });
       const range = Range3d.createNull();
-      const children: RangeNode<AppDataType>[] = [];
-      for (let indexA = index0; indexA < index1; indexA += step) {
-        const child = this.createRecursiveByIndexSplits(ranges, appData, indexA, indexA + step, maxChildPerNode, maxAppDataPerLeaf);
+      const children: RangeTreeNode<AppDataType>[] = [];
+      for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA += maxAppDataPerLeaf) {
+        const child = RangeTreeNode.createLeafInIndexRange(ranges, appData, index0, indexA);
         if (child !== undefined) {
           range.extendRange(child._range);
           children.push(child);
         }
       }
       if (children.length > 0)
-        return RangeNode.createCapture(range, undefined, children);
+        return RangeTreeNode.createCapture(range, undefined, children);
+
+    } else {
+      const range = Range3d.createNull();
+      const children: RangeTreeNode<AppDataType>[] = [];
+      const numPerGulp = Math.ceil((index1 - index0) / maxChildPerNode);
+
+      // console.log({ case: "INTERIOR", index0, index1 });
+      for (let indexA = index0 + numPerGulp; index0 < index1; index0 = indexA, indexA += numPerGulp) {
+        const child = this.createRecursiveByIndexSplits(ranges, appData, index0, indexA, maxChildPerNode, maxAppDataPerLeaf);
+        if (child !== undefined) {
+          range.extendRange(child._range);
+          children.push(child);
+        }
+      }
+      if (children.length > 0)
+        return RangeTreeNode.createCapture(range, undefined, children);
     }
     return undefined;
   }
@@ -360,11 +466,28 @@ export class RangeNode<AppDataType> {
    * * Returns undefined if array lengths differ or are zero.
    * @param ranges
    */
-  public static createByIndexSplits<AppDataType>(ranges: Range3d[], appData: AppDataType[], numChildrenPerNode: number = 2, numAppDataPerLeaf: number = 2): RangeNode<AppDataType> | undefined {
-    if (ranges.length === 0 || ranges.length !== appData.length)
+  public static createByIndexSplits<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d), appData: AppDataType[], numChildrenPerNode: number = 2, numAppDataPerLeaf: number = 2): RangeTreeNode<AppDataType> | undefined {
+    // console.log();
+    // const numData = getFlexDataCount(appData);
+    // console.log({ numData });
+    if (appData.length === 0
+      || (Array.isArray(ranges) && ranges.length !== appData.length))
       return undefined;
     if (numChildrenPerNode < 2)
       numChildrenPerNode = 2;
-    return RangeNode.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, ranges.length, numChildrenPerNode, numAppDataPerLeaf);
+    return RangeTreeNode.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, appData.length, numChildrenPerNode, numAppDataPerLeaf);
+  }
+}
+
+export class RangeTreeOps {
+  public getRecursiveNodeCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
+    let count = 0;
+    root.recurseIntoTree((_node: RangeTreeNode<AppDataType>): boolean => { count++; return true; });
+    return count;
+  }
+  public getRecursiveAppDataCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
+    let count = 0;
+    root.recurseIntoTree((node: RangeTreeNode<AppDataType>): boolean => { count += node.getNumAppData(); return true; });
+    return count;
   }
 }
