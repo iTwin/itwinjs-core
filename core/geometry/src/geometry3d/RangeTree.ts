@@ -137,6 +137,10 @@ export class RangeTreeNode<AppDataType> {
   public getRange(data?: Range3d): Range3d {
     return this._range.clone(data);
   }
+  /** get (a reference to) the range in this RangeEntry */
+  public getRangeRef(): Range3d {
+    return this._range;
+  }
   /**
    * * Access a child by index.
    * * If the child data is an array, this dereferences the array.
@@ -400,6 +404,20 @@ export class RangeTreeNode<AppDataType> {
   ) {
     this.recursivePairSearch(leftRoot, [], [], rightRoot, [], [], handler);
   }
+}
+
+export class RangeTreeOps {
+  public static getRecursiveNodeCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
+    let count = 0;
+    root.recurseIntoTree((_node: RangeTreeNode<AppDataType>): boolean => { count++; return true; });
+    return count;
+  }
+  public static getRecursiveAppDataCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
+    let count = 0;
+    root.recurseIntoTree(
+      (node: RangeTreeNode<AppDataType>): boolean => { count += node.getNumAppData(); return true; });
+    return count;
+  }
   /**
    * Create a leaf referencing appData items indexed index0<=index<index1 and with range of the same indices
    * @param ranges array of ranges.
@@ -427,15 +445,15 @@ export class RangeTreeNode<AppDataType> {
     if (index1 > appData.length)
       index1 = appData.length;
     const maxGrandChild = maxChildPerNode * maxAppDataPerLeaf;
-    // console.log({ index0, index1, maxGrandChild });
+    // console.log({ name: "createRecursive", index0, index1, maxGrandChild });
     if (index1 <= index0 + maxGrandChild) {  // leaf node!!!
       // console.log({ case: "LEAF GROUP" });
       const range = Range3d.createNull();
       const children: RangeTreeNode<AppDataType>[] = [];
-      for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA += maxAppDataPerLeaf) {
-        const child = RangeTreeNode.createLeafInIndexRange(ranges, appData, index0, indexA);
+      for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA = Math.min(indexA + maxAppDataPerLeaf, index1)) {
+        const child = RangeTreeOps.createLeafInIndexRange(ranges, appData, index0, indexA);
         if (child !== undefined) {
-          range.extendRange(child._range);
+          range.extendRange(child.getRange());
           children.push(child);
         }
       }
@@ -448,10 +466,10 @@ export class RangeTreeNode<AppDataType> {
       const numPerGulp = Math.ceil((index1 - index0) / maxChildPerNode);
 
       // console.log({ case: "INTERIOR", index0, index1 });
-      for (let indexA = index0 + numPerGulp; index0 < index1; index0 = indexA, indexA += numPerGulp) {
+      for (let indexA = index0 + numPerGulp; index0 < index1; index0 = indexA, indexA = Math.min(indexA + numPerGulp, index1)) {
         const child = this.createRecursiveByIndexSplits(ranges, appData, index0, indexA, maxChildPerNode, maxAppDataPerLeaf);
         if (child !== undefined) {
-          range.extendRange(child._range);
+          range.extendRange(child.getRangeRef());
           children.push(child);
         }
       }
@@ -461,10 +479,16 @@ export class RangeTreeNode<AppDataType> {
     return undefined;
   }
   /**
-   * Create a range heap by simple left-right split of given ranges.
-   * * Each leaf range is labeled by its corresponding object in the appData array.
-   * * Returns undefined if array lengths differ or are zero.
-   * @param ranges
+   * Create a range tree by simple left-right split of given ranges.
+   * * Leaves carry the inputs in left-to-right order.
+   * * Each leaf range is labeled by its corresponding object(s) in the appData array.
+   * @param ranges array or query function for ranges.
+   *   * if this is an array (of same length as appData, these are the ranges.
+   *   * if this is a function, the create logic is free to call it with individual appData items to get their range.
+   * @param appData array of application data items which are to be carried in leaves.
+   * @param numChildrenPerNode (max) number of child nodes allowed for each interior node.
+   * @param numAppDataPerLeaf (max) number of appData items allowed in each leaf.
+   * @returns the root of the new tree, or undefined if array lengths differ or are zero.
    */
   public static createByIndexSplits<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d), appData: AppDataType[], numChildrenPerNode: number = 2, numAppDataPerLeaf: number = 2): RangeTreeNode<AppDataType> | undefined {
     // console.log();
@@ -475,19 +499,7 @@ export class RangeTreeNode<AppDataType> {
       return undefined;
     if (numChildrenPerNode < 2)
       numChildrenPerNode = 2;
-    return RangeTreeNode.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, appData.length, numChildrenPerNode, numAppDataPerLeaf);
+    return RangeTreeOps.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, appData.length, numChildrenPerNode, numAppDataPerLeaf);
   }
-}
 
-export class RangeTreeOps {
-  public getRecursiveNodeCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
-    let count = 0;
-    root.recurseIntoTree((_node: RangeTreeNode<AppDataType>): boolean => { count++; return true; });
-    return count;
-  }
-  public getRecursiveAppDataCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
-    let count = 0;
-    root.recurseIntoTree((node: RangeTreeNode<AppDataType>): boolean => { count += node.getNumAppData(); return true; });
-    return count;
-  }
 }

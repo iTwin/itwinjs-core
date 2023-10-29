@@ -182,7 +182,7 @@ describe("IndexedRangeHeap", () => {
       dx = -dy;
       dy = t;
     }
-    const rangeHeap = RangeTreeNode.createByIndexSplits<CurvePrimitive>(ranges, lines, 3, 2)!;
+    const rangeHeap = RangeTreeOps.createByIndexSplits<CurvePrimitive>(ranges, lines, 3, 2)!;
     for (const spacePoint of [Point3d.create(3.8, 2.5), Point3d.create(27.3, 9.5), Point3d.create(-8, bigStep * 0.45)]) {
       const handler = ClosestPointOnCurvesHandler.create(spacePoint, true)!;
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, spacePoint, 0.2, x0 + bigStep, y0);
@@ -233,6 +233,7 @@ describe("IndexedRangeHeap", () => {
         // This array collects min-distance during a sequence of searches with differing tree structures.  They should all produce the same result!
         const distanceSequence: number[] = [];
         for (const treeFlare of [2, 4, 6]) {
+          // a patch of a sphere, facing along the x axis
           const pointsA = Sample.createGridPointsOnEllipsoid(
             Transform.createRowValues(
               5, 0, 0, 0,
@@ -243,6 +244,12 @@ describe("IndexedRangeHeap", () => {
             AngleSweep.createStartEndDegrees(-30, 30),
             AngleSweep.createStartEndDegrees(-40, 60),
           );
+          // some
+          // uz = 0 makes a patch of sphere somewhat above, to the right, and facing back at the one for pointsA.
+          //    (close approach is near bottom of pointsB patch)
+          // uz > 0 is moved downward and has its x axis tipped downward
+          //    (close approach is nearer to middle of pointsB patch)
+
           const pointsB = Sample.createGridPointsOnEllipsoid(
             Transform.createRowValues(
               -1, -1, 0, 8,
@@ -254,15 +261,15 @@ describe("IndexedRangeHeap", () => {
             AngleSweep.createStartEndDegrees(-40, 80),
           );
 
-          const treeA = RangeTreeNode.createByIndexSplits<Point3d>(
+          const treeA = RangeTreeOps.createByIndexSplits<Point3d>(
             (xyz: Point3d): Range3d => { return Range3d.create(xyz); },
             pointsA,
-            treeFlare, treeFlare);
-          const treeB = RangeTreeNode.createByIndexSplits<Point3d>(
+            treeFlare, treeFlare)!;
+          const treeB = RangeTreeOps.createByIndexSplits<Point3d>(
             (xyz: Point3d): Range3d => { return Range3d.create(xyz); },
             pointsB,
-            treeFlare, treeFlare);
-          // ck.testExactNumber(pointsA.length, RangeTreeOps.getRecursiveAppDataCount<Point3d>(treeA!), "point count in range tree");
+            treeFlare, treeFlare)!;
+          ck.testExactNumber(pointsA.length, RangeTreeOps.getRecursiveAppDataCount<Point3d>(treeA), "point count in range tree");
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.05, x0, 0);
 
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsB, 0.05, x0, 0);
@@ -275,7 +282,7 @@ describe("IndexedRangeHeap", () => {
           }
 
           const handler = ClosestApproachBetweenPointClustersHandler.create(uz === 0);
-          RangeTreeNode.searchTwoTreesTopDown(treeA!, treeB!, handler);
+          RangeTreeNode.searchTwoTreesTopDown(treeA, treeB, handler);
           if (handler.closestPointInA && handler.closestPointInB) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [handler.closestPointInA, handler.closestPointInB], x0, 0);
           }
