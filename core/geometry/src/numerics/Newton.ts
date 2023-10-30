@@ -335,7 +335,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
       const fA = this._func.currentF;
-      if (
+      if (  // Given X_{n+1} = X_n - dX = X_n - JInv(X_n) F(X_n), we solve J(X_n) dX = F(X_n) for dX:
         SmallSystem.linearSystem2d(
           fA.vectorU.x, fA.vectorV.x,
           fA.vectorU.y, fA.vectorV.y,

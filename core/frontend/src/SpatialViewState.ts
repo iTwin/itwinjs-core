@@ -61,6 +61,8 @@ export class SpatialViewState extends ViewState3d {
       this.registerModelSelectorListeners();
       this.onViewedModelsChanged.raiseEvent();
     }
+
+    this.markModelSelectorChanged();
   }
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],

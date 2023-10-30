@@ -62,20 +62,23 @@ export class ContentPropertyValueFormatter {
   constructor(private _koqValueFormatter: KoqPropertyValueFormatter) { }
 
   public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
-    if (isFieldWithKoq(field) && typeof value === "number") {
-      const koq = field.properties[0].property.kindOfQuantity;
-      const formattedValue = await this._koqValueFormatter.format(value, { koqName: koq.name, unitSystem });
-      if (formattedValue !== undefined)
-        return formattedValue;
-    }
+    const doubleFormatter = isFieldWithKoq(field)
+      ? async (rawValue: number) => {
+        const koq = field.properties[0].property.kindOfQuantity;
+        const formattedValue = await this._koqValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
+        if (formattedValue !== undefined)
+          return formattedValue;
+        return formatDouble(rawValue);
+      }
+      : async (rawValue: number) => formatDouble(rawValue);
 
-    return this.formatValue(field.type, value);
+    return this.formatValue(field.type, value, { doubleFormatter });
   }
 
-  public formatValue(type: TypeDescription, value: Value): DisplayValue {
+  private async formatValue(type: TypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string>}): Promise<DisplayValue> {
     switch (type.valueFormat) {
       case PropertyValueFormat.Primitive:
-        return this.formatPrimitiveValue(type, value);
+        return this.formatPrimitiveValue(type, value, ctx);
       case PropertyValueFormat.Array:
         return this.formatArrayValue(type, value);
       case PropertyValueFormat.Struct:
@@ -83,15 +86,17 @@ export class ContentPropertyValueFormatter {
     }
   }
 
-  public formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value) {
+  private async formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string>}) {
     if (value === undefined)
       return "";
 
+    const formatDoubleValue = async (raw: number) => ctx ? ctx.doubleFormatter(raw) : formatDouble(raw);
+
     if (type.typeName === "point2d" && isPoint2d(value)) {
-      return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)}`;
+      return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}`;
     }
     if (type.typeName === "point3d" && isPoint3d(value)) {
-      return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)} Z: ${formatDouble(value.z)}`;
+      return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}; Z: ${await formatDoubleValue(value.z)}`;
     }
     if (type.typeName === "dateTime") {
       assert(typeof value === "string");
@@ -107,7 +112,7 @@ export class ContentPropertyValueFormatter {
     }
     if (type.typeName === "double") {
       assert(isNumber(value));
-      return formatDouble(value);
+      return formatDoubleValue(value);
     }
     if (type.typeName === "navigation") {
       assert(Value.isNavigationValue(value));
@@ -117,22 +122,22 @@ export class ContentPropertyValueFormatter {
     return value.toString();
   }
 
-  public formatStructValue(type: StructTypeDescription, value: Value) {
+  private async formatStructValue(type: StructTypeDescription, value: Value) {
     if (!Value.isMap(value))
       return {};
 
     const formattedMember: DisplayValuesMap = {};
     for (const member of type.members) {
-      formattedMember[member.name] = this.formatValue(member.type, value[member.name]);
+      formattedMember[member.name] = await this.formatValue(member.type, value[member.name]);
     }
     return formattedMember;
   }
 
-  public formatArrayValue(type: ArrayTypeDescription, value: Value) {
+  private async formatArrayValue(type: ArrayTypeDescription, value: Value) {
     if (!Value.isArray(value))
       return [];
 
-    return value.map((arrayVal) => this.formatValue(type.memberType, arrayVal));
+    return Promise.all(value.map(async (arrayVal) => this.formatValue(type.memberType, arrayVal)));
   }
 }
 
