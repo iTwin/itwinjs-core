@@ -144,7 +144,6 @@ describe("convertToReadableSpans", () => {
         },
       ],
     });
-    console.log(actualSpans);
 
     const expectedSpans = [
       {
@@ -162,7 +161,6 @@ describe("convertToReadableSpans", () => {
         duration: [1, 111000000],
       },
     ];
-    console.log(expectedSpans);
 
     expect(actualSpans.length).to.be.eq(2);
     expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
