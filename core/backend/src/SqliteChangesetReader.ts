@@ -8,11 +8,15 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
-/** Changed value type */
-type ChangedValue = Uint8Array | number | string | null | undefined;
+/** Changed value type
+ * @beta
+*/
+type SqliteValue = Uint8Array | number | string | null | undefined;
 
-/**  Array of changed values*/
-type ChangedValueArray = ChangedValue[];
+/**  Array of changed values
+ * @beta
+*/
+type SqliteValueArray = SqliteValue[];
 export interface ChangeFormatArgs {
   includeTableName?: true;
   includeOpCode?: true;
@@ -21,65 +25,93 @@ export interface ChangeFormatArgs {
   includePrimaryKeyInUpdateNew?: true;
 }
 
-/** Operation that cause the change */
-export type ChangeOp = "Inserted" | "Updated" | "Deleted";
+/** Operation that cause the change
+ * @beta
+*/
+export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
-/** Stage is version of value that needed to be read */
-export type Stage = "Old" | "New";
+/** Stage is version of value that needed to be read
+ * @beta
+*/
+export type SqliteValueStage = "Old" | "New";
 
-/** Db from which schema will be read. It should be from timeline to which changeset belong. */
+/** Db from which schema will be read. It should be from timeline to which changeset belong.
+ * @beta
+*/
 export type AnyDb = IModelDb | ECDb;
 
-/** Arg to open a changeset file from disk */
+/** Arg to open a changeset file from disk
+ * @beta
+*/
 export interface SqliteChangesetReaderArgs {
-  readonly changesetFileName: string; /** name of the changeset file */
+  readonly fileName: string; /** name of the changeset file */
   readonly db?: AnyDb; /** db from which schema will be read. It should be close to changeset.*/
   readonly invert?: true; /** invert the changeset operations */
   readonly disableSchemaCheck?: true; /** do not check if column of change match db schema instead ignore addition columns */
 }
 
-export interface ChangedObject {
+/**
+ * @beta
+ */
+export interface SqliteChange {
   $table?: string;
-  $op?: ChangeOp;
-  $stage?: Stage;
+  $op?: SqliteChangeOp;
+  $stage?: SqliteValueStage;
   [key: string]: any;
 }
+
 /**
  * Read raw sqlite changeset from disk and enumerate changes.
  * It also optionally let you format change with schema from
  * a db provided.
+ * @beta
  */
 export class SqliteChangesetReader implements IDisposable {
   private readonly _nativeReader = new IModelHost.platform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
+  private _changeIndex = 0;
   protected constructor(public readonly db?: AnyDb) { }
 
   public static openFile(args: SqliteChangesetReaderArgs) {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.open(args.changesetFileName, args.invert ?? false);
+    reader._nativeReader.open(args.fileName, args.invert ?? false);
     return reader;
   }
   public get disableSchemaCheck() { return this._disableSchemaCheck; }
-  /** Move to next change in changeset */
+  /** Move to next change in changeset
+   * @beta
+  */
   public step(): boolean {
-    return this._nativeReader.step();
+    if (this._nativeReader.step()) {
+      this._changeIndex++;
+      return true;
+    }
+    return false;
   }
-  /** Check if reader current on a row */
+  /** Check if reader current on a row
+   * @beta
+  */
   public get hasRow(): boolean {
     return this._nativeReader.hasRow();
   }
-  /** Check if its current change is indirect */
+  /** Check if its current change is indirect
+   * @beta
+  */
   public get isIndirect(): boolean {
     return this._nativeReader.isIndirectChange();
   }
-  /** Get count of columns in current change */
+  /** Get count of columns in current change
+   * @beta
+  */
   public get columnCount(): number {
     return this._nativeReader.getColumnCount();
   }
-  /** Get operation that caused the change */
-  public get op(): ChangeOp {
+  /** Get operation that caused the change
+   * @beta
+  */
+  public get op(): SqliteChangeOp {
     if (this._nativeReader.getOpCode() === DbOpcode.Insert)
       return "Inserted";
 
@@ -88,13 +120,16 @@ export class SqliteChangesetReader implements IDisposable {
 
     return "Updated";
   }
-  /** Get primary key value array */
-  public get primaryKeyValues(): ChangedValueArray {
+  /** Get primary key value array
+   * @beta
+  */
+  public get primaryKeyValues(): SqliteValueArray {
     return this._nativeReader.getPrimaryKeys();
   }
   /** Get primary key columns.
    * @note To this to work db arg must be set when opening changeset file.
-   * */
+   * @beta
+   */
   public getPrimaryKeyColumnNames(): string[] {
     const pks = [];
     const cols = this.getColumnNames(this.tableName);
@@ -107,7 +142,9 @@ export class SqliteChangesetReader implements IDisposable {
 
     return pks;
   }
-  /** Get current change table. */
+  /** Get current change table.
+   * @beta
+  */
   public get tableName(): string {
     return this._nativeReader.getTableName();
   }
@@ -116,16 +153,18 @@ export class SqliteChangesetReader implements IDisposable {
    * @param columnIndex index of column in current change
    * @param stage old or new value for change.
    * @returns value for changed column
+   * @beta
    */
-  public getChangeValue(columnIndex: number, stage: Stage): ChangedValue {
+  public getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue {
     return this._nativeReader.getColumnValue(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
   }
   /**
    * Get all changed value in current change as array
    * @param stage old or new values for current change.
    * @returns array of values.
+   * @beta
    */
-  public getChangeValuesArray(stage: Stage): ChangedValueArray | undefined {
+  public getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined {
     return this._nativeReader.getRow(stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
   }
   /**
@@ -133,8 +172,9 @@ export class SqliteChangesetReader implements IDisposable {
    * @param stage old or new value for current change.
    * @param args change format options
    * @returns return object or undefined
+   * @beta
    */
-  public getChangeValuesObject(stage: Stage, args: ChangeFormatArgs = {}): ChangedObject | undefined {
+  public getChangeValuesObject(stage: SqliteValueStage, args: ChangeFormatArgs = {}): SqliteChange | undefined {
     const cols = this.getColumnNames(this.tableName);
     const row = this.getChangeValuesArray(stage);
     if (!row)
@@ -145,7 +185,7 @@ export class SqliteChangesetReader implements IDisposable {
     if (!this._disableSchemaCheck && cols.length !== this.columnCount)
       throw new Error(`changeset table ${this.tableName} columns count does not match db declared table. ${this.columnCount} <> ${cols.length}`);
 
-    const out: ChangedObject = {};
+    const out: SqliteChange = {};
     if (args.includeTableName) {
       out.$table = this.tableName;
     }
@@ -163,7 +203,7 @@ export class SqliteChangesetReader implements IDisposable {
         out[v] = pkValues[i];
       });
     }
-    const isNullOrUndefined = (val: ChangedValue) => val === null || typeof val === "undefined";
+    const isNullOrUndefined = (val: SqliteValue) => val === null || typeof val === "undefined";
 
     for (let i = 0; i < minLen; ++i) {
       const columnValue = row[i];
@@ -180,6 +220,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @note To this to work db arg must be set when opening changeset file.
    * @param tableName name of the table for which columns are requested.
    * @returns columns of table.
+   * @beta
    */
   public getColumnNames(tableName: string): string[] {
     const columns = this._schemaCache.get(tableName);
@@ -199,14 +240,21 @@ export class SqliteChangesetReader implements IDisposable {
       return tblCols;
     });
   }
+  /** index of current change
+   * @beta
+   */
+  public get changeIndex() { return this._changeIndex; }
   /**
    * Close changeset
+   * @beta
    */
   public close() {
+    this._changeIndex = 0;
     this._nativeReader.close();
   }
   /**
    * Dispose this object
+   * @beta
    */
   public dispose(): void {
     this.close();
