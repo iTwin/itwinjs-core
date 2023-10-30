@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { convertToReadableSpans } from "../presentation-opentelemetry";
 import { SpanContext, SpanKind, SpanStatusCode, TraceFlags } from "@opentelemetry/api";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+import { Resource } from "@opentelemetry/resources";
 
 describe("convertToReadableSpans", () => {
 
@@ -16,7 +17,7 @@ describe("convertToReadableSpans", () => {
     instrumentationLibrary: { name: "" },
     kind: SpanKind.INTERNAL,
     links: [],
-    resource: { attributes: { [SemanticResourceAttributes.SERVICE_NAME]: "iTwin.js Presentation" } },
+    resource: new Resource({ [SemanticResourceAttributes.SERVICE_NAME]: "iTwin.js Presentation" }),
     status: { code: SpanStatusCode.UNSET },
   };
 
@@ -143,6 +144,7 @@ describe("convertToReadableSpans", () => {
         },
       ],
     });
+    console.log(actualSpans);
 
     const expectedSpans = [
       {
@@ -160,6 +162,7 @@ describe("convertToReadableSpans", () => {
         duration: [1, 111000000],
       },
     ];
+    console.log(expectedSpans);
 
     expect(actualSpans.length).to.be.eq(2);
     expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
