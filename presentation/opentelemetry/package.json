@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@itwin/presentation-common": "workspace:*",
     "@opentelemetry/api": "^1.0.4",
-    "@opentelemetry/resources": "1.9.1",
+    "@opentelemetry/resources": "^1.5.0",
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.5.0"
   },
@@ -52,7 +52,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@opentelemetry/api": "1.0.4",
-    "@opentelemetry/resources": "1.9.1",
+    "@opentelemetry/resources": "^1.5.0",
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.5.0",
     "@types/chai": "4.3.1",
