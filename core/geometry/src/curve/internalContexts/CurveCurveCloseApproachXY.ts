@@ -437,6 +437,41 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.testAndRecordProjection(cpB, fB1, pointB1, cpA, fA0, fA1, !reversed);
     }
   }
+  /**
+ * Return XY closest approach between a curve primitive and a point.
+ * Currently, this function only supports Arc3d and LineSegment.
+ * Note that this function doesn't handle endpoints.
+ */
+  private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
+    if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
+      assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
+      return undefined;
+    }
+    const seeds = [0.2, 0.4, 0.6, 0.8];
+    const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
+    const newtonSearcher = new Newton1dUnbounded(newtonEvaluator);
+    let minCloseApproachLength = Geometry.largeCoordinateResult;
+    let minCurvePFraction: number | undefined;
+    let minPointP: Point3d | undefined;
+    for (const seed of seeds) {
+      newtonSearcher.setX(seed);
+      if (newtonSearcher.runIterations()) {
+        const curvePFraction = newtonSearcher.getX();
+        if (this.acceptFraction(curvePFraction)) {
+          const pointP = curveP.fractionToPoint(curvePFraction);
+          const closeApproachLength = pointP.distanceXY(pointQ);
+          if (closeApproachLength < minCloseApproachLength) {
+            minCloseApproachLength = closeApproachLength;
+            minCurvePFraction = curvePFraction;
+            minPointP = pointP;
+          }
+        }
+      }
+    }
+    if (minCurvePFraction && minPointP)
+      return CurveLocationDetail.createCurveFractionPoint(curveP, minCurvePFraction, minPointP);
+    return undefined;
+  }
   /** Find the closest approach between pointA and cpB. Add the approach if it's within fB0 and fB1. */
   private testAndRecordProjection(
     cpA: CurvePrimitive, fA: number, pointA: Point3d, cpB: CurvePrimitive, fB0: number, fB1: number, reversed: boolean,
@@ -590,7 +625,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (c > radiusA + radiusB + e) // distance between circles is more than max distance
       return;
     // TODO: 1) intersection between arcs
-    // 2) endpoints to endpoints
+    // 2) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
     // 3) line from one arc to another (perpendicular to arc tangents along center-center line)
     if (!Geometry.isSmallMetricDistance(c)) {
@@ -912,42 +947,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
     }
     */
-    return undefined;
-  }
-
-  /**
-   * Return XY closest approach between a curve primitive and a point.
-   * Currently, this function only supports Arc3d and LineSegment.
-   * Note that this function doesn't handle endpoints.
-   */
-  private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
-    if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
-      assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
-      return undefined;
-    }
-    const seeds = [0.2, 0.4, 0.6, 0.8];
-    const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
-    const newtonSearcher = new Newton1dUnbounded(newtonEvaluator);
-    let minCloseApproachLength = Geometry.largeCoordinateResult;
-    let minCurvePFraction: number | undefined;
-    let minPointP: Point3d | undefined;
-    for (const seed of seeds) {
-      newtonSearcher.setX(seed);
-      if (newtonSearcher.runIterations()) {
-        const curvePFraction = newtonSearcher.getX();
-        if (this.acceptFraction(curvePFraction)) {
-          const pointP = curveP.fractionToPoint(curvePFraction);
-          const closeApproachLength = pointP.distanceXY(pointQ);
-          if (closeApproachLength < minCloseApproachLength) {
-            minCloseApproachLength = closeApproachLength;
-            minCurvePFraction = curvePFraction;
-            minPointP = pointP;
-          }
-        }
-      }
-    }
-    if (minCurvePFraction && minPointP)
-      return CurveLocationDetail.createCurveFractionPoint(curveP, minCurvePFraction, minPointP);
     return undefined;
   }
 }
