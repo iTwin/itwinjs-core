@@ -564,7 +564,7 @@
       "presentation": {
         "group": "6_Misc"
       },
-      "cwd": "${workspaceFolder}/core/backend",
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -617,7 +617,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/test-apps/export-gltf/lib/ExportGltf.js",
-      "args": [   // customize your input/output below
+      "args": [ // customize your input/output below
         "--input=d:\\foo.bim",
         "--output=d:\\foo.gltf"
       ],
