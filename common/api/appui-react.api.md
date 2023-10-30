@@ -80,7 +80,6 @@ import { InteractiveTool } from '@itwin/core-frontend';
 import { IPresentationTreeDataProvider } from '@itwin/presentation-components';
 import { ItemField } from '@itwin/core-frontend';
 import { JSXElementConstructor } from 'react';
-import { Key } from 'react';
 import { LayoutFragmentProps } from '@itwin/appui-abstract';
 import { Localization } from '@itwin/core-common';
 import { MessageBoxIconType } from '@itwin/core-frontend';
@@ -254,7 +253,7 @@ export class AccuDrawCommandItems {
 }
 
 // @beta
-export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
+export function AccuDrawDialog(props: AccuDrawDialogProps): React_2.JSX.Element;
 
 // @beta
 export interface AccuDrawDialogProps extends CommonProps {
@@ -383,7 +382,7 @@ export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
 // @beta
-export function AccuDrawWidget(): JSX.Element;
+export function AccuDrawWidget(): React_2.JSX.Element;
 
 // @beta
 export class AccuDrawWidgetControl extends WidgetControl {
@@ -401,7 +400,7 @@ export interface Action<T extends string> {
 }
 
 // @internal
-export function ActionButtonItem(props: ActionButtonProps): JSX.Element;
+export function ActionButtonItem(props: ActionButtonProps): React_2.JSX.Element;
 
 // @public
 export abstract class ActionButtonItemDef extends ItemDefBase {
@@ -473,7 +472,7 @@ export interface ActiveContentChangedEventArgs {
 // @internal (undocumented)
 export function ActiveFrontstageDefProvider({ frontstageDef }: {
     frontstageDef: FrontstageDef;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @public
 export class ActivityCenterField extends React_2.Component<StatusFieldProps, ActivityCenterState> {
@@ -487,7 +486,7 @@ export class ActivityCenterField extends React_2.Component<StatusFieldProps, Act
 }
 
 // @public @deprecated
-export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
+export function ActivityMessage(props: ActivityMessageProps): React_2.JSX.Element;
 
 // @public
 export class ActivityMessageCancelledEvent extends UiEvent<{}> {
@@ -502,7 +501,7 @@ export interface ActivityMessageEventArgs {
 }
 
 // @public @deprecated
-export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
+export function ActivityMessagePopup(props: ActivityMessagePopupProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface ActivityMessagePopupProps extends CommonProps {
@@ -645,7 +644,7 @@ export interface BackstageActionItem extends BackstageActionItem_2 {
 }
 
 // @public
-export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
+export function BackstageAppButton(props: BackstageAppButtonProps): React_2.JSX.Element;
 
 // @public
 export interface BackstageAppButtonProps {
@@ -655,10 +654,10 @@ export interface BackstageAppButtonProps {
 }
 
 // @public
-export function BackstageComposer(props: BackstageComposerProps): JSX.Element;
+export function BackstageComposer(props: BackstageComposerProps): React_2.JSX.Element;
 
 // @internal (undocumented)
-export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element;
+export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface BackstageComposerActionItemProps {
@@ -667,7 +666,7 @@ export interface BackstageComposerActionItemProps {
 }
 
 // @internal
-export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX.Element;
+export function BackstageComposerItem({ item }: BackstageComposerItemProps): React_2.JSX.Element;
 
 // @internal
 export interface BackstageComposerItemProps {
@@ -685,7 +684,7 @@ export interface BackstageComposerProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncherProps): JSX.Element;
+export function BackstageComposerStageLauncher({ item }: BackstageComposerStageLauncherProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface BackstageComposerStageLauncherProps {
@@ -807,7 +806,7 @@ export class BaseUiItemsProvider extends BaseUiItemsProvider_2 {
 }
 
 // @public
-export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
+export function BasicNavigationWidget(props: BasicNavigationWidgetProps): React_2.JSX.Element;
 
 // @public
 export interface BasicNavigationWidgetProps {
@@ -816,7 +815,7 @@ export interface BasicNavigationWidgetProps {
 }
 
 // @public
-export function BasicToolWidget(props: BasicToolWidgetProps): JSX.Element;
+export function BasicToolWidget(props: BasicToolWidgetProps): React_2.JSX.Element;
 
 // @public
 export interface BasicToolWidgetProps {
@@ -866,7 +865,7 @@ export class Calculator extends React_2.PureComponent<CalculatorProps, Calculato
     // @internal (undocumented)
     static readonly defaultProps: CalculatorPropsProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -923,7 +922,7 @@ export enum CalculatorOperator {
 // @alpha
 export class CalculatorPopup extends React_2.PureComponent<CalculatorPopupProps, CalculatorPopupState> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         size: Size;
@@ -959,7 +958,7 @@ export type CalculatorPropsProps = Pick<CalculatorProps, "engine">;
 export class CardContainer extends React_2.Component<CardContainerProps> {
     static get onCardSelectedEvent(): CardSelectedEvent;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha
@@ -1007,7 +1006,7 @@ export interface Category {
 }
 
 // @public @deprecated
-export function CategoryTree(props: CategoryTreeProps): JSX.Element;
+export function CategoryTree(props: CategoryTreeProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface CategoryTreeProps {
@@ -1105,7 +1104,7 @@ export enum ClassGroupingOption {
 }
 
 // @beta @deprecated
-export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
+export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export function clearKeyinPaletteHistory(): void;
@@ -1274,7 +1273,7 @@ export const ConfigurableUiActions: {
 export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActions>;
 
 // @public
-export function ConfigurableUiContent(props: ConfigurableUiContentProps): JSX.Element;
+export function ConfigurableUiContent(props: ConfigurableUiContentProps): React_2.JSX.Element;
 
 // @public
 export interface ConfigurableUiContentProps extends CommonProps {
@@ -1426,7 +1425,7 @@ export interface ContentControlActivatedEventArgs {
 }
 
 // @public
-export function ContentDialog(props: ContentDialogProps): JSX.Element;
+export function ContentDialog(props: ContentDialogProps): React_2.JSX.Element;
 
 // @public
 export class ContentDialogChangedEvent extends DialogChangedEvent {
@@ -1598,7 +1597,7 @@ export interface ContentProps {
 }
 
 // @public
-export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element;
+export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): React_2.JSX.Element;
 
 // @public
 export interface ContentToolWidgetComposerProps {
@@ -1632,7 +1631,7 @@ export class ContentViewManager {
 }
 
 // @internal
-export function ContentWrapper(props: ContentWrapperProps): JSX.Element;
+export function ContentWrapper(props: ContentWrapperProps): React_2.JSX.Element;
 
 // @public
 export class CoreTools {
@@ -1698,7 +1697,7 @@ export function createAction<T extends string, P>(type: T, payload: P): ActionWi
 export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
 
 // @alpha @deprecated
-export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
+export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => React_2.JSX.Element;
 
 // @public
 export class CubeNavigationAidControl extends NavigationAidControl {
@@ -1780,11 +1779,11 @@ export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopup
     // @internal (undocumented)
     static getPopupRect(pt: PointProps, offset: PointProps, popupSize: SizeProps | undefined, relativePosition: RelativePosition): RectangleProps;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
-export function CursorPopupContent(props: CommonDivProps): JSX.Element;
+export function CursorPopupContent(props: CommonDivProps): React_2.JSX.Element;
 
 // @internal
 export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> {
@@ -1909,10 +1908,10 @@ export interface CursorUpdatedEventArgs {
 // @internal
 export function CustomActivityMessageContent({ initialActivityMessageInfo }: {
     initialActivityMessageInfo: ActivityMessageEventArgs;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @internal
-export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element;
+export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): React_2.JSX.Element;
 
 // @public
 export class CustomItemDef extends ActionButtonItemDef {
@@ -1991,7 +1990,7 @@ export interface DefaultContentToolsAppData {
 export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: {
     componentGenerator: ComponentGenerator;
     isToolSettings?: boolean;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @beta @deprecated
 export interface DefaultNavigationProps {
@@ -2022,7 +2021,7 @@ export interface DefaultNavigationTools {
 // @beta @deprecated
 export class DefaultNavigationWidget extends React_2.Component<DefaultNavigationProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2063,7 +2062,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 }
 
 // @public
-export function DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null;
+export function DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): React_2.JSX.Element | null;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -2078,7 +2077,7 @@ export interface DialogChangedEventArgs {
 }
 
 // @internal (undocumented)
-export function DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element;
+export function DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): React_2.JSX.Element;
 
 // @public
 export interface DialogInfo {
@@ -2143,7 +2142,7 @@ export interface DialogRendererProps {
 }
 
 // @internal
-export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
+export function DockedStatusBarItem(props: StatusBarItemProps): React_2.JSX.Element;
 
 // @beta
 export class DrawingNavigationAidControl extends NavigationAidControl {
@@ -2171,7 +2170,7 @@ export class ElementTooltip extends React_2.Component<CommonProps, ElementToolti
     // (undocumented)
     static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent;
     // (undocumented)
-    render(): JSX.Element | null;
+    render(): React_2.JSX.Element | null;
     // (undocumented)
     static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void;
     // @internal (undocumented)
@@ -2205,7 +2204,7 @@ export interface EmphasizeElementsChangedArgs {
 // @beta
 export class ExpandableSection extends React_2.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta
@@ -2237,7 +2236,7 @@ export class FloatingContentControl extends ContentControl {
 }
 
 // @beta
-export function FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element;
+export function FloatingViewportContent(props: FloatingViewportContentProps): React_2.JSX.Element;
 
 // @beta (undocumented)
 export class FloatingViewportContentControl extends ViewportContentControl {
@@ -2263,7 +2262,7 @@ export class FocusToolSettings extends Tool {
 }
 
 // @public @deprecated
-export function FooterModeField(props: FooterModeFieldProps): JSX.Element;
+export function FooterModeField(props: FooterModeFieldProps): React_2.JSX.Element;
 
 // @public
 export interface FooterModeFieldProps extends StatusFieldProps {
@@ -2643,7 +2642,7 @@ export class FrameworkUiAdmin extends UiAdmin {
 }
 
 // @public @deprecated
-export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
+export function FrameworkVersion(props: FrameworkVersionProps): React_2.JSX.Element;
 
 // @internal
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> {
@@ -2670,7 +2669,7 @@ export interface FrameworkVersionProps {
 }
 
 // @internal (undocumented)
-export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element;
+export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface FrameworkVersionSwitchProps {
@@ -3275,10 +3274,10 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
 // @public @deprecated
-export function GroupButton(props: GroupButtonProps): JSX.Element;
+export function GroupButton(props: GroupButtonProps): React_2.JSX.Element;
 
 // @internal
-export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
+export function GroupButtonItem(props: GroupButtonProps_2): React_2.JSX.Element;
 
 // @public @deprecated
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
@@ -3441,7 +3440,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 // @alpha
 export class HTMLElementPopup extends React_2.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         size: Size;
@@ -3512,7 +3511,7 @@ export interface IModelViewportControlOptions {
 }
 
 // @beta @deprecated
-export function Indicator(props: IndicatorProps): JSX.Element;
+export function Indicator(props: IndicatorProps): React_2.JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
@@ -3554,7 +3553,7 @@ export class InputEditorCommitHandler {
 // @alpha
 export class InputEditorPopup extends React_2.PureComponent<InputEditorPopupProps, InputEditorPopupState> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         size: Size;
@@ -3881,10 +3880,10 @@ export enum KeyinFieldLocalization {
 }
 
 // @internal (undocumented)
-export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element;
+export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): React_2.JSX.Element;
 
 // @public
-export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element;
+export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): React_2.JSX.Element;
 
 // @public
 export interface KeyinPalettePopupProps {
@@ -3938,7 +3937,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
     static get Key_None(): number;
     // (undocumented)
     static get Key_Separator(): number;
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -3951,12 +3950,12 @@ export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListP
     getExpandedContent(): React_2.ReactNode;
     isExpanded: () => boolean;
     minimize: () => void;
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta
 export class ListPickerItem extends React_2.PureComponent<ListPickerItemProps> {
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta
@@ -4036,13 +4035,13 @@ export class MarkupTools {
 export class MenuButton extends React_2.PureComponent<MenuButtonProps, MenuButtonState> {
     constructor(props: MenuButtonProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha
 export class MenuButtonPopup extends React_2.PureComponent<MenuButtonPopupProps, MenuButtonPopupState> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         size: Size;
@@ -4194,7 +4193,7 @@ export class ModalDialogRenderer extends React_2.PureComponent<CommonProps> {
 export class ModalFrontstage extends React_2.Component<ModalFrontstageProps> {
     constructor(props: ModalFrontstageProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -4222,7 +4221,7 @@ export interface ModalFrontstageClosedEventArgs {
 // @internal (undocumented)
 export function ModalFrontstageComposer({ stageInfo }: {
     stageInfo: ModalFrontstageInfo | undefined;
-}): JSX.Element | null;
+}): React_2.JSX.Element | null;
 
 // @public
 export interface ModalFrontstageInfo {
@@ -4267,7 +4266,7 @@ export interface ModalFrontstageRequestedCloseEventArgs {
 export class ModelessDialog extends React_2.Component<ModelessDialogProps> {
     constructor(props: ModelessDialogProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.ReactElement;
 }
 
 // @public
@@ -4321,7 +4320,7 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
 }
 
 // @public @deprecated
-export function ModelsTree(props: ModelsTreeProps): JSX.Element;
+export function ModelsTree(props: ModelsTreeProps): React_2.JSX.Element;
 
 // @beta @deprecated
 export enum ModelsTreeNodeType {
@@ -4458,7 +4457,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
 }
 
 // @public
-export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
+export function NavigationAidHost(props: NavigationAidHostProps): React_2.JSX.Element;
 
 // @public
 export interface NavigationAidHostProps {
@@ -4480,7 +4479,7 @@ export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx,
 }
 
 // @public
-export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
+export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): React_2.JSX.Element;
 
 // @public
 export interface NavigationWidgetComposerProps extends CommonProps {
@@ -4639,7 +4638,7 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     // (undocumented)
     get label(): string;
     minimize: () => void;
-    render(): JSX.Element | null;
+    render(): React_2.JSX.Element | null;
 }
 
 // @public @deprecated
@@ -4762,11 +4761,11 @@ export interface PopupsChangedEventArgs {
 export class PositionPopup extends React_2.PureComponent<PositionPopupProps> {
     constructor(props: PositionPopupProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta
-export function PositionPopupContent(props: CommonDivProps): JSX.Element;
+export function PositionPopupContent(props: CommonDivProps): React_2.JSX.Element;
 
 // @beta
 export interface PositionPopupProps extends CommonProps {
@@ -4789,7 +4788,7 @@ export const PromptField: ConnectedComponent<typeof PromptFieldComponent, Omit_3
 export class PropsHelper {
     // (undocumented)
     static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem_2>;
-    static getIcon(iconSpec: string | ConditionalStringValue | React_2.ReactNode): JSX.Element | undefined;
+    static getIcon(iconSpec: string | ConditionalStringValue | React_2.ReactNode): React_2.ReactElement | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
@@ -4799,7 +4798,7 @@ export class PropsHelper {
 export type ProviderItem = ProvidedItem;
 
 // @beta
-export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
+export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): React_2.JSX.Element;
 
 // @beta
 export interface QuantityFormatterSettingsOptions {
@@ -4898,7 +4897,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
 // @beta
 export class ReviewToolWidget extends React_2.Component<ReviewToolWidgetProps, any> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta
@@ -4968,7 +4967,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
 }
 
 // @beta
-export function SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element;
+export function SectionsStatusField(props: SectionsStatusFieldProps): React_2.JSX.Element;
 
 // @beta
 export interface SectionsStatusFieldProps extends StatusFieldProps {
@@ -5250,20 +5249,20 @@ export const setPanelSize: (base: {
             } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
-                readonly key: Key | null;
+                readonly key: string | null;
             } | {} | {
                 readonly [Symbol.iterator]: () => Iterator<ReactNode, any, undefined>;
             } | {
-                readonly key: Key | null;
                 readonly children: boolean | ReactText | {
                     readonly type: string | JSXElementConstructor<any>;
                     readonly props: any;
-                    readonly key: Key | null;
+                    readonly key: string | null;
                 } | {} | {
                     readonly [Symbol.iterator]: () => Iterator<ReactNode, any, undefined>;
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
+                readonly key: string | null;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5326,7 +5325,7 @@ export function setWidgetState(state: NineZoneState, widgetDef: WidgetDef, widge
 export class SheetCard extends React_2.Component<SheetCardProps, SheetCardState> {
     constructor(props: SheetCardProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha
@@ -5409,7 +5408,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @public @deprecated
-export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface SpatialContainmentTreeProps {
@@ -5422,7 +5421,7 @@ export interface SpatialContainmentTreeProps {
 }
 
 // @public
-export function SplitPane(props: SplitPaneProps): JSX.Element;
+export function SplitPane(props: SplitPaneProps): React_2.JSX.Element;
 
 // @public
 export interface SplitPaneProps {
@@ -5456,7 +5455,7 @@ export interface SplitPaneProps {
 // @internal (undocumented)
 export class SplitterPaneTarget extends React_2.PureComponent<SplitterPaneTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -5562,7 +5561,7 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 // @alpha @deprecated
 export class StagePanelHeader extends React_2.PureComponent<StagePanelHeaderProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha @deprecated
@@ -5750,7 +5749,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
 export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.ReactElement;
     // @internal (undocumented)
     readonly state: Readonly<StandardMessageBoxState>;
 }
@@ -5843,10 +5842,10 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
 export type StatusBarActionItem = AbstractStatusBarActionItem;
 
 // @public
-export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
+export function StatusBarCenterSection(props: CommonDivProps): React_2.JSX.Element;
 
 // @public
-export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
+export function StatusBarComposer(props: StatusBarComposerProps): React_2.JSX.Element;
 
 // @public
 export interface StatusBarComposerProps extends CommonProps {
@@ -5864,7 +5863,7 @@ export const StatusBarContext: React_2.Context<StatusBarWidgetControlArgs>;
 export type StatusBarCustomItem = StatusBarItem;
 
 // @beta
-export function StatusBarDialog(props: StatusBarDialogProps): JSX.Element;
+export function StatusBarDialog(props: StatusBarDialogProps): React_2.JSX.Element;
 
 // @beta
 export namespace StatusBarDialog {
@@ -5882,7 +5881,7 @@ export interface StatusBarDialogProps extends CommonProps {
 export type StatusBarFieldId = string | null;
 
 // @beta
-export function StatusBarIndicator(props: StatusBarIndicatorProps): JSX.Element;
+export function StatusBarIndicator(props: StatusBarIndicatorProps): React_2.JSX.Element;
 
 // @beta
 export interface StatusBarIndicatorProps extends CommonProps {
@@ -5930,7 +5929,7 @@ export namespace StatusBarItemUtilities {
 }
 
 // @beta
-export function StatusBarLabelIndicator(props: StatusBarLabelIndicatorProps): JSX.Element;
+export function StatusBarLabelIndicator(props: StatusBarLabelIndicatorProps): React_2.JSX.Element;
 
 // @beta
 export interface StatusBarLabelIndicatorProps extends Omit<StatusBarIndicatorProps, "children"> {
@@ -5949,7 +5948,7 @@ export type StatusBarLabelSide = StatusBarLabelSide_2;
 export const StatusBarLabelSide: typeof StatusBarLabelSide_2;
 
 // @public
-export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
+export function StatusBarLeftSection(props: CommonDivProps): React_2.JSX.Element;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -5960,7 +5959,7 @@ export interface StatusBarProps extends CommonProps {
 }
 
 // @public
-export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
+export function StatusBarRightSection(props: CommonDivProps): React_2.JSX.Element;
 
 // @beta
 export type StatusBarSection = StatusBarSection_2;
@@ -5969,10 +5968,10 @@ export type StatusBarSection = StatusBarSection_2;
 export const StatusBarSection: typeof StatusBarSection_2;
 
 // @public
-export function StatusBarSeparator(props: CommonProps): JSX.Element;
+export function StatusBarSeparator(props: CommonProps): React_2.JSX.Element;
 
 // @public
-export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
+export function StatusBarSpaceBetween(props: CommonDivProps): React_2.JSX.Element;
 
 // @public
 export class StatusBarWidgetComposerControl extends StatusBarWidgetControl {
@@ -6039,7 +6038,7 @@ export interface StatusFieldProps extends CommonProps {
 }
 
 // @public @deprecated
-export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
+export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface StatusMessageRendererProps extends CommonProps {
@@ -6052,7 +6051,7 @@ export interface StatusMessageRendererProps extends CommonProps {
 }
 
 // @public @deprecated
-export function StickyMessage(props: StickyMessageProps): JSX.Element;
+export function StickyMessage(props: StickyMessageProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface StickyMessageProps {
@@ -6262,11 +6261,11 @@ export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
-export function ToastMessage(props: ToastMessageProps): JSX.Element;
+export function ToastMessage(props: ToastMessageProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface ToastMessageProps {
@@ -6346,7 +6345,7 @@ export class Toolbar extends React_2.Component<ToolbarProps, ToolbarState> {
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element | null;
+    render(): React_2.JSX.Element | null;
 }
 
 // @public
@@ -6366,7 +6365,7 @@ export class ToolbarButtonHelper {
 }
 
 // @public
-export function ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element;
+export function ToolbarComposer(props: ExtensibleToolbarProps): React_2.JSX.Element;
 
 // @beta
 export type ToolbarCustomItem = CustomButtonDefinition;
@@ -6427,7 +6426,7 @@ export const ToolbarOrientation: typeof ToolbarOrientation_2;
 // @beta
 export class ToolbarPopup extends React_2.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         size: Size;
@@ -6557,10 +6556,10 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
 }
 
 // @internal (undocumented)
-export function ToolSettingsContent(): JSX.Element | null;
+export function ToolSettingsContent(): React_2.JSX.Element | null;
 
 // @internal (undocumented)
-export function ToolSettingsDockedContent(): JSX.Element;
+export function ToolSettingsDockedContent(): React_2.JSX.Element;
 
 // @public
 export interface ToolSettingsEntry {
@@ -6571,12 +6570,12 @@ export interface ToolSettingsEntry {
 }
 
 // @internal
-export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
+export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): React_2.JSX.Element;
 
 // @public
 export function ToolSettingsGridContainer({ componentGenerator }: {
     componentGenerator: ComponentGenerator;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @internal
 export interface ToolSettingsGridProps {
@@ -6606,7 +6605,7 @@ export class ToolSettingsManager {
 }
 
 // @internal (undocumented)
-export function ToolSettingsWidgetContent(): JSX.Element;
+export function ToolSettingsWidgetContent(): React_2.JSX.Element;
 
 // @internal
 export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
@@ -6675,7 +6674,7 @@ export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetS
 }
 
 // @public
-export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
+export function ToolWidgetComposer(props: ToolWidgetComposerProps): React_2.JSX.Element;
 
 // @public
 export interface ToolWidgetComposerProps extends CommonProps {
@@ -6721,7 +6720,7 @@ export interface TrackingTime {
 }
 
 // @public
-export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element;
+export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): React_2.JSX.Element;
 
 // @public
 export interface UiDataProvidedDialogProps {
@@ -6899,12 +6898,12 @@ export type UiItemsProviderOverrides = UiItemProviderOverrides;
 export type UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs;
 
 // @beta
-export function UiSettingsPage(): JSX.Element;
+export function UiSettingsPage(): React_2.ReactElement;
 
 // @beta @deprecated (undocumented)
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
-}): JSX.Element;
+}): React_2.ReactElement;
 
 // @public
 export interface UiSettingsProviderProps {
@@ -6963,7 +6962,7 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
 export const UiStateStorageContext: React_2.Context<UiStateStorage>;
 
 // @public
-export function UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element;
+export function UiStateStorageHandler(props: UiSettingsProviderProps): React_2.JSX.Element;
 
 // @public
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> {
@@ -6976,7 +6975,7 @@ export interface UiVisibilityEventArgs {
 }
 
 // @alpha
-export function UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element;
+export function UnitSystemSelector(props: UnitSystemSelectorProps): React_2.JSX.Element;
 
 // @beta
 export interface UnitSystemSelectorProps {
@@ -7126,7 +7125,7 @@ export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWith
 };
 
 // @alpha @deprecated
-export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
+export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => React_2.JSX.Element;
 
 // @internal (undocumented)
 export function useWidgetDef(): WidgetDef | undefined;
@@ -7147,7 +7146,7 @@ export class ViewAttributesStatusField extends React_2.Component<StatusFieldProp
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -7161,7 +7160,7 @@ export interface ViewLayout {
 }
 
 // @internal
-export function ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): JSX.Element | null;
+export function ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): React_2.JSX.Element | null;
 
 // @public
 export interface ViewOverlayProps {
@@ -7204,7 +7203,7 @@ export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelec
     static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
-    render(): JSX.Element | null;
+    render(): React_2.JSX.Element | null;
     static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
@@ -7263,7 +7262,7 @@ export interface ViewStateHelperProps extends ViewStateProps {
 }
 
 // @public
-export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element;
+export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): React_2.JSX.Element;
 
 // @public
 export interface ViewToolWidgetComposerProps {
@@ -7328,10 +7327,10 @@ export interface VisibilityTreeFilterInfo {
 }
 
 // @alpha @deprecated
-export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
+export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => React_2.JSX.Element;
 
 // @alpha @deprecated
-export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
+export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): React_2.JSX.Element;
 
 // @alpha @deprecated
 export interface VisibilityTreeNoFilteredDataProps {
@@ -7382,7 +7381,7 @@ export type WidgetConfig = Readonly<Omit<WidgetProps, "id">> & {
 };
 
 // @internal (undocumented)
-export function WidgetContent(): JSX.Element;
+export function WidgetContent(): React_2.JSX.Element;
 
 // @public
 export class WidgetControl extends ConfigurableUiControl {
@@ -7565,7 +7564,7 @@ export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" 
 export const WidgetPanelsFrontstage: React_2.NamedExoticComponent<object>;
 
 // @internal (undocumented)
-export function WidgetPanelsFrontstageContent(): JSX.Element | null;
+export function WidgetPanelsFrontstageContent(): React_2.JSX.Element | null;
 
 // @internal
 export interface WidgetPanelsFrontstageState {
@@ -7580,16 +7579,16 @@ export interface WidgetPanelsFrontstageState {
 }
 
 // @internal (undocumented)
-export function WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null;
+export function WidgetPanelsStatusBar(props: CommonProps): React_2.JSX.Element | null;
 
 // @internal (undocumented)
-export function WidgetPanelsTab(): JSX.Element;
+export function WidgetPanelsTab(): React_2.JSX.Element;
 
 // @internal (undocumented)
-export function WidgetPanelsToolbars(): JSX.Element;
+export function WidgetPanelsToolbars(): React_2.JSX.Element;
 
 // @internal (undocumented)
-export function WidgetPanelsToolSettings(): JSX.Element | null;
+export function WidgetPanelsToolSettings(): React_2.JSX.Element | null;
 
 // @public @deprecated
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
@@ -7817,12 +7816,12 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => React_2.JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
     new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>> | Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
-        render(): JSX.Element;
+        render(): React_2.JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
@@ -7847,7 +7846,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
         UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
     };
     new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>, context: any): {
-        render(): JSX.Element;
+        render(): React_2.JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
@@ -7875,7 +7874,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => React_2.JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

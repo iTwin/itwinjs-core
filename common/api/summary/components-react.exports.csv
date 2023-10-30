@@ -68,9 +68,9 @@ public;CompositeFilterType
 public;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 public;computeVisibleNodes(model: TreeModel): VisibleTreeNodes
-public;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
+public;ControlledSelectableContent(props: ControlledSelectableContentProps): React_2.JSX.Element
 public;ControlledSelectableContentProps
-public;ControlledTree(props: ControlledTreeProps): JSX.Element
+public;ControlledTree(props: ControlledTreeProps): React_2.JSX.Element
 public;ControlledTreeProps 
 public;ConvertedPrimitives
 internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
@@ -81,11 +81,11 @@ public;CustomToolbarItem
 public;DataController
 public;class DataControllerBase 
 internal;DataRowItem 
-internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
+internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): React_2.JSX.Element
 internal;DateFieldProps 
 public;DateFormatOptions
-alpha;DatePicker(props: DatePickerProps): JSX.Element
-alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePicker(props: DatePickerProps): React_2.JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): React_2.JSX.Element
 alpha;DatePickerPopupButtonProps 
 alpha;DatePickerProps
 internal;DateTimeEditor 
@@ -113,7 +113,7 @@ public;EnumPropertyEditor
 public;EnumTypeConverter 
 public;ErrorObserver
 public;FavoritePropertiesRenderer
-alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
+alpha;FavoritePropertyList(props: FavoritePropertyListProps): React_2.JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
 deprecated;FieldFilterDescriptor 
@@ -159,7 +159,7 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode_2, flag: SelectionMod
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
 public;HighlightableTreeProps
-public;HighlightedText(props: HighlightedTextProps): JSX.Element
+public;HighlightedText(props: HighlightedTextProps): React_3.JSX.Element
 public;HighlightedTextProps
 public;HighlightInfo
 public;HighlightingComponentProps
@@ -211,7 +211,7 @@ public;ITreeNodeLoader
 public;ITreeNodeLoaderWithProvider
 public;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
-public;LinksRenderer(props: LinksRendererProps): JSX.Element
+public;LinksRenderer(props: LinksRendererProps): React_2.JSX.Element
 public;LinksRendererProps
 public;LoadedBinaryImage 
 public;LoadedImage
@@ -261,20 +261,20 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 public;PagedTreeNodeLoader
 public;PageOptions
-public;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
+public;ParsedInput: (props: ParsedInputProps) => React_2.ReactElement | null
 public;ParsedInputProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
-public;PopupItem(props: PopupItemProps): JSX.Element
-internal;PopupItemPopup(props: PopupItemPopupProps): JSX.Element
+public;PopupItem(props: PopupItemProps): React_2.JSX.Element
+internal;PopupItemPopup(props: PopupItemPopupProps): React_2.JSX.Element
 public;PopupItemProps 
-public;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
+public;PopupItemWithDrag(props: PopupItemWithDragProps): React_2.JSX.Element
 public;PopupItemWithDragProps 
 public;PrimitivePropertyLabelRenderer 
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
 public;PrimitivePropertyValueRenderer 
-internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element
+internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): React_2.JSX.Element
 public;PrimitiveRendererProps 
 public;PropertyCategory
 public;PropertyCategoryBlock 
@@ -296,7 +296,7 @@ public;class PropertyEditorBase
 public;PropertyEditorManager
 public;PropertyEditorProps 
 beta;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
-beta;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
+beta;PropertyFilterBuilder(props: PropertyFilterBuilderProps): React_2.JSX.Element
 beta;PropertyFilterBuilderProps
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
@@ -343,7 +343,7 @@ public;RowItem
 deprecated;RowItem
 public;RowProps
 deprecated;RowProps
-public;SelectableContent(props: SelectableContentProps): JSX.Element
+public;SelectableContent(props: SelectableContentProps): React_2.JSX.Element
 public;SelectableContentDefinition
 public;SelectableContentProps
 internal;SelectionHandler
@@ -431,13 +431,13 @@ beta;ThemedEnumEditorProps
 deprecated;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
 deprecated;ThemedEnumPropertyEditor 
-internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
+internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): React_2.JSX.Element
 internal;TimeFieldProps
 internal;TimeSpec
 public;toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 public;ToggleEditor 
 public;TogglePropertyEditor 
-public;Toolbar(props: ToolbarProps): JSX.Element
+public;Toolbar(props: ToolbarProps): React_2.JSX.Element
 public;ToolbarButtonItem: React_2.MemoExoticComponent
 public;ToolbarButtonItemProps 
 public;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
@@ -452,7 +452,7 @@ public;ToolbarPopupAutoHideContext: React_2.Context
 public;ToolbarPopupContext: React_2.Context
 public;ToolbarPopupContextProps
 public;ToolbarProps 
-public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
+public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): React_2.JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React_2.Context
 public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
@@ -481,7 +481,7 @@ public;TreeModelNodePlaceholder
 public;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
 public;TreeModelRootNode
 public;TreeModelSource
-public;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
+public;TreeNodeEditor(props: TreeNodeEditorProps): React_2.JSX.Element
 public;TreeNodeEditorProps
 public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React_2.ReactNode
 public;TreeNodeEventArgs
@@ -522,7 +522,7 @@ public;useTreeNodeLoader
 public;VirtualizedPropertyGrid 
 public;VirtualizedPropertyGridContext
 public;VirtualizedPropertyGridProps 
-public;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+public;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): React_3.JSX.Element
 public;VirtualizedPropertyGridWithDataProviderProps 
 public;VisibleTreeNodes 
 public;withContextStyle: (node: React_2.ReactNode, context?: PropertyValueRendererContext | undefined) => React_2.ReactNode

@@ -11,9 +11,9 @@ public;AutoSuggestProps
 internal;Badge 
 internal;BadgeProps 
 internal;BadgeUtilities
-internal;BetaBadge(props: CommonProps): JSX.Element
-public;BlockText(props: TextProps): JSX.Element
-public;BodyText(props: TextProps): JSX.Element
+internal;BetaBadge(props: CommonProps): React_2.JSX.Element
+public;BlockText(props: TextProps): React_2.JSX.Element
+public;BodyText(props: TextProps): React_2.JSX.Element
 public;Button 
 deprecated;Button 
 public;ButtonProps 
@@ -26,7 +26,7 @@ internal;calculateBackdropFilterBlur: (proximityScale: number) => number
 internal;calculateBoxShadowOpacity: (proximityScale: number) => number
 internal;calculateProximityScale: (proximity: number, snap?: boolean, threshold?: number) => number
 internal;calculateToolbarOpacity: (proximityScale: number) => number
-public;Centered(props: CommonDivProps): JSX.Element
+public;Centered(props: CommonDivProps): React_2.JSX.Element
 public;Checkbox 
 deprecated;Checkbox 
 public;CheckBoxInfo
@@ -36,7 +36,7 @@ public;CheckBoxState
 public;CheckListBox 
 public;CheckListBoxItem 
 public;CheckListBoxItemProps 
-public;CheckListBoxSeparator(): JSX.Element
+public;CheckListBoxSeparator(): React_2.JSX.Element
 internal;Circle
 public;ClassNameProps
 internal;CloseSettingsContainerEvent 
@@ -61,12 +61,12 @@ deprecated;DialogButtonStyle
 public;DialogButtonType
 deprecated;DialogButtonType
 public;DialogProps 
-public;DisabledText(props: TextProps): JSX.Element
-public;Div(props: DivProps): JSX.Element
+public;DisabledText(props: TextProps): React_2.JSX.Element
+public;Div(props: DivProps): React_2.JSX.Element
 public;DivProps 
 public;DivWithOutsideClick:
 public;ElementResizeObserver({ watchedElement, render }:
-public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
+public;ElementSeparator: (props: ElementSeparatorProps) => React_2.JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
 public;ExpandableBlock 
@@ -77,8 +77,8 @@ public;ExpandableList
 public;ExpandableListProps 
 public;ExpansionToggle 
 public;ExpansionToggleProps 
-beta;FeaturedTile(props: TileProps): JSX.Element
-deprecated;FeaturedTile(props: TileProps): JSX.Element
+beta;FeaturedTile(props: TileProps): React_2.JSX.Element
+deprecated;FeaturedTile(props: TileProps): React_2.JSX.Element
 public;Field 
 deprecated;Field 
 public;FieldDef
@@ -90,20 +90,20 @@ public;FieldProps
 deprecated;FieldProps 
 public;FieldValues
 deprecated;FieldValues
-public;FillCentered(props: CommonDivProps): JSX.Element
-alpha;FilteredText(props: FilteredTextProps): JSX.Element
+public;FillCentered(props: CommonDivProps): React_2.JSX.Element
+alpha;FilteredText(props: FilteredTextProps): React_2.JSX.Element
 alpha;FilteredTextProps 
 internal;flattenChildren: (children: React_2.ReactNode) => React_2.ReactNode
-public;FlexWrapContainer(props: CommonDivProps): JSX.Element
+public;FlexWrapContainer(props: CommonDivProps): React_2.JSX.Element
 internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React_2.RefObject
-internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
+internal;FocusTrap(props: FocusTrapProps): React_2.JSX.Element | null
 internal;FocusTrapProps 
 public;Form 
 public;FormContext: React_2.Context
 deprecated;FormContext: React_2.Context
 public;FormContextState 
 public;FormProps
-public;Gap(props: GapProps): JSX.Element
+public;Gap(props: GapProps): React_2.JSX.Element
 public;GapProps 
 public;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
@@ -121,21 +121,21 @@ public;GlobalDialog
 public;GlobalDialogProps 
 public;GlobalDialogState
 internal;hasPointerEventsSupport(): boolean
-public;Headline(props: TextProps): JSX.Element
-deprecated;Headline(props: TextProps): JSX.Element
+public;Headline(props: TextProps): React_2.JSX.Element
+deprecated;Headline(props: TextProps): React_2.JSX.Element
 public;HorizontalAlignment
-public;HorizontalTabs(props: TabsProps): JSX.Element
-deprecated;HorizontalTabs(props: TabsProps): JSX.Element
-public;Icon(props: IconProps): JSX.Element | null
+public;HorizontalTabs(props: TabsProps): React_2.JSX.Element
+deprecated;HorizontalTabs(props: TabsProps): React_2.JSX.Element
+public;Icon(props: IconProps): React_2.JSX.Element | null
 public;IconHelper
-public;IconInput: (props: IconInputProps) => JSX.Element | null
+public;IconInput: (props: IconInputProps) => React_2.ReactElement | null
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React_2.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
-public;Input: (props: InputProps) => JSX.Element | null
-deprecated;Input: (props: InputProps) => JSX.Element | null
+public;Input: (props: InputProps) => React_2.ReactElement | null
+deprecated;Input: (props: InputProps) => React_2.ReactElement | null
 public;InputLabel 
 public;InputLabelProps 
 public;InputProps 
@@ -147,35 +147,35 @@ internal;isPromiseLike(obj: unknown): obj is PromiseLike
 internal;isReactMessage: (message: MessageType) => message is ReactMessage
 internal;ItemKeyboardNavigator
 public;LabeledComponentProps
-public;LabeledInput(props: LabeledInputProps): JSX.Element
-deprecated;LabeledInput(props: LabeledInputProps): JSX.Element
+public;LabeledInput(props: LabeledInputProps): React_2.JSX.Element
+deprecated;LabeledInput(props: LabeledInputProps): React_2.JSX.Element
 public;LabeledInputProps 
 deprecated;LabeledInputProps 
 public;LabeledSelect 
 deprecated;LabeledSelect 
 public;LabeledSelectProps 
 deprecated;LabeledSelectProps 
-public;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
-deprecated;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
+public;LabeledTextarea(props: LabeledTextareaProps): React_2.JSX.Element
+deprecated;LabeledTextarea(props: LabeledTextareaProps): React_2.JSX.Element
 public;LabeledTextareaProps 
 deprecated;LabeledTextareaProps 
-beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
-deprecated;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
+beta;LabeledThemedSelect(props: LabeledThemedSelectProps): React_2.JSX.Element
+deprecated;LabeledThemedSelect(props: LabeledThemedSelectProps): React_2.JSX.Element
 beta;LabeledThemedSelectProps 
 deprecated;LabeledThemedSelectProps 
 public;LabeledToggle 
 deprecated;LabeledToggle 
 public;LabeledToggleProps 
 deprecated;LabeledToggleProps 
-public;LeadingText(props: TextProps): JSX.Element
-deprecated;LeadingText(props: TextProps): JSX.Element
-public;LeadingText2(props: TextProps): JSX.Element
-deprecated;LeadingText2(props: TextProps): JSX.Element
+public;LeadingText(props: TextProps): React_2.JSX.Element
+deprecated;LeadingText(props: TextProps): React_2.JSX.Element
+public;LeadingText2(props: TextProps): React_2.JSX.Element
+deprecated;LeadingText2(props: TextProps): React_2.JSX.Element
 internal;Line
-alpha;Listbox(props: ListboxProps): JSX.Element
+alpha;Listbox(props: ListboxProps): React_2.JSX.Element
 alpha;ListboxContext: React_2.Context
 alpha;ListboxContextProps
-alpha;ListboxItem(props: ListboxItemProps): JSX.Element
+alpha;ListboxItem(props: ListboxItemProps): React_2.JSX.Element
 alpha;ListboxItemProps 
 alpha;ListboxProps 
 alpha;ListboxValue = string
@@ -195,22 +195,22 @@ public;MessageBoxProps
 public;MessageContainer 
 public;MessageContainerProps 
 public;MessagedComponentProps
-public;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+public;MessageRenderer(props: MessageRendererProps): React_2.JSX.Element | null
 public;MessageRendererProps 
 public;MessageSeverity
 deprecated;MessageSeverity
 public;MessageType = string | HTMLElement | ReactMessage
-beta;MinimalFeaturedTile(props: TileProps): JSX.Element
-deprecated;MinimalFeaturedTile(props: TileProps): JSX.Element
-beta;MinimalTile(props: TileProps): JSX.Element
-deprecated;MinimalTile(props: TileProps): JSX.Element
-public;MutedText(props: TextProps): JSX.Element
-internal;NewBadge(props: CommonProps): JSX.Element
+beta;MinimalFeaturedTile(props: TileProps): React_2.JSX.Element
+deprecated;MinimalFeaturedTile(props: TileProps): React_2.JSX.Element
+beta;MinimalTile(props: TileProps): React_2.JSX.Element
+deprecated;MinimalTile(props: TileProps): React_2.JSX.Element
+public;MutedText(props: TextProps): React_2.JSX.Element
+internal;NewBadge(props: CommonProps): React_2.JSX.Element
 public;NoChildrenProps
 public;NodeCheckboxProps
 public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React_2.ReactNode
 public;NodeCheckboxRenderProps = Omit_2
-public;NumberInput: (props: NumberInputProps) => JSX.Element | null
+public;NumberInput: (props: NumberInputProps) => React_2.ReactElement | null
 public;NumberInputProps 
 public;OmitChildrenProp
 beta;OptionsType = Array
@@ -225,19 +225,19 @@ internal;Point
 public;PointProps
 deprecated;PointProps
 public;Popup 
-public;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+public;PopupContextMenu(props: PopupContextMenuProps): React_2.JSX.Element
 public;PopupContextMenuProps 
 public;PopupProps 
 public;ProcessSettingsContainerCloseEvent 
 public;ProcessSettingsContainerCloseEventArgs
 public;ProcessSettingsTabActivationEvent 
 public;ProcessSettingsTabActivationEventArgs
-beta;ProgressBar(props: ProgressBarProps): JSX.Element
-deprecated;ProgressBar(props: ProgressBarProps): JSX.Element
+beta;ProgressBar(props: ProgressBarProps): React_2.JSX.Element
+deprecated;ProgressBar(props: ProgressBarProps): React_2.JSX.Element
 beta;ProgressBarProps 
 deprecated;ProgressBarProps 
-beta;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
-deprecated;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
+beta;ProgressSpinner(props: ProgressSpinnerProps): React_2.JSX.Element
+deprecated;ProgressSpinner(props: ProgressSpinnerProps): React_2.JSX.Element
 beta;ProgressSpinnerProps 
 deprecated;ProgressSpinnerProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
@@ -258,16 +258,16 @@ public;RenderPropsArgs
 public;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserverType = default_2
 public;ScrollPositionMaintainer 
-public;ScrollView(props: CommonDivProps): JSX.Element
+public;ScrollView(props: CommonDivProps): React_2.JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select: (props: SelectProps) => JSX.Element | null
-deprecated;Select: (props: SelectProps) => JSX.Element | null
+public;Select: (props: SelectProps) => React_2.ReactElement | null
+deprecated;Select: (props: SelectProps) => React_2.ReactElement | null
 public;SelectOption
 deprecated;SelectOption
 public;SelectProps 
 deprecated;SelectProps 
-public;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
+public;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => React_2.JSX.Element
 public;SettingsContainerProps
 public;SettingsManager
 public;SettingsProvidersChangedEvent 
@@ -277,11 +277,11 @@ public;SettingsTabsProvider
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
-public;Slider(props: SliderProps): JSX.Element
-deprecated;Slider(props: SliderProps): JSX.Element
+public;Slider(props: SliderProps): React_2.JSX.Element
+deprecated;Slider(props: SliderProps): React_2.JSX.Element
 public;SliderProps 
-public;SmallText(props: TextProps): JSX.Element
-deprecated;SmallText(props: TextProps): JSX.Element
+public;SmallText(props: TextProps): React_2.JSX.Element
+deprecated;SmallText(props: TextProps): React_2.JSX.Element
 public;SortDirection
 public;Spinner 
 deprecated;Spinner 
@@ -295,12 +295,12 @@ internal;SplitButtonActionType
 public;SplitButtonProps 
 deprecated;SplitButtonProps 
 public;StepFunctionProp = number | ((direction: string) => number | undefined)
-public;StyledText(props: StyledTextProps): JSX.Element
+public;StyledText(props: StyledTextProps): React_2.JSX.Element
 public;StyledTextProps 
-public;Subheading(props: TextProps): JSX.Element
-deprecated;Subheading(props: TextProps): JSX.Element
-public;Subheading2(props: TextProps): JSX.Element
-deprecated;Subheading2(props: TextProps): JSX.Element
+public;Subheading(props: TextProps): React_2.JSX.Element
+deprecated;Subheading(props: TextProps): React_2.JSX.Element
+public;Subheading2(props: TextProps): React_2.JSX.Element
+deprecated;Subheading2(props: TextProps): React_2.JSX.Element
 public;SvgPath 
 public;SvgPathProps 
 public;SvgSprite 
@@ -310,13 +310,13 @@ deprecated;SvgSpriteProps
 public;TabLabel
 public;Tabs 
 public;TabsProps 
-public;Textarea: (props: TextareaProps) => JSX.Element | null
-deprecated;Textarea: (props: TextareaProps) => JSX.Element | null
+public;Textarea: (props: TextareaProps) => React_2.ReactElement | null
+deprecated;Textarea: (props: TextareaProps) => React_2.ReactElement | null
 public;TextareaProps 
 deprecated;TextareaProps 
 public;TextProps 
-beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
-deprecated;ThemedSelect(props: ThemedSelectProps): JSX.Element
+beta;ThemedSelect(props: ThemedSelectProps): React_2.JSX.Element
+deprecated;ThemedSelect(props: ThemedSelectProps): React_2.JSX.Element
 beta;ThemedSelectProps =
 deprecated;ThemedSelectProps =
 beta;Tile 
@@ -326,12 +326,12 @@ beta;TileProps
 deprecated;TileProps 
 public;TimeFormat
 public;Timer
-public;Title(props: TextProps): JSX.Element
-deprecated;Title(props: TextProps): JSX.Element
-public;Title2(props: TextProps): JSX.Element
-deprecated;Title2(props: TextProps): JSX.Element
-public;Toggle: (props: ToggleProps) => JSX.Element | null
-deprecated;Toggle: (props: ToggleProps) => JSX.Element | null
+public;Title(props: TextProps): React_2.JSX.Element
+deprecated;Title(props: TextProps): React_2.JSX.Element
+public;Title2(props: TextProps): React_2.JSX.Element
+deprecated;Title2(props: TextProps): React_2.JSX.Element
+public;Toggle: (props: ToggleProps) => React_2.ReactElement | null
+deprecated;Toggle: (props: ToggleProps) => React_2.ReactElement | null
 public;ToggleButtonType
 deprecated;ToggleButtonType
 public;ToggleProps 
@@ -339,8 +339,8 @@ deprecated;ToggleProps
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
 internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
 internal;TOOLBAR_OPACITY_DEFAULT = 0.5
-beta;Tooltip(props: TooltipProps): JSX.Element
-deprecated;Tooltip(props: TooltipProps): JSX.Element
+beta;Tooltip(props: TooltipProps): React_2.JSX.Element
+deprecated;Tooltip(props: TooltipProps): React_2.JSX.Element
 beta;TooltipPlacement = "bottom" | "left" | "right" | "top"
 deprecated;TooltipPlacement = "bottom" | "left" | "right" | "top"
 beta;TooltipProps 
@@ -361,7 +361,7 @@ public;UiStateEntry
 public;UiStateStorage
 public;UiStateStorageResult
 public;UiStateStorageStatus
-public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
+public;UnderlinedButton(props: UnderlinedButtonProps): React_2.JSX.Element
 public;UnderlinedButtonProps
 beta;useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void
 public;useDisposable
@@ -380,8 +380,8 @@ public;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, s
 internal;useTargeted: (ref: React_2.RefObject
 internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment
-public;VerticalTabs(props: TabsProps): JSX.Element
-public;WebFontIcon(props: WebFontIconProps): JSX.Element
+public;VerticalTabs(props: TabsProps): React_2.JSX.Element
+public;WebFontIcon(props: WebFontIconProps): React_2.JSX.Element
 public;WebFontIconProps 
 internal;WidgetElementSet 
 internal;WidgetOpacityContext: React_2.Context
