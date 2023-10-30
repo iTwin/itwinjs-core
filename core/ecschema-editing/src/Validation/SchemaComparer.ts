@@ -288,7 +288,7 @@ export class SchemaComparer {
   public async compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void> {
     const promises: Array<Promise<void>> = [];
     for (const mixinA of entityA.mixins) {
-      if (!entityB || -1 === entityB.mixins.findIndex((m) => m.fullName === mixinA.fullName))
+      if (!entityB || -1 === entityB.mixins.findIndex((m) => m.name === mixinA.name)) // TODO: Double check this is okay
         promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
     }
 

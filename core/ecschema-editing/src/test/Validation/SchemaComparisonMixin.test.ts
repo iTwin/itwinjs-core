@@ -13,7 +13,7 @@ class TestSchemaCompareReporter implements ISchemaCompareReporter {
   }
 }
 
-function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string, fullNameB: string, propertyType?: string) {
+function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: string, fullNameB?: string, propertyType?: string) {
   let found = false;
   diagnostics.find((anyDiagnostic) => {
     switch (code) {
@@ -22,6 +22,13 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
           anyDiagnostic.messageArgs?.at(0) === propertyType &&
           anyDiagnostic.messageArgs?.at(1) === fullNameA &&
           anyDiagnostic.messageArgs?.at(2) === fullNameB) {
+          found = true;
+        }
+        break;
+      }
+      case SchemaCompareCodes.EntityMixinMissing: {
+        if (anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0).fullName === fullNameA) {
           found = true;
         }
         break;
@@ -35,14 +42,6 @@ describe("Mixin comparison tests", () => {
   let reporter: TestSchemaCompareReporter;
   let contextA: SchemaContext;
   let contextB: SchemaContext;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const dummyRefJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "DummyReference",
-    version: "01.00.01",
-    alias: "dumRef",
-  };
 
   const schemaAJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -193,6 +192,108 @@ describe("Mixin comparison tests", () => {
 
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-109", "SchemaA.testClass", "SchemaA.testClassB", "appliesTo");
       expect(foundDiag).to.equal(true);
+    });
+
+    it("should not report missing mixin", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            description: "Test class",
+            mixins: ["SchemaA.mixinA", "SchemaA.mixinB"],
+          },
+          mixinA: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaA.testClass",
+          },
+          mixinB: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaA.testClass",
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            description: "Test class",
+            mixins: ["SchemaB.mixinA", "SchemaB.mixinB"],
+          },
+          mixinA: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.testClass",
+          },
+          mixinB: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.testClass",
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinA")).to.equal(false);
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinB")).to.equal(false);
+
+    });
+
+    it("should report missing mixin", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            description: "Test class",
+            mixins: ["SchemaA.mixinA", "SchemaA.mixinB", "SchemaA.mixinC"],
+          },
+          mixinA: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaA.testClass",
+          },
+          mixinB: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaA.testClass",
+          },
+          mixinC: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaA.testClass",
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            description: "Test class",
+            mixins: ["SchemaB.mixinA", "SchemaB.mixinB", "SchemaB.mixinD"],
+          },
+          mixinA: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.testClass",
+          },
+          mixinB: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.testClass",
+          },
+          mixinD: {
+            schemaItemType: "Mixin",
+            appliesTo: "SchemaB.testClass",
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinC")).to.equal(true);
+      expect(findDiagnostic(reporter.changes[1].allDiagnostics, "SC-108", "SchemaB.mixinD")).to.equal(true);
+
     });
   });
 });
