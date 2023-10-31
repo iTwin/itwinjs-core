@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "4.3.0-dev.16",
+  "version": "4.3.0-dev.17",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
@@ -37,10 +37,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.16",
-    "@itwin/core-common": "workspace:^4.3.0-dev.16",
-    "@itwin/core-frontend": "workspace:^4.3.0-dev.16",
-    "@itwin/core-geometry": "workspace:^4.3.0-dev.16"
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.17",
+    "@itwin/core-common": "workspace:^4.3.0-dev.17",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.17",
+    "@itwin/core-geometry": "workspace:^4.3.0-dev.17"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
