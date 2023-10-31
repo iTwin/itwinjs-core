@@ -696,73 +696,6 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
-// @internal (undocumented)
-export class ChannelAdmin implements ChannelControl {
-    constructor(_iModel: IModelDb);
-    // (undocumented)
-    addAllowedChannel(channelKey: ChannelKey): void;
-    // (undocumented)
-    static readonly channelClassName = "bis:ChannelRootAspect";
-    // (undocumented)
-    getChannelKey(elementId: Id64String): ChannelKey;
-    // (undocumented)
-    get hasChannels(): boolean;
-    // (undocumented)
-    insertChannelSubject(args: {
-        subjectName: string;
-        channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
-    }): Id64String;
-    // (undocumented)
-    makeChannelRoot(args: {
-        elementId: Id64String;
-        channelKey: ChannelKey;
-    }): void;
-    // (undocumented)
-    removeAllowedChannel(channelKey: ChannelKey): void;
-    // (undocumented)
-    static readonly sharedChannel = "shared";
-    // (undocumented)
-    verifyChannel(modelId: Id64String): void;
-}
-
-// @beta
-export interface ChannelControl {
-    addAllowedChannel(channelKey: ChannelKey): void;
-    getChannelKey(elementId: Id64String): ChannelKey;
-    get hasChannels(): boolean;
-    insertChannelSubject(args: {
-        subjectName: string;
-        channelKey: ChannelKey;
-        parentSubjectId?: Id64String;
-        description?: string;
-    }): Id64String;
-    makeChannelRoot(args: {
-        elementId: Id64String;
-        channelKey: ChannelKey;
-    }): void;
-    removeAllowedChannel(channelKey: ChannelKey): void;
-    // @internal (undocumented)
-    verifyChannel(modelId: Id64String): void;
-}
-
-// @beta (undocumented)
-export namespace ChannelControl {
-    const sharedChannelName = "shared";
-}
-
-// @beta
-export type ChannelKey = string;
-
-// @public (undocumented)
-export class ChannelRootAspect extends ElementUniqueAspect {
-    // @internal (undocumented)
-    static get className(): string;
-    // @deprecated
-    static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
-}
-
 // @internal @deprecated (undocumented)
 export type CheckpointArg = DownloadRequest;
 
@@ -1289,6 +1222,73 @@ export class CodeSpecs {
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
     updateProperties(codeSpec: CodeSpec): void;
+}
+
+// @internal (undocumented)
+export class CompartmentAdmin implements CompartmentControl {
+    constructor(_iModel: IModelDb);
+    // (undocumented)
+    addAllowedCompartment(compartmentKey: CompartmentKey): void;
+    // (undocumented)
+    static readonly compartmentClassName = "bis:ChannelRootAspect";
+    // (undocumented)
+    getCompartmentKey(elementId: Id64String): CompartmentKey;
+    // (undocumented)
+    get hasCompartments(): boolean;
+    // (undocumented)
+    insertCompartmentSubject(args: {
+        subjectName: string;
+        compartmentKey: CompartmentKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    // (undocumented)
+    makeCompartmentRoot(args: {
+        elementId: Id64String;
+        compartmentKey: CompartmentKey;
+    }): void;
+    // (undocumented)
+    removeAllowedCompartment(compartmentKey: CompartmentKey): void;
+    // (undocumented)
+    static readonly sharedCompartment = "shared";
+    // (undocumented)
+    verifyCompartment(modelId: Id64String): void;
+}
+
+// @beta
+export interface CompartmentControl {
+    addAllowedCompartment(compartmentKey: CompartmentKey): void;
+    getCompartmentKey(elementId: Id64String): CompartmentKey;
+    get hasCompartments(): boolean;
+    insertCompartmentSubject(args: {
+        subjectName: string;
+        compartmentKey: CompartmentKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
+    makeCompartmentRoot(args: {
+        elementId: Id64String;
+        compartmentKey: CompartmentKey;
+    }): void;
+    removeAllowedCompartment(compartmentKey: CompartmentKey): void;
+    // @internal (undocumented)
+    verifyCompartment(modelId: Id64String): void;
+}
+
+// @beta (undocumented)
+export namespace CompartmentControl {
+    const sharedCompartmentName = "shared";
+}
+
+// @beta
+export type CompartmentKey = string;
+
+// @public (undocumented)
+export class CompartmentRootAspect extends ElementUniqueAspect {
+    // @internal (undocumented)
+    static get className(): string;
+    // @deprecated
+    static insert(iModel: IModelDb, ownerId: Id64String, compartmentKey: string): void;
 }
 
 // @public
@@ -2922,8 +2922,6 @@ export abstract class IModelDb extends IModel {
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
-    // @beta (undocumented)
-    readonly channels: ChannelControl;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
@@ -2937,6 +2935,8 @@ export abstract class IModelDb extends IModel {
     get codeSpecs(): CodeSpecs;
     get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
     set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
+    // @beta (undocumented)
+    readonly compartments: CompartmentControl;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T;
     containsClass(classFullName: string): boolean;

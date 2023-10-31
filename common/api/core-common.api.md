@@ -1148,16 +1148,6 @@ export enum ChangesetType {
     Schema = 1
 }
 
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
-// @public
-export interface ChannelRootAspectProps extends ElementAspectProps {
-    owner: string;
-}
-
 // @internal
 export interface ClassifierTileTreeId {
     // (undocumented)
@@ -1533,6 +1523,16 @@ export interface CommonMapLayerProps {
 
 // @internal
 export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number;
+
+// @alpha
+export class CompartmentConstraintError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData);
+}
+
+// @public
+export interface CompartmentRootAspectProps extends ElementAspectProps {
+    owner: string;
+}
 
 // @internal
 export class CompositeTileHeader extends TileHeader {

@@ -265,7 +265,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case RepositoryStatus.CodeUsed: return new StateViolation();
     case RepositoryStatus.LockNotHeld: return new Forbidden();
     case RepositoryStatus.RepositoryIsLocked: return new Locked();
-    case RepositoryStatus.ChannelConstraintViolation: return new ConstraintViolation();
+    case RepositoryStatus.CompartmentConstraintViolation: return new ConstraintViolation();
 
     case HttpStatus.Success: return new Success();
 

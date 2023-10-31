@@ -14,7 +14,7 @@ export {
   BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, DbResult, ChangeSetStatus,
 } from "@itwin/core-bentley";
 
-export type {GetMetaDataFunction, LogFunction, LoggingMetaData} from "@itwin/core-bentley";
+export type { GetMetaDataFunction, LogFunction, LoggingMetaData } from "@itwin/core-bentley";
 
 /** Numeric values for common errors produced by iTwin.js APIs, typically provided by [[IModelError]].
  * The values within each of these `enum`s are guaranteed not to conflict with one another.
@@ -57,12 +57,12 @@ export class BackendError extends IModelError {
 }
 
 /**
- * Channel constraint error
+ * Compartment constraint error
  * @alpha
  */
-export class ChannelConstraintError extends IModelError {
+export class CompartmentConstraintError extends IModelError {
   public constructor(message: string, getMetaData?: LoggingMetaData) {
-    super(RepositoryStatus.ChannelConstraintViolation, message, getMetaData);
+    super(RepositoryStatus.CompartmentConstraintViolation, message, getMetaData);
   }
 }
 

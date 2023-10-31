@@ -274,11 +274,11 @@ describe("Functional Domain", () => {
     assert.equal(commits, 1);
     assert.equal(committed, 1);
 
-    const testChannelKey = "channel for tests";
-    function testChannel<T>(fn: () => T, spies: Sinon.SinonSpy[]) {
-      iModelDb.channels.removeAllowedChannel(testChannelKey);
+    const testCompartmentKey = "compartment for tests";
+    function testCompartment<T>(fn: () => T, spies: Sinon.SinonSpy[]) {
+      iModelDb.compartments.removeAllowedCompartment(testCompartmentKey);
       expect(fn).throws("not allowed");
-      iModelDb.channels.addAllowedChannel(testChannelKey);
+      iModelDb.compartments.addAllowedCompartment(testCompartmentKey);
       spies.forEach((s) => s.resetHistory());
       return fn();
     }
@@ -336,22 +336,22 @@ describe("Functional Domain", () => {
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
-    expect(iModelDb.channels.hasChannels).equal(false);
+    expect(iModelDb.compartments.hasCompartments).equal(false);
 
-    // create a channel subject for all elements in this test
-    const channel1 = iModelDb.channels.insertChannelSubject({ subjectName: "TestSubject", channelKey: testChannelKey });
-    iModelDb.channels.addAllowedChannel(testChannelKey);
+    // create a compartment subject for all elements in this test
+    const compartment1 = iModelDb.compartments.insertCompartmentSubject({ subjectName: "TestSubject", compartmentKey: testCompartmentKey });
+    iModelDb.compartments.addAllowedCompartment(testCompartmentKey);
 
-    const partitionCode = FunctionalPartition.createCode(iModelDb, channel1, "Test Functional Model");
+    const partitionCode = FunctionalPartition.createCode(iModelDb, compartment1, "Test Functional Model");
     const partitionProps = {
       classFullName: TestFuncPartition.classFullName, model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(channel1), code: partitionCode,
+      parent: new SubjectOwnsPartitionElements(compartment1), code: partitionCode,
     };
 
     let partitionId = iModelDb.elements.insertElement(partitionProps);
-    const modelId = testChannel(() => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
+    const modelId = testCompartment(() => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
 
-    expect(() => iModelDb.channels.makeChannelRoot({ elementId: partitionId, channelKey: "nested channel" })).to.throw("may not nest");
+    expect(() => iModelDb.compartments.makeCompartmentRoot({ elementId: partitionId, compartmentKey: "nested compartment" })).to.throw("may not nest");
 
     assert.isTrue(Id64.isValidId64(modelId));
     assert.isTrue(spy.model.onInsert.calledOnce);
@@ -374,12 +374,12 @@ describe("Functional Domain", () => {
     assert.equal(spy.partition.onSubModelInserted.getCall(1).args[0].subModelId, modelId2, "Element.onSubModelInserted should have correct subModelId");
 
     const model2 = iModelDb.models.getModel(modelId2);
-    testChannel(() => model2.update(), []);
+    testCompartment(() => model2.update(), []);
     assert.equal(spy.model.onUpdated.getCall(0).args[0].id, modelId2);
     assert.equal(spy.model.onUpdate.callCount, 2);
     assert.equal(spy.model.onUpdated.callCount, 1);
 
-    testChannel(() => model2.delete(), [spy.model.onDelete, spy.partition.onSubModelDelete]);
+    testCompartment(() => model2.delete(), [spy.model.onDelete, spy.partition.onSubModelDelete]);
     assert.isTrue(spy.model.onDelete.calledOnce);
     assert.isTrue(spy.model.onDeleted.calledOnce);
     assert.equal(spy.model.onDeleted.getCall(0).args[0].id, modelId2);
@@ -388,7 +388,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId, modelId2);
 
     const breakdownProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "Breakdown1" } };
-    const breakdownId = testChannel(() => elements.insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);
+    const breakdownId = testCompartment(() => elements.insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);
     assert.isTrue(Id64.isValidId64(breakdownId));
     assert.isTrue(spy.model.onInsertElement.calledOnce);
     assert.isTrue(spy.model.onInsertedElement.calledOnce);
@@ -411,7 +411,7 @@ describe("Functional Domain", () => {
 
     TestFuncAspect.expectedVal = aspect.strProp;
 
-    testChannel(() => elements.insertAspect(aspect), [spy.aspect.onInsert]);
+    testCompartment(() => elements.insertAspect(aspect), [spy.aspect.onInsert]);
     assert.isTrue(spy.aspect.onInsert.calledOnce);
     assert.isTrue(spy.aspect.onInserted.calledOnce);
     assert.isFalse(spy.aspect.onUpdate.called);
@@ -420,7 +420,7 @@ describe("Functional Domain", () => {
 
     aspect.strProp = "prop 2";
     TestFuncAspect.expectedVal = aspect.strProp;
-    testChannel(() => elements.updateAspect(aspect), [spy.aspect.onUpdate]);
+    testCompartment(() => elements.updateAspect(aspect), [spy.aspect.onUpdate]);
     assert.equal(spy.aspect.onInsert.callCount, 1, "ElementAspect.onInsert should not be called on update");
     assert.equal(spy.aspect.onInserted.callCount, 1, "ElementAspect.onInserted should should not be called on update");
     assert.equal(spy.aspect.onUpdate.callCount, 1);
@@ -428,7 +428,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.aspect.onUpdated.getCall(0).args[0].props.element.id, bd2, "from ElementAspect.onUpdated");
     const aspects = elements.getAspects(bd2, TestFuncAspect.classFullName);
     assert.equal(aspects.length, 1);
-    testChannel(() => elements.deleteAspect(aspects[0].id), [spy.aspect.onDelete]);
+    testCompartment(() => elements.deleteAspect(aspects[0].id), [spy.aspect.onDelete]);
     assert.equal(spy.aspect.onDelete.callCount, 1);
     assert.equal(spy.aspect.onDeleted.callCount, 1);
     assert.equal(spy.aspect.onDelete.getCall(0).args[0].aspectId, aspects[0].id);
@@ -436,10 +436,10 @@ describe("Functional Domain", () => {
 
     let bd2el = elements.getElement(bd2);
     assert.equal(bd2el.userLabel, insertedLabel, "label was modified by onInsert");
-    expect(iModelDb.channels.getChannelKey(bd2)).equals(testChannelKey);
+    expect(iModelDb.compartments.getCompartmentKey(bd2)).equals(testCompartmentKey);
 
     bd2el.userLabel = "nothing";
-    testChannel(() => bd2el.update(), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
+    testCompartment(() => bd2el.update(), [spy.breakdown.onUpdate, spy.breakdown.onUpdated]);
     bd2el = elements.getElement(bd2);
     assert.equal(bd2el.userLabel, updatedLabel, "label was modified in onUpdate");
     assert.equal(spy.breakdown.onUpdate.callCount, 1);
@@ -447,7 +447,7 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onUpdate.getCall(0).args[0].props.id, bd2);
     assert.equal(spy.breakdown.onUpdated.getCall(0).args[0].id, bd2);
 
-    testChannel(() => bd2el.delete(), [spy.breakdown.onDelete]);
+    testCompartment(() => bd2el.delete(), [spy.breakdown.onDelete]);
     assert.equal(spy.breakdown.onDelete.callCount, 1);
     assert.equal(spy.breakdown.onDeleted.callCount, 1);
     const deleteArg = spy.breakdown.onDelete.getCall(0).args[0];
@@ -469,14 +469,14 @@ describe("Functional Domain", () => {
       parent: { id: breakdownId, relClassName: ElementOwnsChildElements.classFullName },
       code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
-    const componentId = testChannel(() => elements.insertElement(componentProps), []);
+    const componentId = testCompartment(() => elements.insertElement(componentProps), []);
     assert.isTrue(Id64.isValidId64(componentId));
     assert.equal(spy.breakdown.onChildInserted.callCount, 1);
     assert.equal(spy.breakdown.onChildInserted.getCall(0).args[0].childId, componentId);
 
     // test model and element callbacks for updateElement
     const component1 = elements.getElement(componentId);
-    testChannel(() => component1.update(), [spy.model.onUpdateElement, spy.model.onUpdatedElement]);
+    testCompartment(() => component1.update(), [spy.model.onUpdateElement, spy.model.onUpdatedElement]);
     assert.equal(spy.model.onUpdateElement.callCount, 1);
     assert.equal(spy.model.onUpdatedElement.callCount, 1);
     assert.equal(spy.model.onUpdatedElement.getCall(0).args[0].elementId, componentId);
@@ -515,7 +515,7 @@ describe("Functional Domain", () => {
     const compEl3 = elements.getElementProps(comp3);
     compEl3.parent!.id = breakdownId;
 
-    testChannel(() => elements.updateElement(compEl3), []);
+    testCompartment(() => elements.updateElement(compEl3), []);
 
     assert.equal(spy.breakdown.onChildAdd.callCount, 1);
     assert.equal(spy.breakdown.onChildAdd.getCall(0).args[0].parentId, breakdownId);
@@ -544,7 +544,7 @@ describe("Functional Domain", () => {
     const filename = iModelDb.pathName;
     iModelDb.close();
     const imodel2 = StandaloneDb.openFile(filename, OpenMode.Readonly);
-    expect(imodel2.channels.hasChannels).equal(true);
+    expect(imodel2.compartments.hasCompartments).equal(true);
     imodel2.close();
 
   });

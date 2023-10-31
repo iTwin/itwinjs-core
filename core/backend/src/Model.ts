@@ -98,7 +98,7 @@ export class Model extends Entity {
    */
   protected static onInsert(arg: OnModelPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(props.modeledElement.id);
+    iModel.compartments.verifyCompartment(props.modeledElement.id);
     if (props.parentModel)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
@@ -120,7 +120,7 @@ export class Model extends Entity {
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
     const id = arg.props.id!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    arg.iModel.channels.verifyChannel(id);
+    arg.iModel.compartments.verifyCompartment(id);
     arg.iModel.locks.checkExclusiveLock(id, "model", "update");
   }
 
@@ -139,7 +139,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnModelIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.id);
+    arg.iModel.compartments.verifyCompartment(arg.id);
     arg.iModel.locks.checkExclusiveLock(arg.id, "model", "delete");
   }
 

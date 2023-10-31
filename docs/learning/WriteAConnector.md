@@ -577,7 +577,7 @@ See this article on [AccessToken](./common/AccessToken.md)
 
 The Connector SDK takes care of acquiring locks and codes. It goes to iModelHub to acquire all needed locks and to request all codes used before committing the local transaction. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a Connector must not call SaveChanges directly.
 
-The connector’s channel root element is locked. No elements or models in the channel are locked. As long as the Connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a Connector inserts or updates.
+The connector’s compartment root element is locked. No elements or models in the compartment are locked. As long as the Connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a Connector inserts or updates.
 
 A Connector is required to scope all of the subjects and definitions and their models under a job-specific ["subject element"](#job-subjects) in the iModel. The only time a Connector should write to a common model, such as the dictionary model, is when it creates its job subject.
 

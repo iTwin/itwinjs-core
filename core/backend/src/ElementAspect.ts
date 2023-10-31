@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { CompartmentRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -64,7 +64,7 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    arg.iModel.compartments.verifyCompartment(arg.model);
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -79,7 +79,7 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    arg.iModel.compartments.verifyCompartment(arg.model);
   }
 
   /** Called after an ElementAspect was updated.
@@ -94,7 +94,7 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnAspectIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    arg.iModel.compartments.verifyCompartment(arg.model);
   }
 
   /** Called after an ElementAspect was deleted.
@@ -123,14 +123,14 @@ export class ElementMultiAspect extends ElementAspect {
 /**
  * @public
  */
-export class ChannelRootAspect extends ElementUniqueAspect {
+export class CompartmentRootAspect extends ElementUniqueAspect {
   /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
-  /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
+  /** Insert a CompartmentRootAspect on the specified element.
+   * @deprecated in 4.0 use [[CompartmentControl.makeCompartmentRoot]]. This method does not enforce the rule that compartments may not nest and is therefore dangerous.
    */
-  public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
-    const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
+  public static insert(iModel: IModelDb, ownerId: Id64String, compartmentKey: string) {
+    const props: CompartmentRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: compartmentKey };
     iModel.elements.insertAspect(props);
   }
 }

@@ -466,12 +466,13 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
   scale?: XYZProps;
 }
 
-/** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
+/** Properties of an [CompartmentRootAspect]($backend) that identifies an Element as the root of a compartment.
+ * @see [Working With Compartments]($docs/learning/backend/Compartment.md) for details
  * @public
  * @extensions
  */
-export interface ChannelRootAspectProps extends ElementAspectProps {
-  /** The owner of the channel */
+export interface CompartmentRootAspectProps extends ElementAspectProps {
+  /** The owner of the compartment */
   owner: string;
 }
 

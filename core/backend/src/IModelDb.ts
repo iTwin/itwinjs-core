@@ -29,7 +29,7 @@ import {
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
+import { CompartmentAdmin, CompartmentControl } from "./CompartmentControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -230,7 +230,7 @@ export abstract class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   /** @beta */
-  public readonly channels: ChannelControl = new ChannelAdmin(this);
+  public readonly compartments: CompartmentControl = new CompartmentAdmin(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();

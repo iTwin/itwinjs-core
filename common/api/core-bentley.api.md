@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1476,10 +1474,10 @@ export enum RealityDataStatus {
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
-    ChannelConstraintViolation = 86031,
     CodeNotReserved = 86027,
     CodeUnavailable = 86026,
     CodeUsed = 86028,
+    CompartmentConstraintViolation = 86031,
     InvalidRequest = 86024,
     InvalidResponse = 86020,
     LockAlreadyHeld = 86018,

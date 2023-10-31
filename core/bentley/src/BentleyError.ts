@@ -217,8 +217,8 @@ export enum RepositoryStatus {
   LockNotHeld = 0x1500D,
   /** Repository is currently locked, no changes allowed */
   RepositoryIsLocked = 0x1500E,
-  /** Channel write constraint violation, such as an attempt to write outside the designated channel. */
-  ChannelConstraintViolation = 0x1500F,
+  /** Compartment write constraint violation, such as an attempt to write outside of allowed compartments. */
+  CompartmentConstraintViolation = 0x1500F,
 }
 
 /** Status from returned HTTP status code
@@ -602,7 +602,7 @@ export class BentleyError extends Error {
       case RepositoryStatus.CodeUsed: return "CodeUsed";
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
-      case RepositoryStatus.ChannelConstraintViolation: return "ChannelConstraintViolation";
+      case RepositoryStatus.CompartmentConstraintViolation: return "CompartmentConstraintViolation";
       case HttpStatus.Info: return "HTTP Info";
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
