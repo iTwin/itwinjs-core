@@ -577,6 +577,23 @@
       ]
     },
     {
+      "name": "[perftests] ElementAspect PerfTests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:elAspect"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] SchemaDesign PerfTests (Offline)",
       "presentation": {
         "group": "6_Misc"
