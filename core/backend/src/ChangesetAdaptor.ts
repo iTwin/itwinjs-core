@@ -9,7 +9,7 @@ interface IClassRef {
   classId: Id64String;
   className: string;
 }
-/** @internal */
+
 interface IClassMap {
   readonly id: Id64String;
   readonly name: string;
@@ -19,13 +19,11 @@ interface IClassMap {
   readonly properties: IProperty[];
 }
 
-/** @internal */
 interface IDateTimeInfo {
   readonly dateTimeKind?: "Utc" | "Local" | "Unspecified";
   readonly dateTimeComponent?: "DateTime" | "Date" | "TimeOfDay";
 }
 
-/** @internal */
 interface IProperty {
   readonly id: Id64String;
   readonly name: string;
@@ -39,7 +37,6 @@ interface IProperty {
 
 }
 
-/** @internal */
 interface IColumn {
   readonly table: string;
   readonly column: string;
@@ -49,7 +46,6 @@ interface IColumn {
   readonly isVirtual: boolean;
 }
 
-/** @internal */
 interface ITable {
   readonly id: Id64String;
   readonly name: string;
@@ -58,7 +54,6 @@ interface ITable {
   readonly isClassIdVirtual: boolean;
 }
 
-/** @internal */
 class MapCache {
   private _cachedClassMaps = new Map<Id64String, IClassMap>();
   private _cacheTables = new Map<string, ITable>();
@@ -83,8 +78,6 @@ class MapCache {
       return classIds;
     });
   }
-
-  /** @internal */
   public getTable(tableName: string): ITable | undefined {
     if (this._cacheTables.has(tableName))
       return this._cacheTables.get(tableName);
@@ -138,8 +131,6 @@ class MapCache {
       return undefined;
     });
   }
-
-  /** @internal */
   public getClassMap(classId: Id64String): IClassMap | undefined {
     if (this._cachedClassMaps.has(classId))
       return this._cachedClassMaps.get(classId);
@@ -349,17 +340,17 @@ class MapCache {
 
 /** @beta */
 export interface MetaData {
-  table: string[];
+  tables: string[];
   className?: string;
   op: SqliteChangeOp;
-  stage?: SqliteValueStage;
+  stage: SqliteValueStage;
   fallbackClassId?: Id64String;
-  changeIndex: number;
+  changeIndexes: number[];
   [key: string]: any;
 }
 
 /** @beta */
-export interface ECChangedInstance {
+export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   ECInstanceId: Id64String;
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -368,40 +359,128 @@ export interface ECChangedInstance {
   [key: string]: any;
 }
 
+/** @beta */
 namespace DateTime {
   export function toJulianDay(dt: Date, convertToUtc = true) {
     const utcOffset = convertToUtc ? dt.getTimezoneOffset() / 1440 : 0;
     return (dt.valueOf() / 86400000) - utcOffset + 2440587.5;
   }
-
   export function fromJulianDay(jd: number, isLocalTime: boolean) {
     const utcOffset = isLocalTime ? 0 : new Date().getTimezoneOffset() / 1440;
     return new Date((jd - 2440587.5 + utcOffset) * 86400000);
   }
 }
+/**
+ * Combine partial changed instance into single instance.
+ * Partial changes is per table and a single instance can
+ * span multiple tables.
+ * @beta
+ */
+export class CompleteChangedInstanceBuilder {
+  private _cache = new Map<string, ChangedECInstance>();
+  private combine(rhs: ChangedECInstance) {
+    if (!rhs.$meta) {
+      throw new Error("PartialECChange being combine must have '$meta' property");
+    }
+    const key = CompleteChangedInstanceBuilder.buildKey(rhs);
+    const lhs = this._cache.get(key);
+    if (lhs) {
+      const { $meta: _, ...restOfRhs } = rhs;
+      Object.assign(lhs, restOfRhs);
+      if (lhs.$meta && rhs.$meta) {
+        lhs.$meta.tables = [...rhs.$meta?.tables, ...lhs.$meta?.tables];
+        lhs.$meta.changeIndexes = [...rhs.$meta?.changeIndexes, ...lhs.$meta?.changeIndexes];
+      }
+    } else {
+      this._cache.set(key, rhs);
+    }
+  }
+  private static buildKey(change: ChangedECInstance) {
+    return `${change.ECClassId}-${change.ECInstanceId}-${change.$meta?.stage}`.toLowerCase();
+  }
+  /**
+   * Append partial changes which will be combine using there instance key.
+   * @note $meta property must be present on partial change as information
+   * in it is used to combine partial instances.
+   * @param adaptor changeset adaptor is use to read the partial EC change.
+   * @beta
+   */
+  public appendFrom(adaptor: ChangesetAdaptor) {
+    if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
+      this.combine(adaptor.inserted);
+      this.combine(adaptor.deleted);
+    } else if (adaptor.op === "Inserted" && adaptor.inserted) {
+      this.combine(adaptor.inserted);
+    } else if (adaptor.op === "Deleted" && adaptor.deleted) {
+      this.combine(adaptor.deleted);
+    }
+  }
+  /**
+   * Returns complete EC change instances.
+   * @beta
+   */
+  public get instances() { return this._cache.values(); }
+}
 
-/** @beta */
+/**
+ * Transform sqlite change to ec change. EC change is partial change as
+ * it is per table while a single instance can span multiple table.
+ * @note PrimitiveArray and StructArray are not supported types.
+ * @beta
+ *
+*/
 export class ChangesetAdaptor implements IDisposable {
   private readonly _mapCache: MapCache;
   private readonly _tableFilter = new Set<string>();
   private readonly _opFilter = new Set<SqliteChangeOp>();
   private readonly _classFilter = new Set<string>();
   private _allowedClasses = new Set<string>();
-  public inserted?: ECChangedInstance;
-  public deleted?: ECChangedInstance;
+  /**
+   * set debug flags
+   */
+  public readonly debugFlags = {
+    replaceBlobWithEllipsis: false, // replace bolb with ... for debugging
+    replaceGeomWithEllipsis: false, // replace geom with ... for debugging
+  };
+  /**
+   * Return partial inserted instance
+   * For updates inserted represent new version of instance after update.
+   */
+  public inserted?: ChangedECInstance;
+  /**
+   * Return partial deleted instance.
+   * For updates deleted represent old version of instance before update.
+   */
+  public deleted?: ChangedECInstance;
 
+  /**
+   * Setup filter that will result in change enumeration restricted to
+   * list of tables added by acceptTable().
+   * @param table Name of the table
+   * @returns Fluent reference to ChangesetAdaptor.
+   */
   public acceptTable(table: string) {
     if (!this._tableFilter.has(table))
       this._tableFilter.add(table);
     return this;
   }
-
+  /**
+   * Setup filter that will result in change enumeration restricted to
+   * list of op added by acceptOp().
+   * @param op
+   * @returns Fluent reference to ChangesetAdaptor.
+   */
   public acceptOp(op: SqliteChangeOp) {
     if (!this._opFilter.has(op))
       this._opFilter.add(op);
     return this;
   }
-
+  /**
+   * Setup filter that will result in change enumeration restricted to
+   * list of class and its derived classes added by acceptClass().
+   * @param classFullName
+   * @returns
+   */
   public acceptClass(classFullName: string) {
     if (!this._classFilter.has(classFullName))
       this._classFilter.add(classFullName);
@@ -409,7 +488,6 @@ export class ChangesetAdaptor implements IDisposable {
     this._allowedClasses.clear();
     return this;
   }
-
   private buildClassFilter() {
     if (this._allowedClasses.size !== 0 || this._classFilter.size === 0)
       return;
@@ -420,7 +498,12 @@ export class ChangesetAdaptor implements IDisposable {
       });
     });
   }
-
+  /**
+   * Construct adaptor with a initialized reader.
+   * @note the changeset reader must have disableSchemaCheck
+   * set to false and db must also be set.
+   * @param reader wrap changeset reader.
+   */
   public constructor(public readonly reader: SqliteChangesetReader) {
     if (!reader.db)
       throw new Error("SqliteChangesetReader, 'db' param must be set to a valid IModelDb or ECDb.");
@@ -430,15 +513,18 @@ export class ChangesetAdaptor implements IDisposable {
 
     this._mapCache = new MapCache(reader.db);
   }
-
+  /**
+   * dispose current instance and it will also dispose the changeset reader.
+   */
   public dispose(): void {
     this.close();
   }
-
+  /**
+   * close current instance and it will also close the changeset reader.
+   */
   public close() {
     this.reader.close();
   }
-
   private static convertBinaryToGuid(array: Uint8Array): GuidString {
     // Check if the array has 16 elements
     if (array.length !== 16) {
@@ -450,7 +536,6 @@ export class ChangesetAdaptor implements IDisposable {
     return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
 
   }
-
   private static setValue(obj: any, accessString: string, value: any) {
     let cursor = obj;
     const list = accessString.split(".");
@@ -464,7 +549,11 @@ export class ChangesetAdaptor implements IDisposable {
     cursor[list[len - 1]] = value;
   }
 
-  /** Check if given table contain EC Data */
+  /**
+   * Check if sqlite change table is a EC data table
+   * @param tableName name of the table.
+   * @returns true if table has EC data.
+   */
   public isECTable(tableName: string) {
     return typeof this._mapCache.getTable(tableName) !== "undefined";
   }
@@ -478,9 +567,13 @@ export class ChangesetAdaptor implements IDisposable {
       return undefined;
     }
   }
+  /** helper method around reader.op */
   public get op() { return this.reader.op; }
+  /** Return true if current change is of type "Inserted" */
   public get isInserted() { return this.op === "Inserted"; }
+  /** Return true if current change is of type "Deleted" */
   public get isDeleted() { return this.op === "Deleted"; }
+  /** Return true if current change is of type "Updated" */
   public get isUpdated() { return this.op === "Updated"; }
 
   /** Advance reader to next change or a change that meets the filter set in the current adaptor */
@@ -496,6 +589,7 @@ export class ChangesetAdaptor implements IDisposable {
         if (!this._tableFilter.has(this.reader.tableName))
           continue;
       }
+
       if (this._opFilter.size > 0) {
         if (!this._opFilter.has(this.reader.op))
           continue;
@@ -554,23 +648,23 @@ export class ChangesetAdaptor implements IDisposable {
             continue;
         }
 
-        const $meta: MetaData = {
-          table: [this.reader.tableName],
+        const $meta = {
+          tables: [this.reader.tableName],
           op: this.reader.op,
           className: classMap.name,
           fallbackClassId,
-          changeIndex: this.reader.changeIndex,
+          changeIndexes: [this.reader.changeIndex],
         };
 
         if (this.reader.op === "Inserted" && change.inserted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.inserted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.inserted.$meta = $meta;
+          this.inserted.$meta = { ...$meta, stage: "New" };
           this.transform(classMap, change.inserted, table, this.inserted);
         } else if (this.reader.op === "Deleted" && change.deleted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.deleted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.deleted.$meta = $meta;
+          this.deleted.$meta = { ...$meta, stage: "Old" };
           this.transform(classMap, change.deleted, table, this.deleted);
         } else if (change.inserted && change.deleted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -589,7 +683,7 @@ export class ChangesetAdaptor implements IDisposable {
     }
     return this.reader.hasRow;
   }
-  private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ECChangedInstance) {
+  private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance) {
     // transform change row to instance
     for (const prop of classMap.properties) {
       if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
@@ -621,11 +715,11 @@ export class ChangesetAdaptor implements IDisposable {
           continue;
         }
         if (prop.extendedTypeName === "GeometryStream") {
-          ChangesetAdaptor.setValue(out, col.accessString, "...");
+          ChangesetAdaptor.setValue(out, col.accessString, this.debugFlags.replaceGeomWithEllipsis ? "..." : columnValue);
           continue;
         }
         if (prop.primitiveType === "Binary") {
-          ChangesetAdaptor.setValue(out, col.accessString, "...");
+          ChangesetAdaptor.setValue(out, col.accessString, this.debugFlags.replaceBlobWithEllipsis ? "..." : columnValue);
           continue;
         }
         ChangesetAdaptor.setValue(out, col.accessString, columnValue);
