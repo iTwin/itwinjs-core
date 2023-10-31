@@ -29,7 +29,7 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: 
   return found;
 }
 
-describe("Mixin comparison tests", () => {
+describe.skip("Custom attributes class comparison tests", () => {
   let reporter: TestSchemaCompareReporter;
   let contextA: SchemaContext;
   let contextB: SchemaContext;

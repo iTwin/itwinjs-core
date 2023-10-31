@@ -288,8 +288,15 @@ export class SchemaComparer {
   public async compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void> {
     const promises: Array<Promise<void>> = [];
     for (const mixinA of entityA.mixins) {
-      if (!entityB || -1 === entityB.mixins.findIndex((m) => m.name === mixinA.name)) // TODO: Double check this is okay
+      if (!entityB)
         promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
+      else {
+        if (-1 === entityB.mixins.findIndex((m) => m.fullName === mixinA.fullName)) {
+          if (-1 === entityB.mixins.findIndex((m) => m.name === mixinA.name)) {
+            promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
+          }
+        }
+      }
     }
 
     await Promise.all(promises);
@@ -750,9 +757,9 @@ export class SchemaComparer {
       if (propertyA.enumeration || enumerationB) {
         const enumA = propertyA.enumeration ? propertyA.enumeration.fullName : undefined;
         const enumB = enumerationB ? enumerationB.fullName : undefined;
-        if (enumA !== enumB){
+        if (enumA !== enumB) {
           const reportFlag = this.reportDiagnosticFlag(enumA ?? "", enumB ?? "", propertyA, propertyB);
-          if(reportFlag){
+          if (reportFlag) {
             promises.push(this._reporter.reportPropertyDelta(propertyA, "enumeration", enumA, enumB, this._compareDirection));
           }
         }
