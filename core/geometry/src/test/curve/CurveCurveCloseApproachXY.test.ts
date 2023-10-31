@@ -123,20 +123,18 @@ function testVaryingSubsets(
           const circleA1 = Arc3d.createXY(geometryA.endPoint(), maxDistance);
           const circleB0 = Arc3d.createXY(partialB.startPoint(), maxDistance);
           const circleB1 = Arc3d.createXY(partialB.endPoint(), maxDistance);
-          if (!(geometryA instanceof Arc3d)) { // due to the TODO in dispatchCircularCircularOrdered (intersection between arcs)
-            _ck.testCoordinate(
-              0, CurveCurve.intersectionXYPairs(circleA0, false, partialB, false).length, "expect no intersection",
-            );
-            _ck.testCoordinate(
-              0, CurveCurve.intersectionXYPairs(circleA1, false, partialB, false).length, "expect no intersection",
-            );
-            _ck.testCoordinate(
-              0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
-            );
-            _ck.testCoordinate(
-              0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
-            );
-          }
+          _ck.testCoordinate(
+            0, CurveCurve.intersectionXYPairs(circleA0, false, partialB, false).length, "expect no intersection",
+          );
+          _ck.testCoordinate(
+            0, CurveCurve.intersectionXYPairs(circleA1, false, partialB, false).length, "expect no intersection",
+          );
+          _ck.testCoordinate(
+            0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
+          );
+          _ck.testCoordinate(
+            0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
+          );
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.startPoint(), maxDistance, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.endPoint(), maxDistance, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, partialB.startPoint(), maxDistance, x0, y0);
@@ -854,6 +852,66 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc4");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("CoPlanarArcArcIntersection1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const maxDistance = 2;
+    const geometryA = Arc3d.create(
+      Point3d.create(-1, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+    ); // circular arc
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = Arc3d.create(
+      Point3d.create(2, 0), Vector3d.create(2, 0), Vector3d.create(0, 2),
+    ); // circular arc
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    const numExpectedIntersections = 1;
+    let numIntersectionsFound = 0;
+    const expectedIntersectionPoint = Point3d.create(0, 0);
+    for (const p of approaches) {
+      const detailA = p.detailA.point;
+      const detailB = p.detailB.point;
+      if (detailA.isAlmostEqualXY(detailB)) { // intersection between arcs
+        numIntersectionsFound++;
+        ck.testPoint3d(detailA, expectedIntersectionPoint);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailA, 0.0625);
+      }
+    }
+    ck.testLE(numExpectedIntersections, numIntersectionsFound);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "CoPlanarArcArcIntersection1");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("CoPlanarArcArcIntersection2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const maxDistance = 2;
+    const geometryA = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+    ); // circular arc
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
+    const geometryB = Arc3d.create(
+      Point3d.create(-0.75, 0), Vector3d.create(1.25, 0), Vector3d.create(0, 1.25),
+    ); // circular arc
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
+    const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
+    const numExpectedIntersections = 2;
+    let numIntersectionsFound = 0;
+    const expectedIntersectionPoint1 = Point3d.create(0, 1);
+    const expectedIntersectionPoint2 = Point3d.create(0, -1);
+    for (const p of approaches) {
+      const detailA = p.detailA.point;
+      const detailB = p.detailB.point;
+      if (detailA.isAlmostEqualXY(detailB)) { // intersection between arcs
+        numIntersectionsFound++;
+        if (!detailA.isAlmostEqualXY(expectedIntersectionPoint1) && !detailA.isAlmostEqualXY(expectedIntersectionPoint2))
+          ck.announceError("found an unexpected intersection!");
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, detailA, 0.0625);
+      }
+    }
+    ck.testLE(numExpectedIntersections, numIntersectionsFound);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "CoPlanarArcArcIntersection2");
     expect(ck.getNumErrors()).equals(0);
   });
   it("LineStringLineString", () => {

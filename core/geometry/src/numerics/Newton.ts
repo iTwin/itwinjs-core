@@ -426,7 +426,7 @@ export class CurveCurveIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
   }
   public evaluate(fractionU: number, fractionV: number): boolean {
     /**
-     * To find intersection XY between curves P(u) = (x_p(u), y_p(u)) and Q(v) = (x_q(v), y_q(v)) we should solve
+     * To find XY intersection between curves P(u) = (x_p(u), y_p(u)) and Q(v) = (x_q(v), y_q(v)) we should solve
      *    P(u) - Q(v) = 0
      * Using the Newton method with Jacobian `J = [dP/du -dQ/dv], we can find the fractions u and v at the intersection via
      *   [u_{n+1}]     [u_n]          [dx_p/du     -dx_q/dv]    [x_p(u) - x_q(v)]
@@ -461,7 +461,7 @@ export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
   }
   public evaluate(fractionU: number): boolean {
     /**
-     * To find close approach between curve P(u) = (x_p(u), y_p(u)) and point PointQ = (x_q, y_q) we should solve
+     * To find XY close approach between curve P(u) = (x_p(u), y_p(u)) and point PointQ = (x_q, y_q) we should solve
      *    F(u) = P'(u).(P(u) - PointQ) = 0
      * That's because P(u) - PointQ is the close approach which is perp to curve tangents P'(u).
      * Using the Newton method we can find the fractions u at the close approach location via
@@ -499,7 +499,7 @@ export class CurveCurveCloseApproachXYRRtoRRD extends NewtonEvaluatorRRtoRRD {
   }
   public evaluate(fractionU: number, fractionV: number): boolean {
     /**
-     * To find close approach between curves P(u) = (x_p(u), y_p(u)) and Q(v) = (x_q(v), y_q(v)) we should solve
+     * To find XY close approach between curves P(u) = (x_p(u), y_p(u)) and Q(v) = (x_q(v), y_q(v)) we should solve
      *    P'(u).(P(u) - Q(v)) = 0
      *    Q'(v).(P(u) - Q(v)) = 0
      * That's because P(u) - Q(v) is the close approach which is perp to curve tangents P'(u) and Q'(v).

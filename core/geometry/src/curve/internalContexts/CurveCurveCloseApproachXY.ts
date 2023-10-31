@@ -15,7 +15,7 @@ import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { CurvePointCloseApproachXYRtoRD, Newton1dUnbounded } from "../../numerics/Newton";
+import { CurveCurveIntersectionXYRRToRRD, CurvePointCloseApproachXYRtoRD, Newton1dUnbounded, Newton2dUnboundedWithDerivative } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
@@ -438,10 +438,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
   }
   /**
- * Return XY closest approach between a curve primitive and a point.
- * Currently, this function only supports Arc3d and LineSegment.
- * Note that this function doesn't handle endpoints.
- */
+   * Return XY closest approach between a curve primitive and a point.
+   * Currently, this function only supports Arc3d and LineSegment.
+   * Note that this function doesn't handle endpoints.
+   */
   private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
     if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
       assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
@@ -616,6 +616,29 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
+  /** Return XY intersections between 2 arcs. */
+  private getIntersectionXYArcArcNewton(curveP: Arc3d, curveQ: Arc3d, reversed: boolean): void {
+    const seedsU = [0.2, 0.4, 0.6, 0.8];
+    const seedsV = [0.2, 0.4, 0.6, 0.8];
+    const newtonEvaluator = new CurveCurveIntersectionXYRRToRRD(curveP, curveQ);
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator);
+    for (const seedU of seedsU) {
+      for (const seedV of seedsV) {
+        newtonSearcher.setUV(seedU, seedV);
+        if (newtonSearcher.runIterations()) {
+          const curvePFraction = newtonSearcher.getU();
+          const curveQFraction = newtonSearcher.getV();
+          const pointP = curveP.fractionToPoint(curvePFraction);
+          const pointQ = curveQ.fractionToPoint(curveQFraction);
+          if (pointP.isAlmostEqualXY(pointQ) && this.acceptFraction(curvePFraction) && this.acceptFraction(curveQFraction)) {
+            this.recordPointWithLocalFractions(
+              curvePFraction, curveP, 0, 1, curveQFraction, curveQ, 0, 1, reversed,
+            );
+          }
+        }
+      }
+    }
+  }
   /** Low level dispatch of circular arc with circular arc. radiusA must be larger than or equal to radiusB. */
   private dispatchCircularCircularOrdered(
     cpA: Arc3d, radiusA: number, cpB: Arc3d, radiusB: number, reversed: boolean,
@@ -624,7 +647,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const e = this._maxDistanceToAccept !== undefined ? this._maxDistanceToAccept : Geometry.smallMetricDistance;
     if (c > radiusA + radiusB + e) // distance between circles is more than max distance
       return;
-    // TODO: 1) intersection between arcs
+    this.getIntersectionXYArcArcNewton(cpA, cpB, reversed);
     // 2) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
     // 3) line from one arc to another (perpendicular to arc tangents along center-center line)
