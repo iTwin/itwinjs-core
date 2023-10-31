@@ -213,7 +213,6 @@ export interface FilePropertyProps {
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
  * @note This is an immutable type - all of its properties are frozen.
  * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
- * TEST
  * @public
  */
 export class EcefLocation implements EcefLocationProps {
