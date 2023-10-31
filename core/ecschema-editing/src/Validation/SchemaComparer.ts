@@ -425,7 +425,8 @@ export class SchemaComparer {
 
     if (containerA.customAttributes) {
       for (const ca of containerA.customAttributes) {
-        if (!containerB || !containerB.customAttributes || !containerB.customAttributes.has(ca[0]))
+        const caClassName = ca[0];
+        if (!containerB || !containerB.customAttributes || !this.containerHasClass(caClassName, containerA, containerB)) // ca[0] is fullName and key
           promises.push(this._reporter.reportCustomAttributeInstanceClassMissing(containerA, ca[1], this._compareDirection));
       }
     }
@@ -861,7 +862,7 @@ export class SchemaComparer {
 
   /**
    * Compares properties with different full name that could potentially be the same in the context of comparing different schemas.
-   * @returns flag to indicate whether to report or not.
+   * @returns flag to indicate whether to report diagnostic or not.
    */
   private reportDiagnosticFlag(fullNameA: string, fullNameB: string, itemA: SchemaItem | AnyProperty | undefined, itemB: SchemaItem | AnyProperty | undefined): boolean {
     // Getting the schema name of the property to compare
@@ -869,5 +870,26 @@ export class SchemaComparer {
     const [schemaNameB, nameB] = SchemaItem.parseFullName(fullNameB);
 
     return nameA !== nameB || schemaNameA !== itemA?.schema.name || schemaNameB !== itemB?.schema.name;
+  }
+
+  /**
+   * Looking for classNameA in containerB, first it looks for it using the fullName.
+   * If not found using fullName, there might a change it will find it using the name only.
+   * If both cases are false, then classNameA is not within containerB.
+   * @param classNameA name of the class to look for in containerB.
+   * @param containerA container which classNameA belongs to.
+   * @param containerB container in which to look for classNameA.
+   * @returns true if classNameA exists in containerB, otherwise false.
+   */
+  private containerHasClass(classNameA: string, containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): boolean{
+    if(containerB && containerB.customAttributes){
+      for(const caB of containerB.customAttributes){
+        const classNameB = caB[0];
+        if(classNameA === classNameB || !this.reportDiagnosticFlag(classNameA, classNameB, containerA as SchemaItem, containerB as SchemaItem)){
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

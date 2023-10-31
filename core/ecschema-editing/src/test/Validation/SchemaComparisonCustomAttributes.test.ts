@@ -29,7 +29,7 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: 
   return found;
 }
 
-describe.skip("Custom attributes class comparison tests", () => {
+describe("Custom attributes class comparison tests", () => {
   let reporter: TestSchemaCompareReporter;
   let contextA: SchemaContext;
   let contextB: SchemaContext;
@@ -78,11 +78,19 @@ describe.skip("Custom attributes class comparison tests", () => {
                 className: "SchemaA.customAttributeOne",
                 showClasses: true,
               },
+              {
+                className: "SchemaA.customAttributeTwo",
+                showClasses: true,
+              },
             ],
           },
           customAttributeOne: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "AnyClass",
+          },
+          customAttributeTwo: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass, EntityClass",
           },
         },
       }, contextA);
@@ -97,11 +105,19 @@ describe.skip("Custom attributes class comparison tests", () => {
                 className: "SchemaB.customAttributeOne",
                 showClasses: true,
               },
+              {
+                className: "SchemaB.customAttributeTwo",
+                showClasses: true,
+              },
             ],
           },
           customAttributeOne: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "AnyClass",
+          },
+          customAttributeTwo: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass, EntityClass",
           },
         },
       }, contextB);
