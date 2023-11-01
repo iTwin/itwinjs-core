@@ -16,9 +16,10 @@ import { Range3d } from "../../geometry3d/Range";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext, RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree/RangeTree";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
+import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext } from "../../geometry3d/RangeTree/RangeTreeContexts";
 
 // Clone and shift the range ...
 // shift by dx
@@ -315,7 +316,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("PointCloudMultiSearch", () => {
+  it.only("PointCloudMultiSearch", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -336,16 +337,18 @@ describe("IndexedRangeHeap", () => {
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
 
     for (const treeWidth of [2, 4, 8]) {
-      const searcher = Point3dArrayClosestPointSearchContext.create(pointsA, treeWidth, treeWidth);
+      const searcher = Point3dArrayClosestPointSearchContext.createCapture(pointsA, treeWidth, treeWidth);
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
       if (ck.testType(searcher, Point3dArrayClosestPointSearchContext)) {
         for (let u = 0; u <= 0.999999999; u += 0.025) {
           const xyz = path.fractionToPoint(u);
-          searcher.searchForClosestPoint(xyz);
-          const xyz1 = searcher.closestPoint;
-          if (ck.testType(xyz1, Point3d)) {
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, xyz1], x0, y0, z0);
+          const cld = searcher.searchForClosestPoint(xyz);
+          if (ck.testType(cld, CurveLocationDetail)) {
+            const xyz1 = cld.point;
+            if (ck.testType(xyz1, Point3d)) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, xyz1], x0, y0, z0);
+            }
           }
         }
         console.log({
