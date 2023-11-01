@@ -13,7 +13,7 @@
  */
 export class MinimumValueTester<T>{
   public item: T | undefined;
-  public triggerForMinimization: number | undefined;
+  public minValue: number | undefined;
   public triggerForSavingToArray: number | undefined;
   public savedItems: T[] | undefined;
   public savedValues: number[] | undefined;
@@ -40,7 +40,7 @@ export class MinimumValueTester<T>{
    */
   public resetTriggerForMinimization(item: T | undefined = undefined, value: number | undefined = undefined) {
     this.item = item;
-    this.triggerForMinimization = value;
+    this.minValue = value;
   }
 
   public resetTriggerValueForSavingToArray(value: number | undefined, reinitializeArrays: boolean = false) {
@@ -69,18 +69,18 @@ export class MinimumValueTester<T>{
       this.savedItems!.push(item);
     }
 
-    if (this.triggerForMinimization === undefined || value < this.triggerForMinimization) {
-      this.triggerForMinimization = value;
+    if (this.minValue === undefined || value < this.minValue) {
+      this.minValue = value;
       this.item = item;
       return true;
     }
     return false;
   }
   public isNewMinValue(value: number): boolean {
-    return this.triggerForMinimization === undefined || value < this.triggerForMinimization;
+    return this.minValue === undefined || value < this.minValue;
   }
   public isNewMinOrTrigger(value: number): boolean {
-    if (this.triggerForMinimization === undefined || value < this.triggerForMinimization)
+    if (this.minValue === undefined || value < this.minValue)
       return true;
     if (this.triggerForSavingToArray === undefined || value < this.triggerForSavingToArray)
       return true;

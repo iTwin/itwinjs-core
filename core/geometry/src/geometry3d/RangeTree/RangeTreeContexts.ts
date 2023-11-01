@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 import { Range3d } from "../Range";
-import { MinimumValueTester } from "../BestYet";
+import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { PolylineOps } from "../PolylineOps";
@@ -157,7 +157,7 @@ export class Polyline3dClosestPointSearchContext {
   public get closestPoint(): CurveLocationDetail | undefined {
     return this.searchState.item;
   }
-  public get closestDistance(): number | undefined { return this.searchState.triggerForMinimization; }
+  public get closestDistance(): number | undefined { return this.searchState.minValue; }
 
   /**
    * Create a range tree for the polyline points.
