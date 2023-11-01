@@ -3,13 +3,12 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": [
-      "@babel/core",
-      "@types/node",
-      "@typescript-eslint/parser"
-    ]
+    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
   },
-  "globalOverrides": {},
+  "globalOverrides": {
+    "crypto-js": "^4.2.0",
+    "browserify-sign": "^4.2.2"
+  },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
