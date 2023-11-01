@@ -504,13 +504,13 @@ export class IModelHost {
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
-  public static shutdown(this: void): void {
+  public static async shutdown(this: void): Promise<void> {
     // Note: This method is set as a node listener where `this` is unbound. Call private method to
     // ensure `this` is correct. Don't combine these methods.
     return IModelHost.doShutdown();
   }
 
-  private static doShutdown() {
+  private static async doShutdown() {
     if (!this._isValid)
       return;
 
