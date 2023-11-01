@@ -44,7 +44,6 @@ export type AnyDb = IModelDb | ECDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
-  readonly fileName: string; /** name of the changeset file */
   readonly db?: AnyDb; /** db from which schema will be read. It should be close to changeset.*/
   readonly invert?: true; /** invert the changeset operations */
   readonly disableSchemaCheck?: true; /** do not check if column of change match db schema instead ignore addition columns */
@@ -73,12 +72,30 @@ export class SqliteChangesetReader implements IDisposable {
   private _changeIndex = 0;
   protected constructor(public readonly db?: AnyDb) { }
 
-  public static openFile(args: SqliteChangesetReaderArgs) {
+  /**
+   * Open changeset file from disk
+   * @param args fileName of changeset reader and other options.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openFile(args: { readonly fileName: string } & SqliteChangesetReaderArgs) {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.open(args.fileName, args.invert ?? false);
+    reader._nativeReader.openFile(args.fileName, args.invert ?? false);
     return reader;
   }
+
+  /**
+   * Open local changes in iModel.
+   * @param args iModel and other options.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs) {
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openLocalChanges(args.iModel, args.includeInMemoryChanges ?? false, args.invert ?? false);
+    return reader;
+  }
+  /** check if schema check is disabled or not */
   public get disableSchemaCheck() { return this._disableSchemaCheck; }
   /** Move to next change in changeset
    * @beta
@@ -203,7 +220,7 @@ export class SqliteChangesetReader implements IDisposable {
         out[v] = pkValues[i];
       });
     }
-    const isNullOrUndefined = (val: SqliteValue) => val === null || typeof val === "undefined";
+    const isNullOrUndefined = (val: SqliteValue) => typeof val === "undefined";
 
     for (let i = 0; i < minLen; ++i) {
       const columnValue = row[i];

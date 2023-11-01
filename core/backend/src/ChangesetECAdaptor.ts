@@ -376,13 +376,14 @@ namespace DateTime {
  * span multiple tables.
  * @beta
  */
-export class CompleteChangedInstanceBuilder {
+export class PartialECChangeUnifier {
   private _cache = new Map<string, ChangedECInstance>();
+  private _readonly = false;
   private combine(rhs: ChangedECInstance) {
     if (!rhs.$meta) {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
-    const key = CompleteChangedInstanceBuilder.buildKey(rhs);
+    const key = PartialECChangeUnifier.buildKey(rhs);
     const lhs = this._cache.get(key);
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
@@ -405,7 +406,13 @@ export class CompleteChangedInstanceBuilder {
    * @param adaptor changeset adaptor is use to read the partial EC change.
    * @beta
    */
-  public appendFrom(adaptor: ChangesetAdaptor) {
+  public appendFrom(adaptor: ChangesetECAdaptor) {
+    if (adaptor.disableMetaData) {
+      throw new Error("change adaptor property 'disableMetaData' must be set to 'false'");
+    }
+    if (this._readonly) {
+      throw new Error("this instance is marked as readonly.");
+    }
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
       this.combine(adaptor.inserted);
       this.combine(adaptor.deleted);
@@ -414,6 +421,17 @@ export class CompleteChangedInstanceBuilder {
     } else if (adaptor.op === "Deleted" && adaptor.deleted) {
       this.combine(adaptor.deleted);
     }
+  }
+  /**
+   * Delete $meta from all the instances.
+   */
+  public stripMetaData() {
+    for (const inst of this._cache.values()) {
+      if ("$meta" in inst) {
+        delete inst.$meta;
+      }
+    }
+    this._readonly = true;
   }
   /**
    * Returns complete EC change instances.
@@ -429,7 +447,7 @@ export class CompleteChangedInstanceBuilder {
  * @beta
  *
 */
-export class ChangesetAdaptor implements IDisposable {
+export class ChangesetECAdaptor implements IDisposable {
   private readonly _mapCache: MapCache;
   private readonly _tableFilter = new Set<string>();
   private readonly _opFilter = new Set<SqliteChangeOp>();
@@ -441,6 +459,7 @@ export class ChangesetAdaptor implements IDisposable {
   public readonly debugFlags = {
     replaceBlobWithEllipsis: false, // replace bolb with ... for debugging
     replaceGeomWithEllipsis: false, // replace geom with ... for debugging
+    replaceGuidWithEllipsis: false, // replace geom with ... for debugging
   };
   /**
    * Return partial inserted instance
@@ -504,7 +523,7 @@ export class ChangesetAdaptor implements IDisposable {
    * set to false and db must also be set.
    * @param reader wrap changeset reader.
    */
-  public constructor(public readonly reader: SqliteChangesetReader) {
+  public constructor(public readonly reader: SqliteChangesetReader, public readonly disableMetaData = false) {
     if (!reader.db)
       throw new Error("SqliteChangesetReader, 'db' param must be set to a valid IModelDb or ECDb.");
 
@@ -600,8 +619,6 @@ export class ChangesetAdaptor implements IDisposable {
         if (!table || table.type === "Virtual") {
           throw new Error(`table in changeset not found or is virtual ${this.reader.tableName}`);
         }
-        // if (this.reader.op === "Updated")
-        //   throw new Error(`updated op is not supported.`);
 
         const change = {
           inserted: this.reader.getChangeValuesObject("New", { includePrimaryKeyInUpdateNew: true }),
@@ -625,6 +642,8 @@ export class ChangesetAdaptor implements IDisposable {
             if (primaryKeys.length === 1) {
               ecClassId = this.getClassIdFromDb(this.reader.tableName, this.reader.primaryKeyValues[0] as Id64String);
             }
+            // this is update and does not include ECClassId and it was also not found from db
+            // so its unrecoverable error. Call can skip updates to ignore this error.
             if (!ecClassId)
               throw new Error(`change arg must contain 'ECClassId' property.`);
           }
@@ -659,21 +678,25 @@ export class ChangesetAdaptor implements IDisposable {
         if (this.reader.op === "Inserted" && change.inserted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.inserted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.inserted.$meta = { ...$meta, stage: "New" };
+          if (!this.disableMetaData)
+            this.inserted.$meta = { ...$meta, stage: "New" };
           this.transform(classMap, change.inserted, table, this.inserted);
         } else if (this.reader.op === "Deleted" && change.deleted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.deleted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.deleted.$meta = { ...$meta, stage: "Old" };
+          if (!this.disableMetaData)
+            this.deleted.$meta = { ...$meta, stage: "Old" };
           this.transform(classMap, change.deleted, table, this.deleted);
         } else if (change.inserted && change.deleted) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.inserted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.inserted.$meta = { ...$meta, stage: "Old" };
+          if (!this.disableMetaData)
+            this.inserted.$meta = { ...$meta, stage: "New" };
           this.transform(classMap, change.inserted, table, this.inserted);
           // eslint-disable-next-line @typescript-eslint/naming-convention
           this.deleted = { ECClassId: ecClassId, ECInstanceId: "" };
-          this.deleted.$meta = { ...$meta, stage: "New" };
+          if (!this.disableMetaData)
+            this.deleted.$meta = { ...$meta, stage: "Old" };
           this.transform(classMap, change.deleted, table, this.deleted);
         } else {
           throw new Error("unable to read EC changes");
@@ -683,6 +706,29 @@ export class ChangesetAdaptor implements IDisposable {
     }
     return this.reader.hasRow;
   }
+  private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance) {
+    const idCol = prop.columns.filter(($) => $.accessString.endsWith(".Id")).at(0);
+    if (!idCol) {
+      throw new Error("invalid map for nav property");
+    }
+
+    const idValue = change[idCol.column];
+    if (typeof idValue === "undefined")
+      return;
+
+    ChangesetECAdaptor.setValue(out, idCol.accessString, idValue);
+
+    const relClassIdCol = prop.columns.filter(($) => $.accessString.endsWith(".RelECClassId")).at(0);
+    if (!relClassIdCol) {
+      throw new Error("invalid map for nav property");
+    }
+
+    const relClassIdValue = relClassIdCol.isVirtual ? prop.navigationRelationship?.classId : change[relClassIdCol.column];
+    if (typeof relClassIdValue === "undefined")
+      return;
+
+    ChangesetECAdaptor.setValue(out, relClassIdCol.accessString, relClassIdValue);
+  }
   private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance) {
     // transform change row to instance
     for (const prop of classMap.properties) {
@@ -690,39 +736,41 @@ export class ChangesetAdaptor implements IDisposable {
         // Arrays not supported
         continue;
       }
-      for (const col of prop.columns) {
-        if (col.table !== table.name)
-          continue;
+      if (prop.columns.filter((_) => _.isVirtual).length === prop.columns.length) {
+        continue;
+      }
+      if (prop.kind === "Navigation") {
+        this.transformNavigationProperty(prop, change, out);
+      } else {
+        for (const col of prop.columns) {
+          if (col.table !== table.name)
+            continue;
 
-        const columnValue = change[col.column];
-        if (!columnValue)
-          continue;
+          const columnValue = change[col.column];
+          if (typeof columnValue === "undefined")
+            continue;
 
-        if (col.isVirtual) {
-          // if RelClassId is virtual then return relationship classId
-          if (prop.kind === "Navigation" && col.accessString.endsWith(".RelECClassId")) {
-            ChangesetAdaptor.setValue(out, col.accessString, prop.navigationRelationship?.classId);
+          if (columnValue !== null) {
+            if (prop.primitiveType === "DateTime") {
+              const dt = DateTime.fromJulianDay(columnValue, prop.dateTimeInfo?.dateTimeKind === "Local");
+              ChangesetECAdaptor.setValue(out, col.accessString, dt.toISOString());
+              continue;
+            }
+            if (prop.extendedTypeName === "BeGuid") {
+              ChangesetECAdaptor.setValue(out, col.accessString, this.debugFlags.replaceGuidWithEllipsis ? "..." : ChangesetECAdaptor.convertBinaryToGuid(columnValue));
+              continue;
+            }
+            if (prop.extendedTypeName === "GeometryStream") {
+              ChangesetECAdaptor.setValue(out, col.accessString, this.debugFlags.replaceGeomWithEllipsis ? "..." : columnValue);
+              continue;
+            }
+            if (prop.primitiveType === "Binary") {
+              ChangesetECAdaptor.setValue(out, col.accessString, this.debugFlags.replaceBlobWithEllipsis ? "..." : columnValue);
+              continue;
+            }
           }
-          continue;
+          ChangesetECAdaptor.setValue(out, col.accessString, columnValue);
         }
-        if (prop.primitiveType === "DateTime") {
-          const dt = DateTime.fromJulianDay(columnValue, prop.dateTimeInfo?.dateTimeKind === "Local");
-          ChangesetAdaptor.setValue(out, col.accessString, dt.toISOString());
-          continue;
-        }
-        if (prop.extendedTypeName === "BeGuid") {
-          ChangesetAdaptor.setValue(out, col.accessString, ChangesetAdaptor.convertBinaryToGuid(columnValue));
-          continue;
-        }
-        if (prop.extendedTypeName === "GeometryStream") {
-          ChangesetAdaptor.setValue(out, col.accessString, this.debugFlags.replaceGeomWithEllipsis ? "..." : columnValue);
-          continue;
-        }
-        if (prop.primitiveType === "Binary") {
-          ChangesetAdaptor.setValue(out, col.accessString, this.debugFlags.replaceBlobWithEllipsis ? "..." : columnValue);
-          continue;
-        }
-        ChangesetAdaptor.setValue(out, col.accessString, columnValue);
       }
     }
     return out;
