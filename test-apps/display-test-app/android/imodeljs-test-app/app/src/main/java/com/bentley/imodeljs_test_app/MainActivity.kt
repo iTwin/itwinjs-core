@@ -124,6 +124,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var host: IModelJsHost
     private var promiseName: String = ""
     private lateinit var env: JSONObject
+    private var exitAfterModelOpened = false
 
     companion object {
         const val BIM_CACHE_DIR = "bim_cache"
@@ -189,7 +190,9 @@ class MainActivity : AppCompatActivity() {
                 @Suppress("unused", "UNUSED_PARAMETER")
                 fun firstRenderFinished(_dummy: String) {
                     log("First render finished.")
-                    exitProcess(0)
+                    if (exitAfterModelOpened) {
+                        exitProcess(0)
+                    }
                 }
             }, "DTA_Android")
 
@@ -219,10 +222,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (env.has("IMJS_IGNORE_CACHE"))
+        if (isYesEnv("IMJS_IGNORE_CACHE"))
             args += "&ignoreCache=true"
 
+        if (isYesEnv("IMJS_EXIT_AFTER_MODEL_OPENED"))
+            exitAfterModelOpened = true
+
         host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/index.html", args)
+    }
+
+    private fun isYesEnv(name: String): Boolean {
+        return env.optString(name) == "YES"
     }
 
     private fun loadEnvJson() {
