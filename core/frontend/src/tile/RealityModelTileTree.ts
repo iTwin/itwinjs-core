@@ -435,7 +435,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
   public override get wantDeduplicatedVertices() { return this._deduplicateVertices; }
 
-  public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
+  public get maxDepth(): number { return Number.MAX_SAFE_INTEGER; }
   public get minDepth(): number { return 0; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
   public override getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }

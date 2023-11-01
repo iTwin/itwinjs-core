@@ -298,7 +298,7 @@ export class BlobOptionsBuilder {
 }
 
 /** @internal */
-enum QueryParamType {
+export enum QueryParamType {
   Boolean = 0,
   Double = 1,
   Id = 2,
@@ -349,11 +349,10 @@ export class QueryBinder {
     if (typeof indexOrName === "number") {
       if (indexOrName < 1)
         throw new Error("expect index to be >= 1");
+      return;
     }
-    if (typeof indexOrName === "string") {
-      if (!/^[a-zA-Z_]+\w*$/i.test(indexOrName)) {
-        throw new Error("expect named parameter to meet identifier specification");
-      }
+    if (!/^[a-zA-Z_]+\w*$/i.test(indexOrName)) {
+      throw new Error("expect named parameter to meet identifier specification");
     }
   }
 
@@ -590,10 +589,10 @@ export class QueryBinder {
       params.bindPoint3d(nameOrId, val);
     } else if (val instanceof Array && val.length > 0 && typeof val[0] === "string" && Id64.isValidId64(val[0])) {
       params.bindIdSet(nameOrId, val);
-    } else if (typeof val === "object" && !Array.isArray(val)) {
-      params.bindStruct(nameOrId, val);
     } else if (typeof val === "undefined" || val === null) {
       params.bindNull(nameOrId);
+    } else if (typeof val === "object" && !Array.isArray(val)) {
+      params.bindStruct(nameOrId, val);
     } else {
       throw new Error("unsupported type");
     }

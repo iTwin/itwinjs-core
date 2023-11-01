@@ -78,9 +78,11 @@ Below is an example of implementation of a `provideWidgets` method.
           label: PresentationPropertyGridWidgetControl.label,
           defaultState: WidgetState.Open,
           canPopout: true,
-          defaultFloatingSize={{width:330, height:540}},
-          isFloatingStateWindowResizable={true},
-          getWidgetContent: () => <PresentationPropertyGridWidget />,
+          canFloat: {
+            defaultSize: {width:330, height:540},
+            isResizable: true,
+          }
+          content: () => <PresentationPropertyGridWidget />,
         });
       }
     }
@@ -89,7 +91,7 @@ Below is an example of implementation of a `provideWidgets` method.
 }
 ```
 
-One last thing to point out in the above example. We specified default size for the widget if it is "floated". This is sometimes required due to the specific construction of the widget component. Most components have an intrinsic size based on their contents and this size is used when the widget is floated. There are a few widget that draw directly to a canvas object or some other object that does not have an intrinsic size, and these component must have a size specified. Widgets that use the `PropertyGrid` and `ControlledTree` components are of this type and must have their sizes specified. The `defaultFloatingSize` prop is used to specify a default size for these widgets when they are "floated". If the prop `isFloatingStateWindowResizable={true}` is also specified the user is allowed to resize the widgets when floated and that stated is saved and used if the widget is floated again in the same frontstage.
+One last thing to point out in the above example. We specified default size for the widget if it is "floated". This is sometimes required due to the specific construction of the widget component. Most components have an intrinsic size based on their contents and this size is used when the widget is floated. There are a few widget that draw directly to a canvas object or some other object that does not have an intrinsic size, and these component must have a size specified. Widgets that use the `PropertyGrid` and `ControlledTree` components are of this type and must have their sizes specified. The `canFloat.defaultSize` prop is used to specify a default size for these widgets when they are "floated". If `canFloat.isResizable: true` is also specified the user is allowed to resize the widgets when floated and that state is saved and used if the widget is floated again in the same frontstage.
 
 ## UiItemsProviderOverrides
 
@@ -139,7 +141,7 @@ There are three standard providers that can be used to serve as example of defin
 
 ## Adding a Frontstage
 
- The follow example shows how to define a new stage and register it with the `ConfigurableUiManager`. This stage defines the content to show and leaves all the tool and status bar item specifications to standard providers. This stage could then be registered in the package's initialize method by calling `MyFrontstage.register()`.
+ The follow example shows how to define a new stage and register it with the `UiFramework.frontstages`. This stage defines the content to show and leaves all the tool and status bar item specifications to standard providers. This stage could then be registered in the package's initialize method by calling `MyFrontstage.register()`.
 
 ``` ts
 export class MyStageContentGroupProvider extends ContentGroupProvider {
@@ -178,7 +180,7 @@ export class MyFrontstage {
       applicationData: undefined,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(myStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(myStageProps));
     MyFrontstage.registerToolProviders();
   }
 

@@ -1,6 +1,21 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Tue, 10 Oct 2023 20:02:00 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Oct 2023 15:10:48 GMT and should not be manually modified.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Added the ability to update the base class of an EC Class via the ecschema-editing API.
+- Added first version of SchemaMerger class.
+- Added schema merging support for phenomenon, constant, unit system and enumerators.
+- Added the ability to rename an ECProperty via the setName method.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -100,6 +115,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Updated to work with async schema loading changes made to ecschema-metadata
 - Update to eslint@8
 - Removed obsolete EC rule 102 - Abstract class must have abstract base class.
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
 
 ## 3.7.15
 Tue, 10 Oct 2023 19:58:35 GMT

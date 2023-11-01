@@ -1,6 +1,34 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 10 Oct 2023 20:02:00 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Oct 2023 15:10:47 GMT and should not be manually modified.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- Add support for schema synchronization
+- Fixed a null reference error when upgrading schemas to EC3
+- Adds logging for checkpoint application and V2 checkpoint downloads
+- add exportGraphics test to verify uv-parameter output
+- ECDb.createQueryReader and IModelDb.createQueryReader are now public
+- restart default txn after 10 minutes inactivity on v2 checkpoints
+- Add TxnManager events raised when applying external txns.
+- Fix RenderMaterialElement using the wrong CodeSpec.
+- Fix two potential bugs when closing and reopening an iModel while pulling changes."
+- Make watching for briefcase changes more reliable.
+- As instance access no longer an experimental feature, removed experimental features option from relevant ecsql.
+- Use instance query to get aspects for abstract classes
+- ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant
+- Remove `storageType` from `BlobContainer.RequestTokenProps`.
+- Add 'provider' to 'BlobContainer.CreatedContainerProps' 
+- add TileStorage.getCachedTilesGenerator
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -141,6 +169,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Fix for timing issue in core tests
 - allow passing a custom schema read context to IModelDb.importSchemas
 - Added test to verify Id serialization to hex for system properties.
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
 
 ## 3.7.15
 Tue, 10 Oct 2023 19:58:35 GMT

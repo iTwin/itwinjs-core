@@ -1,6 +1,28 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 10 Oct 2023 20:02:00 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Oct 2023 15:10:47 GMT and should not be manually modified.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- Fix failure to preserve name when creating a BlankConnection.
+- remove `require` call preventing pure ESM usage
+- Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo
+- Fix schedule script symbology issue
+- Fixed ignore material not using default material params
+- IModelConnection.createQueryReader is now public
+- Improved content type detection for 3D Tiles tilesets.
+- Add BriefcaseTxns events raised when applying external txns.
+- Add an option to premultiply a model display transform
+- Allow creation of cross-origin web workers
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT
@@ -154,6 +176,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
 
 ## 3.7.15
 Tue, 10 Oct 2023 19:58:35 GMT
