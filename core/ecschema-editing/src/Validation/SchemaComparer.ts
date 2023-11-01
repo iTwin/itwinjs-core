@@ -288,17 +288,9 @@ export class SchemaComparer {
   public async compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void> {
     const promises: Array<Promise<void>> = [];
     for (const mixinA of entityA.mixins) {
-      if (!entityB)
+      if (!entityB || -1 === entityB.mixins.findIndex((mixinB) => !this.reportDiagnosticFlag(mixinA.fullName, mixinB.fullName, entityA, entityB)))
         promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
-      else {
-        if (-1 === entityB.mixins.findIndex((m) => m.fullName === mixinA.fullName)) {
-          if (-1 === entityB.mixins.findIndex((m) => m.name === mixinA.name)) {
-            promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
-          }
-        }
-      }
     }
-
     await Promise.all(promises);
   }
 
@@ -360,7 +352,8 @@ export class SchemaComparer {
 
     if (constraintA.constraintClasses) {
       for (const classA of constraintA.constraintClasses) {
-        if (!constraintB || !constraintB.constraintClasses || -1 === constraintB.constraintClasses.findIndex((c) => c.matchesFullName(classA.fullName)))
+        if (!constraintB ||!constraintB.constraintClasses ||
+          -1 === constraintB.constraintClasses.findIndex((classB) => !this.reportDiagnosticFlag(classA.fullName, classB.fullName, constraintA, constraintB)))
           promises.push(this._reporter.reportRelationshipConstraintClassMissing(constraintA, await classA, this._compareDirection));
       }
     }
@@ -391,7 +384,10 @@ export class SchemaComparer {
       const abstractA = constraintA.abstractConstraint ? constraintA.abstractConstraint.fullName : undefined;
       const abstractB = constraintBAbstractConstraint ? constraintBAbstractConstraint.fullName : undefined;
       if (abstractA !== abstractB) {
-        promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "abstractConstraint", abstractA, abstractB, this._compareDirection));
+        const reportFlag = this.reportDiagnosticFlag(abstractA ?? "", abstractB ?? "", constraintA, constraintB);
+        if(reportFlag){
+          promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "abstractConstraint", abstractA, abstractB, this._compareDirection));
+        }
       }
     }
 
@@ -426,7 +422,7 @@ export class SchemaComparer {
     if (containerA.customAttributes) {
       for (const ca of containerA.customAttributes) {
         const caClassName = ca[0];
-        if (!containerB || !containerB.customAttributes || !this.containerHasClass(caClassName, containerA, containerB)) // ca[0] is fullName and key
+        if (!containerB || !containerB.customAttributes || !this.containerHasClass(caClassName, containerA, containerB))
           promises.push(this._reporter.reportCustomAttributeInstanceClassMissing(containerA, ca[1], this._compareDirection));
       }
     }
@@ -864,7 +860,12 @@ export class SchemaComparer {
    * Compares properties with different full name that could potentially be the same in the context of comparing different schemas.
    * @returns flag to indicate whether to report diagnostic or not.
    */
-  private reportDiagnosticFlag(fullNameA: string, fullNameB: string, itemA: SchemaItem | AnyProperty | undefined, itemB: SchemaItem | AnyProperty | undefined): boolean {
+  private reportDiagnosticFlag(
+    fullNameA: string,
+    fullNameB: string,
+    itemA: SchemaItem | RelationshipConstraint | AnyProperty | undefined,
+    itemB: SchemaItem |RelationshipConstraint |AnyProperty | undefined,
+  ): boolean {
     // Getting the schema name of the property to compare
     const [schemaNameA, nameA] = SchemaItem.parseFullName(fullNameA);
     const [schemaNameB, nameB] = SchemaItem.parseFullName(fullNameB);
@@ -881,7 +882,7 @@ export class SchemaComparer {
    * @param containerB container in which to look for classNameA.
    * @returns true if classNameA exists in containerB, otherwise false.
    */
-  private containerHasClass(classNameA: string, containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): boolean{
+  private containerHasClass(classNameA: string, containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): boolean {
     if(containerB && containerB.customAttributes){
       for(const caB of containerB.customAttributes){
         const classNameB = caB[0];
