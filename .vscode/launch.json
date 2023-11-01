@@ -573,7 +573,7 @@
         "perftest:crud"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
       ]
     },
     {
@@ -590,7 +590,7 @@
         "perftest:elAspect"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/full-stack-tests/backend/lib/**/*.js"
       ]
     },
     {
