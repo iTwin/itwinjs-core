@@ -5,13 +5,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "./Range";
+import { MinimumValueTester } from "./BestYet";
+import { Point3d } from "./Point3dVector3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { PolylineOps } from "./PolylineOps";
+import { Geometry } from "../Geometry";
 
 /** @packageDocumentation
  * @module CartesianGeometry
  */
 
 type FlexData<T> = undefined | T[] | T;
+/**
+ * Parameterized type which can be
+ * * an array of type T
+ * * a function which takes an index and returns type T
+ */
+type IndexToType<T> = T[] | ((index: number) => T);
 
+function evaluateIndexToType<T>(data: IndexToType<T>, index: number): T {
+  if (Array.isArray(data))
+    return data[index];
+  return data(index);
+}
 /**
  * Get data by index from a source that may be undefined, an array of item of type T, or a singleton of the item type.
  * @param index
@@ -133,11 +149,11 @@ export class RangeTreeNode<AppDataType> {
   public setRange(data: Range3d) {
     this._range.setFrom(data);
   }
-  /** get (a copy of) the range in this RangeEntry */
+  /** return (a copy of) the range in this RangeEntry */
   public getRange(data?: Range3d): Range3d {
     return this._range.clone(data);
   }
-  /** get (a reference to) the range in this RangeEntry */
+  /** return (a reference to) the range in this RangeEntry */
   public getRangeRef(): Range3d {
     return this._range;
   }
@@ -152,7 +168,7 @@ export class RangeTreeNode<AppDataType> {
     return getByIndex<RangeTreeNode<AppDataType>>(index, this._children);
   }
   /**
-   * * Access a appData by index.
+   * * Access an appData by index.
    * * If the appData data is an array, this dereferences the array.
    * * If the appData data is a singleton, treat it as if it is at index 0 in an array
    * * return undefined if there are no appData or for any index out of range.
@@ -426,24 +442,45 @@ export class RangeTreeOps {
    * @param index1 upper limit index for block of items.
    * @returns newly created node.
    */
-  private static createLeafInIndexRange<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d),
-    appData: AppDataType[], index0: number, index1: number): RangeTreeNode<AppDataType> {
+  private static createLeafInIndexRange<AppDataType>(
+    ranges: IndexToType<Range3d>,
+    appData: IndexToType<AppDataType>,
+    index0: number,
+    index1: number,
+    appDataLength: number): RangeTreeNode<AppDataType> {
     const appDataBlock: AppDataType[] = [];
     const range = Range3d.createNull();
-    index1 = Math.min(index1, appData.length);
+    index1 = Math.min(index1, appDataLength);
     // console.log({ case: "LEAF", index0, index1 });
     for (let i = index0; i < index1; i++) {
-      appDataBlock.push(appData[i]);
-      range.extendRange(Array.isArray(ranges) ? ranges[i] : ranges(appData[i]));
+      appDataBlock.push(evaluateIndexToType(appData, i));
+      range.extendRange(evaluateIndexToType(ranges, i));
     }
     return RangeTreeNode.createCapture(range, appDataBlock, undefined);
   }
-
-  private static createRecursiveByIndexSplits<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d), appData: AppDataType[], index0: number, index1: number,
+  /**
+   * Split the array entries appData[index0 <= i < index1] into blocks of at most maxChildPerNode * maxAppDataPerLeaf and assemble into a tree structure.
+   * @param ranges range data
+   *   * if given as an array (of same length as appData), each is the range of corresponding appData
+   *   * if given as a function, this method may call with appData items as needed.
+   * @param appData array of application data items
+   * @param index0 start index of the block to access
+   * @param index1 terminal index for the block (one after final)
+   * @param maxChildPerNode max number of child nodes in each interior node
+   * @param maxAppDataPerLeaf max number of appData items in each leaf.
+   * @returns
+   */
+  private static createRecursiveByIndexSplits<AppDataType>(
+    ranges: IndexToType<Range3d>,
+    appData: IndexToType<AppDataType>,
+    index0: number,
+    index1: number,
+    appDataLength: number,
     maxChildPerNode: number,
-    maxAppDataPerLeaf: number): RangeTreeNode<AppDataType> | undefined {
-    if (index1 > appData.length)
-      index1 = appData.length;
+    maxAppDataPerLeaf: number,
+  ): RangeTreeNode<AppDataType> | undefined {
+    if (index1 > appDataLength)
+      index1 = appDataLength;
     const maxGrandChild = maxChildPerNode * maxAppDataPerLeaf;
     // console.log({ name: "createRecursive", index0, index1, maxGrandChild });
     if (index1 <= index0 + maxGrandChild) {  // leaf node!!!
@@ -451,7 +488,7 @@ export class RangeTreeOps {
       const range = Range3d.createNull();
       const children: RangeTreeNode<AppDataType>[] = [];
       for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA = Math.min(indexA + maxAppDataPerLeaf, index1)) {
-        const child = RangeTreeOps.createLeafInIndexRange(ranges, appData, index0, indexA);
+        const child = RangeTreeOps.createLeafInIndexRange(ranges, appData, index0, indexA, appDataLength);
         if (child !== undefined) {
           range.extendRange(child.getRange());
           children.push(child);
@@ -467,7 +504,7 @@ export class RangeTreeOps {
 
       // console.log({ case: "INTERIOR", index0, index1 });
       for (let indexA = index0 + numPerGulp; index0 < index1; index0 = indexA, indexA = Math.min(indexA + numPerGulp, index1)) {
-        const child = this.createRecursiveByIndexSplits(ranges, appData, index0, indexA, maxChildPerNode, maxAppDataPerLeaf);
+        const child = this.createRecursiveByIndexSplits(ranges, appData, index0, indexA, appDataLength, maxChildPerNode, maxAppDataPerLeaf);
         if (child !== undefined) {
           range.extendRange(child.getRangeRef());
           children.push(child);
@@ -485,21 +522,194 @@ export class RangeTreeOps {
    * @param ranges array or query function for ranges.
    *   * if this is an array (of same length as appData, these are the ranges.
    *   * if this is a function, the create logic is free to call it with individual appData items to get their range.
-   * @param appData array of application data items which are to be carried in leaves.
+   * @param appData access to appData for leaves.
+   *   * if this is an array, appData[i] is data for its leaf
+   *   * if this is a function, the function is called (with index) to ask for the appData.
+   * @param appDataLength number of indices to assign.
+   *   * If the appData is an array, this will commonly be the array length.
+   *   *If the appData is a function, this will be another limit known to the caller
    * @param numChildrenPerNode (max) number of child nodes allowed for each interior node.
    * @param numAppDataPerLeaf (max) number of appData items allowed in each leaf.
    * @returns the root of the new tree, or undefined if array lengths differ or are zero.
    */
-  public static createByIndexSplits<AppDataType>(ranges: Range3d[] | ((appData: AppDataType) => Range3d), appData: AppDataType[], numChildrenPerNode: number = 2, numAppDataPerLeaf: number = 2): RangeTreeNode<AppDataType> | undefined {
+  public static createByIndexSplits<AppDataType>(
+    ranges: IndexToType<Range3d>,
+    appData: IndexToType<AppDataType>,
+    appDataLength: number,
+    numChildrenPerNode: number = 2, numAppDataPerLeaf: number = 2): RangeTreeNode<AppDataType> | undefined {
     // console.log();
     // const numData = getFlexDataCount(appData);
     // console.log({ numData });
-    if (appData.length === 0
-      || (Array.isArray(ranges) && ranges.length !== appData.length))
+    if (appDataLength <= 0
+      || (Array.isArray(ranges) && ranges.length !== appDataLength))
       return undefined;
     if (numChildrenPerNode < 2)
       numChildrenPerNode = 2;
-    return RangeTreeOps.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, appData.length, numChildrenPerNode, numAppDataPerLeaf);
+    return RangeTreeOps.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, appDataLength, appDataLength, numChildrenPerNode, numAppDataPerLeaf);
   }
 
 }
+
+/**
+ * Handler class to search a range tree containing only Point3d data, always returning the single closest point and optionally gathering an array of
+ * all points with a search distance.
+ */
+export class Point3dArrayClosestPointSearchContext extends SingleTreeSearchHandler<Point3d> {
+  public searchState: MinimumValueTester<Point3d>;
+  public spacePoint: Point3d;
+  public numRangeTestTrue: number;
+  public numRangeTestFalse: number;
+  public numPointTest: number;
+  public numSearch: number;
+
+  private _rangeTreeRoot: RangeTreeNode<Point3d>;
+
+  private constructor(rangeTreeRoot: RangeTreeNode<Point3d>) {
+    super();
+    this.spacePoint = Point3d.create(0, 0, 0);
+    this.searchState = MinimumValueTester.create<Point3d>();
+    this._rangeTreeRoot = rangeTreeRoot;
+    this.numRangeTestTrue = 0;
+    this.numRangeTestFalse = 0;
+    this.numPointTest = 0;
+    this.numSearch = 0;
+  }
+  public get closestPoint(): Point3d | undefined { return this.searchState.item; }
+  public get closestDistance(): number | undefined { return this.searchState.triggerForMinimization; }
+
+  public static create(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayClosestPointSearchContext | undefined {
+    const rangeTreeRoot = RangeTreeOps.createByIndexSplits<Point3d>(
+      ((index: number): Range3d => { return Range3d.create(points[index]); }),
+      points,
+      points.length,
+      maxChildPerNode, maxAppDataPerLeaf,
+    );
+    return rangeTreeRoot !== undefined ? new Point3dArrayClosestPointSearchContext(rangeTreeRoot) : undefined;
+  }
+
+  public searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch: boolean = true): Point3d | undefined {
+    this.numSearch++;
+    this.spacePoint = spacePoint.clone();
+    if (resetAsNewSearch)
+      this.searchState.resetTriggerForMinimization();
+    this._rangeTreeRoot.searchTopDown(this);
+    return this.searchState.item;
+  }
+  /**
+   *
+   * @param range range containing items to be tested.
+   * @returns true if the spacePoint is within the range or close enough that a point in the range could be the closest.
+   */
+  public isRangeActive(range: Range3d): boolean {
+    const dMin = range.distanceToPoint(this.spacePoint);
+    if (this.searchState.isNewMinValue(dMin)) {
+      this.numRangeTestTrue++;
+      return true;
+    }
+    this.numRangeTestFalse++;
+    return false;
+  }
+  /** Test a point (stored in the range tree) as candidate for "closest" */
+  public override processAppData(candidate: Point3d): void {
+    const d = this.spacePoint.distance(candidate);
+    this.numPointTest++;
+    this.searchState.testAndSave(candidate, d);
+  }
+}
+/**
+ * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyline3dClosestPointSearcherContext.
+ */
+class SingleTreeSearchHandlerForClosestPointTree extends SingleTreeSearchHandler<number> {
+  public context: Polyline3dClosestPointSearchContext;
+
+  public constructor(context: Polyline3dClosestPointSearchContext) {
+    super();
+    this.context = context;
+  }
+  /**
+   *
+   * @param range range containing items to be tested.
+   * @returns true if the spacePoint is within the range or close enough that a point in the range could be the closest.
+   */
+  public isRangeActive(range: Range3d): boolean {
+    const dMin = range.distanceToPoint(this.context.spacePoint);
+    if (this.context.searchState.isNewMinValue(dMin)) {
+      this.context.numRangeTestTrue++;
+      return true;
+    }
+    this.context.numRangeTestFalse++;
+    return false;
+  }
+  /** Test a point (stored in the range tree) as candidate for "closest" */
+  public override processAppData(candidateIndex: number): void {
+    const cld = PolylineOps.projectPointToUncheckedIndexedSegment(this.context.spacePoint, this.context.points, candidateIndex, false, false);
+    const d = this.context.spacePoint.distance(cld.point);
+    this.context.numPointTest++;
+    this.context.searchState.testAndSave(cld, d);
+  }
+}
+
+/**
+ * class to host a point array and associated RangeTree for multiple search calls.
+ */
+export class Polyline3dClosestPointSearchContext {
+  public searchState: MinimumValueTester<CurveLocationDetail>;
+  public points: Point3d[];
+  public spacePoint: Point3d;
+  public numRangeTestTrue: number;
+  public numRangeTestFalse: number;
+  public numPointTest: number;
+  public numSearch: number;
+
+  private _rangeTreeRoot: RangeTreeNode<number>;
+
+  private constructor(rangeTreeRoot: RangeTreeNode<number>, points: Point3d[]) {
+    this.spacePoint = Point3d.create(0, 0, 0);
+    this.searchState = MinimumValueTester.create<CurveLocationDetail>();
+    this.points = points;
+    this._rangeTreeRoot = rangeTreeRoot;
+    this.numRangeTestTrue = 0;
+    this.numRangeTestFalse = 0;
+    this.numPointTest = 0;
+    this.numSearch = 0;
+  }
+  public get closestPoint(): CurveLocationDetail | undefined {
+    return this.searchState.item;
+  }
+  public get closestDistance(): number | undefined { return this.searchState.triggerForMinimization; }
+
+  /**
+   * Create a range tree for the polyline points.
+   *
+   * @param points polyline points.  THIS ARRAY POINTER IS CAPTURED.
+   * @returns Polyline3dClosestPointSearchContext with a range tree and the point array.
+   */
+  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Polyline3dClosestPointSearchContext | undefined {
+    const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
+      ((index: number): Range3d => { return Range3d.create(points[index]); }),
+      ((index: number): number => { return index; }),
+      points.length - 1,
+      maxChildPerNode, maxAppDataPerLeaf,
+    );
+    return rangeTreeRoot !== undefined ? new Polyline3dClosestPointSearchContext(rangeTreeRoot, points) : undefined;
+  }
+
+  public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
+    const handler = new SingleTreeSearchHandlerForClosestPointTree(this);
+    this.numSearch++;
+    this.spacePoint = spacePoint.clone();
+    this.searchState.resetTriggerForMinimization();
+    // seed the search with a few points -- this reduces early trips deep into early ranges that are far from spacePoint.
+    const numTest = Geometry.clamp(Math.floor(this.points.length / 20), 2, 7);
+    const testStep = Math.floor(this.points.length / numTest);
+    handler.processAppData(0);
+    handler.processAppData(this.points.length - 2);
+
+    for (let i = testStep; i + 1 < this.points.length; i += testStep) {
+      handler.processAppData(i);
+    }
+    this._rangeTreeRoot.searchTopDown(handler);
+    return this.searchState.item;
+  }
+}
+

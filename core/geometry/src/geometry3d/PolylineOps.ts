@@ -7,6 +7,7 @@
  */
 
 import { Geometry } from "../Geometry";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -265,5 +266,35 @@ export class PolylineOps {
     }
     return bisectorPlanes.length > 1 ? bisectorPlanes : undefined;
   }
-
+  /**
+   * * Treat the segment from points[segmentIndex] to points[segmentIndex+1] as an line segment.
+   * * compute the fraction where spacePoint projects to that segment.
+   * * restrict the fraction to 0..1, but optionally extend first and last segments.
+   * @param points polyline points
+   * @param spacePoint any point in space
+   * @param segmentIndex index of the first point of the segment.
+   * @param extendIfInitial true to allow the initial segment to extend backward (to negative fractions)
+   * @param extendIfFinal true to allow the final segment to extend backward (to fractions above 1)
+   * @returns CurveLocationDetail containing the the point and fraction.  The `a` value in the CurveLocationDetail is the segmentIndex.
+   */
+  public static projectPointToUncheckedIndexedSegment(
+    spacePoint: Point3d,
+    points: Point3d[],
+    segmentIndex: number,
+    extendIfInitial: boolean = false,
+    extendIfFinal: boolean = false,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    let fraction = spacePoint.fractionOfProjectionToLine(points[segmentIndex], points[segmentIndex + 1]);
+    if (fraction < 0.0) {
+      if (segmentIndex > 0 || !extendIfInitial)
+        fraction = 0.0;
+    } else if (fraction > 1.0) {
+      if (!(segmentIndex + 2 === points.length && extendIfFinal))
+        fraction = 1.0;
+    }
+    const point = points[segmentIndex].interpolate(fraction, points[segmentIndex + 1]);
+    const cld = CurveLocationDetail.createCurveFractionPoint(undefined, fraction, point, result);
+    cld.a = segmentIndex;
+    return cld;
+  }
 }

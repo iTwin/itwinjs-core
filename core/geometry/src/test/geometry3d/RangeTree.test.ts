@@ -16,7 +16,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree";
+import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext, RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
 
@@ -162,7 +162,7 @@ class ClosestApproachBetweenPointClustersHandler extends TwoTreeSearchHandler<Po
 }
 
 describe("IndexedRangeHeap", () => {
-  it("PointSearchInGrid", () => {
+  it("ClosestLineStringSearch", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const points = Sample.createPoint2dLattice(0, 5, 100);
@@ -219,11 +219,11 @@ describe("IndexedRangeHeap", () => {
       testFraction: handlerB.numCurveTest / numQuadraticTests,
     });
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointSearchInGrid");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "ClosestLineStringSearch");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PointPointSearch", () => {
+  it("PointPointSearch", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -254,7 +254,7 @@ describe("IndexedRangeHeap", () => {
             Transform.createRowValues(
               -1, -1, 0, 8,
               0, 2, 0.5, 1,
-              -uz, 0, 2, 3 - 2 * uz,
+              -uz, 0, 2, 3 + 1.3 * uz,
             ),
             pointBFactor * 5, pointBFactor * 7,
             AngleSweep.createStartEndDegrees(-75, 120),
@@ -262,11 +262,11 @@ describe("IndexedRangeHeap", () => {
           );
 
           const treeA = RangeTreeOps.createByIndexSplits<Point3d>(
-            (xyz: Point3d): Range3d => { return Range3d.create(xyz); },
+            ((index: number): Range3d => { return Range3d.create(pointsA[index]); }),
             pointsA,
             treeFlare, treeFlare)!;
           const treeB = RangeTreeOps.createByIndexSplits<Point3d>(
-            (xyz: Point3d): Range3d => { return Range3d.create(xyz); },
+            ((index: number): Range3d => { return Range3d.create(pointsB[index]); }),
             pointsB,
             treeFlare, treeFlare)!;
           ck.testExactNumber(pointsA.length, RangeTreeOps.getRecursiveAppDataCount<Point3d>(treeA), "point count in range tree");
@@ -312,6 +312,97 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointPointSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PointCloudMultiSearch", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+
+    const pointsA = Sample.createGridPointsOnEllipsoid(
+      Transform.createRowValues(
+        5, 0, 0, 0,
+        0, 2, 0, 0,
+        0, 0, 3, 0,
+      ),
+      36, 52,
+      AngleSweep.createStartEndDegrees(-30, 195),
+      AngleSweep.createStartEndDegrees(-40, 60),
+    );
+
+    const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
+
+    for (const treeWidth of [2, 4, 8]) {
+      const searcher = Point3dArrayClosestPointSearchContext.create(pointsA, treeWidth, treeWidth);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
+      if (ck.testType(searcher, Point3dArrayClosestPointSearchContext)) {
+        for (let u = 0; u <= 0.999999999; u += 0.025) {
+          const xyz = path.fractionToPoint(u);
+          searcher.searchForClosestPoint(xyz);
+          const xyz1 = searcher.closestPoint;
+          if (ck.testType(xyz1, Point3d)) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, xyz1], x0, y0, z0);
+          }
+        }
+        console.log({
+          treeWidth,
+          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
+          searches: searcher.numSearch,
+          searchesTimesPoints: searcher.numSearch * pointsA.length,
+          fraction: searcher.numPointTest / (searcher.numSearch * pointsA.length),
+        });
+      }
+      x0 += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointPointSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("PolylineMultiSearch", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const z0 = 0;
+
+    const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 80, 0);
+    const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
+    for (const treeWidth of [2, 4, 8]) {
+      const searcher = Polyline3dClosestPointSearchContext.createCapture(wavePoints, treeWidth, treeWidth);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, wavePoints, x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
+      if (ck.testType(searcher, Polyline3dClosestPointSearchContext)) {
+        for (let u = 0; u <= 1.00001; u += 0.010) {
+          const xyz = path.fractionToPoint(u);
+          searcher.searchForClosestPoint(xyz);
+          const cld = searcher.closestPoint;
+          if (ck.testType(cld, CurveLocationDetail)) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
+            const segmentIndex = cld.a;
+            // const segmentFraction = cld.fraction;
+            const distance = xyz.distance(cld.point);
+            const i1 = Math.min(segmentIndex + 4, wavePoints.length);
+            for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++) {
+              ck.testLE(distance, xyz.distance(wavePoints[i]));
+            }
+          }
+        }
+        ck.show({
+          numPoints: wavePoints.length,
+          treeWidth,
+          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
+          searches: searcher.numSearch,
+          searchesTimesPoints: searcher.numSearch * wavePoints.length,
+          fraction: searcher.numPointTest / (searcher.numSearch * wavePoints.length),
+        });
+        y0 += 10;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
 
