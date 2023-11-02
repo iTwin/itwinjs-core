@@ -647,6 +647,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     const e = this._maxDistanceToAccept !== undefined ? this._maxDistanceToAccept : Geometry.smallMetricDistance;
     if (c > radiusA + radiusB + e) // distance between circles is more than max distance
       return;
+    // 1) intersection between arcs
     this.getIntersectionXYArcArcNewton(cpA, cpB, reversed);
     // 2) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
