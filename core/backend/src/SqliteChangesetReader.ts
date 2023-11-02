@@ -50,13 +50,14 @@ export interface SqliteChangesetReaderArgs {
 }
 
 /**
+ * Represent sqlite change.
  * @beta
  */
 export interface SqliteChange {
-  $table?: string;
-  $op?: SqliteChangeOp;
-  $stage?: SqliteValueStage;
-  [key: string]: any;
+  $table?: string; /** name of table */
+  $op?: SqliteChangeOp; /** SQLite operation that created this change */
+  $stage?: SqliteValueStage; /** version of data in change. */
+  [key: string]: any; /** columns in change */
 }
 
 /**
@@ -77,7 +78,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args fileName of changeset reader and other options.
    * @returns SqliteChangesetReader instance
    */
-  public static openFile(args: { readonly fileName: string } & SqliteChangesetReaderArgs) {
+  public static openFile(args: { readonly fileName: string } & SqliteChangesetReaderArgs): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
@@ -89,15 +90,16 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args iModel and other options.
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs) {
+  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openLocalChanges(args.iModel, args.includeInMemoryChanges ?? false, args.invert ?? false);
     return reader;
   }
   /** check if schema check is disabled or not */
-  public get disableSchemaCheck() { return this._disableSchemaCheck; }
+  public get disableSchemaCheck(): boolean { return this._disableSchemaCheck; }
   /** Move to next change in changeset
+   * @returns true if there is current change false if reader is end of changeset.
    * @beta
   */
   public step(): boolean {

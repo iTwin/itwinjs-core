@@ -338,34 +338,54 @@ class MapCache {
   }
 }
 
-/** @beta */
-export interface MetaData {
-  tables: string[];
-  className?: string;
-  op: SqliteChangeOp;
-  stage: SqliteValueStage;
-  fallbackClassId?: Id64String;
-  changeIndexes: number[];
-  [key: string]: any;
+/**
+ * Record meta data for the change.
+ * @beta
+ * */
+export interface ChangeMetaData {
+  tables: string[]; /** list of tables making up this EC change */
+  className?: string; /** full name of the class of this EC change */
+  op: SqliteChangeOp; /** sqlite operation that caused the change */
+  stage: SqliteValueStage; /** version of the value read from sqlite change */
+  fallbackClassId?: Id64String; /** if classId for the change was not found in db then fallback class for the table */
+  changeIndexes: number[]; /** list of change index making up this change (one per table) */
 }
 
-/** @beta */
+/**
+ * Represent EC change derived from low level sqlite change
+ * @beta
+ */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   ECInstanceId: Id64String;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   ECClassId?: Id64String;
-  $meta?: MetaData;
+  $meta?: ChangeMetaData;
   [key: string]: any;
 }
 
-/** @beta */
+/**
+ * Helper function to convert between JS DateTime & SQLite JulianDay values.
+ * @beta
+ * */
 namespace DateTime {
-  export function toJulianDay(dt: Date, convertToUtc = true) {
+  /**
+   * Convert JS date to JulianDay value.
+   * @param dt JS Date object.
+   * @param convertToUtc convert the input value to UTC.
+   * @returns julian day value
+   */
+  export function toJulianDay(dt: Date, convertToUtc = true): number {
     const utcOffset = convertToUtc ? dt.getTimezoneOffset() / 1440 : 0;
     return (dt.valueOf() / 86400000) - utcOffset + 2440587.5;
   }
-  export function fromJulianDay(jd: number, isLocalTime: boolean) {
+  /**
+   * Convert Julian day to JS Date object
+   * @param jd JulianDay value for date/time
+   * @param isLocalTime if julian day is local time or UTC
+   * @returns JS Date object.
+   */
+  export function fromJulianDay(jd: number, isLocalTime: boolean): Date {
     const utcOffset = isLocalTime ? 0 : new Date().getTimezoneOffset() / 1440;
     return new Date((jd - 2440587.5 + utcOffset) * 86400000);
   }
@@ -379,7 +399,11 @@ namespace DateTime {
 export class PartialECChangeUnifier {
   private _cache = new Map<string, ChangedECInstance>();
   private _readonly = false;
-  private combine(rhs: ChangedECInstance) {
+  /**
+   * Combine partial instance with instance with same key if already exists.
+   * @param rhs partial instance
+   */
+  private combine(rhs: ChangedECInstance): void {
     if (!rhs.$meta) {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
@@ -396,7 +420,12 @@ export class PartialECChangeUnifier {
       this._cache.set(key, rhs);
     }
   }
-  private static buildKey(change: ChangedECInstance) {
+  /**
+   * Build key from EC change.
+   * @param change EC change
+   * @returns key created from EC change.
+   */
+  private static buildKey(change: ChangedECInstance): string {
     return `${change.ECClassId}-${change.ECInstanceId}-${change.$meta?.stage}`.toLowerCase();
   }
   /**
@@ -406,7 +435,7 @@ export class PartialECChangeUnifier {
    * @param adaptor changeset adaptor is use to read the partial EC change.
    * @beta
    */
-  public appendFrom(adaptor: ChangesetECAdaptor) {
+  public appendFrom(adaptor: ChangesetECAdaptor): void {
     if (adaptor.disableMetaData) {
       throw new Error("change adaptor property 'disableMetaData' must be set to 'false'");
     }
@@ -425,7 +454,7 @@ export class PartialECChangeUnifier {
   /**
    * Delete $meta from all the instances.
    */
-  public stripMetaData() {
+  public stripMetaData(): void {
     for (const inst of this._cache.values()) {
       if ("$meta" in inst) {
         delete inst.$meta;
@@ -437,7 +466,7 @@ export class PartialECChangeUnifier {
    * Returns complete EC change instances.
    * @beta
    */
-  public get instances() { return this._cache.values(); }
+  public get instances(): IterableIterator<ChangedECInstance> { return this._cache.values(); }
 }
 
 /**
@@ -478,7 +507,7 @@ export class ChangesetECAdaptor implements IDisposable {
    * @param table Name of the table
    * @returns Fluent reference to ChangesetAdaptor.
    */
-  public acceptTable(table: string) {
+  public acceptTable(table: string): ChangesetECAdaptor {
     if (!this._tableFilter.has(table))
       this._tableFilter.add(table);
     return this;
@@ -489,7 +518,7 @@ export class ChangesetECAdaptor implements IDisposable {
    * @param op
    * @returns Fluent reference to ChangesetAdaptor.
    */
-  public acceptOp(op: SqliteChangeOp) {
+  public acceptOp(op: SqliteChangeOp): ChangesetECAdaptor {
     if (!this._opFilter.has(op))
       this._opFilter.add(op);
     return this;
@@ -500,7 +529,7 @@ export class ChangesetECAdaptor implements IDisposable {
    * @param classFullName
    * @returns
    */
-  public acceptClass(classFullName: string) {
+  public acceptClass(classFullName: string): ChangesetECAdaptor {
     if (!this._classFilter.has(classFullName))
       this._classFilter.add(classFullName);
 
@@ -541,28 +570,37 @@ export class ChangesetECAdaptor implements IDisposable {
   /**
    * close current instance and it will also close the changeset reader.
    */
-  public close() {
+  public close(): void {
     this.reader.close();
   }
-  private static convertBinaryToGuid(array: Uint8Array): GuidString {
+  /**
+   * Convert binary GUID into string GUID.
+   * @param binaryGUID binary version of guid.
+   * @returns GUID string.
+   */
+  private static convertBinaryToGuid(binaryGUID: Uint8Array): GuidString {
     // Check if the array has 16 elements
-    if (array.length !== 16) {
+    if (binaryGUID.length !== 16) {
       throw new Error("Invalid array length for Guid");
     }
     // Convert each element to a two-digit hexadecimal string
-    const hex = Array.from(array, (byte) => byte.toString(16).padStart(2, "0"));
+    const hex = Array.from(binaryGUID, (byte) => byte.toString(16).padStart(2, "0"));
     // Join the hexadecimal strings and insert hyphens
     return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
 
   }
-  private static setValue(obj: any, accessString: string, value: any) {
-    let cursor = obj;
+  /**
+   * Set value use access string in a JS object.
+   * @param targetObj object that will be updated.
+   * @param accessString access string token separated by '.'.
+   */
+  private static setValue(targetObj: any, accessString: string, value: any): void {
+    let cursor = targetObj;
     const list = accessString.split(".");
     const len = list.length;
-    for (let i = 0; i < len - 1; i++) {
-      const elem = list[i];
+    for (const elem of list) {
       if (!cursor[elem])
-        cursor[elem] = {};
+        cursor[elem] = Object.create(null);
       cursor = cursor[elem];
     }
     cursor[list[len - 1]] = value;
@@ -576,6 +614,12 @@ export class ChangesetECAdaptor implements IDisposable {
   public isECTable(tableName: string) {
     return typeof this._mapCache.getTable(tableName) !== "undefined";
   }
+  /**
+   * Attempt find ECClassId from ECInstanceId for a change of type 'updated'.
+   * @param tableName name of the table to find ECClassId from given ECInstanceId
+   * @param instanceId instance id for which we need ECClassId for.
+   * @returns if successful returns ECClassId else return undefined.
+   */
   private getClassIdFromDb(tableName: string, instanceId: Id64String): Id64String | undefined {
     try {
       return this.reader.db?.withPreparedSqliteStatement(`SELECT [ECClassId] FROM [${tableName}] WHERE [rowId]=?`, (stmt) => {
@@ -595,7 +639,10 @@ export class ChangesetECAdaptor implements IDisposable {
   /** Return true if current change is of type "Updated" */
   public get isUpdated() { return this.op === "Updated"; }
 
-  /** Advance reader to next change or a change that meets the filter set in the current adaptor */
+  /**
+   * Advance reader to next change or a change that meets the filter set in the current adaptor
+   * @returns return false if no more changes to read.
+   */
   public step(): boolean {
     this.inserted = undefined;
     this.deleted = undefined;
@@ -706,7 +753,13 @@ export class ChangesetECAdaptor implements IDisposable {
     }
     return this.reader.hasRow;
   }
-  private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance) {
+  /**
+   * Transform nav change column into navigation EC property
+   * @param prop navigation property definition.
+   * @param change sqlite change.
+   * @param out ec instance that will be updated with navigation property.
+   */
+  private transformNavigationProperty(prop: IProperty, change: SqliteChange, out: ChangedECInstance): void {
     const idCol = prop.columns.filter(($) => $.accessString.endsWith(".Id")).at(0);
     if (!idCol) {
       throw new Error("invalid map for nav property");
@@ -729,7 +782,14 @@ export class ChangesetECAdaptor implements IDisposable {
 
     ChangesetECAdaptor.setValue(out, relClassIdCol.accessString, relClassIdValue);
   }
-  private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance) {
+  /**
+   * Transform sqlite change into EC change.
+   * @param classMap classMap use to deserialize sqlite change into EC change.
+   * @param change sqlite change from changeset.
+   * @param table table definition of sqlite change provided.
+   * @param out EC changeset that will be updated with properties.
+   */
+  private transform(classMap: IClassMap, change: SqliteChange, table: ITable, out: ChangedECInstance): void {
     // transform change row to instance
     for (const prop of classMap.properties) {
       if (prop.kind === "PrimitiveArray" || prop.kind === "StructArray") {
@@ -773,6 +833,5 @@ export class ChangesetECAdaptor implements IDisposable {
         }
       }
     }
-    return out;
   }
 }
