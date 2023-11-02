@@ -128,6 +128,11 @@ steps:
     displayName: "Run Electron Backend Tests"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
+  - script: npm run ios:all
+    workingDirectory: core/backend
+    displayName: Build & run iOS backend unit tests in Simulator
+    condition: and(succeededOrFailed(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
+
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
@@ -176,4 +181,11 @@ steps:
     inputs:
       testResultsFiles: core/electron/lib/test/*_junit_results.xml
       testRunTitle: "Core - Electron Tests - ${{ parameters.nodeVersion }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish iOS Backend Test Results"
+    inputs:
+      testResultsFiles: core/backend/lib/junit_results.xml
+      testRunTitle: "Test suite Core - Backend on iOS"
     condition: succeededOrFailed()
