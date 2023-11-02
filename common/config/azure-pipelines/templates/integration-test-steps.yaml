@@ -131,7 +131,7 @@ steps:
   - script: npm run ios:all
     workingDirectory: core/backend
     displayName: Build & run iOS backend unit tests in Simulator
-    condition: and(succeededOrFailed(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
 
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
