@@ -106,8 +106,6 @@ public;ChangesetIndexOrId = ChangesetIndexAndId |
 public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
-alpha;ChannelConstraintError 
-public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
@@ -125,6 +123,8 @@ public;ColorIndex
 public;CommonLoggerCategory
 public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
+alpha;CompartmentConstraintError 
+public;CompartmentRootAspectProps 
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 alpha;ComputeNodeId = (feature: PackedFeatureWithIndex) => number

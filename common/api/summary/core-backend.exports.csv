@@ -29,11 +29,6 @@ internal;ChangesetIndexArg
 public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
-internal;ChannelAdmin 
-beta;ChannelControl
-beta;ChannelControl
-beta;ChannelKey = string
-public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
@@ -52,6 +47,11 @@ alpha;CodeService
 internal;BisCodeSpecIndexProps
 internal;FontIndexProps
 public;CodeSpecs
+internal;CompartmentAdmin 
+beta;CompartmentControl
+beta;CompartmentControl
+beta;CompartmentKey = string
+public;CompartmentRootAspect 
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship

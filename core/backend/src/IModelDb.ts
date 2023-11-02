@@ -347,7 +347,7 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
-    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
+    GeoCoordConfig.loadForImodel(this.workspace.settings); // load `gcs` data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
