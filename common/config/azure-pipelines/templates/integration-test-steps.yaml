@@ -188,4 +188,4 @@ steps:
     inputs:
       testResultsFiles: core/backend/lib/junit_results.xml
       testRunTitle: "Test suite Core - Backend on iOS"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
