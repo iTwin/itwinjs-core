@@ -1,6 +1,11 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Tue, 24 Oct 2023 15:09:13 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Nov 2023 15:36:20 GMT and should not be manually modified.
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+_Version update only_
 
 ## 4.2.1
 Tue, 24 Oct 2023 15:09:13 GMT
