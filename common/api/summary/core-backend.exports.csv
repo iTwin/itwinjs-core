@@ -29,6 +29,8 @@ internal;ChangesetIndexArg
 public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
+internal;ChannelRootAspect = CompartmentRootAspect
+deprecated;ChannelRootAspect = CompartmentRootAspect
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest
 internal;CheckpointManager
