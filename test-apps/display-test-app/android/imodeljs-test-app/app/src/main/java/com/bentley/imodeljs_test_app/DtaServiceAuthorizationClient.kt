@@ -82,20 +82,11 @@ class DtaServiceAuthorizationClient(env: JSONObject): AuthorizationClient() {
         }
     }
 
-    private fun isValidToken(results: List<String>): Boolean {
-        if (results.size != 2) return false
-        // TODO: check if expired
-        return true
-    }
-
     private fun returnAccessToken(tokenAction: AuthTokenCompletionAction): Boolean {
-        val results = listOfNotNull(accessToken, expirationDate)
-        return if (isValidToken(results)) {
-            tokenAction.resolve(results[0], results[1])
+        return let2(accessToken, expirationDate) {
+            tokenAction.resolve(it.first, it.second)
             true
-        } else {
-            false
-        }
+        } == true
     }
 
     override fun getAccessToken(tokenAction: AuthTokenCompletionAction) {
@@ -111,4 +102,8 @@ class DtaServiceAuthorizationClient(env: JSONObject): AuthorizationClient() {
             }
         }
     }
+}
+
+inline fun <T1: Any, T2: Any, R: Any> let2(p1: T1?, p2: T2?, block: (Pair<T1, T2>)->R?): R? {
+    return if (p1 != null && p2 != null) block(Pair(p1, p2)) else null
 }
