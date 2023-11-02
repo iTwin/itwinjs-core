@@ -12,7 +12,7 @@ To create a **frontstage** implement and register a [FrontstageProvider]($appui-
 [[include:AppUI.FrontstageProvider]]
 ```
 
-Learn more about [creating content controls](./content-control.md#create).
+Learn more about [creating content controls](./content-control.md#content-control).
 
 ## Activate a Frontstage
 
@@ -38,7 +38,6 @@ Additionally a frontstage can contain multiple floating widgets that are not doc
 Each floating widget and a stage panel section is a widget container which can contain multiple widgets.
 
 <iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/543/iframe.html?args=&id=frontstage-frontstageprovider--widget-container&viewMode=story"></iframe>
-
 
 ### Create a Standard Frontstage
 
