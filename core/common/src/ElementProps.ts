@@ -466,12 +466,12 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
   scale?: XYZProps;
 }
 
-/** Properties of an [CompartmentRootAspect]($backend) that identifies an Element as the root of a compartment.
+/** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a compartment.
  * @see [Working With Compartments]($docs/learning/backend/Compartment.md) for details
  * @public
  * @extensions
  */
-export interface CompartmentRootAspectProps extends ElementAspectProps {
+export interface ChannelRootAspectProps extends ElementAspectProps {
   /** The owner of the compartment */
   owner: string;
 }

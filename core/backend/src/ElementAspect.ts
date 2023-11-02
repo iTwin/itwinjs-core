@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { CompartmentRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -123,22 +123,17 @@ export class ElementMultiAspect extends ElementAspect {
 /**
  * @public
  */
-export class CompartmentRootAspect extends ElementUniqueAspect {
+export class ChannelRootAspect extends ElementUniqueAspect {
   /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
-  /** Insert a CompartmentRootAspect on the specified element.
+  /** Insert a ChannelRootAspect on the specified element.
    * @deprecated in 4.0 use [[CompartmentControl.makeCompartmentRoot]]. This method does not enforce the rule that compartments may not nest and is therefore dangerous.
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, compartmentKey: string) {
-    const props: CompartmentRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: compartmentKey };
+    const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: compartmentKey };
     iModel.elements.insertAspect(props);
   }
 }
-
-/** @deprecated in 4.3 use [[CompartmentRootAspect]]
- * @internal
- */
-export class ChannelRootAspect extends CompartmentRootAspect { }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2

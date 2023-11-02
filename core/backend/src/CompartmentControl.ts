@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64String, IModelStatus, RepositoryStatus } from "@itwin/core-bentley";
-import { CompartmentRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -136,7 +136,7 @@ export class CompartmentAdmin implements CompartmentControl {
     if (CompartmentControl.sharedCompartmentName !== this.getCompartmentKey(args.elementId))
       throw new Error("compartments may not nest");
 
-    const props: CompartmentRootAspectProps = { classFullName: CompartmentAdmin.compartmentClassName, element: { id: args.elementId }, owner: args.compartmentKey };
+    const props: ChannelRootAspectProps = { classFullName: CompartmentAdmin.compartmentClassName, element: { id: args.elementId }, owner: args.compartmentKey };
     this._iModel.elements.insertAspect(props);
     this._hasCompartments = true;
   }
