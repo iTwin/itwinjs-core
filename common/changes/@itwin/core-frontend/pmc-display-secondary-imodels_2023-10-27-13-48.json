@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
