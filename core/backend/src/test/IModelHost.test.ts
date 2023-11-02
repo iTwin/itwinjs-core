@@ -47,6 +47,17 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
   });
 
+  it("should properly cleanup beforeExit event listeners on shutdown", async () => {
+    const beforeCount = process.listenerCount("beforeExit");
+    for (let i = 0; i <= 15; i++) {
+      await IModelHost.startup();
+      await IModelHost.shutdown();
+
+    }
+    const afterCount = process.listenerCount("beforeExit");
+    expect(beforeCount).to.be.equal(afterCount);
+  });
+
   it("should call logger sync function", async () => {
     const logChanged = sinon.spy(IModelHost as any, "syncNativeLogLevels");
     await IModelHost.startup(opts);
