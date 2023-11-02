@@ -4,21 +4,6 @@
 
 ```ts
 
-// @internal
-export abstract class AbstractNewtonIterator {
-    protected constructor(stepSizeTolerance?: number, successiveConvergenceTarget?: number, maxIterations?: number);
-    abstract applyCurrentStep(isFinalStep: boolean): boolean;
-    abstract computeStep(): boolean;
-    abstract currentStepSize(): number;
-    protected _maxIterations: number;
-    protected _numAccepted: number;
-    numIterations: number;
-    runIterations(): boolean;
-    protected _stepSizeTolerance: number;
-    protected _successiveConvergenceTarget: number;
-    testConvergence(delta: number): boolean;
-}
-
 // @public
 export class AkimaCurve3d extends ProxyCurve {
     clone(): AkimaCurve3d;
@@ -1620,20 +1605,6 @@ export enum CurveCurveApproachType {
     PerpendicularChord = 1
 }
 
-// @internal
-export class CurveCurveCloseApproachXYRRtoRRD extends NewtonEvaluatorRRtoRRD {
-    constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive);
-    // (undocumented)
-    evaluate(fractionU: number, fractionV: number): boolean;
-}
-
-// @internal
-export class CurveCurveIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
-    constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive);
-    // (undocumented)
-    evaluate(fractionU: number, fractionV: number): boolean;
-}
-
 // @public
 export enum CurveExtendMode {
     None = 0,
@@ -1755,13 +1726,6 @@ export class CurveOps {
     static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
     static sumLengths(curves: AnyCurve | AnyCurve[]): number;
-}
-
-// @internal
-export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
-    constructor(curveP: CurvePrimitive, pointQ: Point3d);
-    // (undocumented)
-    evaluate(fractionU: number): boolean;
 }
 
 // @public
@@ -3869,59 +3833,6 @@ export class MomentData {
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
 // @internal
-export class Newton1dUnbounded extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRtoRD);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    getX(): number;
-    setTarget(y: number): void;
-    setX(x: number): boolean;
-}
-
-// @internal
-export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRtoR);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    derivativeH: number;
-    getX(): number;
-    setX(x: number): boolean;
-}
-
-// @internal
-export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRRtoRRD);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    getU(): number;
-    getV(): number;
-    setUV(u: number, v: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRRtoRRD {
-    constructor();
-    currentF: Plane3dByOriginAndVectors;
-    abstract evaluate(x: number, y: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRtoR {
-    currentF: number;
-    abstract evaluate(x: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRtoRD {
-    currentdFdX: number;
-    currentF: number;
-    abstract evaluate(x: number): boolean;
-}
-
-// @internal
 export type NodeFunction = (node: HalfEdge) => any;
 
 // @internal
@@ -5676,11 +5587,6 @@ export interface SignedLoops {
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];
-}
-
-// @internal
-export class SimpleNewton {
-    static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance?: number): number | undefined;
 }
 
 // @internal

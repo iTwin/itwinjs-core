@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-internal;class AbstractNewtonIterator
 public;AkimaCurve3d 
 public;AkimaCurve3dOptions
 public;AkimaCurve3dProps
@@ -91,8 +90,6 @@ public;class CurveCollection
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
 public;CurveCurve
 public;CurveCurveApproachType
-internal;CurveCurveCloseApproachXYRRtoRRD 
-internal;CurveCurveIntersectionXYRRToRRD 
 public;CurveExtendMode
 public;CurveExtendOptions
 public;CurveFactory
@@ -102,7 +99,6 @@ public;CurveLocationDetailArrayPair
 deprecated;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;CurveOps
-internal;CurvePointCloseApproachXYRtoRD 
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
@@ -187,12 +183,6 @@ public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
-internal;Newton1dUnbounded 
-internal;Newton1dUnboundedApproximateDerivative 
-internal;Newton2dUnboundedWithDerivative 
-internal;class NewtonEvaluatorRRtoRRD
-internal;class NewtonEvaluatorRtoR
-internal;class NewtonEvaluatorRtoRD
 internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NonConvexFacetLocationDetail 
@@ -268,7 +258,6 @@ alpha;Sample
 public;SectionSequenceWithPlanes
 public;Segment1d
 public;SignedLoops
-internal;SimpleNewton
 internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta
