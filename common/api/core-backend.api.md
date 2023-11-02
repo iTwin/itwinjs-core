@@ -697,7 +697,8 @@ export class ChangeSummaryManager {
 }
 
 // @internal @deprecated (undocumented)
-export type ChannelRootAspect = CompartmentRootAspect;
+export class ChannelRootAspect extends CompartmentRootAspect {
+}
 
 // @internal @deprecated (undocumented)
 export type CheckpointArg = DownloadRequest;

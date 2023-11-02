@@ -138,7 +138,7 @@ export class CompartmentRootAspect extends ElementUniqueAspect {
 /** @deprecated in 4.3 use [[CompartmentRootAspect]]
  * @internal
  */
-export type ChannelRootAspect = CompartmentRootAspect;
+export class ChannelRootAspect extends CompartmentRootAspect { }
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
