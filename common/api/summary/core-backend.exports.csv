@@ -25,8 +25,9 @@ public;CategoryOwnsSubCategories
 public;CategorySelector 
 beta;ChangedECInstance
 internal;ChangedElementsDb 
-public;ChangeFormatArgs
+beta;ChangeFormatArgs
 beta;ChangeInstanceKey
+beta;ChangeMetaData
 public;ChangesetArg 
 beta;ChangesetECAdaptor 
 internal;ChangesetIndexArg 
@@ -260,7 +261,6 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
-beta;MetaData
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 

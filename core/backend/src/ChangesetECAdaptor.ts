@@ -596,14 +596,22 @@ export class ChangesetECAdaptor implements IDisposable {
    */
   private static setValue(targetObj: any, accessString: string, value: any): void {
     let cursor = targetObj;
-    const list = accessString.split(".");
-    const len = list.length;
-    for (const elem of list) {
-      if (!cursor[elem])
-        cursor[elem] = Object.create(null);
+    const propPath = accessString.split(".");
+    propPath.forEach((propertyName) => {
+      if (propertyName === "__proto__")
+        throw new Error("access string cannot container __proto__");
+    });
+
+    const leafProp = propPath.splice(-1).shift();
+    if (!leafProp)
+      throw new Error("not access string was specified.");
+
+    for (const elem of propPath) {
+      if (typeof cursor[elem] === "undefined")
+        cursor[elem] = {};
       cursor = cursor[elem];
     }
-    cursor[list[len - 1]] = value;
+    cursor[leafProp] = value;
   }
 
   /**

@@ -17,6 +17,10 @@ type SqliteValue = Uint8Array | number | string | null | undefined;
  * @beta
 */
 type SqliteValueArray = SqliteValue[];
+/**
+ * Format option when converting change from array to column/value object.
+ * @beta
+ */
 export interface ChangeFormatArgs {
   includeTableName?: true;
   includeOpCode?: true;

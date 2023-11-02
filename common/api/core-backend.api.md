@@ -620,10 +620,10 @@ export class CategorySelector extends DefinitionElement {
     toJSON(): CategorySelectorProps;
 }
 
-// @beta (undocumented)
+// @beta
 export interface ChangedECInstance {
     // (undocumented)
-    $meta?: MetaData;
+    $meta?: ChangeMetaData;
     // (undocumented)
     [key: string]: any;
     // (undocumented)
@@ -653,7 +653,7 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
-// @public (undocumented)
+// @beta
 export interface ChangeFormatArgs {
     // (undocumented)
     includeNullColumns?: true;
@@ -674,6 +674,22 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
+// @beta
+export interface ChangeMetaData {
+    // (undocumented)
+    changeIndexes: number[]; /** list of tables making up this EC change */
+    // (undocumented)
+    className?: string; /** list of tables making up this EC change */
+    // (undocumented)
+    fallbackClassId?: Id64String; /** list of tables making up this EC change */
+    // (undocumented)
+    op: SqliteChangeOp; /** list of tables making up this EC change */
+    // (undocumented)
+    stage: SqliteValueStage; /** list of tables making up this EC change */
+    // (undocumented)
+    tables: string[]; /** list of change index making up this change (one per table) */
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
@@ -683,9 +699,9 @@ export interface ChangesetArg extends IModelIdArg {
 // @beta
 export class ChangesetECAdaptor implements IDisposable {
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
-    acceptClass(classFullName: string): this;
-    acceptOp(op: SqliteChangeOp): this;
-    acceptTable(table: string): this;
+    acceptClass(classFullName: string): ChangesetECAdaptor;
+    acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
+    acceptTable(table: string): ChangesetECAdaptor;
     close(): void;
     readonly debugFlags: {
         replaceBlobWithEllipsis: boolean;
@@ -4065,24 +4081,6 @@ export interface LockStatusShared {
     state: LockState.Shared;
 }
 
-// @beta (undocumented)
-export interface MetaData {
-    // (undocumented)
-    [key: string]: any;
-    // (undocumented)
-    changeIndexes: number[];
-    // (undocumented)
-    className?: string;
-    // (undocumented)
-    fallbackClassId?: Id64String;
-    // (undocumented)
-    op: SqliteChangeOp;
-    // (undocumented)
-    stage: SqliteValueStage;
-    // (undocumented)
-    tables: string[];
-}
-
 // @internal
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
@@ -5070,16 +5068,16 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
-// @beta (undocumented)
+// @beta
 export interface SqliteChange {
     // (undocumented)
-    $op?: SqliteChangeOp;
+    $op?: SqliteChangeOp; /** name of table */
     // (undocumented)
-    $stage?: SqliteValueStage;
+    $stage?: SqliteValueStage; /** name of table */
     // (undocumented)
-    $table?: string;
+    $table?: string; /** name of table */
     // (undocumented)
-    [key: string]: any;
+    [key: string]: any; /** columns in change */
 }
 
 // @beta
