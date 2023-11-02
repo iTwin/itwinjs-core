@@ -696,8 +696,12 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
-// @internal @deprecated (undocumented)
-export class ChannelRootAspect extends CompartmentRootAspect {
+// @public (undocumented)
+export class ChannelRootAspect extends ElementUniqueAspect {
+    // @internal (undocumented)
+    static get className(): string;
+    // @deprecated
+    static insert(iModel: IModelDb, ownerId: Id64String, compartmentKey: string): void;
 }
 
 // @internal @deprecated (undocumented)
@@ -1286,14 +1290,6 @@ export namespace CompartmentControl {
 
 // @beta
 export type CompartmentKey = string;
-
-// @public (undocumented)
-export class CompartmentRootAspect extends ElementUniqueAspect {
-    // @internal (undocumented)
-    static get className(): string;
-    // @deprecated
-    static insert(iModel: IModelDb, ownerId: Id64String, compartmentKey: string): void;
-}
 
 // @public
 export interface ComputedProjectExtents {

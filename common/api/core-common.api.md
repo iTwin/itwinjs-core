@@ -1148,6 +1148,11 @@ export enum ChangesetType {
     Schema = 1
 }
 
+// @public
+export interface ChannelRootAspectProps extends ElementAspectProps {
+    owner: string;
+}
+
 // @internal
 export interface ClassifierTileTreeId {
     // (undocumented)
@@ -1527,11 +1532,6 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
 // @alpha
 export class CompartmentConstraintError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
-// @public
-export interface CompartmentRootAspectProps extends ElementAspectProps {
-    owner: string;
 }
 
 // @internal
