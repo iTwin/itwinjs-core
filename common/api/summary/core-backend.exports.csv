@@ -29,6 +29,12 @@ internal;ChangesetIndexArg
 public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
+internal;ChannelControl 
+deprecated;ChannelControl 
+internal;ChannelControl
+deprecated;ChannelControl
+internal;ChannelKey = string
+deprecated;ChannelKey = string
 public;ChannelRootAspect 
 internal;CheckpointArg = DownloadRequest
 deprecated;CheckpointArg = DownloadRequest

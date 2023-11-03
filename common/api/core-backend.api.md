@@ -696,6 +696,19 @@ export class ChangeSummaryManager {
     static queryInstanceChange(iModel: BriefcaseDb, instanceChangeId: Id64String): InstanceChange;
 }
 
+// @internal @deprecated (undocumented)
+export interface ChannelControl extends CompartmentControl {
+}
+
+// @internal @deprecated (undocumented)
+export namespace ChannelControl {
+    const // @deprecated (undocumented)
+    sharedChannelName = "shared";
+}
+
+// @internal @deprecated (undocumented)
+export type ChannelKey = string;
+
 // @public (undocumented)
 export class ChannelRootAspect extends ElementUniqueAspect {
     // @internal (undocumented)
