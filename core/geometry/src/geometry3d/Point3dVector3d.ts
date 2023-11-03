@@ -71,7 +71,7 @@ export class XYZ implements XYAndZ {
    * * [number,number]
    * * [number,number,number]
    */
-  public static isAnyImmediatePointType(arg: any): boolean {
+  public static isAnyImmediatePointType(arg: any): arg is XAndY | XYAndZ | number[] {
     return Point3d.isXAndY(arg) || Geometry.isNumberArray(arg, 2);
   }
   /**
@@ -475,17 +475,18 @@ export class Point3d extends XYZ {
   }
   /**
    * Copy and unweight xyzw.
-   * @param xyzData flat array of x,y,z,w,x,y,z,w for multiple points
+   * @param xyzwData flat array of weighted homogeneous points: xw,yw,zw,w
    * @param pointIndex index of point to extract. This index is multiplied by 4 to obtain starting index in the array.
    * @param result optional result point.
+   * @return unweighted xyz
    */
-  public static createFromPackedXYZW(xyzData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined {
+  public static createFromPackedXYZW(xyzwData: Float64Array, pointIndex: number, result?: Point3d): Point3d | undefined {
     const indexX = pointIndex * 4;
-    if (indexX >= 0 && indexX + 3 < xyzData.length) {
-      const w = xyzData[indexX + 3];
+    if (indexX >= 0 && indexX + 3 < xyzwData.length) {
+      const w = xyzwData[indexX + 3];
       if (!Geometry.isSmallMetricDistance(w)) {
         const divW = 1.0 / w;
-        return Point3d.create(divW * xyzData[indexX], divW * xyzData[indexX + 1], divW * xyzData[indexX + 2], result);
+        return Point3d.create(divW * xyzwData[indexX], divW * xyzwData[indexX + 1], divW * xyzwData[indexX + 2], result);
       }
     }
     return undefined;
@@ -1466,6 +1467,16 @@ export class Vector3d extends XYZ {
    */
   public angleFromPerpendicular(planeNormal: Vector3d): Angle {
     return Angle.createAtan2(this.dotProduct(planeNormal), this.crossProductMagnitude(planeNormal));
+  }
+  /**
+   * Return the angle in radians (not as strongly typed Angle) from this vector to the plane perpendicular to planeNormal.
+   * * The returned angle is between -PI/2 and PI/2.
+   * * The returned angle is measured in the plane containing the two vectors.
+   * * The function returns PI/2 - radiansTo(planeNormal).
+   * @param planeNormal a normal vector to the plane.
+   */
+  public radiansFromPerpendicular(planeNormal: Vector3d): number {
+    return Math.atan2(this.dotProduct(planeNormal), this.crossProductMagnitude(planeNormal));
   }
   /**
    * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.

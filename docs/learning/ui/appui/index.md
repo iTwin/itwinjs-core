@@ -32,4 +32,4 @@ The [imodel-components-react package](../imodel-components/index) includes compo
 
 React components in the [components-react package](../components/index) are complex components used to display and edit properties are hierarchies. They have no direct dependencies on iTwin.js frontend classes and can be used inside or outside AppUi apps.
 
-The [core-react package](../core/index) is made up of simple React components that can be used anywhere you would use React. Components in the Bentley project [iTwin Ui React](https://github.com/iTwin/iTwinUI-react) are also used in AppUi and can be used anywhere you can use React components.
+The [core-react package](../core/index) is made up of simple React components that can be used anywhere you would use React. Components in the Bentley project [iTwinUI React](https://itwinui.bentley.com) are also used in AppUI and can be used anywhere you can use React components.

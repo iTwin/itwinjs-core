@@ -19,19 +19,32 @@ const mode =
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
+// local path alias to the ts entry point of each package
+const packageAliases = {};
+
 Object.keys(packageJson.dependencies).forEach((pkgName) => {
   if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
     try {
-      // gets dependency path and replaces everything after /lib/ with /lib/public/* to get static assets
-      let pkg = require
-        .resolve(pkgName)
-        .replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+      // gets dependency path
+      const pkgPath = require.resolve(pkgName);
 
-      const assetsPath = path.relative(process.cwd(), pkg).replace(/\\/g, "/"); // use relative path with forward slashes
+      // replaces everything after /lib/ with /lib/public/* to get static assets
+      let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
+
+      const assetsPath = path
+        .relative(process.cwd(), pkgPublicPath)
+        .replace(/\\/g, "/"); // use relative path with forward slashes
       if (assetsPath.endsWith("lib/public/*")) {
         // filter out pkgs that actually dont have assets
         assets.push(assetsPath);
       }
+
+      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
+      if (pkgPath.includes("temp") || pkgPath.includes("backend")) return;
+      packageAliases[pkgName] = pkgPath
+        .replace("\\lib\\cjs\\", "\\src\\")
+        .replace("/lib/cjs/", "/src/")
+        .replace(".js", ".ts");
     } catch {}
   }
 });
@@ -53,26 +66,25 @@ export default defineConfig(() => {
     },
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
+    logLevel: process.env.VITE_CI ? "error" : "warn",
     build: {
       outDir: "./lib",
       sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.
       minify: false, // disable compaction of source code
       target: browserslistToEsbuild(), // for browserslist in package.json
-      logLevel: process.env.VITE_CI ? "error" : "warn",
       commonjsOptions: {
-        // plugin to convert CommonJS modules to ES6, so they can be included in bundle
+        // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
           /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
-          /node_modules/, // prevent errors for modules
-          /core\/frontend/, // prevent errors with require in IModelApp
+          /node_modules/, // prevent errors from dependencies
         ],
         transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {
         input: path.resolve(__dirname, "index.html"),
+        // run `rushx build --stats` to view stats
         plugins: [
-          // run `rushx build --stats` to view stats
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
                 rollupVisualizer({
@@ -115,6 +127,16 @@ export default defineConfig(() => {
     define: {
       "process.env": process.env, // injects process.env into the frontend
     },
+    resolve: {
+      alias: {
+        ...packageAliases,
+        "@itwin/core-electron/lib/cjs/ElectronFrontend":
+          "@itwin/core-electron/src/ElectronFrontend.ts",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend":
+          "@itwin/core-mobile/src/MobileFrontend.ts",
+        "../../package.json": "../package.json", // in core-frontend
+      },
+    },
     optimizeDeps: {
       esbuildOptions: {
         plugins: [
@@ -127,10 +149,12 @@ export default defineConfig(() => {
       force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
-        "@itwin/core-common", // for opening iModel error
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-frontend", // file in repository uses require (cjs)
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
+      ],
+      exclude: [
+        "@itwin/core-frontend", //prevents import not resolved errors
+        "@itwin/core-common", //prevents rpc errors
       ],
     },
   };

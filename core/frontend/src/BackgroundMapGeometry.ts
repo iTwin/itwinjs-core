@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, WritableXYAndZ, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode, LinePixels } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -190,6 +190,37 @@ export class BackgroundMapGeometry {
 
     return Promise.all(promises);
   }
+
+  public async cartographicToDbFromWgs84Gcs(cartographic: Cartographic[]): Promise<Point3d[]> {
+    let db;
+    if (this.globeMode === GlobeMode.Plane) {
+      const fraction = Point2d.create(0, 0);
+      db = cartographic.map((p) => {
+        this._mercatorTilingScheme.cartographicToFraction(p.latitude, p.longitude, fraction);
+        return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, p.height);
+      });
+    } else {
+      db = cartographic.map((p) => this._ecefToDb.multiplyPoint3d(p.toEcef())!);
+    }
+
+    if (this._iModel.noGcsDefined)
+      return db;
+
+    const toReprojectCoords: WritableXYAndZ[] = [];
+    const toReprojectIdx: number[] = [];
+    db.forEach(async (p, i) => {
+      if (this.cartesianRange.containsPoint(p)) {
+        toReprojectCoords.push({x:cartographic[i].longitudeDegrees, y:cartographic[i].latitudeDegrees, z:cartographic[i].height});
+        toReprojectIdx.push(i);
+      }
+    });
+    const spatialPoints = await this._iModel.toSpatialFromGcs(toReprojectCoords, { horizontalCRS: { epsg: 4326 }, verticalCRS: { id: "ELLIPSOID" } });
+    return db.map((p, i) => {
+      const reprojectedIdx = toReprojectIdx.findIndex((value) => value === i);
+      return (reprojectedIdx === -1 ? p : spatialPoints[reprojectedIdx]);
+    });
+  }
+
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);

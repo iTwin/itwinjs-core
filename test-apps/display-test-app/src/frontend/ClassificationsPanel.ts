@@ -165,7 +165,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
             /** API Version. v1 by default */
             // version?: ApiVersion;
             /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-            baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+            baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
           };
           available = await new RealityDataAccessClient(realityDataClientOptions).getRealityDatas(accessToken, this._iTwinId, criteria);
         }

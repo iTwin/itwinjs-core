@@ -24,6 +24,7 @@ import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
+import { SchemaItems } from "./SchemaItems";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
 // TODO: Add an error code so we can do something programmatic with the error.
@@ -72,6 +73,9 @@ export class SchemaContextEditor {
   public readonly unitSystems = new UnitSystems(this);
   public readonly propertyCategories = new PropertyCategories(this);
   public readonly invertedUnits = new InvertedUnits(this);
+
+  /** @internal */
+  public readonly schemaItems = new SchemaItems(this);
 
   /**
    * Creates a new SchemaContextEditor instance.

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.2.0-dev.27",
+  "version": "4.3.0-dev.18",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -41,12 +41,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.27",
-    "@itwin/core-common": "workspace:^4.2.0-dev.27",
-    "@itwin/core-frontend": "workspace:^4.2.0-dev.27",
-    "@itwin/core-quantity": "workspace:^4.2.0-dev.27",
-    "@itwin/ecschema-metadata": "workspace:^4.2.0-dev.27",
-    "@itwin/presentation-common": "workspace:^4.2.0-dev.27"
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.18",
+    "@itwin/core-common": "workspace:^4.3.0-dev.18",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.18",
+    "@itwin/core-quantity": "workspace:^4.3.0-dev.18",
+    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.18",
+    "@itwin/presentation-common": "workspace:^4.3.0-dev.18"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -67,7 +67,7 @@
     "@types/node": "18.16.1",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "cpx2": "^3.0.0",

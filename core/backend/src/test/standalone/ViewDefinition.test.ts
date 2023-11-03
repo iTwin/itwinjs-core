@@ -15,6 +15,7 @@ import {
   CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, ViewStore,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 function createNewModelAndCategory(rwIModel: IModelDb) {
   const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
@@ -65,7 +66,7 @@ describe("ViewDefinition", () => {
       guid: Guid.createValue(),
     });
 
-    const dbName = join(__dirname, "output", "viewDefTest.db");
+    const dbName = join(KnownTestLocations.outputDir, "viewDefTest.db");
     ViewStore.ViewDb.createNewDb(dbName);
     vs1 = new ViewStore.ViewDb({ iModel, guidMap: new FakeGuids() });
     vs1.openDb(dbName, OpenMode.ReadWrite);

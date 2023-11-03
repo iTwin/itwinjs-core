@@ -1009,8 +1009,8 @@ export class Geometry {
     return result;
   }
   /**
-   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`
-   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`.
+   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`.
    */
   public static inverseInterpolate(
     x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number,
@@ -1030,16 +1030,14 @@ export class Geometry {
    * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
    */
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
-    /**
-     * Line equation is "fTarget-f0 = (f1-f0)*x" so "x = (fTarget-f0)/(f1-f0)"
-     */
-    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // x = (fTarget-f0)/(f1-f0)
+    // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
+    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
    * those beyond minEntries).
    */
-  public static isNumberArray(json: any, minEntries: number = 0): boolean {
+  public static isNumberArray(json: any, minEntries: number = 0): json is number[] {
     if (Array.isArray(json) && json.length >= minEntries) {
       let entry;
       for (entry of json) {
@@ -1054,7 +1052,7 @@ export class Geometry {
    * Return `true` if `json` is an array of at least `minArrays` arrays with at least `minEntries` entries in
    * each array and all entries are numbers (including those beyond minEntries).
    */
-  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): boolean {
+  public static isArrayOfNumberArray(json: any, minArrays: number, minEntries: number = 0): json is number[][] {
     if (Array.isArray(json) && json.length >= minArrays) {
       let entry;
       for (entry of json)

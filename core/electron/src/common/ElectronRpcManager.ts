@@ -6,8 +6,6 @@
 import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
-
 /** RPC interface configuration for an Electron-based application.
  * @internal
  */
