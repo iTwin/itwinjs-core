@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 24 Oct 2023 15:10:47 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Nov 2023 15:37:23 GMT and should not be manually modified.
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+### Updates
+
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
 
 ## 4.2.1
 Tue, 24 Oct 2023 15:09:13 GMT
