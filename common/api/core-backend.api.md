@@ -1236,13 +1236,26 @@ export class CodeSpecs {
 export class CompartmentAdmin implements CompartmentControl {
     constructor(_iModel: IModelDb);
     // (undocumented)
+    addAllowedChannel(channelKey: CompartmentKey): void;
+    // (undocumented)
     addAllowedCompartment(compartmentKey: CompartmentKey): void;
     // (undocumented)
     static readonly compartmentClassName = "bis:ChannelRootAspect";
     // (undocumented)
+    getChannelKey(elementId: Id64String): CompartmentKey;
+    // (undocumented)
     getCompartmentKey(elementId: Id64String): CompartmentKey;
     // (undocumented)
+    get hasChannels(): boolean;
+    // (undocumented)
     get hasCompartments(): boolean;
+    // (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: CompartmentKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
     // (undocumented)
     insertCompartmentSubject(args: {
         subjectName: string;
@@ -1251,10 +1264,17 @@ export class CompartmentAdmin implements CompartmentControl {
         description?: string;
     }): Id64String;
     // (undocumented)
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: CompartmentKey;
+    }): void;
+    // (undocumented)
     makeCompartmentRoot(args: {
         elementId: Id64String;
         compartmentKey: CompartmentKey;
     }): void;
+    // (undocumented)
+    removeAllowedChannel(channelKey: CompartmentKey): void;
     // (undocumented)
     removeAllowedCompartment(compartmentKey: CompartmentKey): void;
     // (undocumented)
@@ -1263,23 +1283,45 @@ export class CompartmentAdmin implements CompartmentControl {
     verifyCompartment(modelId: Id64String): void;
 }
 
-// @beta
+// Warning: (ae-internal-mixed-release-tag) Mixed release tags are not allowed for "CompartmentControl" because one of its declarations is marked as @internal
+//
+// @internal (undocumented)
 export interface CompartmentControl {
+    // @deprecated (undocumented)
+    addAllowedChannel(channelKey: CompartmentKey): void;
     addAllowedCompartment(compartmentKey: CompartmentKey): void;
+    // @deprecated (undocumented)
+    getChannelKey(elementId: Id64String): CompartmentKey;
     getCompartmentKey(elementId: Id64String): CompartmentKey;
+    // @deprecated (undocumented)
+    get hasChannels(): boolean;
     get hasCompartments(): boolean;
+    // @deprecated (undocumented)
+    insertChannelSubject(args: {
+        subjectName: string;
+        channelKey: CompartmentKey;
+        parentSubjectId?: Id64String;
+        description?: string;
+    }): Id64String;
     insertCompartmentSubject(args: {
         subjectName: string;
         compartmentKey: CompartmentKey;
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
+    // @deprecated (undocumented)
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: CompartmentKey;
+    }): void;
     makeCompartmentRoot(args: {
         elementId: Id64String;
         compartmentKey: CompartmentKey;
     }): void;
+    // @deprecated (undocumented)
+    removeAllowedChannel(channelKey: CompartmentKey): void;
     removeAllowedCompartment(compartmentKey: CompartmentKey): void;
-    // @internal (undocumented)
+    // (undocumented)
     verifyCompartment(modelId: Id64String): void;
 }
 
@@ -2922,6 +2964,8 @@ export abstract class IModelDb extends IModel {
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
+    // @internal @deprecated (undocumented)
+    readonly channels: CompartmentControl;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
@@ -2935,7 +2979,7 @@ export abstract class IModelDb extends IModel {
     get codeSpecs(): CodeSpecs;
     get codeValueBehavior(): "exact" | "trim-unicode-whitespace";
     set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace");
-    // @beta (undocumented)
+    // @beta
     readonly compartments: CompartmentControl;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity, P extends EntityProps = EntityProps>(props: P): T;

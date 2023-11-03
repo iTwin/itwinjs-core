@@ -16,7 +16,11 @@ import { IModelDb } from "./IModelDb";
  */
 export type CompartmentKey = string;
 
-/** @internal */
+/** Controls which compartments of an iModel are permitted for write operations. An implementation of this interface is
+ * available via [[IModelDb.compartments]].
+ * @see [Working With Compartments]($docs/learning/backend/Compartment.md) for details
+ * @beta
+ */
 export interface CompartmentControl {
   /** Determine whether this [[IModelDb]] has any compartments in it. */
   get hasCompartments(): boolean;
