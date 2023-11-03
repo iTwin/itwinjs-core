@@ -19,7 +19,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree/RangeTree";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
-import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext } from "../../geometry3d/RangeTree/RangeTreeContexts";
+import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext } from "../../geometry3d/RangeTree/PointArrayRangeContexts";
 
 // Clone and shift the range ...
 // shift by dx

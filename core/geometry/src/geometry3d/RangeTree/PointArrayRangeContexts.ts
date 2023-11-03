@@ -55,14 +55,14 @@ export class Point3dArrayClosestPointSearchContext {
     this.numSearch++;
     this.spacePoint = spacePoint.clone();
     if (resetAsNewSearch)
-      this.searchState.resetTriggerForMinimization();
+      this.searchState.resetMinValueAndItem();
     this._rangeTreeRoot.searchTopDown(handler);
     return this.getCurveLocationDetail();
   }
   private getCurveLocationDetail(): CurveLocationDetail | undefined {
-    if (this.searchState.item === undefined)
+    if (this.searchState.itemAtMinValue === undefined)
       return undefined;
-    return CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[this.searchState.item, this.searchState.item]);
+    return CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[this.searchState.itemAtMinValue, this.searchState.itemAtMinValue]);
   }
 }
 /**
@@ -155,7 +155,7 @@ export class Polyline3dClosestPointSearchContext {
     this.numSearch = 0;
   }
   public get closestPoint(): CurveLocationDetail | undefined {
-    return this.searchState.item;
+    return this.searchState.itemAtMinValue;
   }
   public get closestDistance(): number | undefined { return this.searchState.minValue; }
 
@@ -179,7 +179,7 @@ export class Polyline3dClosestPointSearchContext {
     const handler = new SingleTreeSearchHandlerForClosestPointOnPolyline(this);
     this.numSearch++;
     this.spacePoint = spacePoint.clone();
-    this.searchState.resetTriggerForMinimization();
+    this.searchState.resetMinValueAndItem();
     // seed the search with a few points -- this reduces early trips deep into early ranges that are far from spacePoint.
     const numTest = Geometry.clamp(Math.floor(this.points.length / 20), 2, 7);
     const testStep = Math.floor(this.points.length / numTest);
@@ -190,6 +190,6 @@ export class Polyline3dClosestPointSearchContext {
       handler.processAppData(i);
     }
     this._rangeTreeRoot.searchTopDown(handler);
-    return this.searchState.item;
+    return this.searchState.itemAtMinValue;
   }
 }

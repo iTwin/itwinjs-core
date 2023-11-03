@@ -9,10 +9,10 @@
 /**
  * Data carrier for use when repeatedly testing items (of parameterized type T) to determine the one with a minimum associated value.
  * * Optionally also records arrays items and values whose values are less than a given trigger.
- * * When comparing a number to an undefined value, the number is always accepted as "less than" the undefined value.
+ * * When comparing a potential minimum value to an undefined value, the number is always accepted as "less than" the undefined value.
  */
 export class MinimumValueTester<T>{
-  public item: T | undefined;
+  public itemAtMinValue: T | undefined;
   public minValue: number | undefined;
   public triggerForSavingToArray: number | undefined;
   public savedItems: T[] | undefined;
@@ -21,7 +21,7 @@ export class MinimumValueTester<T>{
    * Capture the given item with undefined item and value, and optional maxValueForSavingToArray.
    */
   private constructor(maxValueForSavingToArray?: number) {
-    this.resetTriggerForMinimization(undefined, undefined);
+    this.resetMinValueAndItem(undefined, undefined);
     this.resetTriggerValueForSavingToArray(maxValueForSavingToArray, true);
   }
   /**
@@ -38,8 +38,8 @@ export class MinimumValueTester<T>{
    * @param item
    * @param value
    */
-  public resetTriggerForMinimization(item: T | undefined = undefined, value: number | undefined = undefined) {
-    this.item = item;
+  public resetMinValueAndItem(item: T | undefined = undefined, value: number | undefined = undefined) {
+    this.itemAtMinValue = item;
     this.minValue = value;
   }
 
@@ -71,7 +71,7 @@ export class MinimumValueTester<T>{
 
     if (this.minValue === undefined || value < this.minValue) {
       this.minValue = value;
-      this.item = item;
+      this.itemAtMinValue = item;
       return true;
     }
     return false;
