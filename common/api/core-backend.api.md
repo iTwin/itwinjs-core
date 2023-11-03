@@ -3317,7 +3317,7 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
-    static shutdown(): Promise<void>;
+    static shutdown(this: void): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
     // @internal
