@@ -1469,6 +1469,16 @@ export class Vector3d extends XYZ {
     return Angle.createAtan2(this.dotProduct(planeNormal), this.crossProductMagnitude(planeNormal));
   }
   /**
+   * Return the angle in radians (not as strongly typed Angle) from this vector to the plane perpendicular to planeNormal.
+   * * The returned angle is between -PI/2 and PI/2.
+   * * The returned angle is measured in the plane containing the two vectors.
+   * * The function returns PI/2 - radiansTo(planeNormal).
+   * @param planeNormal a normal vector to the plane.
+   */
+  public radiansFromPerpendicular(planeNormal: Vector3d): number {
+    return Math.atan2(this.dotProduct(planeNormal), this.crossProductMagnitude(planeNormal));
+  }
+  /**
    * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.
    * * The returned angle is between -180 and 180 degrees.
    * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
