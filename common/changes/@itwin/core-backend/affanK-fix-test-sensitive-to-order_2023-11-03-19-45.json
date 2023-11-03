@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Fixed test broken by updating SQLite version.",
+      "comment": "",
       "type": "none"
     }
   ],
