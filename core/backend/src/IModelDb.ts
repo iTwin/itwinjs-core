@@ -229,8 +229,15 @@ export abstract class IModelDb extends IModel {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
-  /** @beta */
+  /** Controls which compartments of an iModel are permitted for write operations.
+   * @see [Working With Compartments]($docs/learning/backend/Compartment.md)
+   * @beta
+   */
   public readonly compartments: CompartmentControl = new CompartmentAdmin(this);
+  /** @deprecated in 4.3 use compartments
+   * @internal
+   */
+  public readonly channels: CompartmentControl = this.compartments;
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();

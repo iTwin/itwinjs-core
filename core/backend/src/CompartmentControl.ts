@@ -16,12 +16,7 @@ import { IModelDb } from "./IModelDb";
  */
 export type CompartmentKey = string;
 
-/**
- * Controls which compartments of an iModel are permitted for write operations. An implementation of this interface is
- * available via [[IModelDb.compartments]].
- * @see [Working With Compartments]($docs/learning/backend/Compartment.md) for details
- * @beta
- */
+/** @internal */
 export interface CompartmentControl {
   /** Determine whether this [[IModelDb]] has any compartments in it. */
   get hasCompartments(): boolean;
@@ -58,6 +53,31 @@ export interface CompartmentControl {
 
   /** @internal */
   verifyCompartment(modelId: Id64String): void;
+
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  get hasChannels(): boolean;
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  addAllowedChannel(channelKey: CompartmentKey): void;
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  removeAllowedChannel(channelKey: CompartmentKey): void;
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  getChannelKey(elementId: Id64String): CompartmentKey;
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  makeChannelRoot(args: { elementId: Id64String, channelKey: CompartmentKey }): void;
+  /** @deprecated in 4.3 use CompartmentControl
+   * @internal
+   */
+  insertChannelSubject(args: { subjectName: string, channelKey: CompartmentKey, parentSubjectId?: Id64String, description?: string }): Id64String;
 }
 
 /** @beta */
@@ -144,5 +164,14 @@ export class CompartmentAdmin implements CompartmentControl {
     const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     this.makeCompartmentRoot({ elementId, compartmentKey: args.compartmentKey });
     return elementId;
+  }
+
+  public get hasChannels(): boolean { return this.hasCompartments; }
+  public addAllowedChannel(channelKey: CompartmentKey): void { this.addAllowedCompartment(channelKey); }
+  public removeAllowedChannel(channelKey: CompartmentKey): void { this.removeAllowedCompartment(channelKey); }
+  public getChannelKey(elementId: Id64String): CompartmentKey { return this.getCompartmentKey(elementId); }
+  public makeChannelRoot(args: { elementId: Id64String, channelKey: CompartmentKey }): void { this.makeCompartmentRoot({ elementId: args.elementId, compartmentKey: args.channelKey }); }
+  public insertChannelSubject(args: { subjectName: string, channelKey: CompartmentKey, parentSubjectId?: Id64String, description?: string }): Id64String {
+    return this.insertCompartmentSubject({ ...args, compartmentKey: args.channelKey });
   }
 }
