@@ -22,10 +22,15 @@ type SqliteValueArray = SqliteValue[];
  * @beta
  */
 export interface ChangeFormatArgs {
+  /** include table name */
   includeTableName?: true;
+  /** include op code */
   includeOpCode?: true;
+  /** include null columns */
   includeNullColumns?: true;
+  /** include value version */
   includeStage?: true;
+  /** include primary key in update change */
   includePrimaryKeyInUpdateNew?: true;
 }
 
@@ -48,9 +53,12 @@ export type AnyDb = IModelDb | ECDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
-  readonly db?: AnyDb; /** db from which schema will be read. It should be close to changeset.*/
-  readonly invert?: true; /** invert the changeset operations */
-  readonly disableSchemaCheck?: true; /** do not check if column of change match db schema instead ignore addition columns */
+  /** db from which schema will be read. It should be close to changeset.*/
+  readonly db?: AnyDb;
+  /** invert the changeset operations */
+  readonly invert?: true;
+  /** do not check if column of change match db schema instead ignore addition columns */
+  readonly disableSchemaCheck?: true;
 }
 
 /**
@@ -58,10 +66,14 @@ export interface SqliteChangesetReaderArgs {
  * @beta
  */
 export interface SqliteChange {
-  $table?: string; /** name of table */
-  $op?: SqliteChangeOp; /** SQLite operation that created this change */
-  $stage?: SqliteValueStage; /** version of data in change. */
-  [key: string]: any; /** columns in change */
+  /** name of table */
+  $table?: string;
+  /** SQLite operation that created this change */
+  $op?: SqliteChangeOp;
+  /** version of data in change. */
+  $stage?: SqliteValueStage;
+  /** columns in change */
+  [key: string]: any;
 }
 
 /**
@@ -75,7 +87,10 @@ export class SqliteChangesetReader implements IDisposable {
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
-  protected constructor(public readonly db?: AnyDb) { }
+  protected constructor(
+    /** db from where sql schema will be read */
+    public readonly db?: AnyDb,
+  ) { }
 
   /**
    * Open changeset file from disk

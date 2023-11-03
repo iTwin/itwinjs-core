@@ -54,7 +54,7 @@ interface ITable {
   readonly isClassIdVirtual: boolean;
 }
 
-class MapCache {
+class ECDbMap {
   private _cachedClassMaps = new Map<Id64String, IClassMap>();
   private _cacheTables = new Map<string, ITable>();
   public constructor(public readonly db: AnyDb) { }
@@ -343,12 +343,18 @@ class MapCache {
  * @beta
  * */
 export interface ChangeMetaData {
-  tables: string[]; /** list of tables making up this EC change */
-  className?: string; /** full name of the class of this EC change */
-  op: SqliteChangeOp; /** sqlite operation that caused the change */
-  stage: SqliteValueStage; /** version of the value read from sqlite change */
-  fallbackClassId?: Id64String; /** if classId for the change was not found in db then fallback class for the table */
-  changeIndexes: number[]; /** list of change index making up this change (one per table) */
+  /** list of tables making up this EC change */
+  tables: string[];
+  /** full name of the class of this EC change */
+  className?: string;
+  /** sqlite operation that caused the change */
+  op: SqliteChangeOp;
+  /** version of the value read from sqlite change */
+  stage: SqliteValueStage;
+  /** if classId for the change was not found in db then fallback class for the table */
+  fallbackClassId?: Id64String;
+  /** list of change index making up this change (one per table) */
+  changeIndexes: number[];
 }
 
 /**
@@ -477,7 +483,7 @@ export class PartialECChangeUnifier {
  *
 */
 export class ChangesetECAdaptor implements IDisposable {
-  private readonly _mapCache: MapCache;
+  private readonly _mapCache: ECDbMap;
   private readonly _tableFilter = new Set<string>();
   private readonly _opFilter = new Set<SqliteChangeOp>();
   private readonly _classFilter = new Set<string>();
@@ -559,7 +565,7 @@ export class ChangesetECAdaptor implements IDisposable {
     if (!reader.disableSchemaCheck)
       throw new Error("SqliteChangesetReader, 'disableSchemaCheck' param must be set to false.");
 
-    this._mapCache = new MapCache(reader.db);
+    this._mapCache = new ECDbMap(reader.db);
   }
   /**
    * dispose current instance and it will also dispose the changeset reader.

@@ -655,15 +655,10 @@ export class ChangedElementsDb implements IDisposable {
 
 // @beta
 export interface ChangeFormatArgs {
-    // (undocumented)
     includeNullColumns?: true;
-    // (undocumented)
     includeOpCode?: true;
-    // (undocumented)
     includePrimaryKeyInUpdateNew?: true;
-    // (undocumented)
     includeStage?: true;
-    // (undocumented)
     includeTableName?: true;
 }
 
@@ -676,18 +671,12 @@ export interface ChangeInstanceKey {
 
 // @beta
 export interface ChangeMetaData {
-    // (undocumented)
-    changeIndexes: number[]; /** list of tables making up this EC change */
-    // (undocumented)
-    className?: string; /** list of tables making up this EC change */
-    // (undocumented)
-    fallbackClassId?: Id64String; /** list of tables making up this EC change */
-    // (undocumented)
-    op: SqliteChangeOp; /** list of tables making up this EC change */
-    // (undocumented)
-    stage: SqliteValueStage; /** list of tables making up this EC change */
-    // (undocumented)
-    tables: string[]; /** list of change index making up this change (one per table) */
+    changeIndexes: number[];
+    className?: string;
+    fallbackClassId?: Id64String;
+    op: SqliteChangeOp;
+    stage: SqliteValueStage;
+    tables: string[];
 }
 
 // @public
@@ -5070,14 +5059,10 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
 // @beta
 export interface SqliteChange {
-    // (undocumented)
-    $op?: SqliteChangeOp; /** name of table */
-    // (undocumented)
-    $stage?: SqliteValueStage; /** name of table */
-    // (undocumented)
-    $table?: string; /** name of table */
-    // (undocumented)
-    [key: string]: any; /** columns in change */
+    $op?: SqliteChangeOp;
+    $stage?: SqliteValueStage;
+    $table?: string;
+    [key: string]: any;
 }
 
 // @beta
@@ -5085,11 +5070,11 @@ export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
 export class SqliteChangesetReader implements IDisposable {
-    protected constructor(db?: AnyDb | undefined);
+    protected constructor(
+    db?: AnyDb | undefined);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    // (undocumented)
     readonly db?: AnyDb | undefined;
     get disableSchemaCheck(): boolean;
     dispose(): void;
@@ -5115,12 +5100,9 @@ export class SqliteChangesetReader implements IDisposable {
 
 // @beta
 export interface SqliteChangesetReaderArgs {
-    // (undocumented)
-    readonly db?: AnyDb; /** db from which schema will be read. It should be close to changeset.*/
-    // (undocumented)
-    readonly disableSchemaCheck?: true; /** db from which schema will be read. It should be close to changeset.*/
-    // (undocumented)
-    readonly invert?: true; /** do not check if column of change match db schema instead ignore addition columns */
+    readonly db?: AnyDb;
+    readonly disableSchemaCheck?: true;
+    readonly invert?: true;
 }
 
 // @public
