@@ -1283,20 +1283,18 @@ export class CompartmentAdmin implements CompartmentControl {
     verifyCompartment(modelId: Id64String): void;
 }
 
-// Warning: (ae-internal-mixed-release-tag) Mixed release tags are not allowed for "CompartmentControl" because one of its declarations is marked as @internal
-//
-// @internal (undocumented)
+// @beta
 export interface CompartmentControl {
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     addAllowedChannel(channelKey: CompartmentKey): void;
     addAllowedCompartment(compartmentKey: CompartmentKey): void;
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     getChannelKey(elementId: Id64String): CompartmentKey;
     getCompartmentKey(elementId: Id64String): CompartmentKey;
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     get hasChannels(): boolean;
     get hasCompartments(): boolean;
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     insertChannelSubject(args: {
         subjectName: string;
         channelKey: CompartmentKey;
@@ -1309,7 +1307,7 @@ export interface CompartmentControl {
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     makeChannelRoot(args: {
         elementId: Id64String;
         channelKey: CompartmentKey;
@@ -1318,10 +1316,10 @@ export interface CompartmentControl {
         elementId: Id64String;
         compartmentKey: CompartmentKey;
     }): void;
-    // @deprecated (undocumented)
+    // @internal @deprecated (undocumented)
     removeAllowedChannel(channelKey: CompartmentKey): void;
     removeAllowedCompartment(compartmentKey: CompartmentKey): void;
-    // (undocumented)
+    // @internal (undocumented)
     verifyCompartment(modelId: Id64String): void;
 }
 

@@ -49,7 +49,7 @@ internal;BisCodeSpecIndexProps
 internal;FontIndexProps
 public;CodeSpecs
 internal;CompartmentAdmin 
-internal;CompartmentControl
+beta;CompartmentControl
 beta;CompartmentControl
 beta;CompartmentKey = string
 public;ComputedProjectExtents
