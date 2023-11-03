@@ -13,6 +13,7 @@ export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangedElementsDb";
 export * from "./ChangeSummaryManager";
+export * from "./ChannelControl";
 export * from "./CompartmentControl";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
