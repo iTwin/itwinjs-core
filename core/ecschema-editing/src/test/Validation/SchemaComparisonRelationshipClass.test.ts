@@ -76,7 +76,7 @@ describe("Custom attributes class comparison tests", () => {
   });
 
   describe("Relationship class comparison tests", () => {
-    it("should not report diagnostic missing", async () => {
+    it("should not report relationship constraint missing or abstractConstraint delta", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -91,6 +91,7 @@ describe("Custom attributes class comparison tests", () => {
               roleLabel: "Source RoleLabel",
               constraintClasses: [
                 "SchemaA.testClassOne",
+                "SchemaA.testClassTwo"
               ],
             },
             target: {
@@ -99,12 +100,17 @@ describe("Custom attributes class comparison tests", () => {
               roleLabel: "Target RoleLabel",
               constraintClasses: [
                 "SchemaA.testClassOne",
+                "SchemaA.testClassTwo"
               ],
             },
           },
           testClassOne: {
             schemaItemType: "EntityClass",
             description: "Test class one",
+          },
+          testClassTwo: {
+            schemaItemType: "EntityClass",
+            description: "Test class two",
           },
         },
       }, contextA);
@@ -123,6 +129,7 @@ describe("Custom attributes class comparison tests", () => {
               roleLabel: "Source RoleLabel",
               constraintClasses: [
                 "SchemaB.testClassOne",
+                "SchemaB.testClassTwo"
               ],
             },
             target: {
@@ -131,12 +138,17 @@ describe("Custom attributes class comparison tests", () => {
               roleLabel: "Target RoleLabel",
               constraintClasses: [
                 "SchemaB.testClassOne",
+                "SchemaB.testClassTwo"
               ],
             },
           },
           testClassOne: {
             schemaItemType: "EntityClass",
             description: "Test class one",
+          },
+          testClassTwo: {
+            schemaItemType: "EntityClass",
+            description: "Test class two",
           },
         },
       }, contextB);
@@ -148,5 +160,106 @@ describe("Custom attributes class comparison tests", () => {
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to.equal(false);
 
     });
+
+    it("should not report relationship constraint missing or abstractConstraint delta", async () => {
+        const schemaA = await Schema.fromJson({
+          ...schemaAJson,
+          items: {
+            relationshipOne: {
+              schemaItemType: "RelationshipClass",
+              strength: "Embedding",
+              strengthDirection: "Forward",
+              modifier: "Sealed",
+              source: {
+                polymorphic: true,
+                multiplicity: "(0..*)",
+                roleLabel: "Source RoleLabel",
+                constraintClasses: [
+                  "SchemaA.testClassOne",
+                  "SchemaA.testClassTwo"
+                ],
+              },
+              target: {
+                polymorphic: true,
+                multiplicity: "(0..*)",
+                roleLabel: "Target RoleLabel",
+                constraintClasses: [
+                  "SchemaA.testClassOne",
+                  "SchemaA.testClassTwo"
+                ],
+              },
+            },
+            testClassOne: {
+              schemaItemType: "EntityClass",
+              description: "Test class one",
+              properties: [
+                {
+                  name: "PropertyOne",
+                  type: "NavigationProperty",
+                  relationshipName: "SchemaA.relationshipOne",
+                  direction: "forward",
+                },
+              ],
+            },
+            testClassTwo: {
+              schemaItemType: "EntityClass",
+              description: "Test class two",
+            },
+          },
+        }, contextA);
+  
+        const schemaB = await Schema.fromJson({
+          ...schemaBJson,
+          items: {
+            relationshipOne: {
+              schemaItemType: "RelationshipClass",
+              strength: "Embedding",
+              strengthDirection: "Forward",
+              modifier: "Sealed",
+              source: {
+                polymorphic: true,
+                multiplicity: "(0..*)",
+                roleLabel: "Source RoleLabel",
+                constraintClasses: [
+                  "SchemaB.testClassOne",
+                  "SchemaB.testClassTwo"
+                ],
+              },
+              target: {
+                polymorphic: true,
+                multiplicity: "(0..*)",
+                roleLabel: "Target RoleLabel",
+                constraintClasses: [
+                  "SchemaB.testClassOne",
+                  "SchemaB.testClassTwo"
+                ],
+              },
+            },
+            testClassOne: {
+              schemaItemType: "EntityClass",
+              description: "Test class one",
+              properties: [
+                {
+                  name: "PropertyA",
+                  type: "NavigationProperty",
+                  relationshipName: "SchemaB.relationshipOne",
+                  direction: "forward",
+                },
+              ],
+            },
+            testClassTwo: {
+              schemaItemType: "EntityClass",
+              description: "Test class two",
+            },
+          },
+        }, contextB);
+  
+        const comparer = new SchemaComparer(reporter);
+        await comparer.compareSchemas(schemaA, schemaB);
+  
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-112", "SchemaA.testClassOne")).to.equal(false);
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to.equal(false);
+  
+      });
   });
 });
