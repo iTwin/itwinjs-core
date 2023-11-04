@@ -20,6 +20,8 @@ import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHand
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
 import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext } from "../../geometry3d/RangeTree/PointArrayRangeContexts";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { PolyfaceRangeSearchContext } from "../../geometry3d/RangeTree/PolyfaceRangeContexts";
 
 // Clone and shift the range ...
 // shift by dx
@@ -316,7 +318,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PointCloudMultiSearch", () => {
+  it("PointCloudMultiSearch", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -365,7 +367,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PolylineMultiSearch", () => {
+  it("PolylineMultiSearch", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
@@ -406,6 +408,134 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PolyfaceMultiSearch", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const z0 = 0;
+    const strokeOptions = StrokeOptions.createForFacets();
+    strokeOptions.shouldTriangulate = true;
+    /*
+    // output the 4 distinct components of the Franke surface . . .
+    for (const termSelect of [0x01, 0x02, 0x04, 0x08]) {
+      const surface = Sample.createMeshFromFrankeSurface(25, strokeOptions, termSelect);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, surface, x0, y0, z0);
+      x0 += 2;
+    }
+    */
+    for (const treeWidth of [2, 4, 8]) {
+      // Franke surface is ..
+      // range [0,1] in both directions
+      // very non-planar quads -- definitely need to triangulate!!
+      // frankelSize 5 is pretty minimal
+      //             10 looks good for lots of tests.
+      const frankelSize = 20;
+      const polyface = Sample.createMeshFromFrankeSurface(frankelSize, strokeOptions)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, z0);
+      const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
+      const visitor = polyface.createVisitor(0);
+      const searcher = PolyfaceRangeSearchContext.createCapture(visitor, treeWidth, treeWidth);
+      if (ck.testType(searcher, PolyfaceRangeSearchContext)) {
+        for (let u = 0; u <= 1.00001; u += 0.010) {
+          const xyz = path.fractionToPoint(u);
+          const facetLocationDetail = searcher.searchForClosestPoint(xyz);
+          if (ck.testDefined(facetLocationDetail) && facetLocationDetail !== undefined) {
+            const closestPoint = facetLocationDetail.point;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, closestPoint], x0, y0, z0);
+            // const segmentFraction = cld.fraction;
+            const distance = xyz.distance(closestPoint);
+            for (let i = 0; i < polyface.data.point.length; i += 7) {
+              const di = polyface.data.point.distanceIndexToPoint(i, xyz)!;
+              ck.testLE(distance, di);
+            }
+          }
+        }
+        const numFacets = polyface.facetCount;
+        const searchesTimesFacets = searcher.numSearch * numFacets;
+        ck.show({
+          frankelSize,
+          numFacets: polyface.facetCount,
+          treeWidth,
+          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
+          searches: searcher.numSearch,
+          searchesTimesPoints: searchesTimesFacets,
+          fraction: searcher.numPointTest / searchesTimesFacets,
+        });
+        y0 += 2;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it.only("PolyfacePolyfaceSearch", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+    const strokeOptions = StrokeOptions.createForFacets();
+    strokeOptions.shouldTriangulate = true;
+    /*
+    // output the 4 distinct components of the Franke surface . . .
+    for (const termSelect of [0x01, 0x02, 0x04, 0x08]) {
+      const surface = Sample.createMeshFromFrankeSurface(25, strokeOptions, termSelect);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, surface, x0, y0, z0);
+      x0 += 2;
+    }
+    */
+    //    const treeWidth = 3;
+    // Franke surface is ..
+    // range [0,1] in both directions
+    // very non-planar quads -- definitely need to triangulate!!
+    // frankelSize 5 is pretty minimal
+    //             10 looks good for lots of tests.
+    const frankeSizeA = 12;
+    const frankeSizeB = 6;
+    const polyfaceA = Sample.createMeshFromFrankeSurface(frankeSizeA, strokeOptions, [0.5, 0.5, 0.5, 1])!;
+    const polyfaceB = Sample.createMeshFromFrankeSurface(frankeSizeB, strokeOptions, [0, 0, 0, 4])!;
+    const transform = Transform.createRowValues(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 1.5,
+    );
+    polyfaceB.tryTransformInPlace(transform);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0, z0);
+
+    const contextA = PolyfaceRangeSearchContext.createCapture(polyfaceA.createVisitor(), 3, 3)!;
+    const contextB = PolyfaceRangeSearchContext.createCapture(polyfaceB.createVisitor(), 3, 3)!;
+    const approach = PolyfaceRangeSearchContext.searchForClosestApproach(contextA, contextB);
+    if (approach !== undefined) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+        [approach.detailA.point, approach.detailB.point], x0, y0, z0);
+    }
+    const numFacetA = polyfaceA.facetCount;
+    const numFacetB = polyfaceB.facetCount;
+    ck.show({
+      numRangeTestFalse: contextA.numRangeTestFalse,
+      numRangeTestTrue: contextA.numRangeTestTrue,
+      numLeafTest: contextA.numPointTest,
+      numFacetTimeNumFacet: numFacetA * numFacetB,
+      testFraction: contextA.numPointTest / (numFacetA * numFacetB),
+    });
+    /*
+    for (const multipliers of [
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1],
+    ]) {
+      x0 += 2;
+      const polyface = Sample.createMeshFromFrankeSurface(frankelSize, strokeOptions, multipliers)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, z0);
+    }
+    */
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
     expect(ck.getNumErrors()).equals(0);
   });
 

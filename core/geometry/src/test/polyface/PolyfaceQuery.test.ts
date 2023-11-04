@@ -996,7 +996,7 @@ describe("ReOrientFacets", () => {
       x0 += 20;
     }
     // test an open surface
-    const surfMesh = Sample.createMeshFromSmoothSurface(50, defaultOptions);
+    const surfMesh = Sample.createMeshFromFrankeSurface(50, defaultOptions);
     if (ck.testType(surfMesh, IndexedPolyface, "faceted a smooth surface")) {
       for (const viewVector of [Vector3d.create(0, 0, 1), Vector3d.create(1, -1, 1), Vector3d.create(-1, -1, 1)]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfMesh, x0, 0, 0);

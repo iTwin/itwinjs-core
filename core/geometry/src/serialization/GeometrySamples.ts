@@ -116,6 +116,10 @@ export class SteppedIndexFunctionFactory {
  * @internal
  */
 class FrankeSurface implements UVSurface {
+  public scales: number[] | undefined;
+  public constructor(scales: number[] | undefined) {
+    this.scales = scales;
+  }
   private exp0(u: number, v: number): number {
     return Math.exp(-0.25 * (u * u + v * v) + u + v - 2);
   }
@@ -133,11 +137,24 @@ class FrankeSurface implements UVSurface {
     const f1 = 0.75 * this.exp1(u, v);
     const f2 = 0.5 * this.exp2(u, v);
     const f3 = -0.2 * this.exp3(u, v);
-    return f0 + f1 + f2 + f3;
+    if (this.scales !== undefined) {
+      const numScale = this.scales.length;
+      let f = 0;
+      if (numScale >= 1)
+        f += this.scales[0] * f0;
+      if (numScale >= 2)
+        f += this.scales[1] * f1;
+      if (numScale >= 3)
+        f += this.scales[2] * f2;
+      if (numScale >= 4)
+        f += this.scales[3] * f3;
+      return f;
+    } else
+      return f0 + f1 + f2 + f3;
   }
   private du(u: number, v: number): number {
     const du0 = -3.375 * (u - 2) * this.exp0(u, v);
-    const du1 = -(27/98) * (u + 1) * this.exp1(u, v);
+    const du1 = -(27 / 98) * (u + 1) * this.exp1(u, v);
     const du2 = -2.25 * (u - 7) * this.exp2(u, v);
     const du3 = 3.6 * (u - 4) * this.exp3(u, v);
     return du0 + du1 + du2 + du3;
@@ -159,6 +176,12 @@ class FrankeSurface implements UVSurface {
     const v = 9 * vFraction;
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(uFraction, vFraction, this.f(u, v), 1, 0, this.du(u, v), 0, 1, this.dv(u, v), result);
   }
+  public uvFractionToPartialPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
+    const u = 9 * uFraction;
+    const v = 9 * vFraction;
+    return Point3d.create(uFraction, vFraction, this.f(u, v), result);
+  }
+
 }
 /**
  * `Sample` has static methods to create a variety of geometry samples useful in testing.
@@ -2965,10 +2988,14 @@ export class Sample {
   /**
    * Create a mesh surface from samples of a smooth function over [0,1]x[0,1].
    * @param size grid size; the number of intervals on each side of the unit square domain.
+   * @param scales = array of 4 (four) numbers to scale the corresponding Franke exponential.  If undefined, all scales are 1.
    */
-  public static createMeshFromSmoothSurface(size: number, options?: StrokeOptions): IndexedPolyface | undefined {
+  public static createMeshFromFrankeSurface(
+    size: number,
+    options?: StrokeOptions,
+    scales?: number[]): IndexedPolyface | undefined {
     const builder = PolyfaceBuilder.create(options);
-    builder.addUVGridBody(new FrankeSurface(), size, size);
+    builder.addUVGridBody(new FrankeSurface(scales), size, size);
     return builder.claimPolyface(true);
   }
 }

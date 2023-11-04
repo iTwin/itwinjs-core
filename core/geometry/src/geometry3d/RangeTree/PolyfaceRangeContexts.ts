@@ -9,10 +9,10 @@ import { Range3d } from "../Range";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../Point3dVector3d";
 import { Geometry } from "../../Geometry";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "./RangeTree";
 import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { PolyfaceVisitor } from "../../polyface/Polyface";
-import { PolygonOps } from "../PolygonOps";
+import { PolygonLocationDetailPair, PolygonOps } from "../PolygonOps";
 /**
  * class to host a point array and associated RangeTree for multiple search calls.
  */
@@ -71,6 +71,14 @@ export class PolyfaceRangeSearchContext {
     this._rangeTreeRoot.searchTopDown(handler);
     return handler.searchState.itemAtMinValue;
   }
+  public static searchForClosestApproach(
+    treeA: PolyfaceRangeSearchContext,
+    treeB: PolyfaceRangeSearchContext,
+  ) {
+    const handler = new TwoTreeSearchHandlerFacetFacetCloseApproach(treeA, treeB);
+    RangeTreeNode.searchTwoTreesTopDown(treeA._rangeTreeRoot, treeB._rangeTreeRoot, handler);
+    return handler.getResult();
+  }
 }
 
 /**
@@ -117,3 +125,55 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
     }
   }
 }
+
+export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeSearchHandler<number> {
+  /** return true if appData within the ranges should be offered to processAppDataPair */
+  public contextA: PolyfaceRangeSearchContext;
+  public contextB: PolyfaceRangeSearchContext;
+  public visitorA: PolyfaceVisitor;
+  public visitorB: PolyfaceVisitor;
+  public searchState: MinimumValueTester<PolygonLocationDetailPair<number>>;
+  public constructor(contextA: PolyfaceRangeSearchContext, contextB: PolyfaceRangeSearchContext) {
+    super();
+    this.contextA = contextA;
+    this.contextB = contextB;
+    this.searchState = MinimumValueTester.create<PolygonLocationDetailPair<number>>();
+    this.visitorA = contextA.visitor;
+    this.visitorB = contextB.visitor;
+  }
+  public getResult(): PolygonLocationDetailPair<number> | undefined {
+    if (this.searchState.minValue !== undefined) {
+      return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  public isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean {
+    const dMin = leftRange.distanceToRange(rightRange);
+    if (this.searchState.isNewMinValue(dMin)) {
+      this.contextA.numRangeTestTrue++;
+      return true;
+    }
+    this.contextA.numRangeTestFalse++;
+    return false;
+  }
+  public processAppDataPair(tagA: number, tagB: number): void {
+    if (this.visitorA.moveToReadIndex(tagA) && this.visitorB.moveToReadIndex(tagB)) {
+      const detail = PolygonOps.closestApproachOfPolygons<number>(this.visitorA.point, this.visitorB.point);
+      this.contextA.numPointTest++;
+      if (detail !== undefined) {
+        const d = detail.detailA.point.distance(detail.detailB.point);
+        if (this.searchState.isNewMinOrTrigger(d)) {
+          detail.tagA = tagA;
+          detail.tagB = tagB;
+          this.searchState.testAndSave(detail, d);
+        }
+      }
+    }
+  }
+  /** query to see if the active search has been aborted.  Default returns false so
+   * * Default implementation returns false so query runs to completion.
+   */
+  // eslint-disable-next-line @itwin/prefer-get
+  public override isAborted(): boolean { return false; }
+}
+

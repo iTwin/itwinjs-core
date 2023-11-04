@@ -70,7 +70,7 @@ export abstract class SingleTreeSearchHandler<AppDataType> {
 export abstract class TwoTreeSearchHandler<AppDataType> {
   /** return true if appData within the ranges should be offered to processAppDataPair */
   public abstract isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean;
-  public abstract processAppDataPair(leftItem: FlexData<AppDataType>, rightItem: AppDataType): void;
+  public abstract processAppDataPair(leftItem: AppDataType, rightItem: AppDataType): void;
   /** query to see if the active search has been aborted.  Default returns false so
    * * Default implementation returns false so query runs to completion.
    */

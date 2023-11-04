@@ -95,8 +95,18 @@ export class PolygonLocationDetail {
       this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
       this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
   }
+  /** CAPTURE point, index, and fraction as an "at vertex" or "along edge" PolygonLocation detail.
+   *
+  */
+  public static createAtVertexOrEdgeCapture(point: Point3d, index: number, fraction: number = 0): PolygonLocationDetail {
+    const detail = new PolygonLocationDetail();
+    detail.point.setFrom(point);
+    detail.closestEdgeIndex = index;
+    detail.closestEdgeParam = fraction;
+    detail.code = fraction > 0 && fraction < 1 ? PolygonLocation.OnPolygonEdgeInterior : PolygonLocation.OnPolygonVertex;
+    return detail;
+  }
 }
-
 /**
  * Carrier for a loop extracted from clip operation, annotated for sorting
  * @internal
@@ -1193,6 +1203,38 @@ export class PolygonOps {
       coords[i] *= scale; // normalized
     return coords;
   }
+
+  /**
+   * Find smallest distance between polygons.
+   * * ASSUME closure edge is needed.
+   * @param polygonA
+   * @param polygonB
+   * @param dMax largest value to consider as an acceptable result.
+   */
+  public static closestApproachOfPolygons<TagType>(polygonA: GrowableXYZArray, polygonB: GrowableXYZArray, dMax: number = Number.MAX_VALUE): PolygonLocationDetailPair<TagType> | undefined {
+    let minIndexA = 0;
+    let minIndexB = 0;
+    let dMin = dMax;
+    const n1 = polygonA.length;
+    const n2 = polygonB.length;
+    for (let indexA = 0; indexA < n1; indexA++) {
+      for (let indexB = 0; indexB < n2; indexB++) {
+        const d = GrowableXYZArray.distanceBetweenPointsIn2Arrays(polygonA, indexA, polygonB, indexB);
+        if (d !== undefined && d < dMin) {
+          minIndexA = indexA;
+          minIndexB = indexB;
+          dMin = d;
+        }
+      }
+    }
+    if (dMin !== Number.MAX_VALUE && dMin <= dMax) {
+      return new PolygonLocationDetailPair<TagType>(
+        PolygonLocationDetail.createAtVertexOrEdgeCapture(polygonA.getPoint3dAtUncheckedPointIndex(minIndexA), 0),
+        PolygonLocationDetail.createAtVertexOrEdgeCapture(polygonB.getPoint3dAtUncheckedPointIndex(minIndexB), 0),
+      );
+    }
+    return undefined;
+  }
 }
 
 /**
@@ -1543,5 +1585,16 @@ export class Point3dArrayPolygonOps {
       }
       work.length = 0;
     }
+  }
+}
+
+export class PolygonLocationDetailPair<TagType> {
+  public detailA: PolygonLocationDetail;
+  public detailB: PolygonLocationDetail;
+  public tagA?: TagType;
+  public tagB?: TagType;
+  public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail) {
+    this.detailA = detailA;
+    this.detailB = detailB;
   }
 }

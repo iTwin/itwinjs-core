@@ -1165,7 +1165,7 @@ describe("PolyfaceClip", () => {
     let x = 0;
     const surfaceOptions = StrokeOptions.createForFacets();
     surfaceOptions.shouldTriangulate = true;
-    const mesh = Sample.createMeshFromSmoothSurface(30, surfaceOptions);
+    const mesh = Sample.createMeshFromFrankeSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
       regionOptions.angleTol = Angle.createDegrees(5);
@@ -1175,7 +1175,7 @@ describe("PolyfaceClip", () => {
         let drapeMesh: IndexedPolyface | undefined;
         const contour = SweepContour.createForLinearSweep(regionXY);
         if (ck.testType(contour, SweepContour, `${label}: created contour from region`)) {
-          contour.announceFacets((facets: IndexedPolyface) => {regionFacets = facets;}, regionOptions);
+          contour.announceFacets((facets: IndexedPolyface) => { regionFacets = facets; }, regionOptions);
           const regionNormal = contour.localToWorld.matrix.columnZ();
           ck.testTrue(regionNormal.isParallelTo(Vector3d.unitZ(), true), `${label}: we are only testing input regions parallel to the xy-plane`);
           drapeMesh = PolyfaceClip.drapeRegion(mesh, regionXY, sweepDir, regionOptions);
@@ -1248,9 +1248,9 @@ describe("PolyfaceClip", () => {
       }
 
       // areas for following union/parity regions
-      const circleArea = Math.PI*0.3*0.3;
-      const footballArea = 4*(circleArea * Math.asin(Math.sqrt(0.07)/0.3)/(2*Math.PI) - 0.1*Math.sqrt(2)*Math.sqrt(0.07)/2);
-      const unionArea = 2*circleArea - footballArea;
+      const circleArea = Math.PI * 0.3 * 0.3;
+      const footballArea = 4 * (circleArea * Math.asin(Math.sqrt(0.07) / 0.3) / (2 * Math.PI) - 0.1 * Math.sqrt(2) * Math.sqrt(0.07) / 2);
+      const unionArea = 2 * circleArea - footballArea;
       const parityArea = unionArea - footballArea;
 
       if (x += 2) { // union of intersecting circles
@@ -1288,7 +1288,7 @@ describe("PolyfaceClip", () => {
         ck.testExactNumber(arcParity.children.length, 3, "ParityRegion constructor created a parity region with two loops");
         const arcParitySorted = RegionOps.sortOuterAndHoleLoopsXY(arcParity.children);
         if (ck.testType(arcParitySorted, ParityRegion, "successfully sorted the non-intersecting loops into a ParityRegion"))
-          facetAndDrapeRegion("traditionalParityRegion", arcParitySorted, Math.PI*0.4*0.4 - 2*Math.PI*0.1*0.1);
+          facetAndDrapeRegion("traditionalParityRegion", arcParitySorted, Math.PI * 0.4 * 0.4 - 2 * Math.PI * 0.1 * 0.1);
       }
 
       if (x += 2) { // union of parity and loop
