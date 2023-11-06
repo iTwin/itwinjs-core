@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 02 Nov 2023 15:36:20 GMT and should not be manually modified.
+This log was last generated on Mon, 06 Nov 2023 14:01:52 GMT and should not be manually modified.
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+### Updates
+
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
 
 ## 4.2.2
 Thu, 02 Nov 2023 15:36:20 GMT
