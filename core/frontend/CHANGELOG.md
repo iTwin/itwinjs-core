@@ -1,6 +1,22 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 24 Oct 2023 15:10:47 GMT and should not be manually modified.
+This log was last generated on Mon, 06 Nov 2023 14:03:28 GMT and should not be manually modified.
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+### Updates
+
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+### Updates
+
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
 
 ## 4.2.1
 Tue, 24 Oct 2023 15:09:13 GMT
