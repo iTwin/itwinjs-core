@@ -6,7 +6,7 @@
  * @module UiAdmin
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, BeUiEvent } from "@itwin/core-bentley";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
@@ -16,11 +16,13 @@ import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
-import { loggerCategory } from "./utils/misc";
 import { MessagePresenter } from "./notification/MessagePresenter";
-import { UiError } from "./utils/UiError";
 
 interface XAndY { readonly x: number, readonly y: number }
+
+interface BentleyErrorWithCategory extends BentleyError {
+  category: string;
+}
 
 /** The Generic UI Event args contains information useful for any UI message
  * @public
@@ -73,8 +75,12 @@ export class UiAdmin {
 
   /** The MessagePresenter used to display messages. */
   public static get messagePresenter(): MessagePresenter {
-    if (!UiAdmin._messagePresenter)
-      throw new UiError(loggerCategory(this), "UiAdmin.messagePresenter not set");
+    if (!UiAdmin._messagePresenter) {
+      const error = new BentleyError(BentleyStatus.ERROR, "UiAdmin.messagePresenter not set") as BentleyErrorWithCategory;
+      error.category = "messagePresenter";
+      throw error;
+    }
+
     return UiAdmin._messagePresenter;
   }
   public static set messagePresenter(mp: MessagePresenter) {

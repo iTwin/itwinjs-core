@@ -13,8 +13,14 @@ import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
-import { loggerCategory } from "./utils/misc";
 import { UiItemsProvider } from "./UiItemsProvider";
+import { getClassName } from "./utils/misc";
+
+const loggerCategory = (obj: any): string => {
+  const className = getClassName(obj);
+  const category = `appui-abstract${(className ? `.${className}` : "")}`;
+  return category;
+};
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @public @deprecated in 3.2. This was only used by the previously removed UiItemsArbiter.

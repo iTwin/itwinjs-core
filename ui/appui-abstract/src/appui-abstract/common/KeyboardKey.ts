@@ -7,7 +7,7 @@
  */
 
 /** Enumeration for Function Keys
- * @public
+ * @public @deprecated in 4.3. Use string literal instead.
  */
 export enum FunctionKey {
   F1 = "F1",
@@ -25,7 +25,7 @@ export enum FunctionKey {
 }
 
 /** Enumeration for Special Keys
- * @public
+ * @public @deprecated in 4.3. Use string literal instead.
  */
 export enum SpecialKey {
   Home = "Home",
@@ -53,8 +53,9 @@ export enum SpecialKey {
 }
 
 /** Determines if a KeyboardEvent.key is an Arrow key
- * @public
+ * @public @deprecated in 4.3. Use custom implementation instead.
  */
 export function isArrowKey(key: string): boolean {
+  // eslint-disable-next-line deprecation/deprecation
   return (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight || key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown);
 }
