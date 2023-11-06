@@ -17,7 +17,7 @@ const xmlFilter = "[Mocha_Result_XML]: ";
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
 // Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
-Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], args: [string]) {
+Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: string[], args: string[]) {
   const { stdout } = await this.exec('launch', {
     args: [...options, this.requireUdid('launch'), bundleId, ...args],
     architectures: "x86_64",
