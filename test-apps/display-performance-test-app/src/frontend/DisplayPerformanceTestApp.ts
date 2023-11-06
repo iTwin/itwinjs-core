@@ -116,13 +116,17 @@ export class DisplayPerfTestApp {
     IModelApp.animationInterval = undefined;
   }
 
-  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
+  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<boolean> {
     const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
     const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
     const client = DisplayPerfRpcInterface.getClient();
     await client.consoleLog(msg);
     if (logFile)
       await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
+    // test for exception messages that need to terminate app on and return true for any of those
+    return (msg.toLowerCase().includes("rendering context was lost") ||
+      msg.toLowerCase().includes("enospc") // ENOSPC no space left on device
+    );
   }
 }
 
