@@ -44,7 +44,7 @@ describe("ElementAspectPerformance", () => {
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
     iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
-    IModelHost.startup(iModelHost);
+    await IModelHost.startup(iModelHost);
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     iModelDbHub = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId: imodelId });
@@ -56,7 +56,7 @@ describe("ElementAspectPerformance", () => {
     reporter.exportCSV(csvPath);
 
     iModelDbHub.close();
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
   });
 
   it("SimpleElement-Insert-Update-Delete-Read", async () => {
