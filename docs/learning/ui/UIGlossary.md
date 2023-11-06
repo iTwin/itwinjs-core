@@ -8,7 +8,7 @@ tableRowAnchors: true
 |------------|------------|
 |**Backstage**|The main navigation menu of the application used to switch between frontstages, open overlays, or launch custom commands. You can use [BackstageComposer]($appui-react) to set up a backstage that displays an overlay menu along the left edge of the application.|
 |**Content&nbsp;Control**|Control that is displayed in a content layout. You can use [ContentControl]($appui-react) to specify a custom React component.|
-|**Content&nbsp;Group**|Defines which content controls are rendered and how in the content area of a frontstage. You can use [ContentGroup]($appui-react) to describe a collection of content controls and their content layout.|
+|**Content&nbsp;Group**|Defines how content controls are rendered in the content area of a frontstage. You can use [ContentGroup]($appui-react) to describe a collection of content controls and their content layout.|
 |**Content&nbsp;Layout**|Describes how the content controls are arranged on the screen. You can use [StandardContentLayouts]($appui-abstract) for one of the pre-defined layouts or [ContentLayoutProps]($appui-abstract) to define a custom layout.|
 |**Dialog**|A temporary interruptive UI element that overlays the application until a required action is taken by the user. You can use [Dialog](https://itwinui.bentley.com/docs/dialog) to display a custom dialog.|
 |**Navigation&nbsp;Aid**|An interactive UI element that facilitates the navigation of [Viewport]($core-frontend) content. You can use [NavigationAidControl]($appui-react) to display a custom component.|
