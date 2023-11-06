@@ -42,7 +42,6 @@ beta;class BaseQuantityDescription
 public;BaseUiItemsProvider 
 deprecated;BaseUiItemsProvider 
 public;ButtonGroupEditorParams 
-internal;enum CharCode
 public;ColorEditorParams 
 public;CommandHandler
 public;CommonBackstageItem 
@@ -54,8 +53,6 @@ public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
 public;ConditionalStringValue
 public;ContentLayoutProps 
-internal;convertSimple2RegExpPattern(pattern: string): string
-internal;createMatches(score: undefined | FuzzyScore): IMatch[]
 public;CustomButtonDefinition 
 public;CustomFormattedNumberParams 
 public;DateFormatter
@@ -74,25 +71,21 @@ public;DisplayMessageType
 public;EditorPosition
 public;EnumerationChoice
 public;EnumerationChoicesInfo
-internal;equalsIgnoreCase(a: string, b: string): boolean
 public;FunctionKey
-internal;FuzzyScore = [number, number, number]
-internal;FuzzyScore
-internal;fuzzyScore(pattern: string, patternLow: string, patternStart: number, word: string, wordLow: string, wordStart: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
-internal;fuzzyScoreGraceful(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
-internal;fuzzyScoreGracefulAggressive(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
-internal;FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean) => FuzzyScore | undefined
+deprecated;FunctionKey
 public;GenericUiEvent 
 public;GenericUiEventArgs
 internal;getClassName: (obj: any) => string
+deprecated;getClassName: (obj: any) => string
 public;GroupButton 
 public;IconDefinition
 public;IconEditorParams 
 public;IconListEditorParams 
 public;IconSpecUtilities
-internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
+deprecated;IconSpecUtilities
 public;ImageCheckBoxParams 
 public;IMatch
+deprecated;IMatch
 public;InputEditorSizeParams 
 public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
 deprecated;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
@@ -103,31 +96,22 @@ deprecated;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is 
 public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 deprecated;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 public;isArrowKey(key: string): boolean
+deprecated;isArrowKey(key: string): boolean
 public;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
 public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
 public;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
 public;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
 public;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
-internal;isLowerAsciiLetter(code: number): boolean
-internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 deprecated;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
-internal;isUpperAsciiLetter(code: number): boolean
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
 public;LinkElementsInfo
-internal;loggerCategory: (obj: any) => string
-internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
-internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
-internal;matchesFuzzy(word: string, wordToMatchAgainst: string, enableSeparateSubstringMatching?: boolean): IMatch[] | null
-internal;matchesFuzzy2(pattern: string, word: string): IMatch[] | null
-internal;matchesPrefix: IFilter
-internal;matchesStrictPrefix: IFilter
-internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
+deprecated;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
 public;MessagePresenter
 public;MessageSeverity
 public;MultilineTextEditorParams 
@@ -135,7 +119,6 @@ public;OnCancelFunc = () => void
 public;OnItemExecutedFunc = (item: any) => void
 public;OnNumberCommitFunc = (value: number) => void
 public;OnValueCommitFunc = (value: Primitives.Value) => void
-internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
 public;PointProps
 deprecated;PointProps
@@ -159,6 +142,7 @@ public;RangeEditorParams
 public;RelativePosition
 public;SliderEditorParams 
 public;SpecialKey
+deprecated;SpecialKey
 public;StagePanelLocation
 deprecated;StagePanelLocation
 public;StagePanelSection
@@ -168,7 +152,6 @@ deprecated;StageUsage
 public;StandardContentLayouts
 public;StandardEditorNames
 public;StandardTypeNames
-internal;startsWithIgnoreCase(str: string, candidate: string): boolean
 public;StatusBarItemId = CommonStatusBarItem["id"]
 deprecated;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
@@ -196,6 +179,7 @@ deprecated;ToolbarUsage
 public;UiAdmin
 public;class UiDataProvider
 public;UiError 
+deprecated;UiError 
 public;UiEvent
 deprecated;UiEvent
 public;UiEventDispatcher
