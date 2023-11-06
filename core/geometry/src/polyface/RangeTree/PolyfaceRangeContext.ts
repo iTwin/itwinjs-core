@@ -5,16 +5,17 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Range3d } from "../Range";
+import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
-import { Point3d } from "../Point3dVector3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Geometry } from "../../Geometry";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "./RangeTree";
-import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
-import { PolyfaceVisitor } from "../../polyface/Polyface";
-import { PolygonLocationDetailPair, PolygonOps } from "../PolygonOps";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTree";
+import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
+import { PolyfaceVisitor } from "../Polyface";
+import { PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps";
 /**
- * class to host a point array and associated RangeTree for multiple search calls.
+ * class to host a Polyface and associated RangeTree for a variety of search calls.
+ * @public
  */
 export class PolyfaceRangeSearchContext {
   public visitor: PolyfaceVisitor;
@@ -55,6 +56,10 @@ export class PolyfaceRangeSearchContext {
     return rangeTreeRoot !== undefined ? new PolyfaceRangeSearchContext(rangeTreeRoot, visitor) : undefined;
   }
 
+  /**
+   * Search the point array (held by this)
+   * @param spacePoint
+   * @returns   */
   public searchForClosestPoint(spacePoint: Point3d): FacetLocationDetail | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this);
     this.numSearch++;
@@ -83,6 +88,7 @@ export class PolyfaceRangeSearchContext {
 
 /**
  * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyface3dClosestPointSearcherContext.
+ * @private
  */
 class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchHandler<number> {
   public visitor: PolyfaceVisitor;
@@ -126,7 +132,7 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
   }
 }
 
-export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeSearchHandler<number> {
+export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
   /** return true if appData within the ranges should be offered to processAppDataPair */
   public contextA: PolyfaceRangeSearchContext;
   public contextB: PolyfaceRangeSearchContext;
@@ -147,14 +153,9 @@ export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeSearchHa
     }
     return undefined;
   }
-  public isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean {
-    const dMin = leftRange.distanceToRange(rightRange);
-    if (this.searchState.isNewMinValue(dMin)) {
-      this.contextA.numRangeTestTrue++;
-      return true;
-    }
-    this.contextA.numRangeTestFalse++;
-    return false;
+  public getCurrentDistance(): number {
+    const d = this.searchState.minValue;
+    return d === undefined ? Number.MAX_VALUE : d;
   }
   public processAppDataPair(tagA: number, tagB: number): void {
     if (this.visitorA.moveToReadIndex(tagA) && this.visitorB.moveToReadIndex(tagB)) {
@@ -170,10 +171,5 @@ export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeSearchHa
       }
     }
   }
-  /** query to see if the active search has been aborted.  Default returns false so
-   * * Default implementation returns false so query runs to completion.
-   */
-  // eslint-disable-next-line @itwin/prefer-get
-  public override isAborted(): boolean { return false; }
 }
 

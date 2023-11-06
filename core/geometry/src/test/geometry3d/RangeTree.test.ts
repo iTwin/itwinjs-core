@@ -16,12 +16,13 @@ import { Range3d } from "../../geometry3d/Range";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../geometry3d/RangeTree/RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTree";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
-import { Point3dArrayClosestPointSearchContext, Polyline3dClosestPointSearchContext } from "../../geometry3d/RangeTree/PointArrayRangeContexts";
+import { Point3dArrayClosestPointSearchContext } from "../../polyface/RangeTree/PointArrayRangeContext";
+import { Polyline3dClosestPointSearchContext } from "../../polyface/RangeTree/PolylineRangeContext";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceRangeSearchContext } from "../../geometry3d/RangeTree/PolyfaceRangeContexts";
+import { PolyfaceRangeSearchContext } from "../../polyface/RangeTree/PolyfaceRangeContext";
 
 // Clone and shift the range ...
 // shift by dx

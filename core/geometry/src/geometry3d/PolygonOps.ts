@@ -1587,7 +1587,11 @@ export class Point3dArrayPolygonOps {
     }
   }
 }
-
+/**
+ * Carrier structure for a pair of PolygonLocationDetail objects (with name suffixes A and B) with optional parameterized-type tags (also with suffixes A and B)
+ * * Note that the (public!) constructor captures its parameters.
+ * @public
+ */
 export class PolygonLocationDetailPair<TagType> {
   public detailA: PolygonLocationDetail;
   public detailB: PolygonLocationDetail;

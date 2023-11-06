@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Range3d } from "../Range";
+import { Range3d } from "../../geometry3d/Range";
 
 /** @packageDocumentation
  * @module CartesianGeometry
@@ -68,7 +68,8 @@ export abstract class SingleTreeSearchHandler<AppDataType> {
   public isAborted(): boolean { return false; }
 }
 export abstract class TwoTreeSearchHandler<AppDataType> {
-  /** return true if appData within the ranges should be offered to processAppDataPair */
+  /** Method which must be implemented by the concrete class.
+   * * return true if appData within the ranges should be offered to processAppDataPair. */
   public abstract isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean;
   public abstract processAppDataPair(leftItem: AppDataType, rightItem: AppDataType): void;
   /** query to see if the active search has been aborted.  Default returns false so
@@ -76,6 +77,34 @@ export abstract class TwoTreeSearchHandler<AppDataType> {
    */
   // eslint-disable-next-line @itwin/prefer-get
   public isAborted(): boolean { return false; }
+}
+/** This class implements the isRangePairActive method, with logic appropriate to
+ * searching for minimum distance between AppDataItems.
+ * * The concrete class must implement getCurrentDistance() method to provide the best-so-far distance.
+ * * This class' implementation of isRangePairActive with return true if the smallest distance between ranges is
+ *    less than or equal to the getCurrentDistance() value.
+ * * The concrete class can reduce the getCurrentDistance() value as it progresses.
+ */
+export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> extends TwoTreeSearchHandler<AppDataType>{
+  /** REQUIRED method to provide the allowable distance between ranges.
+   * * Range pairs with more than this distance separation are rejected.
+   * * The implementation may alter (probably reduce) the getCurrentDistance() value as the search progresses.
+   */
+  public abstract getCurrentDistance(): number;
+  /**
+   *
+   * @param range range containing items to be tested.
+   * @returns true if the smallest distance from leftRange to rightRange is less than or equal to getCurrentDistance()
+   */
+  public override isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean {
+    const currentDistance = this.getCurrentDistance();
+    const distanceBetweenRanges = leftRange.distanceToRange(rightRange);
+    if (distanceBetweenRanges <= currentDistance) {
+      return true;
+    }
+    return false;
+  }
+
 }
 let numNodeCreated = 0;
 /**
