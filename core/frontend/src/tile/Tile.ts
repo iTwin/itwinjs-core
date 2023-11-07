@@ -512,11 +512,6 @@ export abstract class Tile {
   }
 
   /** @internal */
-  protected get contentRangeGraphicColor(): ColorDef {
-    return ColorDef.red;
-  }
-
-  /** @internal */
   public getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     const type = context.viewport.debugBoundingBoxes;
     if (type === this._rangeGraphicType)
@@ -540,8 +535,7 @@ export abstract class Tile {
       addRangeGraphic(builder, this.range, this.tree.is2d);
 
       if (this.hasContentRange) {
-        const color = this.contentRangeGraphicColor;
-        builder.setSymbology(color, color, 1);
+        builder.setSymbology(ColorDef.red, ColorDef.red, 1);
         addRangeGraphic(builder, this.contentRange, this.tree.is2d);
       }
     } else if (TileBoundingBoxes.Sphere === type) {

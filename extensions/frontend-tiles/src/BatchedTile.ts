@@ -170,11 +170,6 @@ export class BatchedTile extends Tile {
     }
   }
 
-  protected override get contentRangeGraphicColor() {
-    const hasTransform = undefined !== this._transformToRoot;
-    return ColorDef.from(hasTransform ? 0 : 255, hasTransform ? 255 : 0, 127);
-  }
-
   protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
     if (TileBoundingBoxes.ChildVolumes !== type) {
       super.addRangeGraphic(builder, type);
