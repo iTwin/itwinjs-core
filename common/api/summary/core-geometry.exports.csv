@@ -1,12 +1,12 @@
 sep=;
 Release Tag;API Item
-public;AkimaCurve3d
+public;AkimaCurve3d 
 public;AkimaCurve3dOptions
 public;AkimaCurve3dProps
 internal;AnalyticRoots
-public;Angle
+public;Angle 
 public;AngleProps =
-public;AngleSweep
+public;AngleSweep 
 public;AngleSweepProps = AngleSweep |
 internal;AnnotatedLineString3d
 public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
@@ -19,7 +19,7 @@ public;AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d
 public;AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd
 public;AnyRegion = Loop | ParityRegion | UnionRegion
 public;AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe
-public;Arc3d
+public;Arc3d 
 public;ArcBlendData
 public;ArcVectors
 public;AuxChannel
@@ -28,31 +28,31 @@ public;AuxChannelDataType
 public;AxisIndex
 public;AxisOrder
 public;AxisScaleSelect
-public;BagOfCurves
+public;BagOfCurves 
 public;BarycentricTriangle
 public;BeJSONFunctions
 public;BentleyGeometryFlatBuffer
 public;Bezier1dNd
 internal;class BezierCoffs
-public;BezierCurve3d
-public;BezierCurve3dH
-public;class BezierCurveBase
+public;BezierCurve3d 
+public;BezierCurve3dH 
+public;class BezierCurveBase 
 internal;BezierPolynomialAlgebra
-public;BilinearPatch
+public;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
 public;BooleanClipFactory
-public;Box
+public;Box 
 internal;BoxTopology
 public;BSpline1dNd
-public;class BSpline2dNd
-public;BSplineCurve3d
-public;class BSplineCurve3dBase
-public;BSplineCurve3dH
+public;class BSpline2dNd 
+public;BSplineCurve3d 
+public;class BSplineCurve3dBase 
+public;BSplineCurve3dH 
 public;BSplineCurveOps
 public;BSplineCurveOps
-public;BSplineSurface3d
-public;BSplineSurface3dH
+public;BSplineSurface3d 
+public;BSplineSurface3dH 
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
 public;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
@@ -60,35 +60,35 @@ deprecated;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
 public;ClipMaskXYZRangePlanes
 public;ClippedPolyfaceBuilders
 public;Clipper
-public;ClipPlane
+public;ClipPlane 
 public;ClipPlaneContainment
 public;ClipPlaneProps
-public;ClipPrimitive
+public;ClipPrimitive 
 public;ClipPrimitivePlanesProps
 public;ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps
 public;ClipPrimitiveShapeProps
-public;ClipShape
+public;ClipShape 
 public;ClipStatus
 public;ClipStepAction
 public;ClipUtilities
-public;ClipVector
+public;ClipVector 
 public;ClipVectorProps = ClipPrimitiveProps[]
 public;Cloneable
-internal;ClusterableArray
+internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
-internal;Complex
-public;Cone
+internal;Complex 
+public;Cone 
 public;ConsolidateAdjacentCurvePrimitivesOptions
 alpha;Constant
-public;ConstructCurveBetweenCurves
-public;ConvexClipPlaneSet
+public;ConstructCurveBetweenCurves 
+public;ConvexClipPlaneSet 
 public;ConvexClipPlaneSetProps = ClipPlaneProps[]
-public;ConvexFacetLocationDetail
+public;ConvexFacetLocationDetail 
 internal;ConvexPolygon2d
-public;CoordinateXYZ
-public;class CurveChain
-public;CurveChainWithDistanceIndex
-public;class CurveCollection
+public;CoordinateXYZ 
+public;class CurveChain 
+public;CurveChainWithDistanceIndex 
+public;class CurveCollection 
 public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
 public;CurveCurve
 public;CurveCurveApproachType
@@ -101,7 +101,7 @@ public;CurveLocationDetailArrayPair
 deprecated;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;CurveOps
-public;class CurvePrimitive
+public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
 public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
 public;CurveSearchStatus
@@ -111,11 +111,11 @@ public;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
-public;DirectSpiral3d
+public;DirectSpiral3d 
 public;DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian"
 public;DuplicateFacetClusterSelector
-public;Ellipsoid
-public;EllipsoidPatch
+public;Ellipsoid 
+public;EllipsoidPatch 
 public;FacetFaceData
 public;FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean
 public;FacetIntersectOptions
@@ -135,9 +135,9 @@ public;GriddedRaggedRange2dSet
 public;GriddedRaggedRange2dSetWithOverflow
 public;GrowableBlockedArray
 public;GrowableFloat64Array
-public;GrowableXYArray
-public;GrowableXYZArray
-internal;HalfEdge
+public;GrowableXYArray 
+public;GrowableXYZArray 
+internal;HalfEdge 
 internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
 internal;HalfEdgeGraph
 internal;HalfEdgeMask
@@ -148,18 +148,18 @@ public;HoleFillOptions
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval
-public;IndexedPolyface
-public;IndexedPolyfaceSubsetVisitor
-public;IndexedPolyfaceVisitor
-public;class IndexedReadWriteXYZCollection
+public;IndexedPolyface 
+public;IndexedPolyfaceSubsetVisitor 
+public;IndexedPolyfaceVisitor 
+public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
 public;class IndexedXYZCollection
-public;IndexedXYZCollectionInterval
+public;IndexedXYZCollectionInterval 
 public;IndexedXYZCollectionPolygonOps
-public;IntegratedSpiral3d
+public;IntegratedSpiral3d 
 public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
 internal;interpolateColor(color0: number, fraction: number, color1: number): number
-public;InterpolationCurve3d
+public;InterpolationCurve3d 
 public;InterpolationCurve3dOptions
 public;InterpolationCurve3dProps
 public;InverseMatrixState
@@ -167,19 +167,19 @@ public;IStrokeHandler
 public;JointOptions
 public;KnotVector
 public;LinearCurvePrimitive = LineSegment3d | LineString3d
-public;LinearSweep
-public;LineSegment3d
-public;LineString3d
+public;LinearSweep 
+public;LineSegment3d 
+public;LineString3d 
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
-public;LongitudeLatitudeNumber
-public;Loop
+public;LongitudeLatitudeNumber 
+public;Loop 
 public;LoopCurveLoopCurve
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
-public;Map4d
-public;Matrix3d
+public;Map4d 
+public;Matrix3d 
 public;Matrix3dProps = number[][] | number[]
-public;Matrix4d
+public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
 public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
@@ -187,75 +187,75 @@ public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
-public;NonConvexFacetLocationDetail
-public;NullGeometryHandler
+public;NonConvexFacetLocationDetail 
+public;NullGeometryHandler 
 public;NumberArray
 public;OffsetMeshOptions
 public;OffsetMeshSelectiveOutputOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
 internal;OptionalRange2dSearchInterface
-internal;Order2Bezier
-internal;Order3Bezier
-internal;Order4Bezier
-internal;Order5Bezier
+internal;Order2Bezier 
+internal;Order3Bezier 
+internal;Order4Bezier 
+internal;Order5Bezier 
 alpha;OrderedRotationAngles
 internal;PackedMatrix3dOps
 public;PackedPointGrid
-public;ParityRegion
+public;ParityRegion 
 internal;PascalCoefficients
-public;Path
+public;Path 
 public;PathFragment
 public;PerpParallelOptions
-public;class Plane3d
-public;Plane3dByOriginAndUnitNormal
-public;Plane3dByOriginAndVectors
+public;class Plane3d 
+public;Plane3dByOriginAndUnitNormal 
+public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator
 public;PlaneByOriginAndVectors4d
-public;Point2d
+public;Point2d 
 public;Point2dArray
-public;Point2dArrayCarrier
-public;Point3d
+public;Point2dArrayCarrier 
+public;Point3d 
 public;Point3dArray
-public;Point3dArrayCarrier
+public;Point3dArrayCarrier 
 public;Point3dArrayPolygonOps
-public;Point4d
+public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]
-public;PointString3d
-public;class Polyface
+public;PointString3d 
+public;class Polyface 
 public;PolyfaceAuxData
-public;PolyfaceBuilder
+public;PolyfaceBuilder 
 public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
-public;PolyfaceVisitor
+public;PolyfaceVisitor 
 public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
 public;PolygonOps
 public;PolylineOps
 internal;PowerPolynomial
-public;class ProxyCurve
+public;class ProxyCurve 
 internal;Quadrature
-public;Range1d
+public;Range1d 
 internal;Range1dArray
 public;Range1dProps =
-public;Range2d
+public;Range2d 
 public;Range2dProps =
-public;Range3d
+public;Range3d 
 public;Range3dProps =
 public;class RangeBase
 public;Ray2d
-public;Ray3d
-public;RecurseToCurvesGeometryHandler
+public;Ray3d 
+public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
-public;class RecursiveCurveProcessorWithStack
+public;class RecursiveCurveProcessorWithStack 
 public;RegionBinaryOpType
-internal;RegionMomentsXY
+internal;RegionMomentsXY 
 public;RegionOps
-public;RotationalSweep
-public;RuledSweep
+public;RotationalSweep 
+public;RuledSweep 
 alpha;Sample
 public;SectionSequenceWithPlanes
 public;Segment1d
@@ -263,10 +263,10 @@ public;SignedLoops
 internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta
-public;class SolidPrimitive
+public;class SolidPrimitive 
 public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe"
 public;SpacePolygonTriangulation
-public;Sphere
+public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex
 alpha;SteppedIndexFunction = (i: number, n: number) => number
@@ -280,40 +280,40 @@ public;SweepLineStringToFacetsOptions
 public;TaggedNumericConstants
 public;TaggedNumericData
 internal;TorusImplicit
-public;TorusPipe
-public;Transform
+public;TorusPipe 
+public;Transform 
 public;TransformProps = number[][] | number[] |
-public;class TransitionSpiral3d
+public;class TransitionSpiral3d 
 public;TriangleLocationDetail
-public;TriangularFacetLocationDetail
+public;TriangularFacetLocationDetail 
 internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
-public;UnionOfConvexClipPlaneSets
+public;UnionOfConvexClipPlaneSets 
 public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
-public;UnionRegion
-internal;UnivariateBezier
+public;UnionRegion 
+internal;UnivariateBezier 
 public;UVSelect
 public;UVSurface
 public;UVSurfaceIsoParametricDistance
 public;UVSurfaceOps
 public;VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode[]
-public;Vector2d
-public;Vector3d
+public;Vector2d 
+public;Vector3d 
 public;Vector3dArray
 public;WeightStyle
 public;WritableLowAndHighXY
 public;WritableLowAndHighXYZ
 public;WritableXAndY
-public;WritableXYAndZ
+public;WritableXYAndZ 
 public;WriteableHasZ
 public;XAndY = Readonly
-public;XY
+public;XY 
 public;XYAndZ = Readonly
 public;XYAndZ
 public;XYProps =
-public;XYZ
+public;XYZ 
 public;XYZProps =
 public;YawPitchRollAngles
 public;YawPitchRollProps
