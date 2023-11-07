@@ -9,7 +9,7 @@
 /* eslint-disable deprecation/deprecation */
 
 /** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
- * @public @deprecated in 4.3. AppUI libraries > 4.7.x support loading SVGs sources without prefixes, eliminating the need for these utilities.
+ * @public @deprecated in 4.3. AppUI libraries >= 4.7.x support loading SVGs sources without prefixes, eliminating the need for these utilities.
  */
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec loaded with the Sprite loader */
