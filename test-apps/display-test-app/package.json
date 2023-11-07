@@ -39,7 +39,9 @@
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
     "ios": "ts-node --skip-project ./runIosSimulator.ts",
     "ios:all": "npm run build:mobile && npm run build:ios-app && npm run ios",
-    "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build"
+    "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build",
+    "android": "./runAndroidEmulator.py",
+    "android:all": "npm run build:mobile && npm run build:android-app && npm run android"
   },
   "repository": {},
   "dependencies": {

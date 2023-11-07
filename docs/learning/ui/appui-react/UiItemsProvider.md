@@ -10,10 +10,10 @@ Below is an excerpt from the [UiItemsProvider]($appui-react) interface that show
 ```ts
 export interface UiItemsProvider {
   readonly id: string;
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
+  provideToolbarItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => ToolbarItem[];
+  provideStatusBarItems?: (stageId: string, stageUsage: string) => StatusBarItem[];
   provideBackstageItems?: () => BackstageItem[];
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<Widget>;
 }
 ```
 
@@ -52,7 +52,6 @@ class TestUiProvider implements UiItemsProvider {
 
   public provideStatusBarItems(_stageId: string, stageUsage: string): StatusBarItem[] {
     const statusBarItems: StatusBarItem[] = [];
-    const ShadowToggle = withStatusFieldProps(ShadowField);
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
@@ -75,7 +74,7 @@ class TestUiProvider implements UiItemsProvider {
           }));
 
       // add entry that supplies react component
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowToggle", StatusBarSection.Right, 5, <ShadowToggle />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowField", StatusBarSection.Right, 5, <ShadowField />));
     }
     return statusBarItems;
   }
@@ -87,9 +86,11 @@ class TestUiProvider implements UiItemsProvider {
         id: "addonWidget",
         icon: PresentationPropertyGridWidgetControl.iconSpec,
         label: PresentationPropertyGridWidgetControl.label,
-        defaultFloatingSize={{width:330, height:540}},
-         isFloatingStateWindowResizable={true},
-        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>,
+        canFloat: {
+          defaultSize: { width: 330, height: 540 },
+          isResizable: true,
+        }
+        content: <FillCentered>Addon Widget in panel</FillCentered>,
       });
     }
     return widgets;
@@ -114,10 +115,6 @@ Below is an example of registering the TestUiProvider defined above.
 ```ts
 UiItemsManager.register( new TestUiProvider());
 ```
-
-### Examples
-
-The following examples show how an application can allow, disallow and update a Toolbar item.
 
 ## API Reference
 

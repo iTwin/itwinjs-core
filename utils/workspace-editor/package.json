@@ -2,7 +2,7 @@
   "name": "@itwin/workspace-editor",
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "4.3.0-dev.15",
+  "version": "4.3.0-dev.19",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },

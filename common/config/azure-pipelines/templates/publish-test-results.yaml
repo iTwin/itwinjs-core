@@ -17,6 +17,12 @@ steps:
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
+    displayName: "Publish iOS Backend Test Results"
+    inputs:
+      testResultsFiles: core/backend/lib/junit_results.xml
+      testRunTitle: "Test suite Core - Backend on iOS"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Darwin'))
+  - task: PublishTestResults@2
     displayName: "Publish Bentley Test Results"
     inputs:
       testResultsFiles: "core/bentley/lib/test/junit_results.xml"
