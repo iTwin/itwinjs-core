@@ -16,7 +16,7 @@ import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import {
-  CurveCurveCloseApproachXYRRtoRRD, CurveCurveIntersectionXYRRToRRD, CurvePointCloseApproachXYRtoRD,
+  CurveCurveCloseApproachXYRRtoRRD, CurvePointCloseApproachXYRtoRD,
   Newton1dUnbounded, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD,
 } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
