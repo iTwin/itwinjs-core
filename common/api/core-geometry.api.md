@@ -4952,11 +4952,8 @@ export class PolygonLocationDetail {
 // @public
 export class PolygonLocationDetailPair<TagType> {
     constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail);
-    // (undocumented)
     detailA: PolygonLocationDetail;
-    // (undocumented)
     detailB: PolygonLocationDetail;
-    // (undocumented)
     tagA?: TagType;
     // (undocumented)
     tagB?: TagType;
@@ -5007,7 +5004,6 @@ export class PolylineOps {
 
 // @public
 export class PolylineRangeTreeContext {
-    // (undocumented)
     get closestDistance(): number | undefined;
     // (undocumented)
     get closestPoint(): CurveLocationDetail | undefined;
