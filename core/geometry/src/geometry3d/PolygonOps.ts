@@ -1593,9 +1593,13 @@ export class Point3dArrayPolygonOps {
  * @public
  */
 export class PolygonLocationDetailPair<TagType> {
+  /** first of the two details */
   public detailA: PolygonLocationDetail;
+  /** second of the two details */
   public detailB: PolygonLocationDetail;
+  /** first tag */
   public tagA?: TagType;
+  /* second tag */
   public tagB?: TagType;
   public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail) {
     this.detailA = detailA;

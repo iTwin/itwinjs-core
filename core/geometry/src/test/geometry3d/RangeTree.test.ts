@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -16,13 +15,13 @@ import { Range3d } from "../../geometry3d/Range";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
-import { Point3dArrayClosestPointSearchContext } from "../../polyface/RangeTree/PointArrayRangeContext";
-import { Polyline3dClosestPointSearchContext } from "../../polyface/RangeTree/PolylineRangeContext";
+import { Point3dArrayClosestPointSearchContext } from "../../polyface/RangeTree/PointArrayRangeTreeContext";
+import { PolylineRangeTreeContext } from "../../polyface/RangeTree/PolylineRangeTreeContext";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceRangeSearchContext } from "../../polyface/RangeTree/PolyfaceRangeContext";
+import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
 
 // Clone and shift the range ...
 // shift by dx
@@ -167,7 +166,7 @@ class ClosestApproachBetweenPointClustersHandler extends TwoTreeSearchHandler<Po
 
 describe("IndexedRangeHeap", () => {
   it("ClosestLineStringSearch", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const points = Sample.createPoint2dLattice(0, 5, 100);
     const ranges: Range3d[] = [];
@@ -186,7 +185,7 @@ describe("IndexedRangeHeap", () => {
       dx = -dy;
       dy = t;
     }
-    const rangeHeap = RangeTreeOps.createByIndexSplits<CurvePrimitive>(ranges, lines, 3, 2)!;
+    const rangeHeap = RangeTreeOps.createByIndexSplits<CurvePrimitive>(ranges, lines, lines.length, 3, 2)!;
     for (const spacePoint of [Point3d.create(3.8, 2.5), Point3d.create(27.3, 9.5), Point3d.create(-8, bigStep * 0.45)]) {
       const handler = ClosestPointOnCurvesHandler.create(spacePoint, true)!;
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, spacePoint, 0.2, x0 + bigStep, y0);
@@ -215,7 +214,7 @@ describe("IndexedRangeHeap", () => {
     const numQuadraticTests = lines.length * handlerB.numCases;
 
     // eslint-disable-next-line no-console
-    console.log({
+    ck.show({
       numCases: handlerB.numCases,
       numRangeTest: handlerB.numRangeTest,
       numCurveTest: handlerB.numCurveTest,
@@ -228,7 +227,7 @@ describe("IndexedRangeHeap", () => {
   });
 
   it("PointPointSearch", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let numCase = 0;
@@ -268,10 +267,12 @@ describe("IndexedRangeHeap", () => {
           const treeA = RangeTreeOps.createByIndexSplits<Point3d>(
             ((index: number): Range3d => { return Range3d.create(pointsA[index]); }),
             pointsA,
+            pointsA.length,
             treeFlare, treeFlare)!;
           const treeB = RangeTreeOps.createByIndexSplits<Point3d>(
             ((index: number): Range3d => { return Range3d.create(pointsB[index]); }),
             pointsB,
+            pointsB.length,
             treeFlare, treeFlare)!;
           ck.testExactNumber(pointsA.length, RangeTreeOps.getRecursiveAppDataCount<Point3d>(treeA), "point count in range tree");
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.05, x0, 0);
@@ -320,7 +321,7 @@ describe("IndexedRangeHeap", () => {
   });
 
   it("PointCloudMultiSearch", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
@@ -354,7 +355,7 @@ describe("IndexedRangeHeap", () => {
             }
           }
         }
-        console.log({
+        ck.show({
           treeWidth,
           numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
           searches: searcher.numSearch,
@@ -369,7 +370,7 @@ describe("IndexedRangeHeap", () => {
   });
 
   it("PolylineMultiSearch", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     let y0 = 0;
@@ -378,10 +379,10 @@ describe("IndexedRangeHeap", () => {
     const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 80, 0);
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
     for (const treeWidth of [2, 4, 8]) {
-      const searcher = Polyline3dClosestPointSearchContext.createCapture(wavePoints, treeWidth, treeWidth);
+      const searcher = PolylineRangeTreeContext.createCapture(wavePoints, treeWidth, treeWidth);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, wavePoints, x0, y0, z0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
-      if (ck.testType(searcher, Polyline3dClosestPointSearchContext)) {
+      if (ck.testType(searcher, PolylineRangeTreeContext)) {
         for (let u = 0; u <= 1.00001; u += 0.010) {
           const xyz = path.fractionToPoint(u);
           searcher.searchForClosestPoint(xyz);
@@ -413,7 +414,7 @@ describe("IndexedRangeHeap", () => {
   });
 
   it("PolyfaceMultiSearch", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     let y0 = 0;
@@ -440,8 +441,8 @@ describe("IndexedRangeHeap", () => {
       const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
       const visitor = polyface.createVisitor(0);
-      const searcher = PolyfaceRangeSearchContext.createCapture(visitor, treeWidth, treeWidth);
-      if (ck.testType(searcher, PolyfaceRangeSearchContext)) {
+      const searcher = PolyfaceRangeTreeContext.createCapture(visitor, treeWidth, treeWidth);
+      if (ck.testType(searcher, PolyfaceRangeTreeContext)) {
         for (let u = 0; u <= 1.00001; u += 0.010) {
           const xyz = path.fractionToPoint(u);
           const facetLocationDetail = searcher.searchForClosestPoint(xyz);
@@ -462,10 +463,10 @@ describe("IndexedRangeHeap", () => {
           frankelSize,
           numFacets: polyface.facetCount,
           treeWidth,
-          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
+          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numFacetTest,
           searches: searcher.numSearch,
           searchesTimesPoints: searchesTimesFacets,
-          fraction: searcher.numPointTest / searchesTimesFacets,
+          fraction: searcher.numFacetTest / searchesTimesFacets,
         });
         y0 += 2;
       }
@@ -473,8 +474,8 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("PolyfacePolyfaceSearch", () => {
-    const ck = new Checker(true, true);
+  it("PolyfacePolyfaceSearch", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     const y0 = 0;
@@ -508,9 +509,9 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0, z0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0, z0);
 
-    const contextA = PolyfaceRangeSearchContext.createCapture(polyfaceA.createVisitor(), 3, 3)!;
-    const contextB = PolyfaceRangeSearchContext.createCapture(polyfaceB.createVisitor(), 3, 3)!;
-    const approach = PolyfaceRangeSearchContext.searchForClosestApproach(contextA, contextB);
+    const contextA = PolyfaceRangeTreeContext.createCapture(polyfaceA.createVisitor(), 3, 3)!;
+    const contextB = PolyfaceRangeTreeContext.createCapture(polyfaceB.createVisitor(), 3, 3)!;
+    const approach = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB);
     if (approach !== undefined) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry,
         [approach.detailA.point, approach.detailB.point], x0, y0, z0);
@@ -520,9 +521,9 @@ describe("IndexedRangeHeap", () => {
     ck.show({
       numRangeTestFalse: contextA.numRangeTestFalse,
       numRangeTestTrue: contextA.numRangeTestTrue,
-      numLeafTest: contextA.numPointTest,
+      numLeafTest: contextA.numFacetTest,
       numFacetTimeNumFacet: numFacetA * numFacetB,
-      testFraction: contextA.numPointTest / (numFacetA * numFacetB),
+      testFraction: contextA.numFacetTest / (numFacetA * numFacetB),
     });
     /*
     for (const multipliers of [

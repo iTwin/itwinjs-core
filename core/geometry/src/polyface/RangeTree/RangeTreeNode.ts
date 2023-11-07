@@ -1,23 +1,32 @@
-/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module RangeSearch
+ */
 
 import { Range3d } from "../../geometry3d/Range";
 
-/** @packageDocumentation
- * @module CartesianGeometry
+/** type name FlexData is shorthand for a member or parameter which can be:
+ * * undefined
+ * * an array of values of type T
+ * * a singleton of type T
  */
-
 type FlexData<T> = undefined | T[] | T;
 /**
- * Parameterized type which can be
- * * an array of type T
- * * a function which takes an index and returns type T
+ * type name IndexToType is shorthand for a member or parameter which can be:
+ * * an array of values of type T
+ * * a function from integers to type T.
  */
 type IndexToType<T> = T[] | ((index: number) => T);
 
+/**
+ * Map an integer to a parameterized type T, where the data argument can be either
+ * * an array of type T
+ * * a function which takes an index and returns type T
+ * @internal
+ */
 function evaluateIndexToType<T>(data: IndexToType<T>, index: number): T {
   if (Array.isArray(data))
     return data[index];
@@ -25,9 +34,7 @@ function evaluateIndexToType<T>(data: IndexToType<T>, index: number): T {
 }
 /**
  * Get data by index from a source that may be undefined, an array of item of type T, or a singleton of the item type.
- * @param index
- * @param data
- * @returns
+ * @internal
  */
 function getByIndex<T>(index: number, data: FlexData<T>) {
   if (data !== undefined) {
@@ -41,10 +48,8 @@ function getByIndex<T>(index: number, data: FlexData<T>) {
   return undefined;
 }
 /**
- * Get data by index from a source that may be undefined, an array of item of type T, or a singleton of the item type.
- * @param index
- * @param data
- * @returns
+ * Return the number of items in an object that can be undefined, an array of item of type T, or a singleton of the item type.
+ * @internal
  */
 function getFlexDataCount<T>(data: FlexData<T>): number {
   if (data !== undefined) {
@@ -56,34 +61,57 @@ function getFlexDataCount<T>(data: FlexData<T>): number {
   }
   return 0;
 }
-
+/**
+ * abstract class for handler objects called during traversal of a single range tree.
+ * @internal
+ */
 export abstract class SingleTreeSearchHandler<AppDataType> {
   /** return true if appData within the range should be offered to processAppData */
   public abstract isRangeActive(range: Range3d): boolean;
+  /**
+   * Called for a (single) child referenced by a tree.
+   * * This is only called when range checks on the path from root have been passed.
+   * @param item child (of type AppDataType) in the tree.
+   */
   public abstract processAppData(item: AppDataType): void;
   /** query to see if the active search has been aborted.  Default returns false so
+   * * Default implementation returns false so query runs to completion.
+   * * search processes check this after range tests and child processing.
    * * Default implementation returns false so query runs to completion.
    */
   // eslint-disable-next-line @itwin/prefer-get
   public isAborted(): boolean { return false; }
 }
+/**
+ * abstract class for handler objects called during traversal of a single range tree.
+ * @internal
+ */
 export abstract class TwoTreeSearchHandler<AppDataType> {
   /** Method which must be implemented by the concrete class.
    * * return true if appData within the ranges should be offered to processAppDataPair. */
   public abstract isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean;
+  /**
+   * Called with AppDataType items from left tree and right tree.
+   * * This is only called when range tests have been passed.
+   * @param leftItem
+   * @param rightItem
+   */
   public abstract processAppDataPair(leftItem: AppDataType, rightItem: AppDataType): void;
   /** query to see if the active search has been aborted.  Default returns false so
+   * * Default implementation returns false so query runs to completion.
+   * * search processes check this after range tests and child processing.
    * * Default implementation returns false so query runs to completion.
    */
   // eslint-disable-next-line @itwin/prefer-get
   public isAborted(): boolean { return false; }
 }
-/** This class implements the isRangePairActive method, with logic appropriate to
- * searching for minimum distance between AppDataItems.
+/** This class refines teh TwoTreeSearchHandler with an implementation of isRangePairActive.
+ * * The isRangePairActive implementation has logic for searching for minimum distance between AppDataItems.
  * * The concrete class must implement getCurrentDistance() method to provide the best-so-far distance.
  * * This class' implementation of isRangePairActive with return true if the smallest distance between ranges is
  *    less than or equal to the getCurrentDistance() value.
  * * The concrete class can reduce the getCurrentDistance() value as it progresses.
+ * @internal
  */
 export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> extends TwoTreeSearchHandler<AppDataType>{
   /** REQUIRED method to provide the allowable distance between ranges.
@@ -92,8 +120,9 @@ export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> exte
    */
   public abstract getCurrentDistance(): number;
   /**
-   *
-   * @param range range containing items to be tested.
+   * Method called to decide whether to process subtrees and immediate child appData items from a left tree node and right tree node.
+   * @param leftRange range from a node a node in the left tree
+   * @param rightRange range from a node in the right tree.
    * @returns true if the smallest distance from leftRange to rightRange is less than or equal to getCurrentDistance()
    */
   public override isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean {
@@ -104,9 +133,8 @@ export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> exte
     }
     return false;
   }
-
 }
-let numNodeCreated = 0;
+// const numNodeCreated = 0;
 /**
  * * TREE STRUCTURE
  *   * A RangeTreeNode is part of a range tree.
@@ -132,13 +160,14 @@ let numNodeCreated = 0;
  *       * larger memory use because of more nodes
  *   * For future construction methods
  *      * _appData "above the leaves" may allow nodes below to have smaller ranges, but add complexity to search.
- *
+ * @internal
  */
 export class RangeTreeNode<AppDataType> {
   private _range: Range3d;
   private _appData: FlexData<AppDataType>;
   private _children: undefined | RangeTreeNode<AppDataType> | RangeTreeNode<AppDataType>[];
-  public id: number;
+  /** an id assigned sequentially as nodes are created.  For debugging use only. */
+  // public id: number;
   /**
    * CONSTRUCTOR
    * CAPTURE (not copy)
@@ -150,12 +179,13 @@ export class RangeTreeNode<AppDataType> {
     this._range = range;
     this._appData = appData;
     this._children = children;
-    this.id = numNodeCreated++;
-    const childIds: number[] = [];
-    if (Array.isArray(this._children))
-      for (const c of this._children) childIds.push(c.id);
-    else if (this._children instanceof RangeTreeNode)
-      childIds.push(this._children.id);
+
+    // this.id = numNodeCreated++;
+    // const childIds: number[] = [];
+    // if (Array.isArray(this._children))
+    //  for (const c of this._children) childIds.push(c.id);
+    //  else if (this._children instanceof RangeTreeNode)
+    //  childIds.push(this._children.id);
     // const numAppData = getFlexDataCount(appData);
     // console.log({ id: this.id, childIds, numAppData });
   }
@@ -437,6 +467,13 @@ export class RangeTreeNode<AppDataType> {
     }
   }
 
+  /**
+   * Recursive search down two trees, with range tests and child processing under control of a handler.
+   *
+   * @param leftRoot root of left tree
+   * @param rightRoot root of right tree
+   * @param handler handler for range tests and child process
+   */
   public static searchTwoTreesTopDown<AppDataType>(
     leftRoot: RangeTreeNode<AppDataType>,
     rightRoot: RangeTreeNode<AppDataType>,
@@ -445,7 +482,10 @@ export class RangeTreeNode<AppDataType> {
     this.recursivePairSearch(leftRoot, [], [], rightRoot, [], [], handler);
   }
 }
-
+/**
+ * Utilities for various operations on RangeTree
+ * @internal
+ */
 export class RangeTreeOps {
   public static getRecursiveNodeCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
     let count = 0;

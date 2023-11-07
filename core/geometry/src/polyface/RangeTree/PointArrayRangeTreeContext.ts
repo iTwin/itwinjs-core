@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module CartesianGeometry
+ * @module RangeSearch
  */
 import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTreeNode";
 
 /**
  * Handler class to search a range tree containing only Point3d data, always returning the single closest point and optionally gathering an array of
@@ -17,16 +17,28 @@ import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTre
  * @public
  */
 export class Point3dArrayClosestPointSearchContext {
+  /** array of points being searched.
+   * * The AppDataType for the range tree is number, which is an index into the points.
+   */
   public points: Point3d[];
+  /** Evolving search state */
   public searchState: MinimumValueTester<number>;
+  /** space point for search  */
   public spacePoint: Point3d;
+  /** for diagnostic:: number of range tests returned true. */
   public numRangeTestTrue: number;
+  /** for diagnostic:: number of range tests returned false */
   public numRangeTestFalse: number;
+  /** for diagnostic:: number of point distance tests */
   public numPointTest: number;
+  /** for diagnostic:: number of searches. */
   public numSearch: number;
 
   private _rangeTreeRoot: RangeTreeNode<number>;
-
+  /** PRIVATE constructor:
+   * * capture the rangeTreeRoot and points.
+   * * initialize debug counters.
+   */
   private constructor(rangeTreeRoot: RangeTreeNode<number>, points: Point3d[]) {
     this.points = points;
     this.spacePoint = Point3d.create(0, 0, 0);
@@ -37,7 +49,9 @@ export class Point3dArrayClosestPointSearchContext {
     this.numPointTest = 0;
     this.numSearch = 0;
   }
-
+  /**
+   * Create a range tree context with given points.
+   */
   public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayClosestPointSearchContext | undefined {
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => { return Range3d.create(points[index]); }),
@@ -47,7 +61,7 @@ export class Point3dArrayClosestPointSearchContext {
     );
     return rangeTreeRoot !== undefined ? new Point3dArrayClosestPointSearchContext(rangeTreeRoot, points) : undefined;
   }
-
+  /** Search the range tree for closest point to spacePoint */
   public searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch: boolean = true): CurveLocationDetail | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointInArray(this);
     this.numSearch++;
@@ -65,10 +79,11 @@ export class Point3dArrayClosestPointSearchContext {
 }
 /**
  * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyline3dClosestPointSearcherContext.
+ * @internal
  */
 class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHandler<number> {
   public context: Point3dArrayClosestPointSearchContext;
-
+  /** constructor --called by calling context */
   public constructor(context: Point3dArrayClosestPointSearchContext) {
     super();
     this.context = context;

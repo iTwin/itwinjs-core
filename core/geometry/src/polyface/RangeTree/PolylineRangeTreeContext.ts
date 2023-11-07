@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module CartesianGeometry
+ * @module RangeSearch
  */
 import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
@@ -12,18 +12,25 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Geometry } from "../../Geometry";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTree";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTreeNode";
 /**
  * class to host a point array and associated RangeTree for multiple search calls.
  * @public
  */
-export class Polyline3dClosestPointSearchContext {
+export class PolylineRangeTreeContext {
+  /** evolving search state during searches */
   public searchState: MinimumValueTester<CurveLocationDetail>;
+  /** polyline points */
   public points: Point3d[];
+  /** space point for closest point search */
   public spacePoint: Point3d;
+  /** diagnostic: number of range tests that have returned true */
   public numRangeTestTrue: number;
+  /** diagnostic: number of range tests that have returned false */
   public numRangeTestFalse: number;
+  /** diagnostic: number of points tested */
   public numPointTest: number;
+  /** diagnostic: number of searches. */
   public numSearch: number;
 
   private _rangeTreeRoot: RangeTreeNode<number>;
@@ -37,10 +44,13 @@ export class Polyline3dClosestPointSearchContext {
     this.numRangeTestFalse = 0;
     this.numPointTest = 0;
     this.numSearch = 0;
-  }
+
+    /** Return the closest point from the search context. */
+}
   public get closestPoint(): CurveLocationDetail | undefined {
     return this.searchState.itemAtMinValue;
   }
+  /** return the closet point distance from the search state. */
   public get closestDistance(): number | undefined { return this.searchState.minValue; }
 
   /**
@@ -49,14 +59,14 @@ export class Polyline3dClosestPointSearchContext {
    * @param points polyline points.  THIS ARRAY POINTER IS CAPTURED.
    * @returns Polyline3dClosestPointSearchContext with a range tree and the point array.
    */
-  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Polyline3dClosestPointSearchContext | undefined {
+  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): PolylineRangeTreeContext | undefined {
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => { return Range3d.create(points[index]); }),
       ((index: number): number => { return index; }),
       points.length - 1,
       maxChildPerNode, maxAppDataPerLeaf,
     );
-    return rangeTreeRoot !== undefined ? new Polyline3dClosestPointSearchContext(rangeTreeRoot, points) : undefined;
+    return rangeTreeRoot !== undefined ? new PolylineRangeTreeContext(rangeTreeRoot, points) : undefined;
   }
 
   public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
@@ -82,9 +92,12 @@ export class Polyline3dClosestPointSearchContext {
  * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyline3dClosestPointSearcherContext.
  */
 class SingleTreeSearchHandlerForClosestPointOnPolyline extends SingleTreeSearchHandler<number> {
-  public context: Polyline3dClosestPointSearchContext;
-
-  public constructor(context: Polyline3dClosestPointSearchContext) {
+  /** calling context */
+  public context: PolylineRangeTreeContext;
+  /**
+   * CONSTRUCTOR: Capture calling context
+   */
+  public constructor(context: PolylineRangeTreeContext) {
     super();
     this.context = context;
   }

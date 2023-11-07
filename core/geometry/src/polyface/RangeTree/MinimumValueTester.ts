@@ -10,6 +10,7 @@
  * Data carrier for use when repeatedly testing items (of parameterized type T) to determine the one with a minimum associated value.
  * * Optionally also records arrays items and values whose values are less than a given trigger.
  * * When comparing a potential minimum value to an undefined value, the number is always accepted as "less than" the undefined value.
+ * @internal
  */
 export class MinimumValueTester<T>{
   public itemAtMinValue: T | undefined;
