@@ -4481,6 +4481,19 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
 }
 
 // @public
+export class Point3dArrayClosestPointSearchContext {
+    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): Point3dArrayClosestPointSearchContext | undefined;
+    numPointTest: number;
+    numRangeTestFalse: number;
+    numRangeTestTrue: number;
+    numSearch: number;
+    points: Point3d[];
+    searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
+    searchState: MinimumValueTester<number>;
+    spacePoint: Point3d;
+}
+
+// @public
 export class Point3dArrayPolygonOps {
     static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance?: number): void;
     static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
@@ -4872,6 +4885,18 @@ export class PolyfaceQuery {
 }
 
 // @public
+export class PolyfaceRangeTreeContext {
+    static createCapture(visitor: PolyfaceVisitor, maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolyfaceRangeTreeContext | undefined;
+    numFacetTest: number;
+    numRangeTestFalse: number;
+    numRangeTestTrue: number;
+    numSearch: number;
+    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext): PolygonLocationDetailPair<number> | undefined;
+    searchForClosestPoint(spacePoint: Point3d): FacetLocationDetail | undefined;
+    visitor: PolyfaceVisitor;
+}
+
+// @public
 export interface PolyfaceVisitor extends PolyfaceData {
     clearArrays(): void;
     clientAuxIndex(i: number): number;
@@ -4916,11 +4941,25 @@ export class PolygonLocationDetail {
     code: PolygonLocation;
     copyContentsFrom(other: PolygonLocationDetail): void;
     static create(result?: PolygonLocationDetail): PolygonLocationDetail;
+    static createAtVertexOrEdgeCapture(point: Point3d, index: number, fraction?: number): PolygonLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
     point: Point3d;
     v: Vector3d;
+}
+
+// @public
+export class PolygonLocationDetailPair<TagType> {
+    constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail);
+    // (undocumented)
+    detailA: PolygonLocationDetail;
+    // (undocumented)
+    detailB: PolygonLocationDetail;
+    // (undocumented)
+    tagA?: TagType;
+    // (undocumented)
+    tagB?: TagType;
 }
 
 // @public
@@ -4935,6 +4974,7 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
+    static closestApproachOfPolygons<TagType>(polygonA: GrowableXYZArray, polygonB: GrowableXYZArray, dMax?: number): PolygonLocationDetailPair<TagType> | undefined;
     static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance?: number): number[] | undefined;
     static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
@@ -4961,7 +5001,26 @@ export class PolylineOps {
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed?: boolean): Plane3dByOriginAndUnitNormal[] | undefined;
     static edgeLengthRange(points: Point3d[]): Range1d;
+    static projectPointToUncheckedIndexedSegment(spacePoint: Point3d, points: Point3d[], segmentIndex: number, extendIfInitial?: boolean, extendIfFinal?: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
+}
+
+// @public
+export class PolylineRangeTreeContext {
+    // (undocumented)
+    get closestDistance(): number | undefined;
+    // (undocumented)
+    get closestPoint(): CurveLocationDetail | undefined;
+    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolylineRangeTreeContext | undefined;
+    numPointTest: number;
+    numRangeTestFalse: number;
+    numRangeTestTrue: number;
+    numSearch: number;
+    points: Point3d[];
+    // (undocumented)
+    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    searchState: MinimumValueTester<CurveLocationDetail>;
+    spacePoint: Point3d;
 }
 
 // @internal
@@ -5547,6 +5606,7 @@ export class Sample {
     static createFractalLMildConcavePatter(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalLReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createGridPointsOnEllipsoid(transform: Transform, numLatitudeStep: number, numLongitudeStep: number, longitudeSweep?: AngleSweep, latitudeSweep?: AngleSweep): Point3d[];
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
     static createInterpolatedPoints(point0: Point3d, point1: Point3d, numPoints: number, result?: Point3d[], index0?: number, index1?: number): Point3d[];
@@ -5558,7 +5618,7 @@ export class Sample {
     static createMap4ds(): Map4d[];
     static createMatrix3dArray(): Matrix3d[];
     static createMatrix4ds(includeIrregular?: boolean): Matrix4d[];
-    static createMeshFromSmoothSurface(size: number, options?: StrokeOptions): IndexedPolyface | undefined;
+    static createMeshFromFrankeSurface(size: number, options?: StrokeOptions, scales?: number[]): IndexedPolyface | undefined;
     static createMeshInAnnulus(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle): IndexedPolyface | undefined;
     static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
     static createMixedBsplineCurves(): BSplineCurve3dBase[];
@@ -6223,6 +6283,20 @@ export interface TrigValues {
     c: number;
     radians: number;
     s: number;
+}
+
+// @internal
+export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext);
+    contextA: PolyfaceRangeTreeContext;
+    contextB: PolyfaceRangeTreeContext;
+    // (undocumented)
+    getCurrentDistance(): number;
+    getResult(): PolygonLocationDetailPair<number> | undefined;
+    processAppDataPair(tagA: number, tagB: number): void;
+    searchState: MinimumValueTester<PolygonLocationDetailPair<number>>;
+    visitorA: PolyfaceVisitor;
+    visitorB: PolyfaceVisitor;
 }
 
 // @public

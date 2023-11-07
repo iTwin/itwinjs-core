@@ -225,6 +225,7 @@ public;Point2dArrayCarrier
 public;Point3d 
 public;Point3dArray
 public;Point3dArrayCarrier 
+public;Point3dArrayClosestPointSearchContext
 public;Point3dArrayPolygonOps
 public;Point4d 
 public;Point4dArray
@@ -236,12 +237,15 @@ public;PolyfaceBuilder
 public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
+public;PolyfaceRangeTreeContext
 public;PolyfaceVisitor 
 public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
+public;PolygonLocationDetailPair
 public;PolygonOps
 public;PolylineOps
+public;PolylineRangeTreeContext
 internal;PowerPolynomial
 public;class ProxyCurve 
 internal;Quadrature
@@ -298,6 +302,7 @@ internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
+internal;TwoTreeSearchHandlerFacetFacetCloseApproach 
 public;UnionOfConvexClipPlaneSets 
 public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
 public;UnionRegion 
