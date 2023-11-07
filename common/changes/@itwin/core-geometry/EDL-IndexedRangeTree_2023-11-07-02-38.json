@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "New code for RangeTree construction and search",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
