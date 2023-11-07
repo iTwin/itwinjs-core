@@ -2781,6 +2781,7 @@ export namespace IModelJson {
         bsurf?: BSplineSurfaceProps;
         indexedMesh?: IndexedMeshProps;
         point?: XYZProps;
+        pointString?: XYZProps[];
     }
     export interface IndexedMeshProps {
         color?: [number];
@@ -3461,7 +3462,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     setFromJSON(json?: any): void;
     startPoint(): Point3d;
     surfaceNormalAt(i: number, result?: Vector3d): Vector3d | undefined;
-    toJSON(): any;
+    toJSON(): XYZProps[];
     tryTransformInPlace(transform: Transform): boolean;
     vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined;
 }
@@ -4626,7 +4627,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     reverseInPlace(): void;
     setFrom(other: PointString3d): void;
     setFromJSON(json?: any): void;
-    toJSON(): any;
+    toJSON(): XYZProps[];
     tryTransformInPlace(transform: Transform): boolean;
 }
 

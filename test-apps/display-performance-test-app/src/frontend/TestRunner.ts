@@ -1058,8 +1058,8 @@ export class TestRunner {
 
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
-    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-    if ("terminate" === this.curConfig.onException)
+    const terminateErr = await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if (terminateErr || "terminate" === this.curConfig.onException)
       await DisplayPerfRpcInterface.getClient().terminate();
   }
 }
