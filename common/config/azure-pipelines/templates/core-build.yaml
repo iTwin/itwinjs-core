@@ -92,6 +92,11 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
     condition: and(succeeded(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
 
+  - script: npm run ios:all
+    workingDirectory: core/backend
+    displayName: Build & run iOS backend unit tests in Simulator
+    condition: and(succeeded(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
+
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
