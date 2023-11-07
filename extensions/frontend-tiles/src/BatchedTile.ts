@@ -161,7 +161,7 @@ export class BatchedTile extends Tile {
         }
 
         if (content.contentRange)
-          this._transformToRoot.multiplyRange(content.contentRange, content.contentRange);
+          content.contentRange = this._transformToRoot.multiplyRange(content.contentRange);
       }
 
       return content;
