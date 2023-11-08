@@ -30,13 +30,13 @@ jobs:
 
     strategy:
       matrix:
-        "Windows_Node_18":
+        "Windows_Node_20":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_18":
+        "Linux_Node_20":
           platform: Linux
           name: $(linux_pool)
-        "MacOS_Node_18":
+        "MacOS_Node_20":
           platform: Darwin
           name: $(mac_pool)
 
