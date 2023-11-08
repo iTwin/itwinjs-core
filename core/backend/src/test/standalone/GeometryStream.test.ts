@@ -114,6 +114,23 @@ function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angl
   return polyBuilder.claimPolyface();
 }
 
+function createStyledLineElem(imodel: SnapshotDb, seedElement: GeometricElement, x: number, y: number, length: number, styleInfo?: LineStyle.Info, color?: ColorDef): Id64String {
+  const builder = new GeometryStreamBuilder();
+  const params = new GeometryParams(seedElement.category);
+
+  if (styleInfo)
+    params.styleInfo = styleInfo;
+
+  if (color)
+    params.lineColor = color;
+
+  builder.appendGeometryParamsChange(params);
+  builder.appendGeometry(LineSegment3d.create(Point3d.create(x, y, 0), Point3d.create(x + length, y, 0)));
+
+  const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
+  return imodel.elements.insertElement(elementProps);
+}
+
 interface ExpectedElementGeometryEntry {
   opcode: ElementGeometryOpcode;
   geometryCategory?: GeometryQueryCategory;
@@ -564,6 +581,269 @@ describe("GeometryStream", () => {
     assert.isTrue(usageInfo.usedIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(styleId));
     assert.isTrue(usageInfo.usedIds!.includes(seedElement.category));
+  });
+
+  it("create GeometricElement3d with line styles to check bounding box padding", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    // LineStyleDefinition: create special "internal default" continuous style for drawing curves using width overrides
+    let x = 0.0;
+    let y = 0.0;
+    let unitDef = 1.0;
+    let widthDef = 0.0;
+    let name = `Continuous-${unitDef}-${widthDef}`;
+    let styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: 0, compType: LineStyleDefinition.ComponentType.Internal, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap });
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect no range padding...
+    let newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
+
+    // Expect range padded by 0.25...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // LineStyleDefinition: create continuous style with both width and unit scale specified in definition...
+    x = 0.0;
+    y++;
+    unitDef = 2.0;
+    widthDef = 0.5;
+    name = `Continuous-${unitDef}-${widthDef}`;
+    let strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full }] });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect no range padding...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.0, physicalWidth: true })));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
+
+    // Expect range padded by 1.0...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+
+    // Expect range padded by 0.25...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // LineStyleDefinition: create stroke pattern with dash widths in definition...
+    x = 0.0;
+    y++;
+    unitDef = 1.0;
+    widthDef = 0.025;
+    name = `StrokePattern-${unitDef}-${widthDef}`;
+    const lsStrokes: LineStyleDefinition.Strokes = [];
+    lsStrokes.push({ length: 0.25, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Left });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.2, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full });
+    lsStrokes.push({ length: 0.1 });
+    lsStrokes.push({ length: 0.25, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
+    lsStrokes.push({ length: 0.1 });
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap });
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.025...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+
+    // Expect range padded by 0.25...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // LineStyleDefinition: create stroke pattern with dash widths and unit scale specified in definition...
+    x = 0.0;
+    y++;
+    unitDef = 2.0;
+    widthDef = 0.025;
+    name = `StrokePattern-${unitDef}-${widthDef}`;
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.05...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+
+    // Expect range padded by 0.25...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // Expect range padded by 0.25...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // Expect range padded by 0.025...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.blue);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef * 0.5));
+
+    // LineStyleDefinition: create point symbol with internal default instead of a stroke pattern...
+    x = 0.0;
+    y++;
+    unitDef = 1.0;
+    widthDef = 1.0;
+    name = `PointSymbol-${unitDef}-${widthDef}`;
+    const partId = createCirclePart(0.25, imodel);
+    let pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId });
+    let strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveOrigin }] });
+    let compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.5 (circle radius)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+
+    // Expect range padded by 0.25 (scaled circle radius)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+
+    // Expect range padded by 1.0 (width override > symbol size)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 1.0, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 1.0));
+
+    // LineStyleDefinition: create scaling point symbol with stroke pattern with width and unit scale specified in definition...
+    x = 0.0;
+    y++;
+    unitDef = 0.5;
+    widthDef = 0.025; // value used for lsStrokes...
+    name = `PointSymbol-${unitDef}-${widthDef}}`;
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0 });
+    const lsSymbols: LineStyleDefinition.Symbols = [];
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    const lsComponents: LineStyleDefinition.Components = [];
+    lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
+    lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData.unitDef = unitDef;
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.125 (symbol and unit scaled circle radius)......
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.125));
+
+    // Expect range padded by 0.0625 (symbol and modifier scaled circle radius)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0625));
+
+    // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
+
+    // LineStyleDefinition: create non-scaling point symbol with stroke pattern with width and unit scale specified in definition...
+    x = 0.0;
+    y++;
+    unitDef = 0.5;
+    widthDef = 0.025; // value used for lsStrokes...
+    name = `NonScalingPointSymbol-${unitDef}-${widthDef}}`;
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0, symFlags: LineStyleDefinition.PointSymbolFlags.NoScale });
+    lsSymbols.length = 0;
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    lsComponents.length = 0;
+    lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
+    lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData.unitDef = unitDef;
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.5 (circle radius)......
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+
+    // Expect range padded by 0.5 (unscaled circle radius)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+
+    // Expect range padded by 0.75 (width override > unscaled symbol size)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
+
+    // LineStyleDefinition: create scaling point symbol with offsets with stroke pattern with width and unit scale specified in definition...
+    x = 0.0;
+    y++;
+    unitDef = 0.5;
+    widthDef = 0.025; // value used for lsStrokes...
+    name = `OffsetPointSymbol-${unitDef}-${widthDef}}`;
+    strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0 });
+    lsSymbols.length = 0;
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: -0.1 });
+    lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: 0.1 });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    lsComponents.length = 0;
+    lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
+    lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
+    compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
+    compoundData.unitDef = unitDef;
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    // Expect range padded by 0.225 (offset symbol and unit scaled circle radius)......
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.225));
+
+    // Expect range padded by 0.1125 (offset symbol and modifier scaled circle radius)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.1125));
+
+    // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
+    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
   });
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
@@ -1984,9 +2264,9 @@ describe("ElementGeometry", () => {
       elementGeometryBuilderParams: { entryArray: [entryLN!], is2dPart: false },
     };
 
-    const partid = imodel.elements.insertElement(partProps);
+    const partId = imodel.elements.insertElement(partProps);
 
-    let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
+    let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
 
     for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
@@ -2002,7 +2282,7 @@ describe("ElementGeometry", () => {
 
     imodel.elements.updateElement(persistentPartProps);
 
-    persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
+    persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
     assert.isDefined(persistentPartProps.geom);
 
     for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
