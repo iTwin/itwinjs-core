@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module SQLiteDb
+ */
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbOpcode, DbResult, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
