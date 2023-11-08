@@ -9,10 +9,11 @@
 import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Geometry } from "../../Geometry";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTreeNode";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 /**
  * class to host a point array and associated RangeTree for multiple search calls.
  * @public
@@ -46,7 +47,7 @@ export class PolylineRangeTreeContext {
     this.numSearch = 0;
 
     /** Return the closest point from the search context. */
-}
+  }
   public get closestPoint(): CurveLocationDetail | undefined {
     return this.searchState.itemAtMinValue;
   }
@@ -86,6 +87,39 @@ export class PolylineRangeTreeContext {
     this._rangeTreeRoot.searchTopDown(handler);
     return this.searchState.itemAtMinValue;
   }
+  /**
+   * Find a pair of points, one on the polyline in contextA, the other in contextB, which is the closet approach between the facets.
+   * @param contextA
+   * @param contextB
+   * @returns
+   */
+  public static searchForClosestApproach(
+    contextA: PolylineRangeTreeContext,
+    contextB: PolylineRangeTreeContext,
+  ): CurveLocationDetailPair | undefined {
+    const handler = new TwoTreeSearchHandlerPolylinePolylineCloseApproach(contextA, contextB);
+    RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
+    return handler.getResult();
+  }
+
+  private static _workSegmentA?: LineSegment3d;
+  private static _workSegmentB?: LineSegment3d;
+  /** Compute closest approach between segments of polylines accessed by index in contextA, contextB.
+   * * If distance is of interest to the searchState, save the result.
+   */
+  public static updateClosestApproachBetweenIndexedSegments(
+    contextA: PolylineRangeTreeContext, indexA: number,
+    contextB: PolylineRangeTreeContext, indexB: number,
+    searchState: MinimumValueTester<CurveLocationDetailPair>) {
+    // capture point references ...
+    this._workSegmentA = LineSegment3d.create(contextA.points[indexA], contextB.points[indexA + 1], this._workSegmentA);
+    this._workSegmentB = LineSegment3d.create(contextB.points[indexB], contextB.points[indexB + 1], this._workSegmentB);
+    const cld = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false);
+    if (cld !== undefined && searchState.isNewMinOrTrigger(cld.detailA.a)) {
+      searchState.testAndSave(cld, cld.detailA.a);
+    }
+  }
+
 }
 
 /**
@@ -121,5 +155,46 @@ class SingleTreeSearchHandlerForClosestPointOnPolyline extends SingleTreeSearchH
     const d = this.context.spacePoint.distance(cld.point);
     this.context.numPointTest++;
     this.context.searchState.testAndSave(cld, d);
+  }
+}
+
+/**
+ * internal class to receive pairs of facets during search for closest approach.
+ * @internal
+ */
+export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+  /** context for first polyline */
+  public contextA: PolylineRangeTreeContext;
+  /** context for second polyline */
+  public contextB: PolylineRangeTreeContext;
+  /** visitor for first polyline */
+  /** search state with current min distance and facet pair */
+  public searchState: MinimumValueTester<CurveLocationDetailPair>;
+  /** constructor
+   * * CAPTURE both contexts
+   * * create search state
+   * * CAPTURE visitors accessed in contexts
+   */
+  public constructor(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext) {
+    super();
+    this.contextA = contextA;
+    this.contextB = contextB;
+    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>();
+  }
+  /** Return the PolygonLocationDetail pair */
+  public getResult(): CurveLocationDetailPair | undefined {
+    if (this.searchState.minValue !== undefined) {
+      return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  public getCurrentDistance(): number {
+    const d = this.searchState.minValue;
+    return d === undefined ? Number.MAX_VALUE : d;
+  }
+  /** Carry out detailed calculation of closest approach between two facets.
+  */
+  public processAppDataPair(tagA: number, tagB: number): void {
+    PolylineRangeTreeContext.updateClosestApproachBetweenIndexedSegments(this.contextA, tagA, this.contextB, tagB, this.searchState);
   }
 }

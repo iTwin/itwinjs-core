@@ -11,13 +11,15 @@ import { Clipper } from "../clipping/ClipUtils";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
+import { SmallSystem } from "../numerics/Polynomials";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
@@ -218,6 +220,68 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     result.vectorInCurveLocationDetail = undefined;
     result.a = result.point.distance(spacePoint);
     return result;
+  }
+  /** compute the closest approach between a pair of line segments.
+   * @param segmentA first line segment
+   * @param extendA0 true if segmentA is to extend backward from fraction0
+   * @param extendA1 true if segmentA is to extend forward from fraction1
+   * @param segmentB first line segment
+   * @param extendB0 true if segmentB is to extend backward from fraction0
+   * @param extendB1 true if segmentB is to extend forward from fraction1
+   */
+  public static closestApproach(
+    segmentA: LineSegment3d,
+    extendA: VariantCurveExtendParameter,
+    segmentB: LineSegment3d,
+    extendB: VariantCurveExtendParameter,
+    result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined {
+    if (result === undefined) result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
+    const unboundedFractions = Vector2d.create();
+    if (SmallSystem.lineSegment3dClosestApproachUnbounded(segmentA._point0, segmentA._point1, segmentB._point0, segmentB._point1, unboundedFractions)) {
+      // There is a simple approach between the unbounded segments.  Maybe its a really easy case ...
+      const fractionA = CurveExtendOptions.correctFraction(extendA, unboundedFractions.x);
+      const fractionB = CurveExtendOptions.correctFraction(extendB, unboundedFractions.y);
+      // if neither fraction was corrected, just accept !!!
+      if (fractionA === unboundedFractions.x && fractionB === unboundedFractions.y) {
+        return CurveLocationDetailPair.createCapture(
+          CurveLocationDetail.createCurveEvaluatedFraction(segmentA, fractionA, result ? result.detailA : undefined),
+          CurveLocationDetail.createCurveEvaluatedFraction(segmentB, fractionB, result ? result.detailB : undefined),
+        );
+      }
+      // One or both of the fractions were clamped back to an endpoint.
+      // Claim: (????!!!????) The only proximity candidates that matter are from clamped point onto the other.
+      if (fractionA !== unboundedFractions.x && fractionB !== unboundedFractions.y) {
+        // Fill in (in the result) both individual details with "projected" points and distance.
+        // The "loser" will have its contents replaced.
+        const clampedPointOnA = fractionA < 0.5 ? segmentA._point0 : segmentA._point1;
+        const clampedPointOnB = fractionB < 0.5 ? segmentB._point0 : segmentB._point1;
+        result.detailB = segmentB.closestPoint(clampedPointOnA, extendB);
+        result.detailA = segmentA.closestPoint(clampedPointOnB, extendA);
+        if (result.detailA.a <= result.detailB.a) {
+          result.detailB = CurveLocationDetail.createCurveFractionPoint(segmentB, fractionB, clampedPointOnB, result.detailB);
+        } else {
+          result.detailA = CurveLocationDetail.createCurveFractionPoint(segmentA, fractionA, clampedPointOnA, result.detailA);
+        }
+      } else if (fractionB !== unboundedFractions.y) {
+        // B (only) was clamped.
+        const clampedPointOnB = fractionB < 0.5 ? segmentB._point0 : segmentB._point1;
+        result.detailA = segmentA.closestPoint(clampedPointOnB, extendB);
+        result.detailB.setCurve(segmentB);
+        result.detailB.point.setFrom(clampedPointOnB);
+        result.detailB.fraction = fractionB;
+      } else {
+        // fractionA was clamped.
+        const clampedPointOnA = fractionA < 0.5 ? segmentA._point0 : segmentA._point1;
+        result.detailB = segmentB.closestPoint(clampedPointOnA, extendB);
+        result.detailA.setCurve(segmentA);
+        result.detailA.point.setFrom(clampedPointOnA);
+        result.detailA.fraction = fractionA;
+      }
+      result.detailA.a = result.detailB.a = result.detailA.point.distance(result.detailB.point);
+      return result;
+    }
+    // Parallel lines ... use the point1 & fraction1 parts to indicate projected overlaps
+    return undefined;
   }
   /** Swap the endpoint references. */
   public reverseInPlace(): void {
