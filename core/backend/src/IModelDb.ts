@@ -3001,8 +3001,10 @@ export class StandaloneDb extends BriefcaseDb {
    */
   public static upgradeStandaloneSchemas(filePath: LocalFileName) {
     let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade, schemaLockHeld: true });
+    nativeDb.saveChanges();
     nativeDb.closeIModel();
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
+    nativeDb.saveChanges();
     nativeDb.closeIModel();
   }
 

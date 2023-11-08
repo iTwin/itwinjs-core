@@ -2391,7 +2391,28 @@ describe("iModel", () => {
 
     iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
-    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
+    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.16"));
+    iModel.close();
+  });
+
+  it("upgrade the domain schema in a true StandaloneDb", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile("UpgradeIModel", "testStandaloneDb.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("testStandaloneDb.bim");
+    IModelJsFs.copySync(seedFileName, testFileName);
+
+    let iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const beforeVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
+    iModel.close();
+
+    const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
+
+    StandaloneDb.upgradeStandaloneSchemas(testFileName);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const afterVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.16"));
     iModel.close();
   });
 
