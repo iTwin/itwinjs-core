@@ -994,7 +994,7 @@ export class Geometry {
       // (c0,s0) is the closest approach of the line to the circle center (origin)
       const c0 = da2b2 * cosCoff; // -ad/(a^2+b^2)
       const s0 = da2b2 * sinCoff; // -bd/(a^2+b^2)
-      if (criterion <= 0.0) { // nSolution = 1
+      if (criterion <= Geometry.smallMetricDistanceSquared) { // nSolution = 1
         // We observed criterion = -2.22e-16 in a rotated tangent system, therefore for negative criteria near
         // zero, return the near-tangency; for tiny positive criteria, fall through to return both solutions.
         result = [Vector2d.create(c0, s0)];
