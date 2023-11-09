@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "4.3.0-dev.18",
+  "version": "4.3.0-dev.21",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
     "copy:config": "internal-tools copy-config",
@@ -22,7 +22,10 @@
     "test": "mocha",
     "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
-    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
+    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets",
+    "ios:build:core-test-runner": "cd ../../tools/internal/ios/core-test-runner && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme core-test-runner -arch x86_64 -sdk iphonesimulator -configuration Debug",
+    "ios:tests:simulator": "ts-node --skip-project runUnitTestsIosSimulator.ts",
+    "ios:all": "npm run ios:build:tests && npm run ios:build:core-test-runner && npm run ios:tests:simulator"
   },
   "repository": {
     "type": "git",
@@ -41,9 +44,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.18",
-    "@itwin/core-common": "workspace:^4.3.0-dev.18",
-    "@itwin/core-geometry": "workspace:^4.3.0-dev.18",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.21",
+    "@itwin/core-common": "workspace:^4.3.0-dev.21",
+    "@itwin/core-geometry": "workspace:^4.3.0-dev.21",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -83,16 +86,18 @@
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
     "mocha": "^10.0.0",
+    "node-simctl": "~7.2.1",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
     "source-map-loader": "^4.0.0",
+    "ts-node": "^10.8.2",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.2.5",
+    "@bentley/imodeljs-native": "4.3.1",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.1.0",
