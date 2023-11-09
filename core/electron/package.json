@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "4.3.0-dev.20",
+  "version": "4.3.0-dev.21",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.3.0-dev.20",
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.20",
-    "@itwin/core-common": "workspace:^4.3.0-dev.20",
-    "@itwin/core-frontend": "workspace:^4.3.0-dev.20",
+    "@itwin/core-backend": "workspace:^4.3.0-dev.21",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.21",
+    "@itwin/core-common": "workspace:^4.3.0-dev.21",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.21",
     "electron": ">=23.0.0 <28.0.0"
   },
   "devDependencies": {
