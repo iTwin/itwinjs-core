@@ -27,7 +27,7 @@ describe("ClipStyle", () => {
     roundTrip({}, undefined);
     roundTrip({ produceCutGeometry: false }, undefined);
     roundTrip({ cutStyle: undefined, produceCutGeometry: false }, undefined);
-    roundTrip(ClipStyle.create(false, CutStyle.defaults).toJSON(), undefined);
+    roundTrip(ClipStyle.create({produceCutGeometry: false, colorizeIntersection: false, cutStyle: CutStyle.defaults}).toJSON(), undefined);
     roundTrip({
       cutStyle: CutStyle.defaults.toJSON(),
       produceCutGeometry: false,

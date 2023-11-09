@@ -17,7 +17,7 @@ import { addModelViewMatrix } from "./Vertex";
 // flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
 // computeLinearDepth() removes the perspective and puts z in linear [0..1]
 // To avoid excessively low weight for fragments close to the far plane, scale depth to [0.15, 1.0].
-const computeAlphaWeight = `
+export const computeAlphaWeight = `
 float computeAlphaWeight(float a) {
   float d = computeLinearDepth(v_eyeSpace.z) * .85 + .15;
   float z = (u_shaderFlags[kShaderBit_OITFlatAlphaWeight] ? 1.0 : d);
@@ -26,7 +26,7 @@ float computeAlphaWeight(float a) {
 `;
 
 // NB: Our blending algorithm uses pre-multiplied alpha
-const computeOutputs = `
+export const computeOutputs = `
   vec3 Ci = baseColor.rgb * baseColor.a;
   float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
   float wzi = computeAlphaWeight(ai);
