@@ -3328,6 +3328,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     clone(): LineSegment3d;
     clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d;
     cloneTransformed(transform: Transform): LineSegment3d;
+    static closestApproach(segmentA: LineSegment3d, extendA: VariantCurveExtendParameter, segmentB: LineSegment3d, extendB: VariantCurveExtendParameter, result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
@@ -4481,23 +4482,24 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
 }
 
 // @public
-export class Point3dArrayClosestPointSearchContext {
-    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): Point3dArrayClosestPointSearchContext | undefined;
+export class Point3dArrayPolygonOps {
+    static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance?: number): void;
+    static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
+    static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void;
+}
+
+// @public
+export class Point3dArrayRangeTreeContext {
+    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): Point3dArrayRangeTreeContext | undefined;
     numPointTest: number;
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
     points: Point3d[];
+    static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedDataPair<Point3d, Point3d, number> | undefined;
     searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
     searchState: MinimumValueTester<number>;
     spacePoint: Point3d;
-}
-
-// @public
-export class Point3dArrayPolygonOps {
-    static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance?: number): void;
-    static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
-    static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]): void;
 }
 
 // @public
@@ -5013,10 +5015,12 @@ export class PolylineRangeTreeContext {
     numRangeTestTrue: number;
     numSearch: number;
     points: Point3d[];
+    static searchForClosestApproach(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext): CurveLocationDetailPair | undefined;
     // (undocumented)
     searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
     searchState: MinimumValueTester<CurveLocationDetail>;
     spacePoint: Point3d;
+    static updateClosestApproachBetweenIndexedSegments(contextA: PolylineRangeTreeContext, indexA: number, contextB: PolylineRangeTreeContext, indexB: number, searchState: MinimumValueTester<CurveLocationDetailPair>): void;
 }
 
 // @internal
@@ -5605,6 +5609,7 @@ export class Sample {
     static createGridPointsOnEllipsoid(transform: Transform, numLatitudeStep: number, numLongitudeStep: number, longitudeSweep?: AngleSweep, latitudeSweep?: AngleSweep): Point3d[];
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
+    static createHelixPoints(completeTurns: number, numPoints: number, placement?: Transform): Point3d[];
     static createInterpolatedPoints(point0: Point3d, point1: Point3d, numPoints: number, result?: Point3d[], index0?: number, index1?: number): Point3d[];
     static createInvertibleTransforms(): Transform[];
     static createLineArcPaths(): Path[];
@@ -6293,6 +6298,30 @@ export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistance
     searchState: MinimumValueTester<PolygonLocationDetailPair<number>>;
     visitorA: PolyfaceVisitor;
     visitorB: PolyfaceVisitor;
+}
+
+// @internal
+export class TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext);
+    contextA: Point3dArrayRangeTreeContext;
+    contextB: Point3dArrayRangeTreeContext;
+    // (undocumented)
+    getCurrentDistance(): number;
+    getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined;
+    processAppDataPair(tagA: number, tagB: number): void;
+    searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
+}
+
+// @internal
+export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+    constructor(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext);
+    contextA: PolylineRangeTreeContext;
+    contextB: PolylineRangeTreeContext;
+    // (undocumented)
+    getCurrentDistance(): number;
+    getResult(): CurveLocationDetailPair | undefined;
+    processAppDataPair(tagA: number, tagB: number): void;
+    searchState: MinimumValueTester<CurveLocationDetailPair>;
 }
 
 // @public

@@ -225,8 +225,8 @@ public;Point2dArrayCarrier
 public;Point3d 
 public;Point3dArray
 public;Point3dArrayCarrier 
-public;Point3dArrayClosestPointSearchContext
 public;Point3dArrayPolygonOps
+public;Point3dArrayRangeTreeContext
 public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]
@@ -303,6 +303,8 @@ internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
 internal;TwoTreeSearchHandlerFacetFacetCloseApproach 
+internal;TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach 
+internal;TwoTreeSearchHandlerPolylinePolylineCloseApproach 
 public;UnionOfConvexClipPlaneSets 
 public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
 public;UnionRegion 

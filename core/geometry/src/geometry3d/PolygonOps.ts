@@ -23,6 +23,8 @@ import { Range1d, Range3d } from "./Range";
 import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
 import { XAndY, XYAndZ } from "./XYZProps";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 
 /**
  * Carries data about a point in the plane of a polygon.
@@ -1204,6 +1206,10 @@ export class PolygonOps {
     return coords;
   }
 
+  private static _workSegmentA?: LineSegment3d;
+  private static _workSegmentB?: LineSegment3d;
+  private static _workCLD?: CurveLocationDetailPair;
+  private static _workCLDMin?: CurveLocationDetailPair;
   /**
    * Find smallest distance between polygons.
    * * ASSUME closure edge is needed.
@@ -1217,13 +1223,23 @@ export class PolygonOps {
     let dMin = dMax;
     const n1 = polygonA.length;
     const n2 = polygonB.length;
+    let bestCLD: CurveLocationDetailPair | undefined;
     for (let indexA = 0; indexA < n1; indexA++) {
+      this._workSegmentA = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentA);
       for (let indexB = 0; indexB < n2; indexB++) {
-        const d = GrowableXYZArray.distanceBetweenPointsIn2Arrays(polygonA, indexA, polygonB, indexB);
-        if (d !== undefined && d < dMin) {
-          minIndexA = indexA;
-          minIndexB = indexB;
-          dMin = d;
+        this._workSegmentB = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentB);
+        const workCLD = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false, this._workCLD);
+        if (workCLD !== undefined) {
+          this._workCLD = workCLD; // This will almost always be reassigning the same reused CLD
+          workCLD.detailA.a = indexA;
+          workCLD.detailB.a = indexB;
+          const d = workCLD.detailA.point.distance(workCLD.detailB.point);
+          if (d < dMin) {
+            minIndexA = indexA;
+            minIndexB = indexB;
+            bestCLD = workCLD.clone(bestCLD);
+            dMin = d;
+          }
         }
       }
     }
@@ -1605,4 +1621,16 @@ export class PolygonLocationDetailPair<TagType> {
     this.detailA = detailA;
     this.detailB = detailB;
   }
+}
+
+function fillLineSegmentFromUncheckedIndexWithWrap(points: GrowableXYZArray, index: number, segment: LineSegment3d | undefined): LineSegment3d {
+  let index1 = index + 1;
+  if (index1 >= points.length)
+    index1 = 0;
+  if (segment === undefined)
+    return LineSegment3d.createCapture(points.getPoint3dAtUncheckedPointIndex(index), points.getPoint3dAtUncheckedPointIndex(index1));
+  points.getPoint3dAtUncheckedPointIndex(index, segment.point0Ref);
+  points.getPoint3dAtUncheckedPointIndex(index1, segment.point1Ref);
+  return segment;
+
 }
