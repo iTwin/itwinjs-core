@@ -91,6 +91,7 @@ steps:
       IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+      TOKEN: $(GitHubPAT)
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
