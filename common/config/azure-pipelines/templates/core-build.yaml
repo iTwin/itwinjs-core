@@ -84,17 +84,17 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
 
-  - script: npm run ios:all
+  - script: npm run android:all
     workingDirectory: test-apps/display-test-app
-    displayName: Build & run iOS display-test-app
+    displayName: Build & run Android display-test-app
     env:
       IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  - script: npm run android:all
+  - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
-    displayName: Build & run Android display-test-app
+    displayName: Build & run iOS display-test-app
     env:
       IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
