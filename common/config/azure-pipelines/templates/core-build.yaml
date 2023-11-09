@@ -1,5 +1,8 @@
 # This defines the core steps for building and validating iTwin.js Core
 
+variables:
+  - group: Travis Cobbs - Azure Artifacts
+
 parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
