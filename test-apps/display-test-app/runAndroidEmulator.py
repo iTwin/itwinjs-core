@@ -21,10 +21,6 @@ class Env:
     '''The version of the Android command line tools to use.'''
 
     # Calculated variables
-    sdk_dir: str
-    ''' The directory of the Android SDK. '''
-    avd_dir: str
-    ''' The directory of the Android emulator AVDs. '''
     bin_dir: str
     ''' The directory of the Android command line tools binaries. '''
     emulator_dir: str
@@ -35,6 +31,14 @@ class Env:
     ''' The command line to use to run adb. '''
     script_dir = f'{os.path.dirname(os.path.abspath(__file__))}'
     ''' The directory containing this Python script. '''
+    upack_dir = f'{script_dir}/upack'
+    ''' The directory into which to install upacks. '''
+    sdk_dir = f'{upack_dir}/androidsdk_macos'
+    ''' The directory of the Android SDK. '''
+    avd_dir = f'{upack_dir}/androidavd_macos'
+    ''' The directory of the Android emulator AVDs. '''
+    test_app_dir = f'{script_dir}/android/imodeljs-test-app'
+    ''' The directory containing the Android test app. '''
     apk_path = f'{script_dir}/android/imodeljs-test-app/app/build/outputs/apk/debug/app-debug.apk'
     ''' The full path to the display-test-app APK. '''
     bim_dir = f'{script_dir}/test-models'
@@ -43,25 +47,23 @@ class Env:
     ''' The full path to the env.json file used by display-test-app. '''
 
     def __init__(self):
-        android_home = os.environ.get('ANDROID_HOME')
-        try:
-            self.sdk_dir = android_home if android_home != None else os.environ['ANDROID_SDK_ROOT']
-        except:
-            raise Exception('ANDROID_HOME or ANDROID_SDK_ROOT must be set in the environment!')
-        avd_dir = os.environ.get('ANDROID_AVD_HOME')
-        self.avd_dir = avd_dir if avd_dir != None else self.sdk_dir.replace('/androidsdk_', '/androidavd_')
         self.bin_dir = f'{self.sdk_dir}/cmdline-tools/{self.cmdline_tools_ver}/bin'
+        self.emulator_dir = f'{self.sdk_dir}/emulator'
+        self.adb = f'{self.sdk_dir}/platform-tools/adb'
+        self.adb_cmd = f'{self.adb} -e'
+
+    def verify_paths(self) -> None:
+        '''
+        Verify that various path variables refer to valid paths.
+        '''
         if not os.path.isdir(self.bin_dir):
             raise Exception(f'Android command line tools directory ({self.bin_dir}) does not exist!')
-        self.emulator_dir = f'{self.sdk_dir}/emulator'
         if not os.path.isdir(self.emulator_dir):
             raise Exception(f'Android emulator directory ({self.emulator_dir}) does not exist!')
         if not os.path.isdir(self.avd_dir):
             raise Exception(f'Android virtual device directory ({self.avd_dir}) does not exist!')
-        self.adb = f'{self.sdk_dir}/platform-tools/adb'
         if not os.path.exists(self.adb):
             raise Exception(f'Android debugger ({self.adb}) does not exist!')
-        self.adb_cmd = f'{self.adb} -e'
 
     def __repr__(self):
         return f'''      sdk_dir: {self.sdk_dir}
@@ -238,7 +240,7 @@ def load_env_json() -> dict[str, str]:
     if isinstance(result, dict):
         return result
     else:
-        raise Exception("env.json does not contain an object!")
+        raise Exception('env.json does not contain an object!')
 
 def should_download(env_json: dict[str, str]) -> bool:
     '''
@@ -285,33 +287,61 @@ def copy_imodel_to_emulator(bim_file: str) -> None:
         raise Exception(f'Error moving {bim_file} to app sandbox!')
     print('Done copying.')
 
+def make_upack_executable(upack_dir: str) -> None:
+    '''
+    Add executable permission to all files in upack. Azure artifacts stores the files on a Windows
+    file system, which loses the executable permission. Since we don't know which files need to be
+    executable, make all of them executable.
+    '''
+    for root, dirs, files in os.walk(upack_dir):
+        for file in files:
+            os.chmod(f'{root}/{file}', 0o755)
+
+def download_upack_if_needed(name: str, version: str) -> None:
+    '''
+    Check if the given upack is present, and download it if not.
+    '''
+    dst_dir = f'{env.upack_dir}/{name}'
+    if os.path.exists(dst_dir):
+        print(f'upack {name} already present.')
+    else:
+        print(f'Downloading {name} upack...')
+        command = ('az artifacts universal download '
+            '--organization "https://dev.azure.com/bentleycs/" '
+            '--feed "upack" '
+            f'--name "{name}" '
+            f'--version "{version}" '
+            f'--path "{dst_dir}"')
+        run_command(command, f'Error downloading {name} upack!')
+        print(f'upack {name} downloaded.')
+    make_upack_executable(dst_dir)
+
 def download_upacks_if_needed() -> None:
     '''
     Check if Android SDK and AVD upacks are present, and download them if not.
     '''
-    match platform.system():
-        case 'Darwin':
-            platform_name = 'macosx'
-        case 'Windows':
-            platform_name = 'x64'
-        case _:
-            raise Exception(f'Unsupported platform: {platform.system()}!')
-    if not os.path.isdir(env.sdk_dir):
-        command = ('az artifacts universal download '
-            '--organization "https://dev.azure.com/bentleycs/" '
-            '--feed "upack" '
-            f'--name "androidsdk_{platform_name}" '
-            '--version "33.5.0-1" '
-            f'--path {env.sdk_dir}')
-        run_command(command, 'Error downloading Android SDK upack!')
-    if not os.path.isdir(env.avd_dir):
-        command = ('az artifacts universal download '
-            '--organization "https://dev.azure.com/bentleycs/" '
-            '--feed "upack" '
-            f'--name "androidavd_{platform_name}" '
-            '--version "33.0.0-0" '
-            f'--path {env.sdk_dir}')
-        run_command(command, 'Error downloading Android AVD upack!')
+    print('Downloading upacks if needed...')
+    if not os.path.exists(env.upack_dir):
+        os.mkdir(env.upack_dir)
+    download_upack_if_needed('androidavd_macos', '33.0.0-0')
+    download_upack_if_needed('androidsdk_macos', '33.5.0-0')
+    print('upacks downloaded.')
+
+def build_test_app() -> None:
+    '''
+    Build the Android test app using the Android SDK upack.
+    '''
+    print('Building Android test app...')
+    gradle_env = os.environ.copy()
+    gradle_env['ANDROID_HOME'] = env.sdk_dir
+    if subprocess.run(
+        ['./gradlew', '--no-daemon', 'build'],
+        text=True,
+        env=gradle_env,
+        cwd=env.test_app_dir
+    ).returncode != 0:
+        raise Exception(f'Error building Android test app!')
+    print('Android test app Built.')
 
 def main() -> None:
     '''
@@ -320,14 +350,18 @@ def main() -> None:
     emulator: Emulator | None = None
     exit_code = 1
     try:
+        if platform.system() != 'Darwin':
+            raise Exception('This script only works on macOS!')
         global env
         env = Env()
         download_upacks_if_needed()
+        env.verify_paths()
+        build_test_app()
         env_json = load_env_json()
         emulator = start_emulator()
         bim_file = get_bim_file(env_json)
         if bim_file == None and not should_download(env_json):
-            raise Exception("Environment not configured for standalone or download mode!")
+            raise Exception('Environment not configured for standalone or download mode!')
         install_apk()
         if bim_file is not None:
             copy_imodel_to_emulator(bim_file)
