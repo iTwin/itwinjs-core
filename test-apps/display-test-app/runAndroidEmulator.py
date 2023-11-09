@@ -8,6 +8,7 @@ import sys
 import textwrap
 import threading
 import time
+from typing import Union
 
 class Env:
     '''
@@ -84,9 +85,9 @@ class Emulator:
     Wrapper class for launching Android emulator.
     '''
 
-    __process: subprocess.Popen | None
-    __thread: threading.Thread | None
-    __launch_error: Exception | None
+    __process: Union[subprocess.Popen, None]
+    __thread: Union[threading.Thread, None]
+    __launch_error: Union[Exception, None]
     __lock: threading.Lock
     __avd_name: str
     __avd_home: str
@@ -208,7 +209,7 @@ def wait_for_first_render() -> bool:
             print('Timed out!')
             return False
 
-def stop_emulator(emulator: Emulator | None) -> None:
+def stop_emulator(emulator: Union[Emulator, None]) -> None:
     '''
     Stop the emulator and wait for it to exit.
     '''
@@ -252,7 +253,7 @@ def should_download(env_json: dict[str, str]) -> bool:
         'IMJS_ITWIN_ID' in env_json and
         'IMJS_IMODEL_ID' in env_json)
 
-def get_bim_file(env_json: dict[str, str]) -> str | None:
+def get_bim_file(env_json: dict[str, str]) -> Union[str, None]:
     '''
     Return the bim filename from env.json if present, else `None`.
     '''
@@ -347,7 +348,7 @@ def main() -> None:
     '''
     The runAndroidEmulator main program.
     '''
-    emulator: Emulator | None = None
+    emulator: Union[Emulator, None] = None
     exit_code = 1
     try:
         if platform.system() != 'Darwin':
