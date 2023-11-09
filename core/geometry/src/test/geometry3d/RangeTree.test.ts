@@ -12,13 +12,13 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Range3d } from "../../geometry3d/Range";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
-import { Point3dArrayClosestPointSearchContext } from "../../polyface/RangeTree/PointArrayRangeTreeContext";
+import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/PointArrayRangeTreeContext";
 import { PolylineRangeTreeContext } from "../../polyface/RangeTree/PolylineRangeTreeContext";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
@@ -341,10 +341,10 @@ describe("IndexedRangeHeap", () => {
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
 
     for (const treeWidth of [2, 4, 8]) {
-      const searcher = Point3dArrayClosestPointSearchContext.createCapture(pointsA, treeWidth, treeWidth);
+      const searcher = Point3dArrayRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth);
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
-      if (ck.testType(searcher, Point3dArrayClosestPointSearchContext)) {
+      if (ck.testType(searcher, Point3dArrayRangeTreeContext)) {
         for (let u = 0; u <= 0.999999999; u += 0.025) {
           const xyz = path.fractionToPoint(u);
           const cld = searcher.searchForClosestPoint(xyz);
@@ -538,6 +538,52 @@ describe("IndexedRangeHeap", () => {
     }
     */
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it.only("PolylinePolylineSearcher", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+    const pointsA = Sample.createHelixPoints(5.0, 129,
+      Transform.createRowValues(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 3, 0,
+      ));
+    const pointsB = Sample.createHelixPoints(9.0, 257,
+      Transform.createRowValues(
+        2, 0, -2, 5,
+        0, 2, 0, 0,
+        1, 0.1, 1, 0,
+      ));
+    const treeWidth = 3;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, z0);
+
+    const contextA = PolylineRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth)!;
+    const contextB = PolylineRangeTreeContext.createCapture(pointsB, treeWidth, treeWidth)!;
+    const polylineApproach = PolylineRangeTreeContext.searchForClosestApproach(contextA, contextB);
+
+    if (ck.testDefined(polylineApproach) && polylineApproach !== undefined) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polylineApproach.detailA.point, polylineApproach.detailB.point], x0, y0, z0);
+    }
+
+    x0 += 20;
+    const shiftB = Transform.createTranslationXYZ(0, 3, 4);
+    shiftB.multiplyPoint3dArrayInPlace(pointsB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, z0);
+
+    const contextA1 = Point3dArrayRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth)!;
+    const contextB1 = Point3dArrayRangeTreeContext.createCapture(pointsB, treeWidth, treeWidth)!;
+    const approach1 = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1);
+    if (ck.testDefined(approach1) && approach1 !== undefined) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach1.dataA, approach1.dataB], x0, y0, z0);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearcher");
     expect(ck.getNumErrors()).equals(0);
   });
 

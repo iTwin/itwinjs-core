@@ -9,14 +9,15 @@ import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler } from "./RangeTreeNode";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
+import { TaggedDataPair } from "../../geometry3d/TaggedDataPair";
 
 /**
  * Handler class to search a range tree containing only Point3d data, always returning the single closest point and optionally gathering an array of
  * all points with a search distance.
  * @public
  */
-export class Point3dArrayClosestPointSearchContext {
+export class Point3dArrayRangeTreeContext {
   /** array of points being searched.
    * * The AppDataType for the range tree is number, which is an index into the points.
    */
@@ -52,14 +53,14 @@ export class Point3dArrayClosestPointSearchContext {
   /**
    * Create a range tree context with given points.
    */
-  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayClosestPointSearchContext | undefined {
+  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayRangeTreeContext | undefined {
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => { return Range3d.create(points[index]); }),
       ((index: number): number => { return index; }),
       points.length,
       maxChildPerNode, maxAppDataPerLeaf,
     );
-    return rangeTreeRoot !== undefined ? new Point3dArrayClosestPointSearchContext(rangeTreeRoot, points) : undefined;
+    return rangeTreeRoot !== undefined ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points) : undefined;
   }
   /** Search the range tree for closest point to spacePoint */
   public searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch: boolean = true): CurveLocationDetail | undefined {
@@ -76,15 +77,31 @@ export class Point3dArrayClosestPointSearchContext {
       return undefined;
     return CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[this.searchState.itemAtMinValue, this.searchState.itemAtMinValue]);
   }
+
+  /**
+   * Find a pair of points, one from each of contextA and contextB with smallest distance between.
+   * @param contextA
+   * @param contextB
+   * @returns TaggedDataPair with the two points and their indices in the original arrays.
+   */
+  public static searchForClosestApproach(
+    contextA: Point3dArrayRangeTreeContext,
+    contextB: Point3dArrayRangeTreeContext,
+  ): TaggedDataPair<Point3d, Point3d, number> | undefined {
+    const handler = new TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB);
+    RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
+    return handler.getResult();
+  }
+
 }
 /**
  * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyline3dClosestPointSearcherContext.
  * @internal
  */
 class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHandler<number> {
-  public context: Point3dArrayClosestPointSearchContext;
+  public context: Point3dArrayRangeTreeContext;
   /** constructor --called by calling context */
-  public constructor(context: Point3dArrayClosestPointSearchContext) {
+  public constructor(context: Point3dArrayRangeTreeContext) {
     super();
     this.context = context;
   }
@@ -107,5 +124,56 @@ class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHand
     const d = this.context.spacePoint.distance(this.context.points[candidateIndex]);
     this.context.numPointTest++;
     this.context.searchState.testAndSave(candidateIndex, d);
+  }
+}
+
+/**
+ * internal class to receive pairs of facets during search for closest approach.
+ * @internal
+ */
+export class TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+  /** context for first polyline */
+  public contextA: Point3dArrayRangeTreeContext;
+  /** context for second polyline */
+  public contextB: Point3dArrayRangeTreeContext;
+  /** visitor for first polyline */
+  /** search state with current min distance and facet pair */
+  public searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
+  /** constructor
+   * * CAPTURE both contexts
+   * * create search state
+   * * CAPTURE visitors accessed in contexts
+   */
+  public constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext) {
+    super();
+    this.contextA = contextA;
+    this.contextB = contextB;
+    this.searchState = MinimumValueTester.create<TaggedDataPair<Point3d, Point3d, number>>();
+  }
+  /** Return the PolygonLocationDetail pair */
+  public getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined {
+    if (this.searchState.minValue !== undefined) {
+      return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  public getCurrentDistance(): number {
+    const d = this.searchState.minValue;
+    return d === undefined ? Number.MAX_VALUE : d;
+  }
+  /** Carry out detailed calculation of closest approach between two facets.
+  */
+  public processAppDataPair(tagA: number, tagB: number): void {
+    const pointA = this.contextA.points[tagA];
+    const pointB = this.contextB.points[tagB];
+    const d = pointA.distance(pointB);
+    if (this.searchState.isNewMinValue(d)) {
+      this.searchState.minValue = d;
+      if (this.searchState.itemAtMinValue) {
+        this.searchState.itemAtMinValue.setAll(pointA.clone(), pointB.clone(), tagA, tagB);
+      } else {
+        this.searchState.itemAtMinValue = new TaggedDataPair<Point3d, Point3d, number>(pointA.clone(), pointB.clone(), tagA, tagB);
+      }
+    }
   }
 }

@@ -134,7 +134,7 @@ describe("LineSegment3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("PointsAlongLine", () => {
+  it("PointsAlongLine", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker(true, true);
     let x0 = 0;

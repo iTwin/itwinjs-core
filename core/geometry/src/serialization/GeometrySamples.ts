@@ -2998,4 +2998,29 @@ export class Sample {
     builder.addUVGridBody(new FrankeSurface(scales), size, size);
     return builder.claimPolyface(true);
   }
+  /** Stroke a helix over the unit circle.  Place in space via a transform.
+   * The various columns of the transform become the critical measures for the (elliptic) helix:
+   * The unit cylinder maps to an elliptic cylinder with x and y columns as 0 and 90 degree vectors.
+   * the Helix pitch is equal to the length of the z axis in the transform.
+   * The completeTurns parameter (which does NOT need to be an integer) is the local z of the last point
+   */
+  public static createHelixPoints(
+    completeTurns: number,
+    numPoints: number,
+    placement?: Transform,
+  ): Point3d[] {
+    const points: Point3d[] = [];
+    if (numPoints < 2)
+      numPoints = 2;
+    const dThetaRadians = completeTurns * Math.PI * 2 / (numPoints - 1);
+    const dz = completeTurns / (numPoints - 1);
+    for (let i = 0; i < numPoints; i++) {
+      const thetaRadians = dThetaRadians * i;
+      points.push(Point3d.create(Math.cos(thetaRadians), Math.sin(thetaRadians), i * dz));
+    }
+    if (placement)
+      placement.multiplyPoint3dArrayInPlace(points);
+    return points;
+  }
+
 }

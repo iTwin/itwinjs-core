@@ -91,7 +91,7 @@ export class PolylineRangeTreeContext {
    * Find a pair of points, one on the polyline in contextA, the other in contextB, which is the closet approach between the facets.
    * @param contextA
    * @param contextB
-   * @returns
+   * @returns pair of CurveLocationDetails
    */
   public static searchForClosestApproach(
     contextA: PolylineRangeTreeContext,
@@ -111,11 +111,20 @@ export class PolylineRangeTreeContext {
     contextA: PolylineRangeTreeContext, indexA: number,
     contextB: PolylineRangeTreeContext, indexB: number,
     searchState: MinimumValueTester<CurveLocationDetailPair>) {
+    contextA.numPointTest++;
     // capture point references ...
-    this._workSegmentA = LineSegment3d.create(contextA.points[indexA], contextB.points[indexA + 1], this._workSegmentA);
+    this._workSegmentA = LineSegment3d.create(contextA.points[indexA], contextA.points[indexA + 1], this._workSegmentA);
     this._workSegmentB = LineSegment3d.create(contextB.points[indexB], contextB.points[indexB + 1], this._workSegmentB);
     const cld = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false);
     if (cld !== undefined && searchState.isNewMinOrTrigger(cld.detailA.a)) {
+      // annotate the details with polyline fractions instead of segment fractions.
+      const polylineFractionA = (indexA + cld.detailA.fraction) / (contextA.points.length - 1);
+      const polylineFractionB = (indexA + cld.detailB.fraction) / (contextB.points.length - 1);
+
+      cld.detailA.fraction = polylineFractionA;
+      cld.detailB.fraction = polylineFractionB;
+      cld.detailA.curve = undefined;
+      cld.detailB.curve = undefined;
       searchState.testAndSave(cld, cld.detailA.a);
     }
   }
