@@ -36,6 +36,8 @@ class Env:
     ''' The directory into which to install upacks. '''
     sdk_dir = f'{upack_dir}/androidsdk_macos'
     ''' The directory of the Android SDK. '''
+    jdk_dir = f'{upack_dir}/openjdk_macos'
+    ''' The directory of the JDK. '''
     avd_dir = f'{upack_dir}/androidavd_macos'
     ''' The directory of the Android emulator AVDs. '''
     test_app_dir = f'{script_dir}/android/imodeljs-test-app'
@@ -326,6 +328,7 @@ def download_upacks_if_needed() -> None:
         os.mkdir(env.upack_dir)
     download_upack_if_needed('androidavd_macos', '33.0.0-0')
     download_upack_if_needed('androidsdk_macos', '33.5.0-0')
+    download_upack_if_needed('openjdk_macos', '11.0.1-0')
     print('upacks downloaded.')
 
 def build_test_app() -> None:
@@ -335,6 +338,7 @@ def build_test_app() -> None:
     print('Building Android test app...')
     gradle_env = os.environ.copy()
     gradle_env['ANDROID_HOME'] = env.sdk_dir
+    gradle_env['JAVA_HOME'] = env.jdk_dir
     if subprocess.run(
         ['./gradlew', '--no-daemon', 'build'],
         text=True,
