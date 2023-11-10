@@ -166,9 +166,10 @@ export class MapLayerFormatRegistry {
     return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
   }
 
-  public async validateSourceOptions(source: MapLayerSource, options?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
+  public async validateSourceObj(source: MapLayerSource): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(source.formatId);
     const format = entry?.type;
     return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, options?.userName, options?.password, options?.ignoreCache);
   }
 }
+s;
