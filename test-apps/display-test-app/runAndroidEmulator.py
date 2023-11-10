@@ -95,6 +95,7 @@ class Emulator:
     __avd_home: str
     __jdk_home: str
     __emulator_dir: str
+    __debug_log = False
 
     def __init__(self, avd_name: str, avd_home: str, jdk_home: str, emulator_dir: str):
         self.__process = None
@@ -133,7 +134,8 @@ class Emulator:
                 )
                 self.__lock.release()
                 for line in self.__process.stdout:
-                    log(f'EMULATOR: {line}', end='')
+                    if self.__debug_log:
+                        log(f'EMULATOR: {line}', end='')
                 self.__process.stdout.close()
                 self.__process.wait()
             except Exception as e:
