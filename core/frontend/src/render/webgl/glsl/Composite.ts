@@ -107,10 +107,10 @@ const computeTranslucentColor = `
 vec4 computeColor() {
   vec4 opaque = computeOpaqueColor();
   vec4 accum = TEXTURE(u_accumulation, v_texCoord);
-  float r = TEXTURE(u_revealage, v_texCoord).r;
+  vec2 rg = TEXTURE(u_revealage, v_texCoord).rg;
 
-  vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-  vec4 col = (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  vec4 transparent = vec4(accum.rgb / clamp(rg.r, 1e-4, 5e4), accum.a);
+  vec4 col = mix((1.0 - transparent.a) * transparent + transparent.a * opaque, vec4(u_clipIntersection.rgb, 1.0), rg.g);
   return col;
 }
 `;
@@ -190,6 +190,12 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
   const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");
   builder.vert.headerComment = `//!V! CombineTextures${flagString}`;
   builder.frag.headerComment = `//!F! CombineTextures${flagString}`;
+
+  builder.frag.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
+    program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
+      params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
+    });
+  });
 
   return builder.buildProgram(context);
 }

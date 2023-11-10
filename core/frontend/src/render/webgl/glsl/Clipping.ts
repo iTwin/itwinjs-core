@@ -115,8 +115,8 @@ const applyClipPlanesPostlude = `
 
 const assignFragData = `
   if (g_hasClipColor.y) {
-    vec4 output0 = vec4(g_clipColor, 0.1);
-    vec4 output1 = vec4(0.0);
+    vec4 output0 = vec4(g_clipColor, 1.0);
+    vec4 output1 = vec4(1.0, 1.0, 0.0, 1.0);
 
     FragColor0 = output0;
     FragColor1 = output1;

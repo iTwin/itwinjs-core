@@ -35,7 +35,7 @@ export const computeOutputs = `
   float outputScale = (u_shaderFlags[kShaderBit_OITScaleOutput] ? 1.0 / 3001.040604 : 1.0);
 
   vec4 output0 = vec4(Ci * wzi * outputScale, ai);
-  vec4 output1 = vec4(ai * wzi * outputScale);
+  vec4 output1 = vec4(ai * wzi * outputScale, 0.0, 0.0, ai * wzi * outputScale);
 `;
 
 const assignFragData = `${computeOutputs}
