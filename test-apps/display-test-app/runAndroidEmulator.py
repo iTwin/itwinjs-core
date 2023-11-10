@@ -382,7 +382,7 @@ def main() -> None:
         env = Env()
         download_upacks_if_needed()
         env.verify_paths()
-        # build_test_app()
+        build_test_app()
         env_json = load_env_json()
         emulator = start_emulator()
         bim_file = get_bim_file(env_json)
