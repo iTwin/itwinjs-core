@@ -2,6 +2,12 @@
   "name": "@itwin/ecschema-rpcinterface-common",
   "entries": [
     {
+      "version": "4.2.3",
+      "tag": "@itwin/ecschema-rpcinterface-common_v4.2.3",
+      "date": "Mon, 06 Nov 2023 14:01:52 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.2.2",
       "tag": "@itwin/ecschema-rpcinterface-common_v4.2.2",
       "date": "Thu, 02 Nov 2023 15:36:21 GMT",

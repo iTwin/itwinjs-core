@@ -71,6 +71,8 @@ export namespace IModelJson {
     point?: XYZProps;
     /** `{bsurf:...}` */
     bsurf?: BSplineSurfaceProps;
+    /** `{pointString:...}` */
+    pointString?: XYZProps[];
   }
   /**
    * Property rules for json objects that can be deserialized to various CurvePrimitives
@@ -797,11 +799,11 @@ export namespace IModelJson {
       let newCurve: BSplineCurve3d | BSplineCurve3dH | undefined;
       let dim: number;
       if (data !== undefined
-          && data.hasOwnProperty("knots") && Array.isArray(data.knots)
-          && data.hasOwnProperty("order") && Number.isFinite(data.order)
-          && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0])
-          && (dim = data.points[0].length) >= 3 && dim <= 4
-         ) {
+        && data.hasOwnProperty("knots") && Array.isArray(data.knots)
+        && data.hasOwnProperty("order") && Number.isFinite(data.order)
+        && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0])
+        && (dim = data.points[0].length) >= 3 && dim <= 4
+      ) {
         const myData = SerializationHelpers.createBSplineCurveData(data.points, dim, data.knots, data.points.length, data.order);
         if (data.hasOwnProperty("closed") && true === data.closed)
           myData.params.closed = true;
@@ -994,19 +996,19 @@ export namespace IModelJson {
       let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined;
       let dim: number;
       if (data !== undefined
-          && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
-          && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
-          && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
-          && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
-          && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])
-          && (dim = data.points[0][0].length) >= 3 && dim <= 4
-         ) {
+        && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
+        && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
+        && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
+        && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
+        && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])
+        && (dim = data.points[0][0].length) >= 3 && dim <= 4
+      ) {
         const myData = SerializationHelpers.createBSplineSurfaceData(data.points, dim, data.uKnots, data.points[0].length, data.orderU, data.vKnots, data.points.length, data.orderV);
         if (data.hasOwnProperty("closedU") && true === data.closedU)
           myData.uParams.closed = true;
         if (data.hasOwnProperty("closedV") && true === data.closedV)
           myData.vParams.closed = true;
-        if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: true})) {
+        if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, { jsonPoles: true })) {
           if (dim === 3)
             newSurface = BSplineSurface3d.createGrid(myData.poles as number[][][], myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
           else
@@ -1781,15 +1783,17 @@ export namespace IModelJson {
       if (BSplineWrapMode.None !== wrapMode)
         data.params.wrapMode = wrapMode;
 
-      if (!SerializationHelpers.Export.prepareBSplineCurveData(data, {jsonPoles: true, jsonKnots: true}))
+      if (!SerializationHelpers.Export.prepareBSplineCurveData(data, { jsonPoles: true, jsonKnots: true }))
         return undefined;
 
-      return { bcurve: {
-        points: data.poles as number[][],
-        knots: data.params.knots as number[],
-        order: data.params.order,
-        closed: data.params.closed ? true : undefined,
-      }};
+      return {
+        bcurve: {
+          points: data.poles as number[][],
+          knots: data.params.knots as number[],
+          order: data.params.order,
+          closed: data.params.closed ? true : undefined,
+        },
+      };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1862,18 +1866,20 @@ export namespace IModelJson {
       if (BSplineWrapMode.None !== wrapModeV)
         data.vParams.wrapMode = wrapModeV;
 
-      if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, {jsonPoles: true, jsonKnots: true}))
+      if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, { jsonPoles: true, jsonKnots: true }))
         return undefined;
 
-      return { bsurf: {
-        points: data.poles as number[][][],
-        uKnots: data.uParams.knots as number[],
-        vKnots: data.vParams.knots as number[],
-        orderU: data.uParams.order,
-        orderV: data.vParams.order,
-        closedU: data.uParams.closed ? true : undefined,
-        closedV: data.vParams.closed ? true : undefined,
-      }};
+      return {
+        bsurf: {
+          points: data.poles as number[][][],
+          uKnots: data.uParams.knots as number[],
+          vKnots: data.vParams.knots as number[],
+          orderU: data.uParams.order,
+          orderV: data.vParams.order,
+          closedU: data.uParams.closed ? true : undefined,
+          closedV: data.vParams.closed ? true : undefined,
+        },
+      };
     }
 
     /** Convert strongly typed instance to tagged json */
