@@ -21,7 +21,7 @@ and that custom ContentControl will indicate the associated Navigation Aid in th
 
 A Navigation Aid is comprised of two parts:
 
-1. A NavigationAidControl subclass. This custom class is registered as a Navigation Aid using `ConfigurableUiManager.registerControl`.
+1. A NavigationAidControl subclass. This custom class is registered as a Navigation Aid using `UiFramework.controls.register`.
 1. A React component that the NavigationAidControl subclass references in its `reactNode` property. This component renders the Navigation Aid and responds to user interaction.
 
 ### NavigationAidControl
@@ -30,20 +30,20 @@ The [NavigationAidControl]($appui-react) class is the base class for the first p
 The `reactNode` property returns the React component part of the Navigation Aid as a `React.ReactNode`.
 The `getSize` method optionally overrides the default size of "64px".
 
-### ConfigurableUiManager.registerControl
+### UiFramework.controls.register
 
-Each NavigationAidControl subclass should be registered by calling the `ConfigurableUiManager.registerControl` method.
+Each NavigationAidControl subclass should be registered by calling the `UiFramework.controls.register` method.
 
 ```ts
-    ConfigurableUiManager.registerControl(SampleNavigationAidControl.navigationAidId, SampleNavigationAidControl);
+    UiFramework.controls.register(SampleNavigationAidControl.navigationAidId, SampleNavigationAidControl);
 ```
 
-The `ConfigurableUiManager.initialize` function calls `ConfigurableUiManager.registerControl` for the
+The `UiFramework.initialize` function calls `UiFramework.controls.register` for the
 two navigation aids provided in the `@itwin/appui-react` package:
 
 ```ts
-    ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
-    ConfigurableUiManager.registerControl(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
+    UiFramework.controls.register(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
+    UiFramework.controls.register(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 ```
 
 ### Sample Navigation Aid

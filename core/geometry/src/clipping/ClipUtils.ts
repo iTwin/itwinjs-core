@@ -6,12 +6,14 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
 import { BagOfCurves } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
@@ -206,8 +208,10 @@ export class ClipUtilities {
     return intervals.length > 0;
   }
   /**
-   * Find portions of the curve primitive that are within the clipper.
-   * Collect them into an array of curve primitives.
+   * Compute and return portions of the input curve that are within the clipper.
+   * @param curve input curve, unmodified
+   * @param clipper used to compute the clipped components
+   * @return array of clipped curves
    */
   public static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
@@ -224,8 +228,10 @@ export class ClipUtilities {
     return result;
   }
   /**
-   * Find portions of the planar region that are within the clipper.
-   * Collect them into a single region to return.
+   * Compute and return the portions of the input region that are within the clipper.
+   * @param region input region, unmodified
+   * @param clipper used to compute the clipped components
+   * @return clipped subregion, as a single `AnyRegion`
    */
   public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
     let result: UnionRegion | undefined;
@@ -273,14 +279,16 @@ export class ClipUtilities {
     return result;
   }
   /**
-   * Find portions of any curve that are within the clipper.
-   * Collect them into an array of any curves.
+   * Compute and return portions of the input curve or region that are within the clipper.
+   * @param curve input curve or region, unmodified
+   * @param clipper used to compute the clipped components
+   * @return array of clipped components of the input curve or region that lie inside the clipper
    */
   public static clipAnyCurve(curve: AnyCurve, clipper: Clipper): AnyCurve[] {
     if (curve instanceof CurvePrimitive)
       return ClipUtilities.collectClippedCurves(curve, clipper);
-    if (curve.isAnyRegionType) {
-      const ret = ClipUtilities.clipAnyRegion(curve as AnyRegion, clipper);
+    if (curve.isAnyRegion()) {
+      const ret = ClipUtilities.clipAnyRegion(curve, clipper);
       return ret ? [ret] : [];
     }
     const result: AnyCurve[] = [];
@@ -620,33 +628,110 @@ export class ClipUtilities {
     return false;
   }
   /**
+   * Create a clipper from the transformed range.
+   * @param range input range to create clipper from
+   * @param transform how to transform the range (NOTE: applied to the range faces without swelling the range volume)
+   * @param degeneratePoints optionally populated with the 1 or 2 points defining the transformed range if it is degenerate (all points colinear/coincident); otherwise untouched
+   * @returns newly constructed clipper. If no clip planes could be computed, fill `degeneratePoints` and return undefined.
+  */
+  private static createClipperFromTransformedRange3d(range: Range3d, transform: Transform, degeneratePoints?: Point3d[]): ConvexClipPlaneSet | undefined {
+    if (!transform)
+      transform = Transform.createIdentity();
+    const builder = PolyfaceBuilder.create();
+    builder.addTransformedRangeMesh(transform, range);
+    const mesh = builder.claimPolyface();
+    const clipper = this._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh, this._workClipper).clipper;
+    if (clipper.planes.length > 0)
+      return clipper;
+    // no faces found in the compressed mesh
+    if (degeneratePoints) {
+      assert(mesh.data.point.length <= 2);
+      for (let i = 0; i < 2; ++i) {
+        const point = mesh.data.point.getPoint3dAtCheckedPointIndex(i);
+        if (point)
+          degeneratePoints.push(point);
+      }
+    }
+    return undefined;
+  }
+  /**
+   * Handle pathological cases of range-range intersection, where one of the ranges defines no area or volume (is a line segment or single point).
+   * @param range local range to intersect with the point/segment
+   * @param points isolated local point, or local segment's start and end
+   * @param localToWorld optional transform for output range
+   * @param intersection optional range of the intersection, in world coordinates, or null range if no intersection.
+   * @returns whether the point/segment intersects the range
+   */
+  private static rangeIntersectPointOrSegment(range: Range3d, points: Point3d[], localToWorld?: Transform, intersection?: Range3d): boolean {
+    const announceInterval: AnnounceNumberNumberCurvePrimitive | undefined = intersection ?
+      (f0: number, f1: number, cp: CurvePrimitive) => {
+        intersection.extendPoint(cp.fractionToPoint(f0), localToWorld);
+        intersection.extendPoint(cp.fractionToPoint(f1), localToWorld);
+        } : undefined;
+    let hasIntersection = false;
+    if (points.length > 1) {
+      const segment = LineSegment3d.createCapture(points[0], points[1]);
+      const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
+      hasIntersection = segment.announceClipIntervals(clipper, announceInterval);
+    } else if (points.length > 0) {
+      hasIntersection = range.containsPoint(points[0]);
+      if (hasIntersection && intersection)
+        intersection.extendPoint(points[0], localToWorld);
+    }
+    return hasIntersection;
+  }
+  /**
    * Test for intersection of two ranges in different local coordinates.
    * * Useful for clash detection of elements in iModels, using their stored (tight) local ranges and placement transforms.
-   * @param range0 range in local coordinates of first geometry
-   * @param local0ToWorld placement transform for first geometry
-   * @param range1 range in local coordinates of second geometry
-   * @param local1ToWorld placement transform for second geometry. Assumed to be invertible.
+   * @param range0 first range in local coordinates
+   * @param local0ToWorld placement transform for first range
+   * @param range1 second range in local coordinates
+   * @param local1ToWorld placement transform for second range. Assumed to be invertible.
    * @param range1Margin optional signed local distance to expand/contract the second range before intersection. Positive expands.
    * @return whether the local ranges are adjacent or intersect. Also returns false if local1ToWorld is singular.
    */
   public static doLocalRangesIntersect(
     range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, range1Margin?: number,
   ): boolean {
-    const worldToLocal1 = ClipUtilities._workTransform = local1ToWorld.inverse(ClipUtilities._workTransform);
+    const worldToLocal1 = this._workTransform = local1ToWorld.inverse(this._workTransform);
     if (!worldToLocal1)
       return false;
     let myRange1 = range1;
     if (range1Margin) {
-      myRange1 = ClipUtilities._workRange = range1.clone(ClipUtilities._workRange);
+      myRange1 = this._workRange = range1.clone(this._workRange);
       myRange1.expandInPlace(range1Margin);
     }
-    // convert range0 into a clipper in local1 coordinates, then intersect with range1
+    const degeneratePoints: Point3d[] = [];
     const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
-    const builder = PolyfaceBuilder.create();
-    builder.addTransformedRangeMesh(local0ToLocal1, range0);
-    const mesh0 = builder.claimPolyface();
-    const clipper = ClipUtilities._workClipper = ConvexClipPlaneSet.createConvexPolyface(mesh0, ClipUtilities._workClipper).clipper;
-    return ClipUtilities.doesClipperIntersectRange(clipper, myRange1);
+    // convert range0 into a clipper in local1 coordinates, then intersect with range1
+    const clipper = this.createClipperFromTransformedRange3d(range0, local0ToLocal1, degeneratePoints);
+    if (clipper)
+      return this.doesClipperIntersectRange(clipper, myRange1);
+    return this.rangeIntersectPointOrSegment(myRange1, degeneratePoints, local1ToWorld);
+  }
+  /**
+   * Compute the range of the intersection between two local (e.g., element-aligned) ranges.
+   * @param range0 first range in local coordinates
+   * @param local0ToWorld placement transform for first range
+   * @param range1 second range in local coordinates
+   * @param local1ToWorld placement transform for second range. Assumed to be invertible.
+   * @param result optional pre-allocated range to fill and return
+   * @return range of the intersection (aligned to world axes). Returns null range if local1ToWorld is singular.
+   */
+  public static rangeOfIntersectionOfLocalRanges(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, result?: Range3d): Range3d {
+    const myResult = Range3d.createNull(result);
+    const worldToLocal1 = this._workTransform = local1ToWorld.inverse(this._workTransform);
+    if (!worldToLocal1)
+      return myResult;
+    const degeneratePoints: Point3d[] = [];
+    const local0ToLocal1 = worldToLocal1.multiplyTransformTransform(local0ToWorld, worldToLocal1);
+    // convert range0 into a clipper in local1 coordinates, then intersect with range1
+    const clipper = this.createClipperFromTransformedRange3d(range0, local0ToLocal1, degeneratePoints);
+    if (clipper)
+      this.announceLoopsOfConvexClipPlaneSetIntersectRange(clipper, range1, (loopPoints: GrowableXYZArray) => { loopPoints.extendRange(myResult, local1ToWorld); });
+    else
+      this.rangeIntersectPointOrSegment(range1, degeneratePoints, local1ToWorld, myResult);
+    return myResult;
   }
   /**
    * Test if `obj` is a `Clipper` object.

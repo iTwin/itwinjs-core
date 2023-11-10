@@ -73,13 +73,13 @@ describe("ImageryTileTree", () => {
     ];
     for (const entry of dataset) {
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);
-      const treeRefLhs = new ImageryMapLayerTreeReference(settingsLhs, 0, imodel);
+      const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;
       const tileTreeLhs = await treeOwnerLhs.loadTree();
       expect(tileTreeLhs).to.not.undefined;
 
       const settingsRhs = ImageMapLayerSettings.fromJSON(entry.rhs);
-      const treeRefRhs = new ImageryMapLayerTreeReference(settingsRhs, 0, imodel);
+      const treeRefRhs = new ImageryMapLayerTreeReference({ layerSettings: settingsRhs, layerIndex: 0, iModel: imodel });
       const treeOwnerRhs = treeRefRhs.treeOwner;
       const tileTreeRhs = await treeOwnerRhs.loadTree();
       expect(tileTreeRhs).to.not.undefined;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "4.2.0-dev.16",
+  "version": "4.3.0-dev.20",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.2.0-dev.16",
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.16",
-    "@itwin/core-common": "workspace:^4.2.0-dev.16",
-    "@itwin/core-frontend": "workspace:^4.2.0-dev.16"
+    "@itwin/core-backend": "workspace:^4.3.0-dev.20",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.20",
+    "@itwin/core-common": "workspace:^4.3.0-dev.20",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.20"
   },
   "dependencies": {
     "lodash": "^4.17.10",
@@ -56,7 +56,7 @@
     "@types/node": "18.16.1",
     "@types/superagent": "^4.1.14",
     "@types/ws": "^7.0.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",

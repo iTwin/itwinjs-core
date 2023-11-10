@@ -217,9 +217,9 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the authorization client will not be initialized for the electron app, to work around a current bug that causes it to produce constant exceptions when attempting to obtain an access token.
 * IMJS_FRONTEND_TILES_URL_TEMPLATE
   * If defined, specifies the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost.
-  * The string can include special tokens: {iModel.key} or {iModel.filename}.
-    * e.g.: http://localhost:8080{iModel.key}-tiles/3dft/ or http://localhost:8080/MshX/{iModel.filename}/
-  * These will get replaced by the value of iModel.key or just the filename of that (no path or extension), correspondingly.
+  * The string can include special tokens: `{iModel.key}`, `{iModel.filename}`, and `{iModel.extension}`.
+  * These will get replaced by the value of iModel.key, just the filename of that (no path or extension), or just the extension (including .), correspondingly.
+    * e.g.: <http://localhost:8080{iModel.key}-tiles/3dft/> or <http://localhost:8080/MshX/{iModel.filename}{iModel.extension}/>
   * Note that the contents of iModel.key will be different on different OSes.
 * IMJS_GPU_MEMORY_LIMIT
   * If defined, specifies the GpuMemoryLimit with which to initialize TileAdmin (none, relaxed, default, aggressive; or a specific number of bytes).
@@ -284,7 +284,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `ratio=number` Specify y spacing as current x * ratio.
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
-* `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
+* `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees; `s=0.5` specifies a uniform scale of 0.5. `b=1` indicates the transform should be pre-multiplied with the models' base transforms. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
 * `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.

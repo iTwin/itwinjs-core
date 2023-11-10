@@ -228,7 +228,7 @@
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -672,7 +672,11 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "node-touch",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "nodemon",
@@ -791,12 +795,16 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "touch",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",
@@ -808,7 +816,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "typescript",

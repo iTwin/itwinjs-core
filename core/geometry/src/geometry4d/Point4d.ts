@@ -110,7 +110,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   /** Set this point's xyzw from a json array `[x,y,z,w]` */
   public setFromJSON(json?: Point4dProps) {
     if (Geometry.isNumberArray(json, 4))
-      this.set(json![0], json![1], json![2], json![3]);
+      this.set(json[0], json[1], json[2], json[3]);
     else
       this.set(0, 0, 0, 0);
   }
@@ -223,9 +223,30 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return Point4d.create(pointA.y * pointB.w - pointA.w * pointB.y, pointA.w * pointB.x - pointA.x * pointB.w, 0.0, pointA.x * pointB.y - pointA.y * pointB.x, result);
   }
   /**
+   * extract 3 consecutive numbers from a Float64Array into the xyz values of a Point4d with w = 1.
+   * @param data buffer of numbers
+   * @param xIndex first index for x,y,z sequence
+   */
+  public static createFromPackedXYZ(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d | undefined {
+    if (xIndex >= 0 && xIndex + 2 < data.length)
+      return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], 1.0, result);
+    return undefined;
+  }
+  /**
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
+   */
+  public static createFromPacked(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d | undefined {
+    if (xIndex >= 0 && xIndex + 3 < data.length)
+      return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
+    return undefined;
+  }
+  /**
+   * extract 4 consecutive numbers from a Float64Array into a Point4d.
+   * @param data buffer of numbers
+   * @param xIndex first index for x,y,z,w sequence. Assumed to be a valid index!
+   * @deprecated in 4.x. Use createFromPacked instead.
    */
   public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
     return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
@@ -241,7 +262,6 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * default z is 0.0
    * * default w is 1.0  (array[3] can replace)
    */
-
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d)
       return new Point4d(point.x, point.y, 0, 1);
@@ -354,7 +374,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * * Return xyz projection of spacePoint to the plane of the DPoint4d (understood as coefficients, not point coordinates)
+   * * Return xyz projection of spacePoint to the plane (this Point4d is understood as plane coefficients, not point coordinates)
    * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {

@@ -8,8 +8,7 @@ Table of contents:
 - [Geometry](#geometry)
   - [Clip any curve](#clip-any-curve)
 - [ECSQL instance properties](#ecsql-instance-properties)
-
-## Geometry
+- [Electron 27 support](#electron-27-support)
 
 ### Clip any curve
 
@@ -20,3 +19,7 @@ The new [ClipUtils.clipAnyCurve]($core-geometry) clips any `CurvePrimitive`, `Pa
 ECSQL supports querying instance properties, which are any property in a class selected in ECSql or its derived classes.
 
 [**ECSQL Instance Properties Documentation**](../learning/ECSQLTutorial/InstanceProps.md)
+
+## Electron 27 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 27](https://www.electronjs.org/blog/electron-27-0).
