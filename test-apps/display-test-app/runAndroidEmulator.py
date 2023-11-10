@@ -340,7 +340,7 @@ def build_test_app() -> None:
     gradle_env['ANDROID_HOME'] = env.sdk_dir
     gradle_env['JAVA_HOME'] = env.jdk_dir
     if subprocess.run(
-        ['./gradlew', '--debug', '--no-daemon', 'build'],
+        ['./gradlew', '--no-daemon', 'build'],
         text=True,
         env=gradle_env,
         cwd=env.test_app_dir
