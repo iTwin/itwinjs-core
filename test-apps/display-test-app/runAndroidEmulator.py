@@ -93,15 +93,17 @@ class Emulator:
     __lock: threading.Lock
     __avd_name: str
     __avd_home: str
+    __jdk_home: str
     __emulator_dir: str
 
-    def __init__(self, avd_name: str, avd_home: str, emulator_dir: str):
+    def __init__(self, avd_name: str, avd_home: str, jdk_home: str, emulator_dir: str):
         self.__process = None
         self.__thread = None
         self.__launch_error = None
         self.__lock = None
         self.__avd_name = avd_name
         self.__avd_home = avd_home
+        self.__jdk_home = jdk_home
         self.__emulator_dir = emulator_dir
 
     def fix_ini_path(self) -> None:
@@ -119,6 +121,7 @@ class Emulator:
         def target():
             emulator_env = os.environ.copy()
             emulator_env['ANDROID_AVD_HOME'] = self.__avd_home
+            emulator_env['JAVA_HOME'] = self.__jdk_home
             try:
                 self.__process = subprocess.Popen(
                     [f'./emulator', f'@{self.__avd_name}', '-no-snapshot', '-no-window'],
@@ -165,7 +168,7 @@ def start_emulator() -> Emulator:
     '''
     Start the Android emulator and return an object representing it.
     '''
-    emulator = Emulator(env.avd_name, env.avd_dir, env.emulator_dir)
+    emulator = Emulator(env.avd_name, env.avd_dir, env.jdk_dir, env.emulator_dir)
     log('Fixing path setting in emulator\'s ini file...')
     emulator.fix_ini_path()
     log('Starting Android emulator...')
