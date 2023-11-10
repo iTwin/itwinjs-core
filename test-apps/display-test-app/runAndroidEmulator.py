@@ -132,7 +132,10 @@ class Emulator:
                     text=True
                 )
                 self.__lock.release()
-                self.__process.communicate()
+                for line in self.__process.stdout:
+                    log(f'EMULATOR: {line}', end='')
+                self.__process.stdout.close()
+                self.__process.wait()
             except Exception as e:
                 self.__launch_error = e
                 self.__lock.release()
@@ -367,7 +370,7 @@ def main() -> None:
         env = Env()
         download_upacks_if_needed()
         env.verify_paths()
-        build_test_app()
+        # build_test_app()
         env_json = load_env_json()
         emulator = start_emulator()
         bim_file = get_bim_file(env_json)
