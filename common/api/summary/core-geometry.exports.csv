@@ -291,6 +291,7 @@ public;SweepContour
 public;SweepLineStringToFacetsOptions
 public;TaggedNumericConstants
 public;TaggedNumericData
+public;TaggedPoint3dPair = TaggedDataPair
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 

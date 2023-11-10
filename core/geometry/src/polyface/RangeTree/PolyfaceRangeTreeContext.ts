@@ -28,13 +28,13 @@ import { PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonO
 export class PolyfaceRangeTreeContext {
   /** visitor for the polyface being searched */
   public visitor: PolyfaceVisitor;
-  /** diagnostic:: number of range tests that have returned true. */
+  /** diagnostic: number of range tests that have returned true. */
   public numRangeTestTrue: number;
-  /** diagnostic:: number of range tests that have been returned false */
+  /** diagnostic: number of range tests that have been returned false */
   public numRangeTestFalse: number;
-  /** diagnostic:: number of facet tests. */
+  /** diagnostic: number of facet tests. */
   public numFacetTest: number;
-  /** diagnostic:: number of searches performed. */
+  /** diagnostic: number of searches performed. */
   public numSearch: number;
 
   private _rangeTreeRoot: RangeTreeNode<number>;
@@ -206,7 +206,7 @@ export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistance
       const detail = PolygonOps.closestApproachOfPolygons<number>(this.visitorA.point, this.visitorB.point);
       this.contextA.numFacetTest++;
       if (detail !== undefined) {
-        const d = detail.detailA.point.distance(detail.detailB.point);
+        const d = detail.dataA.point.distance(detail.dataB.point);
         if (this.searchState.isNewMinOrTrigger(d)) {
           detail.tagA = tagA;
           detail.tagB = tagB;

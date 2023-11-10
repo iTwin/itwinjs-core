@@ -474,8 +474,8 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("PolyfacePolyfaceSearch", () => {
-    const ck = new Checker(true, true);
+  it("PolyfacePolyfaceSearch", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     const y0 = 0;
@@ -514,7 +514,7 @@ describe("IndexedRangeHeap", () => {
     const approach = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB);
     if (approach !== undefined) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        [approach.detailA.point, approach.detailB.point], x0, y0, z0);
+        [approach.dataA.point, approach.dataB.point], x0, y0, z0);
     }
     const numFacetA = polyfaceA.facetCount;
     const numFacetB = polyfaceB.facetCount;
@@ -541,7 +541,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("PolylinePolylineSearcher", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;

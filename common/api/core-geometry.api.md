@@ -4496,7 +4496,7 @@ export class Point3dArrayRangeTreeContext {
     numRangeTestTrue: number;
     numSearch: number;
     points: Point3d[];
-    static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedDataPair<Point3d, Point3d, number> | undefined;
+    static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedPoint3dPair | undefined;
     searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
     searchState: MinimumValueTester<number>;
     spacePoint: Point3d;
@@ -4952,14 +4952,7 @@ export class PolygonLocationDetail {
 }
 
 // @public
-export class PolygonLocationDetailPair<TagType> {
-    constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail);
-    detailA: PolygonLocationDetail;
-    detailB: PolygonLocationDetail;
-    tagA?: TagType;
-    // (undocumented)
-    tagB?: TagType;
-}
+export type PolygonLocationDetailPair<TagType> = TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>;
 
 // @public
 export class PolygonOps {
@@ -6015,6 +6008,9 @@ export class TaggedNumericData {
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
 }
+
+// @public
+export type TaggedPoint3dPair = TaggedDataPair<Point3d, Point3d, number>;
 
 // @internal
 export class TorusImplicit {

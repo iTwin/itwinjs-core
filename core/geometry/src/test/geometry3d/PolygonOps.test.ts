@@ -306,8 +306,8 @@ describe("PolygonOps", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "intersectRay3d");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("closestApproach", () => {
-    const ck = new Checker(true, true);
+  it("closestApproach", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -329,12 +329,12 @@ describe("PolygonOps", () => {
         capturePolygonWithClosure(allGeometry, polygonA, x0, y0);
         capturePolygonWithClosure(allGeometry, polygonB, x0, y0);
         if (ck.testDefined(approach, "result from polygon approach") && approach) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point], x0, y0);
-          ck.testCoordinate(expectedDistance, approach.detailA.point.distance(approach.detailB.point));
-          ck.testCoordinate(0.5, approach.detailA.closestEdgeParam, "fractionA");
-          ck.testCoordinate(0.25, approach.detailB.closestEdgeParam, "fractionB");
-          ck.testCoordinate(Geometry.cyclic3dAxis(1 - iA0), approach.detailA.closestEdgeIndex, "edge index A");
-          ck.testCoordinate(Geometry.cyclic3dAxis(-iB0), approach.detailB.closestEdgeIndex, "edge index B");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.dataA.point, approach.dataB.point], x0, y0);
+          ck.testCoordinate(expectedDistance, approach.dataA.point.distance(approach.dataB.point));
+          ck.testCoordinate(0.5, approach.dataA.closestEdgeParam, "fractionA");
+          ck.testCoordinate(0.25, approach.dataB.closestEdgeParam, "fractionB");
+          ck.testCoordinate(Geometry.cyclic3dAxis(1 - iA0), approach.dataA.closestEdgeIndex, "edge index A");
+          ck.testCoordinate(Geometry.cyclic3dAxis(-iB0), approach.dataB.closestEdgeIndex, "edge index B");
         }
         if (approach) {
         }

@@ -11,7 +11,11 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
 import { TaggedDataPair } from "../../geometry3d/TaggedDataPair";
-
+/**
+ * carrier struct for 2 points with numeric tags.
+ * @public
+ */
+export type TaggedPoint3dPair = TaggedDataPair<Point3d, Point3d, number>;
 /**
  * Handler class to search a range tree containing only Point3d data, always returning the single closest point and optionally gathering an array of
  * all points with a search distance.
@@ -26,13 +30,13 @@ export class Point3dArrayRangeTreeContext {
   public searchState: MinimumValueTester<number>;
   /** space point for search  */
   public spacePoint: Point3d;
-  /** for diagnostic:: number of range tests returned true. */
+  /** diagnostic: number of range tests returned true. */
   public numRangeTestTrue: number;
-  /** for diagnostic:: number of range tests returned false */
+  /** diagnostic: number of range tests returned false */
   public numRangeTestFalse: number;
-  /** for diagnostic:: number of point distance tests */
+  /** diagnostic: number of point distance tests */
   public numPointTest: number;
-  /** for diagnostic:: number of searches. */
+  /** diagnostic: number of searches. */
   public numSearch: number;
 
   private _rangeTreeRoot: RangeTreeNode<number>;
@@ -87,7 +91,7 @@ export class Point3dArrayRangeTreeContext {
   public static searchForClosestApproach(
     contextA: Point3dArrayRangeTreeContext,
     contextB: Point3dArrayRangeTreeContext,
-  ): TaggedDataPair<Point3d, Point3d, number> | undefined {
+  ): TaggedPoint3dPair | undefined {
     const handler = new TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();

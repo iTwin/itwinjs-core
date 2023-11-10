@@ -25,6 +25,7 @@ import { SortablePolygon } from "./SortablePolygon";
 import { XAndY, XYAndZ } from "./XYZProps";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { TaggedDataPair } from "./TaggedDataPair";
 
 /**
  * Carries data about a point in the plane of a polygon.
@@ -1241,7 +1242,7 @@ export class PolygonOps {
       }
     }
     if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
-      return new PolygonLocationDetailPair<TagType>(
+      return new TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>(
         PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
         PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
       );
@@ -1605,20 +1606,7 @@ export class Point3dArrayPolygonOps {
  * * Note that the (public!) constructor captures its parameters.
  * @public
  */
-export class PolygonLocationDetailPair<TagType> {
-  /** first of the two details */
-  public detailA: PolygonLocationDetail;
-  /** second of the two details */
-  public detailB: PolygonLocationDetail;
-  /** first tag */
-  public tagA?: TagType;
-  /* second tag */
-  public tagB?: TagType;
-  public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail) {
-    this.detailA = detailA;
-    this.detailB = detailB;
-  }
-}
+export type PolygonLocationDetailPair<TagType> = TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>;
 
 function fillLineSegmentFromUncheckedIndexWithWrap(points: GrowableXYZArray, index: number, segment: LineSegment3d | undefined): LineSegment3d {
   let index1 = index + 1;
