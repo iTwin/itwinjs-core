@@ -199,11 +199,11 @@ def start_app() -> None:
     log('Starting display-test-app...')
     run_command(f'{env.adb_cmd} logcat -c', 'Error clearing adb logcat!')
     activity_name = 'com.bentley.imodeljs_test_app/.MainActivity'
-    shell_cmd = f'am start -n "{activity_name}" -a android.intent.action.MAIN'
+    shell_cmd = f'am start -S -n "{activity_name}" -a android.intent.action.MAIN'
     run_command(f'{env.adb_cmd} shell {shell_cmd}', 'Error starting display-test-app!')
     log('display-test-app started.')
 
-def wait_for_first_render() -> bool:
+def wait_for_first_render(wait_minutes: float) -> bool:
     '''
     Wait for display-test-app to complete its first render of its model.
 
@@ -216,9 +216,21 @@ def wait_for_first_render() -> bool:
         if result.stdout.find('com.bentley.display_test_app: First render finished.') != -1:
             log('Success!')
             return True
-        if time.time() - start_time >= 60.0 * 3.0: # 3 minutes
+        if time.time() - start_time >= 60.0 * wait_minutes:
             log('Timed out!')
             return False
+
+def run_app() -> bool:
+    '''
+    Run the app and return True on success of False on failure. Since the app often fails on the
+    first run, this will run it a second time in the event of a failure on the first run.
+    Note: first run waits for 1 minute; second run waits for 3 minutes.
+    '''
+    for i in range(2):
+        start_app()
+        if wait_for_first_render(i * 2.0 + 1.0):
+            return True
+    return False
 
 def stop_emulator(emulator: Union[Emulator, None]) -> None:
     '''
@@ -335,7 +347,7 @@ def download_upacks_if_needed() -> None:
     log('Downloading upacks if needed...')
     if not os.path.exists(env.upack_dir):
         os.mkdir(env.upack_dir)
-    download_upack_if_needed('androidavd_macos', '33.0.0-0')
+    download_upack_if_needed('androidavd_macos', '33.0.0-1')
     download_upack_if_needed('androidsdk_macos', '33.5.0-0')
     download_upack_if_needed('openjdk_macos', '11.0.1-0')
     log('upacks downloaded.')
@@ -379,8 +391,7 @@ def main() -> None:
         install_apk()
         if bim_file is not None:
             copy_imodel_to_emulator(bim_file)
-        start_app()
-        if wait_for_first_render():
+        if run_app():
             exit_code = 0
     except Exception as e:
         log(e)
