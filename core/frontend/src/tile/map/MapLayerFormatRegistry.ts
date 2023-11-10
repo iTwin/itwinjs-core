@@ -10,7 +10,7 @@ import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /** Class representing a map-layer format.
@@ -30,7 +30,7 @@ export class MapLayerFormat {
 
   /** Allow a source of a specific to be validated before being attached as a map-layer.
   */
-  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
    * @internal
@@ -84,6 +84,13 @@ export interface MapLayerOptions {
 export interface MapLayerFormatEntry {
   type: MapLayerFormatType;
   accessClient?: MapLayerAccessClient;
+}
+
+/** Options to validate a source
+ * @beta
+ */
+export interface ValidateSourceOptions {
+  ignoreCache?: boolean;
 }
 
 /** A registry of MapLayerFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.mapLayerFormatRegistry]].
@@ -157,5 +164,11 @@ export class MapLayerFormatRegistry {
     const entry = this._formats.get(formatId);
     const format = entry?.type;
     return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
+  }
+
+  public async validateSourceOptions(source: MapLayerSource, options?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
+    const entry = this._formats.get(source.formatId);
+    const format = entry?.type;
+    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, options?.userName, options?.password, options?.ignoreCache);
   }
 }
