@@ -672,7 +672,7 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "node-touch",
@@ -804,7 +804,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",

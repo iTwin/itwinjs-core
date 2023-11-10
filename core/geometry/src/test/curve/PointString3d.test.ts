@@ -51,7 +51,7 @@ function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const jsonA = lsA.toJSON();
   const lsE = PointString3d.fromJSON(jsonA);
   ck.testTrue(lsA.isAlmostEqual(lsE), "JSON round trip");
-  ck.testFalse(lsA.isAlmostEqual(jsonA), "isAlmostEqual with bad arg");
+  ck.testFalse(lsA.isAlmostEqual(jsonA as any), "isAlmostEqual with bad arg");
 }
 
 describe("PointString3d", () => {
