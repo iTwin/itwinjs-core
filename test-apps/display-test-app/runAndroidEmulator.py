@@ -150,6 +150,9 @@ class Emulator:
             self.__process.terminate()
             self.__thread.join()
 
+def log(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def run_command(command: str, error: str) -> None:
     '''
     Call `os.system` with the specified command and throw an exception with the given error string
@@ -163,36 +166,36 @@ def start_emulator() -> Emulator:
     Start the Android emulator and return an object representing it.
     '''
     emulator = Emulator(env.avd_name, env.avd_dir, env.emulator_dir)
-    print('Fixing path setting in emulator\'s ini file...')
+    log('Fixing path setting in emulator\'s ini file...')
     emulator.fix_ini_path()
-    print('Starting Android emulator...')
+    log('Starting Android emulator...')
     emulator.start()
     shell_cmd = 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
     run_command(
         f'{env.adb_cmd} wait-for-device shell \'{shell_cmd}\'',
         'Error waiting for emulator to boot!'
     )
-    print('Emulator started.')
+    log('Emulator started.')
     return emulator
 
 def install_apk() -> None:
     '''
     Install the display-test-app APK onto the emulator.
     '''
-    print(f'Installing apk {env.apk_path}...')
+    log(f'Installing apk {env.apk_path}...')
     run_command(f'{env.adb_cmd} install -r -g {env.apk_path}', 'Error installing APK!')
-    print('APK installed.')
+    log('APK installed.')
 
 def start_app() -> None:
     '''
     Start display-test-app on the emulator and wait for it to launch.
     '''
-    print('Starting display-test-app...')
+    log('Starting display-test-app...')
     run_command(f'{env.adb_cmd} logcat -c', 'Error clearing adb logcat!')
     activity_name = 'com.bentley.imodeljs_test_app/.MainActivity'
     shell_cmd = f'am start -n "{activity_name}" -a android.intent.action.MAIN'
     run_command(f'{env.adb_cmd} shell {shell_cmd}', 'Error starting display-test-app!')
-    print('display-test-app started.')
+    log('display-test-app started.')
 
 def wait_for_first_render() -> bool:
     '''
@@ -200,15 +203,15 @@ def wait_for_first_render() -> bool:
 
     Returns `True` on success, `False` on failure.
     '''
-    print('Waiting for first render to finish...')
+    log('Waiting for first render to finish...')
     start_time = time.time()
     while True:
         result = subprocess.run([env.adb, '-e', 'logcat', '-d'], capture_output=True, text=True)
         if result.stdout.find('com.bentley.display_test_app: First render finished.') != -1:
-            print('Success!')
+            log('Success!')
             return True
         if time.time() - start_time >= 60.0 * 3.0: # 3 minutes
-            print('Timed out!')
+            log('Timed out!')
             return False
 
 def stop_emulator(emulator: Union[Emulator, None]) -> None:
@@ -217,20 +220,20 @@ def stop_emulator(emulator: Union[Emulator, None]) -> None:
     '''
     if emulator == None:
         return
-    print('Stopping emulator...')
+    log('Stopping emulator...')
     emulator.stop()
-    print('Emulator stopped.')
+    log('Emulator stopped.')
 
 def stop_adb() -> None:
     '''
     Stop the adb daemon that was started when the first adb command was executed.
     '''
-    print('Stopping the adb daemon')
+    log('Stopping the adb daemon')
     try:
         run_command(f'{env.adb_cmd} kill-server')
-        print('adb daemon stopped.')
+        log('adb daemon stopped.')
     except:
-        print('adb daemon not running.')
+        log('adb daemon not running.')
 
 def load_env_json() -> dict[str, str]:
     '''
@@ -269,10 +272,10 @@ def copy_imodel_to_emulator(bim_file: str) -> None:
     tmp = f'/sdcard/{bim_file}'
     dst_dir = '/storage/emulated/0/Android/data/com.bentley.imodeljs_test_app/files/bim_cache'
     dst = f'{dst_dir}/{bim_file}'
-    print(f'Copying {bim_file} to emulator:')
-    print('Push to sdcard...')
+    log(f'Copying {bim_file} to emulator:')
+    log('Push to sdcard...')
     run_command(f'{env.adb_cmd} push \'{src}\' \'{tmp}\'', f'Error copying {bim_file} to emulator!')
-    print('Move to app sandbox...')
+    log('Move to app sandbox...')
     # Notes about the following script:
     # Trying to use adb to copy the file directly to the destination doesn't work due to a
     # permission denied error.
@@ -288,7 +291,7 @@ def copy_imodel_to_emulator(bim_file: str) -> None:
         ''')
     if subprocess.run([env.adb, '-e', 'shell'], text=True, input=shell_commands).returncode != 0:
         raise Exception(f'Error moving {bim_file} to app sandbox!')
-    print('Done copying.')
+    log('Done copying.')
 
 def make_upack_executable(upack_dir: str) -> None:
     '''
@@ -306,9 +309,9 @@ def download_upack_if_needed(name: str, version: str) -> None:
     '''
     dst_dir = f'{env.upack_dir}/{name}'
     if os.path.exists(dst_dir):
-        print(f'upack {name} already present.')
+        log(f'upack {name} already present.')
     else:
-        print(f'Downloading {name} upack...')
+        log(f'Downloading {name} upack...')
         command = ('az artifacts universal download '
             '--organization "https://dev.azure.com/bentleycs/" '
             '--feed "upack" '
@@ -316,26 +319,26 @@ def download_upack_if_needed(name: str, version: str) -> None:
             f'--version "{version}" '
             f'--path "{dst_dir}"')
         run_command(command, f'Error downloading {name} upack!')
-        print(f'upack {name} downloaded.')
+        log(f'upack {name} downloaded.')
     make_upack_executable(dst_dir)
 
 def download_upacks_if_needed() -> None:
     '''
     Check if Android SDK and AVD upacks are present, and download them if not.
     '''
-    print('Downloading upacks if needed...')
+    log('Downloading upacks if needed...')
     if not os.path.exists(env.upack_dir):
         os.mkdir(env.upack_dir)
     download_upack_if_needed('androidavd_macos', '33.0.0-0')
     download_upack_if_needed('androidsdk_macos', '33.5.0-0')
     download_upack_if_needed('openjdk_macos', '11.0.1-0')
-    print('upacks downloaded.')
+    log('upacks downloaded.')
 
 def build_test_app() -> None:
     '''
     Build the Android test app using the Android SDK upack.
     '''
-    print('Building Android test app...')
+    log('Building Android test app...')
     gradle_env = os.environ.copy()
     gradle_env['ANDROID_HOME'] = env.sdk_dir
     gradle_env['JAVA_HOME'] = env.jdk_dir
@@ -346,7 +349,7 @@ def build_test_app() -> None:
         cwd=env.test_app_dir
     ).returncode != 0:
         raise Exception(f'Error building Android test app!')
-    print('Android test app Built.')
+    log('Android test app Built.')
 
 def main() -> None:
     '''
@@ -374,10 +377,10 @@ def main() -> None:
         if wait_for_first_render():
             exit_code = 0
     except Exception as e:
-        print(e)
+        log(e)
     stop_emulator(emulator)
     stop_adb()
-    print('Done')
+    log('Done')
     sys.exit(exit_code)
 
 if __name__ == '__main__':
