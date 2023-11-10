@@ -121,7 +121,7 @@ class Emulator:
             emulator_env['ANDROID_AVD_HOME'] = self.__avd_home
             try:
                 self.__process = subprocess.Popen(
-                    [f'./emulator', '-no-snapshot', f'@{self.__avd_name}'],
+                    [f'./emulator', f'@{self.__avd_name}', '-no-snapshot', '-no-window'],
                     cwd=self.__emulator_dir,
                     env=emulator_env,
                     stdout=subprocess.PIPE,
