@@ -474,8 +474,8 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("PolyfacePolyfaceSearch", () => {
-    const ck = new Checker();
+  it.only("PolyfacePolyfaceSearch", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     const y0 = 0;
@@ -540,7 +540,7 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("PolylinePolylineSearcher", () => {
+  it("PolylinePolylineSearcher", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;

@@ -97,7 +97,8 @@ export class PolygonLocationDetail {
       this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
       this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
   }
-  /** CAPTURE point, index, and fraction as an "at vertex" or "along edge" PolygonLocation detail.
+  /** point, index, and fraction as an "at vertex" or "along edge" PolygonLocation detail.
+   * * NOTE: This is misnamed.  It does NOT capture the point -- just copy coordinates.
    *
   */
   public static createAtVertexOrEdgeCapture(point: Point3d, index: number, fraction: number = 0): PolygonLocationDetail {
@@ -1218,8 +1219,6 @@ export class PolygonOps {
    * @param dMax largest value to consider as an acceptable result.
    */
   public static closestApproachOfPolygons<TagType>(polygonA: GrowableXYZArray, polygonB: GrowableXYZArray, dMax: number = Number.MAX_VALUE): PolygonLocationDetailPair<TagType> | undefined {
-    let minIndexA = 0;
-    let minIndexB = 0;
     let dMin = dMax;
     const n1 = polygonA.length;
     const n2 = polygonB.length;
@@ -1227,7 +1226,7 @@ export class PolygonOps {
     for (let indexA = 0; indexA < n1; indexA++) {
       this._workSegmentA = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentA);
       for (let indexB = 0; indexB < n2; indexB++) {
-        this._workSegmentB = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentB);
+        this._workSegmentB = fillLineSegmentFromUncheckedIndexWithWrap(polygonB, indexB, this._workSegmentB);
         const workCLD = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false, this._workCLD);
         if (workCLD !== undefined) {
           this._workCLD = workCLD; // This will almost always be reassigning the same reused CLD
@@ -1235,18 +1234,16 @@ export class PolygonOps {
           workCLD.detailB.a = indexB;
           const d = workCLD.detailA.point.distance(workCLD.detailB.point);
           if (d < dMin) {
-            minIndexA = indexA;
-            minIndexB = indexB;
             bestCLD = workCLD.clone(bestCLD);
             dMin = d;
           }
         }
       }
     }
-    if (dMin !== Number.MAX_VALUE && dMin <= dMax) {
+    if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
       return new PolygonLocationDetailPair<TagType>(
-        PolygonLocationDetail.createAtVertexOrEdgeCapture(polygonA.getPoint3dAtUncheckedPointIndex(minIndexA), 0),
-        PolygonLocationDetail.createAtVertexOrEdgeCapture(polygonB.getPoint3dAtUncheckedPointIndex(minIndexB), 0),
+        PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
+        PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
       );
     }
     return undefined;
