@@ -86,13 +86,6 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** Options to validate a source
- * @beta
- */
-export interface ValidateSourceOptions {
-  ignoreCache?: boolean;
-}
-
 /** A registry of MapLayerFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.mapLayerFormatRegistry]].
  * @public
  */
