@@ -94,6 +94,19 @@ describe("ECDb", () => {
     });
   });
 
+  it("should be able to get schema props", () => {
+    const fileName = "schema-props.ecdb";
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+      assert.isTrue(testECDb.isOpen);
+    });
+    using(new ECDb(), (ecdb) => {
+      ecdb.openDb(ecdbPath);
+      const schema = ecdb.getSchemaProps("ECDbMeta");
+      assert.equal(schema.name, "ECDbMeta");
+    });
+  });
+
   it("Run plain SQL", () => {
     const fileName = "plainseql.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);

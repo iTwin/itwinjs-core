@@ -1,8 +1,9 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "outDir": "lib/cjs"
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts", "./src/**/*.json"]
 }
