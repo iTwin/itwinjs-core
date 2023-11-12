@@ -15,6 +15,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Sample } from "../../serialization/GeometrySamples";
 import { CurveLocationDetail } from "../../core-geometry";
+import { Range1d } from "../../geometry3d/Range";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
@@ -134,9 +135,79 @@ describe("LineSegment3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("PointsAlongLine", () => {
-    const allGeometry: GeometryQuery[] = [];
+  it("ClosestApproachParallelSegments", () => {
     const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const pointsA: Point3d[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+    for (let x = -4; x < 12; x += 3) {
+      pointsA.push(Point3d.create(x, 1, 0));
+    }
+    const forwardSegments = [];
+    const reverseSegments = [];
+    for (let i0 = 0; i0 + 1 < pointsA.length; i0++) {
+      const point1 = pointsA[i0 + 1].clone();
+      const point0 = pointsA[i0];
+      point1.x -= 0.25;
+      forwardSegments.push(LineSegment3d.create(point0, point1));
+      reverseSegments.push(LineSegment3d.create(
+        Point3d.create(point1.x, -1, 0),
+        Point3d.create(point0.x, -1, 0),
+      ));
+    }
+    const segmentRange = Range1d.createXX(0, 6);
+    const xSegment = LineSegment3d.createXYZXYZ(segmentRange.low, 0, 0, segmentRange.high, 0, 0);
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, xSegment, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, forwardSegments, x0, y0, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, reverseSegments, x0, y0, z0);
+    const y1 = 4;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, xSegment, x0, y1, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, forwardSegments, x0, y1, z0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, reverseSegments, x0, y1, z0);
+    // xSegment sits on the x axis.
+    // forwardSegments are parallel and at y=1, always oriented left to right.
+    // the 5 forwardSegments are all shorter than xSegment, with x range entirely left, partially in at left, entirely in, partially in at right, and entirely out to right.
+    // the reverseSegments are the same x ranges but with orientation reversed and at negated y.
+    //
+    for (const segments of [forwardSegments, reverseSegments]) {
+      for (const s of segments) {
+        const sRange = s.range();
+        const approachAB = LineSegment3d.closestApproach(xSegment, false, s, false);
+        if (ck.testDefined(approachAB) && approachAB) {
+          const fA = approachAB.detailA.fraction;
+          const fB = approachAB.detailB.fraction;
+          ck.testPoint3d(approachAB.detailA.point, approachAB.detailA.curve!.fractionToPoint(fA));
+          ck.testPoint3d(approachAB.detailB.point, approachAB.detailB.curve!.fractionToPoint(fB));
+          // const fB = approach.detailB.fraction;
+          if (fA <= 0.0001) {
+            ck.testLE(sRange.high.x, segmentRange.low);
+          } else if (fA > 0.9999) {
+            ck.testLE(segmentRange.high, sRange.high.x, segmentRange);
+          } else {
+            ck.testTrue(segmentRange.containsX(approachAB.detailB.point.x));
+          }
+          // test with call in reverse order.
+          const approachBA = LineSegment3d.closestApproach(s, false, xSegment, false);
+          if (ck.testDefined(approachBA) && approachBA) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approachBA.detailA.point, approachBA.detailB.point], x0, 4, z0);
+            // Skip these tests - the reversal flips some cases around because of order inspected.
+            // ck.testPoint3d(approachAB.detailA.point, approachBA.detailB.point);
+            // ck.testPoint3d(approachAB.detailB.point, approachBA.detailA.point);
+          }
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approachAB.detailA.point, approachAB.detailB.point], x0, y0, z0);
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproachParallelSegments");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClosestApproach", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
     let x0 = 0;
     let y0 = 0;
     let x00 = 0;

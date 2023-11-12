@@ -134,7 +134,7 @@ export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> exte
     return false;
   }
 }
-// const numNodeCreated = 0;
+let numNodeCreated = 0;
 /**
  * * TREE STRUCTURE
  *   * A RangeTreeNode is part of a range tree.
@@ -167,7 +167,7 @@ export class RangeTreeNode<AppDataType> {
   private _appData: FlexData<AppDataType>;
   private _children: undefined | RangeTreeNode<AppDataType> | RangeTreeNode<AppDataType>[];
   /** an id assigned sequentially as nodes are created.  For debugging use only. */
-  // public id: number;
+  public id: number;
   /**
    * CONSTRUCTOR
    * CAPTURE (not copy)
@@ -180,7 +180,7 @@ export class RangeTreeNode<AppDataType> {
     this._appData = appData;
     this._children = children;
 
-    // this.id = numNodeCreated++;
+    this.id = numNodeCreated++;
     // const childIds: number[] = [];
     // if (Array.isArray(this._children))
     //  for (const c of this._children) childIds.push(c.id);
@@ -279,9 +279,10 @@ export class RangeTreeNode<AppDataType> {
 
   public searchTopDown(handler: SingleTreeSearchHandler<AppDataType>) {
     if (handler.isRangeActive(this._range)) {
-      let item: AppDataType | undefined;
-      for (let i = 0; undefined !== (item = this.getAppDataByIndex(i)); i++) {
-        handler.processAppData(item);
+      let itemToProcess: AppDataType | undefined;
+      for (let i = 0; undefined !== (itemToProcess = this.getAppDataByIndex(i)); i++) {
+        // console.log(itemToProcess);
+        handler.processAppData(itemToProcess);
         if (handler.isAborted())
           return;
       }
@@ -548,7 +549,7 @@ export class RangeTreeOps {
     const maxGrandChild = maxChildPerNode * maxAppDataPerLeaf;
     // console.log({ name: "createRecursive", index0, index1, maxGrandChild });
     if (index1 <= index0 + maxGrandChild) {  // leaf node!!!
-      // console.log({ case: "LEAF GROUP" });
+      // console.log({ case: "LEAF GROUP", index0, index1 });
       const range = Range3d.createNull();
       const children: RangeTreeNode<AppDataType>[] = [];
       for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA = Math.min(indexA + maxAppDataPerLeaf, index1)) {

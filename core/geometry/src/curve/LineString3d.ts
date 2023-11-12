@@ -1297,10 +1297,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /** Return (if possible) a specific segment of the linestring */
-  public getIndexedSegment(index: number): LineSegment3d | undefined {
+  public getIndexedSegment(index: number, result?: LineSegment3d): LineSegment3d | undefined {
     if (index >= 0 && index + 1 < this._points.length)
       return LineSegment3d.create(
-        this._points.getPoint3dAtCheckedPointIndex(index)!, this._points.getPoint3dAtCheckedPointIndex(index + 1)!,
+        this._points.getPoint3dAtCheckedPointIndex(index)!, this._points.getPoint3dAtCheckedPointIndex(index + 1)!, result,
       );
     return undefined;
   }

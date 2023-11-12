@@ -250,7 +250,7 @@ export * from "./polyface/PolyfaceData";
 export * from "./polyface/PolyfaceQuery";
 export * from "./polyface/PolyfaceClip";
 export * from "./polyface/RangeTree/Point3dArrayRangeTreeContext";
-export * from "./polyface/RangeTree/PolylineRangeTreeContext";
+export * from "./polyface/RangeTree/LineString3dRangeTreeContext";
 export * from "./polyface/RangeTree/PolyfaceRangeTreeContext";
 export * from "./polyface/TaggedNumericData";
 export * from "./topology/Graph";

@@ -235,18 +235,18 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     segmentB: LineSegment3d,
     extendB: VariantCurveExtendParameter,
     result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined {
-    if (result === undefined) result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
     const unboundedFractions = Vector2d.create();
+    if (result === undefined) result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
     if (SmallSystem.lineSegment3dClosestApproachUnbounded(segmentA._point0, segmentA._point1, segmentB._point0, segmentB._point1, unboundedFractions)) {
       // There is a simple approach between the unbounded segments.  Maybe its a really easy case ...
       const fractionA = CurveExtendOptions.correctFraction(extendA, unboundedFractions.x);
       const fractionB = CurveExtendOptions.correctFraction(extendB, unboundedFractions.y);
       // if neither fraction was corrected, just accept !!!
       if (fractionA === unboundedFractions.x && fractionB === unboundedFractions.y) {
-        return CurveLocationDetailPair.createCapture(
-          CurveLocationDetail.createCurveEvaluatedFraction(segmentA, fractionA, result ? result.detailA : undefined),
-          CurveLocationDetail.createCurveEvaluatedFraction(segmentB, fractionB, result ? result.detailB : undefined),
-        );
+        result.detailA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, fractionA, result ? result.detailA : undefined);
+        result.detailB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, fractionB, result ? result.detailB : undefined);
+        result.detailA.a = result.detailB.a = result.detailA.point.distance(result.detailB.point);
+        return result;
       }
       // One or both of the fractions were clamped back to an endpoint.
       // Claim: (????!!!????) The only proximity candidates that matter are from clamped point onto the other.
@@ -280,8 +280,45 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       result.detailA.a = result.detailB.a = result.detailA.point.distance(result.detailB.point);
       return result;
     }
-    // Parallel lines ... use the point1 & fraction1 parts to indicate projected overlaps
-    return undefined;
+    // (probably? certainly?) parallel (possibly coincident) lines.
+    // run all 4 endpoint-to-other cases . . . reassemble carefully ...
+    const resultSet = [
+      segmentA.closestPoint(segmentB._point0, extendA),
+      segmentA.closestPoint(segmentB._point1, extendA),
+      segmentB.closestPoint(segmentA._point0, extendB),
+      segmentB.closestPoint(segmentA._point1, extendB),
+    ];
+    let dMin = resultSet[0].a;
+    let iMin = 0;
+    for (let i = 1; i < 4; i++) {
+      if (resultSet[i].a < dMin) {
+        iMin = i;
+        dMin = resultSet[i].a;
+      }
+    }
+    let cldA: CurveLocationDetail;
+    let cldB: CurveLocationDetail;
+    if (iMin === 0) {
+      cldA = resultSet[0];
+      cldB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 0.0);
+    } else if (iMin === 1) {
+      cldA = resultSet[1];
+      cldB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 1.0);
+    } else if (iMin === 2) {
+      cldA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 0.0);
+      cldB = resultSet[2];
+    } else {
+      // must be iMin === 3!!!!
+      cldA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 1.0);
+      cldB = resultSet[3];
+    }
+    if (result) {
+      cldA.clone(result.detailA);
+      cldB.clone(result.detailB);
+      return result;
+    } else {
+      return CurveLocationDetailPair.createCapture(cldA, cldB);
+    }
   }
   /** Swap the endpoint references. */
   public reverseInPlace(): void {

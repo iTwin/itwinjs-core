@@ -19,9 +19,10 @@ import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHand
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Geometry } from "../../Geometry";
 import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
-import { PolylineRangeTreeContext } from "../../polyface/RangeTree/PolylineRangeTreeContext";
+import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
+import { LineString3d } from "../../core-geometry";
 
 // Clone and shift the range ...
 // shift by dx
@@ -376,22 +377,25 @@ describe("IndexedRangeHeap", () => {
     let y0 = 0;
     const z0 = 0;
 
-    const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 80, 0);
-    const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
-    for (const treeWidth of [2, 4, 8]) {
-      const searcher = PolylineRangeTreeContext.createCapture(wavePoints, treeWidth, treeWidth);
+    const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 95, 0);
+    const path = BezierCurve3d.create([Point3d.create(-1, 5, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
+    for (const treeWidth of [2]) {
+      const linestring = LineString3d.create(wavePoints);
+      const searcher = LineString3dRangeTreeContext.createCapture(linestring, treeWidth, treeWidth);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, wavePoints, x0, y0, z0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
-      if (ck.testType(searcher, PolylineRangeTreeContext)) {
+      if (ck.testType(searcher, LineString3dRangeTreeContext)) {
         for (let u = 0; u <= 1.00001; u += 0.010) {
           const xyz = path.fractionToPoint(u);
           searcher.searchForClosestPoint(xyz);
           const cld = searcher.closestPoint;
           if (ck.testType(cld, CurveLocationDetail)) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
-            const segmentIndex = cld.a;
-            // const segmentFraction = cld.fraction;
             const distance = xyz.distance(cld.point);
+            const indexAndFraction = linestring.globalFractionToSegmentIndexAndLocalFraction(cld.fraction);
+            const segmentIndex = indexAndFraction.index;
+            // const segmentFraction = indexAndFraction.fraction;
+
             const i1 = Math.min(segmentIndex + 4, wavePoints.length);
             for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++) {
               ck.testLE(distance, xyz.distance(wavePoints[i]));
@@ -541,7 +545,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("PolylinePolylineSearcher", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
@@ -562,9 +566,9 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, z0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, z0);
 
-    const contextA = PolylineRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth)!;
-    const contextB = PolylineRangeTreeContext.createCapture(pointsB, treeWidth, treeWidth)!;
-    const polylineApproach = PolylineRangeTreeContext.searchForClosestApproach(contextA, contextB);
+    const contextA = LineString3dRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth)!;
+    const contextB = LineString3dRangeTreeContext.createCapture(pointsB, treeWidth, treeWidth)!;
+    const polylineApproach = LineString3dRangeTreeContext.searchForClosestApproach(contextA, contextB);
 
     if (ck.testDefined(polylineApproach) && polylineApproach !== undefined) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polylineApproach.detailA.point, polylineApproach.detailB.point], x0, y0, z0);

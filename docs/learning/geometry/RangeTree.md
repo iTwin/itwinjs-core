@@ -54,10 +54,11 @@ The overall class structure for a specialized range tree object is as in this fi
         * Tree searches aim to identify particular facets within the polyface
         * The context holds a pointer to a visitor for the polyface
         * the appData in leaf nodes is indices (readIndex) into the polyface
-      * A polyline (PolylineRangeTreeContext)
+      * A linestring (LineString3dRangeTreeContext)
         * Tree searches aim to identify individual edges (line segments) within the polyline
-      * the data for the polyline is an array of Point3d
-      * The index is the index of an edge's first vertex (of two) in the point array.
+      * the data for the linestring is a LineString3d
+      * the returned CurveLocationDetail data indcates a fraction position of a point on the LineStrint3d.
+        * Recall that that "fractional position" is encoded so that the segment index and intra-segment fraction are in a single number.
 
 ## Handlers
 

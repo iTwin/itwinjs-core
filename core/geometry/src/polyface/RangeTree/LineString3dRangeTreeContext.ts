@@ -10,19 +10,19 @@ import { Range3d } from "../../geometry3d/Range";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Geometry } from "../../Geometry";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 /**
  * class to host a point array and associated RangeTree for multiple search calls.
  * @public
  */
-export class PolylineRangeTreeContext {
+export class LineString3dRangeTreeContext {
   /** evolving search state during searches */
   public searchState: MinimumValueTester<CurveLocationDetail>;
   /** polyline points */
-  public points: Point3d[];
+  public linestring: LineString3d;
   /** space point for closest point search */
   public spacePoint: Point3d;
   /** diagnostic: number of range tests that have returned true */
@@ -36,10 +36,10 @@ export class PolylineRangeTreeContext {
 
   private _rangeTreeRoot: RangeTreeNode<number>;
 
-  private constructor(rangeTreeRoot: RangeTreeNode<number>, points: Point3d[]) {
+  private constructor(rangeTreeRoot: RangeTreeNode<number>, points: LineString3d) {
     this.spacePoint = Point3d.create(0, 0, 0);
     this.searchState = MinimumValueTester.create<CurveLocationDetail>();
-    this.points = points;
+    this.linestring = points;
     this._rangeTreeRoot = rangeTreeRoot;
     this.numRangeTestTrue = 0;
     this.numRangeTestFalse = 0;
@@ -57,17 +57,20 @@ export class PolylineRangeTreeContext {
   /**
    * Create a range tree for the polyline points.
    *
-   * @param points polyline points.  THIS ARRAY POINTER IS CAPTURED.
+   * @param linestring
    * @returns Polyline3dClosestPointSearchContext with a range tree and the point array.
    */
-  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): PolylineRangeTreeContext | undefined {
+  public static createCapture(points: Point3d[] | LineString3d, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): LineString3dRangeTreeContext | undefined {
+    const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      ((index: number): Range3d => { return Range3d.create(points[index]); }),
+      ((index: number): Range3d => {
+        return Range3d.create(linestring.pointAt(index)!, linestring.pointAt(index + 1)!);
+      }),
       ((index: number): number => { return index; }),
-      points.length - 1,
+      linestring.numPoints() - 1,
       maxChildPerNode, maxAppDataPerLeaf,
     );
-    return rangeTreeRoot !== undefined ? new PolylineRangeTreeContext(rangeTreeRoot, points) : undefined;
+    return rangeTreeRoot !== undefined ? new LineString3dRangeTreeContext(rangeTreeRoot, linestring) : undefined;
   }
 
   public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
@@ -76,12 +79,12 @@ export class PolylineRangeTreeContext {
     this.spacePoint = spacePoint.clone();
     this.searchState.resetMinValueAndItem();
     // seed the search with a few points -- this reduces early trips deep into early ranges that are far from spacePoint.
-    const numTest = Geometry.clamp(Math.floor(this.points.length / 20), 2, 7);
-    const testStep = Math.floor(this.points.length / numTest);
+    const numTest = Geometry.clamp(Math.floor(this.linestring.numPoints() / 20), 2, 7);
+    const testStep = Math.floor(this.linestring.numPoints() / numTest);
     handler.processAppData(0);
-    handler.processAppData(this.points.length - 2);
+    handler.processAppData(this.linestring.numPoints() - 2);
 
-    for (let i = testStep; i + 1 < this.points.length; i += testStep) {
+    for (let i = testStep; i + 1 < this.linestring.numPoints(); i += testStep) {
       handler.processAppData(i);
     }
     this._rangeTreeRoot.searchTopDown(handler);
@@ -94,8 +97,8 @@ export class PolylineRangeTreeContext {
    * @returns pair of CurveLocationDetails
    */
   public static searchForClosestApproach(
-    contextA: PolylineRangeTreeContext,
-    contextB: PolylineRangeTreeContext,
+    contextA: LineString3dRangeTreeContext,
+    contextB: LineString3dRangeTreeContext,
   ): CurveLocationDetailPair | undefined {
     const handler = new TwoTreeSearchHandlerPolylinePolylineCloseApproach(contextA, contextB);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
@@ -108,18 +111,18 @@ export class PolylineRangeTreeContext {
    * * If distance is of interest to the searchState, save the result.
    */
   public static updateClosestApproachBetweenIndexedSegments(
-    contextA: PolylineRangeTreeContext, indexA: number,
-    contextB: PolylineRangeTreeContext, indexB: number,
+    contextA: LineString3dRangeTreeContext, indexA: number,
+    contextB: LineString3dRangeTreeContext, indexB: number,
     searchState: MinimumValueTester<CurveLocationDetailPair>) {
     contextA.numPointTest++;
     // capture point references ...
-    this._workSegmentA = LineSegment3d.create(contextA.points[indexA], contextA.points[indexA + 1], this._workSegmentA);
-    this._workSegmentB = LineSegment3d.create(contextB.points[indexB], contextB.points[indexB + 1], this._workSegmentB);
+    this._workSegmentA = contextA.linestring.getIndexedSegment(indexA, this._workSegmentA)!;
+    this._workSegmentB = contextB.linestring.getIndexedSegment(indexB, this._workSegmentB)!;
     const cld = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false);
     if (cld !== undefined && searchState.isNewMinOrTrigger(cld.detailA.a)) {
       // annotate the details with polyline fractions instead of segment fractions.
-      const polylineFractionA = (indexA + cld.detailA.fraction) / (contextA.points.length - 1);
-      const polylineFractionB = (indexA + cld.detailB.fraction) / (contextB.points.length - 1);
+      const polylineFractionA = (indexA + cld.detailA.fraction) / (contextA.linestring.numPoints() - 1);
+      const polylineFractionB = (indexB + cld.detailB.fraction) / (contextB.linestring.numPoints() - 1);
 
       cld.detailA.fraction = polylineFractionA;
       cld.detailB.fraction = polylineFractionB;
@@ -136,11 +139,11 @@ export class PolylineRangeTreeContext {
  */
 class SingleTreeSearchHandlerForClosestPointOnPolyline extends SingleTreeSearchHandler<number> {
   /** calling context */
-  public context: PolylineRangeTreeContext;
+  public context: LineString3dRangeTreeContext;
   /**
    * CONSTRUCTOR: Capture calling context
    */
-  public constructor(context: PolylineRangeTreeContext) {
+  public constructor(context: LineString3dRangeTreeContext) {
     super();
     this.context = context;
   }
@@ -158,9 +161,13 @@ class SingleTreeSearchHandlerForClosestPointOnPolyline extends SingleTreeSearchH
     this.context.numRangeTestFalse++;
     return false;
   }
+  private _workSegment?: LineSegment3d;
   /** Test a point (stored in the range tree) as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const cld = PolylineOps.projectPointToUncheckedIndexedSegment(this.context.spacePoint, this.context.points, candidateIndex, false, false);
+    this._workSegment = this.context.linestring.getIndexedSegment(candidateIndex, this._workSegment)!;
+    const cld = this._workSegment.closestPoint(this.context.spacePoint, false);
+    cld.fraction = this.context.linestring.segmentIndexAndLocalFractionToGlobalFraction(candidateIndex, cld.fraction);
+    // const cld = PolylineOps.projectPointToUncheckedIndexedSegment(this.context.spacePoint, this.context.linestring, candidateIndex, false, false);
     const d = this.context.spacePoint.distance(cld.point);
     this.context.numPointTest++;
     this.context.searchState.testAndSave(cld, d);
@@ -173,9 +180,9 @@ class SingleTreeSearchHandlerForClosestPointOnPolyline extends SingleTreeSearchH
  */
 export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
   /** context for first polyline */
-  public contextA: PolylineRangeTreeContext;
+  public contextA: LineString3dRangeTreeContext;
   /** context for second polyline */
-  public contextB: PolylineRangeTreeContext;
+  public contextB: LineString3dRangeTreeContext;
   /** visitor for first polyline */
   /** search state with current min distance and facet pair */
   public searchState: MinimumValueTester<CurveLocationDetailPair>;
@@ -184,7 +191,7 @@ export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDi
    * * create search state
    * * CAPTURE visitors accessed in contexts
    */
-  public constructor(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext) {
+  public constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
@@ -204,6 +211,6 @@ export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDi
   /** Carry out detailed calculation of closest approach between two facets.
   */
   public processAppDataPair(tagA: number, tagB: number): void {
-    PolylineRangeTreeContext.updateClosestApproachBetweenIndexedSegments(this.contextA, tagA, this.contextB, tagB, this.searchState);
+    LineString3dRangeTreeContext.updateClosestApproachBetweenIndexedSegments(this.contextA, tagA, this.contextB, tagB, this.searchState);
   }
 }

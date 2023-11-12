@@ -171,6 +171,7 @@ public;LinearCurvePrimitive = LineSegment3d | LineString3d
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
+public;LineString3dRangeTreeContext
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
 public;LongitudeLatitudeNumber 
 public;Loop 
@@ -245,7 +246,6 @@ public;PolygonLocationDetail
 public;PolygonLocationDetailPair
 public;PolygonOps
 public;PolylineOps
-public;PolylineRangeTreeContext
 internal;PowerPolynomial
 public;class ProxyCurve 
 internal;Quadrature

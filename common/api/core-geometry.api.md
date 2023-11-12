@@ -3430,7 +3430,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     static fromJSON(json?: any): LineString3d;
-    getIndexedSegment(index: number): LineSegment3d | undefined;
+    getIndexedSegment(index: number, result?: LineSegment3d): LineSegment3d | undefined;
     globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {
         index: number;
         fraction: number;
@@ -3466,6 +3466,25 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     toJSON(): XYZProps[];
     tryTransformInPlace(transform: Transform): boolean;
     vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined;
+}
+
+// @public
+export class LineString3dRangeTreeContext {
+    get closestDistance(): number | undefined;
+    // (undocumented)
+    get closestPoint(): CurveLocationDetail | undefined;
+    static createCapture(points: Point3d[] | LineString3d, maxChildPerNode?: number, maxAppDataPerLeaf?: number): LineString3dRangeTreeContext | undefined;
+    linestring: LineString3d;
+    numPointTest: number;
+    numRangeTestFalse: number;
+    numRangeTestTrue: number;
+    numSearch: number;
+    static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined;
+    // (undocumented)
+    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    searchState: MinimumValueTester<CurveLocationDetail>;
+    spacePoint: Point3d;
+    static updateClosestApproachBetweenIndexedSegments(contextA: LineString3dRangeTreeContext, indexA: number, contextB: LineString3dRangeTreeContext, indexB: number, searchState: MinimumValueTester<CurveLocationDetailPair>): void;
 }
 
 // @public
@@ -4998,25 +5017,6 @@ export class PolylineOps {
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
-// @public
-export class PolylineRangeTreeContext {
-    get closestDistance(): number | undefined;
-    // (undocumented)
-    get closestPoint(): CurveLocationDetail | undefined;
-    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolylineRangeTreeContext | undefined;
-    numPointTest: number;
-    numRangeTestFalse: number;
-    numRangeTestTrue: number;
-    numSearch: number;
-    points: Point3d[];
-    static searchForClosestApproach(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext): CurveLocationDetailPair | undefined;
-    // (undocumented)
-    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
-    searchState: MinimumValueTester<CurveLocationDetail>;
-    spacePoint: Point3d;
-    static updateClosestApproachBetweenIndexedSegments(contextA: PolylineRangeTreeContext, indexA: number, contextB: PolylineRangeTreeContext, indexB: number, searchState: MinimumValueTester<CurveLocationDetailPair>): void;
-}
-
 // @internal
 export class PowerPolynomial {
     static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number;
@@ -6311,9 +6311,9 @@ export class TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach extends T
 
 // @internal
 export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: PolylineRangeTreeContext, contextB: PolylineRangeTreeContext);
-    contextA: PolylineRangeTreeContext;
-    contextB: PolylineRangeTreeContext;
+    constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext);
+    contextA: LineString3dRangeTreeContext;
+    contextB: LineString3dRangeTreeContext;
     // (undocumented)
     getCurrentDistance(): number;
     getResult(): CurveLocationDetailPair | undefined;
