@@ -438,35 +438,37 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
+  /**
+   * Compute the intersection of two xy-arcs.
+   * * Each matrix has [U V C] in (x,y,w) form from homogeneous projection (local to world).
+   * * Arcs are ordered so that matrixA is better conditioned.
+   */
   private dispatchArcArcThisOrder(
-    cpA: Arc3d,
-    matrixA: Matrix3d, // homogeneous xyw projection
+    cpA: Arc3d,         // arc closer to being circular
+    matrixA: Matrix3d,
     extendA: boolean,
     cpB: Arc3d,
-    matrixB: Matrix3d, // homogeneous xyw projection
+    matrixB: Matrix3d,
     extendB: boolean,
     reversed: boolean,
   ): void {
-    // map (and transform) arcA to xy plane such that it becomes the unit circle.
-    // note that if you use inverseA to transform arcA, it becomes a unit circle.
+    // inverseA transforms arcA to its local coordinates, where it is the unit xy-circle.
     const inverseA = matrixA.inverse();
     if (inverseA) {
-      // use the same map (and transform) to map arcB to xy plane.
+      // localB defines the arc formed by transforming arcB into the local coordinates of arcA
       const localB = inverseA.multiplyMatrixMatrix(matrixB);
       const ellipseRadians: number[] = [];
       const circleRadians: number[] = [];
-      // find the intersection of arc and unit circle.
+      // find the intersection of the transformed arcs
       TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
         localB.coffs[2], localB.coffs[5], localB.coffs[8],  // center xyw
         localB.coffs[0], localB.coffs[3], localB.coffs[6],  // vector0 xyw
         localB.coffs[1], localB.coffs[4], localB.coffs[7],  // vector90 xyw
         ellipseRadians, circleRadians,
-      );
-      // transform back the intersections.
+      );  // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
         const fractionB = cpB.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
-        // hm .. do we really need to check the fractions?  We know they are internal to the beziers
         if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
         }
@@ -474,12 +476,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   /**
-   * We have 2 arcs that can be non-coplanar. 
+   * We have 2 xy-arcs. 
    * 1- We pick the arc that is closest to circular (larger condition number is closer to circular).
-   * 2- Map (and transform) it to xy plane such that it becomes the unit circle. 
-   * 3- Use the same map (and transform) to map the other arc to xy plane.
+   * 2- Transform it to local coords, where it becomes the unit xy-circle. 
+   * 3- Use the same map to transform the other arc.
    * 4- Find the intersection of arc and unit circle.
-   * 5- Transform back the intersections.
+   * 5- Convert intersection angles to fractions and record intersections.
    */
   private dispatchArcArc(
     cpA: Arc3d, extendA: boolean, cpB: Arc3d, extendB: boolean, reversed: boolean,
@@ -671,6 +673,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           );
           if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
+            // We have a near intersection at fractions on the two beziers !!!
+            // Iterate on the curves for a true intersection ....
             const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
@@ -678,23 +682,22 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               bezierAFraction = newtonSearcher.getU();
               bezierBFraction = newtonSearcher.getV();
             }
-            // We have a near intersection at fractions on the two beziers !!!
-            // Iterate on the curves for a true intersection ....
-            // NEEDS WORK -- just accept . . .
             const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
             const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
-            const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
-            const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
-            const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
-            const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
-            if (!xyzA0.isAlmostEqualXY(xyzA1))
-              errors++;
-            if (!xyzB0.isAlmostEqualXY(xyzB1))
-              errors++;
-            if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
-              errors++;
-            if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
-              errors++;
+            if (!"verify results") {
+              const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
+              const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
+              const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
+              const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
+              if (!xyzA0.isAlmostEqualXY(xyzA1))
+                errors++;
+              if (!xyzB0.isAlmostEqualXY(xyzB1))
+                errors++;
+              if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
+                errors++;
+              if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
+                errors++;
+            }
             if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
               this.recordPointWithLocalFractions(
                 bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,

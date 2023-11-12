@@ -450,7 +450,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       assert(!!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
       return undefined;
     }
-    const seeds = [0.2, 0.4, 0.6, 0.8];
+    const seeds = [0.2, 0.4, 0.6, 0.8]; // HEURISTIC: arcs have up to 4 perpendiculars; lines have only 1
     const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
     const newtonSearcher = new Newton1dUnbounded(newtonEvaluator);
     let minCloseApproachLength = Geometry.largeCoordinateResult;
@@ -623,7 +623,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private solveArcArcNewton(
     curveP: Arc3d, curveQ: Arc3d, reversed: boolean, newtonEvaluator: NewtonEvaluatorRRtoRRD,
   ): void {
-    const seedsU = [0.2, 0.4, 0.6, 0.8];
+    const seedsU = [0.2, 0.4, 0.6, 0.8];  // HEURISTIC: 2 arcs have up to 4 perpendiculars/intersections
     const seedsV = [0.2, 0.4, 0.6, 0.8];
     const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator);
     for (const seedU of seedsU) {

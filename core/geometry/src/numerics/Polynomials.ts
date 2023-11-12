@@ -1182,10 +1182,8 @@ export class TrigPolynomial {
    * @param referenceCoefficient A number which represents the size of coefficients
    *     at various stages of computation.  A small fraction of this will be used as a zero
    *     tolerance
-   * @param angles Roots are placed here. Assumed preallocated with adequate size.
-   * @param numRoots Number of roots  .  Zero roots is possible. (Passed as array of size
-   * one to pass-by-reference)
-   * Returns false if equation is all zeros.   This usually means any angle is a solution.
+   * @param radians Roots are placed here
+   * @return false if equation is all zeros. This usually means any angle is a solution.
    */
   public static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number,
     radians: number[]): boolean {
@@ -1261,7 +1259,6 @@ export class TrigPolynomial {
    * @param ay  Coefficient of y
    * @param a1  Constant coefficient
    * @param radians  solution angles
-   * @param numAngle  number of solution angles(Passed as array to make changes to reference)
    */
   public static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
     ax: number, ay: number, a1: number, radians: number[]): boolean {
@@ -1338,8 +1335,7 @@ export class TrigPolynomial {
   }
   /**
    * Compute intersections of unit circle `x^2 + y^2 = w^2` with the ellipse
-   * `(x,y) = (cx + ux Cos + vx Sin, cy + uy Cos + vy Sin) / (cw + uw Cos + vw Sin)`.
-   * Solutions are returned as angles in the ellipse space.
+   * `F(t) = (cx + ux cos(t) + vx sin(t), cy + uy cos(t) + vy sin(t)) / (cw + uw cos(t) + vw sin(t))`.
    * @param cx center x
    * @param cy center y
    * @param cw center w
