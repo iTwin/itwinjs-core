@@ -462,7 +462,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         const curvePFraction = newtonSearcher.getX();
         if (this.acceptFraction(curvePFraction)) {
           const pointP = curveP.fractionToPoint(curvePFraction);
-          const closeApproachLength = pointP.distanceXY(pointQ);
+          const closeApproachLength = pointP.distanceSquaredXY(pointQ);
           if (closeApproachLength < minCloseApproachLength) {
             minCloseApproachLength = closeApproachLength;
             minCurvePFraction = curvePFraction;
