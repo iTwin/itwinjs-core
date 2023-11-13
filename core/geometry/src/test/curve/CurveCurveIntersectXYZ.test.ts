@@ -306,7 +306,7 @@ describe("CurveCurveIntersectXYZ", () => {
   it("LineArc", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const geometryA = LineSegment3d.createXYZXYZ(0, 2, -5, 0, 2, 5);
+    const geometryA = LineSegment3d.createXYZXYZ(1, 2, -3, -1, 2, 3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
@@ -314,7 +314,7 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(0, 2, 0);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
@@ -394,7 +394,7 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(3, 4);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
@@ -405,6 +405,36 @@ describe("CurveCurveIntersectXYZ", () => {
     ck.testTightNumber(i1.z, expectedIntersectionXY.z);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXYZ", "ArcArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ArcArcTranslation", () => {
+    const ck = new Checker();
+    const dx = 980.21312;
+    const dy = 700.2342;
+    const dz = 123.81;
+    for (let i = 0; i < 1000; i = i + 10) {
+      const geometryA = Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(-1 + i * dx, 2 + i * dy, i * dz),
+        Point3d.create(3 + i * dx, 4 + i * dy, i * dz),
+        Point3d.create(7 + i * dx, 2 + i * dy, i * dz),
+      )!;
+      const geometryB = Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(3 + i * dx, 3 + i * dy, -2 + i * dz),
+        Point3d.create(3 + i * dx, 4 + i * dy, i * dz),
+        Point3d.create(3 + i * dx, 5 + i * dy, -2 + i * dz),
+      )!;
+      // find intersections
+      const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
+      const numExpected = 1;
+      const expectedIntersectionXY = Point3d.create(3 + i * dx, 4 + i * dy, i * dz);
+      ck.testExactNumber(numExpected, intersections.length);
+      const i1 = intersections[0].detailA.point;
+      const i2 = intersections[0].detailB.point;
+      ck.testPoint3d(i1, i2);
+      ck.testTightNumber(i1.x, expectedIntersectionXY.x);
+      ck.testTightNumber(i1.y, expectedIntersectionXY.y);
+      ck.testTightNumber(i1.z, expectedIntersectionXY.z);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
   it("LineStringLineString", () => {
@@ -436,13 +466,13 @@ describe("CurveCurveIntersectXYZ", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYZPairs(geometryA, false, geometryB, false);
-    const numExpected = 2; // BUG! number of expected intersections is 1 but code generates duplicate intersections
+    const numExpected = 1;
     const expectedIntersectionXY = Point3d.create(3, 4);
     ck.testExactNumber(numExpected, intersections.length);
     const i1 = intersections[0].detailA.point;
     const i2 = intersections[0].detailB.point;
     ck.testPoint3d(i1, i2);
-    // ck.testTightNumber(i1.x, expectedIntersectionXY.x); // this line fails due to the duplicate bug!
+    ck.testTightNumber(i1.x, expectedIntersectionXY.x);
     ck.testTightNumber(i1.y, expectedIntersectionXY.y);
     ck.testTightNumber(i1.z, expectedIntersectionXY.z);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
