@@ -1170,7 +1170,7 @@ export interface ClassifierTileTreeId {
 
 // @public
 export class ClipIntersectionStyle {
-    readonly color?: RgbColor;
+    readonly color: Readonly<RgbColor>;
     static create(color?: RgbColor, width?: number): ClipIntersectionStyle;
     // (undocumented)
     static readonly defaults: ClipIntersectionStyle;
@@ -1179,7 +1179,7 @@ export class ClipIntersectionStyle {
     // (undocumented)
     get matchesDefaults(): boolean;
     toJSON(): ClipIntersectionStyleProps | undefined;
-    readonly width?: number;
+    readonly width: number;
 }
 
 // @public
@@ -1190,8 +1190,8 @@ export interface ClipIntersectionStyleProps {
 
 // @public
 export class ClipStyle {
-    readonly colorizeIntersection?: boolean;
-    static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle | undefined): ClipStyle;
+    readonly colorizeIntersection: boolean;
+    static create(style: ClipStyleArgs): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
@@ -1202,6 +1202,16 @@ export class ClipStyle {
     readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
     toJSON(): ClipStyleProps | undefined;
+}
+
+// @public
+export interface ClipStyleArgs {
+    colorizeIntersection: boolean;
+    cutStyle: CutStyle;
+    insideColor?: RgbColor;
+    intersectionStyle?: ClipIntersectionStyle;
+    outsideColor?: RgbColor;
+    produceCutGeometry: boolean;
 }
 
 // @public

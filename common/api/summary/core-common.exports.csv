@@ -112,6 +112,7 @@ internal;ClassifierTileTreeId
 public;ClipIntersectionStyle
 public;ClipIntersectionStyleProps
 public;ClipStyle
+public;ClipStyleArgs
 public;ClipStyleProps
 beta;CloudContainerUri
 public;Code 
