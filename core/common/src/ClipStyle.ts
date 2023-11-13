@@ -174,7 +174,7 @@ export class ClipIntersectionStyle {
  * @public
  * @extensions
  */
-export interface ClipStyleArgs {
+export interface ClipStyleCreateArgs {
   /** If `true`, geometry will be produced at the clip planes in a 3d view.
    * - Solids (closed volumes) will produce facets on the clip planes.
    * - Other surfaces will produce line strings representing the edges of the surface at the clip planes.
