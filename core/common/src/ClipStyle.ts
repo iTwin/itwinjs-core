@@ -170,8 +170,7 @@ export class ClipIntersectionStyle {
   }
 }
 
-/** Wire format describing a [[ClipStyle]].
- * @see [[DisplayStyleSettingsProps.clipStyle]].
+/** Arguments supplied to [[ClipStyle.create]].
  * @public
  * @extensions
  */
