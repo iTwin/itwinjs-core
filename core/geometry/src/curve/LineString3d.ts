@@ -20,7 +20,7 @@ import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "..
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
+import { XAndY, XYZProps } from "../geometry3d/XYZProps";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
@@ -497,7 +497,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * Convert an LineString3d to a JSON object.
    * * The returned object is an array of arrays of x,y,z coordinates, `[[x,y,z],...[x,y,z]]`
    */
-  public toJSON(): any {
+  public toJSON(): XYZProps[] {
     const value = [];
     let i = 0;
     while (this._points.isIndexValid(i)) {
@@ -536,6 +536,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Evaluate a point a fractional position and derivative with respect to fraction along this linestring.
    * * See `LineString3d` class comments for description of how fraction relates to the linestring points.
+   * * At interior corners and the end point, the left derivative is returned; at the start point, the right derivative is returned.
    * @param fraction fractional position
    * @param result optional result
    */

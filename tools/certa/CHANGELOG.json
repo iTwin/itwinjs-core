@@ -2,6 +2,39 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "4.2.3",
+      "tag": "@itwin/certa_v4.2.3",
+      "date": "Mon, 06 Nov 2023 14:01:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.2",
+      "tag": "@itwin/certa_v4.2.2",
+      "date": "Thu, 02 Nov 2023 15:36:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.1",
+      "tag": "@itwin/certa_v4.2.1",
+      "date": "Tue, 24 Oct 2023 15:09:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/certa_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Mitigate GHSA-j7hp-h8jx-5ppr by bumping electron to first patched version (26.2.1)"
+          },
+          {
+            "comment": "Add support for Electron 26"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/certa_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",

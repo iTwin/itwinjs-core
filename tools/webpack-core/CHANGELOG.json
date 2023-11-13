@@ -2,6 +2,36 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "4.2.3",
+      "tag": "@itwin/core-webpack-tools_v4.2.3",
+      "date": "Mon, 06 Nov 2023 14:01:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.2",
+      "tag": "@itwin/core-webpack-tools_v4.2.2",
+      "date": "Thu, 02 Nov 2023 15:36:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.1",
+      "tag": "@itwin/core-webpack-tools_v4.2.1",
+      "date": "Tue, 24 Oct 2023 15:09:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/core-webpack-tools_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updates devtoolModuleFilenameTemplate to be in line with webpack documentation."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.1.9",
       "tag": "@itwin/core-webpack-tools_v4.1.9",
       "date": "Tue, 10 Oct 2023 18:48:12 GMT",

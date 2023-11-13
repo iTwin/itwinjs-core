@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove maximum depth constraint for reality tile trees.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

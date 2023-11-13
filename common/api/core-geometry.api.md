@@ -4,21 +4,6 @@
 
 ```ts
 
-// @internal
-export abstract class AbstractNewtonIterator {
-    protected constructor(stepSizeTolerance?: number, successiveConvergenceTarget?: number, maxIterations?: number);
-    abstract applyCurrentStep(isFinalStep: boolean): boolean;
-    abstract computeStep(): boolean;
-    abstract currentStepSize(): number;
-    protected _maxIterations: number;
-    protected _numAccepted: number;
-    numIterations: number;
-    runIterations(): boolean;
-    protected _stepSizeTolerance: number;
-    protected _successiveConvergenceTarget: number;
-    testConvergence(delta: number): boolean;
-}
-
 // @public
 export class AkimaCurve3d extends ProxyCurve {
     clone(): AkimaCurve3d;
@@ -220,6 +205,9 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
 
 // @public
 export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void;
+
+// @public
+export type AnyChain = CurvePrimitive | Path | BagOfCurves | Loop;
 
 // @public
 export type AnyCurve = CurvePrimitive | CurveCollection;
@@ -1016,7 +1004,7 @@ export enum BSplineWrapMode {
     OpenByRemovingKnots = 2
 }
 
-// @public
+// @public @deprecated
 export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
 // @public
@@ -1244,6 +1232,7 @@ export class ClipUtilities {
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
     static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;
     static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
+    static rangeOfIntersectionOfLocalRanges(range0: Range3d, local0ToWorld: Transform, range1: Range3d, local1ToWorld: Transform, result?: Range3d): Range3d;
     static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: IndexedXYZCollection, arrayCache: GrowableXYZArrayCache): void;
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     static sumPolylineClipLength(clipper: Clipper, points: Point3d[]): number;
@@ -1729,12 +1718,12 @@ export class CurveLocationDetailPair {
 // @public
 export class CurveOps {
     static appendXYOffsets(curves: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number;
-    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number | undefined): ChainTypes;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number | undefined): AnyChain | undefined;
     static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, planeTolerance?: number | undefined): void;
     static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
         insideOffsets: AnyCurve[];
         outsideOffsets: AnyCurve[];
-        chains: ChainTypes;
+        chains?: AnyChain;
     };
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined;
     static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
@@ -2777,6 +2766,7 @@ export namespace IModelJson {
         bsurf?: BSplineSurfaceProps;
         indexedMesh?: IndexedMeshProps;
         point?: XYZProps;
+        pointString?: XYZProps[];
     }
     export interface IndexedMeshProps {
         color?: [number];
@@ -3457,7 +3447,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     setFromJSON(json?: any): void;
     startPoint(): Point3d;
     surfaceNormalAt(i: number, result?: Vector3d): Vector3d | undefined;
-    toJSON(): any;
+    toJSON(): XYZProps[];
     tryTransformInPlace(transform: Transform): boolean;
     vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined;
 }
@@ -3845,59 +3835,6 @@ export class MomentData {
 
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
-
-// @internal
-export class Newton1dUnbounded extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRtoRD);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    getX(): number;
-    setTarget(y: number): void;
-    setX(x: number): boolean;
-}
-
-// @internal
-export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRtoR);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    derivativeH: number;
-    getX(): number;
-    setX(x: number): boolean;
-}
-
-// @internal
-export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
-    constructor(func: NewtonEvaluatorRRtoRRD);
-    applyCurrentStep(): boolean;
-    computeStep(): boolean;
-    currentStepSize(): number;
-    getU(): number;
-    getV(): number;
-    setUV(u: number, v: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRRtoRRD {
-    constructor();
-    currentF: Plane3dByOriginAndVectors;
-    abstract evaluate(x: number, y: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRtoR {
-    currentF: number;
-    abstract evaluate(x: number): boolean;
-}
-
-// @internal
-export abstract class NewtonEvaluatorRtoRD {
-    currentdFdX: number;
-    currentF: number;
-    abstract evaluate(x: number): boolean;
-}
 
 // @internal
 export type NodeFunction = (node: HalfEdge) => any;
@@ -4609,7 +4546,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     reverseInPlace(): void;
     setFrom(other: PointString3d): void;
     setFromJSON(json?: any): void;
-    toJSON(): any;
+    toJSON(): XYZProps[];
     tryTransformInPlace(transform: Transform): boolean;
 }
 
@@ -4651,6 +4588,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined, params: GrowableXYArray | undefined, colors: number[] | undefined, edgeVisible?: boolean[]): void;
     addFacetFromIndexedVisitor(visitor: PolyfaceVisitor, indices: number[]): boolean;
     addFacetFromVisitor(visitor: PolyfaceVisitor): void;
+    addFacetsFromVisitor(visitor: PolyfaceVisitor): void;
     addGeometryQuery(g: GeometryQuery): void;
     // @internal
     addGraph(graph: HalfEdgeGraph, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction | undefined): void;
@@ -4798,6 +4736,7 @@ export class PolyfaceQuery {
     static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceLoop: (points: LineString3d) => void): void;
     static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
+    static announceSilhouetteEdges(source: Polyface | PolyfaceVisitor, announce: (pointA: Point3d, pointB: Point3d, vertexIndexA: number, vertexIndexB: number, facetIndex: number) => void, vectorToEye: Vector3d, sideAngle?: Angle): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     // @internal
     static asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): Promise<number>;
@@ -4806,7 +4745,7 @@ export class PolyfaceQuery {
     static get asyncWorkLimit(): number;
     // @internal
     static awaitBlockCount: number;
-    static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
@@ -4818,9 +4757,11 @@ export class PolyfaceQuery {
     static cloneWithDanglingEdgesRemoved(source: Polyface | PolyfaceVisitor): IndexedPolyface;
     static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle): IndexedPolyface | undefined;
     static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface;
+    static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): AnyChain | undefined;
     static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons?: boolean): number[][];
     static collectEdgesByDihedralAngle(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle, sharpEdges?: boolean): SortableEdgeCluster[];
     static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData;
+    static collectSilhouetteEdges(source: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngle?: Angle): AnyChain | undefined;
     static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
@@ -5418,12 +5359,12 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined;
-    static collectChains(fragments: AnyCurve[], gapTolerance?: number): ChainTypes;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number): AnyChain | undefined;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     static collectInsideAndOutsideOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
         insideOffsets: AnyCurve[];
         outsideOffsets: AnyCurve[];
-        chains: ChainTypes;
+        chains?: AnyChain;
     };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
@@ -5453,7 +5394,7 @@ export class RegionOps {
         outsideParts: AnyCurve[];
         coincidentParts: AnyCurve[];
     };
-    static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes;
+    static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
 }
 
@@ -5654,11 +5595,6 @@ export interface SignedLoops {
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];
-}
-
-// @internal
-export class SimpleNewton {
-    static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance?: number): number | undefined;
 }
 
 // @internal
@@ -6417,6 +6353,7 @@ export class Vector3d extends XYZ {
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Vector3d): Vector3d;
+    radiansFromPerpendicular(planeNormal: Vector3d): number;
     radiansTo(vectorB: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;

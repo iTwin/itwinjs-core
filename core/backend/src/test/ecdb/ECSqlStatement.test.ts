@@ -1762,7 +1762,7 @@ describe("ECSqlStatement", () => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Range3d) VALUES(?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlStatement) => {
         stmt.bindRange3d(1, testRange);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1770,7 +1770,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
       ecdb.saveChanges();
-      ecdb.withPreparedStatement("SELECT Range3d FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT [Range3d] FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
