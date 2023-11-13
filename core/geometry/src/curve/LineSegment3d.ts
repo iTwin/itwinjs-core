@@ -265,7 +265,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       } else if (fractionB !== unboundedFractions.y) {
         // B (only) was clamped.
         const clampedPointOnB = fractionB < 0.5 ? segmentB._point0 : segmentB._point1;
-        result.detailA = segmentA.closestPoint(clampedPointOnB, extendB);
+        result.detailA = segmentA.closestPoint(clampedPointOnB, extendA);
         result.detailB.setCurve(segmentB);
         result.detailB.point.setFrom(clampedPointOnB);
         result.detailB.fraction = fractionB;
