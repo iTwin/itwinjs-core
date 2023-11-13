@@ -180,11 +180,11 @@ export interface ClipStyleCreateArgs {
    * - Other surfaces will produce line strings representing the edges of the surface at the clip planes.
    * @note Cut geometry will only be produced for element geometry - not for, e.g., terrain or reality models.
    */
-  produceCutGeometry: boolean;
-  /** If 'true', intersection of geometry and clip planes will be colorized */
-  colorizeIntersection: boolean;
+  produceCutGeometry?: boolean;
+  /** If `true`, intersection of geometry and clip planes will be colorized */
+  colorizeIntersection?: boolean;
   /** Controls aspects of how the cut geometry is displayed, if [[produceCutGeometry]] is `true`. */
-  cutStyle: CutStyle;
+  cutStyle?: CutStyle;
   /** If defined, geometry inside the clip planes will be drawn in this color. */
   insideColor?: RgbColor;
   /** If defined, geometry outside of the clip planes will be drawn in this color instead of being clipped. */
