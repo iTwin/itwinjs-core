@@ -117,7 +117,7 @@ export interface ClipIntersectionStyleProps {
  */
 export class ClipIntersectionStyle {
   /** Color to apply to intersection of geometry and clip planes, default white */
-  public readonly color: Readonly<RgbColor>;
+  public readonly color: RgbColor;
   /** Number of pixels to be considered intersecting the clip plane, default 1 */
   public readonly width: number;
 
