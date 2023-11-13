@@ -1,5 +1,6 @@
 ---
 tableRowAnchors: true
+layout: custom-ui-feedback.handlebars
 ---
 
 # Glossary of terms in iTwin.js UI
