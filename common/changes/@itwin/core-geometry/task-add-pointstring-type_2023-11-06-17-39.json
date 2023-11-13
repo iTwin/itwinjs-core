@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "add GeometryProps.pointString",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
