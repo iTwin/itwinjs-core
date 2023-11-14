@@ -64,7 +64,9 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    const { props, iModel } = arg;
+    iModel.channels.verifyChannel(arg.model);
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "update");
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -79,7 +81,9 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    const { props, iModel } = arg;
+    iModel.channels.verifyChannel(arg.model);
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "update");
   }
 
   /** Called after an ElementAspect was updated.
