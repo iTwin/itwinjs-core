@@ -154,6 +154,7 @@ export * from "./geometry3d/Range";
 export * from "./geometry3d/Ray2d";
 export * from "./geometry3d/Ray3d";
 export * from "./geometry3d/Segment1d";
+export * from "./geometry3d/TaggedDataPair";
 export * from "./geometry3d/Transform";
 export * from "./geometry3d/UVSurfaceOps";
 export * from "./geometry3d/XYZProps";

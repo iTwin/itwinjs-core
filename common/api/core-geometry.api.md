@@ -5978,6 +5978,18 @@ export class SweepLineStringToFacetsOptions {
 }
 
 // @public
+export class TaggedDataPair<DataTypeA, DataTypeB, TagType> {
+    constructor(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType);
+    dataA: DataTypeA;
+    dataB: DataTypeB;
+    setAll(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType): void;
+    setData(dataA: DataTypeA, dataB: DataTypeB): void;
+    setTags(tagA?: TagType, tagB?: TagType): void;
+    tagA?: TagType;
+    tagB?: TagType;
+}
+
+// @public
 export namespace TaggedNumericConstants {
     export enum SubdivisionControlCode {
         AbsoluteTolerance = -101,

@@ -8,7 +8,6 @@
  */
 /**
  * Carrier structure for a pair of objects dataA and dataB of types DataTypeA and DataTypeB with optional parameterized-type tags (also with suffixes A and B) of type TagType.
- * * The constructor is public and captures its parameters
  * * Note that the (public!) constructor captures its parameters.
  * @public
  */
@@ -19,24 +18,27 @@ export class TaggedDataPair<DataTypeA, DataTypeB, TagType> {
   public dataB: DataTypeB;
   /** first tag */
   public tagA?: TagType;
-  /* second tag */
+  /** second tag */
   public tagB?: TagType;
-  public constructor(dataA: DataTypeA, dataB: DataTypeB, tagA: TagType | undefined = undefined, tagB: TagType | undefined = undefined) {
+  /** Constructor, inputs captured. */
+  public constructor(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType) {
     this.dataA = dataA;
     this.dataB = dataB;
     this.tagA = tagA;
     this.tagB = tagB;
   }
-  public setTags(tagA: TagType | undefined, tagB: TagType | undefined) {
+  /** Set the tags of this instance. */
+  public setTags(tagA?: TagType, tagB?: TagType) {
     this.tagA = tagA;
     this.tagB = tagB;
   }
-
+  /** Set the data of this instance. */
   public setData(dataA: DataTypeA, dataB: DataTypeB) {
     this.dataA = dataA;
     this.dataB = dataB;
   }
-  public setAll(dataA: DataTypeA, dataB: DataTypeB, tagA: TagType | undefined = undefined, tagB: TagType | undefined = undefined) {
+  /** Set the data and tags of this instance. */
+  public setAll(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType) {
     this.dataA = dataA;
     this.dataB = dataB;
     this.tagA = tagA;

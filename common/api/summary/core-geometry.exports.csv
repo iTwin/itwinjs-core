@@ -291,6 +291,7 @@ public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
 public;SweepLineStringToFacetsOptions
+public;TaggedDataPair
 public;TaggedNumericConstants
 public;TaggedNumericData
 public;TaggedPoint3dPair = TaggedDataPair
