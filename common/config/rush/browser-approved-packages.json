@@ -219,12 +219,16 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "@itwin/ecql-common",
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -237,6 +241,10 @@
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecsql-common",
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -664,7 +672,11 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "node-touch",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "nodemon",
@@ -783,12 +795,16 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "touch",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",
@@ -800,7 +816,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "typescript",

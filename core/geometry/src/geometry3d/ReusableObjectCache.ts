@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
 
 /** @packageDocumentation
  * @module ArraysAndInterfaces
@@ -79,9 +80,9 @@ export class GrowableXYZArrayCache extends ReusableObjectCache<GrowableXYZArray>
    * Grab an array from the cache and immediately fill from a source
    * @param source
    */
-  public grabAndFill(source: GrowableXYZArray): GrowableXYZArray {
+  public grabAndFill(source: IndexedXYZCollection): GrowableXYZArray {
     const dest = this.grabFromCache();
-    dest.pushFromGrowableXYZArray(source);
+    dest.pushFrom(source);
     return dest;
 
   }

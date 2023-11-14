@@ -60,6 +60,14 @@ function labelsMatch(label1?: string, label2?: string) {
 }
 
 /**
+ * Interface for additional schema compare options.
+ * @alpha
+ */
+export interface SchemaComparerOptions {
+  compareItemFullName?: boolean;
+}
+
+/**
  * Compares EC Schemas and reports differences using the [[IDiagnosticReporter]] objects
  * specified.
  * @alpha
@@ -82,16 +90,17 @@ export class SchemaComparer {
    * Compares two schemas to identify differences.
    * @param schemaA The first Schema.
    * @param schemaB The second Schema.
+   * @param options Additional optional settings to manipulate the comparison.
    */
-  public async compareSchemas(schemaA: Schema, schemaB: Schema) {
+  public async compareSchemas(schemaA: Schema, schemaB: Schema, options?: SchemaComparerOptions) {
     this._reporter = new SchemaCompareResultDelegate(schemaA, schemaB, ...this._reporters);
-    let visitor = new SchemaCompareVisitor(this, schemaB);
+    let visitor = new SchemaCompareVisitor(this, schemaB, options);
     let walker = new SchemaWalker(visitor);
     await walker.traverseSchema(schemaA);
 
     this._compareDirection = SchemaCompareDirection.Backward;
 
-    visitor = new SchemaCompareVisitor(this, schemaA);
+    visitor = new SchemaCompareVisitor(this, schemaA, options);
     walker = new SchemaWalker(visitor);
     await walker.traverseSchema(schemaB);
 

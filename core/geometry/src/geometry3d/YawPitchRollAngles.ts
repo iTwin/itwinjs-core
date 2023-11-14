@@ -267,7 +267,7 @@ export class YawPitchRollAngles {
    */
   public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     /**
-     * The rotation matrix for is
+     * The rotation matrix form is
      *
      * Matrix3d.createRowValues(
      *      cz * cy, -(sz * cx + cz * sy * sx), (sz * sx - cz * sy * cx),

@@ -29,7 +29,7 @@ As many levels of composition as necessary can be used when modeling the spatial
 
 ## Using the Spatial Structure to organize other Elements
 
-Once the spatial structure is modeled, its elements can be used to organize any `bis:SpatialElement` (the base class for both `bis:PhysicalElement` and `bis:SpatialLocationElement`) using "Holds" and "References" relationships. "Holds" implies that the related element (or some significant part of it, like the base of an elevator shaft) is contained in the `SpatialStructureElement` or `Zone`. "References" implies some weaker relationship (e.g. the elevator shaft passes through the space). See the ["Element Held by Spatial Organizer"](./information-hierarchy.md#element-held-by-spatial-organizer) section of the ["Information Hierarchy"](information-hierarchy.md) article.
+Once the spatial structure is modeled, its elements can be used to organize any `bis:SpatialElement` (the base class for both `bis:PhysicalElement` and `bis:SpatialLocationElement`) using "Holds" and "References" relationships. "Holds" implies that the related element (or some significant part of it, like the base of an elevator shaft) is contained in the `SpatialStructureElement` or `Zone`. "References" implies some weaker relationship (e.g. the elevator shaft passes through the space). See the ["Element Organized by Spatial Organizer"](./information-hierarchy.md#element-organized-by-spatial-organizer) section of the ["Information Hierarchy"](information-hierarchy.md) article.
 
 The following table shows `bis:SpatialElement`s that could be associated to the Bus Terminal example presented earlier.
 

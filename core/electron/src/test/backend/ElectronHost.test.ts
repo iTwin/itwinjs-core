@@ -91,7 +91,7 @@ async function testRegisterIpcHandler() {
 }
 
 async function testInitializeProvidedRpcInterface() {
-  abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+  abstract class TestRpcInterface extends RpcInterface {
     public static readonly interfaceName = "TestRpcInterface";
     public static interfaceVersion = "0.0.0";
   }

@@ -581,8 +581,8 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         expect(ck.getNumErrors()).equals(0);
       }
     }
-    GeometryCoreTestIO.consoleLog(`Calls to Ray3d.intersectWithTriangle took ${timeByRay3d} milliseconds`);
-    GeometryCoreTestIO.consoleLog(`Calls to BarycentricTriangle.intersectRay3d took ${timeByBarycentricTriangle} milliseconds`);
+    GeometryCoreTestIO.consoleLog(`Calls to Ray3d.intersectionWithTriangle (fast method) took ${timeByRay3d} milliseconds`);
+    GeometryCoreTestIO.consoleLog(`Calls to BarycentricTriangle.intersectRay3d (slow method) took ${timeByBarycentricTriangle} milliseconds`);
 
     // intersection under rotation
     const rotatedRay = Ray3d.createZero();

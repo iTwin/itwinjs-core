@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Load built-in rulesets as code rather than separately delivered assets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

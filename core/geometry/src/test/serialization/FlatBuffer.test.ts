@@ -21,6 +21,7 @@ import { AuxChannelDataType } from "../../polyface/AuxData";
 import { TaggedNumericData } from "../../polyface/TaggedNumericData";
 import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { BGFBAccessors } from "../../serialization/BGFBAccessors";
+import { DeepCompare } from "../../serialization/DeepCompare";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
@@ -124,6 +125,13 @@ it("HelloSpirals", () => {
   testGeometryQueryRoundTrip(ck, clothoid);
   expect(ck.getNumErrors()).equals(0);
 });
+
+function compareFlatBuffers(a1: Uint8Array, a2: Uint8Array): boolean {
+  if (a1.length !== a2.length)
+    return false;
+  return a1.every((entry, i) => { return entry === a2[i]; });
+}
+
 /**
  * verify round trip write and read through multiple serialization forms:
  * * Flatbuffer without signature
@@ -141,54 +149,60 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
   }
   if (g instanceof GeometryQuery) {
     const justTheBytes = BentleyGeometryFlatBuffer.geometryToBytes(g);
-
-    if (ck.testType(justTheBytes, Uint8Array)) {
+    if (ck.testType(justTheBytes, Uint8Array, "to FB")) {
       const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
-      if (Array.isArray(g1)) {
-        ck.announceError("Unexpected array from flat buffer");
-      } if (ck.testType(g1 as (GeometryQuery | undefined), GeometryQuery)) {
-        if (!ck.testTrue(g.isAlmostEqual(g1 as GeometryQuery))) {
-          GeometryCoreTestIO.consoleLog("input (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g)));
-          GeometryCoreTestIO.consoleLog("OUTPUT (mismatch): ", prettyPrint(IModelJson.Writer.toIModelJson(g1)));
-          const g2 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
-          if (g2 instanceof GeometryQuery)
-            ck.testTrue(g.isAlmostEqual(g2));
+      if (ck.testFalse(Array.isArray(g1), "Unexpected array from FB") && !Array.isArray(g1)) {
+        if (ck.testDefined(g1, "FB back to geometry") && g1) {
+          if (ck.testTrue(g.isAlmostEqual(g1), "GeometryQuery round-tripped through FB without signature")) {
+            const justTheBytes2 = BentleyGeometryFlatBuffer.geometryToBytes(g1);
+            if (ck.testType(justTheBytes2, Uint8Array)) {
+              ck.testTrue(compareFlatBuffers(justTheBytes, justTheBytes2), "FB without signature round-tripped through iTwin");
+            }
+          }
         }
       }
     }
     const bytesWithSignature = BentleyGeometryFlatBuffer.geometryToBytes(g, true);
-    if (justTheBytes && bytesWithSignature) {
-      ck.testExactNumber(justTheBytes.length + 8, bytesWithSignature.length, "Signature adds 8 bytes");
-      const g3 = BentleyGeometryFlatBuffer.bytesToGeometry(bytesWithSignature, true);
-      ck.testTrue(g3 instanceof GeometryQuery && g.isAlmostEqual(g3), "round trip with signature");
-      ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes, true), "signature state mismatch A");
-      ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(bytesWithSignature, false), "signature state mismatch B");
+    if (ck.testType(justTheBytes, Uint8Array, "to FB with signature") && justTheBytes && bytesWithSignature) {
+      if (ck.testExactNumber(justTheBytes.length + 8, bytesWithSignature.length, "Signature adds 8 bytes")) {
+        const g2 = BentleyGeometryFlatBuffer.bytesToGeometry(bytesWithSignature, true);
+        if (ck.testTrue(g2 instanceof GeometryQuery && g.isAlmostEqual(g2), "GeometryQuery round-tripped through FB with signature") && g2 instanceof GeometryQuery) {
+          ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes, true), "signature state mismatch A");
+          ck.testUndefined(BentleyGeometryFlatBuffer.bytesToGeometry(bytesWithSignature, false), "signature state mismatch B");
+          const bytesWithSignature2 = BentleyGeometryFlatBuffer.geometryToBytes(g2, true);
+          if (ck.testType(bytesWithSignature2, Uint8Array)) {
+            ck.testTrue(compareFlatBuffers(bytesWithSignature, bytesWithSignature2), "FB with signature round-tripped through iTwin");
+          }
+        }
+      }
     }
-
     const json = IModelJson.Writer.toIModelJson(g);
-    if (ck.testDefined(json, "toJson")) {
+    if (ck.testDefined(json, "to json")) {
       const g2 = IModelJson.Reader.parse(json);
-      if (ck.testDefined(g2, "to json to geometry") && ck.testTrue(g2 instanceof GeometryQuery) && g2 instanceof GeometryQuery) {
-        ck.testTrue(g.isAlmostEqual(g2), "imjs round trip", g);
+      if (ck.testDefined(g2, "json back to geometry") && ck.testTrue(g2 instanceof GeometryQuery) && g2 instanceof GeometryQuery) {
+        if (ck.testTrue(g.isAlmostEqual(g2), "GeometryQuery round-tripped through json", g)) {
+          const json2 = IModelJson.Writer.toIModelJson(g2);
+          if (ck.testDefined(json2)) {
+            const comparer = new DeepCompare();
+            ck.testTrue(comparer.compare(json, json2), "json round-tripped through iTwin");
+          }
+        }
       }
     }
   } else if (Array.isArray(g)) {
     const justTheBytes = BentleyGeometryFlatBuffer.geometryToBytes(g);
     if (ck.testType(justTheBytes, Uint8Array)) {
       const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
-      if (!Array.isArray(g1)) {
-        ck.announceError("Expected equal length array back from FB");
-      } else if (!ck.testExactNumber(g.length, g1.length, "mismatched array lengths from FB")) {
-
-      } else {
-        for (let i = 0; i < g.length; i++) {
-          ck.testGeometry(g[i], g1[i], ` FB round trip array ${i}`);
-        }
-      }
+      ck.testGeometry(g, g1, "GeometryQuery array round-tripped through FB");
     }
-
+    const json = IModelJson.Writer.toIModelJson(g);
+    if (ck.testDefined(json, "array to Json")) {
+      const g2 = IModelJson.Reader.parse(json);
+      ck.testGeometry(g, g2, "GeometryQuery array round-tripped through json");
+    }
   }
 }
+
 // Test imjs and flatbuffer round trips.
 // If errors are noticed (by comparison of ck.getNumErrors()), do it again for debugging opportunity
 export function testGeometryQueryRoundTrip(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {

@@ -377,7 +377,6 @@ export class PolygonOps {
       }
     }
     s *= 0.5;
-    // GeometryCoreTestIO.consoleLog("polygon area ", s, points);
     return s;
   }
   /** These values are the integrated area moment products [xx,xy,xz, x]
@@ -446,7 +445,7 @@ export class PolygonOps {
         let u1 = points.getXAtUncheckedPointIndex(1) - x0;
         let v1 = points.getYAtUncheckedPointIndex(1) - y0;
         let u2, v2;
-        for (let i = 1; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
+        for (let i = 2; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
           u2 = points.getXAtUncheckedPointIndex(i) - x0;
           v2 = points.getYAtUncheckedPointIndex(i) - y0;
           area += Geometry.crossProductXYXY(u1, v1, u2, v2);
@@ -1197,7 +1196,7 @@ export class PolygonOps {
 }
 
 /**
- *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
+ *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXYZCollection`
  * @public
  */
 export class IndexedXYZCollectionPolygonOps {
@@ -1214,7 +1213,7 @@ export class IndexedXYZCollectionPolygonOps {
    * @param altitudeRange min and max altitudes encountered.
    */
   public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
-    xyz: IndexedReadWriteXYZCollection,
+    xyz: IndexedXYZCollection,
     xyzPositive: IndexedReadWriteXYZCollection,
     xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
     const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;

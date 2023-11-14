@@ -1,6 +1,71 @@
 # Change Log - @itwin/ecschema-rpcinterface-common
 
-This log was last generated on Tue, 15 Aug 2023 19:39:59 GMT and should not be manually modified.
+This log was last generated on Mon, 06 Nov 2023 14:03:28 GMT and should not be manually modified.
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:21 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+_Version update only_
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
+
+## 4.1.7
+Thu, 28 Sep 2023 21:41:33 GMT
+
+_Version update only_
+
+## 4.1.6
+Tue, 12 Sep 2023 15:38:52 GMT
+
+_Version update only_
+
+## 4.1.5
+Fri, 08 Sep 2023 13:37:23 GMT
+
+_Version update only_
+
+## 4.1.4
+Thu, 07 Sep 2023 18:26:02 GMT
+
+_Version update only_
+
+## 4.1.3
+Wed, 30 Aug 2023 15:35:27 GMT
+
+_Version update only_
+
+## 4.1.2
+Wed, 23 Aug 2023 15:25:29 GMT
+
+_Version update only_
+
+## 4.1.1
+Fri, 18 Aug 2023 13:02:53 GMT
+
+_Version update only_
 
 ## 4.1.0
 Mon, 14 Aug 2023 14:36:34 GMT
@@ -51,6 +116,31 @@ Mon, 22 May 2023 15:34:14 GMT
 
 - Updated to support changes to async schema loading and `ISchemaLocater`
 - Update to eslint@8
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
+
+## 3.7.14
+Fri, 29 Sep 2023 16:57:16 GMT
+
+_Version update only_
+
+## 3.7.13
+Tue, 08 Aug 2023 19:49:18 GMT
+
+_Version update only_
+
+## 3.7.12
+Thu, 27 Jul 2023 21:50:57 GMT
+
+_Version update only_
 
 ## 3.7.11
 Tue, 11 Jul 2023 17:17:22 GMT

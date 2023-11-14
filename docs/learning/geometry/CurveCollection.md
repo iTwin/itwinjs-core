@@ -5,7 +5,7 @@ A [CurveCollection]($core-geometry) is a an abstract base class for various coll
 There are 5 concrete derived types:
 
 - [Path]($core-geometry) - curve primitives joining head to tail.
-- [Loop]($core-geometry) - coplanar  curve primitives joining head to tail and closing to form a loop.
+- [Loop]($core-geometry) - coplanar curve primitives joining head to tail and closing to form a loop.
 - [ParityRegion]($core-geometry) - `Loop`s that bound a planar area by parity rules.
 - [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s.
 - BagOfCurves - a collection of `AnyCurve` with no implied structure.
