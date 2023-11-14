@@ -297,20 +297,20 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       }
     }
     if (iMin === 0) {
-      result.detailA.clone(resultSet[0]);
+      resultSet[0].clone(result.detailA);
       CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 0.0, result.detailB);
       result.detailB.a = result.detailA.a;
     } else if (iMin === 1) {
-      result.detailA.clone(resultSet[1]);
+      resultSet[1].clone(result.detailA);
       CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 1.0, result.detailB);
       result.detailB.a = result.detailA.a;
     } else if (iMin === 2) {
-      result.detailB.clone(resultSet[2]);
+      resultSet[2].clone(result.detailB);
       CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 0.0, result.detailA);
       result.detailA.a = result.detailB.a;
     } else {
       assert(iMin === 3);
-      result.detailB.clone(resultSet[3]);
+      resultSet[3].clone(result.detailB);
       CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 1.0, result.detailA);
       result.detailA.a = result.detailB.a;
     }

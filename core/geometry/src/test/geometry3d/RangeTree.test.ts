@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Range3d } from "../../geometry3d/Range";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Geometry } from "../../Geometry";
-import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
-import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
+import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
-import { LineString3d } from "../../core-geometry";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // Clone and shift the range ...
 // shift by dx
@@ -545,7 +545,7 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("PolylinePolylineSearcher", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;

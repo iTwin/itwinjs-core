@@ -5,17 +5,18 @@
 
 import { expect } from "chai";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Sample } from "../../serialization/GeometrySamples";
-import { CurveLocationDetail } from "../../core-geometry";
 import { Range1d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
@@ -136,7 +137,7 @@ describe("LineSegment3d", () => {
   });
 
   it("ClosestApproachParallelSegments", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const pointsA: Point3d[] = [];
     const x0 = 0;
@@ -179,8 +180,10 @@ describe("LineSegment3d", () => {
         if (ck.testDefined(approachAB) && approachAB) {
           const fA = approachAB.detailA.fraction;
           const fB = approachAB.detailB.fraction;
-          ck.testPoint3d(approachAB.detailA.point, approachAB.detailA.curve!.fractionToPoint(fA));
-          ck.testPoint3d(approachAB.detailB.point, approachAB.detailB.curve!.fractionToPoint(fB));
+          if (ck.testType(approachAB.detailA.curve, CurvePrimitive, "closestApproach set detail.curveA"))
+            ck.testPoint3d(approachAB.detailA.point, approachAB.detailA.curve.fractionToPoint(fA));
+          if (ck.testType(approachAB.detailB.curve, CurvePrimitive, "closestApproach set detail.curveB"))
+            ck.testPoint3d(approachAB.detailB.point, approachAB.detailB.curve.fractionToPoint(fB));
           // const fB = approach.detailB.fraction;
           if (fA <= 0.0001) {
             ck.testLE(sRange.high.x, segmentRange.low);
