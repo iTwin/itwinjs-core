@@ -251,14 +251,33 @@ export class ClipStyle {
     this.intersectionStyle = intersectionStyle;
   }
 
-  /** Create a style from its components. */
-  // public static create(produceCutGeometry: boolean, cutStyle: CutStyle, colorizeIntersection: boolean, insideColor?: RgbColor, outsideColor?: RgbColor, intersectionStyle?: ClipIntersectionStyle): ClipStyle;
+  /** @deprecated in 4.x. Use [[create(style: ClipStyleCreateArgs]] */
+  public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
 
-  public static create(style: ClipStyleArgs): ClipStyle {
-    if (!style.produceCutGeometry && !style.colorizeIntersection && style.cutStyle.matchesDefaults && !style.insideColor && !style.outsideColor && !style.intersectionStyle)
+  /** Create a style from its components. */
+  public static create(style: ClipStyleCreateArgs): ClipStyle;
+
+  public static create(styleOrProduceCutGeometry: ClipStyleCreateArgs | boolean, cutStyle?: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle {
+
+    if (typeof styleOrProduceCutGeometry === "boolean") {
+      cutStyle = cutStyle === undefined ? CutStyle.defaults : cutStyle;
+
+      if (!styleOrProduceCutGeometry && cutStyle.matchesDefaults && !insideColor && !outsideColor) {
+        return this.defaults;
+      }
+
+      return new ClipStyle(styleOrProduceCutGeometry, false, cutStyle, insideColor, outsideColor, undefined);
+    }
+
+    const style = styleOrProduceCutGeometry;
+    if (!style.produceCutGeometry && !style.colorizeIntersection && (!style.cutStyle || style.cutStyle.matchesDefaults) && !style.insideColor && !style.outsideColor && !style.intersectionStyle)
       return this.defaults;
 
-    return new ClipStyle(style.produceCutGeometry, style.colorizeIntersection, style.cutStyle, style.insideColor, style.outsideColor,  style.intersectionStyle);
+    const produceCutGeometry = style.produceCutGeometry ? true : false;
+    const colorizeIntersection = style.colorizeIntersection ? true : false;
+    cutStyle = style.cutStyle === undefined ? CutStyle.defaults : style.cutStyle;
+
+    return new ClipStyle(produceCutGeometry, colorizeIntersection, cutStyle, style.insideColor, style.outsideColor,  style.intersectionStyle);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {

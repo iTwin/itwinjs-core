@@ -170,6 +170,12 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
       });
     });
 
+    builder.frag.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
+      program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
+        params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
+      });
+    });
+
     frag.addFunction(computeTranslucentColor);
     if (!wantHilite) {
       frag.set(FragmentShaderComponent.ComputeBaseColor, computeTranslucentBaseColor);
@@ -190,12 +196,6 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
   const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");
   builder.vert.headerComment = `//!V! CombineTextures${flagString}`;
   builder.frag.headerComment = `//!F! CombineTextures${flagString}`;
-
-  builder.frag.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
-    program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
-      params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
-    });
-  });
 
   return builder.buildProgram(context);
 }
