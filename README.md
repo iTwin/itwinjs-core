@@ -44,7 +44,7 @@ If you get an error similar to the following, it means that the repo has stopped
 [Error: ENOENT: no such file or directory, stat '/.../itwinjs-core/test-apps/display-test-app/node_modules/@bentley/react-scripts']
 ```
 
-To fix this build error, you should completely remove the node_modules directory that is referenced in the error, and then rerun `rush install`.
+To fix this build error, you should completely remove the node_modules directory that is referenced in the error with `rush purge`, and then rerun `rush install`.
 
 For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
