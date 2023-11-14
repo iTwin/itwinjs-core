@@ -279,17 +279,18 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   ): Arc3d | LineString3d | undefined {
     const vectorAB = Vector3d.createStartEnd(pointA, pointB);
     const vectorAC = Vector3d.createStartEnd(pointA, pointC);
-    const ab = vectorAB.magnitude();
-    const bc = vectorAC.magnitude();
-    const normal = vectorAB.sizedCrossProduct(vectorAC, Math.sqrt(ab * bc));
+    const ab2 = vectorAB.magnitudeSquared();
+    const ac2 = vectorAC.magnitudeSquared();
+    const normal = vectorAB.sizedCrossProduct(vectorAC, Math.sqrt(Math.sqrt(ab2 * ac2)));
     if (normal) {
       const vectorToCenter = SmallSystem.linearSystem3d(
         normal.x, normal.y, normal.z,
         vectorAB.x, vectorAB.y, vectorAB.z,
         vectorAC.x, vectorAC.y, vectorAC.z,
-        0,              // vectorToCenter DOT normal = 0
-        0.5 * ab * ab,  // vectorToCenter DOT vectorBA = 0.5 * vectorBA DOT vectorBA  (Rayleigh quotient)
-        0.5 * bc * bc); // vectorToCenter DOT vectorBC = 0.5 * vectorBC DOT vectorBC  (Rayleigh quotient)
+        0,         // vectorToCenter DOT normal = 0
+        0.5 * ab2, // vectorToCenter DOT vectorAB = 0.5 * vectorAB DOT vectorAB (Rayleigh quotient)
+        0.5 * ac2, // vectorToCenter DOT vectorAC = 0.5 * vectorAC DOT vectorAC (Rayleigh quotient)
+      );
       if (vectorToCenter) {
         const center = Point3d.create(pointA.x, pointA.y, pointA.z).plus(vectorToCenter);
         const vectorX = Vector3d.createStartEnd(center, pointA);
@@ -299,8 +300,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
           const sweepAngle = vectorX.signedAngleTo(vectorCenterToC, normal);
           if (sweepAngle.radians < 0.0)
             sweepAngle.addMultipleOf2PiInPlace(1.0);
-          return Arc3d.create(center, vectorX, vectorY,
-            AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+          return Arc3d.create(
+            center, vectorX, vectorY, AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result,
+          );
         }
       }
     }
