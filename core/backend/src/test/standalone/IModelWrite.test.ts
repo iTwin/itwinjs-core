@@ -96,7 +96,6 @@ describe("IModelWriteTest", () => {
   });
 
   it("aspect insert, update & delete requires exclusive lock", async () => {
-
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
     const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
@@ -150,7 +149,7 @@ describe("IModelWriteTest", () => {
     };
 
     /* attempt to insert aspect without a lock */
-    assert.throws(insertAspectIntoB2, "Error inserting ElementAspect [exclusive lock not held on element for update (id=0x20000000004)], class: BisCore:ExternalSourceAspect");
+    assert.throws(insertAspectIntoB2, "Error inserting ElementAspect [exclusive lock not held on aspect insert for update (id=0x20000000004)], class: BisCore:ExternalSourceAspect");
 
     /* acquire lock and try again */
     await b2.locks.acquireLocks({ exclusive: el1 });
@@ -179,7 +178,7 @@ describe("IModelWriteTest", () => {
     };
 
     /* attempt to update aspect without a lock */
-    assert.throws(updateAspectIntoB1, "Error updating ElementAspect [exclusive lock not held on element for update (id=0x20000000004)], id: 0x30000000001");
+    assert.throws(updateAspectIntoB1, "Error updating ElementAspect [exclusive lock not held on aspect update for update (id=0x20000000004)], id: 0x30000000001");
 
     /* acquire lock and try again */
     await b1.locks.acquireLocks({ exclusive: el1 });
