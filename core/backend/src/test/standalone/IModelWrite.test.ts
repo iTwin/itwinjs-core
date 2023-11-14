@@ -95,7 +95,7 @@ describe("IModelWriteTest", () => {
     sinon.restore();
   });
 
-  it("aspect insert/update requires exclusive lock", async () => {
+  it("aspect insert, update & delete requires exclusive lock", async () => {
 
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
