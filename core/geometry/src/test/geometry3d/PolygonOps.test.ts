@@ -336,17 +336,13 @@ describe("PolygonOps", () => {
           ck.testCoordinate(Geometry.cyclic3dAxis(1 - iA0), approach.dataA.closestEdgeIndex, "edge index A");
           ck.testCoordinate(Geometry.cyclic3dAxis(-iB0), approach.dataB.closestEdgeIndex, "edge index B");
         }
-        if (approach) {
-        }
         y0 += 5;
       }
       x0 += 5;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "closestApproach");
     expect(ck.getNumErrors()).equals(0);
-
   });
-
 });
 function capturePolygonWithClosure(allGeometry: GeometryQuery[], points: GrowableXYZArray, x0: number, y0: number, z0: number = 0) {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0, z0);

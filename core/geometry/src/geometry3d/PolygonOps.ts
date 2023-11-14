@@ -1215,7 +1215,7 @@ export class PolygonOps {
   private static _workCLDMin?: CurveLocationDetailPair;
   /**
    * Find smallest distance between polygons.
-   * * ASSUME closure edge is needed.
+   * * Input polygons should have closure edge (wraparound point).
    * @param polygonA
    * @param polygonB
    * @param dMax largest value to consider as an acceptable result.
@@ -1224,7 +1224,6 @@ export class PolygonOps {
     let dMin = dMax;
     const n1 = polygonA.length;
     const n2 = polygonB.length;
-    let bestCLD: CurveLocationDetailPair | undefined;
     for (let indexA = 0; indexA < n1; indexA++) {
       this._workSegmentA = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentA);
       for (let indexB = 0; indexB < n2; indexB++) {
@@ -1236,12 +1235,13 @@ export class PolygonOps {
           workCLD.detailB.a = indexB;
           const d = workCLD.detailA.point.distance(workCLD.detailB.point);
           if (d < dMin) {
-            bestCLD = workCLD.clone(bestCLD);
+            this._workCLDMin = workCLD.clone(this._workCLDMin);
             dMin = d;
           }
         }
       }
     }
+    const bestCLD = this._workCLDMin;
     if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
       return new TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>(
         PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
@@ -1618,5 +1618,4 @@ function fillLineSegmentFromUncheckedIndexWithWrap(points: GrowableXYZArray, ind
   points.getPoint3dAtUncheckedPointIndex(index, segment.point0Ref);
   points.getPoint3dAtUncheckedPointIndex(index1, segment.point1Ref);
   return segment;
-
 }
