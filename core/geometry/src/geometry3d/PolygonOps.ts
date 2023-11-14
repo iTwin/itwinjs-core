@@ -98,16 +98,17 @@ export class PolygonLocationDetail {
       this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
       this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
   }
-  /** point, index, and fraction as an "at vertex" or "along edge" PolygonLocation detail.
-   * * NOTE: This is misnamed.  It does NOT capture the point -- just copy coordinates.
-   *
-  */
-  public static createAtVertexOrEdgeCapture(point: Point3d, index: number, fraction: number = 0): PolygonLocationDetail {
+  /**
+   * Set point, index, and fraction for an "at vertex" or "along edge" PolygonLocationDetail.
+   * * Point is not captured; its coordinates are copied.
+   */
+  public static createAtVertexOrEdge(point: Point3d, index: number, fraction: number = 0): PolygonLocationDetail {
     const detail = new PolygonLocationDetail();
     detail.point.setFrom(point);
     detail.closestEdgeIndex = index;
     detail.closestEdgeParam = fraction;
-    detail.code = fraction > 0 && fraction < 1 ? PolygonLocation.OnPolygonEdgeInterior : PolygonLocation.OnPolygonVertex;
+    fraction = Geometry.clamp(fraction, 0, 1);
+    detail.code = (fraction > 0 && fraction < 1) ? PolygonLocation.OnPolygonEdgeInterior : PolygonLocation.OnPolygonVertex;
     return detail;
   }
 }
@@ -1243,8 +1244,8 @@ export class PolygonOps {
     }
     if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
       return new TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>(
-        PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
-        PolygonLocationDetail.createAtVertexOrEdgeCapture(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
+        PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
+        PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
       );
     }
     return undefined;
