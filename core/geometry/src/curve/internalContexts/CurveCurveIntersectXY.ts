@@ -444,7 +444,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * * Arcs are ordered so that matrixA is better conditioned.
    */
   private dispatchArcArcThisOrder(
-    cpA: Arc3d,         // arc closer to being circular
+    cpA: Arc3d, // arc closer to being circular
     matrixA: Matrix3d,
     extendA: boolean,
     cpB: Arc3d,
@@ -465,7 +465,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         localB.coffs[0], localB.coffs[3], localB.coffs[6],  // vector0 xyw
         localB.coffs[1], localB.coffs[4], localB.coffs[7],  // vector90 xyw
         ellipseRadians, circleRadians,
-      );  // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
+      );
+      // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
         const fractionB = cpB.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
@@ -673,8 +674,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           );
           if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
-            // We have a near intersection at fractions on the two beziers !!!
-            // Iterate on the curves for a true intersection ....
+            // We have a near intersection at fractions on the two beziers
+            // Iterate on the curves for a true intersection
             const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
