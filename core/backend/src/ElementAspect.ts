@@ -66,7 +66,7 @@ export class ElementAspect extends Entity {
   protected static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels.verifyChannel(arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "aspect insert", "update");
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -83,7 +83,7 @@ export class ElementAspect extends Entity {
   protected static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels.verifyChannel(arg.model);
-    iModel.locks.checkExclusiveLock(props.element.id, "aspect update", "update");
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
   }
 
   /** Called after an ElementAspect was updated.
@@ -101,7 +101,7 @@ export class ElementAspect extends Entity {
     const { aspectId, iModel } = arg;
     iModel.channels.verifyChannel(arg.model);
     const { element } = iModel.elements.getAspect(aspectId);
-    iModel.locks.checkExclusiveLock(element.id, "aspect delete", "update");
+    iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
   }
 
   /** Called after an ElementAspect was deleted.
