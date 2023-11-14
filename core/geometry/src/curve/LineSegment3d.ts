@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Clipper } from "../clipping/ClipUtils";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
@@ -213,8 +214,6 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);
     result = CurveLocationDetail.create(this, result);
-    // remark: This can be done by result.setFP (fraction, thePoint, undefined, a)
-    //   but that creates a temporary point.
     result.fraction = fraction;
     this._point0.interpolate(fraction, this._point1, result.point);
     result.vectorInCurveLocationDetail = undefined;
@@ -236,15 +235,16 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     extendB: VariantCurveExtendParameter,
     result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined {
     const unboundedFractions = Vector2d.create();
-    if (result === undefined) result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
+    if (result === undefined)
+      result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
     if (SmallSystem.lineSegment3dClosestApproachUnbounded(segmentA._point0, segmentA._point1, segmentB._point0, segmentB._point1, unboundedFractions)) {
       // There is a simple approach between the unbounded segments.  Maybe its a really easy case ...
       const fractionA = CurveExtendOptions.correctFraction(extendA, unboundedFractions.x);
       const fractionB = CurveExtendOptions.correctFraction(extendB, unboundedFractions.y);
       // if neither fraction was corrected, just accept !!!
       if (fractionA === unboundedFractions.x && fractionB === unboundedFractions.y) {
-        result.detailA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, fractionA, result ? result.detailA : undefined);
-        result.detailB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, fractionB, result ? result.detailB : undefined);
+        CurveLocationDetail.createCurveEvaluatedFraction(segmentA, fractionA, result.detailA);
+        CurveLocationDetail.createCurveEvaluatedFraction(segmentB, fractionB, result.detailB);
         result.detailA.a = result.detailB.a = result.detailA.point.distance(result.detailB.point);
         return result;
       }
@@ -255,24 +255,24 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
         // The "loser" will have its contents replaced.
         const clampedPointOnA = fractionA < 0.5 ? segmentA._point0 : segmentA._point1;
         const clampedPointOnB = fractionB < 0.5 ? segmentB._point0 : segmentB._point1;
-        result.detailB = segmentB.closestPoint(clampedPointOnA, extendB);
-        result.detailA = segmentA.closestPoint(clampedPointOnB, extendA);
+        segmentB.closestPoint(clampedPointOnA, extendB, result.detailB);
+        segmentA.closestPoint(clampedPointOnB, extendA, result.detailA);
         if (result.detailA.a <= result.detailB.a) {
-          result.detailB = CurveLocationDetail.createCurveFractionPoint(segmentB, fractionB, clampedPointOnB, result.detailB);
+          CurveLocationDetail.createCurveFractionPoint(segmentB, fractionB, clampedPointOnB, result.detailB);
         } else {
-          result.detailA = CurveLocationDetail.createCurveFractionPoint(segmentA, fractionA, clampedPointOnA, result.detailA);
+          CurveLocationDetail.createCurveFractionPoint(segmentA, fractionA, clampedPointOnA, result.detailA);
         }
       } else if (fractionB !== unboundedFractions.y) {
         // B (only) was clamped.
         const clampedPointOnB = fractionB < 0.5 ? segmentB._point0 : segmentB._point1;
-        result.detailA = segmentA.closestPoint(clampedPointOnB, extendA);
+        segmentA.closestPoint(clampedPointOnB, extendA, result.detailA);
         result.detailB.setCurve(segmentB);
         result.detailB.point.setFrom(clampedPointOnB);
         result.detailB.fraction = fractionB;
       } else {
         // fractionA was clamped.
         const clampedPointOnA = fractionA < 0.5 ? segmentA._point0 : segmentA._point1;
-        result.detailB = segmentB.closestPoint(clampedPointOnA, extendB);
+        segmentB.closestPoint(clampedPointOnA, extendB, result.detailB);
         result.detailA.setCurve(segmentA);
         result.detailA.point.setFrom(clampedPointOnA);
         result.detailA.fraction = fractionA;
@@ -296,29 +296,25 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
         dMin = resultSet[i].a;
       }
     }
-    let cldA: CurveLocationDetail;
-    let cldB: CurveLocationDetail;
     if (iMin === 0) {
-      cldA = resultSet[0];
-      cldB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 0.0);
+      result.detailA.clone(resultSet[0]);
+      CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 0.0, result.detailB);
+      result.detailB.a = result.detailA.a;
     } else if (iMin === 1) {
-      cldA = resultSet[1];
-      cldB = CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 1.0);
+      result.detailA.clone(resultSet[1]);
+      CurveLocationDetail.createCurveEvaluatedFraction(segmentB, 1.0, result.detailB);
+      result.detailB.a = result.detailA.a;
     } else if (iMin === 2) {
-      cldA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 0.0);
-      cldB = resultSet[2];
+      result.detailB.clone(resultSet[2]);
+      CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 0.0, result.detailA);
+      result.detailA.a = result.detailB.a;
     } else {
-      // must be iMin === 3!!!!
-      cldA = CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 1.0);
-      cldB = resultSet[3];
+      assert(iMin === 3);
+      result.detailB.clone(resultSet[3]);
+      CurveLocationDetail.createCurveEvaluatedFraction(segmentA, 1.0, result.detailA);
+      result.detailA.a = result.detailB.a;
     }
-    if (result) {
-      cldA.clone(result.detailA);
-      cldB.clone(result.detailB);
-      return result;
-    } else {
-      return CurveLocationDetailPair.createCapture(cldA, cldB);
-    }
+    return result;
   }
   /** Swap the endpoint references. */
   public reverseInPlace(): void {
