@@ -75,6 +75,7 @@ public;ClipUtilities
 public;ClipVector 
 public;ClipVectorProps = ClipPrimitiveProps[]
 public;Cloneable
+deprecated;Cloneable
 internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
@@ -146,6 +147,7 @@ internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 internal;HalfEdgeUserData
 public;HasZ = Readonly
 public;HoleFillOptions
+public;ICloneable
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval

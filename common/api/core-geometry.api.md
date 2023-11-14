@@ -1289,7 +1289,7 @@ export class ClipVector implements Clipper {
 // @public
 export type ClipVectorProps = ClipPrimitiveProps[];
 
-// @public
+// @public @deprecated
 export interface Cloneable<T> {
     clone(): T | undefined;
 }
@@ -2142,6 +2142,8 @@ export class Geometry {
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
     static clampToStartEnd(value: number, a: number, b: number): number;
+    static cloneArray<T extends ICloneable<T>>(array: T[] | undefined): T[] | undefined;
+    // @deprecated
     static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
@@ -2707,6 +2709,11 @@ export interface HoleFillOptions {
     maxEdgesAroundHole?: number;
     maxPerimeter?: number;
     upVector?: Vector3d;
+}
+
+// @public
+export interface ICloneable<T> {
+    clone(result?: T): T;
 }
 
 // @public
@@ -4963,7 +4970,7 @@ export class PolygonLocationDetail {
     code: PolygonLocation;
     copyContentsFrom(other: PolygonLocationDetail): void;
     static create(result?: PolygonLocationDetail): PolygonLocationDetail;
-    static createAtVertexOrEdgeCapture(point: Point3d, index: number, fraction?: number): PolygonLocationDetail;
+    static createAtVertexOrEdge(point: Point3d, index: number, fraction?: number): PolygonLocationDetail;
     invalidate(): void;
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
