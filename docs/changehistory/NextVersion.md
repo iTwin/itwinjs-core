@@ -6,6 +6,7 @@ publish: false
 Table of contents:
 
 - [Electron 27 support](#electron-27-support)
+- [Display](#display)
 
 ## Electron 27 support
 
