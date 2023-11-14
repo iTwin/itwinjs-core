@@ -257,6 +257,7 @@ export class ClipStyle {
   /** Create a style from its components. */
   public static create(style: ClipStyleCreateArgs): ClipStyle;
 
+  /** @internal */
   public static create(styleOrProduceCutGeometry: ClipStyleCreateArgs | boolean, cutStyle?: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle {
 
     if (typeof styleOrProduceCutGeometry === "boolean") {
