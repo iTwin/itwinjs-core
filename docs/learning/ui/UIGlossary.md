@@ -61,7 +61,7 @@ A mechanism for providing UI elements such as widgets, backstage, toolbar or sta
 
 ## Widget
 
-An interactive UI element for a custom content of an application that allows the user to view and/or modify data relevant to their current context. The content of the [Widget]($appui-react) is just a React component, but additional meta-data such as label or icon can be provided to customize or initialize the widget. Multiple widgets can be grouped and displayed in one of the widget containers.
+An interactive UI element for a custom content of an application that allows the user to view and/or modify data relevant to their current context. The content of the [Widget]($appui-react) is just a React component, but additional metadata such as label or icon can be provided to customize or initialize the widget. Multiple widgets can be grouped and displayed in one of the widget containers.
 
 **Docked** - when a widget is docked to a stage panel sections on the side of the page.
 
