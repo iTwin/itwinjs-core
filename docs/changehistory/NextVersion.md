@@ -6,7 +6,7 @@ publish: false
 Table of contents:
 
 - [Electron 27 support](#electron-27-support)
-- Inserting,updating & deleting aspect require exclusive lock on the element that owns the aspect
+- [Element aspects require locking](#element-aspects-require-locking)
 - [Display](#display)
 
 ## Electron 27 support
