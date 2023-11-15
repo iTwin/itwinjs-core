@@ -210,6 +210,7 @@ export const {
 	ChangeOpCode,
 	ChangedValueState,
 	ChangesetType,
+	ClipIntersectionStyle,
 	ColorByName,
 	ColorDef,
 	CommonLoggerCategory,

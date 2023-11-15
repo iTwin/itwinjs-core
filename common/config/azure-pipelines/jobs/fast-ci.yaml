@@ -6,6 +6,7 @@ trigger:
 
 variables:
   - group: Rush Build Cache SAS Token
+  - group: Travis Cobbs - GitHub PAT
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
 
@@ -56,7 +57,7 @@ jobs:
       - template: ../templates/core-build.yaml
         parameters:
           nodeVersion: 18.x
-          buildIos: true
+          buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
