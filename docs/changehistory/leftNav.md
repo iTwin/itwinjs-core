@@ -9,14 +9,9 @@ closedPanels: ["Previous Versions", "Changelogs"]
 - [Big Picture](./Roadmap.md)
 
 ### Versions
-<<<<<<< HEAD
-- [4.2.0](./4.2.0.md)
-
-=======
 
 - [4.2.0](./4.2.0.md)
 - [4.1.0](./4.1.0.md)
->>>>>>> 56a8233c9f (docs: fix and update change history (#6202))
 - [4.0.0](./4.0.0.md)
 
 ### Previous Versions
