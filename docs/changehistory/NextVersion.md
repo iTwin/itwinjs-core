@@ -6,11 +6,16 @@ publish: false
 Table of contents:
 
 - [Electron 27 support](#electron-27-support)
+- [Element aspects require locking](#element-aspects-require-locking)
 - [Display](#display)
 
 ## Electron 27 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 27](https://www.electronjs.org/blog/electron-27-0).
+
+## Element aspects require locking
+
+Inserting, updating or deleting an aspect now requires the exclusive lock be held on its element. This is a new requirement to prevent conflicts that may result in corrupt changesets. Before changes may be made to an element's aspects, you must now acquire its exclusive lock (see `IModelDb.LockControl.acquireLocks`).
 
 ## Display
 
