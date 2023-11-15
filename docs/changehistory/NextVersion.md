@@ -15,7 +15,7 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ## Inserting,updating & deleting aspect require exclusive lock on the element that owns the aspect
 
-This is new requirement to prevent certain changesets from being pushed that will not apply.
+This is a new requirement to prevent conflicts that may result in corrupt changesets. Before changes may be made to an element's aspects, you must now acquire its exclusive lock (see `IModelDb.LockControl.acquireLocks`).
 
 ## Display
 
