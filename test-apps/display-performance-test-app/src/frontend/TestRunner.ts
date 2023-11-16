@@ -197,8 +197,8 @@ export class TestRunner {
       const realityDataClientOptions: RealityDataClientOptions = {
         /** API Version. v1 by default */
         // version?: ApiVersion;
-        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-        baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
       };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
@@ -229,7 +229,7 @@ export class TestRunner {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
@@ -1058,8 +1058,8 @@ export class TestRunner {
 
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
-    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-    if ("terminate" === this.curConfig.onException)
+    const terminateErr = await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if (terminateErr || "terminate" === this.curConfig.onException)
       await DisplayPerfRpcInterface.getClient().terminate();
   }
 }

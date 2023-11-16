@@ -994,9 +994,10 @@ export class Geometry {
       // (c0,s0) is the closest approach of the line to the circle center (origin)
       const c0 = da2b2 * cosCoff; // -ad/(a^2+b^2)
       const s0 = da2b2 * sinCoff; // -bd/(a^2+b^2)
-      if (criterion <= 0.0) { // nSolution = 1
-        // We observed criterion = -2.22e-16 in a rotated tangent system, therefore for negative criteria near
-        // zero, return the near-tangency; for tiny positive criteria, fall through to return both solutions.
+      if (criterion <= Geometry.smallMetricDistanceSquared) { // nSolution = 1
+        // We observed criterion = -2.22e-16 in a rotated tangent system, and criterion = 4.44e-16 in a
+        // transverse line-arc intersectXYZ near-tangency, therefore for criteria near zero (on either side),
+        // return the (near) tangency; any larger criteria fall through to return both solutions.
         result = [Vector2d.create(c0, s0)];
       } else { // nSolution = 2
         const s = Math.sqrt(criterion * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
@@ -1009,8 +1010,8 @@ export class Geometry {
     return result;
   }
   /**
-   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`
-   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`.
+   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`.
    */
   public static inverseInterpolate(
     x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number,
@@ -1030,10 +1031,8 @@ export class Geometry {
    * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
    */
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
-    /**
-     * Line equation is "fTarget-f0 = (f1-f0)*x" so "x = (fTarget-f0)/(f1-f0)"
-     */
-    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0); // x = (fTarget-f0)/(f1-f0)
+    // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
+    return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including

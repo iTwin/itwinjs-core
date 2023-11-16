@@ -10,7 +10,7 @@ import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, UVSelect, WeightStyle } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { ClipPlane } from "../clipping/ClipPlane";
@@ -1436,8 +1436,8 @@ export class Sample {
    */
   public static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined {
     const points = [];
-    const numUPole = numU + orderU - 1;
-    const numVPole = numV + orderV - 1;
+    const numUPole = numU + orderU - 1;   // degreeU wrap-around poles
+    const numVPole = numV + orderV - 1;   // degreeV wrap-around poles
     const uKnots = KnotVector.createUniformWrapped(numU, orderU - 1, 0, 1);
     const vKnots = KnotVector.createUniformWrapped(numV, orderV - 1, 0, 1);
     const dURadians = 2.0 * Math.PI / numU;
@@ -1456,8 +1456,8 @@ export class Sample {
     }
     const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
     if (result) {
-      result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
-      result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
+      result.setWrappable(UVSelect.uDirection, BSplineWrapMode.OpenByAddingControlPoints);
+      result.setWrappable(UVSelect.vDirection, BSplineWrapMode.OpenByAddingControlPoints);
     }
     return result;
   }
@@ -1500,10 +1500,8 @@ export class Sample {
     const result = BSplineSurface3dH.createGrid(controlPoints,
       WeightStyle.WeightsSeparateFromCoordinates,
       3, uKnots, 2, vKnots);
-    // if (result) {
-    // result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
-    // result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
-    // }
+    if (result)
+      result.setWrappable(UVSelect.uDirection, BSplineWrapMode.OpenByRemovingKnots);
     return result;
   }
   /** Create bspline surface on xy grid with weights. */
@@ -2210,7 +2208,13 @@ export class Sample {
    * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
-    const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
+    const pointsA = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 3, 0),
+      Point3d.create(2, 4, 0),
+      Point3d.create(3, 3, 0),
+      Point3d.create(4, 0, 0),
+    ];
     const result = [];
     // one singleton per basic curve type ...
     result.push(

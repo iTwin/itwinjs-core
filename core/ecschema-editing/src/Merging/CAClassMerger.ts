@@ -1,28 +1,23 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, parseCustomAttributeContainerType } from "@itwin/ecschema-metadata";
-import { MutableCAClass } from "../Editing/Mutable/MutableCAClass";
-import { ClassChanges } from "../Validation/SchemaChanges";
-import { mergeSchemaItemProperties } from "./SchemaItemMerger";
-import mergeClasses from "./ClassMerger";
+// /*---------------------------------------------------------------------------------------------
+// * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+// * See LICENSE.md in the project root for license terms and full copyright notice.
+// *--------------------------------------------------------------------------------------------*/
+import { CustomAttributeClass } from "@itwin/ecschema-metadata";
+import { PropertyValueResolver } from "./SchemaItemMerger";
+import ClassMerger from "./ClassMerger";
 
 /**
  * @internal
  */
-export default async function mergeCAClasses(target: CustomAttributeClass, source: CustomAttributeClass, changes: ClassChanges) {
-  const mutableCAClass = target as MutableCAClass;
-  await mergeSchemaItemProperties(mutableCAClass, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
-    switch(propertyName) {
-      case "appliesTo": {
-        const containerType = parseCustomAttributeContainerType(propertyValue);
-        if (containerType !== undefined) {
-          return item.setContainerType(containerType);
-        }
-      }
-    }
-  });
-
-  return mergeClasses(target, source, changes);
+export default class CAClassMerger extends ClassMerger {
+  /**
+   * Creates the property value resolver for [[CustomAttributeClass]] items.
+   */
+  protected override async createPropertyValueResolver(): Promise<PropertyValueResolver<CustomAttributeClass>> {
+    return {
+      // TODO: The other container types should be added instead of overriding the existing flags.
+      //       See issue: https://github.com/iTwin/itwinjs-core/issues/6014
+      appliesTo: (value: number) => value,
+    };
+  }
 }

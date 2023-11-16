@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { Arc3d } from "../../curve/Arc3d";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry, PolygonLocation } from "../../Geometry";
@@ -18,6 +19,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -40,6 +42,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
+import { JointOptions } from "../../curve/OffsetOptions";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -956,13 +959,13 @@ describe("ReOrientFacets", () => {
   });
 
   it("ComputeSilhouettes", () => {
-
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const solids = Sample.createClosedSolidSampler(true);
-    const defaultOptions = StrokeOptions.createForFacets();
-    // REMARK: (EDL Oct 2020) Mutter and grumble.  The builder does not observe shouldTriangulate !!!
+    const defaultOptions = new StrokeOptions();
+    defaultOptions.shouldTriangulate = true;
+    defaultOptions.angleTol = Angle.createDegrees(10);
     // REMARK: (EDL Oct 2020) What can be asserted about the silhouette output?
     //       We'll at least assert its not null  for the forward view cases ...
     for (const solid of solids) {
@@ -975,14 +978,16 @@ describe("ReOrientFacets", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
           for (const selector of [0, 1, 2]) {
             const edges = PolyfaceQuery.boundaryOfVisibleSubset(mesh, selector as (0 | 1 | 2), viewVector);
-            if (selector < 2)
-              ck.testDefined(edges);
+            y0 += 40.0;
             if (edges) {
-              y0 += 40.0;
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, edges, x0, y0, 0);
-              y0 += 20.0;
               const chains = RegionOps.collectChains([edges]);
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, x0, y0, 0);
+            }
+            if (selector < 2) {
+              ck.testDefined(edges);
+            } else {  // alternate silhouette method, often better results
+              const silhouetteEdges = PolyfaceQuery.collectSilhouetteEdges(mesh, viewVector);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, silhouetteEdges, x0, y0, 20);
             }
           }
         }
@@ -990,8 +995,62 @@ describe("ReOrientFacets", () => {
       }
       x0 += 20;
     }
+    // test an open surface
+    const surfMesh = Sample.createMeshFromSmoothSurface(50, defaultOptions);
+    if (ck.testType(surfMesh, IndexedPolyface, "faceted a smooth surface")) {
+      for (const viewVector of [Vector3d.create(0, 0, 1), Vector3d.create(1, -1, 1), Vector3d.create(-1, -1, 1)]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfMesh, x0, 0, 0);
+        const boundary = PolyfaceQuery.collectBoundaryEdges(surfMesh);
+        const silhouette = PolyfaceQuery.collectSilhouetteEdges(surfMesh, viewVector);
+        const allEdges: AnyCurve[] = [];
+        if (ck.testDefined(boundary, "boundary found") && boundary) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, 20, 0);
+          allEdges.push(boundary);
+        }
+        ck.testTrue(viewVector.isExactEqual(Vector3d.unitZ()) || undefined !== silhouette, "silhouette edges found in skew views");
+        if (silhouette) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, silhouette, x0, 20, 0);
+          allEdges.push(silhouette);
+        }
+        // find the xy-boundary in the view plane
+        const localToWorld = Matrix3d.createRigidViewAxesZTowardsEye(viewVector.x, viewVector.y, viewVector.z);
+        const toWorld = Transform.createOriginAndMatrix(undefined, localToWorld);
+        const worldToLocal = localToWorld.transpose();
+        const toPlane = Transform.createOriginAndMatrix(undefined, worldToLocal);
+        allEdges.forEach((curve: AnyCurve) => { curve.tryTransformInPlace(toPlane); });
+        const signedLoops = RegionOps.constructAllXYRegionLoops(allEdges);
+        let largestRangeDiagonal = 0;
+        let exteriorLoop: Loop | undefined;
+        for (const component of signedLoops) {
+          for (const negAreaLoop of component.negativeAreaLoops) {
+            const rangeDiagonal = negAreaLoop.range().diagonal().magnitude();
+            if (rangeDiagonal > largestRangeDiagonal) {
+              largestRangeDiagonal = rangeDiagonal;
+              exteriorLoop = negAreaLoop; // clockwise in the view plane
+            }
+          }
+        }
+        // verify that mesh points are in the xy-boundary in the view plane
+        if (exteriorLoop) {
+          const jointOptions = new JointOptions(Geometry.smallMetricDistance); // enlarge to catch boundary points
+          const offsetChain = RegionOps.constructPolygonWireXYOffset(exteriorLoop.getPackedStrokes()!.getArray(), true, jointOptions);
+          if (ck.testDefined(offsetChain, "offset computed") && offsetChain) {
+            const offsetPolygon = offsetChain.getPackedStrokes()!;
+            offsetPolygon.forceClosure();
+            for (let i = 0; i < surfMesh.pointCount; ++i) {
+              const pt = surfMesh.data.getPoint(i)!;
+              const localPt = toPlane.multiplyPoint3d(pt);
+              if (!ck.testTrue(-1 < PolygonOps.classifyPointInPolygonXY(localPt.x, localPt.y, offsetPolygon)!, `point (${pt.x},${pt.y}) is in/on the exterior loop`))
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pt, pt), x0, 30, 0);
+            }
+          }
+          exteriorLoop.tryTransformInPlace(toWorld);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, exteriorLoop, x0, 30, 0);
+        }
+        x0 += 20;
+      }
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeSilhouettes");
-
     expect(ck.getNumErrors()).equals(0);
   });
 });

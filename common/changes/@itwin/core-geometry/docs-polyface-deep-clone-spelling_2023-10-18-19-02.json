@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fix spelling of deep clone in PolyfaceData.clone jsdoc",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

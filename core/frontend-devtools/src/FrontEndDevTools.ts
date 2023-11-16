@@ -27,7 +27,7 @@ import {
 } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
+import { ClipColorTool, ClipIntersectionTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
   ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
   SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
@@ -121,6 +121,7 @@ export class FrontendDevTools {
       ClearEmphasizedElementsTool,
       ClearIsolatedElementsTool,
       ClipColorTool,
+      ClipIntersectionTool,
       CompileShadersTool,
       DefaultTileSizeModifierTool,
       DetachMapLayersTool,

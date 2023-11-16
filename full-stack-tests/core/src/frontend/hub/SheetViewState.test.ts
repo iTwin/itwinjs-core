@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, SheetViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
@@ -38,11 +38,30 @@ describe("Sheet views (#integration)", () => {
     expect(props[0].category).to.equal(attachmentCategoryId);
   });
 
-  it("preserves view attachment info when cloned", async () => {
+  it("clones view attachment info when cloned", async () => {
     const v1 = await imodel.views.load(sheetViewId) as SheetViewState;
     const v2 = v1.clone();
     expect(v1).not.to.equal(v2);
-    expect(v1.viewAttachmentProps).to.equal(v2.viewAttachmentProps);
+    expect(v1.viewAttachmentProps).not.to.equal(v2.viewAttachmentProps);
+    expect(v1.viewAttachmentProps).to.deep.equal(v2.viewAttachmentProps);
+
+    const v1Infos = v1.viewAttachmentInfos;
+    expect(v1Infos.length > 0).to.be.true;
+
+    const v2Infos = v2.viewAttachmentInfos;
+    expect(v1Infos).not.to.equal(v2Infos);
+    expect(v1Infos.length).to.equal(v2Infos.length);
+    for (let i = 0; i < v1Infos.length; i++) {
+      expect(v1Infos[i]).not.to.equal(v2Infos[i]);
+      const view1 = (v1Infos[i] as any).attachedView;
+      const view2 = (v2Infos[i] as any).attachedView;
+
+      expect(view1).instanceof(ViewState);
+      expect(view2).instanceof(ViewState);
+
+      expect(view1).not.to.equal(view2);
+      expect(view1.id).to.equal(view2.id);
+    }
   });
 
   it("draws tiles from view attachments if so specified", async () => {
