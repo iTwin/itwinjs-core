@@ -689,7 +689,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Multiply `this` Transform times `other` Transform.
-   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a] because:
+   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as `[A*B   Ab+a]` because:
    * ```
    * equation
    * \begin{matrix}
@@ -698,7 +698,7 @@ export class Transform implements BeJSONFunctions {
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
    * \end{matrix}
    * ```
-   * @param other the 'other` Transform to be multiplied to `this` Transform.
+   * @param other the `other` Transform to be multiplied to `this` Transform.
    * @param result optional preallocated `result` to reuse.
    */
   public multiplyTransformTransform(other: Transform, result?: Transform) {
