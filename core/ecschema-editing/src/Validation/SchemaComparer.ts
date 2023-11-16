@@ -866,7 +866,7 @@ export class SchemaComparer {
    * @param itemKeyB item key B to compare to.
    * @param topLevelSchemaNameA top level schema name in which the item A exists.
    * @param topLevelSchemaNameB top level schema name in which the item B exists.
-   * @returns true if both names are the same and neither one has a referenced schema.
+   * @returns true if both names are the same and they come from their respective top level schema.
    */
   private areItemsSameByName(
     itemKeyA: Readonly<SchemaItemKey> | undefined,
@@ -884,7 +884,7 @@ export class SchemaComparer {
   }
 
   /**
-   * Looks for same classA in containerB using fullName first and if not found try using the keys.
+   * Looks for same classA in containerB using key.
    * @param classNameA name of the class to look for in containerB.
    * @param containerA container which classNameA belongs to.
    * @param containerB container in which to look for classNameA.
@@ -897,7 +897,7 @@ export class SchemaComparer {
         const classItemKeyA = containerA.schema.getSchemaItemKey(classNameA);
         const classItemKeyB = containerB.schema.getSchemaItemKey(classNameB);
         const areSameByName = this.areItemsSameByName(classItemKeyA, classItemKeyB, containerA.schema.name, containerB.schema.name);
-        if (classNameA === classNameB || areSameByName) {
+        if (areSameByName) {
           return true;
         }
       }

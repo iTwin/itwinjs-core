@@ -13,7 +13,7 @@ class TestSchemaCompareReporter implements ISchemaCompareReporter {
   }
 }
 
-function findDiagnostic(diagnostics: AnyDiagnostic[], code: string,fullNameA: string, fullNameB: string, propertyType?: string) {
+function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string, fullNameB: string, propertyType?: string) {
   let found = false;
 
   diagnostics.find((anyDiagnostic) => {
@@ -42,12 +42,11 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string,fullNameA: st
   return found;
 }
 
-describe("Schema comparison tests to filter out cases", () => {
+describe("Schema comparison tests for comparing schemas with different names", () => {
   let reporter: TestSchemaCompareReporter;
   let contextA: SchemaContext;
   let contextB: SchemaContext;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const dummyRefOneJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "DummyReferenceOne",
@@ -87,7 +86,7 @@ describe("Schema comparison tests to filter out cases", () => {
   });
 
   describe("Entity Class comparisons cases", () => {
-    it("should not report baseClass delta when comparing testEntityClass", async () => {
+    it("should not report baseClass delta when base class has same name and is defined in schemas being compared", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -124,7 +123,7 @@ describe("Schema comparison tests to filter out cases", () => {
 
     });
 
-    it("should report baseClass delta for testEntityClass", async () => {
+    it("should report baseClass delta when base class has different full name", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -141,7 +140,7 @@ describe("Schema comparison tests to filter out cases", () => {
       }, contextA);
 
       const schemaB = await Schema.fromJson({
-        ...schemaAJson, // Using schemaAJson
+        ...schemaBJson,
         items: {
           testBaseClassB: {
             schemaItemType: "EntityClass",
@@ -150,7 +149,7 @@ describe("Schema comparison tests to filter out cases", () => {
           testEntityClass: {
             schemaItemType: "EntityClass",
             description: "Test entity class",
-            baseClass: "SchemaA.testBaseClassB",
+            baseClass: "SchemaB.testBaseClassB",
           },
         },
       }, contextB);
@@ -158,51 +157,11 @@ describe("Schema comparison tests to filter out cases", () => {
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
 
-      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClassA", "SchemaA.testBaseClassB");
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClassA", "SchemaB.testBaseClassB");
       expect(foundDiag).to.equal(true);
     });
 
-    it("should not report baseClass delta when comparing testEntityClass", async () => {
-      const schemaA = await Schema.fromJson({
-        ...schemaAJson,
-        items: {
-          testEntityClass: {
-            schemaItemType: "EntityClass",
-            baseClass: "SchemaA.testBaseClass",
-          },
-          testBaseClass: {
-            schemaItemType: "EntityClass",
-          },
-        },
-      }, contextA);
-
-      const schemaB = await Schema.fromJson({
-        ...schemaBJson,
-        items: {
-          testEntityClass: {
-            schemaItemType: "EntityClass",
-            baseClass: "SchemaB.testBaseClass",
-          },
-          testBaseClass: {
-            schemaItemType: "EntityClass",
-            description: "Test base class",
-            label: "Base class",
-          },
-        },
-      }, contextB);
-
-      const comparer = new SchemaComparer(reporter);
-      await comparer.compareSchemas(schemaA, schemaB);
-
-      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "SchemaB.testBaseClass");
-      expect(foundDiag).to.equal(false);
-    });
-
-    /**
-     * This case should register testBaseClass differences as usual.
-     * Then baseClass should be reported as difference because the baseClass is in another schema.
-     */
-    it("should report baseClass delta for baseClass in referenced schema", async () => {
+    it("should report baseClass delta for baseClass with same name but defined in a referenced schema", async () => {
       const _dummyRefTwo = await Schema.fromJson({
         ...dummyRefTwoJson,
         items: {
@@ -262,7 +221,7 @@ describe("Schema comparison tests to filter out cases", () => {
      * The item referenced exists within the schema.
      */
   describe("Struct Class comparisons", () => {
-    it("should not report property delta when comparing typeName", async () => {
+    it("should not report property delta for typeName of the property with same name and is defined in schemas being compared", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -312,7 +271,7 @@ describe("Schema comparison tests to filter out cases", () => {
       expect(foundDiag).to.equal(false);
     });
 
-    it("should report property delta when comparing typeName", async () => {
+    it("should report property delta for typeName of the property with different name", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -329,7 +288,6 @@ describe("Schema comparison tests to filter out cases", () => {
           },
           inSpanAddressA: {
             schemaItemType: "StructClass",
-            label: "In span address A",
             description: "Linear draft InSpanAddress Class A",
           },
         },
@@ -363,7 +321,7 @@ describe("Schema comparison tests to filter out cases", () => {
       expect(foundDiag).to.equal(true);
     });
 
-    it("should report property delta when comparing typeName that is referencing a schema", async () => {
+    it("should report property delta for typeName of the property with the same name but defined in a referenced schema", async () => {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefOneJson,
         items: {
@@ -427,8 +385,8 @@ describe("Schema comparison tests to filter out cases", () => {
     });
   });
 
-  describe("Property comparison tests", ()=>{
-    it("should not report property delta", async ()=> {
+  describe("Property comparison of entity classes tests", ()=>{
+    it("should not report property delta for category with same name and defined in schemas being compared", async ()=> {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -484,7 +442,7 @@ describe("Schema comparison tests to filter out cases", () => {
       expect(foundDiag).to.equal(false);
     });
 
-    it("should report property delta", async ()=> {
+    it("should report property delta for category with same name but defined in a reference schema", async ()=> {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefOneJson,
         items: {
