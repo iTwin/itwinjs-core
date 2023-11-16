@@ -176,12 +176,6 @@ class FrankeSurface implements UVSurface {
     const v = 9 * vFraction;
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(uFraction, vFraction, this.f(u, v), 1, 0, this.du(u, v), 0, 1, this.dv(u, v), result);
   }
-  public uvFractionToPartialPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
-    const u = 9 * uFraction;
-    const v = 9 * vFraction;
-    return Point3d.create(uFraction, vFraction, this.f(u, v), result);
-  }
-
 }
 /**
  * `Sample` has static methods to create a variety of geometry samples useful in testing.

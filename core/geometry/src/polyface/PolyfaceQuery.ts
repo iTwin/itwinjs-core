@@ -1057,7 +1057,9 @@ export class PolyfaceQuery {
   /** If the visitor's client is a polyface, simply return its point array length.
    * If not a polyface, visit all facets to find the largest index.
    */
-  public static visitorClientPointCount(visitor: PolyfaceVisitor): number {
+  public static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number {
+    if (visitor instanceof Polyface)
+      return visitor.data.point.length;
     const polyface = visitor.clientPolyface();
     if (polyface !== undefined)
       return polyface.data.point.length;
@@ -1073,7 +1075,12 @@ export class PolyfaceQuery {
   /** If the visitor's client is a polyface, simply return its facet count.
    * If not a polyface, visit all facets to accumulate a count.
    */
-  public static visitorClientFacetCount(visitor: PolyfaceVisitor): number {
+  public static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number {
+    if (visitor instanceof Polyface) {
+      if (visitor.facetCount !== undefined)
+        return visitor.facetCount;
+      visitor = visitor.createVisitor(0);
+    }
     const polyface = visitor.clientPolyface();
     if (polyface !== undefined && polyface.facetCount !== undefined)
       return polyface.facetCount;

@@ -294,7 +294,7 @@ public;SweepLineStringToFacetsOptions
 public;TaggedDataPair
 public;TaggedNumericConstants
 public;TaggedNumericData
-public;TaggedPoint3dPair = TaggedDataPair
+public;TaggedPoint3dPair 
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 
@@ -306,9 +306,9 @@ internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
-internal;TwoTreeSearchHandlerFacetFacetCloseApproach 
-internal;TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach 
-internal;TwoTreeSearchHandlerPolylinePolylineCloseApproach 
+internal;TwoTreeSearchHandlerForFacetFacetCloseApproach 
+internal;TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach 
+internal;TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach 
 public;UnionOfConvexClipPlaneSets 
 public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
 public;UnionRegion 

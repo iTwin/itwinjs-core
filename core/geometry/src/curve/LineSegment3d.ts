@@ -220,13 +220,14 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     result.a = result.point.distance(spacePoint);
     return result;
   }
-  /** compute the closest approach between a pair of line segments.
+  /**
+   * Compute the closest approach between a pair of line segments.
+   * * The approach distance is returned in the `a` fields of the details.
    * @param segmentA first line segment
-   * @param extendA0 true if segmentA is to extend backward from fraction0
-   * @param extendA1 true if segmentA is to extend forward from fraction1
-   * @param segmentB first line segment
-   * @param extendB0 true if segmentB is to extend backward from fraction0
-   * @param extendB1 true if segmentB is to extend forward from fraction1
+   * @param extendA how to extend segmentA forward/backward
+   * @param segmentB second line segment
+   * @param extendB how to extend segmentB forward/backward
+   * @param result optional pre-allocated object to populate and return
    */
   public static closestApproach(
     segmentA: LineSegment3d,

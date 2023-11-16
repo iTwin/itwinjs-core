@@ -3477,18 +3477,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
 // @public
 export class LineString3dRangeTreeContext {
-    get closestDistance(): number | undefined;
-    // (undocumented)
-    get closestPoint(): CurveLocationDetail | undefined;
     static createCapture(points: Point3d[] | LineString3d, maxChildPerNode?: number, maxAppDataPerLeaf?: number): LineString3dRangeTreeContext | undefined;
-    linestring: LineString3d;
+    lineString: LineString3d;
     numPointTest: number;
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
     static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined;
-    // (undocumented)
-    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
     searchState: MinimumValueTester<CurveLocationDetail>;
     spacePoint: Point3d;
     static updateClosestApproachBetweenIndexedSegments(contextA: LineString3dRangeTreeContext, indexA: number, contextB: LineString3dRangeTreeContext, indexB: number, searchState: MinimumValueTester<CurveLocationDetailPair>): void;
@@ -4527,6 +4523,7 @@ export class Point3dArrayRangeTreeContext {
     searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
     searchState: MinimumValueTester<number>;
     spacePoint: Point3d;
+    static updateClosestApproachBetweenIndexedPoints(contextA: Point3dArrayRangeTreeContext, indexA: number, contextB: Point3dArrayRangeTreeContext, indexB: number, searchState: MinimumValueTester<TaggedPoint3dPair>): void;
 }
 
 // @public
@@ -4663,7 +4660,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
 export abstract class Polyface extends GeometryQuery {
     protected constructor(data: PolyfaceData);
     static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean;
-    abstract createVisitor(_numWrap: number): PolyfaceVisitor;
+    abstract createVisitor(numWrap: number): PolyfaceVisitor;
     data: PolyfaceData;
     get expectedClosure(): number;
     set expectedClosure(value: number);
@@ -4908,14 +4905,14 @@ export class PolyfaceQuery {
     static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     // @deprecated (undocumented)
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
-    static visitorClientFacetCount(visitor: PolyfaceVisitor): number;
-    static visitorClientPointCount(visitor: PolyfaceVisitor): number;
+    static visitorClientFacetCount(visitor: Polyface | PolyfaceVisitor): number;
+    static visitorClientPointCount(visitor: Polyface | PolyfaceVisitor): number;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
 
 // @public
 export class PolyfaceRangeTreeContext {
-    static createCapture(visitor: PolyfaceVisitor, maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolyfaceRangeTreeContext | undefined;
+    static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolyfaceRangeTreeContext | undefined;
     numFacetTest: number;
     numRangeTestFalse: number;
     numRangeTestTrue: number;
@@ -4979,7 +4976,9 @@ export class PolygonLocationDetail {
 }
 
 // @public
-export type PolygonLocationDetailPair<TagType> = TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>;
+export class PolygonLocationDetailPair<TagType> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
+    constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType);
+}
 
 // @public
 export class PolygonOps {
@@ -6030,7 +6029,9 @@ export class TaggedNumericData {
 }
 
 // @public
-export type TaggedPoint3dPair = TaggedDataPair<Point3d, Point3d, number>;
+export class TaggedPoint3dPair extends TaggedDataPair<Point3d, Point3d, number> {
+    constructor(pointA: Point3d, pointB: Point3d, tagA?: number, tagB?: number);
+}
 
 // @internal
 export class TorusImplicit {
@@ -6303,7 +6304,7 @@ export interface TrigValues {
 }
 
 // @internal
-export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
     constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext);
     contextA: PolyfaceRangeTreeContext;
     contextB: PolyfaceRangeTreeContext;
@@ -6317,27 +6318,25 @@ export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistance
 }
 
 // @internal
-export class TwoTreeSearchHandlerPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext);
-    contextA: Point3dArrayRangeTreeContext;
-    contextB: Point3dArrayRangeTreeContext;
-    // (undocumented)
-    getCurrentDistance(): number;
-    getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined;
-    processAppDataPair(tagA: number, tagB: number): void;
-    searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
-}
-
-// @internal
-export class TwoTreeSearchHandlerPolylinePolylineCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
     constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext);
     contextA: LineString3dRangeTreeContext;
     contextB: LineString3dRangeTreeContext;
-    // (undocumented)
     getCurrentDistance(): number;
     getResult(): CurveLocationDetailPair | undefined;
     processAppDataPair(tagA: number, tagB: number): void;
     searchState: MinimumValueTester<CurveLocationDetailPair>;
+}
+
+// @internal
+export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext);
+    contextA: Point3dArrayRangeTreeContext;
+    contextB: Point3dArrayRangeTreeContext;
+    getCurrentDistance(): number;
+    getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined;
+    processAppDataPair(tagA: number, tagB: number): void;
+    searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
 }
 
 // @public

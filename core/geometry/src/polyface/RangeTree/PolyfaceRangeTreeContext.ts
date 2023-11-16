@@ -5,40 +5,39 @@
 /** @packageDocumentation
  * @module RangeSearch
  */
-import { Range3d } from "../../geometry3d/Range";
-import { MinimumValueTester } from "./MinimumValueTester";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+
 import { Geometry } from "../../Geometry";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
-import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
-import { PolyfaceVisitor } from "../Polyface";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
+import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
+import { Polyface, PolyfaceVisitor } from "../Polyface";
+import { PolyfaceQuery } from "../PolyfaceQuery";
+import { MinimumValueTester } from "./MinimumValueTester";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
+
 /**
- * class to host a Polyface and associated RangeTree for a variety of search calls.
- * * Usage pattern:
- *   * Create with
- *          myContext = PolyfaceRangeTreeContext.createCapture (polyface)
- *          or other method which creates a compatible tree structure of RangeTreeNode
- *  * search (many times) with
- *       myContext.searchForClosestPoint(spacePoint)
- *  * or with other PolyfaceRangeTreeContext with
- *       PolyfaceRangeTreeContext.closestApproach(contextA, contextB)
+ * Handler class for searching a range tree containing the facets of a polyface.
+ * * Facilitates multiple searches for closest point and close approach calculations.
  * @public
  */
 export class PolyfaceRangeTreeContext {
-  /** visitor for the polyface being searched */
+  /** Visitor for the polyface being searched */
   public visitor: PolyfaceVisitor;
-  /** diagnostic: number of range tests that have returned true. */
+
+  /** Diagnostic: number of range tests that have returned true. */
   public numRangeTestTrue: number;
-  /** diagnostic: number of range tests that have been returned false */
+  /** Diagnostic: number of range tests that have been returned false */
   public numRangeTestFalse: number;
-  /** diagnostic: number of facet tests. */
+  /** Diagnostic: number of facet tests. */
   public numFacetTest: number;
-  /** diagnostic: number of searches performed. */
+  /** Diagnostic: number of searches performed. */
   public numSearch: number;
 
+  /** Range tree, whose appData are facet (read) indices */
   private _rangeTreeRoot: RangeTreeNode<number>;
-  /** Constructor is called only internally . . . */
+
+  /** Constructor: capture inputs, initialize debug counters */
   private constructor(rangeTreeRoot: RangeTreeNode<number>, visitor: PolyfaceVisitor) {
     this.visitor = visitor;
     this._rangeTreeRoot = rangeTreeRoot;
@@ -47,7 +46,6 @@ export class PolyfaceRangeTreeContext {
     this.numFacetTest = 0;
     this.numSearch = 0;
   }
-
   /**
    * Create a range tree for the Polyface points.
    * * This is a very simple construction that splits "right and left parts" of the facet sequence.
@@ -55,8 +53,10 @@ export class PolyfaceRangeTreeContext {
    * @param points Polyface points.  THIS ARRAY POINTER IS CAPTURED.
    * @returns Polyface3dClosestPointSearchContext with a range tree and the point array.
    */
-  public static createCapture(visitor: PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): PolyfaceRangeTreeContext | undefined {
-    const numFacet = visitor.clientPolyface()!.facetCount!;
+  public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): PolyfaceRangeTreeContext | undefined {
+    if (visitor instanceof Polyface)
+      return this.createCapture(visitor.createVisitor(0), maxChildPerNode, maxAppDataPerLeaf);
+    const numFacet = PolyfaceQuery.visitorClientFacetCount(visitor);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => {
         visitor.moveToReadIndex(index);
@@ -100,14 +100,14 @@ export class PolyfaceRangeTreeContext {
     contextA: PolyfaceRangeTreeContext,
     contextB: PolyfaceRangeTreeContext,
   ): PolygonLocationDetailPair<number> | undefined {
-    const handler = new TwoTreeSearchHandlerFacetFacetCloseApproach(contextA, contextB);
+    const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
   }
 }
 
 /**
- * Helper class containing methods in SingleTreeSearchHandler, and a reference to a Polyface3dClosestPointSearcherContext.
+ * Helper class for searching for the closest point in a polyface.
  * @internal
  */
 class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchHandler<number> {
@@ -161,10 +161,10 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
   }
 }
 /**
- * internal class to receive pairs of facets during search for closest approach.
+ * Helper class for searching for close approach(es) between polyfaces.
  * @internal
  */
-export class TwoTreeSearchHandlerFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
+export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
   /** context for first polyface */
   public contextA: PolyfaceRangeTreeContext;
   /** context for second polyface */

@@ -387,8 +387,7 @@ describe("IndexedRangeHeap", () => {
       if (ck.testType(searcher, LineString3dRangeTreeContext)) {
         for (let u = 0; u <= 1.00001; u += 0.010) {
           const xyz = path.fractionToPoint(u);
-          searcher.searchForClosestPoint(xyz);
-          const cld = searcher.closestPoint;
+          const cld = searcher.searchForClosestPoint(xyz);
           if (ck.testType(cld, CurveLocationDetail)) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
             const distance = xyz.distance(cld.point);

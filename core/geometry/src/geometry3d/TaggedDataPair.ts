@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+
 /**
  * Carrier structure for a pair of objects dataA and dataB of types DataTypeA and DataTypeB with optional parameterized-type tags (also with suffixes A and B) of type TagType.
  * * Note that the (public!) constructor captures its parameters.

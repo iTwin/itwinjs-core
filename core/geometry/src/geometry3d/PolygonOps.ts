@@ -112,6 +112,18 @@ export class PolygonLocationDetail {
     return detail;
   }
 }
+
+/**
+ * Carrier structure for a pair of PolygonLocationDetail objects, each with optional typed tag.
+ * @public
+ */
+export class PolygonLocationDetailPair<TagType> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
+  /** Constructor, inputs captured */
+  public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType) {
+    super(detailA, detailB, tagA, tagB);
+  }
+}
+
 /**
  * Carrier for a loop extracted from clip operation, annotated for sorting
  * @internal
@@ -1243,7 +1255,7 @@ export class PolygonOps {
     }
     const bestCLD = this._workCLDMin;
     if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
-      return new TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>(
+      return new PolygonLocationDetailPair<TagType>(
         PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
         PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
       );
@@ -1602,12 +1614,6 @@ export class Point3dArrayPolygonOps {
     }
   }
 }
-/**
- * Carrier structure for a pair of PolygonLocationDetail objects (with name suffixes A and B) with optional parameterized-type tags (also with suffixes A and B)
- * * Note that the (public!) constructor captures its parameters.
- * @public
- */
-export type PolygonLocationDetailPair<TagType> = TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType>;
 
 function fillLineSegmentFromUncheckedIndexWithWrap(points: GrowableXYZArray, index: number, segment: LineSegment3d | undefined): LineSegment3d {
   let index1 = index + 1;

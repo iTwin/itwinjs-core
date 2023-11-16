@@ -273,8 +273,8 @@ export class PolylineOps {
    * @param points polyline points
    * @param spacePoint any point in space
    * @param segmentIndex index of the first point of the segment.
-   * @param extendIfInitial true to allow the initial segment to extend backward (to negative fractions)
-   * @param extendIfFinal true to allow the final segment to extend backward (to fractions above 1)
+   * @param extendIfInitial true to allow the initial segment to extend below fraction 0
+   * @param extendIfFinal true to allow the final segment to extend above fraction 1
    * @returns CurveLocationDetail containing the the point and fraction.  The `a` value in the CurveLocationDetail is the segmentIndex.
    */
   public static projectPointToUncheckedIndexedSegment(
