@@ -6,6 +6,7 @@ trigger:
 
 variables:
   - group: Rush Build Cache SAS Token
+  - group: Travis Cobbs - GitHub PAT
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
 
@@ -55,11 +56,11 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
-          buildIos: true
+          nodeVersion: 18.x
+          buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          nodeVersion: 18.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml

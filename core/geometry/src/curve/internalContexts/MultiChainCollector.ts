@@ -12,15 +12,15 @@ import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveTypes";
 import { BagOfCurves, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyChain, AnyCurve } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
-import { ChainTypes, RegionOps } from "../RegionOps";
+import { RegionOps } from "../RegionOps";
 import { StrokeOptions } from "../StrokeOptions";
 
 /**
@@ -106,10 +106,9 @@ export class MultiChainCollector {
   public captureCurve(candidate: AnyCurve) {
     if (candidate instanceof CurvePrimitive)
       this.captureCurvePrimitive(candidate);
-    else if (candidate instanceof CurveCollection && candidate.children !== undefined) {
-      for (const c of candidate.children) {
-        this.captureCurve(c as AnyCurve);
-      }
+    else if (candidate instanceof CurveCollection) {
+      for (const c of candidate.children)
+        this.captureCurve(c);
     }
   }
   /** If allowed by the geometry type, move an endpoint. */
@@ -317,7 +316,7 @@ export class MultiChainCollector {
     return linestring;
   }
   /** Return the collected results, structured as the simplest possible type. */
-  public grabResult(makeLoopIfClosed: boolean = false): ChainTypes {
+  public grabResult(makeLoopIfClosed: boolean = false): AnyChain | undefined {
     const chains = this._chains;
     if (chains.length === 0)
       return undefined;

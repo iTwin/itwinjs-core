@@ -48,15 +48,13 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 
 /**
  * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
- * - `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive` joining head-to-tail.
- * The two instantiable forms of `CurveChain` are
- *   - `Path` - A chain not required to close and not enclosing a planar area (so curves do not have to be on the
- * same plane).
- *   - `Loop` - A chain required to close from last to first so that a planar area is enclosed (so curves have to
- * be on the same plane).
- * - `ParityRegion` -- a collection of coplanar `Loop`, with "in/out" classification by parity rules.
- * - `UnionRegion` -- a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
- * - `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ * - [[CurveChain]] - a non-instantiable intermediate class for a sequence of [[CurvePrimitive]] joining head-to-tail.
+ * The two instantiable forms of `CurveChain` are:
+ *   - [[Path]] - a chain of curves. Does not have to be closed or planar. A closed `Path` is not treated as bounding a surface.
+ *   - [[Loop]] - a closed and planar chain of curves. A `Loop` is treated as bounding a planar area.
+ * - [[ParityRegion]] - a collection of coplanar `Loop`, with "in/out" classification by parity rules.
+ * - [[UnionRegion]] - a collection of coplanar `Loop` and/or `ParityRegion`, with "in/out" classification by union rules.
+ * - [[BagOfCurves]] - a collection of [[AnyCurve]] with no implied structure.
  *
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
@@ -66,9 +64,10 @@ export abstract class CurveCollection extends GeometryQuery {
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
-  /* eslint-disable @typescript-eslint/naming-convention, no-empty */
   /** Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
+  /** Return the curve children. */
+  public abstract override get children(): AnyCurve[];
   /** Return the sum of the lengths of all contained curves. */
   public sumLengths(): number {
     return SumLengthsContext.sumLengths(this);

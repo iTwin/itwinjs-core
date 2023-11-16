@@ -300,6 +300,7 @@ export interface PresentationManagerProps {
     localeDirectories?: string[];
     // @deprecated
     mode?: PresentationManagerMode;
+    // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     // @alpha

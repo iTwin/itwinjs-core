@@ -40,13 +40,11 @@ export class PascalCoefficients {
     }
     return allRows[row];
   }
-  /** Return an array with Bezier weighted pascal coefficients
-   * @param row row index in the pascal triangle.  (`row+1` entries)
+  /**
+   * Return an array with Bezier weighted pascal coefficients
+   * @param order output size. The index of the row of the Pascal triangle supplying weights is `order - 1`.
    * @param u parameter value
-   * @param result optional destination array.
-   * @note if the destination array is undefined or too small, a new Float64Array is allocated.
-   * @note if the destination array is larger than needed, its leading `row+1` values are filled,
-   *     and the array is returned.
+   * @param result optional destination array of length `order`. If the destination array is too small, a new Float64Array is allocated.
    */
   public static getBezierBasisValues(order: number, u: number, result?: Float64Array): Float64Array {
     const row = order - 1;
@@ -69,15 +67,15 @@ export class PascalCoefficients {
     return result;
   }
 
-  /** Return an array with derivatives of Bezier weighted pascal coefficients
-   * @param row row index in the pascal triangle.  (`row+1` entries)
+  /**
+   * Return an array with derivatives of Bezier weighted pascal coefficients
+   * @param order output size. The index of the row of the Pascal triangle supplying weights is `order - 2`.
    * @param u parameter value
-   * @param result optional destination array.
-   * @note if the destination array is undefined or too small, a new Float64Array is allocated.
-   * @note if the destination array is larger than needed, its leading `row+1` values are filled,
-   *     and the array is returned.
+   * @param result optional destination array of length `order`. If the destination array is too small, a new Float64Array is allocated.
    */
   public static getBezierBasisDerivatives(order: number, u: number, result?: Float64Array): Float64Array {
+    if (result === undefined || result.length < order)
+      result = new Float64Array(order);
     result = this.getBezierBasisValues(order - 1, u, result);
     // derivative is df/du = (order-1 ) * sum ( q[i+1] - q[i])   summed on 0 <= i < order - 1.\
     // evaluate lower order basis, overwrite in place from right to left

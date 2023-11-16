@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 public;AnnotationElement2d 
+beta;AnyDb = IModelDb | ECDb
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
@@ -22,9 +23,13 @@ public;class Callout
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
+beta;ChangedECInstance
 internal;ChangedElementsDb 
+beta;ChangeFormatArgs
 beta;ChangeInstanceKey
+beta;ChangeMetaData
 public;ChangesetArg 
+beta;ChangesetECAdaptor 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
 beta;ChangeSummary
@@ -281,6 +286,7 @@ beta;OnSubModelIdArg
 beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs
 public;OrthographicViewDefinition 
+beta;PartialECChangeUnifier
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
 public;PhysicalElementFulfillsFunction 
@@ -354,12 +360,17 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
+beta;SqliteChange
+beta;SqliteChangeOp = "Inserted" | "Updated" | "Deleted"
+beta;SqliteChangesetReader 
+beta;SqliteChangesetReaderArgs
 public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
 public;SqliteStatement
 public;SqliteValue
+beta;SqliteValueStage = "Old" | "New"
 public;SqliteValueType
 public;StandaloneDb 
 internal;StatementCache

@@ -22,7 +22,6 @@
     "perftest:cs": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ImodelChangesetPerformance \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:elAspect": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ElementAspectPerformance \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/cjs/perftest/**/*.test.js\"",
-    "perftest:tile": "npm run -s perftest:pre && mocha --timeout=999999999 --grep TilesGenerationPerformance \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schemaloader": "mocha \"./lib/cjs/perftest/SchemaLoader.test.js\""
   },
   "dependencies": {
