@@ -10,7 +10,7 @@ parameters:
   - name: rushBuildCacheEnabled
     type: number
     default: 1
-  - name: buildIos
+  - name: buildMobile
     type: boolean
     default: false
   - name: currentBranch
@@ -84,13 +84,28 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
 
+  - script: npm run android:all
+    workingDirectory: test-apps/display-test-app
+    displayName: Build & run Android display-test-app
+    env:
+      IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
+      IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+      TOKEN: $(GitHubPAT)
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
     displayName: Build & run iOS display-test-app
     env:
       IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-    condition: and(succeeded(), ${{ parameters.buildIos }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+
+  - script: npm run ios:all
+    workingDirectory: core/backend
+    displayName: Build & run iOS backend unit tests in Simulator
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint

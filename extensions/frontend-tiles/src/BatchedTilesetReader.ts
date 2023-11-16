@@ -93,6 +93,7 @@ export class BatchedTilesetReader {
       isLeaf,
       maximumSize: maximumSizeScale * RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
       childrenProps: isLeaf ? undefined : json.children,
+      transformToRoot: undefined !== parent && json.transform ? transformFromJSON(json.transform) : undefined,
     };
   }
 

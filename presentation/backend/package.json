@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.3.0-dev.18",
+  "version": "4.3.0-dev.25",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -24,8 +24,7 @@
   "typings": "lib/cjs/presentation-backend",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:cjs": "npm run -s copy:assets && tsc 1>&2",
-    "copy:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets",
+    "build:cjs": "tsc 1>&2",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
@@ -39,12 +38,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.3.0-dev.18",
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.18",
-    "@itwin/core-common": "workspace:^4.3.0-dev.18",
-    "@itwin/core-quantity": "workspace:^4.3.0-dev.18",
-    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.18",
-    "@itwin/presentation-common": "workspace:^4.3.0-dev.18"
+    "@itwin/core-backend": "workspace:^4.3.0-dev.25",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.25",
+    "@itwin/core-common": "workspace:^4.3.0-dev.25",
+    "@itwin/core-quantity": "workspace:^4.3.0-dev.25",
+    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.25",
+    "@itwin/presentation-common": "workspace:^4.3.0-dev.25"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
