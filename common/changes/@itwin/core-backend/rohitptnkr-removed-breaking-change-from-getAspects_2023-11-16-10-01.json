@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "modified getAspects to handle dot separator in full class name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
