@@ -3484,10 +3484,7 @@ export class LineString3dRangeTreeContext {
     numRangeTestTrue: number;
     numSearch: number;
     static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined;
-    searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
-    searchState: MinimumValueTester<CurveLocationDetail>;
-    spacePoint: Point3d;
-    static updateClosestApproachBetweenIndexedSegments(contextA: LineString3dRangeTreeContext, indexA: number, contextB: LineString3dRangeTreeContext, indexB: number, searchState: MinimumValueTester<CurveLocationDetailPair>): void;
+    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
 }
 
 // @public
@@ -4520,10 +4517,7 @@ export class Point3dArrayRangeTreeContext {
     numSearch: number;
     points: Point3d[];
     static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedPoint3dPair | undefined;
-    searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch?: boolean): CurveLocationDetail | undefined;
-    searchState: MinimumValueTester<number>;
-    spacePoint: Point3d;
-    static updateClosestApproachBetweenIndexedPoints(contextA: Point3dArrayRangeTreeContext, indexA: number, contextB: Point3dArrayRangeTreeContext, indexB: number, searchState: MinimumValueTester<TaggedPoint3dPair>): void;
+    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
 }
 
 // @public
@@ -6313,8 +6307,6 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
     getResult(): PolygonLocationDetailPair<number> | undefined;
     processAppDataPair(tagA: number, tagB: number): void;
     searchState: MinimumValueTester<PolygonLocationDetailPair<number>>;
-    visitorA: PolyfaceVisitor;
-    visitorB: PolyfaceVisitor;
 }
 
 // @internal
@@ -6324,7 +6316,7 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
     contextB: LineString3dRangeTreeContext;
     getCurrentDistance(): number;
     getResult(): CurveLocationDetailPair | undefined;
-    processAppDataPair(tagA: number, tagB: number): void;
+    processAppDataPair(indexA: number, indexB: number): void;
     searchState: MinimumValueTester<CurveLocationDetailPair>;
 }
 
@@ -6335,7 +6327,7 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     contextB: Point3dArrayRangeTreeContext;
     getCurrentDistance(): number;
     getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined;
-    processAppDataPair(tagA: number, tagB: number): void;
+    processAppDataPair(indexA: number, indexB: number): void;
     searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
 }
 

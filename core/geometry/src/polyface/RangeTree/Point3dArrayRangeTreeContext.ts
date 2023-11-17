@@ -32,10 +32,6 @@ export class TaggedPoint3dPair extends TaggedDataPair<Point3d, Point3d, number> 
 export class Point3dArrayRangeTreeContext {
   /** Array of points being searched, indexed by the range tree */
   public points: Point3d[];
-  /** Evolving search state */
-  public searchState: MinimumValueTester<number>;
-  /** Space point for closest point search  */
-  public spacePoint: Point3d;
 
   /** Diagnostic: number of range tests returned true */
   public numRangeTestTrue: number;
@@ -52,8 +48,6 @@ export class Point3dArrayRangeTreeContext {
   /** Constructor: capture inputs, initialize debug counters */
   private constructor(rangeTreeRoot: RangeTreeNode<number>, points: Point3d[]) {
     this.points = points;
-    this.spacePoint = Point3d.create(0, 0, 0);
-    this.searchState = MinimumValueTester.create<number>();
     this._rangeTreeRoot = rangeTreeRoot;
     this.numRangeTestTrue = 0;
     this.numRangeTestFalse = 0;
@@ -79,16 +73,13 @@ export class Point3dArrayRangeTreeContext {
     return rangeTreeRoot ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points) : undefined;
   }
   /** Search the range tree for closest point to spacePoint */
-  public searchForClosestPoint(spacePoint: Point3d, resetAsNewSearch: boolean = true): CurveLocationDetail | undefined {
-    const handler = new SingleTreeSearchHandlerForClosestPointInArray(this);
+  public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
+    const handler = new SingleTreeSearchHandlerForClosestPointInArray(spacePoint, this);
     this.numSearch++;
-    this.spacePoint = spacePoint.clone();
-    if (resetAsNewSearch)
-      this.searchState.resetMinValueAndItem();
     this._rangeTreeRoot.searchTopDown(handler);
-    if (this.searchState.itemAtMinValue !== undefined && this.searchState.minValue !== undefined) {
-      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[this.searchState.itemAtMinValue]);
-      cld.a = this.searchState.minValue;
+    if (handler.searchState.itemAtMinValue !== undefined && handler.searchState.minValue !== undefined) {
+      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[handler.searchState.itemAtMinValue]);
+      cld.a = handler.searchState.minValue;
       return cld;
     }
     return undefined;
@@ -107,24 +98,6 @@ export class Point3dArrayRangeTreeContext {
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
   }
-  /**
-   * * Compute the distance between the indexed points of contextA and contextB.
-   * * If this distance is of interest to the searchState, update it with the points.
-   */
-  public static updateClosestApproachBetweenIndexedPoints(
-    contextA: Point3dArrayRangeTreeContext,
-    indexA: number,
-    contextB: Point3dArrayRangeTreeContext,
-    indexB: number,
-    searchState: MinimumValueTester<TaggedPoint3dPair>,
-  ) {
-    contextA.numPointTest++;
-    const pointA = contextA.points[indexA];
-    const pointB = contextB.points[indexB];
-    const d = pointA.distance(pointB);
-    if (searchState.isNewMinOrTrigger(d))
-      searchState.testAndSave(new TaggedPoint3dPair(pointA.clone(), pointB.clone(), indexA, indexB), d);
-  }
 }
 
 /**
@@ -134,10 +107,17 @@ export class Point3dArrayRangeTreeContext {
 class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHandler<number> {
   /** The calling context */
   public context: Point3dArrayRangeTreeContext;
+  /** Evolving search state */
+  public searchState: MinimumValueTester<number>;
+  /** Space point for closest point search  */
+  public spacePoint: Point3d;
+
   /** Constructor, captures context */
-  public constructor(context: Point3dArrayRangeTreeContext) {
+  public constructor(spacePoint: Point3d, context: Point3dArrayRangeTreeContext) {
     super();
     this.context = context;
+    this.searchState = MinimumValueTester.create<number>();
+    this.spacePoint = spacePoint.clone();
   }
   /**
    * Return true if appData within the range should be offered to `processAppData`.
@@ -145,8 +125,8 @@ class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHand
    * @returns true if the spacePoint is within the range or close enough that a point in the range could be the closest.
    */
   public override isRangeActive(range: Range3d): boolean {
-    const dMin = range.distanceToPoint(this.context.spacePoint);
-    if (this.context.searchState.isNewMinValue(dMin)) {
+    const dMin = range.distanceToPoint(this.spacePoint);
+    if (this.searchState.isNewMinValue(dMin)) {
       this.context.numRangeTestTrue++;
       return true;
     }
@@ -155,9 +135,9 @@ class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHand
   }
   /** Test a point indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const d = this.context.spacePoint.distance(this.context.points[candidateIndex]);
+    const d = this.spacePoint.distance(this.context.points[candidateIndex]);
     this.context.numPointTest++;
-    this.context.searchState.testAndSave(candidateIndex, d);
+    this.searchState.testAndSave(candidateIndex, d);
   }
 }
 
@@ -172,7 +152,8 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
   public contextB: Point3dArrayRangeTreeContext;
   /** Search state with current min distance point pair */
   public searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
-  /** constructor, all inputs captured */
+
+  /** Constructor, all inputs captured */
   public constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext) {
     super();
     this.contextA = contextA;
@@ -192,7 +173,12 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     return d === undefined ? Number.MAX_VALUE : d;
   }
   /** Compute and test the distance between two points, given their indices. */
-  public override processAppDataPair(tagA: number, tagB: number): void {
-    Point3dArrayRangeTreeContext.updateClosestApproachBetweenIndexedPoints(this.contextA, tagA, this.contextB, tagB, this.searchState);
+  public override processAppDataPair(indexA: number, indexB: number): void {
+    this.contextA.numPointTest++;
+    const pointA = this.contextA.points[indexA];
+    const pointB = this.contextB.points[indexB];
+    const d = pointA.distance(pointB);
+    if (this.searchState.isNewMinOrTrigger(d))
+      this.searchState.testAndSave(new TaggedPoint3dPair(pointA.clone(), pointB.clone(), indexA, indexB), d);
   }
 }
