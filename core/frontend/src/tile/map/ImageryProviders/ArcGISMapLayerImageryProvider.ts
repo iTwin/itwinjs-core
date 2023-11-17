@@ -333,6 +333,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       geometryType: "esriGeometryPoint",
       tolerance,
       mapExtent: {low: {x: bbox.left, y: bbox.bottom}, high: {x: bbox.right, y: bbox.top}},
+      sr: 3857,
       imageDisplay: {width: this.tileSize, height: this.tileSize, dpi: 96},
       layers: {prefix: "top", layerIds},
       returnGeometry,
