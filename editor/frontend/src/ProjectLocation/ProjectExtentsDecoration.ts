@@ -25,10 +25,10 @@ import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./Proj
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);
 }
-function translateMessageBold(key: string) {
+export function translateMessageBold(key: string) {
   return `<b>${translateMessage(key)}:</b> `;
 }
-function translateCoreMeasureBold(key: string) {
+export function translateCoreMeasureBold(key: string) {
   return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
 }
 
@@ -40,7 +40,7 @@ function clearViewClip(vp: ScreenViewport): boolean {
   return true;
 }
 
-function clipToProjectExtents(vp: ScreenViewport): boolean {
+export function clipToProjectExtents(vp: ScreenViewport): boolean {
   clearViewClip(vp); // Clear any existing view clip and send clear event...
   ViewClipTool.enableClipVolume(vp);
   return ViewClipTool.doClipToRange(vp, vp.iModel.projectExtents, Transform.createIdentity());
@@ -54,7 +54,7 @@ function enableBackgroundMap(viewport: Viewport, onOff: boolean): boolean {
   return true;
 }
 
-function updateMapDisplay(vp: ScreenViewport, turnOnMap: boolean): void {
+export function updateMapDisplay(vp: ScreenViewport, turnOnMap: boolean): void {
   if (!turnOnMap || !enableBackgroundMap(vp, true))
     vp.invalidateRenderPlan();
 }
