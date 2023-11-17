@@ -88,6 +88,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     return (
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       <div className={classnames("core-context-submenu", ContextMenu.getCSSClassNameFromDirection(renderDirection), className)}
+        // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
         data-testid="core-context-submenu"

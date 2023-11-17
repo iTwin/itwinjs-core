@@ -147,6 +147,7 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(   // e
     );
 
     return (
+      // eslint-disable-next-line jsx-a11y/label-has-associated-control
       <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName} onBlur={handleBlur}>
         <input type="checkbox" ref={refs} className="core-toggle-input"
           checked={checked} disabled={props.disabled}
