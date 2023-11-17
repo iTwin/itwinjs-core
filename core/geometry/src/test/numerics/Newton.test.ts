@@ -103,9 +103,9 @@ export class Simple1DFunctionEvaluator2 extends NewtonEvaluatorRtoR {
 export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
   public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      u - v + 1, u * u - v + 1, 0.0, // [ x(u,v), y(u,v), 0 ]
-      1, 2 * u, 0.0,                 // [ dx/du,  dy/du,  0 ]
-      -1, -1, 0.0,                   // [ dx/dv,  dy/dv,  0 ]
+      u - v + 1, u * u - v + 1, 0.0, // x(u,v), y(u,v), 0
+      1, 2 * u, 0.0,                 // dx/du,  dy/du,  0
+      -1, -1, 0.0,                   // dx/dv,  dy/dv,  0
     );
     return true;
   }
@@ -114,9 +114,9 @@ export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
 export class Simple2DFunctionEvaluator2 extends NewtonEvaluatorRRtoRRD {
   public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      u * u + v * v - 5, 3 * u - v - 5, 0.0, // [ x(u,v), y(u,v), 0 ]
-      2 * u, 3, 0.0,                         // [ dx/du,  dy/du,  0 ]
-      2 * v, -1, 0.0,                        // [ dx/dv,  dy/dv,  0 ]
+      u * u + v * v - 5, 3 * u - v - 5, 0.0, // x(u,v), y(u,v), 0
+      2 * u, 3, 0.0,                         // dx/du,  dy/du,  0
+      2 * v, -1, 0.0,                        // dx/dv,  dy/dv,  0
     );
     return true;
   }

@@ -345,6 +345,11 @@ These keysins control the planar masking of reality models.
   * "clear": Clear all clip colors
   * "inside `<color string>` | clear": Set or clear an inside clip color
   * "outside  `<color string>` | clear": Set or clear an outside clip color
+* `fdt clip intersection` - Specify or unspecify an intersection style to be applied to geometry intersecting the defined clip planes. Geometry at this intersection will be colorized with the defined color at the defined width. `<color string>` must be in one of the following forms: "rgb(255,0,0)", "rgba(255,0,0,255)", "rgb(100%,0%,0%)", "hsl(120,50%,50%)", "#rrbbgg", "blanchedAlmond" (see possible values from `ColorByName`; case insensitive). If no argument is specified, the most recently defined intersection style will be applied (or the default style if no style has been defined). Arguments can be:
+  * "off": Turn off intersection style
+  * "default": Apply default intersection style (color: white, width: 1 pixel)
+  * "color `<color string>`": define the color to apply to the intersection style
+  * "width `<number>`": define the number of pixels considered to be intersecting the clip plane
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
