@@ -7,17 +7,17 @@ alpha;BaseSolarDataProvider
 alpha;BaseTimelineDataProvider 
 beta;ColorEditor 
 beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
-beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): React_2.JSX.Element
 beta;ColorPickerDialogProps
-public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
-deprecated;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
+public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): React_2.JSX.Element
+deprecated;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): React_2.JSX.Element
 public;ColorPickerPanelProps
 deprecated;ColorPickerPanelProps
 public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 public;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
-beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
+beta;ColorSwatch(props: ColorSwatchProps): React_2.JSX.Element
 beta;ColorSwatchProps 
 public;Cube 
 internal;CubeFace 
@@ -31,7 +31,7 @@ public;CubeNavigationHitBoxZ
 public;CubeProps 
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
-internal;CustomThumb(): JSX.Element
+internal;CustomThumb(): React_2.JSX.Element
 public;DrawingNavigationAid 
 public;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
@@ -41,17 +41,17 @@ public;DrawingViewportChangeEventArgs
 public;Face
 internal;FaceCell 
 internal;FaceCellProps 
-alpha;FormatPanel(props: FormatPanelProps): JSX.Element
+alpha;FormatPanel(props: FormatPanelProps): React_2.JSX.Element
 alpha;FormatPanelProps 
-alpha;FormatPrecision(props: FormatPrecisionProps): JSX.Element
+alpha;FormatPrecision(props: FormatPrecisionProps): React_2.JSX.Element
 alpha;FormatPrecisionProps 
-alpha;FormatSample(props: FormatSampleProps): JSX.Element
+alpha;FormatSample(props: FormatSampleProps): React_2.JSX.Element
 alpha;FormatSampleProps 
-alpha;FormatTypeOption(props: FormatTypeOptionProps): JSX.Element
+alpha;FormatTypeOption(props: FormatTypeOptionProps): React_2.JSX.Element
 alpha;FormatTypeOptionProps 
-alpha;FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element
+alpha;FormatUnitLabel(props: FormatUnitLabelProps): React_2.JSX.Element
 alpha;FormatUnitLabelProps 
-alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
+alpha;FormatUnits(props: FormatUnitsProps): React_2.JSX.Element
 alpha;FormatUnitsProps 
 internal;getCSSColorFromDef(colorDef: ColorDef): string
 internal;getPercentageOfRectangle(rect: DOMRect, pointer: number): number
@@ -61,7 +61,7 @@ internal;HitBoxY
 deprecated;HitBoxY
 internal;HitBoxZ
 deprecated;HitBoxZ
-beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
+beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): React_2.JSX.Element
 beta;HueSliderProps 
 internal;InlineEdit 
 public;LineWeightSwatch 
@@ -70,7 +70,7 @@ internal;MapMode
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
-alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
+alpha;MiscFormatOptions(props: MiscFormatOptionsProps): React_2.JSX.Element
 alpha;MiscFormatOptionsProps 
 internal;NavCubeFace 
 internal;NavCubeFaceProps 
@@ -79,16 +79,16 @@ public;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => voi
 internal;PlayButton 
 internal;PlayerButton 
 internal;PlayerButtonProps 
-alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
+alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): React_2.JSX.Element
 alpha;QuantityFormatPanelProps 
-beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): React_2.JSX.Element
 beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
 internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
-beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
+beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): React_2.JSX.Element
 beta;SaturationPickerProps 
-internal;Scrubber(props: ScrubberProps): JSX.Element
+internal;Scrubber(props: ScrubberProps): React_2.JSX.Element
 internal;ScrubberProps 
 alpha;SolarDataProvider
 alpha;SolarPlaybackProgressHandler = (time: Date) => void
@@ -112,7 +112,7 @@ public;ViewClassFullNameChangedEvent
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
 public;ViewIdChangedEventArgs
-public;ViewportComponent(props: ViewportProps): JSX.Element
+public;ViewportComponent(props: ViewportProps): React_2.JSX.Element
 public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 

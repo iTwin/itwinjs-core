@@ -45,6 +45,7 @@ import { PropertyRecord } from '@itwin/appui-abstract';
 import { PropertyValue } from '@itwin/appui-abstract';
 import { RatioChangeResult } from '@itwin/core-react';
 import * as React_2 from 'react';
+import { default as React_3 } from 'react';
 import ReactDataGrid from 'react-data-grid';
 import { ReactNode } from 'react';
 import { RelativePosition } from '@itwin/appui-abstract';
@@ -75,7 +76,7 @@ export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends T
 // @public
 export class ActionButtonList extends React_2.PureComponent<ActionButtonListProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -99,7 +100,7 @@ export interface ActionButtonRendererProps {
 export function ActionItem({ item, addGroupSeparator }: {
     item: ActionButton;
     addGroupSeparator: boolean;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @public
 export interface ActiveMatchInfo {
@@ -166,7 +167,7 @@ export class BasicPropertyEditor extends PropertyEditorBase {
 // @beta @deprecated
 export function BeDragDropContext(props: {
     children?: React_2.ReactNode;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @public
 export class BooleanEditor extends React_2.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
@@ -183,7 +184,7 @@ export class BooleanEditor extends React_2.PureComponent<PropertyEditorProps, Bo
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<BooleanEditorState>;
 }
@@ -568,7 +569,7 @@ export class CompositeTypeConverter extends TypeConverter {
 export function computeVisibleNodes(model: TreeModel): VisibleTreeNodes;
 
 // @public
-export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
+export function ControlledSelectableContent(props: ControlledSelectableContentProps): React_2.JSX.Element;
 
 // @public
 export interface ControlledSelectableContentProps {
@@ -583,7 +584,7 @@ export interface ControlledSelectableContentProps {
 }
 
 // @public
-export function ControlledTree(props: ControlledTreeProps): JSX.Element;
+export function ControlledTree(props: ControlledTreeProps): React_2.JSX.Element;
 
 // @public
 export interface ControlledTreeProps extends CommonProps {
@@ -625,7 +626,7 @@ export function convertPrimitiveRecordToString(record: PropertyRecord): string |
 export function CustomItem({ item, addGroupSeparator }: {
     item: CustomToolbarItem;
     addGroupSeparator: boolean;
-}): JSX.Element | null;
+}): React_2.JSX.Element | null;
 
 // @alpha
 export class CustomNumberEditor extends React_2.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
@@ -686,7 +687,7 @@ export interface DataRowItem extends RowItem {
 }
 
 // @internal
-export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element;
+export function DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): React_2.JSX.Element;
 
 // @internal
 export interface DateFieldProps extends CommonProps {
@@ -706,10 +707,10 @@ export interface DateFormatOptions {
 }
 
 // @alpha
-export function DatePicker(props: DatePickerProps): JSX.Element;
+export function DatePicker(props: DatePickerProps): React_2.JSX.Element;
 
 // @alpha
-export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element;
+export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): React_2.JSX.Element;
 
 // @alpha
 export interface DatePickerPopupButtonProps extends CommonProps {
@@ -871,7 +872,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 // @public
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -893,7 +894,7 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 // @public
 export class EditorContainer extends React_2.PureComponent<EditorContainerProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -920,7 +921,7 @@ export class EnumButtonGroupEditor extends React_2.Component<PropertyEditorProps
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<EnumButtonGroupEditorState>;
 }
@@ -940,7 +941,7 @@ export class EnumEditor extends React_2.PureComponent<PropertyEditorProps, EnumE
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<EnumEditorState>;
 }
@@ -990,7 +991,7 @@ export class FavoritePropertiesRenderer {
 }
 
 // @alpha
-export function FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null;
+export function FavoritePropertyList(props: FavoritePropertyListProps): React_2.JSX.Element | null;
 
 // @alpha
 export interface FavoritePropertyListProps {
@@ -1088,7 +1089,7 @@ export class FilteringInput extends React_2.PureComponent<FilteringInputProps, F
     // @internal (undocumented)
     componentDidUpdate(prevProps: FilteringInputProps): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -1268,7 +1269,7 @@ export interface GridCategoryItem extends FlatGridItemBase {
 export function GroupPopupItem({ item, addGroupSeparator }: {
     item: GroupButton;
     addGroupSeparator: boolean;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @internal (undocumented)
 export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void;
@@ -1306,7 +1307,7 @@ export interface HighlightableTreeProps {
 }
 
 // @public
-export function HighlightedText(props: HighlightedTextProps): JSX.Element;
+export function HighlightedText(props: HighlightedTextProps): React_3.JSX.Element;
 
 // @public
 export interface HighlightedTextProps {
@@ -1372,7 +1373,7 @@ export class IconEditor extends React_2.PureComponent<PropertyEditorProps, IconE
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha @deprecated
@@ -1382,7 +1383,7 @@ export class IconPickerButton extends React_2.PureComponent<IconPickerProps, Ico
     // @internal (undocumented)
     static defaultProps: Partial<IconPickerProps>;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha @deprecated
@@ -1426,7 +1427,7 @@ export class ImageCheckBoxEditor extends React_2.PureComponent<PropertyEditorPro
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<ImageCheckBoxEditorState>;
 }
@@ -1738,7 +1739,7 @@ export interface LessGreaterOperatorProcessor {
 }
 
 // @public
-export function LinksRenderer(props: LinksRendererProps): JSX.Element;
+export function LinksRenderer(props: LinksRendererProps): React_2.JSX.Element;
 
 // @public
 export interface LinksRendererProps {
@@ -2053,7 +2054,7 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 // @public
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React_2.JSX.Element;
 }
 
 // @public
@@ -2078,7 +2079,7 @@ export { Node_2 as Node }
 // @public
 export class NonPrimitivePropertyLabelRenderer extends React_2.PureComponent<NonPrimitivePropertyLabelRendererProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2095,7 +2096,7 @@ export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropert
 export class NonPrimitivePropertyRenderer extends React_2.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
     constructor(props: NonPrimitivePropertyRendererProps);
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: NonPrimitivePropertyRendererState;
 }
@@ -2258,10 +2259,10 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
 }
 
 // @public
-export function PopupItem(props: PopupItemProps): JSX.Element;
+export function PopupItem(props: PopupItemProps): React_2.JSX.Element;
 
 // @internal (undocumented)
-export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
+export function PopupItemPopup(props: PopupItemPopupProps): React_2.JSX.Element;
 
 // @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
@@ -2271,7 +2272,7 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
 }
 
 // @public
-export function PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element;
+export function PopupItemWithDrag(props: PopupItemWithDragProps): React_2.JSX.Element;
 
 // @public
 export interface PopupItemWithDragProps extends ToolbarButtonItemProps {
@@ -2281,7 +2282,7 @@ export interface PopupItemWithDragProps extends ToolbarButtonItemProps {
 // @public
 export class PrimitivePropertyLabelRenderer extends React_2.PureComponent<PrimitivePropertyLabelRendererProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2294,17 +2295,17 @@ export interface PrimitivePropertyLabelRendererProps extends PropertyLabelRender
 export class PrimitivePropertyRenderer extends React_2.Component<PrimitiveRendererProps> {
     constructor(props: PrimitiveRendererProps);
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
-export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element;
+export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): React_2.JSX.Element;
 
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
@@ -2334,7 +2335,7 @@ export interface PropertyCategory {
 export class PropertyCategoryBlock extends React_2.Component<PropertyCategoryBlockProps> {
     constructor(props: PropertyCategoryBlockProps);
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2500,7 +2501,7 @@ export interface PropertyEditorProps extends CommonProps {
 export type PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup;
 
 // @beta
-export function PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element;
+export function PropertyFilterBuilder(props: PropertyFilterBuilderProps): React_2.JSX.Element;
 
 // @beta
 export interface PropertyFilterBuilderProps {
@@ -2580,7 +2581,7 @@ export class PropertyGrid extends React_2.Component<PropertyGridProps, PropertyG
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
@@ -2623,7 +2624,7 @@ export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onProperty
 export class PropertyGridEventsRelatedPropsSupplier extends React_2.Component<PropertyGridEventsRelatedPropsSupplierProps, PropertyGridEventsRelatedPropsSupplierState> {
     constructor(props: PropertyGridEventsRelatedPropsSupplierProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2675,7 +2676,7 @@ export interface PropertyGridProps extends CommonPropertyGridProps {
 export class PropertyLabelRenderer extends React_2.PureComponent<PropertyLabelRendererProps> {
     static getStyle(offset?: number): React_2.CSSProperties;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2689,7 +2690,7 @@ export interface PropertyLabelRendererProps {
 export class PropertyList extends React_2.Component<PropertyListProps> {
     constructor(props: PropertyListProps);
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2759,7 +2760,7 @@ export class PropertyRenderer extends React_2.Component<PropertyRendererProps, P
     // (undocumented)
     static getLabelOffset(indentation?: number, orientation?: Orientation, width?: number, columnRatio?: number, minColumnLabelWidth?: number): number;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<PropertyRendererState>;
     updateDisplayValueAsEditor(props: PropertyRendererProps): void;
@@ -2819,7 +2820,7 @@ export class PropertyValueRendererManager {
 export class PropertyView extends React_2.Component<PropertyViewProps, PropertyViewState> {
     constructor(props: PropertyViewProps);
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2860,7 +2861,7 @@ export class ResultSelector extends React_2.PureComponent<ResultSelectorProps, R
     // @internal (undocumented)
     componentDidUpdate(prevProps: ResultSelectorProps): void;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -2898,7 +2899,7 @@ export interface RowProps {
 }
 
 // @public
-export function SelectableContent(props: SelectableContentProps): JSX.Element;
+export function SelectableContent(props: SelectableContentProps): React_2.JSX.Element;
 
 // @public
 export interface SelectableContentDefinition {
@@ -3280,7 +3281,7 @@ export class Table extends React_2.Component<TableProps, TableState> {
     // @internal
     getPropertyDisplayValueExpression(property: string): string;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     shouldComponentUpdate(_props: TableProps): boolean;
     // @internal (undocumented)
@@ -3296,13 +3297,13 @@ export class Table extends React_2.Component<TableProps, TableState> {
 // @public
 export class TableArrayValueRenderer extends React_2.PureComponent<TableSpecificValueRendererProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
 export class TableCell extends React_2.PureComponent<TableCellProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
@@ -3429,7 +3430,7 @@ export class TableFilterDescriptorCollection extends FilterDescriptorCollection 
 // @public @deprecated
 export class TableIconCellContent extends React_2.PureComponent<TableIconCellContentProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
@@ -3440,7 +3441,7 @@ export interface TableIconCellContentProps {
 // @public
 export class TableNonPrimitiveValueRenderer extends React_2.PureComponent<TableNonPrimitiveValueRendererProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -3490,7 +3491,7 @@ export interface TableProps extends CommonProps {
 // @internal
 export class TableRow extends React_2.Component<TableRowProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -3525,7 +3526,7 @@ export interface TableSpecificValueRendererProps extends SharedTableNonPrimitive
 // @public
 export class TableStructValueRenderer extends React_2.PureComponent<TableSpecificValueRendererProps> {
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -3595,7 +3596,7 @@ export class ThemedEnumEditor extends React_2.PureComponent<ThemedEnumEditorProp
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<EnumEditorState_2>;
 }
@@ -3624,7 +3625,7 @@ export class ThemedEnumPropertyEditor extends PropertyEditorBase {
 }
 
 // @internal
-export function TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element;
+export function TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): React_2.JSX.Element;
 
 // @internal
 export interface TimeFieldProps {
@@ -3666,7 +3667,7 @@ export class ToggleEditor extends React_2.PureComponent<PropertyEditorProps, Tog
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<ToggleEditorState>;
 }
@@ -3680,7 +3681,7 @@ export class TogglePropertyEditor extends PropertyEditorBase {
 }
 
 // @public
-export function Toolbar(props: ToolbarProps): JSX.Element;
+export function Toolbar(props: ToolbarProps): React_2.JSX.Element;
 
 // @public
 export const ToolbarButtonItem: React_2.MemoExoticComponent<React_2.FC<ToolbarButtonItemProps>>;
@@ -3707,7 +3708,7 @@ export type ToolbarItem = ActionButton | GroupButton | CustomToolbarItem;
 export function ToolbarItemComponent({ item, addGroupSeparator }: {
     item: ToolbarItem;
     addGroupSeparator: boolean;
-}): JSX.Element | null;
+}): React_2.JSX.Element | null;
 
 // @internal
 export const ToolbarItemContext: React_2.Context<ToolbarItemContextArgs>;
@@ -3799,7 +3800,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 }
 
 // @public
-export function ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element;
+export function ToolbarWithOverflow(props: ToolbarWithOverflowProps): React_2.JSX.Element;
 
 // @internal
 export const ToolbarWithOverflowDirectionContext: React_2.Context<ToolbarOverflowContextProps>;
@@ -4064,7 +4065,7 @@ export class TreeModelSource {
 }
 
 // @public
-export function TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element;
+export function TreeNodeEditor(props: TreeNodeEditorProps): React_2.JSX.Element;
 
 // @public
 export interface TreeNodeEditorProps {
@@ -4134,7 +4135,7 @@ export interface TreeNodeLoadResult {
 }
 
 // @public
-export const TreeNodeRenderer: React_2.MemoExoticComponent<(props: TreeNodeRendererProps) => JSX.Element>;
+export const TreeNodeRenderer: React_2.MemoExoticComponent<(props: TreeNodeRendererProps) => React_2.JSX.Element>;
 
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
@@ -4153,7 +4154,7 @@ export interface TreeNodeRendererProps extends CommonProps {
 // @public
 export class TreeRenderer extends React_2.Component<TreeRendererProps> implements TreeRendererAttributes {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     scrollToNode(nodeId: string, alignment?: Alignment): void;
 }
@@ -4266,7 +4267,7 @@ export interface Unsubscribable {
 // @public
 export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React_2.JSX.Element;
 }
 
 // @public
@@ -4343,7 +4344,7 @@ export class VirtualizedPropertyGrid extends React_2.Component<VirtualizedProper
     // @internal (undocumented)
     static getDerivedStateFromProps(props: VirtualizedPropertyGridProps, state: VirtualizedPropertyGridState): VirtualizedPropertyGridState | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -4421,7 +4422,7 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
 }
 
 // @public
-export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element;
+export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): React_3.JSX.Element;
 
 // @public
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {

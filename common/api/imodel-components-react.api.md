@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { CommonProps } from '@itwin/core-react';
@@ -162,7 +160,7 @@ export class ColorEditor extends React_2.PureComponent<PropertyEditorProps, Colo
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<ColorEditorState>;
 }
@@ -171,7 +169,7 @@ export class ColorEditor extends React_2.PureComponent<PropertyEditorProps, Colo
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element;
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): React_2.JSX.Element;
 
 // @beta
 export interface ColorPickerDialogProps {
@@ -188,7 +186,7 @@ export interface ColorPickerDialogProps {
 }
 
 // @public @deprecated
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): React_2.JSX.Element;
 
 // @public @deprecated
 export interface ColorPickerPanelProps {
@@ -241,7 +239,7 @@ export class ColorPropertyEditor extends PropertyEditorBase {
 }
 
 // @beta
-export function ColorSwatch(props: ColorSwatchProps): JSX.Element;
+export function ColorSwatch(props: ColorSwatchProps): React_2.JSX.Element;
 
 // @beta
 export interface ColorSwatchProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -361,7 +359,7 @@ export interface CubeRotationChangeEventArgs {
 }
 
 // @internal
-export function CustomThumb(): JSX.Element;
+export function CustomThumb(): React_2.JSX.Element;
 
 // @public
 export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
@@ -499,7 +497,7 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 }
 
 // @alpha
-export function FormatPanel(props: FormatPanelProps): JSX.Element;
+export function FormatPanel(props: FormatPanelProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatPanelProps extends CommonProps {
@@ -526,7 +524,7 @@ export interface FormatPanelProps extends CommonProps {
 }
 
 // @alpha
-export function FormatPrecision(props: FormatPrecisionProps): JSX.Element;
+export function FormatPrecision(props: FormatPrecisionProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatPrecisionProps extends CommonProps {
@@ -537,7 +535,7 @@ export interface FormatPrecisionProps extends CommonProps {
 }
 
 // @alpha
-export function FormatSample(props: FormatSampleProps): JSX.Element;
+export function FormatSample(props: FormatSampleProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatSampleProps extends CommonProps {
@@ -550,7 +548,7 @@ export interface FormatSampleProps extends CommonProps {
 }
 
 // @alpha
-export function FormatTypeOption(props: FormatTypeOptionProps): JSX.Element;
+export function FormatTypeOption(props: FormatTypeOptionProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatTypeOptionProps extends CommonProps {
@@ -561,7 +559,7 @@ export interface FormatTypeOptionProps extends CommonProps {
 }
 
 // @alpha
-export function FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element;
+export function FormatUnitLabel(props: FormatUnitLabelProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatUnitLabelProps extends CommonProps {
@@ -572,7 +570,7 @@ export interface FormatUnitLabelProps extends CommonProps {
 }
 
 // @alpha
-export function FormatUnits(props: FormatUnitsProps): JSX.Element;
+export function FormatUnits(props: FormatUnitsProps): React_2.JSX.Element;
 
 // @alpha
 export interface FormatUnitsProps extends CommonProps {
@@ -623,7 +621,7 @@ export enum HitBoxZ {
 }
 
 // @beta
-export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element;
+export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): React_2.JSX.Element;
 
 // @beta
 export interface HueSliderProps extends React_2.HTMLAttributes<HTMLDivElement>, CommonProps {
@@ -638,7 +636,7 @@ export class InlineEdit extends React_2.Component<InlineEditProps, InlineEditSta
     // (undocumented)
     componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -648,7 +646,7 @@ export class LineWeightSwatch extends React_2.PureComponent<LineWeightSwatchProp
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -692,7 +690,7 @@ export interface MilestoneRange {
 }
 
 // @alpha
-export function MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element;
+export function MiscFormatOptions(props: MiscFormatOptionsProps): React_2.JSX.Element;
 
 // @alpha
 export interface MiscFormatOptionsProps extends CommonProps {
@@ -754,13 +752,13 @@ export class PlayButton extends React_2.Component<PlayerButtonProps, PlayButtonS
     // (undocumented)
     componentDidUpdate(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class PlayerButton extends React_2.PureComponent<any> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -776,7 +774,7 @@ export interface PlayerButtonProps extends CommonProps {
 }
 
 // @alpha
-export function QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element;
+export function QuantityFormatPanel(props: QuantityFormatPanelProps): React_2.JSX.Element;
 
 // @alpha
 export interface QuantityFormatPanelProps extends CommonProps {
@@ -792,7 +790,7 @@ export interface QuantityFormatPanelProps extends CommonProps {
 }
 
 // @beta
-export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element;
+export function QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): React_2.JSX.Element;
 
 // @beta
 export const QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null;
@@ -826,10 +824,10 @@ export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
     percent: number;
     tooltipText: string;
     markDate?: DateMarkerProps;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @beta
-export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element;
+export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): React_2.JSX.Element;
 
 // @beta
 export interface SaturationPickerProps extends React_2.HTMLAttributes<HTMLDivElement>, CommonProps {
@@ -838,7 +836,7 @@ export interface SaturationPickerProps extends React_2.HTMLAttributes<HTMLDivEle
 }
 
 // @internal
-export function Scrubber(props: ScrubberProps): JSX.Element;
+export function Scrubber(props: ScrubberProps): React_2.JSX.Element;
 
 // @internal
 export interface ScrubberProps extends CommonProps {
@@ -896,7 +894,7 @@ export class SolarTimeline extends React_2.PureComponent<SolarTimelineComponentP
     // (undocumented)
     getLocalTime(ticks: number): Date;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -920,7 +918,7 @@ export class TimelineComponent extends React_2.Component<TimelineComponentProps,
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
 }
@@ -1061,7 +1059,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export function ViewportComponent(props: ViewportProps): JSX.Element;
+export function ViewportComponent(props: ViewportProps): React_2.JSX.Element;
 
 // @public
 export class ViewportComponentEvents {
@@ -1150,7 +1148,7 @@ export class WeightEditor extends React_2.PureComponent<PropertyEditorProps, Wei
     // (undocumented)
     get htmlElement(): HTMLElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<WeightEditorState>;
 }
@@ -1166,7 +1164,7 @@ export class WeightPickerButton extends React_2.PureComponent<WeightPickerProps,
         weights: number[];
     };
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     setFocus(): void;
 }
