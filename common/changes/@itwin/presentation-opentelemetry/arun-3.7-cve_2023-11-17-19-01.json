@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/presentation-opentelemetry"
+    }
+  ],
+  "packageName": "@itwin/presentation-opentelemetry",
+  "email": "aruniverse@users.noreply.github.com"
+}
