@@ -67,6 +67,9 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     ended: true,
     resource: new Resource({ [SemanticResourceAttributes.SERVICE_NAME]: "iTwin.js Presentation" }),
     instrumentationLibrary: { name: "" },
+    droppedAttributesCount: 0,
+    droppedEventsCount: 0,
+    droppedLinksCount: 0,
   };
   spans.push(span);
 
