@@ -275,7 +275,7 @@ export class BreadcrumbInput extends React_2.Component<BreadcrumbInputProps, Bre
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     readonly state: Readonly<BreadcrumbInputState>;
 }
@@ -2228,7 +2228,7 @@ export interface PageOptions {
 }
 
 // @public
-export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null;
+export const ParsedInput: (props: ParsedInputProps) => React_2.JSX.Element | null;
 
 // @public
 export interface ParsedInputProps extends CommonProps {
@@ -2681,7 +2681,7 @@ export class PropertyLabelRenderer extends React_2.PureComponent<PropertyLabelRe
 
 // @public
 export interface PropertyLabelRendererProps {
-    children: string | JSX.Element;
+    children: string | React_2.JSX.Element;
     renderColon?: boolean;
     tooltip?: string;
 }

@@ -244,7 +244,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     sectionTitle: "uicore-autosuggest__section-title",
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const { inputValue, suggestions } = this.state;
     const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions, // eslint-disable-line @typescript-eslint/no-unused-vars
       onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel, // eslint-disable-line @typescript-eslint/no-unused-vars

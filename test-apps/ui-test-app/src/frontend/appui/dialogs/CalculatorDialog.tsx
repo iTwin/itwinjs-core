@@ -25,7 +25,7 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <Dialog
         title={"Calculator"}

@@ -74,7 +74,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     let icon = (<></>);
     if (this.props.icon !== undefined) {
       icon = (

@@ -95,7 +95,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
   /** Return array of SnapRow elements, one for each support snap mode. This array will populate the pop-up used
     * to select a SnapMode.
     */
-  private getSnapEntries(): JSX.Element[] {
+  private getSnapEntries(): React.JSX.Element[] {
     return this._snapModeFieldArray.map((item: SnapModeFieldEntry, index: number) => {
       return (
         <Snap

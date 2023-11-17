@@ -813,7 +813,7 @@ beta;UiItemsManager
 beta;UiItemsProvider = UiItemsProvider_2
 beta;UiItemsProviderOverrides = UiItemProviderOverrides
 beta;UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs
-beta;UiSettingsPage(): JSX.Element
+beta;UiSettingsPage(): React_2.JSX.Element
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 deprecated;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 public;UiSettingsProviderProps

@@ -195,7 +195,7 @@ export interface RenderPropsArgs {
  * observing element in pop-out/child windows.
  *  @public
  */
-export function ElementResizeObserver({ watchedElement, render }: { watchedElement: HTMLElement | null, render: (props: RenderPropsArgs) => JSX.Element }) {
+export function ElementResizeObserver({ watchedElement, render }: { watchedElement: HTMLElement | null, render: (props: RenderPropsArgs) => React.JSX.Element }) {
   const [width, height] = useLayoutResizeObserver(watchedElement);
   return render({ width, height });
 }

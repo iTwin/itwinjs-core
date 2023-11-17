@@ -42,7 +42,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
     this.setState({ testInput: e.target.value });
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     // cspell:disable
     return (
       <Dialog

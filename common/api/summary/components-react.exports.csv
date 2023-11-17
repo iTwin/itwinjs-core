@@ -261,7 +261,7 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 public;PagedTreeNodeLoader
 public;PageOptions
-public;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
+public;ParsedInput: (props: ParsedInputProps) => React_2.JSX.Element | null
 public;ParsedInputProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 

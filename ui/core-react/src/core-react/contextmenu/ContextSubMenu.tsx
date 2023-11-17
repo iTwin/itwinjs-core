@@ -21,7 +21,7 @@ import { BadgeUtilities } from "../badge/BadgeUtilities";
  */
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
   /** Text/jsx to display in the list item */
-  label: string | JSX.Element;
+  label: string | React.JSX.Element;
   /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
 }
@@ -64,7 +64,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const {
       label,
       opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, // eslint-disable-line @typescript-eslint/no-unused-vars

@@ -28,7 +28,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
       opened: this.props.opened,
     };
   }
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <ModelessDialog
         title={this._title}

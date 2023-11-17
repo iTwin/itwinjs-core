@@ -26,7 +26,7 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <Dialog
         title={this._title}

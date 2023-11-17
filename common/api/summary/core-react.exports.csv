@@ -128,14 +128,14 @@ public;HorizontalTabs(props: TabsProps): React_2.JSX.Element
 deprecated;HorizontalTabs(props: TabsProps): React_2.JSX.Element
 public;Icon(props: IconProps): React_2.JSX.Element | null
 public;IconHelper
-public;IconInput: (props: IconInputProps) => JSX.Element | null
+public;IconInput: (props: IconInputProps) => React_2.JSX.Element | null
 public;IconInputProps 
 public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React_2.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
-public;Input: (props: InputProps) => JSX.Element | null
-deprecated;Input: (props: InputProps) => JSX.Element | null
+public;Input: (props: InputProps) => React_2.JSX.Element | null
+deprecated;Input: (props: InputProps) => React_2.JSX.Element | null
 public;InputLabel 
 public;InputLabelProps 
 public;InputProps 
@@ -210,7 +210,7 @@ public;NoChildrenProps
 public;NodeCheckboxProps
 public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React_2.ReactNode
 public;NodeCheckboxRenderProps = Omit_2
-public;NumberInput: (props: NumberInputProps) => JSX.Element | null
+public;NumberInput: (props: NumberInputProps) => React_2.JSX.Element | null
 public;NumberInputProps 
 public;OmitChildrenProp
 beta;OptionsType = Array
@@ -261,8 +261,8 @@ public;ScrollPositionMaintainer
 public;ScrollView(props: CommonDivProps): React_2.JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
-public;Select: (props: SelectProps) => JSX.Element | null
-deprecated;Select: (props: SelectProps) => JSX.Element | null
+public;Select: (props: SelectProps) => React_2.JSX.Element | null
+deprecated;Select: (props: SelectProps) => React_2.JSX.Element | null
 public;SelectOption
 deprecated;SelectOption
 public;SelectProps 
@@ -310,8 +310,8 @@ deprecated;SvgSpriteProps
 public;TabLabel
 public;Tabs 
 public;TabsProps 
-public;Textarea: (props: TextareaProps) => JSX.Element | null
-deprecated;Textarea: (props: TextareaProps) => JSX.Element | null
+public;Textarea: (props: TextareaProps) => React_2.JSX.Element | null
+deprecated;Textarea: (props: TextareaProps) => React_2.JSX.Element | null
 public;TextareaProps 
 deprecated;TextareaProps 
 public;TextProps 
@@ -330,8 +330,8 @@ public;Title(props: TextProps): React_2.JSX.Element
 deprecated;Title(props: TextProps): React_2.JSX.Element
 public;Title2(props: TextProps): React_2.JSX.Element
 deprecated;Title2(props: TextProps): React_2.JSX.Element
-public;Toggle: (props: ToggleProps) => JSX.Element | null
-deprecated;Toggle: (props: ToggleProps) => JSX.Element | null
+public;Toggle: (props: ToggleProps) => React_2.JSX.Element | null
+deprecated;Toggle: (props: ToggleProps) => React_2.JSX.Element | null
 public;ToggleButtonType
 deprecated;ToggleButtonType
 public;ToggleProps 

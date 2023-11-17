@@ -24,7 +24,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
  * @deprecated in 3.0. Use LabeledSelect in itwinui-react instead
  */
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const { label, status, className, style,
       inputClassName, inputStyle,
       labelClassName, labelStyle,

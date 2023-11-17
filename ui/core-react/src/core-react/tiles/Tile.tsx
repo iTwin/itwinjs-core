@@ -41,7 +41,7 @@ export class Tile extends React.Component<TileProps> {  // eslint-disable-line d
   };
 
   /** @internal */
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const stepType =
       (this.props.stepCount && this.props.stepCount < 13)
         ? Math.floor(this.props.stepNum! * 12 / (this.props.stepCount - 1))

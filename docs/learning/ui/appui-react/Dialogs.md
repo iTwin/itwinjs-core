@@ -39,7 +39,7 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps, S
     super(props);
   }
 
-  public render(): JSX.Element {
+  public render(): React.JSX.Element {
     return (
       <Dialog
         title={this._title}
@@ -134,7 +134,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
     };
   }
 
-  public render(): JSX.Element {
+  public render(): React.JSX.Element {
     return (
       <ModelessDialog
         title={this._title}

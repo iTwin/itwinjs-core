@@ -4266,7 +4266,7 @@ export interface ModalFrontstageRequestedCloseEventArgs {
 export class ModelessDialog extends React_2.Component<ModelessDialogProps> {
     constructor(props: ModelessDialogProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -4788,7 +4788,7 @@ export const PromptField: ConnectedComponent<typeof PromptFieldComponent, Omit_3
 export class PropsHelper {
     // (undocumented)
     static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem_2>;
-    static getIcon(iconSpec: string | ConditionalStringValue | React_2.ReactNode): JSX.Element | undefined;
+    static getIcon(iconSpec: string | ConditionalStringValue | React_2.ReactNode): React_2.JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
@@ -5020,7 +5020,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
+export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
@@ -5749,7 +5749,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
 export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: Readonly<StandardMessageBoxState>;
 }
@@ -6898,12 +6898,12 @@ export type UiItemsProviderOverrides = UiItemProviderOverrides;
 export type UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs;
 
 // @beta
-export function UiSettingsPage(): JSX.Element;
+export function UiSettingsPage(): React_2.JSX.Element;
 
 // @beta @deprecated (undocumented)
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
-}): JSX.Element;
+}): React_2.JSX.Element;
 
 // @public
 export interface UiSettingsProviderProps {
@@ -7816,7 +7816,7 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => React_2.JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => React_2.JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
@@ -7874,7 +7874,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => React_2.JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => React_2.JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

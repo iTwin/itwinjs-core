@@ -161,7 +161,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this.props.onOutsideClick(event);
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
       selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars

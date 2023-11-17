@@ -66,4 +66,4 @@ const ForwardRefInput = React.forwardRef<HTMLInputElement, InputProps>(   // esl
  * @public
  * @deprecated in 3.0. Use Input in itwinui-react instead
  */
-export const Input: (props: InputProps) => JSX.Element | null = ForwardRefInput;  // eslint-disable-line deprecation/deprecation
+export const Input: (props: InputProps) => React.JSX.Element | null = ForwardRefInput;  // eslint-disable-line deprecation/deprecation

@@ -19,7 +19,7 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps> {
     super(props);
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <Dialog
         title={this._title}

@@ -36,7 +36,7 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <RadialMenu
         left={"50%"}

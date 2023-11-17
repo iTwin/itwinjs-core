@@ -122,7 +122,7 @@ export function ButtonWithDropdownMenu({ label, placement}: { label?: string, pl
     setIsMenuOpen(show);
   }, [isMenuOpen]);
 
-  const createMenuItemNodes = React.useCallback((close: () => void): JSX.Element[] => {
+  const createMenuItemNodes = React.useCallback((close: () => void): React.JSX.Element[] => {
     const itemNodes = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"].map((listItem, index) => {
       return (
         <MenuItem
