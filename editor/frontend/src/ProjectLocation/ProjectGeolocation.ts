@@ -258,7 +258,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
         this.latitude = cartographic.latitude;
         this.longitude = cartographic.longitude;
         this.altitude = cartographic.height;
-        this.north = deco.getClockwiseAngleToNorth().radians;
+        this.north = deco.getClockwiseAngleToNorth();
       } else if (!this._haveToolSettings) {
         this.acceptDefaultLocation();
       }
@@ -656,9 +656,10 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   public static async startTool() { return new ProjectGeolocationMoveTool().run(); }
 }
 
-/** Controls to modify project extents shown using view clip
+/** Decorations to modify project ecef location.
  * @beta
  */
+// todo: don't need to extend HandleProvider since we have no handles to create?
 export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectGeolocationDecoration;
   protected _ecefLocation?: EcefLocation;
@@ -707,16 +708,9 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
       return false;
 
-    const horizontalCRS = this.iModel.geographicCoordinateSystem?.horizontalCRS;
-    if (!horizontalCRS)
-      return false; // A valid GCS ought to have horizontalCR defined
-
     // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced
-    const hasValidId = horizontalCRS.id?.length;
-    const hasValidDescr = horizontalCRS.description?.length;
-    const hasValidProjection = !!horizontalCRS.projection && "AzimuthalEqualArea" !== horizontalCRS.projection.method;
-
-    return hasValidId || hasValidDescr || hasValidProjection;
+    const horizontalCRS = this.iModel.geographicCoordinateSystem?.horizontalCRS;
+    return horizontalCRS?.id?.length || horizontalCRS?.description?.length || !!horizontalCRS?.projection && "AzimuthalEqualArea" !== horizontalCRS?.projection.method;
   }
 
   protected override async createControls() {
@@ -788,7 +782,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
 
       const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
-        const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
+        const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth(), angleFormatterSpec);
         toolTipHtml += `${translateMessageBold("Angle") + formattedAngle}<br>`;
       }
     }
@@ -811,12 +805,10 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
   }
 
   public getClockwiseAngleToNorth() {
-    const angle = this.getNorthAngle();
-    angle.setRadians(Angle.adjustRadians0To2Pi(angle.radians));
-    return angle;
+    return Angle.adjustRadians0To2Pi(this.getNorthAngle().radians);
   }
 
-  public getNorthAngle(northDirection = this.getNorthDirection()) {
+  public getNorthAngle(northDirection = this._northDirection) {
     return northDirection.direction.angleToXY(Vector3d.unitY());
   }
 
