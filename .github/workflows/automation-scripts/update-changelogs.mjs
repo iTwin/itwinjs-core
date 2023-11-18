@@ -31,9 +31,6 @@ let commitMessage = await $`git log --format=%B -n 1`;
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
 commitMessage = String(commitMessage).replace(/\n/g, '');
-const substring = " Changelogs";
-if (commitMessage.includes(substring))
-  commitMessage = commitMessage.replace(substring, '');
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
@@ -53,9 +50,14 @@ await $`git checkout ${targetBranch}`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-const currentFiles = getFilePaths(targetPath);
+const currentFiles = fs.readdirSync(targetPath);
+const incomingFiles = fs.readdirSync(incomingPath);
+// Do not include packages from Current branch if they do not exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
 currentFiles.forEach((file, index) => {
-  currentFiles[index] = file.split('/').slice(1);
+  if (!incomingFiles.includes(currentFiles[index])) {
+    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+    currentFiles.splice(index, 1);
+  }
 })
 fixChangeLogs(currentFiles);
 
@@ -78,17 +80,6 @@ await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
 await $`git push origin HEAD:${targetBranch}`;
-
-// Read all files in the directory
-function getFilePaths(directoryPath) {
-  let filePaths = [];
-  const files = fs.readdirSync(directoryPath);
-  files.forEach(file => {
-    const filePath = path.join(directoryPath, file);
-    filePaths.push(filePath);
-  });
-  return filePaths
-}
 
 function loadJsonFiles(filePath) {
   // Load each JSON file
