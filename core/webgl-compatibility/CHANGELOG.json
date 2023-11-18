@@ -152,6 +152,12 @@
       }
     },
     {
+      "version": "3.7.17",
+      "tag": "@itwin/webgl-compatibility_v3.7.17",
+      "date": "Mon, 20 Nov 2023 18:24:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.16",
       "tag": "@itwin/webgl-compatibility_v3.7.16",
       "date": "Mon, 16 Oct 2023 12:49:08 GMT",
