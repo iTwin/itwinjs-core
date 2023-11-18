@@ -95,7 +95,7 @@ export class ArcGISIdentifyRequestUrl {
     newUrl.searchParams.append("geometryType", json.geometryType);
 
     if (json.sr) {
-      newUrl.searchParams.append("sr", `${json.geometryType}`);
+      newUrl.searchParams.append("sr", `${json.sr}`);
     }
 
     if (json.layers) {
@@ -334,8 +334,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       geometryType: "esriGeometryPoint",
       tolerance,
       mapExtent: {low: {x: bbox.left, y: bbox.bottom}, high: {x: bbox.right, y: bbox.top}},
+      sr: 3857,
       imageDisplay: {width: this.tileSize, height: this.tileSize, dpi: 96},
-      layers: {prefix: "visible", layerIds},
+      layers: {prefix: "top", layerIds},
       returnGeometry,
       maxAllowableOffset}, 3 /* 1mm accuracy*/);
 
