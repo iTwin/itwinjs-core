@@ -9,7 +9,7 @@
 import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButton, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, QuantityType, ScreenViewport, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Arc3d, AxisIndex, AxisOrder, Matrix3d, Point3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, EcefLocation, LinePixels } from "@itwin/core-common";
-import { clipToProjectExtents, ProjectExtentsClipDecoration, ProjectLocationChanged, translateCoreMeasureBold, translateMessageBold, updateMapDisplay } from "./ProjectExtentsDecoration";
+import { ProjectLocationChanged, translateCoreMeasureBold, translateMessageBold, updateMapDisplay } from "./ProjectExtentsDecoration";
 import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 import { BeEvent } from "@itwin/core-bentley";
@@ -33,7 +33,7 @@ class LabelDecoration implements CanvasDecoration {
     this.label = label;
   }
 
-  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+  public drawDecoration(ctx: CanvasRenderingContext2D) {
     ctx.font = "16px san-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
@@ -141,7 +141,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   public get north(): number { return this.northProperty.value; }
   public set north(value: number) { this.northProperty.value = value; }
 
-  private syncToolSettingsCoordinates(): void {
+  private syncToolSettingsCoordinates() {
     this.syncToolSettingsProperties([this.latitudeProperty.syncItem, this.longitudeProperty.syncItem, this.altitudeProperty.syncItem, this.northProperty.syncItem]);
   }
 
@@ -159,7 +159,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return toolSettings;
   }
 
-  protected provideToolAssistance(): void {
+  protected provideToolAssistance() {
     const acceptMsg = CoreTools.translate(undefined === this._origin ? "ElementSet.Inputs.AcceptPoint" : "ElementSet.Inputs.Accept");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyKnownLocation" : "ConfirmCoordinates"));
@@ -180,7 +180,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected setupAndPromptForNextAction() {
     IModelApp.accuSnap.enableSnap(undefined === this._origin);
     this.provideToolAssistance();
   }
@@ -189,7 +189,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (!this._accept)
       return;
 
-    const deco = ProjectGeolocationMonumentDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -202,16 +202,16 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   }
 
   private unsuspendDecorations() {
-    const deco = ProjectGeolocationMonumentDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined !== deco)
       deco.suspendGeolocationDecorations = false;
   }
 
-  public override decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext) {
     if (undefined === this._origin || !context.viewport.view.isSpatialView())
       return;
 
-    const deco = ProjectGeolocationMonumentDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -235,7 +235,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  protected acceptDefaultLocation(): void {
+  protected acceptDefaultLocation() {
     // Greenwich is better default when testing control handle w/o tool settings support...
     this.latitude = Angle.createDegrees(51.4934).radians;
     this.longitude = Angle.createDegrees(0.0098).radians;
@@ -243,8 +243,8 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     this.north = 0.0;
   }
 
-  public acceptKnownLocation(ev: BeButtonEvent): void {
-    const deco = ProjectGeolocationMonumentDecoration.get();
+  public acceptKnownLocation(ev: BeButtonEvent) {
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -270,7 +270,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   }
 
   public async acceptCoordinates(): Promise<void> {
-    const deco = ProjectGeolocationMonumentDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -297,7 +297,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   }
 
   public override async onInstall(): Promise<boolean> {
-    if (!ProjectGeolocationMonumentDecoration.allowEcefLocationChange(false))
+    if (!ProjectGeolocationDecoration.allowEcefLocationChange(false))
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
@@ -374,7 +374,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   public async onRestartTool() { return this.exitTool(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
-  protected provideToolAssistance(): void {
+  protected provideToolAssistance() {
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineAngle"));
@@ -395,7 +395,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected setupAndPromptForNextAction() {
     IModelApp.accuSnap.enableSnap(true);
     this.provideToolAssistance();
 
@@ -418,12 +418,12 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   }
 
   private unsuspendDecorations() {
-    const deco = ProjectGeolocationNorthDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined !== deco)
       deco.suspendGeolocationDecorations = false;
   }
 
-  private updateNorthVector(ev: BeButtonEvent): void {
+  private updateNorthVector(ev: BeButtonEvent) {
     if (undefined === ev.viewport)
       return;
 
@@ -444,11 +444,11 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     this._northDir.direction.normalizeInPlace();
   }
 
-  public override decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext) {
     if (undefined === this._northDir || !context.viewport.view.isSpatialView())
       return;
 
-    const deco = ProjectGeolocationNorthDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -488,7 +488,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     this.updateNorthVector(ev);
 
     if (undefined !== this._northDir) {
-      const deco = ProjectGeolocationNorthDecoration.get();
+      const deco = ProjectGeolocationDecoration.get();
       if (undefined !== deco)
         deco.updateNorthDirection(this._northDir);
     }
@@ -497,7 +497,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onInstall(): Promise<boolean> { return ProjectGeolocationNorthDecoration.allowEcefLocationChange(true); }
+  public override async onInstall(): Promise<boolean> { return ProjectGeolocationDecoration.allowEcefLocationChange(true); }
 
   public static async startTool() { return new ProjectGeolocationNorthTool().run(); }
 }
@@ -530,7 +530,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
 
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
-  protected provideToolAssistance(): void {
+  protected provideToolAssistance() {
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineOffset"));
@@ -551,7 +551,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected setupAndPromptForNextAction() {
     IModelApp.accuSnap.enableSnap(true);
     this.provideToolAssistance();
 
@@ -567,7 +567,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   }
 
   private unsuspendDecorations() {
-    const deco = ProjectExtentsClipDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined !== deco)
       deco.suspendGeolocationDecorations = false;
   }
@@ -576,7 +576,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     if (undefined === ev.viewport || undefined === this._origin)
       return;
 
-    const deco = ProjectExtentsClipDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -587,11 +587,11 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     return this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
-  public override decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext) {
     if (undefined === this._origin || undefined === this._current || !context.viewport.view.isSpatialView())
       return;
 
-    const deco = ProjectExtentsClipDecoration.get();
+    const deco = ProjectGeolocationDecoration.get();
     if (undefined === deco)
       return;
 
@@ -651,395 +651,94 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onInstall(): Promise<boolean> { return ProjectExtentsClipDecoration.allowEcefLocationChange(true); }
+  public override async onInstall(): Promise<boolean> { return ProjectGeolocationDecoration.allowEcefLocationChange(true); }
 
   public static async startTool() { return new ProjectGeolocationMoveTool().run(); }
 }
 
-class ProjectGeolocationMonumentDecoration extends EditManipulator.HandleProvider {
-  private static _decorator?: ProjectGeolocationMonumentDecoration;
+/** Controls to modify project extents shown using view clip
+ * @beta
+ */
+export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider {
+  private static _decorator?: ProjectGeolocationDecoration;
   protected _ecefLocation?: EcefLocation;
   protected _allowEcefLocationChange = false;
-  protected _monumentPoint?: Point3d;
-  protected _monumentId?: string;
+  protected _monumentPoint: Point3d;
+  protected _northDirection: Ray3d;
+  protected _monumentId: string;
+  protected _northId: string;
   protected _removeViewCloseListener?: () => void;
   public suspendGeolocationDecorations = false;
 
   /** Called when project extents or geolocation is modified */
+  // todo: change the event enum
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
 
   public constructor(public viewport: ScreenViewport) {
     super(viewport.iModel);
 
-    if (!this.init())
-      return;
-
     this._monumentId = this.iModel.transientIds.getNext();
+    this._northId = this.iModel.transientIds.getNext();
+
+    this._ecefLocation = this.iModel.ecefLocation;
+    this._monumentPoint = this.getMonumentPoint();
+    this._northDirection = this.getNorthDirection();
+
     this.start();
   }
 
-  protected start(): void {
+  protected start() {
     this.updateDecorationListener(true);
     this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener((vp) => this.onViewClose(vp));
   }
 
-  protected override stop(): void {
+  protected override stop() {
     super.stop();
     this._removeViewCloseListener?.();
     this._removeViewCloseListener = undefined;
   }
 
-  protected init(): boolean {
-    this._ecefLocation = this.iModel.ecefLocation;
-    this._monumentPoint = this.getMonumentPoint();
-
-    return true;
-  }
-
-  public onViewClose(vp: ScreenViewport): void {
+  public onViewClose(vp: ScreenViewport) {
     if (this.viewport === vp)
-      ProjectGeolocationMonumentDecoration.clear();
+      ProjectGeolocationDecoration.clear();
   }
 
-  protected hasValidGCS(): boolean {
+  protected hasValidGCS() {
     if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
       return false;
 
-    const gcs = this.iModel.geographicCoordinateSystem;
-    if (undefined === gcs || undefined === gcs.horizontalCRS)
-      return false; // A valid GCS ought to have horizontalCR defined...
+    const horizontalCRS = this.iModel.geographicCoordinateSystem?.horizontalCRS;
+    if (!horizontalCRS)
+      return false; // A valid GCS ought to have horizontalCR defined
 
-    // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced...
-    const hasValidId = (undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length);
-    const hasValidDescr = (undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length);
-    const hasValidProjection = (undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method);
+    // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced
+    const hasValidId = horizontalCRS.id?.length;
+    const hasValidDescr = horizontalCRS.description?.length;
+    const hasValidProjection = !!horizontalCRS.projection && "AzimuthalEqualArea" !== horizontalCRS.projection.method;
 
     return hasValidId || hasValidDescr || hasValidProjection;
   }
 
-  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+  protected override async createControls() {
+    this._allowEcefLocationChange = !this.hasValidGCS();
+    return true;
+  }
 
-  public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+  protected async modifyControls(_hit: HitDetail, _ev: BeButtonEvent) {
+    return true;
+  }
+
+  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent) { return EventHandled.No; }
+
+  // protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent) { return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev)); }
+
+  public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent) {
     if (hit.sourceId === this._monumentId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
         await ProjectGeolocationPointTool.startTool();
       return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
     }
 
-    return super.onDecorationButtonEvent(hit, ev);
-  }
-
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-    const quantityFormatter = IModelApp.quantityFormatter;
-    const toolTip = document.createElement("div");
-    let toolTipHtml = "";
-
-    if (hit.sourceId === this._monumentId) {
-      toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
-
-      const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
-      if (undefined !== coordFormatterSpec) {
-        const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
-        const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
-        const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
-        const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-        toolTipHtml += `${translateCoreMeasureBold("Coordinate") + formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
-      }
-
-      const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
-      if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
-        const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
-        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
-        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
-        const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-        const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
-        const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
-        toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
-        toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
-      }
-    }
-
-    toolTip.innerHTML = toolTipHtml;
-    return toolTip;
-  }
-
-  public testDecorationHit(id: string): boolean { return (id === this._monumentId); }
-
-  public getMonumentPoint(): Point3d {
-    if (this.iModel.ecefLocation?.cartographicOrigin)
-      return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin);
-
-    const extents = this.iModel.projectExtents;
-    return Point3d.create(extents.low.x, extents.low.y, 0 > extents.low.z && 0 < extents.high.z ? 0 : extents.low.z);
-  }
-
-  public drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string): void {
-    const vp = context.viewport;
-    const pixelSize = vp.pixelsFromInches(0.25) * scaleFactor;
-    const scale = vp.viewingSpace.getPixelSizeAtPoint(point) * pixelSize;
-    const matrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(45));
-
-    matrix.scaleColumnsInPlace(scale, scale, scale);
-    const monumentTrans = Transform.createRefs(point, matrix);
-
-    const monumentPointBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, monumentTrans, id);
-    const color = ColorDef.white;
-
-    monumentPointBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 150), 1);
-    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.7), true, true);
-
-    monumentPointBuilder.setSymbology(color, color, 2);
-    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
-    monumentPointBuilder.addLineString([Point3d.create(0.5, 0), Point3d.create(-0.5, 0)]);
-    monumentPointBuilder.addLineString([Point3d.create(0, 0.5), Point3d.create(0, -0.5)]);
-
-    context.addDecorationFromBuilder(monumentPointBuilder);
-  }
-
-  public override decorate(context: DecorateContext): void {
-    if (!this.suspendGeolocationDecorations && this._monumentId && this._monumentPoint && this._allowEcefLocationChange && this.viewport === context.viewport)
-      this.drawMonumentPoint(context, this._monumentPoint, 1, this._monumentId);
-  }
-
-  public resetGeolocation(): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
-
-    if (!this.getModifiedEcefLocation())
-      return false; // Wasn't changed...
-
-    this.iModel.disableGCS(false);
-    this.iModel.ecefLocation = this._ecefLocation;
-
-    this._monumentPoint = this.getMonumentPoint();
-
-    updateMapDisplay(this.viewport, false);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.ResetGeolocation);
-    return true;
-  }
-
-  public getClockwiseAngleToNorth(): Angle {
-    const angle = this.getNorthAngle();
-    angle.setRadians(Angle.adjustRadians0To2Pi(angle.radians));
-    return angle;
-  }
-
-  private getNorthAngle(): Angle {
-    const northDirection = this.getNorthDirection();
-    return northDirection.direction.angleToXY(Vector3d.unitY());
-  }
-
-  private getNorthDirection(): Ray3d {
-    const origin = this.iModel.projectExtents.center;
-    if (!this.iModel.isGeoLocated)
-      return Ray3d.create(origin, Vector3d.unitY());
-
-    const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
-    cartographic.latitude += Angle.createDegrees(0.01).radians;
-    const pt2 = this.iModel.cartographicToSpatialFromEcef(cartographic);
-    const northVec = Vector3d.createStartEnd(origin, pt2);
-    northVec.z = 0;
-    northVec.normalizeInPlace();
-
-    return Ray3d.create(origin, northVec);
-  }
-
-  public updateEcefLocation(origin: Cartographic, point: Point3d | undefined, angle: Angle | undefined): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
-
-    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, angle ?? this.getNorthAngle());
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined !== ecefLocation && ecefLocation.isAlmostEqual(newEcefLocation))
-      return false;
-
-    this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
-    this.iModel.setEcefLocation(newEcefLocation);
-
-    this._monumentPoint = this.getMonumentPoint();
-
-    updateMapDisplay(this.viewport, true);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Geolocation);
-    return true;
-  }
-
-  public getModifiedEcefLocation(): EcefLocation | undefined {
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined === ecefLocation)
-      return undefined; // geolocation wasn't added...
-
-    if (undefined === this._ecefLocation)
-      return ecefLocation; // geolocation didn't exist previously...
-
-    if (this._ecefLocation.isAlmostEqual(ecefLocation))
-      return undefined;
-
-    return ecefLocation;
-  }
-
-  protected override async createControls(): Promise<boolean> {
-    this._allowEcefLocationChange = !this.hasValidGCS();
-    return false;
-  }
-
-  protected override async modifyControls(_hit: HitDetail, _ev: BeButtonEvent): Promise<boolean> {
-    return false;
-  }
-
-  public static allowEcefLocationChange(requireExisting: boolean, outputError = true) {
-    let errMessage: string | undefined;
-    // todo: verify/add messages as needed
-    if (undefined === ProjectGeolocationMonumentDecoration._decorator) {
-      errMessage = "NotActive";
-    } else if (!ProjectGeolocationMonumentDecoration._decorator._allowEcefLocationChange) {
-      errMessage = "NotAllowed";
-    } else if (requireExisting && !ProjectGeolocationMonumentDecoration._decorator.iModel.isGeoLocated) {
-      errMessage = "NotGeolocated";
-    }
-    if (errMessage) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage(errMessage)));
-      return false;
-    }
-    return true;
-  }
-
-  public static get() {
-    return ProjectGeolocationMonumentDecoration._decorator;
-  }
-
-  public static show(vp: ScreenViewport): boolean {
-    if (!vp.view.isSpatialView())
-      return false;
-
-    if (undefined !== ProjectGeolocationMonumentDecoration._decorator) {
-      const deco = ProjectGeolocationMonumentDecoration._decorator;
-      if (vp === deco.viewport && deco._monumentId && deco._monumentPoint) {
-        if (undefined === deco._removeManipulatorToolListener) {
-          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
-          deco.start();
-          // todo: new/different event here?
-          deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Show);
-        }
-        return true;
-      }
-      ProjectGeolocationMonumentDecoration.clear();
-    }
-
-    if (!clipToProjectExtents(vp))
-      return false;
-
-    ProjectGeolocationMonumentDecoration._decorator = new ProjectGeolocationMonumentDecoration(vp);
-    vp.onChangeView.addOnce(() => ProjectGeolocationMonumentDecoration.clear(true));
-    return !!ProjectGeolocationMonumentDecoration._decorator._monumentId;
-  }
-
-  public static hide(): void {
-    if (!ProjectGeolocationMonumentDecoration._decorator)
-      return;
-    const saveId = ProjectGeolocationMonumentDecoration._decorator._monumentId; // cleared by stop to trigger decorator removal...
-    ProjectGeolocationMonumentDecoration._decorator.stop();
-    ProjectGeolocationMonumentDecoration._decorator._monumentId = saveId;
-    ProjectGeolocationMonumentDecoration._decorator.onChanged.raiseEvent(ProjectGeolocationMonumentDecoration._decorator.iModel, ProjectLocationChanged.Hide);
-  }
-
-  public static clear(resetGeolocation: boolean = true): void {
-    if (undefined === ProjectGeolocationMonumentDecoration._decorator)
-      return;
-    if (resetGeolocation)
-      ProjectGeolocationMonumentDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
-    ProjectGeolocationMonumentDecoration._decorator.stop();
-    ProjectGeolocationMonumentDecoration._decorator = undefined;
-  }
-
-  public static async update(): Promise<void> {
-    const deco = ProjectGeolocationMonumentDecoration._decorator;
-    if (undefined === deco)
-      return;
-
-    deco.init();
-    return deco.updateControls();
-  }
-}
-
-export class ProjectGeolocationNorthDecoration extends EditManipulator.HandleProvider {
-  private static _decorator?: ProjectGeolocationNorthDecoration;
-  protected _allowEcefLocationChange = false;
-  protected _northDirection?: Ray3d;
-  protected _northId?: string;
-  protected _removeViewCloseListener?: () => void;
-  public suspendGeolocationDecorations = false;
-
-  /** Called when project extents or geolocation is modified */
-  public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
-
-  public constructor(public viewport: ScreenViewport) {
-    super(viewport.iModel);
-
-    if (!this.init())
-      return;
-
-    this._northId = this.iModel.transientIds.getNext();
-    this.start();
-  }
-
-  protected start(): void {
-    this.updateDecorationListener(true);
-    this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener((vp) => this.onViewClose(vp));
-  }
-
-  protected override stop(): void {
-    this._northId = undefined; // Invalidate id so that decorator will be dropped...
-    super.stop();
-    if (undefined !== this._removeViewCloseListener) {
-      this._removeViewCloseListener();
-      this._removeViewCloseListener = undefined;
-    }
-  }
-
-  protected init(): boolean {
-    this._northDirection = this.getNorthDirection();
-    return true;
-  }
-
-  public onViewClose(vp: ScreenViewport): void {
-    if (this.viewport === vp)
-      ProjectGeolocationNorthDecoration.clear();
-  }
-
-  protected hasValidGCS(): boolean {
-    if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
-      return false;
-
-    const gcs = this.iModel.geographicCoordinateSystem;
-    if (undefined === gcs || undefined === gcs.horizontalCRS)
-      return false; // A valid GCS ought to have horizontalCR defined...
-
-    // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced...
-    const hasValidId = (undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length);
-    const hasValidDescr = (undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length);
-    const hasValidProjection = (undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method);
-
-    return hasValidId || hasValidDescr || hasValidProjection;
-  }
-
-  protected override async createControls(): Promise<boolean> {
-    if (undefined === this._northId)
-      return false;
-
-    this._allowEcefLocationChange = !this.hasValidGCS();
-    return false;
-  }
-
-  protected override async modifyControls(_hit: HitDetail, _ev: BeButtonEvent): Promise<boolean> {
-    return false;
-  }
-
-  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
-
-  protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._northId ? EventHandled.No : super.onTouchTap(hit, ev)); }
-
-  public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     if (hit.sourceId === this._northId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
         await ProjectGeolocationNorthTool.startTool();
@@ -1049,19 +748,42 @@ export class ProjectGeolocationNorthDecoration extends EditManipulator.HandlePro
     return super.onDecorationButtonEvent(hit, ev);
   }
 
-  // todo: do we need this? Don't think so, but will leave for now
-  public override onManipulatorEvent(eventType: EditManipulator.EventType): void {
-    if (EditManipulator.EventType.Accept === eventType)
-      this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Extents);
-    super.onManipulatorEvent(eventType);
-  }
+  // public override onManipulatorEvent(eventType: EditManipulator.EventType) {
+  //   if (EditManipulator.EventType.Accept === eventType)
+  //     this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Extents);
+  //   this._suspendDecorator = false;
+  //   super.onManipulatorEvent(eventType);
+  // }
 
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+  public async getDecorationToolTip(hit: HitDetail) {
     const quantityFormatter = IModelApp.quantityFormatter;
     const toolTip = document.createElement("div");
     let toolTipHtml = "";
 
-    if (hit.sourceId === this._northId) {
+    if (hit.sourceId === this._monumentId) {
+      toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
+
+      const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
+      if (coordFormatterSpec) {
+        const pointAdjusted = this._monumentPoint.minus(this.iModel.globalOrigin);
+        const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
+        const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
+        const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+        toolTipHtml += `${translateCoreMeasureBold("Coordinate") + formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
+      }
+
+      const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
+      if (latLongFormatterSpec && coordFormatterSpec && this.iModel.isGeoLocated) {
+        const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint);
+        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
+        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+        const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
+        const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
+        const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
+        toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
+        toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
+      }
+    } else if (hit.sourceId === this._northId) {
       toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
 
       const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
@@ -1075,32 +797,31 @@ export class ProjectGeolocationNorthDecoration extends EditManipulator.HandlePro
     return toolTip;
   }
 
-  public testDecorationHit(id: string): boolean { return (id === this._northId || id === this._northId || id === this._northId); }
-  protected override updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._northId); } // Decorator isn't just for resize controls...
+  public testDecorationHit(id: string) { return (id === this._monumentId || id === this._northId); }
+  // protected override updateDecorationListener(_add: boolean) { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
-  public getMonumentPoint(): Point3d {
-    const origin = Point3d.createZero();
-    if (this.iModel.ecefLocation && this.iModel.ecefLocation.cartographicOrigin)
-      return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin, origin);
-    origin.setFrom(this.iModel.projectExtents.low);
+  public getMonumentPoint() {
+    if (this.iModel.ecefLocation?.cartographicOrigin)
+      return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin);
+
+    const origin = Point3d.createFrom(this.iModel.projectExtents.low);
     if (0.0 > this.iModel.projectExtents.low.z && 0.0 < this.iModel.projectExtents.high.z)
       origin.z = 0.0;
     return origin;
   }
 
-  public getClockwiseAngleToNorth(): Angle {
+  public getClockwiseAngleToNorth() {
     const angle = this.getNorthAngle();
     angle.setRadians(Angle.adjustRadians0To2Pi(angle.radians));
     return angle;
   }
 
-  public getNorthAngle(): Angle {
-    const northDirection = (undefined !== this._northDirection ? this._northDirection : this.getNorthDirection());
+  public getNorthAngle(northDirection = this.getNorthDirection()) {
     return northDirection.direction.angleToXY(Vector3d.unitY());
   }
 
-  public getNorthDirection(refOrigin?: Point3d): Ray3d {
-    const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
+  public getNorthDirection(refOrigin?: Point3d) {
+    const origin = refOrigin ?? this.iModel.projectExtents.center;
 
     if (!this.iModel.isGeoLocated)
       return Ray3d.create(origin, Vector3d.unitY());
@@ -1115,7 +836,7 @@ export class ProjectGeolocationNorthDecoration extends EditManipulator.HandlePro
     return Ray3d.create(origin, northVec);
   }
 
-  public drawNorthArrow(context: DecorateContext, northDir: Ray3d, id?: string): void {
+  public drawNorthArrow(context: DecorateContext, northDir: Ray3d, id?: string) {
     const vp = context.viewport;
     const pixelSize = vp.pixelsFromInches(0.55);
     const scale = vp.viewingSpace.getPixelSizeAtPoint(northDir.origin) * pixelSize;
@@ -1172,25 +893,52 @@ export class ProjectGeolocationNorthDecoration extends EditManipulator.HandlePro
     context.addDecorationFromBuilder(northArrowBuilder);
   }
 
-  public override decorate(context: DecorateContext): void {
-    if (undefined === this._northId)
-      return;
+  public drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string) {
+    const vp = context.viewport;
+    const pixelSize = vp.pixelsFromInches(0.25) * scaleFactor;
+    const scale = vp.viewingSpace.getPixelSizeAtPoint(point) * pixelSize;
+    const matrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(45.0));
 
-    if (this.viewport !== context.viewport)
-      return;
+    matrix.scaleColumnsInPlace(scale, scale, scale);
+    const monumentTrans = Transform.createRefs(point, matrix);
 
-    if (!this.suspendGeolocationDecorations && this._northDirection && this.iModel.isGeoLocated)
-      this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
+    const monumentPointBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, monumentTrans, id);
+    const color = ColorDef.white;
+
+    monumentPointBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 150), 1);
+    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.7), true, true);
+
+    monumentPointBuilder.setSymbology(color, color, 2);
+    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
+    monumentPointBuilder.addLineString([Point3d.create(0.5, 0.0), Point3d.create(-0.5, 0.0)]);
+    monumentPointBuilder.addLineString([Point3d.create(0.0, 0.5), Point3d.create(0.0, -0.5)]);
+
+    context.addDecorationFromBuilder(monumentPointBuilder);
   }
 
-  public resetGeolocation(): boolean {
+  public override decorate(context: DecorateContext) {
+    const vp = context.viewport;
+    if (this.viewport !== vp)
+      return;
+
+    if (!this.suspendGeolocationDecorations && this.iModel.isGeoLocated)
+      this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
+
+    if (!this.suspendGeolocationDecorations && this._allowEcefLocationChange)
+      this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
+  }
+
+  public resetGeolocation() {
     if (!this._allowEcefLocationChange)
       return false;
 
-    // if (undefined === this.getModifiedEcefLocation())
-    //   return false; // Wasn't changed...
+    if (!this.getModifiedEcefLocation())
+      return false; // Wasn't changed...
 
     this.iModel.disableGCS(false);
+    this.iModel.ecefLocation = this._ecefLocation;
+
+    this._monumentPoint = this.getMonumentPoint();
     this._northDirection = this.getNorthDirection();
 
     updateMapDisplay(this.viewport, false);
@@ -1198,116 +946,123 @@ export class ProjectGeolocationNorthDecoration extends EditManipulator.HandlePro
     return true;
   }
 
-  public updateEcefLocation(origin: Cartographic, point?: Point3d, angle?: Angle): boolean {
+  public updateEcefLocation(origin: Cartographic, point: Point3d | undefined, angle = this.getNorthAngle()) {
     if (!this._allowEcefLocationChange)
       return false;
 
-    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, angle ?? this.getNorthAngle()); // Preserve modified north direction...
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined !== ecefLocation && ecefLocation.isAlmostEqual(newEcefLocation))
+    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, angle); // Preserve modified north direction...
+    if (this.iModel.ecefLocation?.isAlmostEqual(newEcefLocation))
       return false;
 
     this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
     this.iModel.setEcefLocation(newEcefLocation);
 
-    this._northDirection = this.getNorthDirection(undefined !== this._northDirection ? this._northDirection.origin : undefined); // Preserve modified north reference point...
+    this._monumentPoint = this.getMonumentPoint();
+    this._northDirection = this.getNorthDirection(this._northDirection.origin); // Preserve modified north reference point...
 
     updateMapDisplay(this.viewport, true);
     this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Geolocation);
     return true;
   }
 
-  public updateNorthDirection(northDir: Ray3d): boolean {
+  public updateNorthDirection(northDir: Ray3d) {
     if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
       return false;
 
-    const point = this.getMonumentPoint();
-    const origin = this.iModel.spatialToCartographicFromEcef(point);
-
-    const saveDirection = this._northDirection;
-    this._northDirection = northDir; // Change reference point to input location...
-    const angle = this.getNorthAngle();
-
-    if (!this.updateEcefLocation(origin, point, angle)) {
-      this._northDirection = saveDirection;
-      return false;
-    }
-
-    return true;
+    const origin = this.iModel.spatialToCartographicFromEcef(this._monumentPoint);
+    return this.updateEcefLocation(origin, this._monumentPoint, this.getNorthAngle(northDir));
   }
 
-  public static allowEcefLocationChange(requireExisting: boolean, outputError: boolean = true): boolean {
-    if (undefined === ProjectGeolocationNorthDecoration._decorator) {
+  public getModifiedEcefLocation() {
+    // return the iModel's ecef location unless it is almost equal to the original location
+    const ecefLocation = this.iModel.ecefLocation;
+    if (ecefLocation && this._ecefLocation?.isAlmostEqual(ecefLocation))
+      return undefined;
+    return ecefLocation;
+  }
+
+  public static allowEcefLocationChange(requireExisting: boolean, outputError = true) {
+    let errorMessage: string | undefined;
+
+    if (!ProjectGeolocationDecoration._decorator) {
+      errorMessage = "NotActive";
+    } else if (!ProjectGeolocationDecoration._decorator._allowEcefLocationChange) {
+      errorMessage = "NotAllowed";
+    } else if (requireExisting && !ProjectGeolocationDecoration._decorator.iModel.isGeoLocated) {
+      errorMessage = "NotGeolocated";
+    }
+
+    if (errorMessage) {
       if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
-      return false;
-    } else if (!ProjectGeolocationNorthDecoration._decorator._allowEcefLocationChange) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotAllowed")));
-      return false;
-    } else if (requireExisting && !ProjectGeolocationNorthDecoration._decorator.iModel.isGeoLocated) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotGeolocated")));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage(errorMessage)));
       return false;
     }
     return true;
   }
 
   public static get() {
-    return ProjectGeolocationNorthDecoration._decorator;
+    return ProjectGeolocationDecoration._decorator;
   }
 
-  public static show(vp: ScreenViewport): boolean {
+  public static show(vp: ScreenViewport) {
     if (!vp.view.isSpatialView())
       return false;
 
-    if (undefined !== ProjectGeolocationNorthDecoration._decorator) {
-      const deco = ProjectGeolocationNorthDecoration._decorator;
-      if (vp === deco.viewport && undefined !== deco._northId && undefined !== deco._northDirection) {
-        if (undefined === deco._removeManipulatorToolListener) {
-          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
-          deco.start();
-          deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Show);
-        }
-        return true;
-      }
-      ProjectGeolocationNorthDecoration.clear();
+    if (undefined !== ProjectGeolocationDecoration._decorator) {
+      // const deco = ProjectGeolocationDecoration._decorator;
+      // if (vp === deco.viewport && undefined !== deco._clipId && undefined !== deco._clip) {
+      //   if (deco._clip !== vp.view.getViewClip()) {
+      //     clearViewClip(vp);
+      //     ViewClipTool.enableClipVolume(vp);
+      //     ViewClipTool.setViewClip(vp, deco._clip);
+      //   }
+      //   if (undefined === deco._removeManipulatorToolListener) {
+      //     deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
+      //     deco.start();
+      //     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Show);
+      //   }
+      //   return true;
+      // }
+      ProjectGeolocationDecoration.clear();
     }
 
-    if (!clipToProjectExtents(vp))
-      return false;
+    // if (!clipToProjectExtents(vp))
+    //   return false;
 
-    ProjectGeolocationNorthDecoration._decorator = new ProjectGeolocationNorthDecoration(vp);
+    ProjectGeolocationDecoration._decorator = new ProjectGeolocationDecoration(vp);
+    // if (fitExtents)
+    //   ProjectGeolocationDecoration._decorator.fitExtents();
     vp.onChangeView.addOnce(() => this.clear(true));
-    return (undefined !== ProjectGeolocationNorthDecoration._decorator._northId);
+    // return (undefined !== ProjectGeolocationDecoration._decorator._clipId);
+    return true;
   }
 
-  public static hide(): void {
-    if (undefined === ProjectGeolocationNorthDecoration._decorator)
+  public static hide() {
+    if (!ProjectGeolocationDecoration._decorator)
       return;
-    const saveId = ProjectGeolocationNorthDecoration._decorator._northId; // cleared by stop to trigger decorator removal...
-    ProjectGeolocationNorthDecoration._decorator.stop();
-    ProjectGeolocationNorthDecoration._decorator._northId = saveId;
-    ProjectGeolocationNorthDecoration._decorator.onChanged.raiseEvent(ProjectGeolocationNorthDecoration._decorator.iModel, ProjectLocationChanged.Hide);
+    // const saveClipId = ProjectGeolocationDecoration._decorator._clipId; // cleared by stop to trigger decorator removal...
+    ProjectGeolocationDecoration._decorator.stop();
+    // ProjectGeolocationDecoration._decorator._clipId = saveClipId;
+    ProjectGeolocationDecoration._decorator.onChanged.raiseEvent(ProjectGeolocationDecoration._decorator.iModel, ProjectLocationChanged.Hide);
   }
 
-  public static clear(resetGeolocation: boolean = true): void {
-    if (undefined === ProjectGeolocationNorthDecoration._decorator)
+  public static clear(resetGeolocation = true) {
+    if (undefined === ProjectGeolocationDecoration._decorator)
       return;
     if (resetGeolocation)
-      ProjectGeolocationNorthDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
-    ProjectGeolocationNorthDecoration._decorator.stop();
-    ProjectGeolocationNorthDecoration._decorator = undefined;
+      ProjectGeolocationDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
+    ProjectGeolocationDecoration._decorator.stop();
+    ProjectGeolocationDecoration._decorator = undefined;
   }
 
-  public static async update(): Promise<void> {
-    const deco = ProjectGeolocationNorthDecoration._decorator;
-    if (undefined === deco)
-      return;
+  // public static async update(): Promise<void> {
+  //   const deco = ProjectGeolocationDecoration._decorator;
+  //   if (undefined === deco)
+  //     return;
 
-    clipToProjectExtents(deco.viewport);
-    deco.init();
+  //   clipToProjectExtents(deco.viewport);
+  //   deco.init();
 
-    return deco.updateControls();
-  }
+  //   return deco.updateControls();
+  // }
 }
