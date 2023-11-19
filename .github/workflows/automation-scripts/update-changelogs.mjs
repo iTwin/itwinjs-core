@@ -52,28 +52,14 @@ await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -ex
 
 const allTargetFiles = fs.readdirSync(targetPath);
 const incomingFiles = fs.readdirSync(incomingPath);
-// Do not include packages from Current branch if they do not exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
-allTargetFiles.forEach((file, index) => {
-  if (!incomingFiles.includes(allTargetFiles[index])) {
-    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
-    allTargetFiles.splice(index, 1);
+// Only include packages from Current branch if they DO exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
+const targetFiles = allTargetFiles.filter((file) => {
+  if (incomingFiles.includes(file)) {
+    return file;
   }
-})
-
-const targetFiles = allTargetFiles.filter(excludeNewPkgs)
-function excludeNewPkgs(file) {
-  if (incomingFiles.includes(file))
-    return file
-  else
+  else {
     console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
-}
-
-const targetFiles = [];
-allTargetFiles.forEach((file) => {
-  if (incomingFiles.includes(file))
-    targetFiles.push(file);
-  else
-    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+  }
 })
 
 fixChangeLogs(targetFiles);
