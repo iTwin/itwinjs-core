@@ -50,16 +50,33 @@ await $`git checkout ${targetBranch}`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-const currentFiles = fs.readdirSync(targetPath);
+const allTargetFiles = fs.readdirSync(targetPath);
 const incomingFiles = fs.readdirSync(incomingPath);
 // Do not include packages from Current branch if they do not exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
-currentFiles.forEach((file, index) => {
-  if (!incomingFiles.includes(currentFiles[index])) {
+allTargetFiles.forEach((file, index) => {
+  if (!incomingFiles.includes(allTargetFiles[index])) {
     console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
-    currentFiles.splice(index, 1);
+    allTargetFiles.splice(index, 1);
   }
 })
-fixChangeLogs(currentFiles);
+
+const targetFiles = allTargetFiles.filter(excludeNewPkgs)
+function excludeNewPkgs(file) {
+  if (incomingFiles.includes(file))
+    return file
+  else
+    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+}
+
+const targetFiles = [];
+allTargetFiles.forEach((file) => {
+  if (incomingFiles.includes(file))
+    targetFiles.push(file);
+  else
+    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+})
+
+fixChangeLogs(targetFiles);
 
 // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
 await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
