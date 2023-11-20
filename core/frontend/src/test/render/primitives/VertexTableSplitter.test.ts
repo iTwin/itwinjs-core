@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Point2d, Range2d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
@@ -27,7 +27,7 @@ import { createPointStringParams } from "../../../render/primitives/PointStringP
 import { MeshArgs, PolylineArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 
 interface Point {
-  x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
+  x: number; // quantized or unquantized x coordinate - y will be x+1 and z will be x+5.
   color: number; // color index
   feature: number; // feature index
 }
@@ -68,21 +68,38 @@ function makeFeatureIndex(points: Point[]): FeatureIndex {
   return featureIndex;
 }
 
-function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): PointStringParams {
-  const colorIndex = makeColorIndex(points, colors);
-  const featureIndex = makeFeatureIndex(points);
+function makePointList(pts: Point[], quantized: boolean): QPoint3dList | (Array<Point3d> & { range: Range3d }) {
+  if (quantized) {
+    const qpts = new QPoint3dList();
+    for (const point of pts)
+      qpts.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
 
-  const qpoints = new QPoint3dList();
-  for (const point of points)
-    qpoints.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
+    return qpts;
+  }
 
+  const points = [] as unknown as Array<Point3d> & { range: Range3d };
+  points.range = new Range3d();
+  for (const pt of pts) {
+    const point = new Point3d(pt.x, pt.x + 1, pt.x + 5);
+    points.push(point);
+    points.range.extend(point);
+  }
+
+  return points;
+}
+
+function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unquantized?: boolean): PointStringParams {
+  const colorIndex = makeColorIndex(pts, colors);
+  const featureIndex = makeFeatureIndex(pts);
+
+  const points = makePointList(pts, !unquantized);
   const args: PolylineArgs = {
     colors: colorIndex,
     features: featureIndex,
     width: 1,
     linePixels: LinePixels.Solid,
     flags: { isPlanar: true, isDisjoint: true },
-    points: qpoints,
+    points,
     polylines: [[...new Array<number>(points.length).keys()] ],
   };
 
@@ -405,7 +422,7 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
     expectPolyline(params.polylines, expected.polylines!);
 }
 
-describe("VertexTableSplitter", () => {
+describe.only("VertexTableSplitter", () => {
   class MockSystem extends MockRender.System {
     public static maxTextureSize = 2048;
     public override get maxTextureSize() { return MockSystem.maxTextureSize; }
