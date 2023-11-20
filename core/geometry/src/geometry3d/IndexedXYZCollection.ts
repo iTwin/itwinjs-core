@@ -318,6 +318,19 @@ export abstract class IndexedXYZCollection {
       return undefined;
     return this.getPoint3dAtUncheckedPointIndex(this.length - 1, result);
   }
+  /**
+   * Test whether the indexed points are equal within tolerance.
+   * @param index0 index of first point
+   * @param index1 index of second point
+   * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
+   */
+  public almostEqualIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
+    if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
+      return undefined;
+    return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
+      && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance)
+      && Geometry.isSameCoordinate(this.getZAtUncheckedPointIndex(index0), this.getZAtUncheckedPointIndex(index1), tolerance);
+  }
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
