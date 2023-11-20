@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Inserting, updating and deleting of an element aspect requires exclusive lock on the element that owns it",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

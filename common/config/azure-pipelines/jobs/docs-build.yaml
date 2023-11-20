@@ -115,7 +115,7 @@ jobs:
           useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@5.1.x --legacy-peer-deps
+      - script: npm install @bentley/bemetalsmith@5.2.x --legacy-peer-deps
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 

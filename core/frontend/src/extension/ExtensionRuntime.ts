@@ -259,6 +259,7 @@ import {
   TxnAction,
   TypeOfChange,
   // @public real(s) from @itwin/core-common
+  ClipIntersectionStyle,
   ColorByName,
   ColorDef,
   FrustumPlanes,
@@ -305,6 +306,7 @@ const extensionExports = {
   ChangedValueState,
   ChangesetType,
   ClipEventType,
+  ClipIntersectionStyle,
   Cluster,
   ColorByName,
   ColorDef,
