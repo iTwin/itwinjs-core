@@ -7,20 +7,19 @@
  */
 
 import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
-import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
+import { ColorDef } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
+  BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
   IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
   Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
+  ClipShape, ClipVector, Constant, Point3d, PolygonOps, Range1d, Range3d, Range3dProps,
   Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
 import { basicManipulationIpc } from "../EditToolIpc";
-import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);
@@ -70,11 +69,11 @@ export enum ProjectLocationChanged {
   /** Extents has been modified (unsaved changes) */
   Extents,
   /** Geolocation has been modified (unsaved changes) */
-  Geolocation,
+  // Geolocation,
   /** Abandon unsaved changes to extents */
   ResetExtents,
   /** Abandon unsaved changes to geolocation */
-  ResetGeolocation,
+  // ResetGeolocation,
   /** Decoration hidden (unsaved changes preserved) */
   Hide,
   /** Decoration shown (unsaved changes restored) */
@@ -96,17 +95,17 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _extentsLengthValid = true;
   protected _extentsWidthValid = true;
   protected _extentsHeightValid = true;
-  protected _ecefLocation?: EcefLocation;
-  protected _allowEcefLocationChange = false;
+  // protected _ecefLocation?: EcefLocation;
+  // protected _allowEcefLocationChange = false;
   protected _controlIds: string[] = [];
   protected _controls: ProjectExtentsControlArrow[] = [];
-  protected _monumentPoint?: Point3d;
-  protected _northDirection?: Ray3d;
-  protected _monumentId?: string;
-  protected _northId?: string;
+  // protected _monumentPoint?: Point3d;
+  // protected _northDirection?: Ray3d;
+  // protected _monumentId?: string;
+  // protected _northId?: string;
   protected _suspendDecorator = false;
   protected _removeViewCloseListener?: () => void;
-  public suspendGeolocationDecorations = false;
+  // public suspendGeolocationDecorations = false;
 
   /** Called when project extents or geolocation is modified */
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
@@ -117,8 +116,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.init())
       return;
 
-    this._monumentId = this.iModel.transientIds.getNext();
-    this._northId = this.iModel.transientIds.getNext();
+    // this._monumentId = this.iModel.transientIds.getNext();
+    // this._northId = this.iModel.transientIds.getNext();
     this._clipId = this.iModel.transientIds.getNext();
 
     this.start();
@@ -146,9 +145,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.getClipData())
       return false;
 
-    this._ecefLocation = this.iModel.ecefLocation;
-    this._monumentPoint = this.getMonumentPoint();
-    this._northDirection = this.getNorthDirection();
+    // this._ecefLocation = this.iModel.ecefLocation;
+    // this._monumentPoint = this.getMonumentPoint();
+    // this._northDirection = this.getNorthDirection();
 
     return true;
   }
@@ -233,33 +232,33 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   /** Allow project extents for map projections to be larger since curvature of the earth is accounted for. */
-  protected get maxExtentLength(): number { return ((this._allowEcefLocationChange ? 20 : 350) * Constant.oneKilometer); }
+  protected get maxExtentLength(): number { return ((/* this._allowEcefLocationChange ? 20 : */ 350) * Constant.oneKilometer); }
 
   /** Impose some reasonable height limit for project extents. */
   protected get maxExtentHeight(): number { return (2 * Constant.oneKilometer); }
 
-  protected hasValidGCS(): boolean {
-    if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
-      return false;
+  // protected hasValidGCS(): boolean {
+  //   if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
+  //     return false;
 
-    const gcs = this.iModel.geographicCoordinateSystem;
-    if (undefined === gcs || undefined === gcs.horizontalCRS)
-      return false; // A valid GCS ought to have horizontalCR defined...
+  //   const gcs = this.iModel.geographicCoordinateSystem;
+  //   if (undefined === gcs || undefined === gcs.horizontalCRS)
+  //     return false; // A valid GCS ought to have horizontalCR defined...
 
-    // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced...
-    const hasValidId = (undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length);
-    const hasValidDescr = (undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length);
-    const hasValidProjection = (undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method);
+  //   // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced...
+  //   const hasValidId = (undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length);
+  //   const hasValidDescr = (undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length);
+  //   const hasValidProjection = (undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method);
 
-    return hasValidId || hasValidDescr || hasValidProjection;
-  }
+  //   return hasValidId || hasValidDescr || hasValidProjection;
+  // }
 
   protected async createControls(): Promise<boolean> {
     // Always update to current view clip to handle post-modify, etc.
     if (undefined === this._clipId || !this.getClipData())
       return false;
 
-    this._allowEcefLocationChange = !this.hasValidGCS();
+    // this._allowEcefLocationChange = !this.hasValidGCS();
 
     if (undefined !== this._clipRange) {
       this._extentsLengthValid = (this._clipRange.xLength() < this.maxExtentLength);
@@ -310,21 +309,21 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
   protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev)); }
 
-  public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
-    if (hit.sourceId === this._monumentId) {
-      if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        await ProjectGeolocationPointTool.startTool();
-      return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
-    }
+  // public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+  //   if (hit.sourceId === this._monumentId) {
+  //     if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
+  //       await ProjectGeolocationPointTool.startTool();
+  //     return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
+  //   }
 
-    if (hit.sourceId === this._northId) {
-      if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        await ProjectGeolocationNorthTool.startTool();
-      return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
-    }
+  //   if (hit.sourceId === this._northId) {
+  //     if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
+  //       await ProjectGeolocationNorthTool.startTool();
+  //     return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
+  //   }
 
-    return super.onDecorationButtonEvent(hit, ev);
-  }
+  //   return super.onDecorationButtonEvent(hit, ev);
+  // }
 
   public override onManipulatorEvent(eventType: EditManipulator.EventType): void {
     if (EditManipulator.EventType.Accept === eventType)
@@ -338,40 +337,41 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     const toolTip = document.createElement("div");
     let toolTipHtml = "";
 
-    if (hit.sourceId === this._monumentId) {
-      toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
+    // if (hit.sourceId === this._monumentId) {
+    //   toolTipHtml += `${translateMessage("ModifyGeolocation")}<br>`;
 
-      const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
-      if (undefined !== coordFormatterSpec) {
-        const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
-        const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
-        const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
-        const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
-        toolTipHtml += `${translateCoreMeasureBold("Coordinate") + formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
-      }
+    //   const coordFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
+    //   if (undefined !== coordFormatterSpec) {
+    //     const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
+    //     const formattedPointX = quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
+    //     const formattedPointY = quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
+    //     const formattedPointZ = quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+    //     toolTipHtml += `${translateCoreMeasureBold("Coordinate") + formattedPointX}, ${formattedPointY}, ${formattedPointZ}<br>`;
+    //   }
 
-      const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
-      if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
-        const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
-        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
-        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
-        const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-        const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
-        const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
-        toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
-        toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
-      }
+    //   const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
+    //   if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
+    //     const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
+    //     const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
+    //     const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+    //     const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
+    //     const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
+    //     const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
+    //     toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
+    //     toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
+    //   }
 
-    } else if (hit.sourceId === this._northId) {
-      toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
+    // } else if (hit.sourceId === this._northId) {
+    //   toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
 
-      const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
-      if (undefined !== angleFormatterSpec) {
-        const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
-        toolTipHtml += `${translateMessageBold("Angle") + formattedAngle}<br>`;
-      }
+    //   const angleFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+    //   if (undefined !== angleFormatterSpec) {
+    //     const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
+    //     toolTipHtml += `${translateMessageBold("Angle") + formattedAngle}<br>`;
+    //   }
 
-    } else if (hit.sourceId === this._clipId) {
+    // } else
+    if (hit.sourceId === this._clipId) {
       const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
       toolTipHtml += `${translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents")}<br>`;
 
@@ -438,125 +438,125 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return toolTip;
   }
 
-  public testDecorationHit(id: string): boolean { return (id === this._monumentId || id === this._northId || id === this._clipId || this._controlIds.includes(id)); }
+  public testDecorationHit(id: string): boolean { return (/* id === this._monumentId || id === this._northId || */ id === this._clipId || this._controlIds.includes(id)); }
   protected override updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
-  public getMonumentPoint(): Point3d {
-    const origin = Point3d.createZero();
-    if (this.iModel.ecefLocation && this.iModel.ecefLocation.cartographicOrigin)
-      return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin, origin);
-    origin.setFrom(this.iModel.projectExtents.low);
-    if (0.0 > this.iModel.projectExtents.low.z && 0.0 < this.iModel.projectExtents.high.z)
-      origin.z = 0.0;
-    return origin;
-  }
+  // public getMonumentPoint(): Point3d {
+  //   const origin = Point3d.createZero();
+  //   if (this.iModel.ecefLocation && this.iModel.ecefLocation.cartographicOrigin)
+  //     return this.iModel.cartographicToSpatialFromEcef(this.iModel.ecefLocation.cartographicOrigin, origin);
+  //   origin.setFrom(this.iModel.projectExtents.low);
+  //   if (0.0 > this.iModel.projectExtents.low.z && 0.0 < this.iModel.projectExtents.high.z)
+  //     origin.z = 0.0;
+  //   return origin;
+  // }
 
-  public getClockwiseAngleToNorth(): Angle {
-    const angle = this.getNorthAngle();
-    angle.setRadians(Angle.adjustRadians0To2Pi(angle.radians));
-    return angle;
-  }
+  // public getClockwiseAngleToNorth(): Angle {
+  //   const angle = this.getNorthAngle();
+  //   angle.setRadians(Angle.adjustRadians0To2Pi(angle.radians));
+  //   return angle;
+  // }
 
-  public getNorthAngle(): Angle {
-    const northDirection = (undefined !== this._northDirection ? this._northDirection : this.getNorthDirection());
-    return northDirection.direction.angleToXY(Vector3d.unitY());
-  }
+  // public getNorthAngle(): Angle {
+  //   const northDirection = (undefined !== this._northDirection ? this._northDirection : this.getNorthDirection());
+  //   return northDirection.direction.angleToXY(Vector3d.unitY());
+  // }
 
-  public getNorthDirection(refOrigin?: Point3d): Ray3d {
-    const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
+  // public getNorthDirection(refOrigin?: Point3d): Ray3d {
+  //   const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
 
-    if (!this.iModel.isGeoLocated)
-      return Ray3d.create(origin, Vector3d.unitY());
+  //   if (!this.iModel.isGeoLocated)
+  //     return Ray3d.create(origin, Vector3d.unitY());
 
-    const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
-    cartographic.latitude += Angle.createDegrees(0.01).radians;
-    const pt2 = this.iModel.cartographicToSpatialFromEcef(cartographic);
-    const northVec = Vector3d.createStartEnd(origin, pt2);
-    northVec.z = 0.0;
-    northVec.normalizeInPlace();
+  //   const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
+  //   cartographic.latitude += Angle.createDegrees(0.01).radians;
+  //   const pt2 = this.iModel.cartographicToSpatialFromEcef(cartographic);
+  //   const northVec = Vector3d.createStartEnd(origin, pt2);
+  //   northVec.z = 0.0;
+  //   northVec.normalizeInPlace();
 
-    return Ray3d.create(origin, northVec);
-  }
+  //   return Ray3d.create(origin, northVec);
+  // }
 
-  public drawNorthArrow(context: DecorateContext, northDir: Ray3d, id?: string): void {
-    const vp = context.viewport;
-    const pixelSize = vp.pixelsFromInches(0.55);
-    const scale = vp.viewingSpace.getPixelSizeAtPoint(northDir.origin) * pixelSize;
-    const matrix = Matrix3d.createRigidFromColumns(northDir.direction, Vector3d.unitZ(), AxisOrder.YZX);
+  // public drawNorthArrow(context: DecorateContext, northDir: Ray3d, id?: string): void {
+  //   const vp = context.viewport;
+  //   const pixelSize = vp.pixelsFromInches(0.55);
+  //   const scale = vp.viewingSpace.getPixelSizeAtPoint(northDir.origin) * pixelSize;
+  //   const matrix = Matrix3d.createRigidFromColumns(northDir.direction, Vector3d.unitZ(), AxisOrder.YZX);
 
-    if (undefined === matrix)
-      return;
+  //   if (undefined === matrix)
+  //     return;
 
-    matrix.scaleColumnsInPlace(scale, scale, scale);
-    const arrowTrans = Transform.createRefs(northDir.origin, matrix);
+  //   matrix.scaleColumnsInPlace(scale, scale, scale);
+  //   const arrowTrans = Transform.createRefs(northDir.origin, matrix);
 
-    const northArrowBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, arrowTrans, id);
-    const color = ColorDef.white;
+  //   const northArrowBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, arrowTrans, id);
+  //   const color = ColorDef.white;
 
-    const arrowOutline: Point3d[] = [];
-    arrowOutline[0] = Point3d.create(0.0, 0.65);
-    arrowOutline[1] = Point3d.create(-0.45, -0.5);
-    arrowOutline[2] = Point3d.create(0.0, -0.2);
-    arrowOutline[3] = Point3d.create(0.45, -0.5);
-    arrowOutline[4] = arrowOutline[0].clone();
+  //   const arrowOutline: Point3d[] = [];
+  //   arrowOutline[0] = Point3d.create(0.0, 0.65);
+  //   arrowOutline[1] = Point3d.create(-0.45, -0.5);
+  //   arrowOutline[2] = Point3d.create(0.0, -0.2);
+  //   arrowOutline[3] = Point3d.create(0.45, -0.5);
+  //   arrowOutline[4] = arrowOutline[0].clone();
 
-    const arrowLeftFill: Point3d[] = [];
-    arrowLeftFill[0] = arrowOutline[0].clone();
-    arrowLeftFill[1] = arrowOutline[1].clone();
-    arrowLeftFill[2] = arrowOutline[2].clone();
-    arrowLeftFill[3] = arrowLeftFill[0].clone();
+  //   const arrowLeftFill: Point3d[] = [];
+  //   arrowLeftFill[0] = arrowOutline[0].clone();
+  //   arrowLeftFill[1] = arrowOutline[1].clone();
+  //   arrowLeftFill[2] = arrowOutline[2].clone();
+  //   arrowLeftFill[3] = arrowLeftFill[0].clone();
 
-    const arrowRightFill: Point3d[] = [];
-    arrowRightFill[0] = arrowOutline[0].clone();
-    arrowRightFill[1] = arrowOutline[3].clone();
-    arrowRightFill[2] = arrowOutline[2].clone();
-    arrowRightFill[3] = arrowRightFill[0].clone();
+  //   const arrowRightFill: Point3d[] = [];
+  //   arrowRightFill[0] = arrowOutline[0].clone();
+  //   arrowRightFill[1] = arrowOutline[3].clone();
+  //   arrowRightFill[2] = arrowOutline[2].clone();
+  //   arrowRightFill[3] = arrowRightFill[0].clone();
 
-    northArrowBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 200), 1);
-    northArrowBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.6), true, true);
-    northArrowBuilder.addArc(Arc3d.createXY(Point3d.create(0.0, 0.85), 0.2), true, true);
+  //   northArrowBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 200), 1);
+  //   northArrowBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.6), true, true);
+  //   northArrowBuilder.addArc(Arc3d.createXY(Point3d.create(0.0, 0.85), 0.2), true, true);
 
-    northArrowBuilder.setSymbology(color, color, 2);
-    northArrowBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
-    northArrowBuilder.addLineString([Point3d.create(0.6, 0.0), Point3d.create(-0.6, 0.0)]);
-    northArrowBuilder.addLineString([Point3d.create(0.0, 0.6), Point3d.create(0.0, -0.6)]);
+  //   northArrowBuilder.setSymbology(color, color, 2);
+  //   northArrowBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
+  //   northArrowBuilder.addLineString([Point3d.create(0.6, 0.0), Point3d.create(-0.6, 0.0)]);
+  //   northArrowBuilder.addLineString([Point3d.create(0.0, 0.6), Point3d.create(0.0, -0.6)]);
 
-    northArrowBuilder.setSymbology(color, ColorDef.from(150, 150, 150), 1);
-    northArrowBuilder.addShape(arrowLeftFill);
+  //   northArrowBuilder.setSymbology(color, ColorDef.from(150, 150, 150), 1);
+  //   northArrowBuilder.addShape(arrowLeftFill);
 
-    northArrowBuilder.setSymbology(color, ColorDef.black, 1);
-    northArrowBuilder.addShape(arrowRightFill);
+  //   northArrowBuilder.setSymbology(color, ColorDef.black, 1);
+  //   northArrowBuilder.addShape(arrowRightFill);
 
-    northArrowBuilder.setSymbology(color, color, 1);
-    northArrowBuilder.addLineString(arrowOutline);
-    northArrowBuilder.setSymbology(color, color, 3);
-    northArrowBuilder.addLineString([Point3d.create(-0.1, 0.75), Point3d.create(-0.1, 0.95), Point3d.create(0.1, 0.75), Point3d.create(0.1, 0.95)]);
+  //   northArrowBuilder.setSymbology(color, color, 1);
+  //   northArrowBuilder.addLineString(arrowOutline);
+  //   northArrowBuilder.setSymbology(color, color, 3);
+  //   northArrowBuilder.addLineString([Point3d.create(-0.1, 0.75), Point3d.create(-0.1, 0.95), Point3d.create(0.1, 0.75), Point3d.create(0.1, 0.95)]);
 
-    context.addDecorationFromBuilder(northArrowBuilder);
-  }
+  //   context.addDecorationFromBuilder(northArrowBuilder);
+  // }
 
-  public drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string): void {
-    const vp = context.viewport;
-    const pixelSize = vp.pixelsFromInches(0.25) * scaleFactor;
-    const scale = vp.viewingSpace.getPixelSizeAtPoint(point) * pixelSize;
-    const matrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(45.0));
+  // public drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string): void {
+  //   const vp = context.viewport;
+  //   const pixelSize = vp.pixelsFromInches(0.25) * scaleFactor;
+  //   const scale = vp.viewingSpace.getPixelSizeAtPoint(point) * pixelSize;
+  //   const matrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(45.0));
 
-    matrix.scaleColumnsInPlace(scale, scale, scale);
-    const monumentTrans = Transform.createRefs(point, matrix);
+  //   matrix.scaleColumnsInPlace(scale, scale, scale);
+  //   const monumentTrans = Transform.createRefs(point, matrix);
 
-    const monumentPointBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, monumentTrans, id);
-    const color = ColorDef.white;
+  //   const monumentPointBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, monumentTrans, id);
+  //   const color = ColorDef.white;
 
-    monumentPointBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 150), 1);
-    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.7), true, true);
+  //   monumentPointBuilder.setSymbology(color, ColorDef.from(0, 0, 0, 150), 1);
+  //   monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.7), true, true);
 
-    monumentPointBuilder.setSymbology(color, color, 2);
-    monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
-    monumentPointBuilder.addLineString([Point3d.create(0.5, 0.0), Point3d.create(-0.5, 0.0)]);
-    monumentPointBuilder.addLineString([Point3d.create(0.0, 0.5), Point3d.create(0.0, -0.5)]);
+  //   monumentPointBuilder.setSymbology(color, color, 2);
+  //   monumentPointBuilder.addArc(Arc3d.createXY(Point3d.createZero(), 0.5), false, false);
+  //   monumentPointBuilder.addLineString([Point3d.create(0.5, 0.0), Point3d.create(-0.5, 0.0)]);
+  //   monumentPointBuilder.addLineString([Point3d.create(0.0, 0.5), Point3d.create(0.0, -0.5)]);
 
-    context.addDecorationFromBuilder(monumentPointBuilder);
-  }
+  //   context.addDecorationFromBuilder(monumentPointBuilder);
+  // }
 
   protected drawAreaTooLargeIndicator(context: DecorateContext): void {
     if ((this._extentsLengthValid && this._extentsWidthValid) || undefined === this._clipRange)
@@ -630,15 +630,15 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (this.viewport !== vp)
       return;
 
-    if (!this.suspendGeolocationDecorations && undefined !== this._northDirection && this.iModel.isGeoLocated)
-      this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
+    // if (!this.suspendGeolocationDecorations && undefined !== this._northDirection && this.iModel.isGeoLocated)
+    //   this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
 
     const maxSizeInches = ((this._clipRange.maxLength() / vp.viewingSpace.getPixelSizeAtPoint(this._clipRange.center)) / vp.pixelsPerInch) * 0.5; // Display size limit when zooming out...
     if (maxSizeInches < 0.5)
       return;
 
-    if (!this.suspendGeolocationDecorations && undefined !== this._monumentPoint && this._allowEcefLocationChange)
-      this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
+    // if (!this.suspendGeolocationDecorations && undefined !== this._monumentPoint && this._allowEcefLocationChange)
+    //   this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
     ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
     this.drawAreaTooLargeIndicator(context);
@@ -720,76 +720,76 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return true;
   }
 
-  public resetGeolocation(): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
+  // public resetGeolocation(): boolean {
+  //   if (!this._allowEcefLocationChange)
+  //     return false;
 
-    if (undefined === this.getModifiedEcefLocation())
-      return false; // Wasn't changed...
+  //   if (undefined === this.getModifiedEcefLocation())
+  //     return false; // Wasn't changed...
 
-    this.iModel.disableGCS(false);
-    this.iModel.ecefLocation = this._ecefLocation;
+  //   this.iModel.disableGCS(false);
+  //   this.iModel.ecefLocation = this._ecefLocation;
 
-    this._monumentPoint = this.getMonumentPoint();
-    this._northDirection = this.getNorthDirection();
+  //   this._monumentPoint = this.getMonumentPoint();
+  //   this._northDirection = this.getNorthDirection();
 
-    updateMapDisplay(this.viewport, false);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.ResetGeolocation);
-    return true;
-  }
+  //   updateMapDisplay(this.viewport, false);
+  //   this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.ResetGeolocation);
+  //   return true;
+  // }
 
-  public updateEcefLocation(origin: Cartographic, point?: Point3d, angle?: Angle): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
+  // public updateEcefLocation(origin: Cartographic, point?: Point3d, angle?: Angle): boolean {
+  //   if (!this._allowEcefLocationChange)
+  //     return false;
 
-    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle())); // Preserve modified north direction...
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined !== ecefLocation && ecefLocation.isAlmostEqual(newEcefLocation))
-      return false;
+  //   const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle())); // Preserve modified north direction...
+  //   const ecefLocation = this.iModel.ecefLocation;
+  //   if (undefined !== ecefLocation && ecefLocation.isAlmostEqual(newEcefLocation))
+  //     return false;
 
-    this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
-    this.iModel.setEcefLocation(newEcefLocation);
+  //   this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
+  //   this.iModel.setEcefLocation(newEcefLocation);
 
-    this._monumentPoint = this.getMonumentPoint();
-    this._northDirection = this.getNorthDirection(undefined !== this._northDirection ? this._northDirection.origin : undefined); // Preserve modified north reference point...
+  //   this._monumentPoint = this.getMonumentPoint();
+  //   this._northDirection = this.getNorthDirection(undefined !== this._northDirection ? this._northDirection.origin : undefined); // Preserve modified north reference point...
 
-    updateMapDisplay(this.viewport, true);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Geolocation);
-    return true;
-  }
+  //   updateMapDisplay(this.viewport, true);
+  //   this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Geolocation);
+  //   return true;
+  // }
 
-  public updateNorthDirection(northDir: Ray3d): boolean {
-    if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
-      return false;
+  // public updateNorthDirection(northDir: Ray3d): boolean {
+  //   if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
+  //     return false;
 
-    const point = (undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint()); // Preserve modified monument point...
-    const origin = this.iModel.spatialToCartographicFromEcef(point);
+  //   const point = (undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint()); // Preserve modified monument point...
+  //   const origin = this.iModel.spatialToCartographicFromEcef(point);
 
-    const saveDirection = this._northDirection;
-    this._northDirection = northDir; // Change reference point to input location...
-    const angle = this.getNorthAngle();
+  //   const saveDirection = this._northDirection;
+  //   this._northDirection = northDir; // Change reference point to input location...
+  //   const angle = this.getNorthAngle();
 
-    if (!this.updateEcefLocation(origin, point, angle)) {
-      this._northDirection = saveDirection;
-      return false;
-    }
+  //   if (!this.updateEcefLocation(origin, point, angle)) {
+  //     this._northDirection = saveDirection;
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
-  public getModifiedEcefLocation(): EcefLocation | undefined {
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined === ecefLocation)
-      return undefined; // geolocation wasn't added...
+  // public getModifiedEcefLocation(): EcefLocation | undefined {
+  //   const ecefLocation = this.iModel.ecefLocation;
+  //   if (undefined === ecefLocation)
+  //     return undefined; // geolocation wasn't added...
 
-    if (undefined === this._ecefLocation)
-      return ecefLocation; // geolocation didn't exist previously...
+  //   if (undefined === this._ecefLocation)
+  //     return ecefLocation; // geolocation didn't exist previously...
 
-    if (this._ecefLocation.isAlmostEqual(ecefLocation))
-      return undefined;
+  //   if (this._ecefLocation.isAlmostEqual(ecefLocation))
+  //     return undefined;
 
-    return ecefLocation;
-  }
+  //   return ecefLocation;
+  // }
 
   public getModifiedExtents(): Range3d | undefined {
     if (undefined === this._clipRange)
@@ -798,22 +798,22 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return this._clipRange.isAlmostEqual(this.iModel.projectExtents) ? undefined : this._clipRange;
   }
 
-  public static allowEcefLocationChange(requireExisting: boolean, outputError: boolean = true): boolean {
-    if (undefined === ProjectExtentsClipDecoration._decorator) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
-      return false;
-    } else if (!ProjectExtentsClipDecoration._decorator._allowEcefLocationChange) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotAllowed")));
-      return false;
-    } else if (requireExisting && !ProjectExtentsClipDecoration._decorator.iModel.isGeoLocated) {
-      if (outputError)
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotGeolocated")));
-      return false;
-    }
-    return true;
-  }
+  // public static allowEcefLocationChange(requireExisting: boolean, outputError: boolean = true): boolean {
+  //   if (undefined === ProjectExtentsClipDecoration._decorator) {
+  //     if (outputError)
+  //       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
+  //     return false;
+  //   } else if (!ProjectExtentsClipDecoration._decorator._allowEcefLocationChange) {
+  //     if (outputError)
+  //       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotAllowed")));
+  //     return false;
+  //   } else if (requireExisting && !ProjectExtentsClipDecoration._decorator.iModel.isGeoLocated) {
+  //     if (outputError)
+  //       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotGeolocated")));
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   public fitExtents(): void {
     if (undefined === this._clipRange)
@@ -860,7 +860,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     ProjectExtentsClipDecoration._decorator = new ProjectExtentsClipDecoration(vp);
     if (fitExtents)
       ProjectExtentsClipDecoration._decorator.fitExtents();
-    vp.onChangeView.addOnce(() => this.clear(false, true));
+    vp.onChangeView.addOnce(() => this.clear(false/* , true */));
     return (undefined !== ProjectExtentsClipDecoration._decorator._clipId);
   }
 
@@ -873,13 +873,13 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     ProjectExtentsClipDecoration._decorator.onChanged.raiseEvent(ProjectExtentsClipDecoration._decorator.iModel, ProjectLocationChanged.Hide);
   }
 
-  public static clear(clearClip: boolean = true, resetGeolocation: boolean = true): void {
+  public static clear(clearClip: boolean = true/* , resetGeolocation: boolean = true */): void {
     if (undefined === ProjectExtentsClipDecoration._decorator)
       return;
     if (clearClip)
       ProjectExtentsClipDecoration._decorator.resetViewClip(); // Clear project extents view clip...
-    if (resetGeolocation)
-      ProjectExtentsClipDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
+    // if (resetGeolocation)
+    //   ProjectExtentsClipDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
     ProjectExtentsClipDecoration._decorator.stop();
     ProjectExtentsClipDecoration._decorator = undefined;
   }
@@ -956,7 +956,7 @@ export class ProjectLocationSaveTool extends Tool {
     return true;
   }
 
-  protected async saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void> {
+  protected async saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps/* , ecefLocation?: EcefLocationProps */): Promise<void> {
     if (!deco.iModel.isBriefcaseConnection())
       return;
 
@@ -969,8 +969,8 @@ export class ProjectLocationSaveTool extends Tool {
       if (undefined !== extents)
         await basicManipulationIpc.updateProjectExtents(extents);
 
-      if (undefined !== ecefLocation)
-        await basicManipulationIpc.updateEcefLocation(ecefLocation);
+      // if (undefined !== ecefLocation)
+      //   await basicManipulationIpc.updateEcefLocation(ecefLocation);
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
@@ -996,14 +996,14 @@ export class ProjectLocationSaveTool extends Tool {
     }
 
     const extents = deco.getModifiedExtents();
-    const ecefLocation = deco.getModifiedEcefLocation();
+    // const ecefLocation = deco.getModifiedEcefLocation();
 
-    if (undefined === extents && undefined === ecefLocation) {
+    if (undefined === extents/*  && undefined === ecefLocation */) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NoChanges")));
       return true;
     }
 
-    await this.saveChanges(deco, extents, ecefLocation);
+    await this.saveChanges(deco, extents/* , ecefLocation */);
     return true;
   }
 }
