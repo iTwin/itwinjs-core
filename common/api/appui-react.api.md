@@ -5020,7 +5020,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
+export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
@@ -7816,7 +7816,7 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => React_2.JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => React_2.JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
@@ -7874,7 +7874,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => React_2.JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => React_2.JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {
