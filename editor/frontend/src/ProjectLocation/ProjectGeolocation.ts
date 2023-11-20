@@ -9,7 +9,7 @@
 import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButton, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, QuantityType, ScreenViewport, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Arc3d, AxisIndex, AxisOrder, Matrix3d, Point3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, EcefLocation, LinePixels } from "@itwin/core-common";
-import { ProjectLocationChanged, translateCoreMeasureBold, translateMessageBold, updateMapDisplay } from "./ProjectExtentsDecoration";
+import { translateCoreMeasureBold, translateMessageBold, updateMapDisplay } from "./ProjectExtentsDecoration";
 import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 import { BeEvent } from "@itwin/core-bentley";
@@ -656,24 +656,39 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   public static async startTool() { return new ProjectGeolocationMoveTool().run(); }
 }
 
+/** Values for [[ProjectGeolocationDecoration.onChanged] event.
+ * @beta
+ */
+export enum ProjectGeolocationChanged {
+  /** Geolocation has been modified (unsaved changes) */
+  Geolocation,
+  /** Abandon unsaved changes to geolocation */
+  ResetGeolocation,
+  /** Decoration hidden (unsaved changes preserved) */
+  Hide,
+  /** Decoration shown (unsaved changes restored) */
+  Show,
+  /** Save changes to geolocation */
+  Save,
+}
+
 /** Decorations to modify project ecef location.
  * @beta
  */
-// todo: don't need to extend HandleProvider since we have no handles to create?
+// todo: do we need to extend HandleProvider since we have no handles/controls to create?
 export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectGeolocationDecoration;
   protected _ecefLocation?: EcefLocation;
   protected _allowEcefLocationChange = false;
-  protected _monumentPoint: Point3d;
-  protected _northDirection: Ray3d;
+  protected _monumentPoint!: Point3d;
+  protected _northDirection!: Ray3d;
   protected _monumentId: string;
   protected _northId: string;
   protected _removeViewCloseListener?: () => void;
   public suspendGeolocationDecorations = false;
 
   /** Called when project extents or geolocation is modified */
-  // todo: change the event enum
-  public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
+  public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectGeolocationChanged) => void>();
 
   public constructor(public viewport: ScreenViewport) {
     super(viewport.iModel);
@@ -681,10 +696,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     this._monumentId = this.iModel.transientIds.getNext();
     this._northId = this.iModel.transientIds.getNext();
 
-    this._ecefLocation = this.iModel.ecefLocation;
-    this._monumentPoint = this.getMonumentPoint();
-    this._northDirection = this.getNorthDirection();
-
+    this.init();
     this.start();
   }
 
@@ -697,6 +709,12 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     super.stop();
     this._removeViewCloseListener?.();
     this._removeViewCloseListener = undefined;
+  }
+
+  protected init() {
+    this._ecefLocation = this.iModel.ecefLocation;
+    this._monumentPoint = this.getMonumentPoint();
+    this._northDirection = this.getNorthDirection();
   }
 
   public onViewClose(vp: ScreenViewport) {
@@ -744,7 +762,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
 
   // public override onManipulatorEvent(eventType: EditManipulator.EventType) {
   //   if (EditManipulator.EventType.Accept === eventType)
-  //     this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Extents);
+  //     this.onChanged.raiseEvent(this.iModel, ProjectGeolocationChanged.Extents);
   //   this._suspendDecorator = false;
   //   super.onManipulatorEvent(eventType);
   // }
@@ -934,7 +952,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     this._northDirection = this.getNorthDirection();
 
     updateMapDisplay(this.viewport, false);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.ResetGeolocation);
+    this.onChanged.raiseEvent(this.iModel, ProjectGeolocationChanged.ResetGeolocation);
     return true;
   }
 
@@ -953,7 +971,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     this._northDirection = this.getNorthDirection(this._northDirection.origin); // Preserve modified north reference point...
 
     updateMapDisplay(this.viewport, true);
-    this.onChanged.raiseEvent(this.iModel, ProjectLocationChanged.Geolocation);
+    this.onChanged.raiseEvent(this.iModel, ProjectGeolocationChanged.Geolocation);
     return true;
   }
 
@@ -1000,61 +1018,49 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     if (!vp.view.isSpatialView())
       return false;
 
-    if (undefined !== ProjectGeolocationDecoration._decorator) {
-      // const deco = ProjectGeolocationDecoration._decorator;
-      // if (vp === deco.viewport && undefined !== deco._clipId && undefined !== deco._clip) {
-      //   if (deco._clip !== vp.view.getViewClip()) {
-      //     clearViewClip(vp);
-      //     ViewClipTool.enableClipVolume(vp);
-      //     ViewClipTool.setViewClip(vp, deco._clip);
-      //   }
-      //   if (undefined === deco._removeManipulatorToolListener) {
-      //     deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
-      //     deco.start();
-      //     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Show);
-      //   }
-      //   return true;
-      // }
+    const deco = ProjectGeolocationDecoration._decorator;
+    if (deco) {
+      if (vp === deco.viewport) {
+        if (undefined === deco._removeManipulatorToolListener) {
+          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
+          deco.start();
+          deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Show);
+        }
+        return true;
+      }
       ProjectGeolocationDecoration.clear();
     }
 
-    // if (!clipToProjectExtents(vp))
-    //   return false;
-
     ProjectGeolocationDecoration._decorator = new ProjectGeolocationDecoration(vp);
-    // if (fitExtents)
-    //   ProjectGeolocationDecoration._decorator.fitExtents();
     vp.onChangeView.addOnce(() => this.clear(true));
-    // return (undefined !== ProjectGeolocationDecoration._decorator._clipId);
     return true;
   }
 
   public static hide() {
-    if (!ProjectGeolocationDecoration._decorator)
-      return;
-    // const saveClipId = ProjectGeolocationDecoration._decorator._clipId; // cleared by stop to trigger decorator removal...
-    ProjectGeolocationDecoration._decorator.stop();
-    // ProjectGeolocationDecoration._decorator._clipId = saveClipId;
-    ProjectGeolocationDecoration._decorator.onChanged.raiseEvent(ProjectGeolocationDecoration._decorator.iModel, ProjectLocationChanged.Hide);
+    const deco = ProjectGeolocationDecoration._decorator;
+    if (deco) {
+      // const saveClipId = ProjectGeolocationDecoration._decorator._clipId; // cleared by stop to trigger decorator removal...
+      deco.stop();
+      // ProjectGeolocationDecoration._decorator._clipId = saveClipId;
+      deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Hide);
+    }
   }
 
   public static clear(resetGeolocation = true) {
-    if (undefined === ProjectGeolocationDecoration._decorator)
-      return;
-    if (resetGeolocation)
-      ProjectGeolocationDecoration._decorator.resetGeolocation(); // Restore modified geolocation back to create state...
-    ProjectGeolocationDecoration._decorator.stop();
-    ProjectGeolocationDecoration._decorator = undefined;
+    const deco = ProjectGeolocationDecoration._decorator;
+    if (deco) {
+      if (resetGeolocation)
+        deco.resetGeolocation(); // Restore modified geolocation back to create state...
+      deco.stop();
+      ProjectGeolocationDecoration._decorator = undefined;
+    }
   }
 
-  // public static async update(): Promise<void> {
-  //   const deco = ProjectGeolocationDecoration._decorator;
-  //   if (undefined === deco)
-  //     return;
-
-  //   clipToProjectExtents(deco.viewport);
-  //   deco.init();
-
-  //   return deco.updateControls();
-  // }
+  public static async update() {
+    const deco = ProjectGeolocationDecoration._decorator;
+    if (deco) {
+      deco.init();
+      return deco.updateControls();
+    }
+  }
 }
