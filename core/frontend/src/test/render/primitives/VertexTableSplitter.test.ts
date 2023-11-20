@@ -132,24 +132,42 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
 
 function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasColorIndex = true): void {
   const data = getVertexTableData(vertexTable, 0);
+
+  const getVertex = vertexTable.usesUnquantizedPositions ? (idx: number) => {
+    const x = data[idx];
+    return {
+      x,
+      y: data[idx + 1],
+      z: data[idx + 2],
+      featureIndex: data[idx + 3],
+      colorIndex: (data[idx + 4] & 0x0000ffff) >>> 16,
+    };
+  } : (idx: number) => {
+    const x = data[idx] & 0xffff;
+    return {
+      x,
+      y: (data[idx] & 0xffff0000) >>> 16,
+      z: data[idx + 1] & 0xffff,
+      colorIndex: (data[idx + 1] & 0xffff0000) >>> 16,
+      featureIndex: data[idx + 2] & 0x00ffffff,
+    };
+  };
+
+
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
-    const x = data[idx] & 0xffff;
-    const y = (data[idx] & 0xffff0000) >>> 16;
-    const z = data[idx + 1] & 0xffff;
-    const colorIndex = (data[idx + 1] & 0xffff0000) >>> 16;
-    const featureIndex = data[idx + 2] & 0x00ffffff;
+    const vert = getVertex(idx);
 
     const pt = expectedPts[i];
-    expect(x).to.equal(pt.x);
-    expect(y).to.equal(pt.x + 1);
-    expect(z).to.equal(pt.x + 5);
+    expect(vert.x).to.equal(pt.x);
+    expect(vert.y).to.equal(pt.x + 1);
+    expect(vert.z).to.equal(pt.x + 5);
 
     // Textured meshes don't use color tables and may reuse the color index for other purposes like normal.
     if (hasColorIndex)
-      expect(colorIndex).to.equal(pt.color);
+      expect(vert.colorIndex).to.equal(pt.color);
 
-    expect(featureIndex).to.equal(pt.feature);
+    expect(vert.featureIndex).to.equal(pt.feature);
   }
 }
 
