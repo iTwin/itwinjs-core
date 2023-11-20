@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "3.7.16",
+  "version": "3.7.17",
   "description": "iTwin.js Extension API",
   "typings": "index.d.ts",
   "license": "MIT",

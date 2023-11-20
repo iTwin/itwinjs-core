@@ -1,6 +1,11 @@
 # Change Log - @itwin/presentation-testing
 
-This log was last generated on Mon, 16 Oct 2023 12:49:08 GMT and should not be manually modified.
+This log was last generated on Mon, 20 Nov 2023 18:24:24 GMT and should not be manually modified.
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:24 GMT
+
+_Version update only_
 
 ## 3.7.16
 Mon, 16 Oct 2023 12:49:08 GMT
