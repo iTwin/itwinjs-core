@@ -149,10 +149,9 @@ export class CurveLocationDetail {
     result.fraction1 = this.fraction1;
     result.point1 = optionalUpdate<Point3d>(this.point1, result.point1);
     result.point.setFromPoint3d(this.point);
-    result.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(
-      this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail,
-    );
+    result.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
     result.a = this.a;
+    result.childDetail = optionalUpdate<CurveLocationDetail>(this.childDetail, result.childDetail);
     result.curveSearchStatus = this.curveSearchStatus;
     return result;
   }
@@ -206,6 +205,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
     result.curveSearchStatus = undefined;
     return result;
   }
@@ -234,6 +234,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = distance;
+    result.childDetail = undefined;
     result.curveSearchStatus = status;
     return result;
   }
@@ -266,6 +267,7 @@ export class CurveLocationDetail {
     curve.fractionToPoint(endFraction, result.point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = a;
+    result.childDetail = undefined;
     result.curveSearchStatus = status;
     return result;
   }
@@ -278,8 +280,9 @@ export class CurveLocationDetail {
     result.fraction = fraction;
     curve.fractionToPoint(fraction, result.point);
     result.vectorInCurveLocationDetail = undefined;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer and fraction for evaluation. */
@@ -292,8 +295,9 @@ export class CurveLocationDetail {
     const ray = curve.fractionToPointAndDerivative(fraction);
     result.point.setFromPoint3d(ray.origin);
     result.vectorInCurveLocationDetail = ray.direction;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer and 2 fractions for evaluation. */
@@ -307,8 +311,9 @@ export class CurveLocationDetail {
     result.fraction1 = fraction1;
     result.point1 = curve.fractionToPoint(fraction1, result.point1);
     result.vectorInCurveLocationDetail = undefined;
-    result.curveSearchStatus = undefined;
     result.a = 0.0;
+    result.childDetail = undefined;
+    result.curveSearchStatus = undefined;
     return result;
   }
   /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
@@ -325,6 +330,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     result.vectorInCurveLocationDetail = undefined;
     result.a = a;
+    result.childDetail = undefined;
     result.curveSearchStatus = undefined;
     return result;
   }
