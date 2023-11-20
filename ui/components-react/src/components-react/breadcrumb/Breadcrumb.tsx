@@ -464,7 +464,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     messageBoxOpened: false,
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     return (
       <div className="components-breadcrumb-input-root" data-testid="components-breadcrumb-input-root">
         <input
@@ -746,7 +746,7 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
       this.props.renderNode !== nextProps.renderNode;
   }
 
-  public override render(): JSX.Element | null {
+  public override render(): React.JSX.Element | null {
     const node = this.props.node;
     let nodes: BeInspireTreeNodes<TreeNodeItem> | undefined;
     if (node) {

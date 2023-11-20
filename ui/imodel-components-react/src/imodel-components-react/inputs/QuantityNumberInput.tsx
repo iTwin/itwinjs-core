@@ -321,4 +321,4 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
  * units that can be stored in the iModel.
  * @beta
  */
-export const QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null = ForwardRefQuantityNumberInput;
+export const QuantityNumberInput: (props: QuantityNumberInputProps) => React.JSX.Element | null = ForwardRefQuantityNumberInput;

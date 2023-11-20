@@ -115,5 +115,5 @@ const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProp
 /** Generic Input component that requires formatting and parsing functions to be passed in as props.
  * @public
  */
-export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null = ForwardRefParsedInput;
+export const ParsedInput: (props: ParsedInputProps) => React.JSX.Element | null = ForwardRefParsedInput;
 

@@ -21,7 +21,7 @@ import { BadgeUtilities } from "../badge/BadgeUtilities";
  */
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
   /** Text/jsx to display in the list item */
-  label: string | JSX.Element;
+  label: string | React.JSX.Element;
   /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
 }
@@ -64,7 +64,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     };
   }
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const {
       label,
       opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -88,6 +88,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     return (
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       <div className={classnames("core-context-submenu", ContextMenu.getCSSClassNameFromDirection(renderDirection), className)}
+        // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
         data-testid="core-context-submenu"

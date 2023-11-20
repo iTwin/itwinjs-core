@@ -19,7 +19,7 @@ export interface SettingsTabEntry {
   /** localized display label */
   readonly label: string;
   /** Setting page content to display when tab item is selected. */
-  readonly page: JSX.Element;
+  readonly page: React.JSX.Element;
   /** Setting to true if page will register to watch for stage closing event so it can save any dirty settings. Page component should register and handle the events:
    * `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose` */
   readonly pageWillHandleCloseRequest?: boolean;
@@ -28,9 +28,9 @@ export interface SettingsTabEntry {
   /** Optional Subtitle to show below label. */
   readonly subLabel?: string;
   /** Icon specification */
-  readonly icon?: string | JSX.Element;
+  readonly icon?: string | React.JSX.Element;
   /** Tooltip. Allows JSX|Element to support react-tooltip component */
-  readonly tooltip?: string | JSX.Element;
+  readonly tooltip?: string | React.JSX.Element;
   /** Allows Settings entry to be disabled */
   readonly isDisabled?: boolean | ConditionalBooleanValue;
 }

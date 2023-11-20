@@ -402,7 +402,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       });
   };
 
-  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): JSX.Element {
+  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): React.JSX.Element {
     const label = item.label;
     const checked = currentTimelineDuration === item.timelineDuration;
     const icon = checked ? <span className="icon icon-checkmark" /> : <span />;
@@ -415,7 +415,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   }
 
   private _renderSettings = () => {
-    const createMenuItemNodes = (close: () => void): JSX.Element[] => {
+    const createMenuItemNodes = (close: () => void): React.JSX.Element[] => {
 
       const { totalDuration } = this.state;
       let contextMenuItems: Array<TimelineMenuItemProps> = [];
@@ -432,7 +432,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         }
       }
 
-      const itemNodes: JSX.Element[] = [];
+      const itemNodes: React.JSX.Element[] = [];
       let keyIndex = 0;
       if (this.state.includeRepeat) {
         const checked = this.state.repeat;

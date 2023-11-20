@@ -80,7 +80,7 @@ export const withDragInteraction = <P extends {}, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.JSXElementConstructor<P> & C,
 ) => {
-  type Props = JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>;
+  type Props = React.JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>;
   return function WithDragInteraction(props: Props) {
     const { direction, onClick, onOpenPanel, ...otherProps } = props;
     const initialPosition = React.useRef<Point | undefined>(undefined);

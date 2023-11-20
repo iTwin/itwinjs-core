@@ -29,7 +29,7 @@ export interface LabeledToggleProps extends ToggleSwitchProps {
  * @deprecated in 3.0. Use ToggleSwitch from itwinui-react with `labelPosition="right"` instead
  */
 export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {  // eslint-disable-line deprecation/deprecation
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const { label, labelClassName, className, style, ...props } = this.props;
 
     return (

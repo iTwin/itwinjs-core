@@ -56,4 +56,4 @@ const ForwardRefTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
  * @public
  * @deprecated in 3.0. Use Textarea in itwinui-react instead
  */
-export const Textarea: (props: TextareaProps) => JSX.Element | null = ForwardRefTextarea;   // eslint-disable-line deprecation/deprecation
+export const Textarea: (props: TextareaProps) => React.JSX.Element | null = ForwardRefTextarea;   // eslint-disable-line deprecation/deprecation

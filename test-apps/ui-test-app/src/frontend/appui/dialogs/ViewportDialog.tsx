@@ -64,7 +64,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     }
   };
 
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
 
     /* Demo values */
     const width = 400;

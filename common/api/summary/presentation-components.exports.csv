@@ -49,11 +49,11 @@ beta;NavigationPropertyTargetEditor
 public;PresentationComponentsLoggerCategory
 beta;PresentationInfoTreeNodeItem 
 beta;PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition
-beta;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element
+beta;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): React_2.JSX.Element
 beta;PresentationInstanceFilterBuilderProps
 beta;PresentationInstanceFilterCondition
 beta;PresentationInstanceFilterConditionGroup
-beta;PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element
+beta;PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): React_2.JSX.Element
 beta;PresentationInstanceFilterDialogProps 
 beta;PresentationInstanceFilterInfo
 public;PresentationLabelsProvider 
@@ -71,9 +71,9 @@ beta;PresentationTreeNodeItem
 beta;PresentationTreeNodeItemFilteringInfo
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
-beta;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element
+beta;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): React_2.JSX.Element
 beta;PresentationTreeNodeRendererProps 
-beta;PresentationTreeRenderer(props: PresentationTreeRendererProps): JSX.Element
+beta;PresentationTreeRenderer(props: PresentationTreeRendererProps): React_2.JSX.Element
 beta;PresentationTreeRendererProps 
 public;PropertyDataProviderWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
