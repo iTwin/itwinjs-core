@@ -113,14 +113,16 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
     this._color = undefined;
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
   public static create(facetIndex: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail {
-    if (undefined === result)
-      return new TriangularFacetLocationDetail(facetIndex, detail);
-    result.invalidate(false); // detail might be owned by result!
+    if (!result)
+      result = new TriangularFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
-    if (undefined !== detail)
+    if (undefined !== detail && result._detail !== detail)
       result._detail.copyContentsFrom(detail);
     return result;
   }
@@ -247,12 +249,14 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
       this._detail.invalidate();
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
   public static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail {
-    if (undefined === result)
-      return new NonConvexFacetLocationDetail(facetIndex, edgeCount, detail);
-    result.invalidate(false); // detail might be owned by result!
+    if (!result)
+      result = new NonConvexFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
     result._edgeCount = edgeCount;
     if (undefined !== detail && result._detail !== detail)
@@ -362,11 +366,14 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
     this._barycentricCoordinates = undefined;
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
   public static override create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail {
-    if (undefined === result)
-      return new ConvexFacetLocationDetail(facetIndex, edgeCount, detail);
+    if (!result)
+      result = new ConvexFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     return super.create(facetIndex, edgeCount, detail, result);
   }
   /** Whether the facet is convex. */
