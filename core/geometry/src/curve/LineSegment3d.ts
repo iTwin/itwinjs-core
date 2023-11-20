@@ -234,7 +234,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     extendA: VariantCurveExtendParameter,
     segmentB: LineSegment3d,
     extendB: VariantCurveExtendParameter,
-    result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined {
+    result?: CurveLocationDetailPair,
+  ): CurveLocationDetailPair | undefined {
     const unboundedFractions = Vector2d.create();
     if (result === undefined)
       result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());

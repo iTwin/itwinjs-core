@@ -325,7 +325,7 @@ describe("PolygonOps", () => {
         const iB1 = Geometry.cyclic3dAxis(iB0 + 1);
         const iB2 = Geometry.cyclic3dAxis(iB0 + 2);
         const polygonB = GrowableXYZArray.create([triangleB[iB0], triangleB[iB1], triangleB[iB2]]);
-        const approach = PolygonOps.closestApproachOfPolygons(polygonA, polygonB);
+        const approach = PolygonOps.closestApproach(polygonA, polygonB);  // test assumes closest approaches at boundaries
         capturePolygonWithClosure(allGeometry, polygonA, x0, y0);
         capturePolygonWithClosure(allGeometry, polygonB, x0, y0);
         if (ck.testDefined(approach, "result from polygon approach") && approach) {

@@ -184,7 +184,7 @@ export class GrowableXYArray extends IndexedXYCollection {
       for (const p of points) this.pushXY(p.x, p.y);
     }
   }
-  /** Push points from variant sources.
+  /** Push copies of points from variant sources.
    * Valid inputs are:
    * * Point2d
    * * Point3d

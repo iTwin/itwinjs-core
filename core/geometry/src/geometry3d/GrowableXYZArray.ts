@@ -182,7 +182,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this.ensureCapacity(this._xyzInUse + points.length, false);
     for (const p of points) this.push(p);
   }
-  /** Push points from variant sources.
+  /** Push copies of points from variant sources.
    * Valid inputs are:
    * * Point2d
    * * Point3d

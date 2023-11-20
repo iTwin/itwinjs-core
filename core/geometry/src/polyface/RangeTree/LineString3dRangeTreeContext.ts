@@ -79,16 +79,8 @@ export class LineString3dRangeTreeContext {
     this._rangeTreeRoot.searchTopDown(handler);
     return handler.searchState.itemAtMinValue;
   }
-  /**
-   * Find a pair of points, one from each polyline in contextA and contextB, with the smallest distance between.
-   * @param contextA range tree context for first polyline
-   * @param contextB range tree context for second polyline
-   * @returns pair of CurveLocationDetails for the closest approach
-   */
-  public static searchForClosestApproach(
-    contextA: LineString3dRangeTreeContext,
-    contextB: LineString3dRangeTreeContext,
-  ): CurveLocationDetailPair | undefined {
+  /** Find a pair of points, one from each polyline in contextA and contextB, with the smallest distance between. */
+  public static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined {
     const handler = new TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach(contextA, contextB);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
@@ -104,7 +96,7 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
   public context: LineString3dRangeTreeContext;
   /** Evolving search state */
   public searchState: MinimumValueTester<CurveLocationDetail>;
-  /** Space point for closest point search */
+  /** Space point for the search */
   public spacePoint: Point3d;
 
   /**
@@ -139,7 +131,7 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
     if (segment) {
       const cld = segment.closestPoint(this.spacePoint, false);
       cld.fraction = this.context.lineString.segmentIndexAndLocalFractionToGlobalFraction(candidateIndex, cld.fraction);
-      cld.curve = undefined;
+      cld.curve = this.context.lineString;
       const d = this.spacePoint.distance(cld.point);
       this.context.numPointTest++;
       this.searchState.testAndSave(cld, d);
@@ -148,7 +140,7 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
 }
 
 /**
- * Helper class for searching for close approach(es) between linestrings.
+ * Helper class for searching for the closest approach between linestrings.
  * @internal
  */
 export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
@@ -191,7 +183,8 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
     if (cld !== undefined && this.searchState.isNewMinOrTrigger(cld.detailA.a)) {
       cld.detailA.fraction = this.contextA.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexA, cld.detailA.fraction);
       cld.detailB.fraction = this.contextB.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexB, cld.detailB.fraction);
-      cld.detailA.curve = cld.detailB.curve = undefined;
+      cld.detailA.curve = this.contextA.lineString;
+      cld.detailB.curve = this.contextB.lineString;
       this.searchState.testAndSave(cld, cld.detailA.a);
     }
   }
