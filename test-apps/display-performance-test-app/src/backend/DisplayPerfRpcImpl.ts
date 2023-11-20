@@ -179,7 +179,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       DisplayPerfRpcInterface.backendServer.close();
 
     if (DisplayPerfRpcInterface.chrome)
-      await DisplayPerfRpcInterface.chrome.kill();
+      DisplayPerfRpcInterface.chrome.kill();
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {

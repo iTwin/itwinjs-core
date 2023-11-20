@@ -56,8 +56,8 @@ describe("ExpandableBlock", () => {
       expect(screen.getByTitle("hello")).to.equal(screen.getByText("Test"));
     });
 
-    it("should render empty title if tooltip is not given and title is JSX.Element", () => {
-      const title = <span>JSX Title</span>; // title may be JSX.Element when passing a highlighted text
+    it("should render empty title if tooltip is not given and title is React.JSX.Element", () => {
+      const title = <span>JSX Title</span>; // title may be React.JSX.Element when passing a highlighted text
       render(
         <ExpandableBlock title={title} isExpanded={true} onClick={sinon.spy()}>
           <div>Hello</div>

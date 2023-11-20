@@ -24,7 +24,7 @@ export interface BadgeProps extends CommonProps {
  * @internal
  */
 export class Badge extends React.PureComponent<BadgeProps> {
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const iconSpec = IconSpecUtilities.createWebComponentIconSpec(this.props.svg);
     return (
       <div className={classnames("core-badge", this.props.className)} style={this.props.style}>

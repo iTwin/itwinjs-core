@@ -54,8 +54,8 @@ internal;DirectionHelpers
 internal;DisabledResizeHandles
 internal;DisabledResizeHandlesHelpers
 internal;Dock: React_2.NamedExoticComponent
-internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
-internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
+internal;DockedToolSetting(props: ToolSettingProps): React_2.JSX.Element
+internal;DockedToolSettings(props: DockedToolSettingsProps): React_2.JSX.Element
 internal;DockedToolSettingsHandle: React_2.NamedExoticComponent
 internal;DockedToolSettingsHandleProps 
 internal;DockedToolSettingsOverflow: React_2.MemoExoticComponent
@@ -80,7 +80,7 @@ internal;DragProvider: React_2.NamedExoticComponent
 internal;DragProviderProps
 internal;DragStartArgs
 internal;DropTargetState = TabDragDropTargetState | WidgetDragDropTargetState
-internal;Ellipsis(props: CommonProps): JSX.Element
+internal;Ellipsis(props: CommonProps): React_2.JSX.Element
 internal;eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean
 internal;EventEmitter
 internal;EventHandler = (...args: any[]) => void
@@ -90,9 +90,9 @@ beta;ExpandableItem
 deprecated;ExpandableItem 
 beta;ExpandableItemProps 
 deprecated;ExpandableItemProps 
-internal;FloatingTab(): JSX.Element
+internal;FloatingTab(): React_2.JSX.Element
 internal;FloatingTabLocation
-internal;FloatingWidget(props: FloatingWidgetProps): JSX.Element
+internal;FloatingWidget(props: FloatingWidgetProps): React_2.JSX.Element
 internal;floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetClearUserSizedAction
@@ -103,7 +103,7 @@ internal;FloatingWidgetIdContext: React_2.Context
 internal;FloatingWidgetLocation
 internal;FloatingWidgetNodeContext: React_2.Context
 internal;FloatingWidgetProps
-internal;FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element
+internal;FloatingWidgetProvider(props: FloatingWidgetProviderProps): React_2.JSX.Element
 internal;FloatingWidgetProviderProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle
@@ -245,7 +245,7 @@ internal;NestedStagePanelKey
 internal;NestedStagePanelsId
 internal;NestedStagePanelsManager
 internal;NestedStagePanelsManagerProps
-internal;NineZone(props: NineZoneProps): JSX.Element
+internal;NineZone(props: NineZoneProps): React_2.JSX.Element
 internal;NineZoneAction = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | FloatingWidgetSetUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React_2.Context
 internal;NineZoneDispatch = (action: NineZoneAction) => void
@@ -261,7 +261,7 @@ internal;NineZoneManagerProps
 internal;NineZoneNestedStagePanelsManager 
 internal;NineZoneNestedStagePanelsManagerProps 
 internal;NineZoneProps
-internal;NineZoneProvider(props: NineZoneProviderProps): JSX.Element
+internal;NineZoneProvider(props: NineZoneProviderProps): React_2.JSX.Element
 internal;NineZoneProviderProps 
 internal;NineZoneStagePanelManager 
 internal;NineZoneStagePanelManagerProps 
@@ -445,7 +445,7 @@ internal;ToolSettings
 internal;ToolSettingsDockAction
 internal;ToolSettingsDragStartAction
 internal;ToolSettingsNodeContext: React_2.Context
-internal;ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element
+internal;ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): React_2.JSX.Element
 internal;ToolSettingsOverflowPanelProps 
 internal;ToolSettingsProps 
 internal;ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState
@@ -534,7 +534,7 @@ internal;WidgetDropTargetState
 internal;WidgetIdContext: React_2.Context
 internal;WidgetLocation = PanelWidgetLocation | FloatingWidgetLocation | PopoutWidgetLocation
 internal;WidgetManagerProps
-internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
+internal;WidgetMenu(props: WidgetMenuProps): React_2.JSX.Element
 internal;WidgetMenuProps 
 internal;WidgetOverflow: React_2.NamedExoticComponent
 internal;WidgetOverflowContext: React_2.Context
@@ -542,9 +542,9 @@ internal;WidgetOverflowProps
 internal;WidgetPanel: React_2.NamedExoticComponent
 internal;WidgetPanelContext: React_2.Context
 internal;WidgetPanelContextArgs
-internal;WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element
+internal;WidgetPanelExpander({ side }: WidgetPanelExpanderProps): React_2.JSX.Element
 internal;WidgetPanelExpanderProps
-internal;WidgetPanelExpanders(): JSX.Element
+internal;WidgetPanelExpanders(): React_2.JSX.Element
 internal;WidgetPanelGrip: React_2.NamedExoticComponent
 internal;WidgetPanelProps
 internal;WidgetPanelProvider: React_2.NamedExoticComponent
@@ -571,7 +571,7 @@ internal;WidgetTabDragStartAction
 internal;WidgetTabDragStartArguments
 internal;WidgetTabPopoutAction
 internal;WidgetTabProps 
-internal;WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): JSX.Element
+internal;WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): React_2.JSX.Element
 internal;WidgetTabProviderProps 
 internal;WidgetTabs: React_2.NamedExoticComponent
 internal;WidgetTabsEntryContext: React_2.Context

@@ -147,6 +147,7 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(   // e
     );
 
     return (
+      // eslint-disable-next-line jsx-a11y/label-has-associated-control
       <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName} onBlur={handleBlur}>
         <input type="checkbox" ref={refs} className="core-toggle-input"
           checked={checked} disabled={props.disabled}
@@ -165,4 +166,4 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(   // e
  * @public
  * @deprecated in 3.0. Use ToggleSwitch in itwinui-react instead
  */
-export const Toggle: (props: ToggleProps) => JSX.Element | null = ForwardRefToggle;   // eslint-disable-line deprecation/deprecation
+export const Toggle: (props: ToggleProps) => React.JSX.Element | null = ForwardRefToggle;   // eslint-disable-line deprecation/deprecation

@@ -127,4 +127,4 @@ const ForwardRefSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
  * @public
  * @deprecated in 3.0. Use Select in itwinui-react instead
  */
-export const Select: (props: SelectProps) => JSX.Element | null = ForwardRefSelect;
+export const Select: (props: SelectProps) => React.JSX.Element | null = ForwardRefSelect;

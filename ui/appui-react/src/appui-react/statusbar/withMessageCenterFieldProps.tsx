@@ -18,7 +18,7 @@ export const withMessageCenterFieldProps = <P extends MessageCenterFieldProps, C
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type InjectedProps = Pick<MessageCenterFieldProps, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">;
-  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
+  type Props = React.JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
   return function WithMessageCenterFieldProps(props: Props) {
     const statusBarContext = React.useContext(StatusBarContext);
     const { toastTargetRef, ...args } = statusBarContext;

@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
@@ -42,7 +40,7 @@ import { ITreeNodeLoader } from '@itwin/components-react';
 import { ITreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
-import { MicroMemoize } from 'micro-memoize';
+import { Memoized } from 'micro-memoize';
 import { MutableTreeModel } from '@itwin/components-react';
 import { NavigationPropertyInfo } from '@itwin/presentation-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
@@ -127,7 +125,7 @@ export class ContentDataProvider implements IContentDataProvider {
     get displayType(): string;
     dispose(): void;
     getContent(pageOptions?: PageOptions): Promise<Content | undefined>;
-    getContentDescriptor: MicroMemoize.Memoized<() => Promise<Descriptor | undefined>>;
+    getContentDescriptor: Memoized<() => Promise<Descriptor | undefined>>;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>;
@@ -358,7 +356,7 @@ export class InstanceKeyValueRenderer implements IPropertyValueRenderer {
     // (undocumented)
     canRender(record: PropertyRecord): boolean;
     // (undocumented)
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React_2.JSX.Element;
 }
 
 // @public
@@ -439,7 +437,7 @@ export class NavigationPropertyTargetEditor extends React_2.PureComponent<Proper
     // (undocumented)
     get htmlElement(): HTMLDivElement | null;
     // @internal (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public
@@ -461,7 +459,7 @@ export interface PresentationInfoTreeNodeItem extends ImmediatelyLoadedTreeNodeI
 export type PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition;
 
 // @beta
-export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element;
+export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): React_2.JSX.Element;
 
 // @beta
 export interface PresentationInstanceFilterBuilderProps {
@@ -486,7 +484,7 @@ export interface PresentationInstanceFilterConditionGroup {
 }
 
 // @beta
-export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element;
+export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): React_2.JSX.Element;
 
 // @beta
 export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged" | "descriptor"> {
@@ -524,7 +522,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     dispose(): void;
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
-    protected getMemoizedData: MicroMemoize.Memoized<() => Promise<PropertyData>>;
+    protected getMemoizedData: Memoized<() => Promise<PropertyData>>;
     getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]>;
     // @deprecated
     get includeFieldsWithCompositeValues(): boolean;
@@ -558,7 +556,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     constructor(props: PresentationTableDataProviderProps);
     get filterExpression(): string | undefined;
     set filterExpression(value: string | undefined);
-    getColumns: MicroMemoize.Memoized<() => Promise<ColumnDescription[]>>;
+    getColumns: Memoized<() => Promise<ColumnDescription[]>>;
     protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined;
     getRow(rowIndex: number): Promise<RowItem>;
@@ -653,7 +651,7 @@ export interface PresentationTreeNodeLoaderResult {
 }
 
 // @beta
-export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element;
+export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): React_2.JSX.Element;
 
 // @beta
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
@@ -664,7 +662,7 @@ export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps
 }
 
 // @beta
-export function PresentationTreeRenderer(props: PresentationTreeRendererProps): JSX.Element;
+export function PresentationTreeRenderer(props: PresentationTreeRendererProps): React_2.JSX.Element;
 
 // @beta
 export interface PresentationTreeRendererProps extends TreeRendererProps {

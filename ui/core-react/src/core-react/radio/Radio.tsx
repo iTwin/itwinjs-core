@@ -22,7 +22,7 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
  * @deprecated in 3.0. Use Radio in itwinui-react instead
  */
 export class Radio extends React.PureComponent<RadioProps> {  // eslint-disable-line deprecation/deprecation
-  public override render(): JSX.Element {
+  public override render(): React.JSX.Element {
     const { label, disabled, status, className, style, inputStyle, inputClassName, type, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return (

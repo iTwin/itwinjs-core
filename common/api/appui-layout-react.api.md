@@ -44,7 +44,7 @@ export const AnimateDockedToolSettingsContext: React_2.Context<boolean>;
 // @internal
 export class AppButton extends React_2.PureComponent<AppButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -62,7 +62,7 @@ export const AutoCollapseUnpinnedPanelsContext: React_2.Context<boolean>;
 // @internal
 export class BackArrow extends React_2.PureComponent<BackArrowProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -74,7 +74,7 @@ export interface BackArrowProps extends CommonProps, NoChildrenProps {
 // @internal
 export class BackButton extends React_2.PureComponent<BackButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -90,7 +90,7 @@ export class Backstage extends React_2.PureComponent<BackstageProps> {
     // (undocumented)
     static readonly defaultProps: BackstageDefaultProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -99,7 +99,7 @@ export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
 // @internal
 export class BackstageItem extends React_2.PureComponent<BackstageItemProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -134,13 +134,13 @@ export interface BackstageProps extends CommonProps {
 // @internal
 export class BackstageSeparator extends React_2.PureComponent<CommonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class BackTarget extends React_2.PureComponent<BackTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -194,7 +194,7 @@ export const CenterContentNodeContext: React_2.Context<React_2.ReactNode>;
 // @internal
 export class Columns extends React_2.PureComponent<ColumnsProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -252,7 +252,7 @@ export const CursorTypeContext: React_2.Context<CursorType | undefined>;
 // @beta @deprecated
 export class Dialog extends React_2.PureComponent<DialogProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -315,10 +315,10 @@ export class DisabledResizeHandlesHelpers {
 export const Dock: React_2.NamedExoticComponent<object>;
 
 // @internal
-export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
+export function DockedToolSetting(props: ToolSettingProps): React_2.JSX.Element;
 
 // @internal
-export function DockedToolSettings(props: DockedToolSettingsProps): JSX.Element;
+export function DockedToolSettings(props: DockedToolSettingsProps): React_2.JSX.Element;
 
 // @internal
 export const DockedToolSettingsHandle: React_2.NamedExoticComponent<DockedToolSettingsHandleProps>;
@@ -399,7 +399,7 @@ export interface DraggedWidgetManagerProps {
 // @internal
 export class DragHandle extends React_2.PureComponent<DragHandleProps, DragHandleState> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     readonly state: DragHandleState;
 }
@@ -468,7 +468,7 @@ export interface DragStartArgs {
 export type DropTargetState = TabDragDropTargetState | WidgetDragDropTargetState;
 
 // @internal
-export function Ellipsis(props: CommonProps): JSX.Element;
+export function Ellipsis(props: CommonProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export function eqlOverflown(prev: readonly string[] | undefined, value: readonly string[]): boolean;
@@ -498,7 +498,7 @@ export type EventHandler = (...args: any[]) => void;
 // @internal
 export class ExpandableButton extends React_2.PureComponent<ExpandableButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -509,7 +509,7 @@ export interface ExpandableButtonProps extends CommonProps {
 // @beta @deprecated
 export class ExpandableItem extends React_2.PureComponent<ExpandableItemProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -521,7 +521,7 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 // @internal
-export function FloatingTab(): JSX.Element;
+export function FloatingTab(): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface FloatingTabLocation {
@@ -532,7 +532,7 @@ export interface FloatingTabLocation {
 }
 
 // @internal (undocumented)
-export function FloatingWidget(props: FloatingWidgetProps): JSX.Element;
+export function FloatingWidget(props: FloatingWidgetProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState;
@@ -597,7 +597,7 @@ export interface FloatingWidgetProps {
 }
 
 // @internal (undocumented)
-export function FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element;
+export function FloatingWidgetProvider(props: FloatingWidgetProviderProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface FloatingWidgetProviderProps {
@@ -684,7 +684,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
 // @internal @deprecated
 export class Footer extends React_2.PureComponent<FooterProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -704,7 +704,7 @@ export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -734,7 +734,7 @@ export interface FooterProps extends CommonProps {
 // @public @deprecated
 export class FooterSeparator extends React_2.PureComponent<FooterSeparatorProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @public @deprecated
@@ -834,13 +834,13 @@ export const getZoneIdFromCell: (cell: CellProps) => WidgetZoneId;
 // @alpha @deprecated
 export class Group extends React_2.PureComponent<GroupProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha @deprecated
 export class GroupColumn extends React_2.PureComponent<GroupColumnProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @alpha @deprecated
@@ -858,13 +858,13 @@ export interface GroupProps extends CommonProps, NoChildrenProps {
 // @internal
 export class GroupTool extends React_2.PureComponent<GroupToolProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class GroupToolExpander extends React_2.PureComponent<GroupToolExpanderProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1076,7 +1076,7 @@ export function isWindowDropTargetState(state: WidgetDragDropTargetState): state
 // @beta @deprecated
 export class Item extends React_2.PureComponent<ItemProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -1094,7 +1094,7 @@ export interface ItemProps extends CommonProps {
 // @internal
 export class Items extends React_2.PureComponent<ItemsProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1112,7 +1112,7 @@ export const MeasureContext: React_2.Context<() => Rectangle>;
 // @internal
 export class MergeTarget extends React_2.PureComponent<MergeTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1123,13 +1123,13 @@ export interface MergeTargetProps extends CommonProps {
 // @internal @deprecated
 export class Message extends React_2.PureComponent<StatusMessageProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class MessageButton extends React_2.PureComponent<MessageButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1141,13 +1141,13 @@ export interface MessageButtonProps extends CommonProps {
 // @internal
 export class MessageCenter extends React_2.PureComponent<MessageCenterProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class MessageCenterDialog extends React_2.PureComponent<MessageCenterDialogProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1163,7 +1163,7 @@ export interface MessageCenterDialogProps extends CommonProps {
 // @internal
 export class MessageCenterMessage extends React_2.PureComponent<MessageCenterMessageProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1184,7 +1184,7 @@ export interface MessageCenterProps extends FooterIndicatorProps {
 // @internal
 export class MessageCenterTab extends React_2.PureComponent<MessageCenterTabProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1197,7 +1197,7 @@ export interface MessageCenterTabProps extends CommonProps {
 // @internal
 export class MessageHyperlink extends React_2.PureComponent<MessageHyperlinkProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1209,7 +1209,7 @@ export interface MessageHyperlinkProps extends CommonProps {
 // @internal
 export class MessageLayout extends React_2.PureComponent<MessageLayoutProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1222,7 +1222,7 @@ export interface MessageLayoutProps extends CommonProps {
 // @internal
 export class MessageProgress extends React_2.PureComponent<ProgressProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1240,7 +1240,7 @@ export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
 // @internal @deprecated
 export class NestedGroup extends React_2.PureComponent<NestedGroupProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1281,7 +1281,7 @@ export interface NestedStagePanelsManagerProps {
 }
 
 // @internal (undocumented)
-export function NineZone(props: NineZoneProps): JSX.Element;
+export function NineZone(props: NineZoneProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export type NineZoneAction = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | FloatingWidgetSetUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
@@ -1436,7 +1436,7 @@ export interface NineZoneProps {
 }
 
 // @internal (undocumented)
-export function NineZoneProvider(props: NineZoneProviderProps): JSX.Element;
+export function NineZoneProvider(props: NineZoneProviderProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface NineZoneProviderProps extends NineZoneProps {
@@ -1561,7 +1561,7 @@ export class OrthogonalDirectionHelpers {
 // @internal
 export class Outline extends React_2.PureComponent<OutlineProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1572,7 +1572,7 @@ export interface OutlineProps extends CommonProps {
 // @internal
 export class Overflow extends React_2.PureComponent<OverflowProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -1585,7 +1585,7 @@ export class Panel extends React_2.PureComponent<PanelProps> {
     // @deprecated
     static get isPanelOpen(): boolean;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -1801,7 +1801,7 @@ export class PointerCaptor extends React_2.PureComponent<PointerCaptorProps> {
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -1923,7 +1923,7 @@ export class ResizeDirectionHelpers {
 // @internal
 export class ResizeGrip extends React_2.PureComponent<ResizeGripProps, ResizeGripState> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // (undocumented)
     readonly state: ResizeGripState;
 }
@@ -2160,19 +2160,19 @@ export function sideToCursorType(side: PanelSide): CursorType;
 // @internal
 export class Snap extends React_2.PureComponent<SnapProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal @deprecated
 export class SnapMode extends React_2.PureComponent<SnapModeProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class SnapModePanel extends React_2.PureComponent<SnapModePanelProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2207,13 +2207,13 @@ export class Splitter extends React_2.PureComponent<SplitterProps, SplitterState
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class SplitterPaneTarget extends React_2.PureComponent<MergeTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2226,7 +2226,7 @@ export interface SplitterProps extends CommonProps {
 // @internal
 export class SplitterTarget extends React_2.PureComponent<SplitterTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2240,7 +2240,7 @@ export class Stacked extends React_2.PureComponent<StackedProps> {
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2265,7 +2265,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
 // @internal
 export class StagePanel extends React_2.PureComponent<StagePanelProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2310,7 +2310,7 @@ export interface StagePanelProps extends CommonProps {
 // @internal
 export class StagePanels extends React_2.PureComponent<StagePanelsProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2355,7 +2355,7 @@ export interface StagePanelsProps extends CommonProps {
 // @internal
 export class StagePanelTarget extends React_2.PureComponent<StagePanelTargetProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2421,7 +2421,7 @@ export class Tab extends React_2.PureComponent<TabProps> {
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2449,7 +2449,7 @@ export interface TabDropTargetState {
 // @internal
 export class TabGroup extends React_2.PureComponent<TabGroupProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2522,7 +2522,7 @@ export interface TabProps extends CommonProps {
 // @internal
 export class TabSeparator extends React_2.PureComponent<TabSeparatorProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2570,19 +2570,19 @@ export const TabStateContext: React_2.Context<TabState>;
 // @internal
 export class Title extends React_2.PureComponent<TitleProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
 export class TitleBar extends React_2.PureComponent<TitleBarProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class TitleBarButton extends React_2.PureComponent<TitleBarButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2613,7 +2613,7 @@ export class Toast extends React_2.PureComponent<ToastProps, ToastState> {
     // (undocumented)
     static readonly defaultProps: ToastDefaultProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2633,13 +2633,13 @@ export type ToastStyle = Pick<React_2.CSSProperties, "width" | "height">;
 // @internal
 export class ToolAssistance extends React_2.PureComponent<ToolAssistanceProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class ToolAssistanceDialog extends React_2.PureComponent<ToolAssistanceDialogProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2652,7 +2652,7 @@ export interface ToolAssistanceDialogProps extends CommonProps {
 // @internal
 export class ToolAssistanceInstruction extends React_2.PureComponent<ToolAssistanceInstructionProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2665,7 +2665,7 @@ export interface ToolAssistanceInstructionProps extends CommonProps {
 // @internal
 export class ToolAssistanceItem extends React_2.PureComponent<ToolAssistanceItemProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2684,7 +2684,7 @@ export interface ToolAssistanceProps extends FooterIndicatorProps {
 // @internal
 export class ToolAssistanceSeparator extends React_2.PureComponent<ToolAssistanceSeparatorProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2700,7 +2700,7 @@ export class Toolbar extends React_2.PureComponent<ToolbarProps, ToolbarState> {
         panelAlignment: ToolbarPanelAlignment;
     };
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
     // @internal (undocumented)
     readonly state: {
         panels: null;
@@ -2710,7 +2710,7 @@ export class Toolbar extends React_2.PureComponent<ToolbarProps, ToolbarState> {
 // @internal
 export class ToolbarButton extends React_2.PureComponent<ToolbarButtonProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2728,7 +2728,7 @@ export const ToolbarDirectionContext: React_2.Context<Direction>;
 // @internal
 export class ToolbarIcon extends React_2.PureComponent<ToolbarIconProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2776,13 +2776,13 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 // @internal
 export class Tools extends React_2.PureComponent<ToolsProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
 export class ToolsArea extends React_2.PureComponent<ToolsAreaProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -2804,7 +2804,7 @@ export class ToolSettings extends React_2.PureComponent<ToolSettingsProps> {
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2825,7 +2825,7 @@ export interface ToolSettingsDragStartAction {
 export const ToolSettingsNodeContext: React_2.Context<React_2.ReactNode>;
 
 // @internal
-export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element;
+export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): React_2.JSX.Element;
 
 // @internal
 export interface ToolSettingsOverflowPanelProps extends CommonProps {
@@ -2863,7 +2863,7 @@ export const ToolSettingsStateContext: React_2.Context<ToolSettingsState>;
 // @internal
 export class ToolSettingsTab extends React_2.PureComponent<ToolSettingsTabProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2913,7 +2913,7 @@ export class Tooltip extends React_2.PureComponent<TooltipProps> {
     // (undocumented)
     static readonly defaultProps: TooltipDefaultProps;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -3118,7 +3118,7 @@ export const useResizeGrip: <T extends HTMLElement>() => [(instance: T | null) =
 // @beta @deprecated
 export class UserProfile extends React_2.PureComponent<UserProfileProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @beta @deprecated
@@ -3216,7 +3216,7 @@ export class WidgetContent extends React_2.PureComponent<WidgetContentProps> {
     // (undocumented)
     componentDidUpdate(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal (undocumented)
@@ -3328,7 +3328,7 @@ export interface WidgetManagerProps {
 }
 
 // @internal (undocumented)
-export function WidgetMenu(props: WidgetMenuProps): JSX.Element;
+export function WidgetMenu(props: WidgetMenuProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetMenuProps extends CommonProps {
@@ -3371,7 +3371,7 @@ export interface WidgetPanelContextArgs {
 }
 
 // @internal
-export function WidgetPanelExpander({ side }: WidgetPanelExpanderProps): JSX.Element;
+export function WidgetPanelExpander({ side }: WidgetPanelExpanderProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetPanelExpanderProps {
@@ -3380,7 +3380,7 @@ export interface WidgetPanelExpanderProps {
 }
 
 // @internal (undocumented)
-export function WidgetPanelExpanders(): JSX.Element;
+export function WidgetPanelExpanders(): React_2.JSX.Element;
 
 // @internal
 export const WidgetPanelGrip: React_2.NamedExoticComponent<CommonProps>;
@@ -3576,7 +3576,7 @@ export interface WidgetTabProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): JSX.Element;
+export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): React_2.JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
@@ -3658,7 +3658,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React_2.Compo
         getContainerBounds(): Rectangle;
         getComponentBounds(root: HTMLElement): Rectangle;
         componentDidMount(): void;
-        render(): JSX.Element;
+        render(): React_2.JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
@@ -3687,7 +3687,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React_2.Compo
         getContainerBounds(): Rectangle;
         getComponentBounds(root: HTMLElement): Rectangle;
         componentDidMount(): void;
-        render(): JSX.Element;
+        render(): React_2.JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
@@ -3720,7 +3720,7 @@ export interface WithContainInProps {
 }
 
 // @internal
-export const withDragInteraction: <P extends {}, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => JSX.Element;
+export const withDragInteraction: <P extends {}, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, P & WithDragInteractionProps>) => React_2.JSX.Element;
 
 // @internal
 export interface WithDragInteractionProps {
@@ -3732,7 +3732,7 @@ export interface WithDragInteractionProps {
 // @internal
 export class Zone extends React_2.PureComponent<ZoneProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
@@ -3793,7 +3793,7 @@ export interface ZoneProps extends CommonProps {
 // @internal
 export class Zones extends React_2.PureComponent<ZonesProps> {
     // (undocumented)
-    render(): JSX.Element;
+    render(): React_2.JSX.Element;
 }
 
 // @internal
