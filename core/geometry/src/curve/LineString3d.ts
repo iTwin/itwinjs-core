@@ -171,10 +171,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     result.addPoints(points);
     return result;
   }
-  /**
-   * Create a linestring, capturing the given GrowableXYZArray as the points.
-   * Point3d, Point2d, `[1,2,3]', array of any of those, or GrowableXYZArray
-   */
+  /** Create a linestring, capturing the given GrowableXYZArray as the points. */
   public static createCapture(points: GrowableXYZArray): LineString3d {
     return new LineString3d(points);
   }
@@ -198,7 +195,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
-   * Add points to the linestring.
+   * Add copies of points to the linestring.
    * Valid inputs are:
    * * a Point2d
    * * a point3d
@@ -581,27 +578,35 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
-   * Convert a segment index and local fraction to a global fraction.
+   * Convert a segment index and local fraction to a global linestring fraction.
    * @param index index of segment being evaluated
    * @param localFraction local fraction in [0,1] within the segment
+   * @param numSegment number N of segments in the linestring
    * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
    */
-  public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
-    const numSegment = this._points.length - 1;
+  public static mapLocalToGlobalFraction(index: number, localFraction: number, numSegment: number): number {
     if (numSegment < 1)
       return 0.0;
     return (index + localFraction) / numSegment;
   }
   /**
+   * Convert a segment index and local fraction to a global linestring fraction.
+   * @param index index of segment being evaluated
+   * @param localFraction local fraction in [0,1] within the segment
+   * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
+   */
+  public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
+    return LineString3d.mapLocalToGlobalFraction(index, localFraction, this._points.length - 1);
+  }
+  /**
    * Convert a global fraction to a segment index and local fraction.
    * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
    * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
+   * @returns segment index and local fraction
    */
-  public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): { index: number, fraction: number } {
-    const numSegment = this._points.length - 1;
+  public static mapGlobalToLocalFraction(globalFraction: number, numSegment: number): { index: number, fraction: number } {
     if (numSegment < 1)
       return { index: 0, fraction: 0.0 };
-
     const scaledGlobalFraction = globalFraction * numSegment;
     let segmentIndex: number;
     if (globalFraction < 0)
@@ -610,9 +615,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       segmentIndex = numSegment - 1;
     else  // globalFraction in [0,1]
       segmentIndex = Math.floor(scaledGlobalFraction);
-
-    const localFraction = scaledGlobalFraction - segmentIndex;
-    return { index: segmentIndex, fraction: localFraction };
+    return { index: segmentIndex, fraction: scaledGlobalFraction - segmentIndex };
+  }
+  /**
+   * Convert a global linestring fraction to a segment index and local fraction.
+   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
+   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
+   * @param numSegment number N of segments in the linestring
+   * @returns segment index and local fraction
+   */
+  public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): { index: number, fraction: number } {
+    return LineString3d.mapGlobalToLocalFraction(globalFraction, this._points.length - 1);
   }
   /** Return a frenet frame, using nearby points to estimate a plane. */
   public override fractionToFrenetFrame(fraction: number, result?: Transform): Transform {
