@@ -169,7 +169,7 @@ function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasC
       y: fpts[idx + 1],
       z: fpts[idx + 2],
       featureIndex: data[idx + 3],
-      colorIndex: (data[idx + 4] & 0x0000ffff) >>> 16,
+      colorIndex: (data[idx + 4] & 0x0000ffff),
     };
   } : (idx: number) => {
     const x = data[idx] & 0xffff;
