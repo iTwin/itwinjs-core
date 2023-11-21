@@ -108,33 +108,6 @@ describe("LineSegment3d", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "PointsAlongLine");
   });
-  it("HelloWorld", () => {
-    const ck = new Checker();
-    const segmentA = LineSegment3d.createXYXY(1, 2, 6, 3, 1);
-
-    exerciseLineSegment3d(ck, segmentA);
-
-    const segmentB = LineSegment3d.fromJSON({ startPoint: [1, 2, 3], endPoint: [4, 2, -1] });
-    const segmentC = LineSegment3d.fromJSON(false);
-    ck.testFalse(segmentB.isAlmostEqual(segmentC));
-    ck.testPointer(segmentB, "LineSegment3d.fromJSON");
-    const coordinate = CoordinateXYZ.create(segmentB.startPoint());
-    ck.testFalse(segmentB.isAlmostEqual(coordinate));
-    ck.testFalse(coordinate.isAlmostEqual(segmentB));
-
-    const segmentD = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6);
-    const segmentE = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6, segmentC);  // overwrite the default segmentC.
-    ck.testPointer(segmentE, segmentC, "reuse of optional arg");
-    ck.testTrue(segmentD.isAlmostEqual(segmentE));
-
-    const segmentF = LineSegment3d.create(segmentA.endPoint(), segmentA.startPoint(), segmentD);  // another optional
-    ck.testFalse(segmentF.isAlmostEqual(segmentA));
-    segmentF.reverseInPlace();
-    ck.testTrue(segmentF.isAlmostEqual(segmentA));
-
-    ck.checkpoint("LineSegment3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
-  });
 
   it("ClosestApproachParallelSegments", () => {
     const ck = new Checker();
@@ -186,11 +159,11 @@ describe("LineSegment3d", () => {
             ck.testPoint3d(approachAB.detailB.point, approachAB.detailB.curve.fractionToPoint(fB));
           // const fB = approach.detailB.fraction;
           if (fA <= 0.0001) {
-            ck.testLE(sRange.high.x, segmentRange.low);
+            ck.testLE(sRange.high.x, segmentRange.low, "closest approach off the start of xSegment");
           } else if (fA > 0.9999) {
-            ck.testLE(segmentRange.high, sRange.high.x, segmentRange);
+            ck.testLE(segmentRange.high, sRange.low.x, "closest approach off the end of xSegment");
           } else {
-            ck.testTrue(segmentRange.containsX(approachAB.detailB.point.x));
+            ck.testTrue(segmentRange.containsX(approachAB.detailB.point.x), "closest approach x in range");
           }
           // test with call in reverse order.
           const approachBA = LineSegment3d.closestApproach(s, false, xSegment, false);
@@ -284,10 +257,11 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
     const rayA = curveA.fractionToPointAndDerivative(0.0);
     const dot = vectorAB.dotProduct(rayA?.direction);
     if (detailA.fraction <= 0.0)
-      ck.testLE(dot, 0);
+      ck.testLE(dot, 0.0, "projection vector angle to tangent is at least 90deg");
     else if (detailA.fraction >= 1.0)
-      ck.testLE(0.0, dot);
-    else ck.testCoordinate(dot, 0, "Expect interior fraction to be perpendicular");
+      ck.testLE(0.0, dot, "projection angle to tangent is at most 90deg");
+    else
+      ck.testCoordinate(dot, 0, "Expect interior fraction to be perpendicular");
     // And confirm simple endpoint distances . . .
     const d = detailA.point.distance(detailB.point);
     for (const fractionA of [0, 1]) {

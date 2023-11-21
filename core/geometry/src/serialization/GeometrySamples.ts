@@ -2848,22 +2848,23 @@ export class Sample {
     return point0;
   }
   /**
-  * * Create a grid of lat-long points on a sphere.
-  * * If pole latitudes appear in the evaluation, a single point (not a circle) is evaluate.
-  * * circles at various latitudes proceed south to north.
-  * * if first and last angles of longitudeSweep match, that meridian is not duplicated.
-  * * longitudes can wrap freely
-   * @param transform
-   * @param numLongitude number of longitude steps
-   * @param numLatitude number of latitude steps (poles count if they are in the sweeps)
-   * @param longitudeSweep angle range for longitudes
+  * Create a grid of lat-long points on a sphere.
+  * * If pole latitudes appear in the evaluation, a single point (not a circle) is evaluated.
+  * * Circles at various latitudes proceed south to north.
+  * * If first and last angles of longitudeSweep match, that meridian is not duplicated.
+  * * Longitudes can wrap freely.
+   * @param transform local to world
+   * @param numLatitudeStep number of latitude steps (poles count if they are in the sweeps)
+   * @param numLongitudeStep number of longitude steps
    * @param latitudeSweep angle range for latitudes
+   * @param longitudeSweep angle range for longitudes
    */
-  public static createGridPointsOnEllipsoid(transform: Transform,
+  public static createGridPointsOnEllipsoid(
+    transform: Transform,
     numLatitudeStep: number,
     numLongitudeStep: number,
-    longitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
     latitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(-90, 90),
+    longitudeSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
   ): Point3d[] {
     const points: Point3d[] = [];
     const numJ = numLatitudeStep + 1;

@@ -314,6 +314,14 @@ describe("PolygonOps", () => {
     const expectedDistance = Math.sqrt(0.5);
     const triangleA = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)];
     const triangleB = [Point3d.create(1, 1, -1), Point3d.create(1, 1, 3), Point3d.create(4, 1, 0)];
+
+    // lambda to draw polygon and singleton points at start/end
+    const capturePolygonWithClosure = (points: GrowableXYZArray, z0: number = 0) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0, z0);
+      if (points.length > 1)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [points.getPoint3dAtUncheckedPointIndex(0), points.getPoint3dAtUncheckedPointIndex(points.length - 1)], x0, y0, z0);
+    };
+
     // closest approach is from mid edge1 of triangle A to .25 on edge 0 of triangle B.
     // do closest point with all rotations ...
     for (const iA0 of [0, 1, 2]) {
@@ -325,9 +333,9 @@ describe("PolygonOps", () => {
         const iB1 = Geometry.cyclic3dAxis(iB0 + 1);
         const iB2 = Geometry.cyclic3dAxis(iB0 + 2);
         const polygonB = GrowableXYZArray.create([triangleB[iB0], triangleB[iB1], triangleB[iB2]]);
-        const approach = PolygonOps.closestApproach(polygonA, polygonB);  // test assumes closest approaches at boundaries
-        capturePolygonWithClosure(allGeometry, polygonA, x0, y0);
-        capturePolygonWithClosure(allGeometry, polygonB, x0, y0);
+        const approach = PolygonOps.closestApproach(polygonA, polygonB);  // this test assumes closest approaches at boundaries
+        capturePolygonWithClosure(polygonA);
+        capturePolygonWithClosure(polygonB);
         if (ck.testDefined(approach, "result from polygon approach") && approach) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.dataA.point, approach.dataB.point], x0, y0);
           ck.testCoordinate(expectedDistance, approach.dataA.point.distance(approach.dataB.point));
@@ -344,8 +352,3 @@ describe("PolygonOps", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-function capturePolygonWithClosure(allGeometry: GeometryQuery[], points: GrowableXYZArray, x0: number, y0: number, z0: number = 0) {
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0, z0);
-  if (points.length > 1)
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [points.getPoint3dAtUncheckedPointIndex(0), points.getPoint3dAtUncheckedPointIndex(points.length - 1)], x0, y0, z0);
-}
