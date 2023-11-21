@@ -571,71 +571,70 @@ describe.only("VertexTableSplitter", () => {
           { x: 4, color: 0, feature: 1 },
         ]);
       });
-
-      it("produces rectangular vertex tables", () => {
-        setMaxTextureSize(6);
-
-        const expectDimensions = (p: PointStringParams, w: number, h: number) => {
-          expect(p.vertices.width).to.equal(w);
-          expect(p.vertices.height).to.equal(h);
-        };
-
-        const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
-        const featureTable = makePackedFeatureTable("0x2", "0x20", "0x200", "0x2000");
-        const points = [
-          { x: 0, color: 0, feature: 0 },
-          { x: 1, color: 1, feature: 0 },
-
-          { x: 2, color: 2, feature: 1 },
-
-          { x: 3, color: 1, feature: 2 },
-          { x: 4, color: 1, feature: 2 },
-          { x: 5, color: 1, feature: 2 },
-
-          { x: 6, color: 2, feature: 3 },
-          { x: 7, color: 0, feature: 3 },
-          { x: 8, color: 2, feature: 3 },
-        ];
-
-        const params = makePointStringParams(points, colors, unquantized);
-        expectPointStrings(params, colors, points);
-
-        const split = splitPointStringParams({
-          params, featureTable, maxDimension: 6,
-          computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
-        });
-        expect(split.size).to.equal(4);
-
-        const p1 = split.get(0x2)!;
-        expectDimensions(p1, 3, 3);
-        expectPointStrings(p1, [ ColorDef.red, ColorDef.green ], [
-          { x: 0, color: 0, feature: 0 },
-          { x: 1, color: 1, feature: 0 },
-        ]);
-
-        const p2 = split.get(0x20)!;
-        expectDimensions(p2, 3, 1);
-        expectPointStrings(p2, ColorDef.blue, [{ x: 2, color: 0, feature: 1 }]);
-
-        const p3 = split.get(0x200)!;
-        expectDimensions(p3, 3, 3);
-        expectPointStrings(p3, ColorDef.green, [
-          { x: 3, color: 0, feature: 2 },
-          { x: 4, color: 0, feature: 2 },
-          { x: 5, color: 0, feature: 2 },
-        ]);
-
-        const p4 = split.get(0x2000)!;
-        expectDimensions(p4, 6, 2);
-        expectPointStrings(p4, [ColorDef.blue, ColorDef.red], [
-          { x: 6, color: 0, feature: 3 },
-          { x: 7, color: 1, feature: 3 },
-          { x: 8, color: 0, feature: 3 },
-        ]);
-      });
     });
   }
 
+  it("produces rectangular vertex tables", () => {
+    setMaxTextureSize(6);
+
+    const expectDimensions = (p: PointStringParams, w: number, h: number) => {
+      expect(p.vertices.width).to.equal(w);
+      expect(p.vertices.height).to.equal(h);
+    };
+
+    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+    const featureTable = makePackedFeatureTable("0x2", "0x20", "0x200", "0x2000");
+    const points = [
+      { x: 0, color: 0, feature: 0 },
+      { x: 1, color: 1, feature: 0 },
+
+      { x: 2, color: 2, feature: 1 },
+
+      { x: 3, color: 1, feature: 2 },
+      { x: 4, color: 1, feature: 2 },
+      { x: 5, color: 1, feature: 2 },
+
+      { x: 6, color: 2, feature: 3 },
+      { x: 7, color: 0, feature: 3 },
+      { x: 8, color: 2, feature: 3 },
+    ];
+
+    const params = makePointStringParams(points, colors, false);
+    expectPointStrings(params, colors, points);
+
+    const split = splitPointStringParams({
+      params, featureTable, maxDimension: 6,
+      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+    });
+    expect(split.size).to.equal(4);
+
+    const p1 = split.get(0x2)!;
+    expectDimensions(p1, 3, 3);
+    expectPointStrings(p1, [ ColorDef.red, ColorDef.green ], [
+      { x: 0, color: 0, feature: 0 },
+      { x: 1, color: 1, feature: 0 },
+    ]);
+
+    const p2 = split.get(0x20)!;
+    expectDimensions(p2, 3, 1);
+    expectPointStrings(p2, ColorDef.blue, [{ x: 2, color: 0, feature: 1 }]);
+
+    const p3 = split.get(0x200)!;
+    expectDimensions(p3, 3, 3);
+    expectPointStrings(p3, ColorDef.green, [
+      { x: 3, color: 0, feature: 2 },
+      { x: 4, color: 0, feature: 2 },
+      { x: 5, color: 0, feature: 2 },
+    ]);
+
+    const p4 = split.get(0x2000)!;
+    expectDimensions(p4, 6, 2);
+    expectPointStrings(p4, [ColorDef.blue, ColorDef.red], [
+      { x: 6, color: 0, feature: 3 },
+      { x: 7, color: 1, feature: 3 },
+      { x: 8, color: 0, feature: 3 },
+    ]);
+  });
   function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
     let colors: ColorDef | ColorDef[] = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
