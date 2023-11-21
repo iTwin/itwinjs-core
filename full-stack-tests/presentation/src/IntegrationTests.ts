@@ -24,6 +24,8 @@ import {
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { getOutputRoot } from "./Utils";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -217,12 +219,13 @@ async function initializePresentation(props: PresentationInitProps) {
     return;
 
   // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   await IModelHost.startup(props.backendHostProps);
   PresentationBackend.initialize(props.backendProps);
+  ECSchemaRpcImpl.register();
 
   // init frontend
   await props.frontendApp.startup(props.frontendAppOptions);
