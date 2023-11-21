@@ -336,8 +336,7 @@ class VertexTableSplitter {
       extractFeatureIndex = () => {
         return vertexBytes[3]
           | (vertexBytes[7] << 8)
-          | (vertexBytes[11] << 16)
-          | (vertexBytes[15] << 24);
+          | (vertexBytes[11] << 16);
       };
     } else {
       extractFeatureIndex = () => vertex[2] & 0x00ffffff;
