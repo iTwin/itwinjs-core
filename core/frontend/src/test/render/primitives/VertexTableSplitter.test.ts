@@ -469,7 +469,7 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
     expectPolyline(params.polylines, expected.polylines!);
 }
 
-describe.only("VertexTableSplitter", () => {
+describe("VertexTableSplitter", () => {
   class MockSystem extends MockRender.System {
     public static maxTextureSize = 2048;
     public override get maxTextureSize() { return MockSystem.maxTextureSize; }
