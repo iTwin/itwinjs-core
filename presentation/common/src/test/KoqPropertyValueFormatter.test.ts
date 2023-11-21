@@ -1,11 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import {
-  KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaItemUnitProps, SchemaProps,
+  KindOfQuantityProps,
+  PhenomenonProps,
+  Schema,
+  SchemaContext,
+  SchemaItemFormatProps,
+  SchemaItemType,
+  schemaItemTypeToString,
+  SchemaItemUnitProps,
+  SchemaProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
@@ -16,7 +24,12 @@ describe("KoqPropertyValueFormatter", () => {
   beforeEach(async () => {
     const schemaContext = new SchemaContext();
     await Schema.fromJson(schemaProps, schemaContext);
-    formatter = new KoqPropertyValueFormatter(schemaContext);
+    formatter = new KoqPropertyValueFormatter(schemaContext, {
+      [phenomenon.name!]: {
+        unitSystems: ["usSurvey"],
+        format: usSurveyFormat,
+      },
+    });
   });
 
   describe("getFormatterSpec", () => {
@@ -115,6 +128,14 @@ describe("KoqPropertyValueFormatter", () => {
     it("formats value using 'UsSurvey' system", async () => {
       const formatted = await formatter.format(1.5, {
         koqName: "TestSchema:TestKOQ",
+        unitSystem: "usSurvey",
+      });
+      expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
+    });
+
+    it("formats value format in default formats map", async () => {
+      const formatted = await formatter.format(1.5, {
+        koqName: "TestSchema:TestKOQOnlyMetric",
         unitSystem: "usSurvey",
       });
       expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
