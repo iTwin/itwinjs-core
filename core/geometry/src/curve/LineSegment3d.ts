@@ -207,6 +207,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param spacePoint point in space
    * @param extend if false, only return points within the bounded line segment. If true, allow the point to be on
    * the unbounded line that contains the bounded segment.
+   * @param result optional pre-allocated object to populate and return
+   * @returns detail, with `a` field set to the distance from `spacePoint` to the closest point
    */
   public override closestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
@@ -228,6 +230,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param segmentB second line segment
    * @param extendB how to extend segmentB forward/backward
    * @param result optional pre-allocated object to populate and return
+   * @returns pair of details, one per segment, each with `a` field set to the closest approach distance
    */
   public static closestApproach(
     segmentA: LineSegment3d,
