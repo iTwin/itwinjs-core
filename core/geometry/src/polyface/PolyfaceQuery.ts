@@ -413,7 +413,22 @@ export class PolyfaceQuery {
     const inertiaProducts = PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
-
+  /** Determine whether all facets are convex.
+   * @param source mesh to examine
+   */
+  public static areFacetsConvex(source: Polyface | PolyfaceVisitor): boolean {
+    if (source instanceof Polyface)
+      return this.areFacetsConvex(source.createVisitor(0));
+    source.setNumWrap(0);
+    source.reset();
+    while (source.moveToNextFacet()) {
+      if (source.pointCount > 3) {
+        if (!PolygonOps.isConvex(source.point))
+          return false;
+      }
+    }
+    return true;
+  }
   /**
    * Test for convex volume by dihedral angle tests on all edges.
    * * This tests if all dihedral angles are positive.
@@ -430,7 +445,6 @@ export class PolyfaceQuery {
   public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
-
   /**
   * Compute a number summarizing the dihedral angles in the mesh.
   * @see [[isConvexByDihedralAngleCount]] for comments about ignoreBoundaries===true when there are multiple connected components.
