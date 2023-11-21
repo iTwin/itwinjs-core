@@ -276,12 +276,7 @@ export class SelectionManager implements ISelectionProvider {
    * @public
    */
   public async getHiliteSet(imodel: IModelConnection): Promise<HiliteSet> {
-    let provider = this._hiliteSetProviders.get(imodel);
-    if (!provider) {
-      provider = HiliteSetProvider.create({ imodel });
-      this._hiliteSetProviders.set(imodel, provider);
-    }
-    return provider.getHiliteSet(this.getSelection(imodel));
+    return this.getHiliteSetProvider(imodel).getHiliteSet(this.getSelection(imodel));
   }
 
   /**
@@ -289,12 +284,16 @@ export class SelectionManager implements ISelectionProvider {
    * @public
    */
   public getHiliteSetIterator(imodel: IModelConnection) {
+    return this.getHiliteSetProvider(imodel).getHiliteSetIterator(this.getSelection(imodel));
+  }
+
+  private getHiliteSetProvider(imodel: IModelConnection) {
     let provider = this._hiliteSetProviders.get(imodel);
     if (!provider) {
       provider = HiliteSetProvider.create({ imodel });
       this._hiliteSetProviders.set(imodel, provider);
     }
-    return provider.getHiliteSetIterator(this.getSelection(imodel));
+    return provider;
   }
 }
 
