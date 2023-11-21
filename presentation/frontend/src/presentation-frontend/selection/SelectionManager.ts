@@ -283,6 +283,19 @@ export class SelectionManager implements ISelectionProvider {
     }
     return provider.getHiliteSet(this.getSelection(imodel));
   }
+
+  /**
+   * Get the current hilite set iterator for the specified imodel.
+   * @public
+   */
+  public getHiliteSetIterator(imodel: IModelConnection) {
+    let provider = this._hiliteSetProviders.get(imodel);
+    if (!provider) {
+      provider = HiliteSetProvider.create({ imodel });
+      this._hiliteSetProviders.set(imodel, provider);
+    }
+    return provider.getHiliteSetIterator(this.getSelection(imodel));
+  }
 }
 
 /** @internal */

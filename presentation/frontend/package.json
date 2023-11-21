@@ -40,6 +40,10 @@
     "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
+  "dependencies": {
+    "rxjs": "^7.8.1",
+    "rxjs-for-await": "^1.0.0"
+  },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.3.0-dev.28",
     "@itwin/core-common": "workspace:^4.3.0-dev.28",
