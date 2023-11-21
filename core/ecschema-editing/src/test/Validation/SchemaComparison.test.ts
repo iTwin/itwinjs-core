@@ -238,13 +238,13 @@ describe("Schema comparison tests for comparing schemas with different names", (
             baseClass: "SchemaA.testBaseClass",
           },
         },
-        
-      }, contextA)
+
+      }, contextA);
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "SchemaA.testBaseClass");
       expect(foundDiag).to.equal(false);
-    })
+    });
   });
 
   /**
