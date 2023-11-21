@@ -1463,7 +1463,8 @@ export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
     clone(): ConvexFacetLocationDetail;
     copyContentsFrom(other: ConvexFacetLocationDetail): void;
-    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail;
+    static create(facetIndex?: number, edgeCount?: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail;
+    static createCapture(facetIndex: number, edgeCount: number, detail: PolygonLocationDetail): ConvexFacetLocationDetail;
     getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number[] | undefined;
     getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance?: number): number | undefined;
     getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance?: number): Vector3d | undefined;
@@ -2063,6 +2064,13 @@ export interface FacetLocationDetail {
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
     get point(): Point3d;
+}
+
+// @public
+export class FacetLocationDetailPair {
+    static create(detailA: FacetLocationDetail, detailB: FacetLocationDetail): FacetLocationDetailPair;
+    detailA: FacetLocationDetail;
+    detailB: FacetLocationDetail;
 }
 
 // @public
@@ -3406,6 +3414,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     computeUVFromXYZTransform(transform: Transform): void;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    static convertLocalToGlobalDetail(detail: CurveLocationDetail, segmentIndex: number, numSegment: number, parent?: LineString3d, child?: CurveLocationDetail): CurveLocationDetail;
     static create(...points: any[]): LineString3d;
     static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[];
     static createCapture(points: GrowableXYZArray): LineString3d;
@@ -3455,6 +3464,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     static mapLocalToGlobalFraction(index: number, localFraction: number, numSegment: number): number;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
     get normalIndices(): GrowableFloat64Array | undefined;
+    numEdges(): number;
     numPoints(): number;
     get packedDerivatives(): GrowableXYZArray | undefined;
     get packedPoints(): GrowableXYZArray;
@@ -3947,7 +3957,8 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
         edgeParam: number;
     };
     copyContentsFrom(other: NonConvexFacetLocationDetail): void;
-    static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail;
+    static create(facetIndex?: number, edgeCount?: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail;
+    static createCapture(facetIndex: number, edgeCount: number, detail: PolygonLocationDetail): NonConvexFacetLocationDetail;
     // (undocumented)
     protected _detail: PolygonLocationDetail;
     get edgeCount(): number;
@@ -4919,7 +4930,7 @@ export class PolyfaceRangeTreeContext {
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
-    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean): PolygonLocationDetailPair<number> | undefined;
+    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean): FacetLocationDetailPair | undefined;
     searchForClosestPoint(spacePoint: Point3d, searchFacetInterior?: boolean): FacetLocationDetail | undefined;
     visitor: PolyfaceVisitor;
 }
@@ -5611,7 +5622,7 @@ export class Sample {
     static createFractalLMildConcavePatter(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalLReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
-    static createGridPointsOnEllipsoid(transform: Transform, numLatitudeStep: number, numLongitudeStep: number, longitudeSweep?: AngleSweep, latitudeSweep?: AngleSweep): Point3d[];
+    static createGridPointsOnEllipsoid(transform: Transform, numLatitudeStep: number, numLongitudeStep: number, latitudeSweep?: AngleSweep, longitudeSweep?: AngleSweep): Point3d[];
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
     static createHelixPoints(completeTurns: number, numPoints: number, placement?: Transform): Point3d[];
@@ -6227,7 +6238,8 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
         edgeParam: number;
     };
     copyContentsFrom(other: TriangularFacetLocationDetail): void;
-    static create(facetIndex: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail;
+    static create(facetIndex?: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail;
+    static createCapture(facetIndex: number, detail: TriangleLocationDetail): TriangularFacetLocationDetail;
     get edgeCount(): number;
     get facetIndex(): number;
     getBarycentricCoordinates(): number[];
@@ -6314,10 +6326,10 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
     contextA: PolyfaceRangeTreeContext;
     contextB: PolyfaceRangeTreeContext;
     getCurrentDistance(): number;
-    getResult(): PolygonLocationDetailPair | undefined;
+    getResult(): FacetLocationDetailPair | undefined;
     processAppDataPair(indexA: number, indexB: number): void;
     searchFacetInterior: boolean;
-    searchState: MinimumValueTester<PolygonLocationDetailPair>;
+    searchState: MinimumValueTester<FacetLocationDetailPair>;
 }
 
 // @internal

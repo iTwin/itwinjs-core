@@ -122,6 +122,7 @@ public;FacetFaceData
 public;FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean
 public;FacetIntersectOptions
 public;FacetLocationDetail
+public;FacetLocationDetailPair
 public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
