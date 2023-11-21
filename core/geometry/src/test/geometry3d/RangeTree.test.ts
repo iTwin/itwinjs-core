@@ -25,7 +25,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // Clone and shift the range ...
-// shift by dx
+// shift by dx and dy
 // both low and high z are at dz (ignores input range z)
 function makeRangeForOutput(range: Range3d, dx: number, dy: number, dz: number): Range3d {
   const x0 = range.xLow + dx;
@@ -33,7 +33,6 @@ function makeRangeForOutput(range: Range3d, dx: number, dy: number, dz: number):
   const x1 = range.xHigh + dx;
   const y1 = range.yHigh + dy;
   return Range3d.createXYZXYZ(x0, y0, dz, x1, y1, dz);
-
 }
 class ClosestPointOnCurvesHandler extends SingleTreeSearchHandler<CurvePrimitive>{
   public spacePoint: Point3d;
@@ -136,28 +135,24 @@ class ClosestApproachBetweenPointClustersHandler extends TwoTreeSearchHandler<Po
     return new ClosestApproachBetweenPointClustersHandler(saveRanges);
   }
   public isRangePairActive(rangeA: Range3d, rangeB: Range3d): boolean {
-    // const jRangeA = rangeA.toJSON();
-    // const jRangeB = rangeB.toJSON();
     this.numRangeTest++;
     const b = rangeA.distanceToRange(rangeB) < this.minDistance;
-    // eslint-disable-next-line no-console
-    // console.log({ b, jRangeA, jRangeB });
+    // const jRangeA = rangeA.toJSON();
+    // const jRangeB = rangeB.toJSON();
+    // GeometryCoreTestIO.consoleLog({ b, jRangeA, jRangeB });
     return b;
   }
   public override processAppDataPair(pointA: Point3d, pointB: Point3d): void {
-
     this.numCurveTest++;
     const d = pointA.distance(pointB);
-    // eslint-disable-next-line no-console
-    // console.log({ pointA, pointB, d });
+    // GeometryCoreTestIO.consoleLog({ pointA, pointB, d });
     if (d < this.minDistance) {
       this.minDistance = d;
       this.closestPointInA = pointA.clone();
       this.closestPointInB = pointB.clone();
       if (this.acceptedPairs !== undefined)
         this.acceptedPairs.push([pointA.clone(), pointB.clone()]);
-      // eslint-disable-next-line no-console
-      // console.log({ minDistance: d });
+      // GeometryCoreTestIO.consoleLog({ minDistance: d });
     } else {
       if (this.rejectedPairs !== undefined)
         this.rejectedPairs.push([pointA.clone(), pointB.clone()]);
@@ -214,7 +209,6 @@ describe("IndexedRangeHeap", () => {
     }
     const numQuadraticTests = lines.length * handlerB.numCases;
 
-    // eslint-disable-next-line no-console
     ck.show({
       numCases: handlerB.numCases,
       numRangeTest: handlerB.numRangeTest,
@@ -245,8 +239,8 @@ describe("IndexedRangeHeap", () => {
               0, 0, 3, 0,
             ),
             6, 8,
-            AngleSweep.createStartEndDegrees(-30, 30),
             AngleSweep.createStartEndDegrees(-40, 60),
+            AngleSweep.createStartEndDegrees(-30, 30),
           );
           // some
           // uz = 0 makes a patch of sphere somewhat above, to the right, and facing back at the one for pointsA.
@@ -261,8 +255,8 @@ describe("IndexedRangeHeap", () => {
               -uz, 0, 2, 3 + 1.3 * uz,
             ),
             pointBFactor * 5, pointBFactor * 7,
-            AngleSweep.createStartEndDegrees(-75, 120),
             AngleSweep.createStartEndDegrees(-40, 80),
+            AngleSweep.createStartEndDegrees(-75, 120),
           );
 
           const treeA = RangeTreeOps.createByIndexSplits<Point3d>(
@@ -335,8 +329,8 @@ describe("IndexedRangeHeap", () => {
         0, 0, 3, 0,
       ),
       36, 52,
-      AngleSweep.createStartEndDegrees(-30, 195),
       AngleSweep.createStartEndDegrees(-40, 60),
+      AngleSweep.createStartEndDegrees(-30, 195),
     );
 
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
@@ -517,7 +511,7 @@ describe("IndexedRangeHeap", () => {
     const approach = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB);
     if (approach !== undefined) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        [approach.dataA.point, approach.dataB.point], x0, y0, z0);
+        [approach.detailA.point, approach.detailB.point], x0, y0, z0);
     }
     const numFacetA = polyfaceA.facetCount;
     const numFacetB = polyfaceB.facetCount;
