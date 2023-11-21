@@ -132,9 +132,8 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
       const cld = segment.closestPoint(this.spacePoint, false);
       cld.fraction = this.context.lineString.segmentIndexAndLocalFractionToGlobalFraction(candidateIndex, cld.fraction);
       cld.curve = this.context.lineString;
-      const d = this.spacePoint.distance(cld.point);
       this.context.numPointTest++;
-      this.searchState.testAndSave(cld, d);
+      this.searchState.testAndSave(cld, cld.a);
     }
   }
 }
@@ -180,7 +179,7 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
     const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
       this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
     const cld = LineSegment3d.closestApproach(segA, false, segB, false);
-    if (cld !== undefined && this.searchState.isNewMinOrTrigger(cld.detailA.a)) {
+    if (cld && this.searchState.isNewMinOrTrigger(cld.detailA.a)) {
       cld.detailA.fraction = this.contextA.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexA, cld.detailA.fraction);
       cld.detailB.fraction = this.contextB.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexB, cld.detailB.fraction);
       cld.detailA.curve = this.contextA.lineString;
