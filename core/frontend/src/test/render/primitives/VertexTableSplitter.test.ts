@@ -112,7 +112,32 @@ function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unqu
 }
 
 function getVertexTableData(vertexTable: VertexTable, numExtraRgba: number): Uint32Array {
-  return new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+  let data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+  if (!vertexTable.usesUnquantizedPositions)
+    return data;
+
+  // Unquantized data is transposed for more efficient access on GPU.
+  data = data.slice();
+  const bytes = new Uint8Array(data.buffer);
+  const swapBytes = (u32Idx: number, i0: number, i1: number) => {
+    const u8Idx = u32Idx * 4;
+    const tmp = bytes[u8Idx + i0];
+    bytes[u8Idx + i0] = bytes[u8Idx + i1];
+    bytes[u8Idx + i1] = tmp;
+  };
+
+  for (let i = 0; i < vertexTable.numVertices; i++) {
+    const idx = i * vertexTable.numRgbaPerVertex;
+
+    swapBytes(idx, 1, 4);
+    swapBytes(idx, 2, 8);
+    swapBytes(idx, 3, 12);
+    swapBytes(idx, 6, 9);
+    swapBytes(idx, 7, 13);
+    swapBytes(idx, 11, 14);
+  }
+
+  return data;
 }
 
 function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[]): void {
@@ -136,12 +161,13 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
 function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasColorIndex = true): void {
   const data = getVertexTableData(vertexTable, 0);
 
+  const fpts = new Float32Array(data.buffer);
   const getVertex = vertexTable.usesUnquantizedPositions ? (idx: number) => {
-    const x = data[idx];
+    const x = fpts[idx];
     return {
       x,
-      y: data[idx + 1],
-      z: data[idx + 2],
+      y: fpts[idx + 1],
+      z: fpts[idx + 2],
       featureIndex: data[idx + 3],
       colorIndex: (data[idx + 4] & 0x0000ffff) >>> 16,
     };
