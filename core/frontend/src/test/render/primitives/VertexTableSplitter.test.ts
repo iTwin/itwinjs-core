@@ -182,7 +182,6 @@ function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasC
     };
   };
 
-
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
     const vert = getVertex(idx);
