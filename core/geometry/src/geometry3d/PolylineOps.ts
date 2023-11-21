@@ -336,14 +336,11 @@ export class PolylineOps {
           if (d < dMin) {
             const childDetailA = result?.detailA.childDetail; // save and reuse
             const childDetailB = result?.detailB.childDetail;
-            result = this._workLocalDetailPair.clone(result);
-            result.detailA.childDetail = result.detailA.clone(childDetailA);  // local to segmentA
-            result.detailA.childDetail.a = indexA;
-            result.detailB.childDetail = result.detailB.clone(childDetailB);  // local to segmentB
-            result.detailB.childDetail.a = indexB;
-            result.detailA.fraction = LineString3d.mapLocalToGlobalFraction(indexA, result.detailA.fraction, numSegmentA);
-            result.detailB.fraction = LineString3d.mapLocalToGlobalFraction(indexB, result.detailB.fraction, numSegmentB);
-            result.detailA.curve = result.detailB.curve = undefined;
+            result = this._workLocalDetailPair.clone(result); // overwrite previous result
+            LineString3d.convertLocalToGlobalDetail(result.detailA, indexA, numSegmentA, undefined, childDetailA);
+            LineString3d.convertLocalToGlobalDetail(result.detailB, indexB, numSegmentB, undefined, childDetailB);
+            if (result.detailA.childDetail && result.detailB.childDetail)
+              result.detailA.childDetail.curve = result.detailB.childDetail.curve = undefined; // no CurvePrimitives survive in output
             dMin = d;
             foundMin = true;
           }

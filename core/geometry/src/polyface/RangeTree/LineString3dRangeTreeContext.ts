@@ -157,7 +157,10 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
     this.contextB = contextB;
     this.searchState = MinimumValueTester.create<CurveLocationDetailPair>();
   }
-  /** Return the PolygonLocationDetail pair */
+  /**
+   * Return the segments with closest approach.
+   * * Details contain linestring and segment data, cf. [[LineString3d.convertLocalToGlobalDetail]]
+   */
   public getResult(): CurveLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
@@ -178,13 +181,11 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
       this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
     const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
       this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
-    const cld = LineSegment3d.closestApproach(segA, false, segB, false);
-    if (cld && this.searchState.isNewMinOrTrigger(cld.detailA.a)) {
-      cld.detailA.fraction = this.contextA.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexA, cld.detailA.fraction);
-      cld.detailB.fraction = this.contextB.lineString.segmentIndexAndLocalFractionToGlobalFraction(indexB, cld.detailB.fraction);
-      cld.detailA.curve = this.contextA.lineString;
-      cld.detailB.curve = this.contextB.lineString;
-      this.searchState.testAndSave(cld, cld.detailA.a);
+    const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
+    if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
+      LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
+      LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
+      this.searchState.testAndSave(cldPair, cldPair.detailA.a);
     }
   }
 }

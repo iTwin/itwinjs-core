@@ -704,6 +704,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public numPoints(): number {
     return this._points.length;
   }
+  /** Return the number of edges in this linestring. */
+  public numEdges(): number {
+    return this._points.length > 0 ? this._points.length - 1 : 0;
+  }
   /** Evaluate the end point of the linestring. */
   public override endPoint() {
     if (this._points.length === 0)
@@ -1430,6 +1434,26 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
+  /**
+   * Convert the segment detail to a linestring detail:
+   * * `detail.childDetail` is set to a clone of the input (optionally populating pre-allocated `child` object).
+   * * `childDetail.a` is set to `segmentIndex`.
+   * * `detail.fraction` is set to the global linestring parameter.
+   * * `detail.curve` is set to the parent linestring.
+   * @param detail input segment location detail
+   * @param segmentIndex index of segment in the linestring
+   * @param numSegment linestring segment count
+   * @param parent optional linestring primitive
+   * @param child optional pre-allocated detail to use to clone the child data
+   * @returns modified input location, with both linestring and segment data
+   */
+  public static convertLocalToGlobalDetail(detail: CurveLocationDetail, segmentIndex: number, numSegment: number, parent?: LineString3d, child?: CurveLocationDetail): CurveLocationDetail {
+    detail.childDetail = detail.clone(child);
+    detail.childDetail.a = segmentIndex;
+    detail.fraction = this.mapLocalToGlobalFraction(segmentIndex, detail.fraction, numSegment);
+    detail.curve = parent;
+    return detail;
   }
 }
 
