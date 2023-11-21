@@ -24,6 +24,8 @@ import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMi
 export class PolyfaceRangeTreeContext {
   /** Visitor for the polyface being searched */
   public visitor: PolyfaceVisitor;
+  /** Whether all facets to visit are known to be convex. */
+  public convexFacets: boolean;
 
   /** Diagnostic: number of range tests that have returned true. */
   public numRangeTestTrue: number;
@@ -38,8 +40,9 @@ export class PolyfaceRangeTreeContext {
   private _rangeTreeRoot: RangeTreeNode<number>;
 
   /** Constructor: capture inputs, initialize debug counters */
-  private constructor(rangeTreeRoot: RangeTreeNode<number>, visitor: PolyfaceVisitor) {
+  private constructor(rangeTreeRoot: RangeTreeNode<number>, visitor: PolyfaceVisitor, convexFacets: boolean = false) {
     this.visitor = visitor;
+    this.convexFacets = convexFacets;
     this._rangeTreeRoot = rangeTreeRoot;
     this.numRangeTestTrue = 0;
     this.numRangeTestFalse = 0;
@@ -53,8 +56,9 @@ export class PolyfaceRangeTreeContext {
    * @param visitor access to facets, captured if PolyfaceVisitor
    * @param maxChildPerNode maximum children per range tree node (default 4)
    * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
+   * @param convexFacets whether all facets are known to be convex (cf. [[PolyfaceQuery.areFacetsConvex]]) (default false)
    */
-  public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): PolyfaceRangeTreeContext | undefined {
+  public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4, convexFacets: boolean = false): PolyfaceRangeTreeContext | undefined {
     if (visitor instanceof Polyface)
       return this.createCapture(visitor.createVisitor(0), maxChildPerNode, maxAppDataPerLeaf);
     const numFacet = PolyfaceQuery.visitorClientFacetCount(visitor);
@@ -65,7 +69,7 @@ export class PolyfaceRangeTreeContext {
       maxChildPerNode,
       maxAppDataPerLeaf,
     );
-    return rangeTreeRoot ? new PolyfaceRangeTreeContext(rangeTreeRoot, visitor) : undefined;
+    return rangeTreeRoot ? new PolyfaceRangeTreeContext(rangeTreeRoot, visitor, convexFacets) : undefined;
   }
   /**
    * Search the range tree for the facet closest to spacePoint
@@ -86,9 +90,14 @@ export class PolyfaceRangeTreeContext {
     this._rangeTreeRoot.searchTopDown(handler);
     return handler.searchState.itemAtMinValue;
   }
-  /** Find a pair of points, one from each polyface in contextA and contextB, with the smallest distance between. */
-  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext): PolygonLocationDetailPair<number> | undefined {
-    const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB);
+  /**
+   * Find a pair of points, one from each polyface in contextA and contextB, with the smallest distance between.
+   * @param contextA context for first facet set
+   * @param contextB context for second facet set
+   * @param searchFacetInterior whether to include facet interiors in computations (`this.convexFacets` must be true).
+  */
+  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false): PolygonLocationDetailPair<number> | undefined {
+    const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, searchFacetInterior);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
   }
@@ -137,21 +146,18 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
   }
   /** Test a facet indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    this.context.visitor.setNumWrap(0); // so edgeCount === pointCount
+    this.context.visitor.setNumWrap(0); // so edgeCount === pointCount; closure point unnecessary for closestPoint[OnBoundary]
     if (this.context.visitor.moveToReadIndex(candidateIndex)) {
       let pld: PolygonLocationDetail | undefined;
       if (this.searchFacetInterior)
         pld = PolygonOps.closestPoint(this.context.visitor.point, this.spacePoint);
       else
         pld = PolygonOps.closestPointOnBoundary(this.context.visitor.point, this.spacePoint);
-      if (pld) {
-        const d = this.spacePoint.distance(pld.point);
+      if (pld && this.searchState.isNewMinOrTrigger(pld.a)) {
         this.context.numFacetTest++;
-        if (this.searchState.isNewMinValue(d)) {
-          const edgeCount = this.context.visitor.pointCount;
-          const fld = NonConvexFacetLocationDetail.create(this.context.visitor.currentReadIndex(), edgeCount, pld);
-          this.searchState.testAndSave(fld, d);
-        }
+        const edgeCount = this.context.visitor.pointCount;
+        const fld = NonConvexFacetLocationDetail.create(this.context.visitor.currentReadIndex(), edgeCount, pld);
+        this.searchState.testAndSave(fld, pld.a);
       }
     }
   }
@@ -167,15 +173,18 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   public contextB: PolyfaceRangeTreeContext;
   /** Search state with current min distance and facet pair */
   public searchState: MinimumValueTester<PolygonLocationDetailPair>;
+  /** Whether to include facet interior in search */
+  public searchFacetInterior: boolean;
 
   /** Constructor, all inputs captured */
-  public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext) {
+  public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
     this.contextA.visitor.setNumWrap(1);  // so that polygons are closed for PolygonOps.closestApproach
     this.contextB.visitor.setNumWrap(1);
     this.searchState = MinimumValueTester.create<PolygonLocationDetailPair>();
+    this.searchFacetInterior = searchFacetInterior && contextA.convexFacets && contextB.convexFacets;
   }
   /** Return the PolygonLocationDetail pair */
   public getResult(): PolygonLocationDetailPair | undefined {
@@ -192,7 +201,7 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   /** Compute and test the closest approach between two facets, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
     if (this.contextA.visitor.moveToReadIndex(indexA) && this.contextB.visitor.moveToReadIndex(indexB)) {
-      const detail = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point);
+      const detail = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point, undefined, this.searchFacetInterior);
       this.contextA.numFacetTest++;
       if (detail !== undefined) {
         detail.tagA = indexA;
