@@ -3075,6 +3075,7 @@ export abstract class IndexedXYCollection {
 export abstract class IndexedXYZCollection {
     abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
     abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
+    almostEqualIndexIndex(index0: number, index1: number, tolerance?: number): boolean | undefined;
     back(result?: Point3d): Point3d | undefined;
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined;
@@ -3447,6 +3448,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     get isPhysicallyClosed(): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+    static mapGlobalToLocalFraction(globalFraction: number, numSegment: number): {
+        index: number;
+        fraction: number;
+    };
+    static mapLocalToGlobalFraction(index: number, localFraction: number, numSegment: number): number;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
     get normalIndices(): GrowableFloat64Array | undefined;
     numPoints(): number;
@@ -4838,6 +4844,7 @@ export class PolyfaceQuery {
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSilhouetteEdges(source: Polyface | PolyfaceVisitor, announce: (pointA: Point3d, pointB: Point3d, vertexIndexA: number, vertexIndexB: number, facetIndex: number) => void, vectorToEye: Vector3d, sideAngle?: Angle): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
+    static areFacetsConvex(source: Polyface | PolyfaceVisitor): boolean;
     // @internal
     static asyncAnnounceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): Promise<number>;
     static asyncSweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): Promise<LineString3d[]>;
@@ -4906,13 +4913,14 @@ export class PolyfaceQuery {
 
 // @public
 export class PolyfaceRangeTreeContext {
-    static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode?: number, maxAppDataPerLeaf?: number): PolyfaceRangeTreeContext | undefined;
+    convexFacets: boolean;
+    static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode?: number, maxAppDataPerLeaf?: number, convexFacets?: boolean): PolyfaceRangeTreeContext | undefined;
     numFacetTest: number;
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
-    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext): PolygonLocationDetailPair<number> | undefined;
-    searchForClosestPoint(spacePoint: Point3d): FacetLocationDetail | undefined;
+    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean): PolygonLocationDetailPair<number> | undefined;
+    searchForClosestPoint(spacePoint: Point3d, searchFacetInterior?: boolean): FacetLocationDetail | undefined;
     visitor: PolyfaceVisitor;
 }
 
@@ -4970,7 +4978,7 @@ export class PolygonLocationDetail {
 }
 
 // @public
-export class PolygonLocationDetailPair<TagType> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
+export class PolygonLocationDetailPair<TagType = number> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
     constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType);
 }
 
@@ -4986,9 +4994,12 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
-    static closestApproachOfPolygons<TagType>(polygonA: GrowableXYZArray, polygonB: GrowableXYZArray, dMax?: number): PolygonLocationDetailPair<TagType> | undefined;
+    static cloneIfClosed(polygon: Point3d[] | IndexedXYZCollection, tolerance?: number): Point3d[] | IndexedXYZCollection;
+    static closestApproach(polygonA: Point3d[] | IndexedXYZCollection, polygonB: Point3d[] | IndexedXYZCollection, dMax?: number, _searchInterior?: boolean): PolygonLocationDetailPair | undefined;
+    static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance?: number): number[] | undefined;
+    static forceClosure(polygon: Point3d[] | GrowableXYZArray, tolerance?: number): void;
     static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static isConvex(polygon: Point3d[] | IndexedXYZCollection): boolean;
@@ -5006,6 +5017,7 @@ export class PolygonOps {
 // @public
 export class PolylineOps {
     static addClosurePoint(data: Point3d[] | Point3d[][]): void;
+    static closestApproach(pointsA: Point3d[] | IndexedXYZCollection, extendA: VariantCurveExtendParameter, pointsB: Point3d[] | IndexedXYZCollection, extendB: VariantCurveExtendParameter, dMax?: number, result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined;
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
     static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
@@ -5013,7 +5025,6 @@ export class PolylineOps {
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed?: boolean): Plane3dByOriginAndUnitNormal[] | undefined;
     static edgeLengthRange(points: Point3d[]): Range1d;
-    static projectPointToUncheckedIndexedSegment(spacePoint: Point3d, points: Point3d[], segmentIndex: number, extendIfInitial?: boolean, extendIfFinal?: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
@@ -6299,14 +6310,14 @@ export interface TrigValues {
 
 // @internal
 export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext);
+    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean);
     contextA: PolyfaceRangeTreeContext;
     contextB: PolyfaceRangeTreeContext;
-    // (undocumented)
     getCurrentDistance(): number;
-    getResult(): PolygonLocationDetailPair<number> | undefined;
-    processAppDataPair(tagA: number, tagB: number): void;
-    searchState: MinimumValueTester<PolygonLocationDetailPair<number>>;
+    getResult(): PolygonLocationDetailPair | undefined;
+    processAppDataPair(indexA: number, indexB: number): void;
+    searchFacetInterior: boolean;
+    searchState: MinimumValueTester<PolygonLocationDetailPair>;
 }
 
 // @internal
@@ -6326,9 +6337,9 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     contextA: Point3dArrayRangeTreeContext;
     contextB: Point3dArrayRangeTreeContext;
     getCurrentDistance(): number;
-    getResult(): TaggedDataPair<Point3d, Point3d, number> | undefined;
+    getResult(): TaggedPoint3dPair | undefined;
     processAppDataPair(indexA: number, indexB: number): void;
-    searchState: MinimumValueTester<TaggedDataPair<Point3d, Point3d, number>>;
+    searchState: MinimumValueTester<TaggedPoint3dPair>;
 }
 
 // @public

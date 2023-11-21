@@ -956,7 +956,7 @@ export class PolygonOps {
         }
         if (distToStart2 < minDist2) {
           if (polygon.dotProductIndexIndexXYAndZ(iBase, iPrev, testPoint)! <= 0.0) {
-            // update candidate (to edge start) only if previous edge was NOOP
+            // update candidate (to edge start) only if testPoint projected beyond previous edge end
             polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
             result.a = Math.sqrt(distToStart2);
             polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v)!;
