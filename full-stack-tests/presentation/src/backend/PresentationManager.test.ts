@@ -1,21 +1,29 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
-  ChildNodeSpecificationTypes, ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, KeySet,
-  PresentationError, PresentationStatus, Ruleset, RuleTypes,
+  ChildNodeSpecificationTypes,
+  ContentSpecificationTypes,
+  DisplayValue,
+  DisplayValuesArray,
+  DisplayValuesMap,
+  ElementProperties,
+  KeySet,
+  PresentationError,
+  PresentationStatus,
+  Ruleset,
+  RuleTypes,
 } from "@itwin/presentation-common";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
 describe("PresentationManager", () => {
-
   let imodel: IModelDb;
   before(async () => {
     await initialize({ localization: testLocalization });
@@ -29,13 +37,14 @@ describe("PresentationManager", () => {
   });
 
   describe("Property value formatting", () => {
-
     const ruleset: Ruleset = {
       id: Guid.createValue(),
-      rules: [{
-        ruleType: RuleTypes.Content,
-        specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
-      }],
+      rules: [
+        {
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        },
+      ],
     };
     const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
@@ -43,14 +52,12 @@ describe("PresentationManager", () => {
       expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
     });
 
-    it("formats property using default format when it doesn't have format for requested unit system", async () => {
+    it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
       const formatProps = {
         composite: {
           includeZero: true,
           spacer: " ",
-          units: [
-            { label: "ft²", name: "SQ_FT" },
-          ],
+          units: [{ label: "ft²", name: "SQ_FT" }],
         },
         formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
         precision: 4,
@@ -59,20 +66,18 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        area: { unitSystems: ["imperial" as UnitSystemKey], format: formatProps },
+        area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
       };
 
       expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
     });
 
-    it("formats property using provided format when it has provided format and default format for requested unit system", async () => {
+    it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
       const formatProps = {
         composite: {
           includeZero: true,
           spacer: " ",
-          units: [
-            { label: "ft²", name: "SQ_FT" },
-          ],
+          units: [{ label: "ft²", name: "SQ_FT" }],
         },
         formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
         precision: 4,
@@ -81,13 +86,48 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        area: { unitSystems: ["metric" as UnitSystemKey], format: formatProps },
+        area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
       };
 
       expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
     });
 
-    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: { [phenomenon: string]: UnitSystemFormat }): Promise<DisplayValue> {
+    it("formats property value using different unit system formats in defaults formats map", async () => {
+      const baseFormatProps = {
+        formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+        type: "Decimal",
+        precision: 4,
+        uomSeparator: " ",
+      };
+      const defaultFormats = {
+        area: [
+          {
+            unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
+            format: {
+              ...baseFormatProps,
+              composite: {
+                units: [{ label: "in²", name: "SQ_IN" }],
+              },
+            },
+          },
+          {
+            unitSystems: ["usSurvey"] as UnitSystemKey[],
+            format: {
+              ...baseFormatProps,
+              composite: {
+                units: [{ label: "yrd² (US Survey)", name: "SQ_US_SURVEY_YRD" }],
+              },
+            },
+          },
+        ],
+      };
+
+      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
+      expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
+      expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+    });
+
+    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: { [phenomenon: string]: UnitSystemFormat[] }): Promise<DisplayValue> {
       return using(new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO" }), async (manager) => {
         const descriptor = await manager.getContentDescriptor({
           imodel,
@@ -107,7 +147,6 @@ describe("PresentationManager", () => {
   });
 
   describe("getElementProperties", () => {
-
     it("returns properties for some elements of class 'PhysicalObject", async () => {
       await using(new PresentationManager(), async (manager) => {
         const properties: ElementProperties[] = [];
@@ -118,29 +157,33 @@ describe("PresentationManager", () => {
         expect(properties).to.matchSnapshot();
       });
     });
-
   });
 
   describe("Cancel request", () => {
-
     it("cancels 'getNodes' request", async () => {
       await using(new PresentationManager(), async (manager) => {
         const cancelEvent = new BeEvent<() => void>();
-        const promise = manager.getNodes({ imodel, rulesetOrId: {
-          id: "ruleset",
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-            }],
-          }],
-        }, cancelEvent });
+        const promise = manager.getNodes({
+          imodel,
+          rulesetOrId: {
+            id: "ruleset",
+            rules: [
+              {
+                ruleType: RuleTypes.RootNodes,
+                specifications: [
+                  {
+                    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                    classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                  },
+                ],
+              },
+            ],
+          },
+          cancelEvent,
+        });
         cancelEvent.raiseEvent();
         await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
       });
     });
-
   });
-
 });
