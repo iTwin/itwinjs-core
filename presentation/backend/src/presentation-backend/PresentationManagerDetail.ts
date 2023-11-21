@@ -9,12 +9,12 @@ import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
-  HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
-  PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
+  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
+  WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
@@ -39,11 +39,6 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    const backendAssetsRoot = ((typeof params.presentationAssetsRoot === "string")
-      ? params.presentationAssetsRoot
-      : params.presentationAssetsRoot?.backend
-    ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
-
     const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
@@ -64,9 +59,8 @@ export class PresentationManagerDetail implements IDisposable {
       this._updatesTracker = undefined;
     }
 
-    setupRulesetDirectories(
+    setupRulesets(
       this._nativePlatform,
-      backendAssetsRoot,
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );
@@ -346,23 +340,25 @@ interface RequestParams {
   cancelEvent?: BeEvent<() => void>;
 }
 
-function setupRulesetDirectories(
+function setupRulesets(
   nativePlatform: NativePlatformDefinition,
-  presentationAssetsRoot: string,
-  supplementalRulesetDirectoriesOverrides: string[],
-  rulesetDirectories: string[],
+  supplementalRulesetDirectories: string[],
+  primaryRulesetDirectories: string[],
 ): void {
-  const supplementalRulesetDirectories = collateAssetDirectories(
-    path.join(presentationAssetsRoot, "supplemental-presentation-rules"),
-    supplementalRulesetDirectoriesOverrides,
-  );
-  nativePlatform.setupSupplementalRulesetDirectories(supplementalRulesetDirectories);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
+  nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
 
-  const primaryRulesetDirectories = collateAssetDirectories(
-    path.join(presentationAssetsRoot, "primary-presentation-rules"),
-    rulesetDirectories,
-  );
-  nativePlatform.setupRulesetDirectories(primaryRulesetDirectories);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const bisSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/BisCore.PresentationRuleSet.json");
+  nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const funcSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/Functional.PresentationRuleSet.json");
+  nativePlatform.registerSupplementalRuleset(JSON.stringify(funcSupplementalRuleset));
+
+  nativePlatform.setupSupplementalRulesetDirectories(collateAssetDirectories(supplementalRulesetDirectories));
+  nativePlatform.setupRulesetDirectories(collateAssetDirectories(primaryRulesetDirectories));
 }
 
 interface RulesetIdObject {
@@ -536,10 +532,9 @@ function toNativeUnitSystem(unitSystem: UnitSystemKey): NativePresentationUnitSy
   }
 }
 
-function collateAssetDirectories(mainDirectory: string, additionalDirectories: string[]): string[] {
-  return [...new Set([mainDirectory, ...additionalDirectories])];
+function collateAssetDirectories(dirs: string[]): string[] {
+  return [...new Set(dirs)];
 }
-
 const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
     return descriptorOrOverrides.createDescriptorOverrides();

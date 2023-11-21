@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../../numerics/Newton";
+import { Newton1dUnbounded, Newton1dUnboundedApproximateDerivative, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD, NewtonEvaluatorRtoR, NewtonEvaluatorRtoRD, SimpleNewton } from "../../numerics/Newton";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // cspell:word currentdFdX
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {
   private _coefficients: number[];
-  // Constructor CAPTURES the caller's array . .
+  // Constructor CAPTURES the caller's array.
   public constructor(coefficients: number[]) {
     super();
     this._coefficients = coefficients;
@@ -50,16 +50,18 @@ export class ClothoidCosineEvaluator extends NewtonEvaluatorRtoRD {
     return true;
   }
 }
+
 describe("Newton", () => {
-  it("Newton1dUnbounded", () => {
+  it("Hello World", () => {
     const ck = new Checker();
-    // use coefficients for typical spiral ...
+    // use coefficients for typical spiral.
     const r1 = 10.0;
     const l1 = 1.0;
     const gamma = 1.0 / (40.0 * r1 * r1 * l1 * l1);
     for (const f of [
+      new HornerEvaluator([0, 1, 0, 0, 0, gamma]),
       new ClothoidCosineEvaluator(1.0, r1, l1),
-      new HornerEvaluator([0, 1, 0, 0, 0, gamma])]) {
+    ]) {
       const iterator = new Newton1dUnbounded(f);
       for (const fraction of [0.2, 0.8]) {
         const x = fraction * l1;
@@ -67,20 +69,200 @@ describe("Newton", () => {
         f.evaluate(x);
         iterator.setTarget(f.currentF);
         if (Checker.noisy.newtonRtoRD)
-          GeometryCoreTestIO.consoleLog({ xx: x, ff: f.currentF, dF: f.currentdFdX });
-        // start iterator away from the root.
+          GeometryCoreTestIO.consoleLog({ x, f: f.currentF, dF: f.currentdFdX });
+        // start iterator x_0 away from the root.
         iterator.setX(x + 1);
         if (ck.testTrue(iterator.runIterations())) {
           const x1 = iterator.getX();
-          ck.testCoordinate(x, iterator.getX(), "newton converted to correct value");
+          ck.testCoordinate(x, iterator.getX(), "Newton converted to correct value");
           ck.testLE(iterator.numIterations, 5, "Expect low newton iteration count for gentle function");
           if (Checker.noisy.newtonRtoRD)
-            GeometryCoreTestIO.consoleLog("   ", { xx: x, xx1: x1, n: iterator.numIterations });
+            GeometryCoreTestIO.consoleLog("   ", { x, x1, n: iterator.numIterations });
         }
       }
     }
-    ck.checkpoint("End Newton.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+export class Simple1DFunctionEvaluator1 extends NewtonEvaluatorRtoRD {
+  public evaluate(x: number): boolean {
+    this.currentF = x * x;
+    this.currentdFdX = 2 * x;
+    return true;
+  }
+}
+
+export class Simple1DFunctionEvaluator2 extends NewtonEvaluatorRtoR {
+  public evaluate(x: number): boolean {
+    this.currentF = x * x - 2;
+    return true;
+  }
+}
+
+export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
+  public evaluate(u: number, v: number): boolean {
+    this.currentF.setOriginAndVectorsXYZ(
+      u - v + 1, u * u - v + 1, 0.0, // x(u,v), y(u,v), 0
+      1, 2 * u, 0.0,                 // dx/du,  dy/du,  0
+      -1, -1, 0.0,                   // dx/dv,  dy/dv,  0
+    );
+    return true;
+  }
+}
+
+export class Simple2DFunctionEvaluator2 extends NewtonEvaluatorRRtoRRD {
+  public evaluate(u: number, v: number): boolean {
+    this.currentF.setOriginAndVectorsXYZ(
+      u * u + v * v - 5, 3 * u - v - 5, 0.0, // x(u,v), y(u,v), 0
+      2 * u, 3, 0.0,                         // dx/du,  dy/du,  0
+      2 * v, -1, 0.0,                        // dx/dv,  dy/dv,  0
+    );
+    return true;
+  }
+}
+
+describe("Newton", () => {
+  it("Newton1dUnbounded", () => {
+    const ck = new Checker();
+    const f = new Simple1DFunctionEvaluator1();
+    const iterator = new Newton1dUnbounded(f);
+    iterator.setTarget(2); // f(x) = 2
+    iterator.setX(1); // initial condition x_0 = 1
+    const expectedSolution1 = Math.sqrt(2);
+    // find sqrt(2) solution of f(x) = x^2 = 2
+    if (ck.testTrue(iterator.runIterations())) {
+      const solution = iterator.getX(); // x_n
+      ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+      GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1, n: iterator.numIterations });
+    }
+    iterator.setX(-1); // initial condition x_0 = -1
+    const expectedSolution2 = -Math.sqrt(2);
+    // find -sqrt(2) solution of f(x) = x^2 = 2
+    if (ck.testTrue(iterator.runIterations())) {
+      const solution = iterator.getX(); // x_n
+      ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+      GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Newton1dUnboundedApproximateDerivative", () => {
+    const ck = new Checker();
+    const f = new Simple1DFunctionEvaluator2();
+    const iterator = new Newton1dUnboundedApproximateDerivative(f);
+    iterator.setX(1); // initial condition x_0 = 1
+    const expectedSolution1 = Math.sqrt(2);
+    // find sqrt(2) solution of f(x) = x^2 = 2
+    if (ck.testTrue(iterator.runIterations())) {
+      const solution = iterator.getX(); // x_n
+      ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+      GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1, n: iterator.numIterations });
+    }
+    iterator.setX(-1); // initial condition x_0 = -1
+    const expectedSolution2 = -Math.sqrt(2);
+    // find -sqrt(2) solution of f(x) = x^2 = 2
+    if (ck.testTrue(iterator.runIterations())) {
+      const solution = iterator.getX(); // x_n
+      ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+      GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Newton2dUnboundedWithDerivativeExample1", () => {
+    const ck = new Checker();
+    const f = new Simple2DFunctionEvaluator1();
+    const iterator = new Newton2dUnboundedWithDerivative(f);
+    iterator.setUV(2, 3); // initial condition (u_0,v_0) = (2,3)
+    const expectedSolution1U = 1;
+    const expectedSolution1V = 2;
+    // find (1,2) solution of x(u,v) = u - v + 1 = 0 and y(u,v) = u^2 - v + 1 = 0
+    if (ck.testTrue(iterator.runIterations())) {
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
+      GeometryCoreTestIO.consoleLog({
+        solutionU,
+        expectedSolutionU: expectedSolution1U,
+        solutionV,
+        expectedSolutionV: expectedSolution1V,
+        n: iterator.numIterations,
+      });
+    }
+    iterator.setUV(-1, 0); // initial condition (u_0,v_0) = (-1,0)
+    const expectedSolution2U = 0;
+    const expectedSolution2V = 1;
+    // find (-1,0) solution of x(u,v) = u - v + 1 = 0 and y(u,v) = u^2 - v + 1 = 0
+    if (ck.testTrue(iterator.runIterations())) {
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
+      GeometryCoreTestIO.consoleLog({
+        solutionU,
+        expectedSolutionU: expectedSolution2U,
+        solutionV,
+        expectedSolutionV: expectedSolution2V,
+        n: iterator.numIterations,
+      });
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Newton2dUnboundedWithDerivativeExample2", () => {
+    const ck = new Checker();
+    const f = new Simple2DFunctionEvaluator2();
+    const iterator = new Newton2dUnboundedWithDerivative(f);
+    iterator.setUV(3, 2); // initial condition (u_0,v_0) = (3,2)
+    const expectedSolution1U = 2;
+    const expectedSolution1V = 1;
+    // find (2,1) solution of x(u,v) = u^2 + v^2 - 5 = 0 and y(u,v) = 3*u - v - 5 = 0
+    if (ck.testTrue(iterator.runIterations())) {
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution1U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution1V, "Newton converted to correct V value");
+      GeometryCoreTestIO.consoleLog({
+        solutionU,
+        expectedSolutionU: expectedSolution1U,
+        solutionV,
+        expectedSolutionV: expectedSolution1V,
+        n: iterator.numIterations,
+      });
+    }
+    iterator.setUV(0, -1); // initial condition (u_0,v_0) = (0,-1)
+    const expectedSolution2U = 1;
+    const expectedSolution2V = -2;
+    // find (1,-2) solution of x(u,v) = u^2 + v^2 - 5 = 0 and y(u,v) = 3*u - v - 5 = 0
+    if (ck.testTrue(iterator.runIterations())) {
+      const solutionU = iterator.getU(); // u_n
+      const solutionV = iterator.getV(); // v_n
+      ck.testCoordinate(solutionU, expectedSolution2U, "Newton converted to correct U value");
+      ck.testCoordinate(solutionV, expectedSolution2V, "Newton converted to correct V value");
+      GeometryCoreTestIO.consoleLog({
+        solutionU,
+        expectedSolutionU: expectedSolution2U,
+        solutionV,
+        expectedSolutionV: expectedSolution2V,
+        n: iterator.numIterations,
+      });
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SimpleNewton", () => {
+    const ck = new Checker();
+    const func = (x: number): number => { return x * x - 2; };
+    const derivative = (x: number): number => { return 2 * x; };
+    const initialCondition1 = 1;
+    let solution = SimpleNewton.runNewton1D(initialCondition1, func, derivative)!;
+    const expectedSolution1 = Math.sqrt(2);
+    ck.testCoordinate(solution, expectedSolution1, "Newton converted to correct value");
+    GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution1 });
+    const initialCondition2 = -1;
+    solution = SimpleNewton.runNewton1D(initialCondition2, func, derivative)!;
+    const expectedSolution2 = -Math.sqrt(2);
+    ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
+    GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2 });
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

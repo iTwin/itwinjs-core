@@ -1,6 +1,34 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Mon, 16 Oct 2023 12:52:11 GMT and should not be manually modified.
+This log was last generated on Mon, 20 Nov 2023 16:16:07 GMT and should not be manually modified.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:21 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Make SchemaLoader, SchemaJsonLocater and SchemaPropsGetter beta
+- Added the ability to rename an ECProperty via the setName method.
 
 ## 4.1.9
 Tue, 10 Oct 2023 18:48:12 GMT

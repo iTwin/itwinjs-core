@@ -44,6 +44,7 @@ import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
+import { ClipIntersectionStyle } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipStyle } from '@itwin/core-common';
@@ -3067,7 +3068,9 @@ export class DrawingViewState extends ViewState2d {
     // @internal
     get attachment(): Object | undefined;
     // @internal
-    get attachmentInfo(): Object;
+    get attachmentInfo(): {
+        spatialView: Id64String | ViewState3d;
+    };
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
@@ -12731,6 +12734,10 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     toProps(): ViewStateProps;
     // @internal
+    get viewAttachmentInfos(): Id64Array | Array<{
+        attachedView: ViewState;
+    }>;
+    // @internal
     get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>>;
 }
 
@@ -17685,6 +17692,7 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
 
 // @public
 export interface ZoomToOptions {
+    minimumDimension?: number;
     placementRelativeId?: StandardViewId;
     standardViewId?: StandardViewId;
     viewRotation?: Matrix3d;

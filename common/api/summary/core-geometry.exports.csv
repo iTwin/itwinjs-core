@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-internal;class AbstractNewtonIterator
 public;AkimaCurve3d 
 public;AkimaCurve3dOptions
 public;AkimaCurve3dProps
@@ -14,6 +13,7 @@ public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
 public;AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any
 public;AnnounceNumberNumber = (a0: number, a1: number) => void
 public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void
+public;AnyChain = CurvePrimitive | Path | BagOfCurves | Loop
 public;AnyCurve = CurvePrimitive | CurveCollection
 public;AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d
 public;AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd
@@ -56,6 +56,7 @@ public;BSplineSurface3dH
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
 public;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
+deprecated;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
 public;ClipMaskXYZRangePlanes
 public;ClippedPolyfaceBuilders
 public;Clipper
@@ -184,12 +185,6 @@ public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
-internal;Newton1dUnbounded 
-internal;Newton1dUnboundedApproximateDerivative 
-internal;Newton2dUnboundedWithDerivative 
-internal;class NewtonEvaluatorRRtoRRD
-internal;class NewtonEvaluatorRtoR
-internal;class NewtonEvaluatorRtoRD
 internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NonConvexFacetLocationDetail 
@@ -265,7 +260,6 @@ alpha;Sample
 public;SectionSequenceWithPlanes
 public;Segment1d
 public;SignedLoops
-internal;SimpleNewton
 internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta

@@ -22,7 +22,6 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
     public let errorDomain = "com.bentley.display-test-app"
     var issuerURL = URL(string: "https://ims.bentley.com")!
     var authSettings: DtaServiceAuthSettings
-    let logger = PrintLogger()
     var userInfo: NSDictionary?
     var accessToken: String?
     var expirationDate: Date?
@@ -30,11 +29,11 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
     init?(configData: JSON) {
         let clientId = configData["IMJS_OIDC_CLIENT_ID"] as? String ?? ""
         let clientSecret = configData["IMJS_OIDC_CLIENT_SECRET"] as? String ?? ""
-        let scope = configData["IMJS_OIDC_SCOPE"] as? String ?? "email openid profile organization itwinjs"
+        let scope = configData["IMJS_OIDC_SCOPE"] as? String ?? ""
         let authority = configData["IMJS_SERVICE_AUTHORITY"] as? String ?? "https://ims.bentley.com"
         authSettings = DtaServiceAuthSettings(clientId: clientId, clientSecret: clientSecret, scope: scope, authority: authority)
         super.init()
-        if checkSettings() != nil {
+        guard (try? checkSettings()) != nil else {
             return nil
         }
         if var prefix = configData["IMJS_URL_PREFIX"] as? String,
@@ -51,21 +50,20 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
         }
     }
 
-    func checkSettings() -> NSError? {
+    func checkSettings() throws {
         if authSettings.clientId.count == 0 {
-            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientId")
+            throw error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientId")
         }
         if authSettings.clientSecret.count == 0 {
-            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientSecret")
+            throw error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientSecret")
         }
         if authSettings.scope.count == 0 {
-            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty scope")
+            throw error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty scope")
         }
         let scope = authSettings.scope
         if scope.contains("openid") || scope.contains("email") || scope.contains("profile") || scope.contains("organization") {
-            return error(reason: "DtaServiceAuthSettings: Scopes for a service cannot include 'openid email profile organization'")
+            throw error(reason: "DtaServiceAuthSettings: Scopes for a service cannot include 'openid email profile organization'")
         }
-        return nil
     }
 
     func generateAccessToken(_ completion: @escaping DtaServiceAuthorizationClientCallback) {

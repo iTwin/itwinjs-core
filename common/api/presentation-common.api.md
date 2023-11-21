@@ -387,15 +387,7 @@ export interface ContentModifiersList {
 export class ContentPropertyValueFormatter {
     constructor(_koqValueFormatter: KoqPropertyValueFormatter);
     // (undocumented)
-    formatArrayValue(type: ArrayTypeDescription, value: Value): DisplayValue[];
-    // (undocumented)
-    formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value): string;
-    // (undocumented)
     formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue>;
-    // (undocumented)
-    formatStructValue(type: StructTypeDescription, value: Value): DisplayValuesMap;
-    // (undocumented)
-    formatValue(type: TypeDescription, value: Value): DisplayValue;
 }
 
 // @public

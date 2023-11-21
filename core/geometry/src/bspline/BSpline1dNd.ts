@@ -84,8 +84,11 @@ export class BSpline1dNd {
     return this.knots.spanFractionToKnot(span, localFraction);
   }
 
-  /** Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span. */
-  public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array) {
+  /**
+   * Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span.
+   * @returns true if and only if output arrays are sufficiently sized
+  */
+  public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean {
     if (spanIndex < 0) spanIndex = 0;
     if (spanIndex >= this.numSpan) spanIndex = this.numSpan - 1;
     const knotIndex0 = spanIndex + this.degree - 1;
@@ -183,30 +186,35 @@ export class BSpline1dNd {
    * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon which has been expanded
    * to act as a normal bspline.
    * @returns true if `degree` leading and trailing polygon blocks match
+   * @deprecated in 4.x. Use testClosablePolygon instead.
    */
   public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
+    return this.testClosablePolygon(mode);
+  }
+  /**
+   * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon which has been expanded
+   * to act as a normal bspline.
+   * @returns true if `degree` leading and trailing polygon blocks match
+   */
+  public testClosablePolygon(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.knots.wrappable;
-    const degree = this.degree;
+    let numPolesToTest = 0;
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints)
+      numPolesToTest = this.degree;
+    else if (mode === BSplineWrapMode.OpenByRemovingKnots)
+      numPolesToTest = 1;
+    else
+      return false;
+    // check for wraparound poles
     const blockSize = this.poleLength;
-    const indexDelta = (this.numPoles - this.degree) * blockSize;
-    const data = this.packedData;
-    if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      // expect {degree} matched points.
-      const numValuesToTest = degree * blockSize;
-      for (let i0 = 0; i0 < numValuesToTest; i0++) {
-        if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
-          return false;
-      }
-      return true;
+    const indexDelta = (this.numPoles - numPolesToTest) * blockSize;
+    const numValuesToTest = numPolesToTest * blockSize;
+    for (let i0 = 0; i0 < numValuesToTest; i0++) {
+      if (!Geometry.isSameCoordinate(this.packedData[i0], this.packedData[i0 + indexDelta]))
+        return false;
     }
-
-    if (mode === BSplineWrapMode.OpenByRemovingKnots) {
-      // no pole conditions are applied.
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
   /** Insert knot and resulting pole into the instance, optionally multiple times.
