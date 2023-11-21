@@ -91,7 +91,7 @@ export class BatchedTilesetReader {
         if (parentToRoot)
           localToParent.multiplyTransformTransform(parentToRoot, localToParent);
 
-        transformToRoot = localToParent
+        transformToRoot = localToParent;
       } else {
         transformToRoot = parentToRoot;
       }
