@@ -8,11 +8,14 @@
  */
 
 import { Geometry } from "../Geometry";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { SmallSystem } from "./Polynomials";
 
-// cspell:word currentdFdX
+// cspell:word currentdFdX XYRR
 
 /**
  * Base class for Newton iterations in various dimensions.
@@ -89,6 +92,7 @@ export abstract class AbstractNewtonIterator {
     this.numIterations = 0;
     while (this.numIterations++ < this._maxIterations && this.computeStep()) {
       if (this.testConvergence(this.currentStepSize()) && this.applyCurrentStep(true)) {
+        // console.log("iter: " + this.numIterations); // print number of Newton iterations for debug
         return true;
       }
       this.applyCurrentStep(false);
@@ -151,7 +155,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     // console.log(this._currentX - this._currentStep); // print approximations for debug
     return this.setX(this._currentX - this._currentStep);
   }
-  /** Compute the univariate newton step. */
+  /** Compute the univariate newton step dx. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
       const dx = Geometry.conditionalDivideFraction(this._func.currentF - this._target, this._func.currentdFdX);
@@ -222,7 +226,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
     // console.log(this._currentX - this._currentStep); // print approximations for debug
     return this.setX(this._currentX - this._currentStep);
   }
-  /** Univariate newton step computed with approximate derivative. */
+  /** Univariate newton step dx, computed with approximate derivative. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
       const fA = this._func.currentF; // f(x_n)
@@ -256,20 +260,10 @@ export abstract class NewtonEvaluatorRRtoRRD {
   /**
    * Most recent function evaluation as parts of the plane.
    * * See doc of [[Newton2dUnboundedWithDerivative]] class for info on 2d newton method.
-   * * For current value (u,v) of the independent variable, and `F(u,v) := (x(u,v), y(u,v)), the returned plane has:
-   * * `origin.x` = x(u,v)
-   * * `origin.y` = y(u,v)
-   * * `vectorU.x` = dx/du
-   * * `vectorU.y` = dy/du
-   * * `vectorV.x` = dx/dv
-   * * `vectorV.y` = dy/dv
-   * * In other words, the plane stores the columns of the Jacobian matrix J of F: `vectorU` stores the partials
-   * of F with respect to u (the first column of J), and `vectorV` stores the partials of F with respect to v
-   * (the second column of J):
-   *
-   * `[vectorU.x   vectorV.x]`
-   *
-   * `[vectorU.y   vectorV.y]`
+   * * For `F(u,v) := (x(u,v), y(u,v))` the returned plane stores the following evaluations at current value `X := (u,v)`:
+   * * `origin` = F(X) = (x(X), y(X))
+   * * `vectorU` = F_u(X) = partial deriv of F wrt u at X = (x_u(X), y_u(X)) = 1st col of Jacobian matrix evaluated at X
+   * * `vectorV` = F_v(X) = partial deriv of F wrt v at X = (x_v(X), y_v(X)) = 2nd col of Jacobian matrix evaluated at X
    */
   public currentF!: Plane3dByOriginAndVectors;
   /**
@@ -286,7 +280,7 @@ export abstract class NewtonEvaluatorRRtoRRD {
  * * Suppose we want to find the roots of `F(u,v) := (x(u,v), y(u,v))`. Writing `X := (u,v)` and `F(X)` as column vectors,
  *  the 2D Newton's iteration to find a root of `F` is given by:
  * `X_{n+1} = X_n - dX = X_n - JInv(X_n)F(X_n)`, where `JInv` is the inverse of the Jacobian matrix `J`, and `J` is
- * defined as:
+ * defined by the partial derivatives of the component functions of F:
  *
  * `[dx/du   dx/dv]`
  *
@@ -304,7 +298,8 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
    * @param func function that returns both function value and derivative.
    */
   public constructor(func: NewtonEvaluatorRRtoRRD) {
-    super();
+    const maxIterations = 100;  // Was default (15). We observed 49 iters to achieve 1e-11 tol with tangent geometry.
+    super(undefined, undefined, maxIterations);
     this._func = func;
     this._currentStep = Vector2d.createZero();
     this._currentUV = Point2d.createZero();
@@ -337,10 +332,10 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
       const fA = this._func.currentF;
       if (  // Given X_{n+1} = X_n - dX = X_n - JInv(X_n) F(X_n), we solve J(X_n) dX = F(X_n) for dX:
         SmallSystem.linearSystem2d(
-          fA.vectorU.x, fA.vectorV.x,
-          fA.vectorU.y, fA.vectorV.y,
-          fA.origin.x, fA.origin.y,
-          this._currentStep,
+          fA.vectorU.x, fA.vectorV.x, // x_u(X_n), x_v(X_n): 1st row of J evaluated at X_n
+          fA.vectorU.y, fA.vectorV.y, // y_u(X_n), y_v(X_n): 2nd row of J evaluated at X_n
+          fA.origin.x, fA.origin.y,   // F(X_n) := (x(X_n), y(X_n))
+          this._currentStep,          // dX
         )
       )
         return true;
@@ -401,5 +396,133 @@ export class SimpleNewton {
       }
     }
     return undefined;
+  }
+}
+
+/**
+ * Class to evaluate XY intersection between 2 curve primitives using the Newton method.
+ * @internal
+ */
+export class CurveCurveIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
+  private _curveP: CurvePrimitive;
+  private _curveQ: CurvePrimitive;
+  private _rayP: Ray3d;
+  private _rayQ: Ray3d;
+  constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive) {
+    super();
+    this._curveP = curveP;
+    this._curveQ = curveQ;
+    this._rayP = Ray3d.createZero();
+    this._rayQ = Ray3d.createZero();
+  }
+  public evaluate(fractionU: number, fractionV: number): boolean {
+    /**
+     * To find an intersection between xy-curves P(u) = (x_p(u), y_p(u)) and Q(v) = (x_q(v), y_q(v)) we should solve
+     *   F(u,v) := P(u) - Q(v) = (0,0)
+     * Using the Newton method we can find the fractions u and v at the intersection via
+     *   [u_{n+1}]     [u_n]          [x_p'(u_n)  -x_q'(v_n)]    [x_p(u_n) - x_q(v_n)]
+     *              =         -  Inv(                         )
+     *   [v_{n+1}]     [v_n]          [y_p'(u_n)  -y_q'(v_n)]    [y_p(u_n) - y_q(v_n)]
+     * Note that this is xy intersection so we can ignore z.
+     */
+    this._curveP.fractionToPointAndDerivative(fractionU, this._rayP);
+    this._curveQ.fractionToPointAndDerivative(fractionV, this._rayQ);
+    this.currentF.setOriginAndVectorsXYZ(
+      this._rayP.origin.x - this._rayQ.origin.x, this._rayP.origin.y - this._rayQ.origin.y, 0.0,
+      this._rayP.direction.x, this._rayP.direction.y, 0.0,
+      -this._rayQ.direction.x, -this._rayQ.direction.y, 0.0,
+    );
+    return true;
+  }
+}
+
+/**
+ * Class to evaluate XY close approach between a curve primitive and a point using the Newton method.
+ * @internal
+ */
+export class CurvePointCloseApproachXYRtoRD extends NewtonEvaluatorRtoRD {
+  private _curveP: CurvePrimitive;
+  private _pointQ: Point3d;
+  private _planeP: Plane3dByOriginAndVectors;
+  constructor(curveP: CurvePrimitive, pointQ: Point3d) {
+    super();
+    this._curveP = curveP;
+    this._pointQ = pointQ;
+    this._planeP = Plane3dByOriginAndVectors.createXYPlane();
+  }
+  public evaluate(fractionU: number): boolean {
+    /**
+     * To find a close approach between xy-curve P(u) and xy-point q we should solve
+     *    F(u) := P'(u).(P(u) - q) = 0
+     * For a solution u, the segment S(u) := P(u) - q is perpendicular to the curve tangent P'(u), which means S(u) is a close approach.
+     * Using the Newton method we can find the fractions u at the close approach location via
+     *    u_{n+1} = u_n + F(u_n)/F'(u_n) = u_n + [ P'(u_n).S(u_n) ]/[ P''(u_n).S(u_n) + P'(u_n).P'(u_n) ]
+     * Note that this is xy close approach so we can ignore z.
+     */
+    this._curveP.fractionToPointAnd2Derivatives(fractionU, this._planeP);
+    const segX = this._planeP.origin.x - this._pointQ.x;
+    const segY = this._planeP.origin.y - this._pointQ.y;
+    const pDerivX = this._planeP.vectorU.x;
+    const pDerivY = this._planeP.vectorU.y;
+    const p2DerivX = this._planeP.vectorV.x;
+    const p2DerivY = this._planeP.vectorV.y;
+    this.currentF = pDerivX * segX + pDerivY * segY;
+    this.currentdFdX = p2DerivX * segX + pDerivX * pDerivX + p2DerivY * segY + pDerivY * pDerivY;
+    return true;
+  }
+}
+
+/**
+ * Class to evaluate XY close approach between 2 curve primitives using the Newton method.
+ * @internal
+ */
+export class CurveCurveCloseApproachXYRRtoRRD extends NewtonEvaluatorRRtoRRD {
+  private _curveP: CurvePrimitive;
+  private _curveQ: CurvePrimitive;
+  private _planeP: Plane3dByOriginAndVectors;
+  private _planeQ: Plane3dByOriginAndVectors;
+  constructor(curveP: CurvePrimitive, curveQ: CurvePrimitive) {
+    super();
+    this._curveP = curveP;
+    this._curveQ = curveQ;
+    this._planeP = Plane3dByOriginAndVectors.createXYPlane();
+    this._planeQ = Plane3dByOriginAndVectors.createXYPlane();
+  }
+  public evaluate(fractionU: number, fractionV: number): boolean {
+    /**
+     * To find a close approach between xy-curves P(u) and Q(v) we should solve
+     *    F(u,v) := (P'(u).(P(u) - Q(v)), Q'(v).(P(u) - Q(v))) = (0,0)
+     * For a solution (u,v), the segment S(u,v) := P(u) - Q(v) is perpendicular to the curve tangents P'(u) and Q'(v),
+     * which means S(u,v) is a close approach.
+     * Using the Newton method we can find the fractions u and v at the close approach location via
+     *   [u_{n+1}]     [u_n]          [P''(u_n).S(u_n,v_n) + P'(u_n).P'(u_n)    -P'(u_n).Q'(v_n)]    [P'(u_n).S(u_n,v_n)]
+     *              =         -  Inv(                                                            )
+     *   [v_{n+1}]     [v_n]          [Q'(v_n).P'(u_n)     Q''(v_n).S(u_n,v_n) - Q'(v_n).Q'(v_n)]    [Q'(v_n).S(u_n,v_n)]
+     * Note that this is xy close approach so we can ignore z.
+     */
+    this._curveP.fractionToPointAnd2Derivatives(fractionU, this._planeP);
+    this._curveQ.fractionToPointAnd2Derivatives(fractionV, this._planeQ);
+    const segX = this._planeP.origin.x - this._planeQ.origin.x;
+    const segY = this._planeP.origin.y - this._planeQ.origin.y;
+    const pDerivX = this._planeP.vectorU.x;
+    const pDerivY = this._planeP.vectorU.y;
+    const qDerivX = this._planeQ.vectorU.x;
+    const qDerivY = this._planeQ.vectorU.y;
+    const p2DerivX = this._planeP.vectorV.x;
+    const p2DerivY = this._planeP.vectorV.y;
+    const q2DerivX = this._planeQ.vectorV.x;
+    const q2DerivY = this._planeQ.vectorV.y;
+    this.currentF.setOriginAndVectorsXYZ(
+      pDerivX * segX + pDerivY * segY,
+      qDerivX * segX + qDerivY * segY,
+      0.0,
+      p2DerivX * segX + p2DerivY * segY + pDerivX * pDerivX + pDerivY * pDerivY,
+      qDerivX * pDerivX + qDerivY * pDerivY,
+      0.0,
+      -(pDerivX * qDerivX + pDerivY * qDerivY),
+      q2DerivX * segX + q2DerivY * segY - qDerivX * qDerivX - qDerivY * qDerivY,
+      0.0,
+    );
+    return true;
   }
 }

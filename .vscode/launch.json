@@ -573,7 +573,24 @@
         "perftest:crud"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] ElementAspect PerfTests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:elAspect"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/backend/lib/**/*.js"
       ]
     },
     {

@@ -109,7 +109,10 @@ public;ChangesetType
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
+public;ClipIntersectionStyle
+public;ClipIntersectionStyleProps
 public;ClipStyle
+public;ClipStyleCreateArgs
 public;ClipStyleProps
 beta;CloudContainerUri
 public;Code 
