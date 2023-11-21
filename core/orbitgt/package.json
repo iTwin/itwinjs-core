@@ -36,7 +36,7 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "20.8.8",
+    "@types/node": "~18.16.20",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "debug": "^2.6.9",

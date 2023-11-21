@@ -65,7 +65,7 @@
     "browserslist-to-esbuild": "^1.2.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
-    "@types/node": "20.8.8",
+    "@types/node": "~18.16.20",
     "child_process": "^1.0.2",
     "chrome-launcher": "^0.15.0",
     "cross-env": "^5.1.4",
