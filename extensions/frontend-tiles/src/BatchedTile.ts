@@ -17,6 +17,7 @@ import { frontendTilesOptions } from "./FrontendTiles";
 /** @internal */
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
+  /** See BatchedTile.transformToRoot. */
   transformToRoot: Transform | undefined;
 }
 
@@ -26,7 +27,8 @@ let channel: TileRequestChannel | undefined;
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
   private readonly _unskippable: boolean;
-  private readonly _transformToRoot?: Transform;
+  /** Transform from the tile's local coordinate system to that of the tileset. */
+  public readonly transformToRoot?: Transform;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -50,11 +52,11 @@ export class BatchedTile extends Tile {
     if (!params.transformToRoot)
       return;
 
-    this._transformToRoot = params.transformToRoot;
-    this.boundingSphere.transformBy(this._transformToRoot, this.boundingSphere);
-    this._transformToRoot.multiplyRange(this.range, this.range);
+    this.transformToRoot = params.transformToRoot;
+    this.boundingSphere.transformBy(this.transformToRoot, this.boundingSphere);
+    this.transformToRoot.multiplyRange(this.range, this.range);
     if (this._contentRange)
-      this._transformToRoot.multiplyRange(this._contentRange, this._contentRange);
+      this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -153,15 +155,15 @@ export class BatchedTile extends Tile {
         isLeaf: this.isLeaf,
       });
 
-      if (this._transformToRoot) {
+      if (this.transformToRoot) {
         if (content.graphic) {
           const branch = new GraphicBranch(true);
           branch.add(content.graphic);
-          content.graphic = system.createBranch(branch, this._transformToRoot);
+          content.graphic = system.createBranch(branch, this.transformToRoot);
         }
 
         if (content.contentRange)
-          content.contentRange = this._transformToRoot.multiplyRange(content.contentRange);
+          content.contentRange = this.transformToRoot.multiplyRange(content.contentRange);
       }
 
       return content;
