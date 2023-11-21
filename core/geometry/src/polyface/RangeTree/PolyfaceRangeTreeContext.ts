@@ -8,9 +8,9 @@
 
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonLocationDetail, PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolygonLocationDetail, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
-import { FacetLocationDetail, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
+import { FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
 import { Polyface, PolyfaceVisitor } from "../Polyface";
 import { PolyfaceQuery } from "../PolyfaceQuery";
 import { MinimumValueTester } from "./MinimumValueTester";
@@ -96,7 +96,7 @@ export class PolyfaceRangeTreeContext {
    * @param contextB context for second facet set
    * @param searchFacetInterior whether to include facet interiors in computations (`this.convexFacets` must be true).
   */
-  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false): PolygonLocationDetailPair<number> | undefined {
+  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false): FacetLocationDetailPair | undefined {
     const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, searchFacetInterior);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
@@ -153,10 +153,10 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
         pld = PolygonOps.closestPoint(this.context.visitor.point, this.spacePoint);
       else
         pld = PolygonOps.closestPointOnBoundary(this.context.visitor.point, this.spacePoint);
+      this.context.numFacetTest++;
       if (pld && this.searchState.isNewMinOrTrigger(pld.a)) {
-        this.context.numFacetTest++;
         const edgeCount = this.context.visitor.pointCount;
-        const fld = NonConvexFacetLocationDetail.create(this.context.visitor.currentReadIndex(), edgeCount, pld);
+        const fld = NonConvexFacetLocationDetail.createCapture(this.context.visitor.currentReadIndex(), edgeCount, pld);
         this.searchState.testAndSave(fld, pld.a);
       }
     }
@@ -172,7 +172,7 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   /** Context for second polyface */
   public contextB: PolyfaceRangeTreeContext;
   /** Search state with current min distance and facet pair */
-  public searchState: MinimumValueTester<PolygonLocationDetailPair>;
+  public searchState: MinimumValueTester<FacetLocationDetailPair>;
   /** Whether to include facet interior in search */
   public searchFacetInterior: boolean;
 
@@ -181,13 +181,11 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
     super();
     this.contextA = contextA;
     this.contextB = contextB;
-    this.contextA.visitor.setNumWrap(1);  // so that polygons are closed for PolygonOps.closestApproach
-    this.contextB.visitor.setNumWrap(1);
-    this.searchState = MinimumValueTester.create<PolygonLocationDetailPair>();
+    this.searchState = MinimumValueTester.create<FacetLocationDetailPair>();
     this.searchFacetInterior = searchFacetInterior && contextA.convexFacets && contextB.convexFacets;
   }
-  /** Return the PolygonLocationDetail pair */
-  public getResult(): PolygonLocationDetailPair | undefined {
+  /** Return the facets with closest approach */
+  public getResult(): FacetLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
     }
@@ -200,13 +198,19 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   }
   /** Compute and test the closest approach between two facets, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
+    this.contextA.visitor.setNumWrap(1);  // closed polygons are more efficient for PolygonOps.closestApproach
+    this.contextB.visitor.setNumWrap(1);
     if (this.contextA.visitor.moveToReadIndex(indexA) && this.contextB.visitor.moveToReadIndex(indexB)) {
-      const detail = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point, undefined, this.searchFacetInterior);
+      const pldPair = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point, undefined, this.searchFacetInterior);
       this.contextA.numFacetTest++;
-      if (detail !== undefined) {
-        detail.tagA = indexA;
-        detail.tagB = indexB;
-        this.searchState.testAndSave(detail, detail.dataA.a);
+      if (pldPair && this.searchState.isNewMinOrTrigger(pldPair.dataA.a)) {
+        const edgeCountA = this.contextA.visitor.pointCount - 1;
+        const edgeCountB = this.contextB.visitor.pointCount - 1;
+        const fldPair = FacetLocationDetailPair.create(
+          NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA),
+          NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB),
+        );
+        this.searchState.testAndSave(fldPair, fldPair.detailA.a);
       }
     }
   }
