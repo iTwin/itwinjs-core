@@ -457,7 +457,7 @@ function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: Instan
 }
 
 interface UnitFormatMap {
-  [phenomenon: string]: UnitSystemFormat;
+  [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
 }
 
 function createNativePlatform(
@@ -508,12 +508,11 @@ function createNativePlatform(
     }
 
     const nativeFormatsMap: NativePresentationDefaultUnitFormats = {};
-    Object.keys(map).forEach((phenomenon) => {
-      const unitSystemsFormat = map[phenomenon];
-      nativeFormatsMap[phenomenon] = {
+    Object.entries(map).forEach(([phenomenon, formats]) => {
+      nativeFormatsMap[phenomenon] = (Array.isArray(formats) ? formats : [formats]).map((unitSystemsFormat) => ({
         unitSystems: unitSystemsFormat.unitSystems.map(toNativeUnitSystem),
         format: unitSystemsFormat.format,
-      };
+      }));
     });
     return nativeFormatsMap;
   }

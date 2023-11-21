@@ -283,7 +283,7 @@ export interface PresentationManagerProps {
     addon?: NativePlatformDefinition;
     caching?: PresentationManagerCachingConfig;
     defaultFormats?: {
-        [phenomenon: string]: UnitSystemFormat;
+        [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
     };
     // @deprecated
     defaultLocale?: string;

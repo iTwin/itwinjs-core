@@ -287,7 +287,7 @@ export interface PresentationManagerProps {
    * in requested unit system.
    */
   defaultFormats?: {
-    [phenomenon: string]: UnitSystemFormat;
+    [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
   };
 
   /**
