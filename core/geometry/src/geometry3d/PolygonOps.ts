@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
@@ -19,13 +20,12 @@ import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { PolylineOps } from "./PolylineOps";
 import { Range1d, Range3d } from "./Range";
 import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
-import { XAndY, XYAndZ } from "./XYZProps";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { TaggedDataPair } from "./TaggedDataPair";
+import { XAndY, XYAndZ } from "./XYZProps";
 
 /**
  * Carries data about a point in the plane of a polygon.
@@ -114,10 +114,10 @@ export class PolygonLocationDetail {
 }
 
 /**
- * Carrier structure for a pair of PolygonLocationDetail objects, each with optional typed tag.
+ * Carrier structure for a pair of PolygonLocationDetail objects, each with an optional tag whose type defaults to number (e.g., an index).
  * @public
  */
-export class PolygonLocationDetailPair<TagType> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
+export class PolygonLocationDetailPair<TagType = number> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
   /** Constructor, inputs captured */
   public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType) {
     super(detailA, detailB, tagA, tagB);
@@ -889,13 +889,14 @@ export class PolygonOps {
   }
 
   /** Compute the closest point on the polygon boundary to the given point.
+   * * Compare to [[closestPoint]].
    * @param polygon points of the polygon, closure point optional
    * @param testPoint point p to project onto the polygon edges. Works best when p is in the plane of the polygon.
    * @param tolerance optional distance tolerance to determine point-vertex and point-edge coincidence.
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the closest point `d.point`:
    * * `d.isValid()` returns true if and only if the polygon is nontrivial.
-   * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point, within `distTol`.
+   * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point.
    * * `d.code` classifies the closest point as a vertex (`PolygonLocation.OnPolygonVertex`) or as a point on an edge (`PolygonLocation.OnPolygonEdgeInterior`).
    * * `d.a` is the distance from testPoint to the closest point.
    * * `d.v` can be used to classify p (if p and polygon are coplanar): if n is the polygon normal then `d.v.dotProduct(n)` is +/-/0 if and only if p is inside/outside/on the polygon.
@@ -1018,6 +1019,42 @@ export class PolygonOps {
     return result;
   }
 
+  /**
+   * Compute the closest point on the polygon boundary or its interior to the given point.
+   * * Compare to [[closestPointOnBoundary]].
+   * @param polygon points of the polygon, closure point optional
+   * @param testPoint point p to project onto the polygon edges. Works best when p is in the plane of the polygon.
+   * @param tolerance optional distance tolerance for distinguishing boundary versus interior closest point.
+   * @param result optional pre-allocated object to fill and return
+   * @returns details d of the closest point `d.point`:
+   * * `d.isValid()` returns true if and only if the polygon is nontrivial.
+   * * `d.edgeIndex` and `d.edgeParam` specify the location of the (nearest) boundary point.
+   * * `d.code` classifies the closest point: `PolygonLocation.OnPolygonVertex`, `PolygonLocation.OnPolygonEdgeInterior`, `PolygonLocation.InsidePolygonProjectsToVertex`, or `PolygonLocation.InsidePolygonProjectsToEdgeInterior`.
+   * * `d.a` is the distance from testPoint to the closest point.
+   */
+  public static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+    if (!(polygon instanceof IndexedXYZCollection))
+      return this.closestPoint(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
+    if (!this.unitNormal(polygon, this._normal))
+      return PolygonLocationDetail.create(result);  // invalid
+    const polygonPlane = this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
+    const planePoint = this._workXYZ = polygonPlane.projectPointToPlane(testPoint, this._workXYZ);
+    result = this.closestPointOnBoundary(polygon, planePoint, tolerance, result);
+    if (result.isValid) {
+      const dot = result.v.dotProduct(this._normal);
+      if (dot > 0.0) {  // planePoint is inside, so return it instead of the closest boundary point
+        result.point.setFrom(planePoint);
+        if (PolygonLocation.OnPolygonVertex === result.code)
+          result.code = PolygonLocation.InsidePolygonProjectsToVertex;
+        else if (PolygonLocation.OnPolygonEdgeInterior === result.code)
+          result.code = PolygonLocation.InsidePolygonProjectsToEdgeInterior;
+      }
+      result.a = testPoint.distance(result.point);
+      result.v.setZero(); // not relevant
+    }
+    return result;
+  }
+
   // work objects, allocated as needed
   private static _workXYZ?: Point3d;
   private static _workXY0?: Point2d;
@@ -1044,7 +1081,7 @@ export class PolygonOps {
     if (!this.unitNormal(polygon, this._normal))
       return PolygonLocationDetail.create(result); // invalid
     this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
-    const intersectionPoint = Point3d.createZero(this._workXYZ);
+    const intersectionPoint = this._workXYZ = Point3d.createZero(this._workXYZ);
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
       return PolygonLocationDetail.create(result);
@@ -1220,47 +1257,75 @@ export class PolygonOps {
       coords[i] *= scale; // normalized
     return coords;
   }
-
-  private static _workSegmentA?: LineSegment3d;
-  private static _workSegmentB?: LineSegment3d;
-  private static _workCLD?: CurveLocationDetailPair;
-  private static _workCLDMin?: CurveLocationDetailPair;
   /**
-   * Find smallest distance between polygons.
-   * * Input polygons should have closure edge (wraparound point).
-   * @param polygonA
-   * @param polygonB
-   * @param dMax largest value to consider as an acceptable result.
+   * Force the polygon to be closed.
+   * * If first and last points are not within tolerance, push copy of first point
+   * * If first and last points are within tolerance, set last point equal to first
+   * @param polygon input polygon
+   * @param tolerance closure distance tolerance
    */
-  public static closestApproachOfPolygons<TagType>(polygonA: GrowableXYZArray, polygonB: GrowableXYZArray, dMax: number = Number.MAX_VALUE): PolygonLocationDetailPair<TagType> | undefined {
-    let dMin = dMax;
-    const n1 = polygonA.length;
-    const n2 = polygonB.length;
-    for (let indexA = 0; indexA < n1; indexA++) {
-      this._workSegmentA = fillLineSegmentFromUncheckedIndexWithWrap(polygonA, indexA, this._workSegmentA);
-      for (let indexB = 0; indexB < n2; indexB++) {
-        this._workSegmentB = fillLineSegmentFromUncheckedIndexWithWrap(polygonB, indexB, this._workSegmentB);
-        const workCLD = LineSegment3d.closestApproach(this._workSegmentA, false, this._workSegmentB, false, this._workCLD);
-        if (workCLD !== undefined) {
-          this._workCLD = workCLD; // This will almost always be reassigning the same reused CLD
-          workCLD.detailA.a = indexA;
-          workCLD.detailB.a = indexB;
-          const d = workCLD.detailA.point.distance(workCLD.detailB.point);
-          if (d < dMin) {
-            this._workCLDMin = workCLD.clone(this._workCLDMin);
-            dMin = d;
-          }
-        }
+  public static forceClosure(polygon: Point3d[] | GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance): void {
+    if (polygon.length >= 2) {
+      if (polygon instanceof GrowableXYZArray) {
+        polygon.forceClosure(tolerance);
+      } else if (polygon[0].distance(polygon[polygon.length - 1]) > tolerance) {
+        polygon.push(polygon[0].clone());
+      } else {
+        polygon[polygon.length - 1].setFromPoint3d(polygon[0]);
       }
     }
-    const bestCLD = this._workCLDMin;
-    if (dMin !== Number.MAX_VALUE && dMin <= dMax && bestCLD !== undefined) {
-      return new PolygonLocationDetailPair<TagType>(
-        PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailA.point, bestCLD.detailA.a, bestCLD.detailA.fraction),
-        PolygonLocationDetail.createAtVertexOrEdge(bestCLD.detailB.point, bestCLD.detailB.a, bestCLD.detailB.fraction),
-      );
+  }
+  /**
+   * Return a closed polygon, cloning only if necessary.
+   * * If the first and last points are not identical, call `forceClosure` on a clone of the polygon and return it.
+   * * If the first and last points are identical, return the polygon.
+   * @param polygon input polygon
+   * @param tolerance closure distance tolerance
+   */
+  public static cloneIfClosed(polygon: Point3d[] | IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance): Point3d[] | IndexedXYZCollection {
+    if (polygon.length >= 2) {
+      let forceClosure = false;
+      if (polygon instanceof IndexedXYZCollection)
+        forceClosure = !polygon.almostEqualIndexIndex(0, polygon.length - 1, 0.0);
+      else
+        forceClosure = !polygon[0].isExactEqual(polygon[polygon.length - 1]);
+      if (forceClosure) {
+        const cloned = GrowableXYZArray.create(polygon);
+        this.forceClosure(cloned, tolerance);
+        polygon = cloned;
+      }
     }
-    return undefined;
+    return polygon;
+  }
+  private static _workCLDPair?: CurveLocationDetailPair;
+  /**
+   * Find smallest distance between polygons.
+   * * For efficiency, input polygons should include closure edge.
+   * @param polygonA first polygon
+   * @param polygonB second polygon
+   * @param dMax optional largest approach distance to consider
+   * @param _searchInterior whether to include polygon interiors in computations (false: return closest approach between polygon boundaries only)
+   * @return pair of details, one per polygon. The `a` field of each detail stores the closest approach distance.
+   */
+  public static closestApproach(
+    polygonA: Point3d[] | IndexedXYZCollection,
+    polygonB: Point3d[] | IndexedXYZCollection,
+    dMax: number = Number.MAX_VALUE,
+    _searchInterior: boolean = false,
+  ): PolygonLocationDetailPair | undefined {
+    // TODO: handle interior close approaches as well...
+    let result: PolygonLocationDetailPair | undefined;
+    const polyA = this.cloneIfClosed(polygonA);
+    const polyB = this.cloneIfClosed(polygonB);
+    const cld = this._workCLDPair = PolylineOps.closestApproach(polyA, false, polyB, false, dMax, this._workCLDPair);
+    if (cld && cld.detailA.childDetail && cld.detailB.childDetail) {
+      result = new PolygonLocationDetailPair(
+        PolygonLocationDetail.createAtVertexOrEdge(cld.detailA.point, cld.detailA.childDetail.a, cld.detailA.childDetail.fraction),
+        PolygonLocationDetail.createAtVertexOrEdge(cld.detailB.point, cld.detailB.childDetail.a, cld.detailB.childDetail.fraction),
+      );
+      result.dataA.a = result.dataB.a = cld.detailA.a;
+    }
+    return result;
   }
 }
 
@@ -1613,15 +1678,4 @@ export class Point3dArrayPolygonOps {
       work.length = 0;
     }
   }
-}
-
-function fillLineSegmentFromUncheckedIndexWithWrap(points: GrowableXYZArray, index: number, segment: LineSegment3d | undefined): LineSegment3d {
-  let index1 = index + 1;
-  if (index1 >= points.length)
-    index1 = 0;
-  if (segment === undefined)
-    return LineSegment3d.createCapture(points.getPoint3dAtUncheckedPointIndex(index), points.getPoint3dAtUncheckedPointIndex(index1));
-  points.getPoint3dAtUncheckedPointIndex(index, segment.point0Ref);
-  points.getPoint3dAtUncheckedPointIndex(index1, segment.point1Ref);
-  return segment;
 }

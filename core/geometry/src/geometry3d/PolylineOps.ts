@@ -6,11 +6,15 @@
  * @module CartesianGeometry
  */
 
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
 import { Range1d } from "./Range";
@@ -266,35 +270,86 @@ export class PolylineOps {
     }
     return bisectorPlanes.length > 1 ? bisectorPlanes : undefined;
   }
+
+  private static _workSegmentA?: LineSegment3d;
+  private static _workSegmentB?: LineSegment3d;
+  private static _workLocalDetailPair?: CurveLocationDetailPair;
   /**
-   * * Treat the segment from points[segmentIndex] to points[segmentIndex+1] as an line segment.
-   * * compute the fraction where spacePoint projects to that segment.
-   * * restrict the fraction to 0..1, but optionally extend first and last segments.
-   * @param points polyline points
-   * @param spacePoint any point in space
-   * @param segmentIndex index of the first point of the segment.
-   * @param extendIfInitial true to allow the initial segment to extend below fraction 0
-   * @param extendIfFinal true to allow the final segment to extend above fraction 1
-   * @returns CurveLocationDetail containing the the point and fraction.  The `a` value in the CurveLocationDetail is the segmentIndex.
+   * Find smallest distance between polylines.
+   * * For polylines with many points, it is more efficient to use [[LineString3dRangeTreeContext.searchForClosestApproach]].
+   * @param pointsA first polyline
+   * @param extendA how to extend polylineA forward/backward
+   * @param pointsB second polyline
+   * @param extendB how to extend polylineB forward/backward
+   * @param dMax largest approach distance to consider
+   * @param result optional pre-allocated object to populate and return
+   * @returns pair of details, one for each polyline, with field values:
+   * * `a` is the closest approach distance
+   * * `point` is the point of closest approach
+   * * `fraction` is the global polyline fraction
+   * * `childDetail.a` is the segment index
+   * * `childDetail.fraction` is the local segment fraction
    */
-  public static projectPointToUncheckedIndexedSegment(
-    spacePoint: Point3d,
-    points: Point3d[],
-    segmentIndex: number,
-    extendIfInitial: boolean = false,
-    extendIfFinal: boolean = false,
-    result?: CurveLocationDetail): CurveLocationDetail {
-    let fraction = spacePoint.fractionOfProjectionToLine(points[segmentIndex], points[segmentIndex + 1]);
-    if (fraction < 0.0) {
-      if (segmentIndex > 0 || !extendIfInitial)
-        fraction = 0.0;
-    } else if (fraction > 1.0) {
-      if (!(segmentIndex + 2 === points.length && extendIfFinal))
-        fraction = 1.0;
+  public static closestApproach(
+    pointsA: Point3d[] | IndexedXYZCollection,
+    extendA: VariantCurveExtendParameter,
+    pointsB: Point3d[] | IndexedXYZCollection,
+    extendB: VariantCurveExtendParameter,
+    dMax: number = Number.MAX_VALUE,
+    result?: CurveLocationDetailPair,
+  ): CurveLocationDetailPair | undefined {
+    if (Array.isArray(pointsA))
+      pointsA = new Point3dArrayCarrier(pointsA);
+    if (Array.isArray(pointsB))
+      pointsB = new Point3dArrayCarrier(pointsB);
+    let dMin = dMax;
+    let foundMin = false;
+    const numSegmentA = pointsA.length - 1;
+    const numSegmentB = pointsB.length - 1;
+    const extendSegA = [CurveExtendMode.None, CurveExtendMode.None];
+    const extendSegB = [CurveExtendMode.None, CurveExtendMode.None];
+    // lambda to set extension for first and last segment of a polyline
+    const convertExtend = (extendOut: CurveExtendMode[], extendIn: VariantCurveExtendParameter, segmentIndex: number, numSegments: number) => {
+      extendOut[0] = extendOut[1] = CurveExtendMode.None;
+      if (segmentIndex === 0)
+        extendOut[0] = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendIn, 0);
+      else if (segmentIndex === numSegments - 1)
+        extendOut[1] = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendIn, 1);
+    };
+    // lambda to extract LineSegment3d from polyline
+    const fillSegment = (points: IndexedXYZCollection, index: number, segment: LineSegment3d | undefined): LineSegment3d => {
+      if (segment === undefined)
+        return LineSegment3d.createCapture(points.getPoint3dAtUncheckedPointIndex(index), points.getPoint3dAtUncheckedPointIndex(index + 1));
+      points.getPoint3dAtUncheckedPointIndex(index, segment.point0Ref);
+      points.getPoint3dAtUncheckedPointIndex(index + 1, segment.point1Ref);
+      return segment;
+    };
+    // just test the segments
+    for (let indexA = 0; indexA < numSegmentA; indexA++) {
+      this._workSegmentA = fillSegment(pointsA, indexA, this._workSegmentA);
+      convertExtend(extendSegA, extendA, indexA, numSegmentA);
+      for (let indexB = 0; indexB < numSegmentB; indexB++) {
+        this._workSegmentB = fillSegment(pointsB, indexB, this._workSegmentB);
+        convertExtend(extendSegB, extendB, indexB, numSegmentB);
+        if (undefined !== (this._workLocalDetailPair = LineSegment3d.closestApproach(this._workSegmentA, extendSegA, this._workSegmentB, extendSegB, this._workLocalDetailPair))) {
+          const d = this._workLocalDetailPair.detailA.a;
+          if (d < dMin) {
+            const childDetailA = result?.detailA.childDetail; // save and reuse
+            const childDetailB = result?.detailB.childDetail;
+            result = this._workLocalDetailPair.clone(result);
+            result.detailA.childDetail = result.detailA.clone(childDetailA);  // local to segmentA
+            result.detailA.childDetail.a = indexA;
+            result.detailB.childDetail = result.detailB.clone(childDetailB);  // local to segmentB
+            result.detailB.childDetail.a = indexB;
+            result.detailA.fraction = LineString3d.mapLocalToGlobalFraction(indexA, result.detailA.fraction, numSegmentA);
+            result.detailB.fraction = LineString3d.mapLocalToGlobalFraction(indexB, result.detailB.fraction, numSegmentB);
+            result.detailA.curve = result.detailB.curve = undefined;
+            dMin = d;
+            foundMin = true;
+          }
+        }
+      }
     }
-    const point = points[segmentIndex].interpolate(fraction, points[segmentIndex + 1]);
-    const cld = CurveLocationDetail.createCurveFractionPoint(undefined, fraction, point, result);
-    cld.a = segmentIndex;
-    return cld;
+    return foundMin ? result : undefined;
   }
 }
