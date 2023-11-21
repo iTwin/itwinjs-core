@@ -1931,6 +1931,9 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-backend': workspace:*
@@ -1981,6 +1984,9 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
       '@itwin/oidc-signin-tool': 3.6.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
