@@ -20,13 +20,12 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { UnivariateBezier } from "../../numerics/BezierPolynomials";
-import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../../numerics/Newton";
+import { CurveCurveIntersectionXYRRToRRD, Newton2dUnboundedWithDerivative } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
@@ -38,35 +37,6 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 
 // cspell:word XYRR
-
-/**
- * Private class for refining bezier-bezier intersections.
- * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
- * @internal
- */
-export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
-  private _curveA: BezierCurveBase;
-  private _curveB: BezierCurveBase;
-  private _rayA: Ray3d;
-  private _rayB: Ray3d;
-  constructor(curveA: BezierCurveBase, curveB: BezierCurveBase) {
-    super();
-    this._curveA = curveA;
-    this._curveB = curveB;
-    this._rayA = Ray3d.createZero();
-    this._rayB = Ray3d.createZero();
-  }
-  public evaluate(fractionA: number, fractionB: number): boolean {
-    this._curveA.fractionToPointAndDerivative(fractionA, this._rayA);
-    this._curveB.fractionToPointAndDerivative(fractionB, this._rayB);
-    this.currentF.setOriginAndVectorsXYZ(
-      this._rayB.origin.x - this._rayA.origin.x, this._rayB.origin.y - this._rayA.origin.y, 0.0,
-      -this._rayA.direction.x, -this._rayA.direction.y, 0.0,
-      this._rayB.direction.x, this._rayB.direction.y, 0.0,
-    );
-    return true;
-  }
-}
 /**
  * Handler class for XY intersections between _geometryB and another geometry.
  * * Instances are initialized and called from CurveCurve.
@@ -279,8 +249,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     //  So do the overlap first.  This should do a quick exit in non-coincident case.
     const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
     if (overlap) { // the lines are coincident
-      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1)) {
-        this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(
+        overlap, pointA0, pointA1, pointB0, pointB1,
+        extendA0, extendA1, extendB0, extendB1,
+      )) {
+        this.recordPointWithLocalFractions(
+          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
+          overlap.detailB.fraction, cpB, fractionB0, fractionB1,
+          reversed, overlap,
+        );
       }
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
       if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
@@ -461,53 +438,56 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       }
     }
   }
-  // Caller accesses data from two arcs.
-  // Each matrix has [U V C] in (x,y,w) form from projection.
-  // Invert the projection matrix matrixA.
-  // Apply the inverse to matrixB. Then arc b is an ellipse in the circular space of A.
+  /**
+   * Compute the intersection of two xy-arcs.
+   * * Each matrix has [U V C] in (x,y,w) form from homogeneous projection (local to world).
+   * * Arcs are ordered so that matrixA is better conditioned.
+   */
   private dispatchArcArcThisOrder(
-    cpA: Arc3d,
-    matrixA: Matrix3d, // homogeneous xyw projection !!!
+    cpA: Arc3d, // arc closer to being circular
+    matrixA: Matrix3d,
     extendA: boolean,
     cpB: Arc3d,
-    matrixB: Matrix3d, // homogeneous xyw projection !!!
+    matrixB: Matrix3d,
     extendB: boolean,
     reversed: boolean,
   ): void {
+    // inverseA transforms arcA to its local coordinates, where it is the unit xy-circle.
     const inverseA = matrixA.inverse();
     if (inverseA) {
-      const localB = inverseA.multiplyMatrixMatrix(matrixB);  // localB->localA transform
+      // localB defines the arc formed by transforming arcB into the local coordinates of arcA
+      const localB = inverseA.multiplyMatrixMatrix(matrixB);
       const ellipseRadians: number[] = [];
       const circleRadians: number[] = [];
+      // find the intersection of the transformed arcs
       TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
         localB.coffs[2], localB.coffs[5], localB.coffs[8],  // center xyw
         localB.coffs[0], localB.coffs[3], localB.coffs[6],  // vector0 xyw
         localB.coffs[1], localB.coffs[4], localB.coffs[7],  // vector90 xyw
-        ellipseRadians, circleRadians);
+        ellipseRadians, circleRadians,
+      );
+      // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
         const fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
         const fractionB = cpB.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
-        // hm .. do we really need to check the fractions?  We know they are internal to the beziers
         if (this.acceptFraction(extendA, fractionA, extendA) && this.acceptFraction(extendB, fractionB, extendB)) {
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
         }
       }
     }
   }
-  // Caller accesses data from two arcs.
-  // Selects the best conditioned arc (in xy parts) as "circle after inversion".
-  // Solves the arc-arc equations.
+  /**
+   * We have 2 xy-arcs. 
+   * 1- We pick the arc that is closest to circular (larger condition number is closer to circular).
+   * 2- Transform it to local coords, where it becomes the unit xy-circle. 
+   * 3- Use the same map to transform the other arc.
+   * 4- Find the intersection of arc and unit circle.
+   * 5- Convert intersection angles to fractions and record intersections.
+   */
   private dispatchArcArc(
     cpA: Arc3d, extendA: boolean, cpB: Arc3d, extendB: boolean, reversed: boolean,
   ): void {
-    // Arc: X = C + cU + sV
-    // Line:  contains points A0,A1
-    // Arc point colinear with line if det (A0, A1, X) = 0
-    // with homogeneous xyw points and vectors.
-    // With equational X:   det (A0, A1, C) + c det (A0, A1, U) + s det (A0, A1, V) = 0.
-    // solve for theta.
-    // evaluate points.
-    // project back to line.
+
     let matrixA: Matrix3d;
     let matrixB: Matrix3d;
     if (this._worldToLocalPerspective) {
@@ -527,11 +507,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     const conditionA = matrixA.conditionNumber();
     const conditionB = matrixB.conditionNumber();
+    // pick the arc that is closest to circular.
     if (conditionA > conditionB)
       this.dispatchArcArcThisOrder(cpA, matrixA, extendA, cpB, matrixB, extendB, reversed);
     else
       this.dispatchArcArcThisOrder(cpB, matrixB, extendB, cpA, matrixA, extendA, !reversed);
-    // overlap handling .. perspective is not handled . . .
+    // overlap handling. perspective is not handled.
     if (!this._coincidentGeometryContext) {
       // do nothing
     } else if (this._worldToLocalPerspective) {
@@ -693,32 +674,32 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           );
           if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
-            const xyMatchingFunction = new BezierBezierIntersectionXYRRToRRD(bezierA, bezierB);
+            // We have a near intersection at fractions on the two beziers
+            // Iterate on the curves for a true intersection
+            const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
             if (newtonSearcher.runIterations()) {
               bezierAFraction = newtonSearcher.getU();
               bezierBFraction = newtonSearcher.getV();
             }
-            // We have a near intersection at fractions on the two beziers !!!
-            // Iterate on the curves for a true intersection ....
-            // NEEDS WORK -- just accept . . .
             const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
             const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
-            const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
-            const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
-            const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
-            const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
-            if (!xyzA0.isAlmostEqualXY(xyzA1))
-              errors++;
-            if (!xyzB0.isAlmostEqualXY(xyzB1))
-              errors++;
-            if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
-              errors++;
-            if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
-              errors++;
-            if (this.acceptFraction(false, bcurveAFraction, false) &&
-              this.acceptFraction(false, bcurveBFraction, false)) {
+            if (!"verify results") {
+              const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
+              const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
+              const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
+              const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
+              if (!xyzA0.isAlmostEqualXY(xyzA1))
+                errors++;
+              if (!xyzB0.isAlmostEqualXY(xyzB1))
+                errors++;
+              if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
+                errors++;
+              if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
+                errors++;
+            }
+            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
               this.recordPointWithLocalFractions(
                 bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
               );
@@ -952,7 +933,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     this._geometryB = geomB;  // restore
   }
-  /** Low level dispatch to geomA given a CurveChainWithDistanceIndex in geometryB. */
+  /** Low level dispatch of CurveChainWithDistanceIndex. */
   private dispatchCurveChainWithDistanceIndex(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
