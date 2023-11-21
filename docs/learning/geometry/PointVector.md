@@ -43,7 +43,7 @@ Typical names in the tables are:
 | create from index in packed xyzxyz..  | p = Point3d.createFromPacked (Float64Array, pointIndex) | | | |
 | unweight from indexed in packed xyzwxyzw.. |p = Point3d.createFromPackedXYZW (Float64Array, pointIndex) | | | |
 | create scaled copy | p = Point3d.createScale (pointA: XYAndZ, scalefactor) | | | |
-| create sum of 2 weighted | p = Point3d.createAdd2Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number) | v = Vector3d.createAdd2Scaled (pointA: XYAndZ, scaleA, pointB: XYAndZ: pointB, scaleB)| | |
+| create sum of 2 weighted | p = Point3d.createAdd2Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number) | v = Vector3d.createAdd2Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number,)| | |
 | create sum of 2 weighted | | v = Vector3d.createAdd2ScaledXYZ (ax, ay, az, scaleA, bx, by, bz, scaleB)| | |
 | create sum of 3 weighted | p = Point3d.createAdd3Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number) |v = Vector3d.createAdd3Scaled (pointA: XYAndZ, scaleA, pointB: XYAndZ: pointB, scaleB, XYAndZ: pointC, scaleC) | | |
 | Create from polar radius, angle, and z | | p = Point3d.createPolar (radius, angle, z) | p = Point2d.createPolar (radius, angle)| |
