@@ -36,9 +36,7 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
         break;
       }
     }
-
   });
-
   return found;
 }
 
@@ -117,10 +115,8 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "SchemaB.testBaseClass");
       expect(foundDiag).to.equal(false);
-
     });
 
     it("should report baseClass delta when base class has different full name", async () => {
@@ -156,7 +152,6 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClassA", "SchemaB.testBaseClassB");
       expect(foundDiag).to.equal(true);
     });
@@ -210,15 +205,50 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "DummyReferenceTwo.testBaseClass");
       expect(foundDiag).to.equal(true);
     });
+
+    it("should not report baseClass delta if the full names are the same, even though the schema containing the definition classA has a different name ", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          testBaseClass: {
+            schemaItemType: "EntityClass",
+            description: "Test base class",
+          },
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "SchemaA.testBaseClass",
+          },
+        },
+      }, contextA);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        references: [
+          {
+            name: "SchemaA",
+            version: "1.2.3",
+          },
+        ],
+        items: {
+          testEntityClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "SchemaA.testBaseClass",
+          },
+        },
+        
+      }, contextA)
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+      const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-105", "SchemaA.testBaseClass", "SchemaA.testBaseClass");
+      expect(foundDiag).to.equal(false);
+    })
   });
 
   /**
-     * Linear draft schema example, typeName property has different schema but same name
-     * The item referenced exists within the schema.
+     * Linear draft schema examples
      */
   describe("Struct Class comparisons", () => {
     it("should not report property delta for typeName of the property with same name and is defined in schemas being compared", async () => {
@@ -266,7 +296,6 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddress", "SchemaB.inSpanAddress", "structClass");
       expect(foundDiag).to.equal(false);
     });
@@ -316,7 +345,6 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddressA", "SchemaB.inSpanAddressB", "structClass");
       expect(foundDiag).to.equal(true);
     });
@@ -379,7 +407,6 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.inSpanAddress", "SchemaB.inSpanAddress", "structClass");
       expect(foundDiag).to.equal(true);
     });
@@ -437,7 +464,6 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.categoryTest", "SchemaB.categoryTest", "category");
       expect(foundDiag).to.equal(false);
     });
@@ -505,10 +531,8 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-
       const foundDiag = findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.categoryTest", "SchemaB.categoryTest", "category");
       expect(foundDiag).to.equal(true);
-
     });
   });
 });
