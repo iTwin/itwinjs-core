@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix Map Feature Info for ArcGIS map services when reprojection is needed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
