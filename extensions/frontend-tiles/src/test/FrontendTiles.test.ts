@@ -160,7 +160,7 @@ describe("obtainMeshExportTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchExports(resource: NodeJS.fetch.RequestInfo | RequestInfo): Promise<Response> {
+  async function fetchExports(resource: RequestInfo | URL): Promise<Response> {
     expect(typeof resource).to.equal("string");
     const url = resource as string;
 
