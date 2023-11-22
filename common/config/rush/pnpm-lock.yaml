@@ -2386,11 +2386,16 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
+      rxjs: ^7.8.1
+      rxjs-for-await: ^1.0.0
       sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~5.0.2
+    dependencies:
+      rxjs: 7.8.1
+      rxjs-for-await: 1.0.0_rxjs@7.8.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -11105,6 +11110,20 @@ packages:
 
   /rx/2.3.24:
     resolution: {integrity: sha512-Ue4ZB7Dzbn2I9sIj8ws536nOP2S53uypyCkCz9q0vlYD5Kn6/pu4dE+wt2ZfFzd9m73hiYKnnCb1OyKqc+MRkg==}
+    dev: false
+
+  /rxjs-for-await/1.0.0_rxjs@7.8.1:
+    resolution: {integrity: sha512-MJhvf1vtQaljd5wlzsasvOjcohVogzkHkUI0gFE9nGhZ15/fT2vR1CjkLEh37oRqWwpv11vHo5D+sLM+Aw9Y8g==}
+    peerDependencies:
+      rxjs: ^7.0.0
+    dependencies:
+      rxjs: 7.8.1
+    dev: false
+
+  /rxjs/7.8.1:
+    resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
+    dependencies:
+      tslib: 2.6.2
     dev: false
 
   /safe-array-concat/1.0.1:
