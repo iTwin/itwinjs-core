@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "4.3.0-dev.20",
+  "version": "4.3.0-dev.29",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -40,13 +40,17 @@
     "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
+  "dependencies": {
+    "rxjs": "^7.8.1",
+    "rxjs-for-await": "^1.0.0"
+  },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.20",
-    "@itwin/core-common": "workspace:^4.3.0-dev.20",
-    "@itwin/core-frontend": "workspace:^4.3.0-dev.20",
-    "@itwin/core-quantity": "workspace:^4.3.0-dev.20",
-    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.20",
-    "@itwin/presentation-common": "workspace:^4.3.0-dev.20"
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.29",
+    "@itwin/core-common": "workspace:^4.3.0-dev.29",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.29",
+    "@itwin/core-quantity": "workspace:^4.3.0-dev.29",
+    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.29",
+    "@itwin/presentation-common": "workspace:^4.3.0-dev.29"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

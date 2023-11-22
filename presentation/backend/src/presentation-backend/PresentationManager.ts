@@ -183,7 +183,7 @@ export interface PresentationManagerCachingConfig {
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
  * @public
- * @deprecated in 4.x. The type has been moved to `@itwin/presentation-common` package.
+ * @deprecated in 4.3. The type has been moved to `@itwin/presentation-common` package.
  */
 export type UnitSystemFormat = CommonUnitSystemFormat;
 

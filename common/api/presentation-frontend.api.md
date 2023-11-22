@@ -179,6 +179,7 @@ export interface HiliteSet {
 export class HiliteSetProvider {
     static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
+    getHiliteSetIterator(selection: Readonly<KeySet>): AsyncIterableIterator<HiliteSet>;
 }
 
 // @public
@@ -503,6 +504,7 @@ export class SelectionManager implements ISelectionProvider {
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
+    getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
     // @internal (undocumented)
