@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ClipStyle } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
-import { TestUtility } from "../../TestUtility";
+import { TestUtility } from "../../TestUtility.js";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;

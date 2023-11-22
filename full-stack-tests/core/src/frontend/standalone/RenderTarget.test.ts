@@ -9,10 +9,10 @@ import {
   IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 import {
   Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
-} from "../TestViewport";
+} from "../TestViewport.js";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

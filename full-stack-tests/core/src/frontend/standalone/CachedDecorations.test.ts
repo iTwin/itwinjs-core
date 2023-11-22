@@ -8,9 +8,9 @@ import {
   SnapshotConnection,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
-import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUtility } from "../TestUtility.js";
+import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport.js";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl.js";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;

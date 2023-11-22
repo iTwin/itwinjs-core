@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("SnapshotConnection", () => {
   before(async () => {

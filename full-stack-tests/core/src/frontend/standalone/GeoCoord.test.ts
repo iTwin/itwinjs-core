@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 // spell-checker: disable
 

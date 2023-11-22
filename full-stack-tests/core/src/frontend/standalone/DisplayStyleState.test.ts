@@ -11,8 +11,8 @@ import {
   SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { TestUtility } from "../TestUtility.js";
+import { TestRpcInterface } from "../../common/RpcInterfaces.js";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;

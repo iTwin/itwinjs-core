@@ -1,6 +1,8 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "outDir": "./lib"
   },
   "include": [

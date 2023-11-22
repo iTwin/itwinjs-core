@@ -11,8 +11,6 @@ There are two types of tests;
 - A second set of integration tests which use the iModelHub, and other parts of the iTwin Platform.
   - See [How to setup and run](#how-to-setup-and-run-integration-tests)
 
-> Note: webpack sometimes runs out of memory, particularly on Linux, when TypeScript sourcemaps are generated for this package. If you need them for debugging purposes, uncomment the block marked "UNCOMMENT THIS BLOCK FOR SOURCE MAPS" in webpack.config.js. Make sure to revert that change before committing.
-
 ## How to setup and run integration tests
 
 To run the integration tests, there is an initial configuration step required to get started.

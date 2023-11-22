@@ -9,7 +9,7 @@ import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOv
 import {
   EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;

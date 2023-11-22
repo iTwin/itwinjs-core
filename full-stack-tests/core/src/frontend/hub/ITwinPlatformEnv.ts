@@ -8,7 +8,7 @@ import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient as AuthorIModelsClient, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
 import { IModelsClient as FrontendIModelsClient } from "@itwin/imodels-client-management";
-import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
+import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper.js";
 
 export interface IModelNameArg {
   readonly iModelName: string;

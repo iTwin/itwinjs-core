@@ -57,7 +57,7 @@ import {
   WhereClauseExp,
 } from "@itwin/ecsql-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("ECSql Abstract Syntax Tree", () => {
   let conn: IModelConnection;

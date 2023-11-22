@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;

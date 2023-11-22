@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { testOnScreenViewport } from "../TestViewport";
-import { TestUtility } from "../TestUtility";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers.js";
+import { testOnScreenViewport } from "../TestViewport.js";
+import { TestUtility } from "../TestUtility.js";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;

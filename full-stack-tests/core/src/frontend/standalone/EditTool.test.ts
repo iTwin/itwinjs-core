@@ -7,8 +7,8 @@ import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
-import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { TestUtility } from "../TestUtility";
+import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc.js";
+import { TestUtility } from "../TestUtility.js";
 
 const expect = chai.expect;
 const assert = chai.assert;

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, ThreeDTileFormatInterpreter, TileAdmin } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend.js";
+import { TestUtility } from "../TestUtility.js";
 import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";

@@ -6,8 +6,8 @@ import { assert } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
-import { TestUtility } from "../TestUtility";
-import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport.js";
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;

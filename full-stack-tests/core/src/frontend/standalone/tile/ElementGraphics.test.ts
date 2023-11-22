@@ -7,7 +7,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../../TestUtility";
+import { TestUtility } from "../../TestUtility.js";
 
 describe("requestElementGraphics", () => {
   let imodel: SnapshotConnection;

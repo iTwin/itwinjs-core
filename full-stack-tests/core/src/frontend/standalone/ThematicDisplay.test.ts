@@ -7,8 +7,8 @@ import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport.js";
 
 describe("Thematic display", () => {
   let imodel: IModelConnection;

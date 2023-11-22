@@ -8,8 +8,8 @@ import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
-import { TestUtility } from "../../TestUtility";
-import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
+import { TestUtility } from "../../TestUtility.js";
+import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport.js";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;

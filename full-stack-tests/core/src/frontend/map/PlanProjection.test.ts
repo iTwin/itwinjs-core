@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { testOnScreenViewport } from "../TestViewport.js";
 
 describe("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;

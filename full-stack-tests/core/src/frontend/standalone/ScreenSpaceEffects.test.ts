@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
-import { Color, TestViewport, testViewports } from "../TestViewport";
+import { TestUtility } from "../TestUtility.js";
+import { Color, TestViewport, testViewports } from "../TestViewport.js";
 
 describe("Screen-space effects", () => {
   let imodel: SnapshotConnection;

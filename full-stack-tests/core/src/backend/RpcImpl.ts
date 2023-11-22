@@ -6,10 +6,10 @@
 import * as nock from "nock";
 import * as path from "path";
 import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
+import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager.js";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
-import { TestRpcInterface } from "../common/RpcInterfaces";
-import { AzuriteTest } from "./AzuriteTest";
+import { TestRpcInterface } from "../common/RpcInterfaces.js";
+import { AzuriteTest } from "./AzuriteTest.js";
 import { OpenMode } from "@itwin/core-bentley";
 
 const viewContainer = "views-itwin1";
@@ -74,5 +74,3 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
     IModelHost.authorizationClient = saveAuthClient;
   }
 }
-
-TestRpcImpl.register();

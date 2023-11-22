@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;

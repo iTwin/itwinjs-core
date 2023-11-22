@@ -11,8 +11,8 @@ import {
 import {
   ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
 } from "@itwin/core-frontend";
-import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
-import { TestUtility } from "../TestUtility";
+import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler.js";
+import { TestUtility } from "../TestUtility.js";
 
 describe("Viewport changed events", async () => {
   // test.bim:

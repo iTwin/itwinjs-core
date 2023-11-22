@@ -10,12 +10,12 @@ import {
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl.js";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
-import { TestUtility } from "../../TestUtility";
-import { testViewports } from "../../TestViewport";
-import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
-import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { TestUtility } from "../../TestUtility.js";
+import { testViewports } from "../../TestViewport.js";
+import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1.js";
+import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test.js";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;

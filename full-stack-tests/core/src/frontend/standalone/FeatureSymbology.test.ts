@@ -9,7 +9,7 @@ import {
   ViewFlags,
 } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
-import { TestUtility } from "../TestUtility";
+import { TestUtility } from "../TestUtility.js";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
