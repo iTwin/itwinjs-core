@@ -24,6 +24,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
+import { FormatsMap } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
@@ -348,6 +349,8 @@ export interface PresentationManagerProps {
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
+    // @alpha
+    defaultFormats?: FormatsMap;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
     requestTimeout?: number;
