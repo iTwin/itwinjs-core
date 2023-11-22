@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -198,6 +198,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		5F367F8C28B724C400DED71B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -211,7 +212,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/build/ $AppBundleRoot/Assets/www/\ncp -L -R $AssetRoot/lib/mobile/ $AppBundleRoot/Assets/\n";
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/lib/ $AppBundleRoot/Assets/www/\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -452,7 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 4.1.5;
+				version = 4.3.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -15,11 +15,13 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
 import { HitDetail } from "../../HitDetail";
+
+const loggerCategory = "ImageryMapTileTree";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -264,8 +266,8 @@ class ImageryTileLoader extends RealityTileLoader {
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
 
-  public async getMapFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
-    await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree, hit);
+  public async getMapFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
+    await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree, hit, options);
   }
 
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
@@ -352,10 +354,18 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(id: ImageryMapLayerTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(id.settings);
-    if (undefined === imageryProvider)
+    if (undefined === imageryProvider) {
+      Logger.logError(loggerCategory, `Failed to create imagery provider for format '${id.settings.formatId}'`);
       return undefined;
+    }
 
-    await imageryProvider.initialize();
+    try {
+      await imageryProvider.initialize();
+    } catch (e: any) {
+      Logger.logError(loggerCategory, `Could not initialize imagery provider for map layer '${id.settings.name}' : ${e}`);
+      throw e;
+    }
+
     const modelId = iModel.transientIds.getNext();
     const tilingScheme = imageryProvider.tilingScheme;
     const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
@@ -371,11 +381,17 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
 
 /** A reference to one of our tile trees. The specific TileTree drawn may change when the desired imagery type or target iModel changes.
- * @internal
+ * @beta
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-  public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
-    super(layerSettings, layerIndex, iModel);
+  /**
+   * Constructor for an ImageryMapLayerTreeReference.
+   * @param layerSettings Map layer settings that are applied to the ImageryMapLayerTreeReference.
+   * @param layerIndex The index of the associated map layer. Usually passed in through [[createMapLayerTreeReference]] in [[MapTileTree]]'s constructor.
+   * @param iModel The iModel containing the ImageryMapLayerTreeReference.
+   */
+  public constructor(args: { layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection }) {
+    super(args.layerSettings, args.layerIndex, args.iModel);
   }
 
   public override get castsShadows() { return false; }
@@ -385,6 +401,7 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }
 
+  /* @internal */
   public override resetTreeOwner() {
     return this.iModel.tiles.resetTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }

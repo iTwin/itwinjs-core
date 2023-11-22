@@ -420,4 +420,100 @@ export class NewYorkDataset {
       labelingInfo: null,
     },
   };
+
+  public static uniqueValueSMSDrawingInfo = {
+    drawingInfo: {
+      renderer: {
+        type: "uniqueValue",
+        field1: "WEAPON",
+        field2: null,
+        field3: null,
+        defaultSymbol: {
+          type: "esriSMS",
+          style: "esriSMSCircle",
+          color: [165, 83, 183, 255],
+          size: 15,
+          angle: 0,
+          xoffset: 0,
+          yoffset: 0,
+        },
+        defaultLabel: "<all other values>",
+        uniqueValueInfos: [
+          {
+            symbol: {
+              type: "esriSMS",
+              style: "esriSMSCross",
+              color: [165, 83, 183, 255],
+              size: 15,
+              angle: 0,
+              xoffset: 0,
+              yoffset: 0,
+            },
+            value: " ",
+            label: " ",
+            description: "test",
+          },
+          {
+            symbol: {
+              type: "esriSMS",
+              style: "esriSMSDiamond",
+              color: [165, 83, 183, 255],
+              size: 15,
+              angle: 0,
+              xoffset: 0,
+              yoffset: 0,
+            },
+            value: "blunt_instrument",
+            label: "blunt_instrument",
+            description: "",
+          },
+          {
+            symbol: {
+              type: "esriSMS",
+              style: "esriSMSSquare",
+              color: [165, 83, 183, 255],
+              size: 15,
+              angle: 0,
+              xoffset: 0,
+              yoffset: 0,
+            },
+            value: "gun",
+            label: "gun",
+            description: "",
+          },
+          {
+            symbol: {
+              type: "esriSMS",
+              style: "esriSMSTriangle",
+              color: [165, 83, 183, 255],
+              size: 15,
+              angle: 0,
+              xoffset: 0,
+              yoffset: 0,
+            },
+            value: "knife",
+            label: "knife",
+            description: "",
+          },
+          {
+            symbol: {
+              type: "esriSMS",
+              style: "esriSMSX",
+              color: [165, 83, 183, 255],
+              size: 15,
+              angle: 0,
+              xoffset: 0,
+              yoffset: 0,
+            },
+            value: "other",
+            label: "other",
+            description: "",
+          },
+        ],
+        fieldDelimiter: ",",
+      },
+      transparency: 0,
+      labelingInfo: null,
+    },
+  };
 }

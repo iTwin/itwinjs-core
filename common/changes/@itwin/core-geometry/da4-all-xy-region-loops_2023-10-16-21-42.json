@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "logic error in coincident segment detection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

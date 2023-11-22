@@ -9,7 +9,7 @@
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
-import { AnyCurve } from "../CurveChain";
+import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";

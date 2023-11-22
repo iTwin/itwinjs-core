@@ -91,7 +91,7 @@ async function testRegisterIpcHandler() {
 }
 
 async function testInitializeProvidedRpcInterface() {
-  abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+  abstract class TestRpcInterface extends RpcInterface {
     public static readonly interfaceName = "TestRpcInterface";
     public static interfaceVersion = "0.0.0";
   }
@@ -187,7 +187,7 @@ async function testWindowSizeSettings() {
   assert(sizeAndPos?.height === height);
 
   const x = 15;
-  const y = 16;
+  const y = 25;
   window.setPosition(x, y);
   await BeDuration.wait(250); // wait for new position to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
@@ -37,20 +37,20 @@ export class IModelSession {
       if (!iModelData.iTwinName)
         throw new Error(`The iModel has no iTwin name, so it cannot get the iTwin.`);
 
-      const client = new ProjectsAccessClient();
-      const iTwinList: ITwin[] = await client.getAll(requestContext, {
-        search: {
-          searchString: iModelData.iTwinName,
-          propertyName: ProjectsSearchableProperty.Name,
-          exactMatch: true,
-        }});
-
+      const client = new ITwinsAccessClient();
+      const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(requestContext, ITwinSubClass.Project , {
+        displayName: iModelData.iTwinName,
+      });
+      const iTwinList = iTwinListResponse.data;
+      if (!iTwinList) {
+        throw new Error(`ITwin ${iModelData.iTwinName} returned with no data when queried.`);
+      }
       if (iTwinList.length === 0)
         throw new Error(`ITwin ${iModelData.iTwinName} was not found for the user.`);
       else if (iTwinList.length > 1)
         throw new Error(`Multiple iTwins named ${iModelData.iTwinName} were found for the user.`);
 
-      iTwinId = iTwinList[0].id;
+      iTwinId = iTwinList[0].id ?? iModelData.iTwinId!;
     } else
       iTwinId = iModelData.iTwinId!;
 

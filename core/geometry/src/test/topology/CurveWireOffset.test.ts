@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveChain";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { CurveChain } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";

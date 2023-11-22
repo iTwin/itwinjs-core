@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Allow specifying formatting props for multiple unit systems per phenomenon.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

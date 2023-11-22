@@ -1169,13 +1169,37 @@ export interface ClassifierTileTreeId {
 }
 
 // @public
+export class ClipIntersectionStyle {
+    readonly color: RgbColor;
+    static create(color?: RgbColor, width?: number): ClipIntersectionStyle;
+    // (undocumented)
+    static readonly defaults: ClipIntersectionStyle;
+    // (undocumented)
+    static fromJSON(props?: ClipIntersectionStyleProps): ClipIntersectionStyle;
+    // (undocumented)
+    get matchesDefaults(): boolean;
+    toJSON(): ClipIntersectionStyleProps | undefined;
+    readonly width: number;
+}
+
+// @public
+export interface ClipIntersectionStyleProps {
+    color?: RgbColorProps;
+    width?: number;
+}
+
+// @public
 export class ClipStyle {
+    readonly colorizeIntersection: boolean;
+    // @deprecated (undocumented)
     static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
+    static create(style: ClipStyleCreateArgs): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
     readonly insideColor?: RgbColor;
+    readonly intersectionStyle?: ClipIntersectionStyle;
     get matchesDefaults(): boolean;
     readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
@@ -1183,9 +1207,21 @@ export class ClipStyle {
 }
 
 // @public
+export interface ClipStyleCreateArgs {
+    colorizeIntersection?: boolean;
+    cutStyle?: CutStyle;
+    insideColor?: RgbColor;
+    intersectionStyle?: ClipIntersectionStyle;
+    outsideColor?: RgbColor;
+    produceCutGeometry?: boolean;
+}
+
+// @public
 export interface ClipStyleProps {
+    colorizeIntersection?: boolean;
     cutStyle?: CutStyleProps;
     insideColor?: RgbColorProps;
+    intersectionStyle?: ClipIntersectionStyleProps;
     outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
@@ -2445,17 +2481,17 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta
+// @public
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     get current(): QueryRowProxy;
     get done(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     getMetaData(): Promise<QueryPropertyMetaData[]>;
-    // (undocumented)
+    // @internal (undocumented)
     getRowInternal(): any[];
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
@@ -6671,7 +6707,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     structName?: string;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     // (undocumented)
     [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined>;
@@ -6988,7 +7024,35 @@ export class QueryOptionsBuilder {
     setUsePrimaryConnection(val: boolean): this;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
+export enum QueryParamType {
+    // (undocumented)
+    Blob = 10,
+    // (undocumented)
+    Boolean = 0,
+    // (undocumented)
+    Double = 1,
+    // (undocumented)
+    Id = 2,
+    // (undocumented)
+    IdSet = 3,
+    // (undocumented)
+    Integer = 4,
+    // (undocumented)
+    Long = 5,
+    // (undocumented)
+    Null = 6,
+    // (undocumented)
+    Point2d = 7,
+    // (undocumented)
+    Point3d = 8,
+    // (undocumented)
+    String = 9,
+    // (undocumented)
+    Struct = 11
+}
+
+// @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
@@ -7019,7 +7083,7 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta
+// @public
 export interface QueryRowProxy {
     [propertyName: string]: QueryValueType;
     [propertyIndex: number]: QueryValueType;
@@ -7028,7 +7092,7 @@ export interface QueryRowProxy {
     toRow(): any;
 }
 
-// @beta
+// @public
 export interface QueryStats {
     backendCpuTime: number;
     backendMemUsed: number;
@@ -7038,7 +7102,7 @@ export interface QueryStats {
     totalTime: number;
 }
 
-// @beta
+// @public
 export type QueryValueType = any;
 
 // @public
@@ -9914,6 +9978,10 @@ export interface TxnNotifications {
     notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
     notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
+    // (undocumented)
+    notifyReplayedExternalTxns: () => void;
+    // (undocumented)
+    notifyReplayExternalTxns: () => void;
     // (undocumented)
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }

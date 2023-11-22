@@ -29,7 +29,7 @@ function startWebServer() {
   });
   // All we do is serve out static files, so We have only the simple public path route.
   // If args.resources is relative, we expect it to be relative to process.cwd
-  const resourceRoot = path.resolve(process.cwd(), "./build");
+  const resourceRoot = path.resolve(process.cwd(), "./lib");
   appExp.use(express.static(resourceRoot));
   appExp.use("*", (_req, resp) => {
     resp.sendFile(path.resolve(resourceRoot, "index.html"));

@@ -9,9 +9,8 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
-  ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeature, MapLayerFeatureInfo,
-  MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
+  ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
@@ -95,7 +94,7 @@ export class ArcGISIdentifyRequestUrl {
     newUrl.searchParams.append("geometryType", json.geometryType);
 
     if (json.sr) {
-      newUrl.searchParams.append("sr", `${json.geometryType}`);
+      newUrl.searchParams.append("sr", `${json.sr}`);
     }
 
     if (json.layers) {
@@ -184,9 +183,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    const childIds = this.getPotentialChildIds(tile);
-    if (tile.quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
+  protected override _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(quadId);
+    if (quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
       resolveChildren(childIds);
       return;
     }
@@ -334,8 +333,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       geometryType: "esriGeometryPoint",
       tolerance,
       mapExtent: {low: {x: bbox.left, y: bbox.bottom}, high: {x: bbox.right, y: bbox.top}},
+      sr: 3857,
       imageDisplay: {width: this.tileSize, height: this.tileSize, dpi: 96},
-      layers: {prefix: "visible", layerIds},
+      layers: {prefix: "top", layerIds},
       returnGeometry,
       maxAllowableOffset}, 3 /* 1mm accuracy*/);
 
@@ -367,7 +367,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
     if (!this._querySupported)
       return;
 
@@ -376,9 +376,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const maxAllowableOffsetFactor = 2;
     const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
 
-    const json = await this.getIdentifyData(quadId, carto, 5, true, maxAllowableOffset);
+    const tolerancePixel = options?.tolerance ?? 7;
+    const json = await this.getIdentifyData(quadId, carto, tolerancePixel, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
-      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
+      const renderer = new ArcGisGraphicsRenderer({viewport: hit.viewport});
 
       const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 

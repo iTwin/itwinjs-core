@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./SchemaFileLocater";
+export * from "./SchemaXml";
 export * from "./SchemaJsonFileLocater";
 export * from "./SchemaXmlFileLocater";
 export * from "./StubSchemaXmlFileLocater";
+export * from "./SchemaXmlStringLocater";
 
 /** @docs-package-description
  * The ecschema-locaters package contains classes for locating ECSchemas within a given

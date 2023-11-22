@@ -20,40 +20,16 @@ These principles and rules govern how `Model`s and `Element`s are organized to m
 - A single party should be responsible for all `Element`s in a given `Model`.
 - A single party can be responsible for multiple `Model`s.
 - Modeling the physical perspective:
+  - Use [Spatial Composition](./spatial-composition.md) rules and patterns in order to model `Element`s that spatially organize other `Element`s into a spatial-breakdown hierarchy.
   - Organize `PhysicalModel`s and `PhysicalElement`s primarily around the implementations of physical systems (that implement functions). These will tend to align with responsibility boundaries.
-  - Where a physical Entity is part of multiple physical systems, it should be modeled by a `PhysicalElement` in a `Model` owned by the primary responsible party. Other parties can “share” the `PhysicalElement` using a `PhysicalElementIncludesPhysicalElement` relationship.
+  - Where a physical Entity is part of multiple physical systems, it should be modeled by a `PhysicalElement` in a `Model` owned by the primary responsible party. All parties can “share” the `PhysicalElement` using `PhysicalSystemGroupsMembers` relationships.
 - Within the constraints above, the domain author can impose additional organization for domain-specific reasons.
-- Domain authors should give users flexibility to further-partition for arbitrary reasons, so what could logically be modeled in a single `Model` could be partitioned into two, with one “including” the other.
-- “Include” relationships should never be recursive.
+- Domain authors should give users flexibility to further-partition for arbitrary reasons, so what could logically be modeled in a single `Model` could be partitioned into two, via a sibling `Subject`.
 - Software should not be too “rigid” in its expectations of how `Element`s are organized in to `Model`s, especially in the physical perspective. Functional and analytical `Model`s can be more rigid, because they are highly-specialized.
 
-## The Top-Model for Each Perspective
+## Considerations while Modeling a Domain
 
-### A top-Model models a top-level Entity from a specified perspective
-
-As described in [Top of the World](./top-of-the-world.md) the root `Subject` identifies the real-world [Object](../references/glossary.md#Object) modeled in a `BIS Repository`.  When [modeling an Object with BIS](../intro/modeling-with-bis.md) it is split into multiple [Entities](../references/glossary.md#Entity), one for each modeling perspective.  Each modeling perspective is represented by a partition `Element` added as a child of the `Subject`.  A top-Model is created for each partition to model the Object from the Entities perspective.
-
-In summary:
-
-- **Subject**: mentions/identifies the highest-level Object to be modeled.
-- **Partition**: establishes the perspective-specific Entity of the Object to be modeled.
-- **Top-Model**:  models the Entity from the given perspective.
-
-![BIS Repository and Real World Mapping](../media/organizing-models-and-elements-01.png)
-
-### Contents of a top-Model
-
-The top-`Model` models the complete [Entity](../references/glossary.md#Entity) established by the `Subject` and partition.
-
-The top-`Model` should contain one `Element` for each discrete Object included in the `Subject`. When the modeled `Subject` refers to a single discrete Object, the top-`Model` will contain only a single `Element` that corresponds directly to a perspective on that Object. In this case, the Code and DisplayLabel of that `Element` may be the same or similar to that of the `Subject` (particularly if this is the [Primary Perspective] for the Object) because they are “about” the same thing.
-
-When the modeled `Subject` is ‘compound’ (referring to multiple discrete Objects), there will be multiple `Element`s in the top-`Model`. An example compound-`Subject` might be “Deliverables of Phase II of Project X”. The project’s contract will contain a list of the top-level things-to-be-built, and the top-`Model` would contain one `Element` for each thing-to-be-built in that list. This honors the [Single Responsible Party Principal (SRPP)](./srpp.md) because one General Contractor will ultimately be responsible for all of the deliverables.
-
-If you find that a top-`Model` is unable to follow the [SRPP](./srpp.md), then the modeled-`Subject` needs to be decomposed into child `Subject`s. For example, with a compound-`Subject` like “The Dock and the largest boat that must be able to dock there”. The top-`Model` for that `Subject` would contain separate `Element`s for the dock and the boat, but a single party is unlikely to be responsible for both. Creating “Dock” and “Boat” child `Subject`s solves this problem.
-
-## Modeling from the “Top-Model” on down
-
-The top-`Model` is where modeling from a given perspective really begins. As a domain author, you are faced with many options for modeling your domain, which are described below.
+As a domain author, you are faced with many options for modeling your domain, which are described below.
 
 ### Multiple domain contexts
 
@@ -83,13 +59,18 @@ Each Entity will be modeled with an `Element`. Does the [Entity](../references/g
 
 - **“Atomic” Element**: There are no “parts” to model. Atomic `Element`s can still model significant internal structure using the GeometryStream, Properties, and `ElementAspect`s.
 - **Parent-Child Modeling**: The whole Entity is modeled as “parts” consisting of a parent `Element` and its child `Element`s. The “sum” of the parent and child `Element`s models the whole Entity. These `Element`s implement `IParentElement`. See [Parent-Child Relationships](../fundamentals/element-fundamentals.md#Parent-Child-Relationships).
+- **Spatial-Composition**: The whole Entity corresponds to an `Element` that spatially organizes other `Elements`. The whole Entity needs to be decomposed into a hierarchy of major volumetric parts, which ultimately organize `PhysicalElement`s and `SpatialLocationElement`s. See [Spatial Composition](./spatial-composition.md).
 - **Sub-modeling**: The “parts” are modeled in a sub-`Model` of this `Element`. The sub-modeled `Element` represents the whole Entity. The “sum” of all `Element`s in the sub-`Model` of the `Element` also represents the whole Entity, but at a finer granularity. These `Element`s implement `ISubModeledElement`.
 
-In the picture below, Entity 0 is modeled with an `ISubModeledElement`, so `Element` P-0 represents the whole [Entity](../references/glossary.md#Entity) 0, and its sub-`Model` also represents the whole [Entity](../references/glossary.md#Entity) 0, at a different granularity.  [Entity](../references/glossary.md#Entity) 4 is modeled as an `IParentElement`, so `Element`s P-4, P-5, and P-6 collectively represent [Entity](../references/glossary.md#Entity) 4 and its parts.
+In the picture below, Entity 0 is the volume occupied by a [Spatial Organizer](../../domains/SpatialComposition.ecschema.md#ispatialorganizer), such as an *Infrastructure Facility*, so it is modeled according to the rules and patterns of the [Spatial Composition](./spatial-composition.md) schema. Thus, `Element` F-0 represents the Whole [Entity](../references/glossary.md#Entity) 0, which *aggregates* three major *FacilityParts*, [Entities](../references/glossary.md#Entity) 1, 2 and 3, modeled by `Elements` FP-1, FP-2 and FP3, which spatially breaks it down. Furthermore, [Entities](../references/glossary.md#Entity) 4 and 5 are *spatially organized* by [Entity](../references/glossary.md#Entity) FP-3, and modeled by `Elements` P-4 and P-5.
+
+![Whole-Part Mapping](../media/organizing-models-and-elements-01.png)
+
+In a different case, depicted by the picture below, Entity 0 is modeled with an `ISubModeledElement`, so `Element` P-0 represents the whole [Entity](../references/glossary.md#Entity) 0, and its sub-`Model` also represents the whole [Entity](../references/glossary.md#Entity) 0, at a different granularity. [Entity](../references/glossary.md#Entity) 4 is modeled as an `IParentElement`, so `Element`s P-4, P-5, and P-6 collectively represent [Entity](../references/glossary.md#Entity) 4 and its parts.
 
 ![Whole-Part Mapping](../media/organizing-models-and-elements-02.webp)
 
-Use these questions to determine whether to use parent-child modeling vs sub-modeling:
+Use these questions to determine whether to use parent-child modeling, sub-modeling or spatial composition:
 
 ![Whole-Part Mapping Flowchart](../media/organizing-models-and-elements-03.png)
 

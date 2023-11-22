@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveChain";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";

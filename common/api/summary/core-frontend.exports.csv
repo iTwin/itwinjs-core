@@ -47,6 +47,7 @@ internal;class ArcGisGeometryBaseRenderer
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
 internal;ArcGisGraphicsRenderer 
+internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
@@ -373,7 +374,7 @@ public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): st
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 beta;ImageryMapLayerFormat 
-internal;ImageryMapLayerTreeReference 
+beta;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
@@ -480,6 +481,7 @@ public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
 beta;MapFeatureInfo
+beta;MapFeatureInfoOptions
 beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
@@ -502,10 +504,11 @@ internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
+public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
-internal;class MapLayerTileTreeReference 
+beta;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 beta;MapSubLayerFeatureInfo
 public;MapTile 
@@ -561,6 +564,7 @@ internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutpu
 internal;MockRender
 public;ModalOptions
 public;ModalReturn
+beta;ModelDisplayTransform
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
@@ -820,7 +824,7 @@ public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
 public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
 public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
-internal;TentativeOrAccuSnap
+public;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
 public;class TerrainMeshProvider

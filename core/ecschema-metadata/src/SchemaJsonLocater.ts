@@ -13,14 +13,14 @@ import { SchemaKey } from "./SchemaKey";
 /**
  * Gets the full schema Json for the input schema name or undefined if not found
  * @throws [Error] if the schema is found but json cannot be returned
- * @alpha
+ * @beta
  */
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 /**
  * A  ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
  * that returns the Schema Json for a given schema name
- * @alpha
+ * @beta
  */
 export class SchemaJsonLocater implements ISchemaLocater {
   public constructor(private _getSchema: SchemaPropsGetter) { }

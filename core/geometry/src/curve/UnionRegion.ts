@@ -7,7 +7,7 @@
  * @module Curve
  */
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveChain";
+import { AnyCurve } from "./CurveTypes";
 import { CurveCollection } from "./CurveCollection";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
@@ -40,7 +40,7 @@ export class UnionRegion extends CurveCollection {
     super();
     this._children = [];
   }
-  /** Create a `UnionRegion` with given region children */
+  /** Create a `UnionRegion` by capturing the given regions as children. */
   public static create(...data: Array<ParityRegion | Loop>): UnionRegion {
     const result = new UnionRegion();
     for (const child of data) {
@@ -61,7 +61,7 @@ export class UnionRegion extends CurveCollection {
     const clone = new UnionRegion();
     let child;
     for (child of this._children) {
-      const childStrokes = child.cloneStroked(options) as ParityRegion | Loop;
+      const childStrokes = child.cloneStroked(options);
       if (childStrokes)
         clone.children.push(childStrokes);
     }
@@ -72,11 +72,11 @@ export class UnionRegion extends CurveCollection {
     return new UnionRegion();
   }
   /**
-   * Try to add a child.
+   * Try to add a child (by capturing it).
    * * Returns false if the `AnyCurve` child is not a region type.
    */
   public tryAddChild(child: AnyCurve): boolean {
-    if (child && child instanceof ParityRegion || child instanceof Loop) {
+    if (child && (child instanceof ParityRegion || child instanceof Loop)) {
       this._children.push(child);
       return true;
     }

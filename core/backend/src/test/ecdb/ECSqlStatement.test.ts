@@ -55,6 +55,7 @@ describe("ECSqlStatement", () => {
   const outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
+  const abbreviatedBlobVal = `{"bytes":${ blobVal.byteLength }}`;
 
   it("check asynchronous step and stepForInsert methods", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
@@ -1755,13 +1756,13 @@ describe("ECSqlStatement", () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Foo" modifier="Sealed">
-          <ECProperty propertyName="Range" typeName="binary"/>
+          <ECProperty propertyName="Range3d" typeName="binary"/>
         </ECEntityClass>
        </ECSchema>`), async (ecdb) => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Range) VALUES(?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlStatement) => {
         stmt.bindRange3d(1, testRange);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1769,7 +1770,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
       ecdb.saveChanges();
-      ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT [Range3d] FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
@@ -1987,7 +1988,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([id]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, id);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, blobVal.slice(0, 1));
+        assert.deepEqual(row.bl, abbreviatedBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([id]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2103,6 +2104,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const singleBlobVal = blobVal.slice(0, 1);
+      const abbreviatedSingleBlobVal = `{"bytes":${ singleBlobVal.byteLength }}`;
       const emptyBlobVal = new Uint8Array();
 
       const fullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
@@ -2136,7 +2138,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([fullId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, fullId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, singleBlobVal);
+        assert.deepEqual(row.bl, abbreviatedBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([fullId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2154,7 +2156,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([singleId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, singleId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl, singleBlobVal);
+        assert.deepEqual(row.bl, abbreviatedSingleBlobVal);
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([singleId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2172,7 +2174,7 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([emptyId]), { abbreviateBlobs: true, ...selectSingleRow }, (row: any) => {
         assert.equal(row.id, emptyId);
         assert.equal(row.className, "Test.Foo");
-        assert.deepEqual(row.bl.length, 0);
+        assert.deepEqual(row.bl, "{\"bytes\":0}");
       }), 1);
 
       assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Bl FROM test.Foo WHERE ECInstanceId=?", QueryBinder.from([emptyId]), { abbreviateBlobs: false, ...selectSingleRow }, (row: any) => {
@@ -2888,6 +2890,129 @@ describe("ECSqlStatement", () => {
         assert.equal(colInfo1.getPropertyName(), "MyGenerated");
         assert.isUndefined(colInfo1.getOriginPropertyName());
       });
+    });
+  });
+
+  it("ecsql statements with QueryBinder", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="booleanProperty" typeName="boolean"/>
+          <ECProperty propertyName="blobProperty" typeName="binary"/>
+          <ECProperty propertyName="doubleProperty" typeName="double"/>
+          <ECProperty propertyName="customIdProperty" typeName="id"/>
+          <ECProperty propertyName="customIdSetProperty" typeName="idSet"/>
+          <ECProperty propertyName="intProperty" typeName="int"/>
+          <ECProperty propertyName="longProperty" typeName="long"/>
+          <ECProperty propertyName="stringProperty" typeName="string"/>
+          <ECProperty propertyName="nullProperty" typeName="int"/>
+          <ECProperty propertyName="point2dProperty" typeName="point2d"/>
+          <ECProperty propertyName="point3dProperty" typeName="point3d"/>
+        </ECEntityClass>
+        <ECStructClass typeName="Bar" modifier="Sealed">
+          <ECProperty propertyName="structClassProperty" typeName="string"/>
+        </ECStructClass>
+        <ECEntityClass typeName="Baz" modifier="Sealed">
+          <ECStructProperty propertyName="structProperty" typeName="Bar"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const booleanValue = true;
+      const blobValue = new Uint8Array([0, 0, 0]);
+      const doubleValue = 12.12;
+      const customIdValue = "1234";
+      const customIdSetValue = ["0x9"];
+      const intValue = 10;
+      const longValue = 1e9;
+      const stringValue = "test string value";
+      const point2dValue = new Point2d(10, 20);
+      const point3dValue = new Point3d(15, 30, 45);
+      const structValue = { structClassProperty: "test string value for struct property" };
+
+      let r = await ecdb.withPreparedStatement(
+        `INSERT INTO ts.Foo(booleanProperty, blobProperty, doubleProperty, customIdProperty, customIdSetProperty, intProperty, longProperty, stringProperty, nullProperty, point2dProperty, point3dProperty)
+          VALUES(:booleanValue, :blobValue, :doubleValue, :customIdValue, :customIdSetValue, :intValue, :longValue, :stringValue, :nullValue, :point2dValue, :point3dValue)`,
+        async (stmt: ECSqlStatement) => {
+          stmt.bindBoolean("booleanValue", booleanValue);
+          stmt.bindBlob("blobValue", blobValue);
+          stmt.bindDouble("doubleValue", doubleValue);
+          stmt.bindId("customIdValue", customIdValue);
+          stmt.bindId("customIdSetValue", customIdSetValue[0]);
+          stmt.bindInteger("intValue", intValue);
+          stmt.bindInteger("longValue", longValue);
+          stmt.bindString("stringValue", stringValue);
+          stmt.bindNull("nullValue");
+          stmt.bindPoint2d("point2dValue", point2dValue);
+          stmt.bindPoint3d("point3dValue", point3dValue);
+          return stmt.stepForInsert();
+        },
+      );
+
+      ecdb.saveChanges();
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+      assert.equal(r.id, "0x1");
+
+      const params = new QueryBinder();
+      params.bindBoolean("booleanValue", booleanValue);
+      params.bindBlob("blobValue", blobValue);
+      params.bindDouble("doubleValue", doubleValue);
+      params.bindId("customIdValue", customIdValue);
+      params.bindInt("intValue", intValue);
+      params.bindLong("longValue", longValue);
+      params.bindString("stringValue", stringValue);
+      params.bindPoint2d("point2dValue", point2dValue);
+      params.bindPoint3d("point3dValue", point3dValue);
+      params.bindIdSet("customIdSetValue", customIdSetValue);
+
+      let reader = ecdb.createQueryReader(
+        `SELECT booleanProperty, blobProperty, doubleProperty, customIdProperty, customIdSetProperty, intProperty, longProperty, stringProperty, nullProperty, point2dProperty, point3dProperty FROM ts.Foo
+          WHERE booleanProperty = :booleanValue AND blobProperty = :blobValue AND doubleProperty = :doubleValue AND customIdProperty = :customIdValue AND InVirtualSet(:customIdSetValue, customIdSetProperty) AND
+          intProperty = :intValue AND longProperty = :longValue AND stringProperty = :stringValue AND point2dProperty = :point2dValue AND point3dProperty = :point3dValue`,
+        params,
+      );
+      const row = (await reader.toArray())[0];
+
+      assert.isNotNull(row);
+      assert.equal(row[0], booleanValue);
+      assert.deepEqual(row[1], blobValue);
+      assert.equal(row[2], doubleValue);
+      assert.equal(row[3], customIdValue);
+      assert.equal(row[4], "9");
+      assert.equal(row[5], intValue);
+      assert.equal(row[6], longValue);
+      assert.equal(row[7], stringValue);
+      assert.equal(row[8], null);
+      assert.deepEqual(row[9], { X: 10, Y: 20 });
+      assert.deepEqual(row[10], { X: 15, Y: 30, Z: 45 });
+
+      assert.isFalse(await reader.step());
+
+      r = await ecdb.withPreparedStatement(
+        "INSERT INTO ts.Baz(structProperty) VALUES(:structValue)",
+        async (stmt: ECSqlStatement) => {
+          stmt.bindStruct("structValue", structValue);
+          return stmt.stepForInsert();
+        },
+      );
+
+      ecdb.saveChanges();
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+      assert.equal(r.id, "0x2");
+
+      reader = ecdb.createQueryReader(
+        `SELECT * FROM ts.Baz`,
+      );
+
+      await reader.step();
+
+      assert.deepEqual(reader.current.structProperty, structValue);
+
+      const paramsWithStruct = new QueryBinder();
+      paramsWithStruct.bindStruct("structValue", structValue);
+      reader = ecdb.createQueryReader("SELECT * FROM ts.Baz WHERE structProperty = :structValue", paramsWithStruct);
+
+      await assert.isRejected(reader.toArray(), "Struct type binding not supported");
     });
   });
 });

@@ -5,7 +5,7 @@
     "outDir": "./lib",
     "allowJs": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -15,7 +15,8 @@
       "dom",
       "dom.iterable",
       "esnext"
-    ]
+    ],
+    "types": ["vite/client"],
   },
   "include": [
     "./src/**/*.ts",

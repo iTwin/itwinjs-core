@@ -7,7 +7,7 @@
  */
 import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
+import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -133,6 +133,16 @@ export class ECDb implements IDisposable {
       Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
       throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
     }
+  }
+
+  /**
+   * Returns the full schema for the input name.
+   * @param name The name of the schema e.g. 'ECDbMeta'
+   * @returns The SchemaProps for the requested schema
+   * @throws if the schema can not be found or loaded.
+   */
+  public getSchemaProps(name: string): ECSchemaProps {
+    return this.nativeDb.getSchemaProps(name);
   }
 
   /**
@@ -289,7 +299,7 @@ export class ECDb implements IDisposable {
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
-   * @beta
+   * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {

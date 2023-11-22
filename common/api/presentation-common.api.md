@@ -387,15 +387,7 @@ export interface ContentModifiersList {
 export class ContentPropertyValueFormatter {
     constructor(_koqValueFormatter: KoqPropertyValueFormatter);
     // (undocumented)
-    formatArrayValue(type: ArrayTypeDescription, value: Value): DisplayValue[];
-    // (undocumented)
-    formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value): string;
-    // (undocumented)
     formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue>;
-    // (undocumented)
-    formatStructValue(type: StructTypeDescription, value: Value): DisplayValuesMap;
-    // (undocumented)
-    formatValue(type: TypeDescription, value: Value): DisplayValue;
 }
 
 // @public
@@ -534,10 +526,14 @@ export class Descriptor implements DescriptorSource {
     // @deprecated
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
+    // @beta
+    getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -571,6 +567,8 @@ export interface DescriptorJSON {
     inputKeysHash: string;
     // @beta (undocumented)
     instanceFilter?: InstanceFilterDefinition;
+    // @beta (undocumented)
+    ruleset?: Ruleset;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -613,6 +611,8 @@ export interface DescriptorSource {
     readonly inputKeysHash?: string;
     // @beta
     instanceFilter?: InstanceFilterDefinition;
+    // @beta
+    readonly ruleset?: Ruleset;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;
@@ -974,6 +974,8 @@ export class Field {
     isPropertiesField(): this is PropertiesField;
     isReadonly: boolean;
     label: string;
+    // @beta
+    matchesDescriptor(descriptor: FieldDescriptor): boolean;
     name: string;
     get parent(): NestedContentField | undefined;
     priority: number;
@@ -1046,6 +1048,15 @@ export interface FormatOptions {
     // (undocumented)
     unitSystem?: UnitSystemKey;
 }
+
+// @public
+export interface FormatsMap {
+    // (undocumented)
+    [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
+}
+
+// @internal (undocumented)
+export const getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined;
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined;
@@ -1558,7 +1569,7 @@ export interface KindOfQuantityInfo {
 
 // @alpha (undocumented)
 export class KoqPropertyValueFormatter {
-    constructor(_schemaContext: SchemaContext);
+    constructor(_schemaContext: SchemaContext, defaultFormats?: FormatsMap);
     // (undocumented)
     format(value: number, options: FormatOptions): Promise<string | undefined>;
     // (undocumented)
@@ -2264,6 +2275,8 @@ export class PropertiesField extends Field {
     }, categories: CategoryDescription[]): PropertiesField | undefined;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     getFieldDescriptor(): FieldDescriptor;
+    // @beta
+    matchesDescriptor(descriptor: FieldDescriptor): boolean;
     properties: Property[];
     toJSON(): PropertiesFieldJSON;
 }
@@ -3111,6 +3124,14 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
+
+// @public
+export interface UnitSystemFormat {
+    // (undocumented)
+    format: FormatProps;
+    // (undocumented)
+    unitSystems: UnitSystemKey[];
+}
 
 // @internal (undocumented)
 export interface UnsetRulesetVariableParams extends CommonIpcParams {

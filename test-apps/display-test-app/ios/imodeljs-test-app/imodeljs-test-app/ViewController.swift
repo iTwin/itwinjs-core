@@ -53,7 +53,7 @@ extension JSON {
         }
         return nil
     }
-    
+
     /// Check if a key's value equals "YES"
     /// - Parameter key: The key to check.
     /// - Returns: True if the value of the given key equals "YES".
@@ -121,22 +121,22 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     private var configData: JSON = [:]
     private var authClient: AuthorizationClient? = nil
     private var documentCompletion : ((URL?) -> Void)? = nil
-    
+
     private func parseArguments() {
         // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
         ProcessInfo.processInfo.arguments[1...].forEach { arg in
             if arg.hasPrefix("IMJS_") {
-                let split = arg.split(separator: "=")
+                let split = arg.split(separator: "=", maxSplits: 1)
                 if split.count == 2 {
                     configData[String(split[0])] = String(split[1])
                 }
             }
         }
     }
-    
+
     func setupBackend() {
-        let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/main.js"))
-        if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets"),
+        let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/www/mobile/main.js"))
+        if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets/www/mobile"),
            let envString = try? String(contentsOf: envUrl),
            let envData = JSON.fromString(envString) {
             configData = envData
@@ -151,6 +151,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
         let webView = WKWebView(frame: .zero, configuration: config)
+#if DEBUG && compiler(>=5.8)
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+#endif
         self.webView = webView
         webView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(webView)
@@ -177,7 +182,8 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
 
         webView.addUserContentController(OpenModelHander(self))
-        webView.addUserContentController(ModelOpenedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
+        webView.addUserContentController(ModelOpenedHandler())
+        webView.addUserContentController(FirstRenderFinishedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
         let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
@@ -190,12 +196,12 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         })
         self.present(alert, animated: true)
     }
-    
+
     /// Show alert for webkit alert
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
         showAlert(message: message, completionHandler: completionHandler)
     }
-    
+
     func pickSnapshot(completion: @escaping (URL?) -> Void) {
         self.documentCompletion = completion
         let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.bim-imodel"], in: .open)
@@ -209,7 +215,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     func getDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    
+
     func copyExternalFileWithPrompt(srcUrl: URL, destUrl: URL, handler: @escaping () -> ()) {
         if FileManager.default.fileExists(atPath: destUrl.path) {
             // File exists, check if it is the same
@@ -258,7 +264,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         documentCompletion?(url)
         documentCompletion = nil
     }
-    
+
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         let documentsDirectory = getDocumentsDirectory()
         let documentsDirectoryPath = documentsDirectory.path
@@ -279,11 +285,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             }
         }
     }
-    
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         callDocumentCompletion(nil)
     }
-  
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
@@ -296,6 +302,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             } else {
                 setupFrontend(bimFile: exists ? bimFile : nil)
                 if !exists {
+                    print("File does not exist: \(bimFile.path)")
                     // alert the user after the view controller has loaded
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
                         self.showAlert(message: "File does not exist: \(bimFile.path)")
@@ -310,15 +317,15 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             setupFrontend()
         }
     }
-    
+
     class OpenModelHander: NSObject, MessageHandler {
         static let NAME = "openModel"
         private var viewController: ViewController
-        
+
         init (_ viewController: ViewController) {
             self.viewController = viewController
         }
-        
+
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if let webView = self.viewController.webView, let promiseName = message.body as? String, promiseName.count > 0 {
                 viewController.pickSnapshot() { url in
@@ -329,22 +336,30 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             }
         }
     }
-    
+
     class ModelOpenedHandler : NSObject, MessageHandler {
         static let NAME = "modelOpened"
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let stringMessage = message.body as? String {
+                print("iModel opened: \(stringMessage)")
+            }
+        }
+    }
+
+    class FirstRenderFinishedHandler : NSObject, MessageHandler {
+        static let NAME = "firstRenderFinished"
         private var exitOnMessage: Bool
-        
+
         init(exitOnMessage: Bool) {
             self.exitOnMessage = exitOnMessage
         }
-        
+
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if let stringMessage = message.body as? String {
-                // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
-                // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
-                // on this string to know if it succeeded.
-                print("iModel opened: \(stringMessage)")
-            }
+            // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
+            // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
+            // on this string to know if it succeeded.
+            print("First render finished.")
             if exitOnMessage {
                 exit(EXIT_SUCCESS)
             }

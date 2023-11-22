@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote APIs required to implement a MapLayerFormat to beta",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

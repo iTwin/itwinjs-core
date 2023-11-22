@@ -96,10 +96,11 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { /
    * It is a good idea to close the readonly connection *before* closing the writeable connection so the WAL file will be deleted.
    */
   readonly readonly?: boolean;
-  /**
-   * If true, open the briefcase readonly and watch the briefcase for changes from another connection and restart the defaultTxn whenever they happen.
-   * The restart happens only after the next to the (backend) event loop, and will generate events that reflect the changes
-   * from the other connection.
+  /** If true, open the briefcase readonly and monitor it for changes originating from another connection.
+   * When such changes are detected, the default txn will be restarted.
+   * The restart occurs only after the next iteration of the backend event loop, and will generate events that reflect the changes from the other connection.
+   * This can be useful in contexts where the read-only connection is displaying a view of the contents of the briefcase while another, non-interactive program
+   * is adding txns to the briefcase. It may not be reliable if the writable connection is undoing or redoing txns.
    * @note This cannot be used with cloud-based briefcases.
    */
   readonly watchForChanges?: boolean;

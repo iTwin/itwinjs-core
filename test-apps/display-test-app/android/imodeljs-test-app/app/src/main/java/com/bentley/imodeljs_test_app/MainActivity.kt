@@ -25,6 +25,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URLConnection
+import kotlin.system.exitProcess
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -102,7 +103,7 @@ class AssetsPathHandler(context: Context) : WebViewAssetLoader.PathHandler {
     }
 
     private fun openAsset(path: String): InputStream {
-        return mContext.assets.open(removeLeadingSlash(path), AssetManager.ACCESS_STREAMING)
+        return mContext.assets.open("www/${removeLeadingSlash(path)}", AssetManager.ACCESS_STREAMING)
     }
 
     private fun guessMimeType(path: String): String {
@@ -123,22 +124,34 @@ class MainActivity : AppCompatActivity() {
     private lateinit var host: IModelJsHost
     private var promiseName: String = ""
     private lateinit var env: JSONObject
+    private var exitAfterModelOpened = false
 
     companion object {
         const val BIM_CACHE_DIR = "bim_cache"
     }
 
+    private fun log(message: String) {
+        // Print out a message with a unique prefix so that it can be uniquely found in the TORRENT
+        // of text that comes out of adb logcat.
+        println("com.bentley.display_test_app: $message")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(true)
+        loadEnvJson()
+        val authClient = DtaServiceAuthorizationClient.create(env)
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
-        host = IModelJsHost(this, alwaysExtractAssets, true)
-        host.startup()
+        host = IModelJsHost(this, alwaysExtractAssets, authClient, true).apply {
+            setBackendPath("www/mobile")
+            setHomePath("www/home")
+            startup()
+        }
 
         val webView = WebView(this)
         // using a WebViewAssetLoader so that the localization json files load properly
         // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in version 2.0.1)
-        val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/assets/", AssetsPathHandler(this)).build()
+        val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/", AssetsPathHandler(this)).build()
 
         webView.webViewClient = object : WebViewClientCompat() {
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest): WebResourceResponse? {
@@ -155,6 +168,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // The linter is broken, and claims that the interface functions in this class do not have
+        // the @JavascriptInterface annotation, despite the fact that they do.
+        @Suppress("JavascriptInterface")
         webView.addJavascriptInterface(
             object {
                 @JavascriptInterface
@@ -167,7 +183,16 @@ class MainActivity : AppCompatActivity() {
                 @JavascriptInterface
                 @Suppress("unused")
                 fun modelOpened(modelName: String) {
-                    println("iModel opened: $modelName")
+                    log("iModel opened: $modelName")
+                }
+
+                @JavascriptInterface
+                @Suppress("unused", "UNUSED_PARAMETER")
+                fun firstRenderFinished(_dummy: String) {
+                    log("First render finished.")
+                    if (exitAfterModelOpened) {
+                        exitProcess(0)
+                    }
                 }
             }, "DTA_Android")
 
@@ -175,25 +200,44 @@ class MainActivity : AppCompatActivity() {
         setContentView(webView)
 
         var args = "&standalone=true"
-        loadEnvJson()
         env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
             // ensure fileName already exists in the external files
             getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
                 val fullPath = File(filesDir, fileName)
-                if (fullPath.exists())
+                if (fullPath.exists()) {
                     args += "&iModelName=${Uri.encode(fullPath.toString())}"
+                } else {
+                    log("requested imodel ($fullPath) not found!")
+                }
             }
         }
 
-        if (env.has("IMJS_IGNORE_CACHE"))
+        if (authClient != null) {
+            val remoteIds = listOfNotNull(
+                env.optStringNotEmpty("IMJS_ITWIN_ID"),
+                env.optStringNotEmpty("IMJS_IMODEL_ID")
+            )
+            if (remoteIds.size == 2) {
+                args += "&iTwinId=${Uri.encode(remoteIds[0])}&iModelId=${Uri.encode(remoteIds[1])}"
+            }
+        }
+
+        if (isYesEnv("IMJS_IGNORE_CACHE"))
             args += "&ignoreCache=true"
 
-        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html", args)
+        if (isYesEnv("IMJS_EXIT_AFTER_MODEL_OPENED"))
+            exitAfterModelOpened = true
+
+        host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/index.html", args)
+    }
+
+    private fun isYesEnv(name: String): Boolean {
+        return env.optString(name) == "YES"
     }
 
     private fun loadEnvJson() {
         env = try {
-            JSONObject(assets.open("env.json").bufferedReader().use { it.readText() })
+            JSONObject(assets.open("www/mobile/env.json").bufferedReader().use { it.readText() })
         } catch (ex: Exception) {
             JSONObject()
         }

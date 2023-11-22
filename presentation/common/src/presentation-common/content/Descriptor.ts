@@ -12,8 +12,9 @@ import {
   RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
 import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
+import { Ruleset } from "../rules/Ruleset";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
+import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -179,6 +180,8 @@ export interface DescriptorJSON {
   fieldsFilterExpression?: string;
   /** @beta */
   instanceFilter?: InstanceFilterDefinition;
+  /** @beta */
+  ruleset?: Ruleset;
 }
 
 /**
@@ -268,6 +271,12 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /**
+   * A ruleset used to create this descriptor.
+   * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
+   * @beta
+   */
+  readonly ruleset?: Ruleset;
+  /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
@@ -326,6 +335,12 @@ export class Descriptor implements DescriptorSource {
   public readonly fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
   public readonly contentFlags: number;
+  /**
+   * A ruleset used to create this descriptor.
+   * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
+   * @beta
+   */
+  public readonly ruleset?: Ruleset;
   /** Field used to sort the content */
   public sortingField?: Field;
   /** Sorting direction */
@@ -375,6 +390,7 @@ export class Descriptor implements DescriptorSource {
     this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.instanceFilter = source.instanceFilter;
+    this.ruleset = source.ruleset;
   }
 
   /** Serialize [[Descriptor]] to JSON */
@@ -401,6 +417,7 @@ export class Descriptor implements DescriptorSource {
       this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
       this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
+      this.ruleset !== undefined && { ruleset: this.ruleset },
     );
   }
 
@@ -438,6 +455,14 @@ export class Descriptor implements DescriptorSource {
    */
   public getFieldByName(name: string, recurse?: boolean): Field | undefined {
     return getFieldByName(this.fields, name, recurse);
+  }
+
+  /**
+   * Get field by its descriptor.
+   * @beta
+   */
+  public getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined {
+    return getFieldByDescriptor(this.fields, fieldDescriptor, recurse);
   }
 
   /**
