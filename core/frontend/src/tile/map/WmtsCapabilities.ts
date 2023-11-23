@@ -9,6 +9,7 @@
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
 import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
+import { MapLayerUrlParam } from "@itwin/core-common";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",
@@ -551,14 +552,24 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined> {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmtsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
     }
 
-    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
+    const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
+    tmpUrl.searchParams.append("request", "GetCapabilities");
+    tmpUrl.searchParams.append("service", "WMTS");
+    if (customParam) {
+      customParam.forEach((param) => {
+        if (!tmpUrl.searchParams.has(param.key))
+          tmpUrl.searchParams.append(param.key, param.value);
+      });
+    }
+
+    const xmlCapabilities = await getXml(tmpUrl.toString(), credentials);
     if (!xmlCapabilities)
       return undefined;
 

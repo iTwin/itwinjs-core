@@ -176,6 +176,7 @@ import { Map4d } from '@itwin/core-geometry';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
+import { MapLayerUrlParam } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
 import { MassPropertiesPerCandidateRequestProps } from '@itwin/core-common';
@@ -1368,7 +1369,7 @@ export interface ArcGISServiceMetadata {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction, nbLods?: number);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
@@ -1402,7 +1403,7 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
+    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, customParam?: MapLayerUrlParam[], ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
@@ -1410,7 +1411,7 @@ export class ArcGisUtilities {
         maxLod?: number;
     };
     static isEpsg3857Compatible(tileInfo: any): boolean;
-    static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, customParams?: MapLayerUrlParam[], ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
 }
 
@@ -3611,6 +3612,9 @@ export class FetchCloudStorage implements FrontendStorage {
     // (undocumented)
     uploadInMultipleParts(_input: FrontendUploadInMultiplePartsInput): Promise<void>;
 }
+
+// @internal (undocumented)
+export type FetchFunction = (url: URL, options?: RequestInit) => Promise<Response>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -7267,7 +7271,7 @@ export abstract class InteractiveTool extends Tool {
 }
 
 // @internal (undocumented)
-export const internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[];
+export const internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[];
 
 // @public (undocumented)
 export class IntersectDetail extends SnapDetail {
@@ -7741,7 +7745,10 @@ export class MapLayerFormat {
     // (undocumented)
     static formatId: string;
     static register(): void;
-    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    // @deprecated (undocumented)
+    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation>;
+    // @beta
+    static validateSourceObj(_source: MapLayerSource, _opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -7769,8 +7776,10 @@ export class MapLayerFormatRegistry {
     register(formatClass: MapLayerFormatType): void;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    // @beta
+    validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation>;
 }
 
 // @public
@@ -7781,6 +7790,8 @@ export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // @internal (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
+    // @internal
+    protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
@@ -7923,6 +7934,8 @@ export interface MapLayerScaleRangeVisibility {
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
+    // @beta
+    customParameters?: MapLayerUrlParam[];
     // (undocumented)
     formatId: string;
     // @internal (undocumented)
@@ -15305,6 +15318,11 @@ export interface UserPreferencesAccess {
     save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
 }
 
+// @beta
+export interface ValidateSourceOptions {
+    ignoreCache?: boolean;
+}
+
 // @public
 export enum VaryingType {
     Float = 0,
@@ -17327,7 +17345,7 @@ export class WmsCapabilities {
     // (undocumented)
     get cartoRange(): MapCartoRectangle | undefined;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmsCapabilities | undefined>;
     // (undocumented)
     get featureInfoFormats(): string[] | undefined;
     // (undocumented)
@@ -17443,7 +17461,7 @@ export class WmtsCapabilities {
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
     // (undocumented)

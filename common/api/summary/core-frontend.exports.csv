@@ -217,6 +217,7 @@ public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
 internal;FetchCloudStorage 
+internal;FetchFunction = (url: URL, options?: RequestInit) => Promise
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -441,7 +442,7 @@ public;class InputCollector
 public;InputSource
 public;InstancedGraphicParams
 public;class InteractiveTool 
-internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
+internal;internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[]
 public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions
@@ -931,6 +932,7 @@ public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
+beta;ValidateSourceOptions
 public;VaryingType
 internal;VertexIndices 
 internal;VertexKey

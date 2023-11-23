@@ -8,7 +8,7 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapLayerUrlParam, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -68,6 +68,11 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
+  /** List of custom parameters that will get appended to the source URL
+   * @beta
+   */
+  public customParameters?: MapLayerUrlParam[];
+
   private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
     this.formatId = formatId;
     this.name = name;
@@ -84,7 +89,7 @@ export class MapLayerSource {
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.userName, this.password, ignoreCache);
+    return IModelApp.mapLayerFormatRegistry.validateSourceObj(this, {ignoreCache});
   }
 
   /** @internal*/

@@ -344,4 +344,38 @@ export abstract class MapLayerImageryProvider {
               ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
     }
   }
+
+  /** Append custom parameters for settings to provided URL object.
+   *  Make sure custom parameters do no override query parameters already part of the URL (lower case comparison)
+   * @internal
+   */
+  protected appendCustomParams(url: string) {
+    if (!this._settings.customParameters)
+      return url;
+
+    // create a lower-case array of keys
+    const formatParams: string[] = [];
+    const currentUrl = new URL(url);
+    currentUrl.searchParams.forEach((_value, key, _parent) => {
+      formatParams.push(key.toLowerCase());
+    });
+
+    const tmpCustomParams = new URLSearchParams();
+    for (const customParam of this._settings.customParameters) {
+      if (!formatParams.includes(customParam.key.toLowerCase()))
+        tmpCustomParams.append(customParam.key, customParam.value);
+    }
+    if (tmpCustomParams.size > 0) {
+      let separator = "&";
+      if (url.includes("?")) {
+        if (url.endsWith("?"))
+          separator = "";
+      } else {
+        separator = "?";
+      }
+
+      return `${url}${separator}${tmpCustomParams.toString()}`;
+    }
+    return url;
+  }
 }

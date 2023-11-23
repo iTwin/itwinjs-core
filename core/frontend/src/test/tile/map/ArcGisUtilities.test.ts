@@ -5,12 +5,34 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { MapLayerSourceStatus } from "../../../core-frontend";
+import { MapLayerSource, MapLayerSourceStatus } from "../../../core-frontend";
 import { ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
+import { MapLayerUrlParam } from "@itwin/core-common";
 
-describe("ArcGisUtilities", () => {
+function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any ) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _customParam?: MapLayerUrlParam[], _ignoreCache?: boolean, _requireToken?: boolean) {
+    return json;
+  });
+}
+
+const getSampleSource = () => {
+  const source = MapLayerSource.fromJSON({
+    name: "dummyFeatureLayer",
+    url: "https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/ArcGIS/rest/services/PhillyRailLines/MapServer",
+    formatId: "Arcgis"});
+
+  if (!source) {
+    chai.assert.fail();
+  }
+  source.customParameters = [{key: "key1", value:"value1"}];
+  source.userName = "username1";
+  source.password = "password1";
+  return source;
+};
+
+describe ("ArcGisUtilities", () => {
   const tolerance = 0.1;
   const sandbox = sinon.createSandbox();
 
@@ -78,20 +100,45 @@ describe("ArcGisUtilities", () => {
     expect(lods.maxLod).to.equals(16);
   });
 
-  it("should validate proper source ", async () => {
-
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
+  it("should validate by invoking getServiceJson with proper parameters ", async () => {
+    const source = getSampleSource();
+    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+      return Promise.resolve((({
+        status: 200,
+        json: async () => {return {};},
+      } as unknown) as Response));
     });
+    await ArcGisUtilities.getServiceJson(source.url, source.formatId, source.userName, source.password, source.customParameters);
+
+    expect(fetchStub.calledOnce).to.be.true;
+    const firstCall = fetchStub.getCalls()[0];
+    expect(firstCall.args[0]).to.equals(`${source.url}?f=json&key1=value1`);
+
+  });
+
+  it("should fetch service json with proper URL", async () => {
+    const stub = stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
+    const source = getSampleSource();
+
+    await ArcGisUtilities.validateSource(source.url, source.formatId, [], source.userName, source.password, source.customParameters);
+
+    expect(stub.calledOnce).to.be.true;
+    const firstCall = stub.getCalls()[0];
+    expect(firstCall.args[0]).to.equals(source.url);
+    expect(firstCall.args[1]).to.equals(source.formatId);
+    expect(firstCall.args[2]).to.eqls(source.userName);
+    expect(firstCall.args[3]).to.eqls(source.password);
+    expect(firstCall.args[4]).to.eqls(source.customParameters);
+  });
+
+  it("should validate proper source", async () => {
+    stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
     const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
     expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
   });
 
   it("validate should detect invalid coordinate system ", async () => {
-
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
-    });
+    stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false});
     const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS",[]);
     expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
   });

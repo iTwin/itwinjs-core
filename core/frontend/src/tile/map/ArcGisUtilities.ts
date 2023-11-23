@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
-import { MapSubLayerProps } from "@itwin/core-common";
+import { MapLayerUrlParam, MapSubLayerProps } from "@itwin/core-common";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
 import { IModelApp } from "../../IModelApp";
 
@@ -146,8 +146,8 @@ export class ArcGisUtilities {
    * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
    * @return Validation Status. If successful, a list of available sub-layers will also be returned.
   */
-  public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const metadata = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
+  public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, customParams?: MapLayerUrlParam[], ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    const metadata = await this.getServiceJson(url, formatId, userName, password, customParams, ignoreCache);
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -214,7 +214,7 @@ export class ArcGisUtilities {
    * it will be used to apply required security token.
    * By default, response for each URL are cached.
   */
-  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata|undefined> {
+  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, customParam?: MapLayerUrlParam[], ignoreCache?: boolean, requireToken?: boolean ): Promise<ArcGISServiceMetadata|undefined> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
@@ -225,6 +225,12 @@ export class ArcGisUtilities {
     try {
       let tmpUrl = new URL(url);
       tmpUrl.searchParams.append("f", "json");
+      if (customParam) {
+        customParam.forEach((param) => {
+          if (!tmpUrl.searchParams.has(param.key))
+            tmpUrl.searchParams.append(param.key, param.value);
+        });
+      }
 
       // In some cases, caller might already know token is required, so append it immediately
       if (requireToken) {
@@ -247,6 +253,12 @@ export class ArcGisUtilities {
         if (accessClient) {
           tmpUrl = new URL(url);
           tmpUrl.searchParams.append("f", "json");
+          if (customParam) {
+            customParam.forEach((param) => {
+              if (!tmpUrl.searchParams.has(param.key))
+                tmpUrl.searchParams.append(param.key, param.value);
+            });
+          }
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
           response = await fetch(tmpUrl.toString(), { method: "GET" });
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);

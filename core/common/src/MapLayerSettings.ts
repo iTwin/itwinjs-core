@@ -291,7 +291,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public userName?: string;
   public password?: string;
   public accessKey?: MapLayerKey;
-  public customParams?: MapLayerUrlParam[];
+  public customParameters?: MapLayerUrlParam[];
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 

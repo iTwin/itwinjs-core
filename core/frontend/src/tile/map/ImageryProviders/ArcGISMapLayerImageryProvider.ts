@@ -271,7 +271,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
       // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
       if (this._tileMapSupported) {
-        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
+        const fetch = async (url: URL, options?: RequestInit): Promise<Response> => {
+          return this.fetch(url, options);
+        };
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, fetch, json.tileInfo?.lods?.length);
       }
     }
 

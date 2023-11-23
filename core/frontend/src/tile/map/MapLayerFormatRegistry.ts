@@ -28,9 +28,13 @@ export class MapLayerFormat {
   */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
-  /** Allow a source of a specific to be validated before being attached as a map-layer.
-  */
+  /** @deprecated in 4.2. Use the overload that takes a [[MapL]]. */
   public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+
+  /** Allow a source object to be validated before being attached as a map-layer.
+    * @beta
+  */
+  public static async validateSourceObj(_source: MapLayerSource, _opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
    * @internal
@@ -43,6 +47,14 @@ export class MapLayerFormat {
     return undefined;
   }
 
+}
+
+/** Options for validating sources
+ * @beta
+ */
+export interface ValidateSourceOptions {
+  /** Disable cache lookup during validate process  */
+  ignoreCache?: boolean;
 }
 
 /** The type of a map layer format.
@@ -153,16 +165,29 @@ export class MapLayerFormatRegistry {
     return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
   }
 
+  /** @deprecated in 4.2. Use the overload that takes a [[MapLayerSource]]. */
   public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(formatId);
     const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
+    if (format === undefined)
+      return { status: MapLayerSourceStatus.InvalidFormat };
+
+    const source =  MapLayerSource.fromJSON({name: "", formatId, url});
+    if (source === undefined)
+      return { status: MapLayerSourceStatus.InvalidFormat };
+    source.userName = userName;
+    source.password = password;
+
+    return format.validateSourceObj(source, {ignoreCache});
   }
 
-  public async validateSourceObj(source: MapLayerSource): Promise<MapLayerSourceValidation> {
+  /** Allow a source object to be validated before being attached as a map-layer.
+   * @beta
+   */
+  public async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(source.formatId);
     const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, options?.userName, options?.password, options?.ignoreCache);
+    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSourceObj(source, opts);
   }
 }
-s;
+
