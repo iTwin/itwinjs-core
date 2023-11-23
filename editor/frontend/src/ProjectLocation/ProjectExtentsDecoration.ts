@@ -305,7 +305,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return this._suspendDecorator;
   }
 
-  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+  // not needed as the default implementation returns No
+  // protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
 
   protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev)); }
 
