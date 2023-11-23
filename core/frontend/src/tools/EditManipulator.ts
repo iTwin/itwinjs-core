@@ -17,6 +17,7 @@ import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
+import { Decorator } from "../ViewManager";
 
 /** Classes and methods to create on screen control handles for interactive modification of element(s) and pickable decorations.
  * The basic flow is:
@@ -124,7 +125,7 @@ export namespace EditManipulator {
    * The provider works in conjunction with any PrimitiveTool that raises events for [[ToolAdmin.manipulatorToolEvent]].
    * @see [[SelectTool]] The default PrimitiveTool that supports handle providers.
    */
-  export abstract class HandleProvider {
+  export abstract class HandleProvider implements Decorator {
     protected _isActive = false;
     protected _removeManipulatorToolListener?: () => void;
     protected _removeSelectionListener?: () => void;
