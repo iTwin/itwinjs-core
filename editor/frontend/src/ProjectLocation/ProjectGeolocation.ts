@@ -979,11 +979,12 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
   public static allowEcefLocationChange(requireExisting: boolean, outputError = true) {
     let errorMessage: string | undefined;
 
-    if (!ProjectGeolocationDecoration._decorator) {
+    const deco = ProjectGeolocationDecoration.get();
+    /* if (!deco) {
       errorMessage = "NotActive";
-    } else if (!ProjectGeolocationDecoration._decorator._allowEcefLocationChange) {
+    } else  */if (!deco?._allowEcefLocationChange) {
       errorMessage = "NotAllowed";
-    } else if (requireExisting && !ProjectGeolocationDecoration._decorator.iModel.isGeoLocated) {
+    } else if (requireExisting && !deco.iModel.isGeoLocated) {
       errorMessage = "NotGeolocated";
     }
 
@@ -996,40 +997,49 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
   }
 
   public static get() {
+    // todo: for now we won't require the decorator to be active as the tools can work without it until we sort out the UX
+    if (!ProjectGeolocationDecoration._decorator) {
+      const vp = IModelApp.viewManager.selectedView;
+      if (vp?.view.isSpatialView()) {
+        const deco = ProjectGeolocationDecoration._decorator = new ProjectGeolocationDecoration(vp);
+        deco._allowEcefLocationChange = !deco.hasValidGCS();
+        vp.onChangeView.addOnce(() => this.clear(true));
+      }
+    }
     return ProjectGeolocationDecoration._decorator;
   }
 
-  public static show(vp: ScreenViewport) {
-    if (!vp.view.isSpatialView())
-      return false;
+  // public static show(vp: ScreenViewport) {
+  //   if (!vp.view.isSpatialView())
+  //     return false;
 
-    const deco = ProjectGeolocationDecoration._decorator;
-    if (deco) {
-      if (vp === deco.viewport) {
-        if (undefined === deco._removeManipulatorToolListener) {
-          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
-          deco.start();
-          deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Show);
-        }
-        return true;
-      }
-      ProjectGeolocationDecoration.clear();
-    }
+  //   const deco = ProjectGeolocationDecoration._decorator;
+  //   if (deco) {
+  //     if (vp === deco.viewport) {
+  //       if (undefined === deco._removeManipulatorToolListener) {
+  //         deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
+  //         deco.start();
+  //         deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Show);
+  //       }
+  //       return true;
+  //     }
+  //     ProjectGeolocationDecoration.clear();
+  //   }
 
-    ProjectGeolocationDecoration._decorator = new ProjectGeolocationDecoration(vp);
-    vp.onChangeView.addOnce(() => this.clear(true));
-    return true;
-  }
+  //   ProjectGeolocationDecoration._decorator = new ProjectGeolocationDecoration(vp);
+  //   vp.onChangeView.addOnce(() => this.clear(true));
+  //   return true;
+  // }
 
-  public static hide() {
-    const deco = ProjectGeolocationDecoration._decorator;
-    if (deco) {
-      // const saveClipId = ProjectGeolocationDecoration._decorator._clipId; // cleared by stop to trigger decorator removal...
-      deco.stop();
-      // ProjectGeolocationDecoration._decorator._clipId = saveClipId;
-      deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Hide);
-    }
-  }
+  // public static hide() {
+  //   const deco = ProjectGeolocationDecoration._decorator;
+  //   if (deco) {
+  //     // const saveClipId = ProjectGeolocationDecoration._decorator._clipId; // cleared by stop to trigger decorator removal...
+  //     deco.stop();
+  //     // ProjectGeolocationDecoration._decorator._clipId = saveClipId;
+  //     deco.onChanged.raiseEvent(deco.iModel, ProjectGeolocationChanged.Hide);
+  //   }
+  // }
 
   public static clear(resetGeolocation = true) {
     const deco = ProjectGeolocationDecoration._decorator;
@@ -1041,11 +1051,11 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     }
   }
 
-  public static async update() {
-    const deco = ProjectGeolocationDecoration._decorator;
-    if (deco) {
-      deco.init();
-      return deco.updateControls();
-    }
-  }
+  // public static async update() {
+  //   const deco = ProjectGeolocationDecoration._decorator;
+  //   if (deco) {
+  //     deco.init();
+  //     return deco.updateControls();
+  //   }
+  // }
 }
