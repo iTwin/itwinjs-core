@@ -103,9 +103,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
   private _latitudeProperty: DialogProperty<number> | undefined;
   public get latitudeProperty() {
-    if (!this._latitudeProperty)
-      this._latitudeProperty = new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude")), 0.0);
-    return this._latitudeProperty;
+    return this._latitudeProperty ??= new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude")), 0.0);
   }
 
   public get latitude(): number { return this.latitudeProperty.value; }
@@ -113,9 +111,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
   private _longitudeProperty: DialogProperty<number> | undefined;
   public get longitudeProperty() {
-    if (!this._longitudeProperty)
-      this._longitudeProperty = new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude")), 0.0);
-    return this._longitudeProperty;
+    return this._longitudeProperty ??= new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude")), 0.0);
   }
 
   public get longitude(): number { return this.longitudeProperty.value; }
@@ -123,9 +119,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
-    if (!this._altitudeProperty)
-      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
-    return this._altitudeProperty;
+    return this._altitudeProperty ??= new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
   }
 
   public get altitude(): number { return this.altitudeProperty.value; }
@@ -133,9 +127,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
-    if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
-    return this._northProperty;
+    return this._northProperty ??= new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
   }
 
   public get north(): number { return this.northProperty.value; }
@@ -306,46 +298,39 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return true;
   }
 
-  /** The keyin takes the following arguments, all of which are optional:
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
+    this.parse(inputArgs);
+    return this.run();
+  }
+
+  /** The keyin takes the following optional arguments (first unique letters of each argument are sufficient):
    *  - `latitude=number` Latitude of accept point in degrees.
    *  - `longitude=number` Longitude of accept point in degrees.
    *  - `altitude=number` Height above ellipsoid of accept point.
    *  - `north=number` North direction in degrees of accept point.
    */
-  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
+  private parse(inputArgs: string[]) {
+    const argMap = new Map([
+      ["la", { dialogProp: this.latitudeProperty, isAngle: true }],
+      ["lo", { dialogProp: this.longitudeProperty, isAngle: true }],
+      ["a", { dialogProp: this.altitudeProperty, isAngle: false }],
+      ["n", { dialogProp: this.northProperty, isAngle: true }],
+    ]);
+
     for (const arg of inputArgs) {
       const parts = arg.split("=");
-      if (2 !== parts.length)
-        continue;
-
-      if (parts[0].toLowerCase().startsWith("la")) {
-        const latitude = Number.parseFloat(parts[1]);
-        if (!Number.isNaN(latitude)) {
-          this.saveToolSettingPropertyValue(this.latitudeProperty, { value: Angle.createDegrees(latitude).radians });
-          this._cartographicFromArgs = true;
-        }
-      } else if (parts[0].toLowerCase().startsWith("lo")) {
-        const longitude = Number.parseFloat(parts[1]);
-        if (!Number.isNaN(longitude)) {
-          this.saveToolSettingPropertyValue(this.longitudeProperty, { value: Angle.createDegrees(longitude).radians });
-          this._cartographicFromArgs = true;
-        }
-      } else if (parts[0].toLowerCase().startsWith("al")) {
-        const altitude = Number.parseFloat(parts[1]);
-        if (!Number.isNaN(altitude)) {
-          this.saveToolSettingPropertyValue(this.altitudeProperty, { value: altitude });
-          this._cartographicFromArgs = true;
-        }
-      } else if (parts[0].toLowerCase().startsWith("no")) {
-        const north = Number.parseFloat(parts[1]);
-        if (!Number.isNaN(north)) {
-          this.saveToolSettingPropertyValue(this.northProperty, { value: Angle.createDegrees(north).radians });
-          this._cartographicFromArgs = true;
+      if (parts.length === 2) {
+        const propName = parts[0].toLowerCase();
+        const prop = argMap.get(propName.substring(0, 1)) ?? argMap.get(propName.substring(0, 2));
+        if (prop) {
+          const floatVal = Number.parseFloat(parts[1]);
+          if (!Number.isNaN(floatVal)) {
+            this.saveToolSettingPropertyValue(prop.dialogProp, { value: prop.isAngle ? Angle.createDegrees(floatVal).radians : floatVal });
+            this._cartographicFromArgs = true;
+          }
         }
       }
     }
-
-    return this.run();
   }
 
   public static async startTool(): Promise<boolean> { return new ProjectGeolocationPointTool().run(); }
