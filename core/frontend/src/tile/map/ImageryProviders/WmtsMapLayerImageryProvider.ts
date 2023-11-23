@@ -8,7 +8,6 @@
 import { assert } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
 import {
-  ImageryMapTile,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   QuadId,
@@ -138,14 +137,14 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     return  this._preferredLayerTileMatrixSet.get(this.displayedLayerName);
   }
 
-  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    const childIds = this.getPotentialChildIds(tile);
+  protected override _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(quadId);
     const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
     if (!matrixSetAndLimits) {
       assert(false);    // Must always hava a matrix set.
       return;
     }
-    const limits = matrixSetAndLimits.limits?.[tile.quadId.level + 1]?.limits;
+    const limits = matrixSetAndLimits.limits?.[quadId.level + 1]?.limits;
     if (!limits) {
       resolveChildren(childIds);
       return;

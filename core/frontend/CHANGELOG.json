@@ -2,6 +2,111 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.2.4",
+      "tag": "@itwin/core-frontend_v4.2.4",
+      "date": "Mon, 20 Nov 2023 16:14:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SQ_KM to UNIT_DATA"
+          },
+          {
+            "comment": "Fix Map Feature Info for ArcGIS map services when reprojection is needed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.2.3",
+      "tag": "@itwin/core-frontend_v4.2.3",
+      "date": "Mon, 06 Nov 2023 14:01:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "When assigning to SpatialViewState.modelSelector, notify tile tree references of the change."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.2.2",
+      "tag": "@itwin/core-frontend_v4.2.2",
+      "date": "Thu, 02 Nov 2023 15:36:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix status code when invalid credentials are provided for an ArcGIS service."
+          },
+          {
+            "comment": "Remove maximum depth constraint for reality tile trees."
+          },
+          {
+            "comment": "Clone view attachments when cloning a sheet or drawing view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.2.1",
+      "tag": "@itwin/core-frontend_v4.2.1",
+      "date": "Tue, 24 Oct 2023 15:09:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/core-frontend_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ECSqlExpr api"
+          },
+          {
+            "comment": "Fix failure to preserve name when creating a BlankConnection."
+          },
+          {
+            "comment": "remove `require` call preventing pure ESM usage"
+          },
+          {
+            "comment": "Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo"
+          },
+          {
+            "comment": "Fix schedule script symbology issue"
+          },
+          {
+            "comment": "Fixed ignore material not using default material params"
+          },
+          {
+            "comment": "IModelConnection.createQueryReader is now public"
+          },
+          {
+            "comment": "Improved content type detection for 3D Tiles tilesets."
+          },
+          {
+            "comment": "Add BriefcaseTxns events raised when applying external txns."
+          },
+          {
+            "comment": "Add an option to premultiply a model display transform"
+          },
+          {
+            "comment": "Allow creation of cross-origin web workers"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.1.9",
+      "tag": "@itwin/core-frontend_v4.1.9",
+      "date": "Tue, 10 Oct 2023 18:48:12 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.8",
+      "tag": "@itwin/core-frontend_v4.1.8",
+      "date": "Fri, 06 Oct 2023 04:00:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.1.7",
       "tag": "@itwin/core-frontend_v4.1.7",
       "date": "Thu, 28 Sep 2023 21:41:33 GMT",
@@ -285,6 +390,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.7.16",
+      "tag": "@itwin/core-frontend_v3.7.16",
+      "date": "Mon, 16 Oct 2023 12:49:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.15",
+      "tag": "@itwin/core-frontend_v3.7.15",
+      "date": "Tue, 10 Oct 2023 19:58:35 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.14",

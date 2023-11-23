@@ -238,6 +238,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Add facets for a transformed range box.
+   * * For best results, the transformed range corners should define a nonzero volume or area.
    * @param transform applied to the range points before adding to the polyface
    * @param range sides become 6 quad polyface facets
    * @param faceSelector for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
@@ -1036,11 +1037,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addTorusPipe(surface: TorusPipe, phiStrokeCount?: number, thetaStrokeCount?: number) {
     const thetaFraction = surface.getThetaFraction();
-    const numU = Geometry.clamp(Geometry.resolveNumber(phiStrokeCount, 8), 4, 64);
-    const numV = Geometry.clamp(
+    let numU = Geometry.clamp(Geometry.resolveNumber(phiStrokeCount, 8), 4, 64);
+    let numV = Geometry.clamp(
       Geometry.resolveNumber(thetaStrokeCount, Math.ceil(16 * thetaFraction)),
       2, 64);
-
+    if (this._options) {
+      numU = this._options.applyTolerancesToArc(surface.getMinorRadius());
+      numV = this._options.applyTolerancesToArc(surface.getMajorRadius(), surface.getSweepAngle().radians);
+    }
     this.toggleReversedFacetFlag();
     const sizes = surface.maxIsoParametricDistance();
     this.addUVGridBody(surface, numU, numV, Segment1d.create(0, sizes.x), Segment1d.create(0, sizes.y));
@@ -1539,6 +1543,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addFacetFromVisitor(visitor: PolyfaceVisitor) {
     this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color, visitor.edgeVisible);
+  }
+
+  /** Add all visitor facets to the evolving polyface (in reverse order if indicated by the builder state) */
+  public addFacetsFromVisitor(visitor: PolyfaceVisitor) {
+    visitor.reset();
+    for (; visitor.moveToNextFacet();)
+      this.addFacetFromVisitor(visitor);
   }
 
   /**

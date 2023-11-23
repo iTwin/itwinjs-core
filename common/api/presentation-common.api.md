@@ -387,15 +387,7 @@ export interface ContentModifiersList {
 export class ContentPropertyValueFormatter {
     constructor(_koqValueFormatter: KoqPropertyValueFormatter);
     // (undocumented)
-    formatArrayValue(type: ArrayTypeDescription, value: Value): DisplayValue[];
-    // (undocumented)
-    formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value): string;
-    // (undocumented)
     formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue>;
-    // (undocumented)
-    formatStructValue(type: StructTypeDescription, value: Value): DisplayValuesMap;
-    // (undocumented)
-    formatValue(type: TypeDescription, value: Value): DisplayValue;
 }
 
 // @public
@@ -1057,6 +1049,12 @@ export interface FormatOptions {
     unitSystem?: UnitSystemKey;
 }
 
+// @public
+export interface FormatsMap {
+    // (undocumented)
+    [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
+}
+
 // @internal (undocumented)
 export const getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined;
 
@@ -1571,7 +1569,7 @@ export interface KindOfQuantityInfo {
 
 // @alpha (undocumented)
 export class KoqPropertyValueFormatter {
-    constructor(_schemaContext: SchemaContext);
+    constructor(_schemaContext: SchemaContext, defaultFormats?: FormatsMap);
     // (undocumented)
     format(value: number, options: FormatOptions): Promise<string | undefined>;
     // (undocumented)
@@ -3126,6 +3124,14 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
+
+// @public
+export interface UnitSystemFormat {
+    // (undocumented)
+    format: FormatProps;
+    // (undocumented)
+    unitSystems: UnitSystemKey[];
+}
 
 // @internal (undocumented)
 export interface UnsetRulesetVariableParams extends CommonIpcParams {

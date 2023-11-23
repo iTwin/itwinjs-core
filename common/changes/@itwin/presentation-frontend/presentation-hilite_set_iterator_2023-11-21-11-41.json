@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

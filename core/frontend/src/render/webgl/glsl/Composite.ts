@@ -107,10 +107,10 @@ const computeTranslucentColor = `
 vec4 computeColor() {
   vec4 opaque = computeOpaqueColor();
   vec4 accum = TEXTURE(u_accumulation, v_texCoord);
-  float r = TEXTURE(u_revealage, v_texCoord).r;
+  vec2 rg = TEXTURE(u_revealage, v_texCoord).rg;
 
-  vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-  vec4 col = (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  vec4 transparent = vec4(accum.rgb / clamp(rg.r, 1e-4, 5e4), accum.a);
+  vec4 col = mix((1.0 - transparent.a) * transparent + transparent.a * opaque, vec4(u_clipIntersection.rgb, 1.0), rg.g);
   return col;
 }
 `;
@@ -167,6 +167,12 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
     frag.addUniform("u_revealage", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_revealage", (uniform, params) => {
         Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).reveal, TextureUnit.Two);
+      });
+    });
+
+    builder.frag.addUniform("u_clipIntersection", VariableType.Vec4, (program) => {
+      program.addGraphicUniform("u_clipIntersection", (uniform, params) => {
+        params.target.uniforms.branch.clipStack.intersectionStyle.bind(uniform);
       });
     });
 

@@ -278,7 +278,7 @@ describe("BsplineCurve", () => {
       // these exercise obscure code .. no test for values ...
       bspline.evaluateBasisFunctionsInSpan(-1, 0.5, f);
       bspline.evaluateBasisFunctionsInSpan(29, 0.5, f);
-      ck.testFalse(bspline.testCloseablePolygon());
+      ck.testFalse(bspline.testClosablePolygon());
     }
     expect(ck.getNumErrors()).equals(0);
   });

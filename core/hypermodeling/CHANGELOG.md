@@ -1,6 +1,41 @@
 # Change Log - @itwin/hypermodeling-frontend
 
-This log was last generated on Fri, 29 Sep 2023 18:24:48 GMT and should not be manually modified.
+This log was last generated on Mon, 20 Nov 2023 16:16:07 GMT and should not be manually modified.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:21 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+_Version update only_
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT
@@ -85,6 +120,16 @@ Mon, 22 May 2023 15:34:14 GMT
 ### Updates
 
 - Update to eslint@8
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT

@@ -24,6 +24,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
+import { FormatsMap } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
@@ -178,6 +179,7 @@ export interface HiliteSet {
 export class HiliteSetProvider {
     static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
+    getHiliteSetIterator(selection: Readonly<KeySet>): AsyncIterableIterator<HiliteSet>;
 }
 
 // @public
@@ -347,6 +349,8 @@ export interface PresentationManagerProps {
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
+    // @alpha
+    defaultFormats?: FormatsMap;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
     requestTimeout?: number;
@@ -500,6 +504,7 @@ export class SelectionManager implements ISelectionProvider {
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
+    getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
     // @internal (undocumented)

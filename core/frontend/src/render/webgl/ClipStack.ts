@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { RgbColor } from "@itwin/core-common";
+import { ClipIntersectionStyle, RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";
@@ -65,6 +65,10 @@ export class ClipStack {
   protected readonly _outsideColor = FloatRgba.from(0, 0, 0, 0);
   /** For detecting whether the transform changed from one invocation of setViewClip to the next. */
   protected readonly _prevTransform = Transform.createZero();
+  /** True if we want to colorize geometry intersecting clip planes */
+  protected _colorizeIntersection: boolean = false;
+  /** The style to colorize the geometry intersecting clip planes */
+  protected readonly _intersectionStyle = FloatRgba.from(0, 0, 0, 0);
 
   public constructor(getTransform: () => Transform, wantViewClip: () => boolean) {
     this._getTransform = getTransform;
@@ -87,15 +91,27 @@ export class ClipStack {
     return this.outsideColor.alpha !== 0;
   }
 
+  public get colorizeIntersection(): boolean {
+    return this._colorizeIntersection;
+  }
+
+  public set colorizeIntersection(b: boolean) {
+    this._colorizeIntersection = b;
+  }
+  public get intersectionStyle(): FloatRgba {
+    return this._intersectionStyle;
+  }
+
   public get bytesUsed(): number {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
-  public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor }): void {
+  public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle }): void {
     assert(this._stack.length === 1);
 
     this.updateColor(style.insideColor, this._insideColor);
     this.updateColor(style.outsideColor, this._outsideColor);
+    this.updateIntersectionStyle(style.colorizeIntersection, style.intersectionStyle, this._intersectionStyle);
 
     const transform = this._getTransform();
     if (!transform.isAlmostEqual(this._prevTransform)) {
@@ -253,5 +269,16 @@ export class ClipStack {
     rgba.alpha = undefined !== rgb ? 1 : 0;
     if (rgb)
       rgba.setRgbColor(rgb);
+  }
+
+  protected updateIntersectionStyle(colorizeIntersection: boolean | undefined, style: ClipIntersectionStyle | undefined, _thisStyle: FloatRgba): void {
+    this._colorizeIntersection = colorizeIntersection === true ? true : false;
+
+    if (style !== undefined) {
+      if (style.color !== undefined)
+        _thisStyle.setRgbColor(style.color);
+      if (style.width !== undefined)
+        _thisStyle.alpha = style.width;
+    }
   }
 }

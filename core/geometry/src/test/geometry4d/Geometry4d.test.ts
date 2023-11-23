@@ -95,7 +95,7 @@ class Geometry4dTests {
 
     const unitVectors = [Point4d.unitX(), Point4d.unitY(), Point4d.unitZ(), Point4d.unitW()];
     const cc = new Float64Array([2, 3, 5, 4]);
-    const pointC = Point4d.createFromPackedXYZW(cc);
+    const pointC = Point4d.createFromPacked(cc)!;
     for (let i = 0; i < 4; i++) {
       ck.testExactNumber(cc[i], unitVectors[i].dotProduct(pointC));
       const a = 2.0 + i;
@@ -107,6 +107,11 @@ class Geometry4dTests {
       ck.testCoordinate(pointAMinusC.magnitudeXYZW() * pointAMinusC.magnitudeXYZW(),
         hPointA.distanceSquaredXYZW(pointC));
     }
+    const pointC2 = Point4d.createFromPackedXYZ(cc)!;
+    ck.testExactNumber(pointC.x, pointC2.x, "packed point methods extract the same x");
+    ck.testExactNumber(pointC.y, pointC2.y, "packed point methods extract the same y");
+    ck.testExactNumber(pointC.y, pointC2.y, "packed point methods extract the same z");
+    ck.testExactNumber(pointC2.w, 1.0, "createFromPackedXYZ returns normalized Point4d");
 
     const pointD = Point4d.createZero();
     const pointD2 = Point4d.createZero();

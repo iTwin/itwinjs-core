@@ -186,6 +186,7 @@ const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.SQ_FT", phenomenon: "Units.AREA", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: .09290304, offset: 0.0 }, displayLabel: "ft²" },
   { name: "Units.SQ_US_SURVEY_FT", phenomenon: "Units.AREA", system: "Units.USCUSTOM", conversion: { numerator: 15499969.0, denominator: 1440000, offset: 0.0 }, displayLabel: "ft² (US Survey)" },
   { name: "Units.SQ_M", phenomenon: "Units.AREA", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²" },
+  { name: "Units.SQ_KM", phenomenon: "Units.AREA", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1000000.0, offset: 0.0 }, displayLabel: "km²" },
   // conversion => specified unit to base unit m³
   { name: "Units.CUB_FT", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³" },
   { name: "Units.CUB_US_SURVEY_FT", phenomenon: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³" },

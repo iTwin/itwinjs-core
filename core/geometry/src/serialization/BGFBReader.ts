@@ -2,49 +2,47 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Serialization
- */
 import { flatbuffers } from "flatbuffers";
-import { BGFBAccessors } from "./BGFBAccessors";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { LineString3d } from "../curve/LineString3d";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { UnionRegion } from "../curve/UnionRegion";
-import { ParityRegion } from "../curve/ParityRegion";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { SolidPrimitive } from "../solid/SolidPrimitive";
-import { Box } from "../solid/Box";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Sphere } from "../solid/Sphere";
-import { Cone } from "../solid/Cone";
-import { TorusPipe } from "../solid/TorusPipe";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BSplineSurface3d, BSplineSurface3dH, UVSelect } from "../bspline/BSplineSurface";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
+import { Arc3d } from "../curve/Arc3d";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { UnionRegion } from "../curve/UnionRegion";
+import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
+import { IndexedPolyface } from "../polyface/Polyface";
+import { TaggedNumericData } from "../polyface/TaggedNumericData";
+import { Box } from "../solid/Box";
+import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { RuledSweep } from "../solid/RuledSweep";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
-import { PointString3d } from "../curve/PointString3d";
-import { AuxChannel, AuxChannelData, PolyfaceAuxData } from "../polyface/AuxData";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
-import { Geometry } from "../Geometry";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
-import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { TaggedNumericData } from "../polyface/TaggedNumericData";
-import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
-import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
-import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
+import { SolidPrimitive } from "../solid/SolidPrimitive";
+import { Sphere } from "../solid/Sphere";
+import { TorusPipe } from "../solid/TorusPipe";
+import { BGFBAccessors } from "./BGFBAccessors";
+import { SerializationHelpers } from "./SerializationHelpers";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -59,6 +57,7 @@ export class BGFBReader {
    * @param variant read position in the flat buffer.
    */
   public readBSplineSurfaceFromVariant(variantHeader: BGFBAccessors.VariantGeometry): BSplineSurface3d | BSplineSurface3dH | undefined {
+    let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined;
     const geometryType = variantHeader.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineSurface) {
       const bsurfHeader = variantHeader.geometry(new BGFBAccessors.BsplineSurface());
@@ -71,16 +70,35 @@ export class BGFBReader {
         const knotArrayU = bsurfHeader.knotsUArray();
         const knotArrayV = bsurfHeader.knotsVArray();
         const weightArray = bsurfHeader.weightsArray();
-        // const closed = header.closed();
-        if (xyzArray !== null && knotArrayU !== null && knotArrayV !== null)
-          if (weightArray === null) {
-            return BSplineSurface3d.create(xyzArray, numPolesU, orderU, knotArrayU, numPolesV, orderV, knotArrayV);
-          } else {
-            return BSplineSurface3dH.create(xyzArray, weightArray, numPolesU, orderU, knotArrayU, numPolesV, orderV, knotArrayV);
+        const closedU = bsurfHeader.closedU();
+        const closedV = bsurfHeader.closedV();
+
+        if (xyzArray !== null && knotArrayU !== null && knotArrayV !== null) {
+          const myData = SerializationHelpers.createBSplineSurfaceData(xyzArray, 3, knotArrayU, numPolesU, orderU, knotArrayV, numPolesV, orderV);
+          if (weightArray !== null)
+            myData.weights = weightArray;
+          if (closedU)
+            myData.uParams.closed = true;
+          if (closedV)
+            myData.vParams.closed = true;
+
+          if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: false})) {
+            if (undefined === myData.weights)
+              newSurface = BSplineSurface3d.create(myData.poles as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+            else
+              newSurface = BSplineSurface3dH.create(myData.poles as Float64Array, myData.weights as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+
+            if (undefined !== newSurface) {
+              if (undefined !== myData.uParams.wrapMode)
+                newSurface.setWrappable(UVSelect.uDirection, myData.uParams.wrapMode);
+              if (undefined !== myData.vParams.wrapMode)
+                newSurface.setWrappable(UVSelect.vDirection, myData.vParams.wrapMode);
+            }
           }
+        }
       }
     }
-    return undefined;
+    return newSurface;
   }
 
  /**
@@ -125,18 +143,34 @@ return undefined;
    * @param variant read position in the flat buffer.
    */
   public readBSplineCurve(header: BGFBAccessors.BsplineCurve): BSplineCurve3d | BSplineCurve3dH | undefined {
+    let newCurve: BSplineCurve3d | BSplineCurve3dH | undefined;
     const order = header.order();
     const xyzArray = header.polesArray();
     const knots = header.knotsArray();
     const weightsArray = header.weightsArray();
-    // const closed = header.closed();
-    if (xyzArray !== null && knots !== null)
+    const closed = header.closed();
+
+    if (xyzArray !== null && knots !== null) {
+      const numPoles = Math.floor(xyzArray.length / 3);
+      const myData = SerializationHelpers.createBSplineCurveData(xyzArray, 3, knots, numPoles, order);
+      if (closed)
+        myData.params.closed = true;
+
       if (weightsArray === null) {
-        return BSplineCurve3d.create(xyzArray, knots, order);
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData))
+          newCurve = BSplineCurve3d.create(myData.poles, myData.params.knots, myData.params.order);
       } else {
-        return BSplineCurve3dH.create({ xyz: xyzArray, weights: weightsArray }, knots, order);
+        myData.weights = weightsArray;
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData, {jsonPoles: false}))
+          newCurve = BSplineCurve3dH.create({ xyz: myData.poles as Float64Array, weights: myData.weights }, myData.params.knots, myData.params.order);
       }
-    return undefined;
+
+      if (undefined !== newCurve) {
+        if (undefined !== myData.params.wrapMode)
+          newCurve.setWrappable(myData.params.wrapMode);
+      }
+    }
+    return newCurve;
   }
   /**
    * Extract a bspline curve

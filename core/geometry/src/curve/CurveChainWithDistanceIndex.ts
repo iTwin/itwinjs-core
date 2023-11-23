@@ -19,7 +19,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { LineString3d } from "./LineString3d";
@@ -445,11 +445,29 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     return Math.abs(fraction1 - fraction0) * this._totalLength;
   }
+  /** Flatten CurveChainWithDistanceIndex children in the input chain.
+   * @return cloned flattened CurveChain, or reference to the input chain if no nesting
+  */
+  private static flattenNestedChains(chain: CurveChain): CurveChain {
+    if (-1 === chain.children.findIndex((child: CurvePrimitive) => { return child instanceof CurveChainWithDistanceIndex; }))
+      return chain;
+    const flatChain = chain.clone() as CurveChain;
+    const flatChildren = flatChain.children.flatMap((child: CurvePrimitive) => {
+      if (child instanceof CurveChainWithDistanceIndex)
+        return child.path.children;
+      else
+        return [child];
+      },
+    );
+    flatChain.children.splice(0, Infinity, ...flatChildren);
+    return flatChain;
+  }
   /**
    * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
    * @param path primitive array to be CAPTURED (not cloned)
    */
   public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
+    path = this.flattenNestedChains(path);  // nested chains not allowed
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
     const result = new CurveChainWithDistanceIndex(path, fragments);
     return result;
@@ -798,4 +816,35 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     return undefined;
   }
+  /**
+   * Given a parent chain, convert the corresponding child details in the specified pairs.
+   * * Converted details refer to the chain's global parameterization instead of the child's.
+   * * It is assumed that for all i >= index0, `pairs[i].detailA.curve` is a child of chainA (similarly for chainB).
+   * @param pairs array to mutate
+   * @param index0 convert details of pairs in the tail of the array, starting at index0
+   * @param chainA convert each specified detailA to the global parameterization of chainA
+   * @param chainB convert each specified detailB to the global parameterization of chainB
+   * @param compressAdjacent whether to remove adjacent duplicate pairs after conversion
+   * @return the converted array
+   * @internal
+   */
+  public static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[] {
+    for (let i = index0; i < pairs.length; ++i) {
+      const childDetailPair = pairs[i];
+      if (chainA) {
+        const chainDetail = chainA.computeChainDetail(childDetailPair.detailA);
+        if (chainDetail)
+          childDetailPair.detailA = chainDetail;
+      }
+      if (chainB) {
+        const chainDetail = chainB.computeChainDetail(childDetailPair.detailB);
+        if (chainDetail)
+          childDetailPair.detailB = chainDetail;
+      }
+    }
+    if (compressAdjacent)
+      pairs = CurveLocationDetailPair.removeAdjacentDuplicates(pairs, index0);
+    return pairs;
+  }
+
 }

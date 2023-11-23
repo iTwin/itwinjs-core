@@ -163,12 +163,13 @@ describe("ArcGISMapLayerImageryProvider", () => {
       geometry: { x: 5, y: 6 },
       geometryType: "esriGeometryPoint",
       tolerance: 0.1,
+      sr: 3857,
       mapExtent: {
         low: { x: 1, y: 3 },
         high: { x: 2, y: 4 },
       },
       imageDisplay: { width: 256, height: 256, dpi: 96 },
-      layers: { prefix: "visible", layerIds: [ "2", "3" ] },
+      layers: { prefix: "top", layerIds: [ "2", "3" ] },
       returnGeometry: true,
       maxAllowableOffset,
     };

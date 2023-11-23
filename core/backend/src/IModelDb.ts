@@ -2082,7 +2082,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
 
       // Check if class is abstract
-      const fullClassName = aspectClassFullName.split(":");
+      const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
         const metaData = new EntityMetaData(JSON.parse(val.result));
