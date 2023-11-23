@@ -3,15 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, MapLayerUrlParam } from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, MapLayerUrlParam } from "@itwin/core-common";
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
 import {
+  ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
+  BingMapsImageryLayerProvider,
+  internalMapLayerImageryFormats,
+  MapBoxLayerImageryProvider,
+  MapLayerFormatRegistry,
   MapLayerSource,
   MapLayerSourceStatus,
+  TileUrlImageryProvider,
+  WmsMapLayerImageryProvider,
+  WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
+
+const getSampleLayerSettings = ((formatId: string) => {
+  return ImageMapLayerSettings.fromJSON({
+    formatId, url: "https://localhost/service", name: `Test ${formatId}`,
+  });
+});
 
 describe("MapLayerImageryFormats", () => {
   const sandbox = sinon.createSandbox();
@@ -26,55 +40,99 @@ describe("MapLayerImageryFormats", () => {
       await IModelApp.shutdown();
   });
 
-  const testValidateSource = async (source: MapLayerSource, url: string) => {
-    const stub = sandbox.stub(window, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-      return new Response();
-    });
-    const urlObj = new URL(url);
-    await IModelApp.mapLayerFormatRegistry.validateSourceObj(source);
-    expect(stub.called).to.be.true;
-    expect(stub.getCall(0).args[0]).to.equals(urlObj.toString());
+  it("should create proper provider", () => {
+    const registry = new MapLayerFormatRegistry({});
+    internalMapLayerImageryFormats.forEach((imageryFormat) => {
 
-    const param: MapLayerUrlParam = {key: "key", value:"value1"};
-    urlObj.searchParams.append(param.key, param.value);
-    source.customParameters = [param];
-    await IModelApp.mapLayerFormatRegistry.validateSourceObj(source, {ignoreCache: true});
-    expect(stub.called).to.be.true;
-    expect(stub.getCall(1).args[0]).to.equals(urlObj.toString());
-  };
+      const layerSettings = getSampleLayerSettings(imageryFormat.formatId);
+      expect(layerSettings).to.not.undefined;
+      if (!layerSettings)
+        return;
 
-  it("validate WMS source with proper URL", async () => {
-    const url = "https://sub.service.com/service";
-    const source = MapLayerSource.fromJSON({formatId:"WMS", name: "", url});
-    if (!source) {
-      assert.fail("Failed to create source");
-      return;
-    }
-    await testValidateSource(source, "https://sub.service.com/service?request=GetCapabilities&service=WMS");
-  });
+      const provider = registry.createImageryProvider(layerSettings);
+      expect(provider).to.not.undefined;
 
-  it("validate WMTS source with proper URL", async () => {
-    const url = "https://sub.service.com/service";
-    const source = MapLayerSource.fromJSON({formatId:"WMTS", name: "", url});
-    if (!source) {
-      assert.fail("Failed to create source");
-      return;
-    }
+      // Update this switch case if you add a new format.
+      switch (imageryFormat.formatId) {
+        case "WMS":
+          expect(provider instanceof WmsMapLayerImageryProvider).to.true;
+          break;
 
-    await testValidateSource(source, "https://sub.service.com/service?request=GetCapabilities&service=WMTS");
-  });
+        case "WMTS":
+          expect(provider instanceof WmtsMapLayerImageryProvider).to.true;
+          break;
 
-  it("validate ArcGIS source with proper URL", async () => {
-    const url = "https://sub.service.com/service";
-    const source = MapLayerSource.fromJSON({formatId:"ArcGIS", name: "", url});
-    if (!source) {
-      assert.fail("Failed to create source");
-      return;
-    }
-    sandbox.stub(ArcGisUtilities, "validateUrl").callsFake((_url: string, _serviceType: string) => {
-      return MapLayerSourceStatus.Valid;
+        case "ArcGIS":
+          expect(provider instanceof ArcGISMapLayerImageryProvider).to.true;
+          break;
+
+        case "BingMaps":
+          expect(provider instanceof BingMapsImageryLayerProvider).to.true;
+          break;
+
+        case "MapboxImagery":
+          expect(provider instanceof MapBoxLayerImageryProvider).to.true;
+          break;
+
+        case "TileURL":
+          expect(provider instanceof TileUrlImageryProvider).to.true;
+          break;
+
+        default:
+          assert.fail(`Unknown format: '${imageryFormat.formatId}'. Please make sure any new format is covered by this test.`);
+      }
     });
 
-    await testValidateSource(source, "https://sub.service.com/service?f=json");
+    const testValidateSource = async (source: MapLayerSource, url: string) => {
+      const stub = sandbox.stub(window, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+        return new Response();
+      });
+      const urlObj = new URL(url);
+      await IModelApp.mapLayerFormatRegistry.validateSourceObj(source);
+      expect(stub.called).to.be.true;
+      expect(stub.getCall(0).args[0]).to.equals(urlObj.toString());
+
+      const param: MapLayerUrlParam = {key: "key", value:"value1"};
+      urlObj.searchParams.append(param.key, param.value);
+      source.customParameters = [param];
+      await IModelApp.mapLayerFormatRegistry.validateSourceObj(source, {ignoreCache: true});
+      expect(stub.called).to.be.true;
+      expect(stub.getCall(1).args[0]).to.equals(urlObj.toString());
+    };
+
+    it("validate WMS source with proper URL", async () => {
+      const url = "https://sub.service.com/service";
+      const source = MapLayerSource.fromJSON({formatId:"WMS", name: "", url});
+      if (!source) {
+        assert.fail("Failed to create source");
+        return;
+      }
+      await testValidateSource(source, "https://sub.service.com/service?request=GetCapabilities&service=WMS");
+    });
+
+    it("validate WMTS source with proper URL", async () => {
+      const url = "https://sub.service.com/service";
+      const source = MapLayerSource.fromJSON({formatId:"WMTS", name: "", url});
+      if (!source) {
+        assert.fail("Failed to create source");
+        return;
+      }
+
+      await testValidateSource(source, "https://sub.service.com/service?request=GetCapabilities&service=WMTS");
+    });
+
+    it("validate ArcGIS source with proper URL", async () => {
+      const url = "https://sub.service.com/service";
+      const source = MapLayerSource.fromJSON({formatId:"ArcGIS", name: "", url});
+      if (!source) {
+        assert.fail("Failed to create source");
+        return;
+      }
+      sandbox.stub(ArcGisUtilities, "validateUrl").callsFake((_url: string, _serviceType: string) => {
+        return MapLayerSourceStatus.Valid;
+      });
+
+      await testValidateSource(source, "https://sub.service.com/service?f=json");
+    });
   });
 });
