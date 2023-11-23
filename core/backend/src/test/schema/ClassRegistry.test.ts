@@ -7,17 +7,18 @@ import * as sinon from "sinon";
 import * as path from "path";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityMetaData, EntityReferenceSet, ModelProps,
-  RelatedElement, RelatedElementProps, RelationshipProps,
+  RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
-  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink,
-  Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
+  Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
+import { OpenMode } from "@itwin/core-bentley";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -104,12 +105,18 @@ describe("Class Registry", () => {
 });
 
 describe("Class Registry - getRootMetaData", () => {
-  let imodel: SnapshotDb;
+  let imodel: StandaloneDb;
 
   before(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GetRootMetaData.bim");
-    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    IModelJsFs.copySync(seedFileName, testFileName);
+
+    const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
+    assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
+    StandaloneDb.upgradeStandaloneSchemas(testFileName);
+
+    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     assert.exists(imodel);
     await imodel.importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>

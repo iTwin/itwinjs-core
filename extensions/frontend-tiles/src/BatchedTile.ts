@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
@@ -16,6 +17,8 @@ import { frontendTilesOptions } from "./FrontendTiles";
 /** @internal */
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
+  /** See BatchedTile.transformToRoot. */
+  transformToRoot: Transform | undefined;
 }
 
 let channel: TileRequestChannel | undefined;
@@ -24,6 +27,8 @@ let channel: TileRequestChannel | undefined;
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
   private readonly _unskippable: boolean;
+  /** Transform from the tile's local coordinate system to that of the tileset. */
+  public readonly transformToRoot?: Transform;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -43,6 +48,15 @@ export class BatchedTile extends Tile {
       // mark "undisplayable"
       this._maximumSize = 0;
     }
+
+    if (!params.transformToRoot)
+      return;
+
+    this.transformToRoot = params.transformToRoot;
+    this.boundingSphere.transformBy(this.transformToRoot, this.boundingSphere);
+    this.transformToRoot.multiplyRange(this.range, this.range);
+    if (this._contentRange)
+      this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -133,13 +147,26 @@ export class BatchedTile extends Tile {
       return { };
 
     try {
-      return await this.batchedTree.decoder.decode({
+      const content = await this.batchedTree.decoder.decode({
         stream: ByteStream.fromUint8Array(data),
         options: { tileId: this.contentId },
         system,
         isCanceled,
         isLeaf: this.isLeaf,
       });
+
+      if (this.transformToRoot) {
+        if (content.graphic) {
+          const branch = new GraphicBranch(true);
+          branch.add(content.graphic);
+          content.graphic = system.createBranch(branch, this.transformToRoot);
+        }
+
+        if (content.contentRange)
+          content.contentRange = this.transformToRoot.multiplyRange(content.contentRange);
+      }
+
+      return content;
     } catch {
       return { isLeaf: true };
     }

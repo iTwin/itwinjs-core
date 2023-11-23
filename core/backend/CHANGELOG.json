@@ -2,6 +2,102 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.2.4",
+      "tag": "@itwin/core-backend_v4.2.4",
+      "date": "Mon, 20 Nov 2023 16:14:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.3",
+      "tag": "@itwin/core-backend_v4.2.3",
+      "date": "Mon, 06 Nov 2023 14:01:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.2",
+      "tag": "@itwin/core-backend_v4.2.2",
+      "date": "Thu, 02 Nov 2023 15:36:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.1",
+      "tag": "@itwin/core-backend_v4.2.1",
+      "date": "Tue, 24 Oct 2023 15:09:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.2.0",
+      "tag": "@itwin/core-backend_v4.2.0",
+      "date": "Tue, 17 Oct 2023 15:14:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ECSqlExpr api"
+          },
+          {
+            "comment": "Add support for schema synchronization"
+          },
+          {
+            "comment": "Fixed a null reference error when upgrading schemas to EC3"
+          },
+          {
+            "comment": "Adds logging for checkpoint application and V2 checkpoint downloads"
+          },
+          {
+            "comment": "add exportGraphics test to verify uv-parameter output"
+          },
+          {
+            "comment": "ECDb.createQueryReader and IModelDb.createQueryReader are now public"
+          },
+          {
+            "comment": "restart default txn after 10 minutes inactivity on v2 checkpoints"
+          },
+          {
+            "comment": "Add TxnManager events raised when applying external txns."
+          },
+          {
+            "comment": "Fix RenderMaterialElement using the wrong CodeSpec."
+          },
+          {
+            "comment": "Fix two potential bugs when closing and reopening an iModel while pulling changes.\""
+          },
+          {
+            "comment": "Make watching for briefcase changes more reliable."
+          },
+          {
+            "comment": "As instance access no longer an experimental feature, removed experimental features option from relevant ecsql."
+          },
+          {
+            "comment": "Use instance query to get aspects for abstract classes"
+          },
+          {
+            "comment": "ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant"
+          },
+          {
+            "comment": "Remove `storageType` from `BlobContainer.RequestTokenProps`."
+          },
+          {
+            "comment": "Add 'provider' to 'BlobContainer.CreatedContainerProps' "
+          },
+          {
+            "comment": "add TileStorage.getCachedTilesGenerator"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.1.9",
+      "tag": "@itwin/core-backend_v4.1.9",
+      "date": "Tue, 10 Oct 2023 18:48:12 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.1.8",
+      "tag": "@itwin/core-backend_v4.1.8",
+      "date": "Fri, 06 Oct 2023 04:00:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.1.7",
       "tag": "@itwin/core-backend_v4.1.7",
       "date": "Thu, 28 Sep 2023 21:41:33 GMT",
@@ -246,6 +342,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.7.16",
+      "tag": "@itwin/core-backend_v3.7.16",
+      "date": "Mon, 16 Oct 2023 12:49:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.15",
+      "tag": "@itwin/core-backend_v3.7.15",
+      "date": "Tue, 10 Oct 2023 19:58:35 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.14",
