@@ -365,7 +365,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Close this IModel, if it is currently open. */
-  public close(): void {
+  public close(description?: string): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
@@ -376,7 +376,9 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
-    this.nativeDb.closeIModel();
+    if (!this.isReadonly)
+      this.saveChanges(description);
+    this.nativeDb.closeFile();
   }
 
   /** @internal */
@@ -973,7 +975,7 @@ export abstract class IModelDb extends IModel {
         domain: DomainOptions.CheckRecommendedUpgrades,
       };
       const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
-      nativeDb.closeIModel();
+      nativeDb.closeFile();
     } catch (err: any) {
       result = err.errorNumber;
     }
@@ -2571,7 +2573,7 @@ export class BriefcaseDb extends IModelDb {
   private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
     const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
     const wasChanges = nativeDb.hasPendingTxns();
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
 
     if (wasChanges)
       await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
@@ -2672,7 +2674,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
 
     // The following resets the native db's pointer to this JavaScript object.
-    this.nativeDb.closeIModel();
+    this.nativeDb.closeFile();
     this.nativeDb.openIModel(fileName, openMode);
 
     // Restore the native db's pointer to this JavaScript object.
@@ -3001,9 +3003,9 @@ export class StandaloneDb extends BriefcaseDb {
    */
   public static upgradeStandaloneSchemas(filePath: LocalFileName) {
     let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade, schemaLockHeld: true });
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
   }
 
   /** Creates or updates views in the iModel to permit visualizing the EC content as ECClasses and ECProperties rather than raw database tables and columns.
@@ -3037,7 +3039,7 @@ export class StandaloneDb extends BriefcaseDb {
       assert(undefined !== file.key);
       return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
-      nativeDb.closeIModel();
+      nativeDb.closeFile();
       throw error;
     }
 

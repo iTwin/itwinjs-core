@@ -82,7 +82,7 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
     status = applyChangesetsToNativeDb(nativeDb, filteredChangesets);
   }
 
-  nativeDb.closeIModel();
+  nativeDb.closeFile();
   assert.isTrue(status === ChangeSetStatus.Success, "Error applying changesets");
 }
 
