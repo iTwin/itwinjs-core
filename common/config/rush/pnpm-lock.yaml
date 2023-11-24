@@ -2472,7 +2472,7 @@ importers:
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
-      chrome-launcher: ^0.15.0
+      chrome-launcher: ^0.15.2
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
@@ -2525,7 +2525,7 @@ importers:
       '@types/node': 18.16.1
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
-      chrome-launcher: 0.15.0
+      chrome-launcher: 0.15.2
       cpx2: 3.0.0
       cross-env: 5.1.4
       dotenv: 10.0.0
@@ -6455,8 +6455,8 @@ packages:
   /chownr/1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
-  /chrome-launcher/0.15.0:
-    resolution: {integrity: sha512-ZQqX5kb9H0+jy1OqLnWampfocrtSZaGl7Ny3F9GRha85o4odbL8x55paUzh51UC7cEmZ5obp3H2Mm70uC2PpRA==}
+  /chrome-launcher/0.15.2:
+    resolution: {integrity: sha512-zdLEwNo3aUVzIhKhTtXfxhdvZhUghrnmkvcAq2NoDd+LeOHKf03H5jwZ8T/STsAlzyALkBVK552iaG1fGf1xVQ==}
     engines: {node: '>=12.13.0'}
     hasBin: true
     dependencies:
