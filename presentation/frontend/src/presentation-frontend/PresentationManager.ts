@@ -14,9 +14,9 @@ import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentFormatter, ContentInstanceKeysRequestOptions,
   ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, KoqPropertyValueFormatter, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
-  PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyLevelDescriptorRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, KoqPropertyValueFormatter, LabelDefinition, Node, NodeKey,
+  NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
   SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -96,6 +96,15 @@ export interface PresentationManagerProps {
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
+  /**
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
+   *
+   * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
+   * @alpha
+   */
+  defaultFormats?: FormatsMap;
+
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
 
@@ -118,6 +127,7 @@ export class PresentationManager implements IDisposable {
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
   private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
+  private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
@@ -156,6 +166,7 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     this._connections = new Map<IModelConnection, Promise<void>>();
     this._schemaContextProvider = props?.schemaContextProvider;
+    this._defaultFormats = props?.defaultFormats;
 
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
@@ -430,8 +441,11 @@ export class PresentationManager implements IDisposable {
     const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
     const resultContent = new Content(descriptor, items);
     if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel));
-      const contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), IModelApp.quantityFormatter.activeUnitSystem);
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
+      const contentFormatter = new ContentFormatter(
+        new ContentPropertyValueFormatter(koqPropertyFormatter),
+        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
+      );
       await contentFormatter.formatContent(resultContent);
     }
 
