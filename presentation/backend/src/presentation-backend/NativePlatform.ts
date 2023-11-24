@@ -45,10 +45,10 @@ export enum NativePresentationUnitSystem {
 
 /** @internal */
 export interface NativePresentationDefaultUnitFormats {
-  [phenomenon: string]: {
+  [phenomenon: string]: Array<{
     unitSystems: NativePresentationUnitSystem[];
     format: FormatProps;
-  };
+  }>;
 }
 
 /** @internal */
@@ -131,14 +131,13 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
-        [phenomenon: string]: {
+        [phenomenon: string]: Array<{
           unitSystems: string[];
           serializedFormat: string;
-        };
+        }>;
       } = {};
-      Object.keys(defaultMap).forEach((key) => {
-        const value = defaultMap[key];
-        res[key] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
+      Object.entries(defaultMap).forEach(([phenomenon, formats]) => {
+        res[phenomenon] = formats.map((value) => ({ unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) }));
       });
       return res;
     }

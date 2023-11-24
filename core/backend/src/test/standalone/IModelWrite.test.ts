@@ -3,23 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as semver from "semver";
-import * as sinon from "sinon";
-import * as fs from "fs";
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, ElementAspectProps, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
+import * as chai from "chai";
+import { assert, expect } from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as fs from "fs";
+import * as semver from "semver";
+import * as sinon from "sinon";
 import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
-import {
-  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
-} from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
+import {
+  BriefcaseDb, BriefcaseManager,
+  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
+} from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -89,6 +93,109 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     sinon.restore();
+  });
+
+  it("aspect insert, update & delete requires exclusive lock", async () => {
+    const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
+    const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
+
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "TestIModel";
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    assert.isNotEmpty(rwIModelId);
+
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId });
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId });
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId });
+
+    await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });
+    await b2.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    // create and insert a new model with code1
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      b1,
+      IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
+      true);
+
+    const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+
+    await b1.locks.acquireLocks({ shared: dictionary.id });
+    const spatialCategoryId = SpatialCategory.insert(
+      dictionary.iModel,
+      dictionary.id,
+      newCategoryCode.value,
+      new SubCategoryAppearance({ color: 0xff0000 }),
+    );
+    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: `inserted element ${el1}` });
+
+    await b2.pullChanges();
+    let aspectId: Id64String;
+    const insertAspectIntoB2 = () => {
+      aspectId = b2.elements.insertAspect({
+        classFullName: "BisCore:ExternalSourceAspect",
+        element: {
+          relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+          id: el1,
+        },
+        kind: "",
+        identifier: "test identifier",
+      } as ElementAspectProps);
+    };
+
+    /* attempt to insert aspect without a lock */
+    assert.throws(insertAspectIntoB2, "Error inserting ElementAspect [exclusive lock not held on element for insert aspect (id=0x20000000004)], class: BisCore:ExternalSourceAspect");
+
+    /* acquire lock and try again */
+    await b2.locks.acquireLocks({ exclusive: el1 });
+    insertAspectIntoB2();
+
+    /* b1 cannot acquire lock on el1 as its already taken by b2 */
+    await expect(b1.locks.acquireLocks({ exclusive: el1 })).to.be.rejectedWith("exclusive lock is already held");
+
+    /* push changes on b2 to release lock on el1 */
+    b2.saveChanges();
+    await b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` });
+
+    await b1.pullChanges();
+
+    const updateAspectIntoB1 = () => {
+      b1.elements.updateAspect({
+        id: aspectId,
+        classFullName: "BisCore:ExternalSourceAspect",
+        element: {
+          relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+          id: el1,
+        },
+        kind: "",
+        identifier: "test identifier (modified)",
+      } as ElementAspectProps);
+    };
+
+    /* attempt to update aspect without a lock */
+    assert.throws(updateAspectIntoB1, "Error updating ElementAspect [exclusive lock not held on element for update aspect (id=0x20000000004)], id: 0x30000000001");
+
+    /* acquire lock and try again */
+    await b1.locks.acquireLocks({ exclusive: el1 });
+    updateAspectIntoB1();
+
+    /* delete the element */
+    b1.elements.deleteElement(el1);
+    b1.saveChanges();
+
+    await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
+
+    /* we should be able to apply all changesets */
+    await b3.pullChanges();
+
+    b1.close();
+    b2.close();
+    b3.close();
   });
 
   it("should handle undo/redo", async () => {
