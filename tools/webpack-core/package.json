@@ -30,7 +30,7 @@
     "findup": "0.1.5",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "resolve": "1.19.0",
     "source-map-loader": "^4.0.0"
   },
@@ -55,7 +55,7 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "memfs": "^3.2.2",
     "chai-jest-snapshot": "^2.0.0"
   },

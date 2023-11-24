@@ -44,7 +44,7 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "mocha": "^10.2.0",

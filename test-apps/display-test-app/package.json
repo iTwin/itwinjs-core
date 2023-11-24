@@ -74,7 +74,7 @@
     "@itwin/object-storage-core": "^2.1.0",
     "@itwin/reality-data-client": "1.1.0",
     "@itwin/webgl-compatibility": "workspace:*",
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.20.2",
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {

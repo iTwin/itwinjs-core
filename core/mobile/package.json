@@ -38,7 +38,7 @@
     "@itwin/core-frontend": "workspace:^4.3.0-dev.30"
   },
   "dependencies": {
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "superagent": "^7.1.5",
     "ws": "^7.5.3"
   },
@@ -57,7 +57,7 @@
     "@types/superagent": "^4.1.14",
     "@types/ws": "^7.0.0",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.44.0",
