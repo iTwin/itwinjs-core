@@ -219,10 +219,6 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "@itwin/ecql-common",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
@@ -343,10 +339,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/projects-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
@@ -377,6 +369,10 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "@sinonjs/fake-timers",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -643,10 +639,6 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
-      "name": "lolex",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },
@@ -673,10 +665,6 @@
     {
       "name": "node-simctl",
       "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "node-touch",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "nodemon",

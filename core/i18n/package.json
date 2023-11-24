@@ -51,7 +51,7 @@
     "@types/node": "18.16.1",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
