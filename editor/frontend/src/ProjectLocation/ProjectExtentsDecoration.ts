@@ -7,7 +7,7 @@
  */
 
 import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
-import { ColorDef } from "@itwin/core-common";
+import { ColorDef, EcefLocationProps } from "@itwin/core-common";
 import {
   BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
   IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
@@ -20,6 +20,7 @@ import {
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
 import { basicManipulationIpc } from "../EditToolIpc";
+import { ProjectGeolocationChanged, ProjectGeolocationDecoration } from "./ProjectGeolocation";
 
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);
@@ -828,8 +829,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   public static get(): ProjectExtentsClipDecoration | undefined {
-    if (undefined === ProjectExtentsClipDecoration._decorator)
-      return undefined;
     return ProjectExtentsClipDecoration._decorator;
   }
 
@@ -957,54 +956,59 @@ export class ProjectLocationSaveTool extends Tool {
     return true;
   }
 
-  protected async saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps/* , ecefLocation?: EcefLocationProps */): Promise<void> {
-    if (!deco.iModel.isBriefcaseConnection())
+  protected async saveChanges(iModel: IModelConnection, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void> {
+    if (!iModel.isBriefcaseConnection())
       return;
 
-    if (!await this.allowRestartTxnSession(deco.iModel))
+    if (!await this.allowRestartTxnSession(iModel))
       return;
 
     try {
-      await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: deco.iModel.key });
+      await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: iModel.key });
 
-      if (undefined !== extents)
+      if (extents)
         await basicManipulationIpc.updateProjectExtents(extents);
 
-      // if (undefined !== ecefLocation)
-      //   await basicManipulationIpc.updateEcefLocation(ecefLocation);
+      if (ecefLocation)
+        await basicManipulationIpc.updateEcefLocation(ecefLocation);
 
-      await deco.iModel.saveChanges(this.toolId);
-      await deco.iModel.txns.restartTxnSession();
+      await iModel.saveChanges(this.toolId);
+      await iModel.txns.restartTxnSession();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
-    deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
+    if (extents)
+      ProjectExtentsClipDecoration.get()?.onChanged.raiseEvent(iModel, ProjectLocationChanged.Save);
+
+    if (ecefLocation)
+      ProjectGeolocationDecoration.get()?.onChanged.raiseEvent(iModel, ProjectGeolocationChanged.Save);
+
     await ProjectExtentsClipDecoration.update();
     return IModelApp.toolAdmin.startDefaultTool();
   }
 
   public override async run(): Promise<boolean> {
-    const deco = ProjectExtentsClipDecoration.get();
-    if (undefined === deco) {
+    const iModel = ProjectExtentsClipDecoration.get()?.iModel ?? ProjectGeolocationDecoration.get()?.iModel;
+    if (!iModel) {
+      // todo: change message here?
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
       return false;
     }
-
-    if (deco.iModel.isReadonly) {
+    if (iModel.isReadonly) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("Readonly")));
       return true;
     }
 
-    const extents = deco.getModifiedExtents();
-    // const ecefLocation = deco.getModifiedEcefLocation();
+    const extents = ProjectExtentsClipDecoration.get()?.getModifiedExtents();
+    const ecefLocation = ProjectGeolocationDecoration.get()?.getModifiedEcefLocation();
 
-    if (undefined === extents/*  && undefined === ecefLocation */) {
+    if (!extents && !ecefLocation) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NoChanges")));
       return true;
     }
 
-    await this.saveChanges(deco, extents/* , ecefLocation */);
+    await this.saveChanges(iModel, extents, ecefLocation);
     return true;
   }
 }
