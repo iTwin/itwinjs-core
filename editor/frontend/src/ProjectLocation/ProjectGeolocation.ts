@@ -911,19 +911,20 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     context.addDecorationFromBuilder(monumentPointBuilder);
   }
 
+  // todo: re-enable
   public override decorate(context: DecorateContext) {
     const vp = context.viewport;
     if (this.viewport !== vp)
       return;
 
-    if (!this.suspendGeolocationDecorations && this.iModel.isGeoLocated)
-      this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
+    // if (!this.suspendGeolocationDecorations && this.iModel.isGeoLocated)
+    //   this.drawNorthArrow(context, this._northDirection, this._allowEcefLocationChange ? this._northId : undefined); // Show north, but don't make pickable if it shouldn't be modified...
 
-    if (!this.suspendGeolocationDecorations && this._allowEcefLocationChange)
-      this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
+    // if (!this.suspendGeolocationDecorations && this._allowEcefLocationChange)
+    //   this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
   }
 
-  public resetGeolocation() {
+  public resetGeolocation(): boolean {
     if (!this._allowEcefLocationChange)
       return false;
 
@@ -941,7 +942,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return true;
   }
 
-  public updateEcefLocation(origin: Cartographic, point: Point3d | undefined, angle = this.getNorthAngle()) {
+  public updateEcefLocation(origin: Cartographic, point: Point3d | undefined, angle = this.getNorthAngle()): boolean {
     if (!this._allowEcefLocationChange)
       return false;
 
@@ -960,7 +961,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return true;
   }
 
-  public updateNorthDirection(northDir: Ray3d) {
+  public updateNorthDirection(northDir: Ray3d): boolean {
     if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
       return false;
 
@@ -968,7 +969,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return this.updateEcefLocation(origin, this._monumentPoint, this.getNorthAngle(northDir));
   }
 
-  public getModifiedEcefLocation() {
+  public getModifiedEcefLocation(): EcefLocation | undefined {
     // return the iModel's ecef location unless it is almost equal to the original location
     const ecefLocation = this.iModel.ecefLocation;
     if (ecefLocation && this._ecefLocation?.isAlmostEqual(ecefLocation))
@@ -976,13 +977,14 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return ecefLocation;
   }
 
-  public static allowEcefLocationChange(requireExisting: boolean, outputError = true) {
+  public static allowEcefLocationChange(requireExisting: boolean, outputError = true): boolean {
     let errorMessage: string | undefined;
 
     const deco = ProjectGeolocationDecoration.get();
     /* if (!deco) {
       errorMessage = "NotActive";
-    } else  */if (!deco?._allowEcefLocationChange) {
+    } else  */
+    if (!deco?._allowEcefLocationChange) {
       errorMessage = "NotAllowed";
     } else if (requireExisting && !deco.iModel.isGeoLocated) {
       errorMessage = "NotGeolocated";
@@ -996,7 +998,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return true;
   }
 
-  public static get() {
+  public static get(): ProjectGeolocationDecoration | undefined {
     // todo: for now we won't require the decorator to be active as the tools can work without it until we sort out the UX
     if (!ProjectGeolocationDecoration._decorator) {
       const vp = IModelApp.viewManager.selectedView;
@@ -1009,7 +1011,7 @@ export class ProjectGeolocationDecoration extends EditManipulator.HandleProvider
     return ProjectGeolocationDecoration._decorator;
   }
 
-  // public static show(vp: ScreenViewport) {
+  // public static show(vp: ScreenViewport): boolean {
   //   if (!vp.view.isSpatialView())
   //     return false;
 
