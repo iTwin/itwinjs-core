@@ -130,8 +130,7 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
     const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment)!;
     if (segment) {
       const cld = segment.closestPoint(this.spacePoint, false);
-      cld.fraction = this.context.lineString.segmentIndexAndLocalFractionToGlobalFraction(candidateIndex, cld.fraction);
-      cld.curve = this.context.lineString;
+      LineString3d.convertLocalToGlobalDetail(cld, candidateIndex, this.context.lineString.numEdges(), this.context.lineString);
       this.context.numPointTest++;
       this.searchState.testAndSave(cld, cld.a);
     }

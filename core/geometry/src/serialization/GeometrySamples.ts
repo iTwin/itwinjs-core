@@ -2981,7 +2981,8 @@ export class Sample {
     }
   }
   /**
-   * Create a mesh surface from samples of a smooth function over [0,1]x[0,1].
+   * Create a mesh surface from samples of a smooth real-valued function over [0,1]x[0,1] with multiple humps and dips.
+   * * The facets are bilinear quads, so if planar facets are required, set `options.shouldTriangulate = true`.
    * @param size grid size; the number of intervals on each side of the unit square domain.
    * @param scales = array of 4 (four) numbers to scale the corresponding Franke exponential.  If undefined, all scales are 1.
    */

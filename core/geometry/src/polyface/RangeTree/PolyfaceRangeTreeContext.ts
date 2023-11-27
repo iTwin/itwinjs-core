@@ -74,7 +74,7 @@ export class PolyfaceRangeTreeContext {
   /**
    * Search the range tree for the facet closest to spacePoint
    * @param spacePoint point from which to compute distances
-   * @param searchFacetInterior whether to include facet interior in search (default is false: just consider facet boundary)
+   * @param searchFacetInterior whether to include facet interiors in search. Default is false: just consider facet boundaries.
   */
   public searchForClosestPoint(spacePoint: Point3d, searchFacetInterior: boolean = false): FacetLocationDetail | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this, searchFacetInterior);
@@ -94,7 +94,7 @@ export class PolyfaceRangeTreeContext {
    * Find a pair of points, one from each polyface in contextA and contextB, with the smallest distance between.
    * @param contextA context for first facet set
    * @param contextB context for second facet set
-   * @param searchFacetInterior whether to include facet interiors in computations (`this.convexFacets` must be true).
+   * @param searchFacetInterior whether to include facet interiors in search (`this.convexFacets` must be true). Default is false: just consider facet boundaries.
   */
   public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false): FacetLocationDetailPair | undefined {
     const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, searchFacetInterior);
@@ -176,7 +176,11 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   /** Whether to include facet interior in search */
   public searchFacetInterior: boolean;
 
-  /** Constructor, all inputs captured */
+  /** Constructor
+   * @param contextA captured
+   * @param contextB captured
+   * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
+  */
   public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false) {
     super();
     this.contextA = contextA;

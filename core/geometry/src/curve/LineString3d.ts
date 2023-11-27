@@ -1437,16 +1437,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Convert the segment detail to a linestring detail:
-   * * `detail.childDetail` is set to a clone of the input (optionally populating pre-allocated `child` object).
+   * * `detail.childDetail` is set to a clone of the input segment detail (optionally populating pre-allocated `child` object).
    * * `childDetail.a` is set to `segmentIndex`.
    * * `detail.fraction` is set to the global linestring parameter.
    * * `detail.curve` is set to the parent linestring.
-   * @param detail input segment location detail
+   * @param detail segment location detail, converted in place
    * @param segmentIndex index of segment in the linestring
    * @param numSegment linestring segment count
    * @param parent optional linestring primitive
    * @param child optional pre-allocated detail to use to clone the child data
-   * @returns modified input location, with both linestring and segment data
+   * @returns reference to input detail, with both linestring and segment data
    */
   public static convertLocalToGlobalDetail(detail: CurveLocationDetail, segmentIndex: number, numSegment: number, parent?: LineString3d, child?: CurveLocationDetail): CurveLocationDetail {
     detail.childDetail = detail.clone(child);

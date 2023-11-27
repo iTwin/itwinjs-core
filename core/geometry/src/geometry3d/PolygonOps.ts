@@ -1301,10 +1301,11 @@ export class PolygonOps {
   /**
    * Find smallest distance between polygons.
    * * For efficiency, input polygons should include closure edge.
+   * * If searching interiors for close approaches, the polygons are assumed to be convex.
    * @param polygonA first polygon
    * @param polygonB second polygon
    * @param dMax optional largest approach distance to consider
-   * @param _searchInterior whether to include polygon interiors in computations (false: return closest approach between polygon boundaries only)
+   * @param _searchInterior if true, include CONVEX polygon interiors in computations. If false (default): return closest approach between polygon boundaries only.
    * @return pair of details, one per polygon. The `a` field of each detail stores the closest approach distance.
    */
   public static closestApproach(
