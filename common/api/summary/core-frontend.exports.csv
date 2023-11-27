@@ -56,6 +56,7 @@ internal;ArcGISMapLayerImageryProvider
 internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
+beta;ArcGisValidateSourceOptions 
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AttachToViewportArgs = Viewport

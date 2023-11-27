@@ -176,7 +176,6 @@ import { Map4d } from '@itwin/core-geometry';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
-import { MapLayerUrlParam } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
 import { MassPropertiesPerCandidateRequestProps } from '@itwin/core-common';
@@ -1403,7 +1402,9 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, customParam?: MapLayerUrlParam[], ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
+    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, queryParams?: {
+        [key: string]: string;
+    }, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
@@ -1411,8 +1412,13 @@ export class ArcGisUtilities {
         maxLod?: number;
     };
     static isEpsg3857Compatible(tileInfo: any): boolean;
-    static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, customParams?: MapLayerUrlParam[], ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateSource(source: MapLayerSource, opts?: ArcGisValidateSourceOptions): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
+}
+
+// @beta
+export interface ArcGisValidateSourceOptions extends ValidateSourceOptions {
+    capabilitiesFilter: string[];
 }
 
 // @internal
@@ -7934,8 +7940,6 @@ export interface MapLayerScaleRangeVisibility {
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
-    // @beta
-    customParameters?: MapLayerUrlParam[];
     // (undocumented)
     formatId: string;
     // @internal (undocumented)
@@ -7946,17 +7950,24 @@ export class MapLayerSource {
     name: string;
     // (undocumented)
     password?: string;
-    // (undocumented)
-    toJSON(): {
-        url: string;
-        name: string;
-        formatId: string;
-        transparentBackground: boolean | undefined;
+    // @beta
+    get queryParameters(): {
+        [key: string]: string;
     };
+    // @beta
+    savedQueryParams?: {
+        [key: string]: string;
+    };
+    // (undocumented)
+    toJSON(): MapLayerSourceProps;
     // (undocumented)
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
+    // @beta
+    unsavedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     url: string;
     // (undocumented)
@@ -7970,6 +7981,10 @@ export interface MapLayerSourceProps {
     baseMap?: boolean;
     formatId?: string;
     name: string;
+    // @beta
+    queryParams?: {
+        [key: string]: string;
+    };
     transparentBackground?: boolean;
     url: string;
 }
@@ -17345,7 +17360,9 @@ export class WmsCapabilities {
     // (undocumented)
     get cartoRange(): MapCartoRectangle | undefined;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {
+        [key: string]: string;
+    }): Promise<WmsCapabilities | undefined>;
     // (undocumented)
     get featureInfoFormats(): string[] | undefined;
     // (undocumented)
@@ -17461,7 +17478,9 @@ export class WmtsCapabilities {
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmtsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {
+        [key: string]: string;
+    }): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
     // (undocumented)
