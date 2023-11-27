@@ -62,22 +62,24 @@ describe("WmsMapLayerImageryProvider", () => {
     const refUrl = "https://sub.service.com/service?SERVICE=WMS&VERSION=undefined&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=TRUE&LAYERS=sublayer&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&STYLES=&BBOX=1,2,3,4";
     chai.expect(url).to.equals(refUrl);
 
-    const param = new URLSearchParams([["key1", "value1"], ["key2", "value2"]]);
-    const paramArray = Array.from(param.entries());
-    settings.customParameters = paramArray.map((item) => {
-      return {key: item[0], value: item[1]};
-    });
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
-    chai.expect(url).to.equals(`${refUrl}&${param.toString()}`);
+    chai.expect(url).to.equals(`${refUrl}&${param1.toString()}&${param2.toString()}`);
 
-    settings.customParameters = [{key: "service", value: "BAD"}];
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    settings.unsavedQueryParams.SERVICE = "BAD";
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
     chai.expect(url).to.equals(refUrl);
-
   });
 
   it("construct proper tooltip url", async () => {
@@ -116,16 +118,17 @@ describe("WmsMapLayerImageryProvider", () => {
     chai.expect(stub.called).to.be.true;
     chai.expect(stub.getCall(0).args[1]).to.equals(refUrl);
 
-    const param = new URLSearchParams([["key1", "value1"], ["key2", "value2"]]);
-    const paramArray = Array.from(param.entries());
-    settings.customParameters = paramArray.map((item) => {
-      return {key: item[0], value: item[1]};
-    });
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     await provider.getToolTip([], new QuadId(0,0,0),  Cartographic.createZero(), ({getTileRectangle: ()=> MapCartoRectangle.createZero()} as unknown)as  ImageryMapTileTree);
 
     chai.expect(stub.called).to.be.true;
-    chai.expect(stub.getCall(1).args[1]).to.equals(`${refUrl}&${param.toString()}`);
+    chai.expect(stub.getCall(1).args[1]).to.equals(`${refUrl}&${param1.toString()}&${param2.toString()}`);
   });
 
   it("initialize() should handle 401 error from WmsCapabilities", async () => {

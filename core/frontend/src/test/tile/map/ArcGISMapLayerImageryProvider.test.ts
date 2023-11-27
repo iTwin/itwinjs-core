@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, EmptyLocalization, ImageMapLayerSettings, MapLayerUrlParam, ServerError } from "@itwin/core-common";
+import { Cartographic, EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
@@ -23,6 +23,7 @@ import {
 } from "../../../tile/internal";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { Range2dProps, Range3d } from "@itwin/core-geometry";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 
 chai.use(chaiAsPromised);
 
@@ -43,7 +44,7 @@ function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
 }
 
 function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any) {
-  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _customParam?: MapLayerUrlParam[], _ignoreCache?: boolean, _requireToken?: boolean) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _queryParams?: {[key: string]: string}, _ignoreCache?: boolean, _requireToken?: boolean) {
     return json;
   });
 }
@@ -182,8 +183,10 @@ describe("ArcGISMapLayerImageryProvider", () => {
 
   it("should pass fetch function to ArcGISTileMap object", async () => {
     const settings = ImageMapLayerSettings.fromJSON(sampleSource);
-    const testParam = {key: "testKey", value: "testValue"};
-    settings.customParameters = [testParam];
+    const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
+    const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_"] ]);
+    settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
+    settings.savedQueryParams = indexedArrayFromUrlParams(saved);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -205,6 +208,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
 
     await (provider as any)._generateChildIds(testTile, resolveChildren);
     chai.expect(fetchStub.calledOnce).to.be.true;
-    chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(`${testParam.key}=${testParam.value}`);
+    chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(unsaved.toString());
+    chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(saved.toString());
   });
 });

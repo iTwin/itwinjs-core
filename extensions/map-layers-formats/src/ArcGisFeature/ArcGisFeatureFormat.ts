@@ -15,18 +15,23 @@ export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
     if (urlValidation !== MapLayerSourceStatus.Valid)
       return {status: urlValidation};
 
-    return ArcGisUtilities.validateSource(url, this.formatId, ["query"], userName, password, undefined, ignoreCache);
+    const source = MapLayerSource.fromJSON({name: "", url, formatId: this.formatId});
+    if (!source)
+      return {status: MapLayerSourceStatus.InvalidFormat};
+    source.userName = userName;
+    source.password = password;
+
+    return ArcGisUtilities.validateSource(source, {capabilitiesFilter: ["query"], ignoreCache});
   }
 
   public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const { url, userName, password, customParameters } = source;
     const ignoreCache = opts?.ignoreCache;
 
-    const urlValidation = ArcGisUtilities.validateUrl(url, "FeatureServer");
+    const urlValidation = ArcGisUtilities.validateUrl(source.url, "FeatureServer");
     if (urlValidation !== MapLayerSourceStatus.Valid)
       return {status: urlValidation};
 
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
-    return ArcGisUtilities.validateSource(url, this.formatId, ["query"], userName, password, customParameters, ignoreCache);
+    return ArcGisUtilities.validateSource(source, {capabilitiesFilter: ["query"], ignoreCache});
   }
 }

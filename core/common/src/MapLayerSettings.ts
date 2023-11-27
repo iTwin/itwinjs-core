@@ -164,6 +164,12 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 
   /** @internal */
   modelId?: never;
+
+  /** List of query parameters that will get appended to the source.
+   * @beta
+  */
+  queryParams?: { [key: string]: string };
+
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -291,7 +297,16 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public userName?: string;
   public password?: string;
   public accessKey?: MapLayerKey;
-  public customParameters?: MapLayerUrlParam[];
+
+  /** List of query parameters that will get appended to the settings URL that should be be persisted part of the JSON representation.
+   * @beta
+  */
+  public savedQueryParams?: { [key: string]: string };
+
+  /** List of query parameters that will get appended to the settings URL that should *not* be be persisted part of the JSON representation.
+   * @beta
+  */
+  public unsavedQueryParams?: { [key: string]: string };
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -303,6 +318,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.formatId = props.formatId;
     this.url = props.url;
     this.accessKey = props.accessKey;
+    if (props.queryParams) {
+      this.savedQueryParams = ImageMapLayerSettings.cloneQueryParams(props.queryParams);
+    }
     this.subLayers = [];
     if (!props.subLayers)
       return;
@@ -318,6 +336,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     return new this(props);
   }
 
+  private static cloneQueryParams(input: { [key: string]: string },  result?: { [key: string]: string }) {
+    result = result || {};
+    Object.keys(input).forEach((key) => result![key] = input[key]);
+    return result;
+  }
+
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ImageMapLayerProps {
     const props = super._toJSON() as ImageMapLayerProps;
@@ -326,6 +350,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     if (this.subLayers.length > 0)
       props.subLayers = this.subLayers.map((x) => x.toJSON());
+
+    if (this.savedQueryParams)
+      props.queryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
 
     return props;
   }
@@ -341,6 +368,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone.userName = this.userName;
     clone.password = this.password;
     clone.accessKey = this.accessKey;
+    if (this.unsavedQueryParams)
+      clone.unsavedQueryParams = ImageMapLayerSettings.cloneQueryParams(this.unsavedQueryParams);
+    if (this.savedQueryParams)
+      clone.savedQueryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
 
     return clone;
   }
@@ -353,6 +384,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     props.url = changedProps.url ?? this.url;
     props.accessKey = changedProps.accessKey ?? this.accessKey;
     props.subLayers = changedProps.subLayers ?? this.subLayers;
+    if (changedProps.queryParams) {
+      props.queryParams = ImageMapLayerSettings.cloneQueryParams(changedProps.queryParams);
+    } else if (this.savedQueryParams) {
+      props.queryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
+    }
 
     return props;
   }
@@ -438,6 +474,16 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public setCredentials(userName?: string, password?: string) {
     this.userName = userName;
     this.password = password;
+  }
+
+  /** Get all query parameters
+ * @beta
+ */
+  public get queryParams() {
+    const queryParams: {[key: string]: string} = {};
+    this.savedQueryParams && ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams, queryParams);
+    this.unsavedQueryParams && ImageMapLayerSettings.cloneQueryParams(this.unsavedQueryParams, queryParams);
+    return queryParams;
   }
 }
 

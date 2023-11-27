@@ -350,32 +350,44 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected appendCustomParams(url: string) {
-    if (!this._settings.customParameters)
+    if (!this._settings.savedQueryParams && !this._settings.unsavedQueryParams)
       return url;
 
     // create a lower-case array of keys
-    const formatParams: string[] = [];
+    const currentParams: string[] = [];
     const currentUrl = new URL(url);
     currentUrl.searchParams.forEach((_value, key, _parent) => {
-      formatParams.push(key.toLowerCase());
+      currentParams.push(key.toLowerCase());
     });
 
-    const tmpCustomParams = new URLSearchParams();
-    for (const customParam of this._settings.customParameters) {
-      if (!formatParams.includes(customParam.key.toLowerCase()))
-        tmpCustomParams.append(customParam.key, customParam.value);
-    }
-    if (tmpCustomParams.size > 0) {
+    const urlParamsFromIndexArray = (indexArray?: {[key: string]: string}, result?: URLSearchParams): URLSearchParams  => {
+      const urlParams = (result ? result : new URLSearchParams());
+      if (!indexArray)
+        return urlParams;
+      Object.keys(indexArray).forEach((key) => {
+        if (!currentParams.includes(key.toLowerCase()))
+          urlParams.append(key, indexArray[key]);
+      });
+      return urlParams;
+    };
+
+    const params = urlParamsFromIndexArray(this._settings.savedQueryParams);
+    urlParamsFromIndexArray(this._settings.unsavedQueryParams, params);
+
+    const getSeparator = (u: string) => {
       let separator = "&";
-      if (url.includes("?")) {
-        if (url.endsWith("?"))
+      if (u.includes("?")) {
+        if (u.endsWith("?"))
           separator = "";
       } else {
         separator = "?";
       }
-
-      return `${url}${separator}${tmpCustomParams.toString()}`;
+      return separator;
+    };
+    if ( params.size > 0) {
+      url = `${url}${getSeparator(url)}${params.toString()}`;
     }
+
     return url;
   }
 }

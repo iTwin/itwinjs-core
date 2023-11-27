@@ -89,11 +89,13 @@ describe("WmsCapabilities", () => {
       return new Response();
     });
     const sampleUrl = "https://service.server.com/rest/WMS";
-    const customParameters =  [{key: "key1", value:"value1"}];
-    await WmsCapabilities.create(sampleUrl, undefined, true, customParameters);
+    const params = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const queryParams: {[key: string]: string} = {};
+    params.forEach((value: string, key: string) =>  queryParams[key] = value);
+    await WmsCapabilities.create(sampleUrl, undefined, true, queryParams);
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];
-    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMS&key1=value1`);
+    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMS&${params.toString()}`);
   });
 
 });

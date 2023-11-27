@@ -58,12 +58,15 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
   }
 
   public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const { url, userName, password, customParameters } = source;
+    const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
+    const queryParams: {[key: string]: string} = {};
+    savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
+    unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
     const ignoreCache = opts?.ignoreCache;
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, customParameters);
+      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, queryParams);
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -137,11 +140,14 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
   }
 
   public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const { url, userName, password, customParameters } = source;
+    const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
+    const queryParams: {[key: string]: string} = {};
+    savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
+    unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
     const ignoreCache = opts?.ignoreCache;
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, customParameters);
+      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, queryParams);
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
@@ -203,15 +209,12 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 
   public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const { url, userName, password, customParameters } = source;
-    const ignoreCache = opts?.ignoreCache;
-
-    const urlValidation = ArcGisUtilities.validateUrl(url, "MapServer");
+    const urlValidation = ArcGisUtilities.validateUrl(source.url, "MapServer");
     if (urlValidation !== MapLayerSourceStatus.Valid)
       return {status: urlValidation};
 
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
-    return ArcGisUtilities.validateSource(url, this.formatId, [], userName, password, customParameters, ignoreCache);
+    return ArcGisUtilities.validateSource(source, {...opts, capabilitiesFilter: []});
   }
 
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {

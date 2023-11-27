@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, MapLayerUrlParam, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
@@ -73,7 +73,7 @@ function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
 }
 
 function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any ) {
-  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _customParam?: MapLayerUrlParam[], _ignoreCache?: boolean, _requireToken?: boolean) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _queryParams?: {[key: string]: string}, _ignoreCache?: boolean, _requireToken?: boolean) {
     return json;
   });
 }

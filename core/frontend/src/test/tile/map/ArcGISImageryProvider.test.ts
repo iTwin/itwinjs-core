@@ -11,6 +11,7 @@ import {
   ArcGISImageryProvider,
 
 } from "../../../tile/internal";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 
 chai.use(chaiAsPromised);
 
@@ -52,15 +53,15 @@ describe("ArcGISImageryProvider", () => {
     chai.expect(fetchStub.called).to.be.true;
     chai.expect(fetchStub.getCall(0).args[0]).to.equals(testUrl);
 
-    const param = new URLSearchParams([["key1", "value1"], ["key2", "value2"], ["testParam", "BAD"]]);
-    const paramArray = Array.from(param.entries());
-    settings.customParameters = paramArray.map((item) => {
-      return {key: item[0], value: item[1]};
-    });
-    param.delete("testParam");    // test should not be updated since its already part of the initial url
+    const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
+    const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_2"] ]);
+    settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
+    settings.savedQueryParams = indexedArrayFromUrlParams(saved);
+
+    unsaved.delete("testParam");    // check that test'
     await provider.fetch(new URL(testUrl), { method: "GET" });
     chai.expect(fetchStub.called).to.be.true;
-    chai.expect(fetchStub.getCall(1).args[0]).to.equals(`${testUrl}&${param.toString()}`);
+    chai.expect(fetchStub.getCall(1).args[0]).to.equals(`${testUrl}&${saved.toString()}&${unsaved.toString()}`);
   });
 
 });

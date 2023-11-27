@@ -8,7 +8,7 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapLayerUrlParam, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -48,12 +48,17 @@ export interface MapLayerSourceProps {
   formatId?: string;
   /** Name */
   name: string;
-  /** URL */
+  /** URL of the source's endpoint. */
   url: string;
   /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
   /** Indicate if this source definition should be used as a base map. Defaults to false. */
   baseMap?: boolean;
+
+  /** List of query parameters that will get appended to the source.
+   * @beta
+  */
+  queryParams?: { [key: string]: string };
 }
 
 /** A source for map layers. These may be catalogued for convenient use by users or applications.
@@ -68,24 +73,30 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  /** List of custom parameters that will get appended to the source URL
+  /** List of query parameters that will get appended to the source URL that should be be persisted part of the JSON representation.
    * @beta
-   */
-  public customParameters?: MapLayerUrlParam[];
+  */
+  public savedQueryParams?: { [key: string]: string };
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
+  /** List of query parameters that will get appended to the source URL that should *not* be be persisted part of the JSON representation.
+   * @beta
+  */
+  public unsavedQueryParams?: { [key: string]: string };
+
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
+    this.savedQueryParams = savedQueryParams;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.queryParams);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -106,8 +117,8 @@ export class MapLayerSource {
 
     return undefined;
   }
-  public toJSON() {
-    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
+  public toJSON(): MapLayerSourceProps {
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
   }
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
@@ -117,12 +128,36 @@ export class MapLayerSource {
       layerSettings?.setCredentials(this.userName, this.password);
     }
 
+    if (this.savedQueryParams) {
+      layerSettings.savedQueryParams = MapLayerSource.cloneQueryParams(this.savedQueryParams);
+    }
+
+    if (this.unsavedQueryParams) {
+      layerSettings.unsavedQueryParams = MapLayerSource.cloneQueryParams(this.unsavedQueryParams);
+    }
     return layerSettings;
   }
 
   private getCredentials(): RequestBasicCredentials | undefined {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
+
+  private static cloneQueryParams(input: { [key: string]: string },  result?: { [key: string]: string }) {
+    result = result || {};
+    Object.keys(input).forEach((key) => result![key] = input[key]);
+    return result;
+  }
+
+  /** Get all query parameters
+ * @beta
+ */
+  public get queryParameters() {
+    const queryParams: {[key: string]: string} = {};
+    this.savedQueryParams && MapLayerSource.cloneQueryParams(this.savedQueryParams, queryParams);
+    this.unsavedQueryParams && MapLayerSource.cloneQueryParams(this.unsavedQueryParams, queryParams);
+    return queryParams;
+  }
+
 }
 
 /** A collection of [[MapLayerSource]] objects.

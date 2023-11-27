@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, ImageMapLayerSettings, MapLayerUrlParam } from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
 import {
@@ -92,9 +92,12 @@ describe("MapLayerImageryFormats", () => {
       expect(stub.called).to.be.true;
       expect(stub.getCall(0).args[0]).to.equals(urlObj.toString());
 
-      const param: MapLayerUrlParam = {key: "key", value:"value1"};
-      urlObj.searchParams.append(param.key, param.value);
-      source.customParameters = [param];
+      const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+      const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+      source.savedQueryParams = {};
+      source.unsavedQueryParams = {};
+      param1.forEach((value: string, key: string) => source.savedQueryParams![key] = value);
+      param2.forEach((value: string, key: string) => source.unsavedQueryParams![key] = value);
       await IModelApp.mapLayerFormatRegistry.validateSourceObj(source, {ignoreCache: true});
       expect(stub.called).to.be.true;
       expect(stub.getCall(1).args[0]).to.equals(urlObj.toString());

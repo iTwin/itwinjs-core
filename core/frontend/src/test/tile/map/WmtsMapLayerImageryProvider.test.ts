@@ -68,13 +68,15 @@ describe("WmtsMapLayerImageryProvider", () => {
     const refUrl = `https://sub.service.com/service?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=&TileMatrixSet=${tileMatrixSetIdentifier}&TileMatrix=${tileMatrixLevel0Identifier}&TileCol=0&TileRow=0`;
     chai.expect(url).to.equals(refUrl);
 
-    const param = new URLSearchParams([["key1", "value1"], ["key2", "value2"]]);
-    const paramArray = Array.from(param.entries());
-    settings.customParameters = paramArray.map((item) => {
-      return {key: item[0], value: item[1]};
-    });
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
+
     provider = new WmtsMapLayerImageryProvider(settings);
     url = await provider.constructUrl(0,0,0);
-    chai.expect(url).to.equals(`${refUrl}&${param.toString()}`);
+    chai.expect(url).to.equals(`${refUrl}&${param1.toString()}&${param2.toString()}`);
   });
 });

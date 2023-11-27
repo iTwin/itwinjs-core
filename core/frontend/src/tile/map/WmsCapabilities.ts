@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { MapLayerUrlParam, MapSubLayerProps } from "@itwin/core-common";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
 import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
@@ -213,7 +213,7 @@ export class WmsCapabilities {
       this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, customParam?: MapLayerUrlParam[]): Promise<WmsCapabilities | undefined> {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
@@ -223,10 +223,10 @@ export class WmsCapabilities {
     const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
     tmpUrl.searchParams.append("request", "GetCapabilities");
     tmpUrl.searchParams.append("service", "WMS");
-    if (customParam) {
-      customParam.forEach((param) => {
-        if (!tmpUrl.searchParams.has(param.key))
-          tmpUrl.searchParams.append(param.key, param.value);
+    if (queryParams) {
+      Object.keys(queryParams).forEach((paramKey) => {
+        if (!tmpUrl.searchParams.has(paramKey))
+          tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
     const xmlCapabilities = await getXml(tmpUrl.toString(), credentials);

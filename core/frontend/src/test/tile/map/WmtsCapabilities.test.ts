@@ -253,10 +253,12 @@ describe("WmtsCapabilities", () => {
       return new Response();
     });
     const sampleUrl = "https://service.server.com/rest/WMTS";
-    const customParameters =  [{key: "key1", value:"value1"}];
-    await WmtsCapabilities.create(sampleUrl, undefined, true, customParameters);
+    const searchParams = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const queryParams: {[key: string]: string} = {};
+    searchParams.forEach((value: string, key: string) =>  queryParams[key] = value);
+    await WmtsCapabilities.create(sampleUrl, undefined, true, queryParams);
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];
-    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMTS&key1=value1`);
+    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
 });
