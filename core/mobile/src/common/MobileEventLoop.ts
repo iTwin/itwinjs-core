@@ -9,7 +9,7 @@
 /** @internal */
 export class MobileEventLoop {
   private static _activeTasks = 0;
-  private static _idleCallback: NodeJS.Timer | null = null;
+  private static _idleCallback: NodeJS.Timeout | null = null;
 
   public static addTask() {
     ++this._activeTasks;

@@ -45,7 +45,7 @@
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/node": "~18.16.20",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
