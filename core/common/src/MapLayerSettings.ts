@@ -288,7 +288,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public password?: string;
   public accessKey?: MapLayerKey;
 
-  /** List of query parameters that will get appended to the settings URL that should be be persisted part of the JSON representation.
+  /** List of query parameters to append to the settings URL and persisted as part of the JSON representation.
+   * @note Sensitive information like user credentials should be provided in [[unsavedQueryParams]] to ensure it is never persisted.
    * @beta
   */
   public savedQueryParams?: { [key: string]: string };
