@@ -250,6 +250,9 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
+// @beta
+export type AnyDb = IModelDb | ECDb;
+
 // @public
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
@@ -617,6 +620,18 @@ export class CategorySelector extends DefinitionElement {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface ChangedECInstance {
+    // (undocumented)
+    $meta?: ChangeMetaData;
+    // (undocumented)
+    [key: string]: any;
+    // (undocumented)
+    ECClassId?: Id64String;
+    // (undocumented)
+    ECInstanceId: Id64String;
+}
+
 // @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
@@ -639,16 +654,62 @@ export class ChangedElementsDb implements IDisposable {
 }
 
 // @beta
+export interface ChangeFormatArgs {
+    includeNullColumns?: true;
+    includeOpCode?: true;
+    includePrimaryKeyInUpdateNew?: true;
+    includeStage?: true;
+    includeTableName?: true;
+}
+
+// @beta
 export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
 }
 
+// @beta
+export interface ChangeMetaData {
+    changeIndexes: number[];
+    className?: string;
+    fallbackClassId?: Id64String;
+    op: SqliteChangeOp;
+    stage: SqliteValueStage;
+    tables: string[];
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
     readonly changeset: ChangesetIndexOrId;
+}
+
+// @beta
+export class ChangesetECAdaptor implements IDisposable {
+    constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
+    acceptClass(classFullName: string): ChangesetECAdaptor;
+    acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
+    acceptTable(table: string): ChangesetECAdaptor;
+    close(): void;
+    readonly debugFlags: {
+        replaceBlobWithEllipsis: boolean;
+        replaceGeomWithEllipsis: boolean;
+        replaceGuidWithEllipsis: boolean;
+    };
+    deleted?: ChangedECInstance;
+    // (undocumented)
+    readonly disableMetaData: boolean;
+    dispose(): void;
+    inserted?: ChangedECInstance;
+    get isDeleted(): boolean;
+    isECTable(tableName: string): boolean;
+    get isInserted(): boolean;
+    get isUpdated(): boolean;
+    get op(): SqliteChangeOp;
+    // (undocumented)
+    readonly reader: SqliteChangesetReader;
+    step(): boolean;
 }
 
 // @internal (undocumented)
@@ -1668,6 +1729,7 @@ export class ECDb implements IDisposable {
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
+    getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     // @internal (undocumented)
@@ -3262,7 +3324,7 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
-    static shutdown(): Promise<void>;
+    static shutdown(this: void): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
     // @internal
@@ -4248,6 +4310,13 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     setRange(range: Range3d): void;
 }
 
+// @beta
+export class PartialECChangeUnifier {
+    appendFrom(adaptor: ChangesetECAdaptor): void;
+    get instances(): IterableIterator<ChangedECInstance>;
+    stripMetaData(): void;
+}
+
 // @public
 export abstract class PhysicalElement extends SpatialElement {
     protected constructor(props: PhysicalElementProps, iModel: IModelDb);
@@ -4988,6 +5057,54 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
+// @beta
+export interface SqliteChange {
+    $op?: SqliteChangeOp;
+    $stage?: SqliteValueStage;
+    $table?: string;
+    [key: string]: any;
+}
+
+// @beta
+export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
+
+// @beta
+export class SqliteChangesetReader implements IDisposable {
+    protected constructor(
+    db?: AnyDb | undefined);
+    get changeIndex(): number;
+    close(): void;
+    get columnCount(): number;
+    readonly db?: AnyDb | undefined;
+    get disableSchemaCheck(): boolean;
+    dispose(): void;
+    getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
+    getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
+    getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
+    getColumnNames(tableName: string): string[];
+    getPrimaryKeyColumnNames(): string[];
+    get hasRow(): boolean;
+    get isIndirect(): boolean;
+    get op(): SqliteChangeOp;
+    static openFile(args: {
+        readonly fileName: string;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openLocalChanges(args: {
+        iModel: IModelJsNative.DgnDb;
+        includeInMemoryChanges?: true;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    get primaryKeyValues(): SqliteValueArray;
+    step(): boolean;
+    get tableName(): string;
+}
+
+// @beta
+export interface SqliteChangesetReaderArgs {
+    readonly db?: AnyDb;
+    readonly disableSchemaCheck?: true;
+    readonly invert?: true;
+}
+
 // @public
 export class SQLiteDb {
     abandonChanges(): void;
@@ -5179,6 +5296,9 @@ export class SqliteValue {
     get type(): SqliteValueType;
     get value(): any;
 }
+
+// @beta
+export type SqliteValueStage = "Old" | "New";
 
 // @public
 export enum SqliteValueType {

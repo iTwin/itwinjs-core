@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
 
-global.fetch = async (_input: RequestInfo | URL, _init?: RequestInit) => {
+global.fetch = async (_input, _init) => {
 
   return Promise.resolve((({
     status: 400,

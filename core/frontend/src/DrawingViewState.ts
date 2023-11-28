@@ -74,8 +74,12 @@ class SectionAttachmentInfo {
     };
   }
 
-  public clone(): SectionAttachmentInfo {
-    return new SectionAttachmentInfo(this._spatialView, this._drawingToSpatialTransform, this._displaySpatialView);
+  public clone(iModel: IModelConnection): SectionAttachmentInfo {
+    let spatialView = this._spatialView;
+    if (spatialView instanceof ViewState3d)
+      spatialView = spatialView.clone(iModel);
+
+    return new SectionAttachmentInfo(spatialView, this._drawingToSpatialTransform, this._displaySpatialView);
   }
 
   public preload(options: HydrateViewStateRequestProps): void {
@@ -331,7 +335,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachmentInfo(): Object {
+  public get attachmentInfo(): { spatialView: Id64String | ViewState3d } {
     return this._attachmentInfo;
   }
 
@@ -340,7 +344,7 @@ export class DrawingViewState extends ViewState2d {
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
       this._modelLimits = { ...categories._modelLimits };
-      this._attachmentInfo = categories._attachmentInfo.clone();
+      this._attachmentInfo = categories._attachmentInfo.clone(iModel);
     } else {
       this._viewedExtents = extents;
       this._modelLimits = { min: Constant.oneMillimeter, max: 10 * extents.maxLength() };

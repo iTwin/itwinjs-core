@@ -64,7 +64,9 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    const { props, iModel } = arg;
+    iModel.channels.verifyChannel(arg.model);
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
   }
 
   /** Called after a new ElementAspect was inserted.
@@ -79,7 +81,9 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    const { props, iModel } = arg;
+    iModel.channels.verifyChannel(arg.model);
+    iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
   }
 
   /** Called after an ElementAspect was updated.
@@ -94,7 +98,10 @@ export class ElementAspect extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnAspectIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    const { aspectId, iModel } = arg;
+    iModel.channels.verifyChannel(arg.model);
+    const { element } = iModel.elements.getAspect(aspectId);
+    iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
   }
 
   /** Called after an ElementAspect was deleted.
@@ -103,7 +110,6 @@ export class ElementAspect extends Entity {
    */
   protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
-
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
  * @public
  */

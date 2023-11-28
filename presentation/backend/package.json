@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.2.0-dev.30",
+  "version": "4.3.0-dev.31",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -24,8 +24,7 @@
   "typings": "lib/cjs/presentation-backend",
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:cjs": "npm run -s copy:assets && tsc 1>&2",
-    "copy:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets",
+    "build:cjs": "tsc 1>&2",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
@@ -39,12 +38,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.2.0-dev.30",
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.30",
-    "@itwin/core-common": "workspace:^4.2.0-dev.30",
-    "@itwin/core-quantity": "workspace:^4.2.0-dev.30",
-    "@itwin/ecschema-metadata": "workspace:^4.2.0-dev.30",
-    "@itwin/presentation-common": "workspace:^4.2.0-dev.30"
+    "@itwin/core-backend": "workspace:^4.3.0-dev.31",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.31",
+    "@itwin/core-common": "workspace:^4.3.0-dev.31",
+    "@itwin/core-quantity": "workspace:^4.3.0-dev.31",
+    "@itwin/ecschema-metadata": "workspace:^4.3.0-dev.31",
+    "@itwin/presentation-common": "workspace:^4.3.0-dev.31"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -63,12 +62,12 @@
     "@types/faker": "^4.1.0",
     "@types/lolex": "^2.1.2",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/node": "~18.16.20",
     "@types/object-hash": "^1.3.0",
     "@types/semver": "7.3.10",
     "@types/sinon": "^10.0.15",
     "@types/sinon-chai": "^3.2.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-subset": "1.6.0",

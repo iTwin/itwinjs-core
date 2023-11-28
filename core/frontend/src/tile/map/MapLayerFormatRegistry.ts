@@ -13,19 +13,19 @@ import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
-/** Class representing a map-layer format.
+/**
+ * Class representing a map-layer format.
  * Each format has it's unique 'formatId' string, used to uniquely identify a format in the [[MapLayerFormatRegistry]].
  * When creating an [[ImageMapLayerSettings]] object, a format needs to be specified this 'formatId'.
  * The MapLayerFormat object can later be used to validate a source, or create a provider.
  *
- * Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+ * Subclasses should override formatId, [[MapLayerFormat.createImageryProvider]], and [[MapLayerFormat.createMapLayerTree]].
  * @public
  */
 export class MapLayerFormat {
   public static formatId: string;
 
-  /** Register the current format in the [[MapLayerFormatRegistry]].
-  */
+  /** Register the current format in the [[MapLayerFormatRegistry]]. */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
   /** @deprecated in 4.2. Use the overload that takes a [[MapL]]. */
@@ -57,7 +57,8 @@ export interface ValidateSourceOptions {
   ignoreCache?: boolean;
 }
 
-/** The type of a map layer format.
+/**
+ * The type of a map layer format.
  * @public
  */
 export type MapLayerFormatType = typeof MapLayerFormat;
@@ -98,7 +99,8 @@ export interface MapLayerFormatEntry {
   accessClient?: MapLayerAccessClient;
 }
 
-/** A registry of MapLayerFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.mapLayerFormatRegistry]].
+/**
+ * A registry of MapLayerFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.mapLayerFormatRegistry]].
  * @public
  */
 export class MapLayerFormatRegistry {
@@ -151,7 +153,8 @@ export class MapLayerFormatRegistry {
     return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
-  /** Returns a [[MapLayerImageryProvider]] based on the provided [[ImageMapLayerSettings]] object.
+  /**
+   * Returns a [[MapLayerImageryProvider]] based on the provided [[ImageMapLayerSettings]] object.
    * @internal
    */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {

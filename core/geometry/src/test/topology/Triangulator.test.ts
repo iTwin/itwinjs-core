@@ -600,12 +600,13 @@ describe("Triangulation", () => {
         y0 += 2.0 * r;
       }
     }
-
     GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "Circles");
     expect(ck.getNumErrors()).equals(0);
   });
   it("DegeneratePolygons", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x = 0;
     for (const points of [
       [{ x: 5.36, y: 8.85, z: 23.78 },
       { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
@@ -620,11 +621,14 @@ describe("Triangulation", () => {
       { x: 8.881784197001252e-16, y: 0, z: 0 }],
     ]) {
       const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-      if (graph) {
-        const polyface = PolyfaceBuilder.graphToPolyface(graph);
-        ck.testExactNumber(polyface.facetCount, 0, "degenerate triangle produced no facets.");
+      const polyface = graph ? PolyfaceBuilder.graphToPolyface(graph) : undefined;
+      if (!ck.testTrue(graph === undefined || polyface!.facetCount === 0, "degenerate triangle produced no facets.")) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x);
+        x += 10;
       }
     }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DegeneratePolygons");
+    expect(ck.getNumErrors()).equals(0);
   });
   it("facets for ACS", () => {
     const ck = new Checker();

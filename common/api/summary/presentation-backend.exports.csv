@@ -36,4 +36,5 @@ internal;RulesetManagerImpl
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
 public;SingleManagerPresentationProps 
-public;UnitSystemFormat
+public;UnitSystemFormat = UnitSystemFormat_2
+deprecated;UnitSystemFormat = UnitSystemFormat_2

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
-import { execFileSync } from 'child_process';
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
@@ -11,15 +10,18 @@ const Simctl = require("node-simctl").default;
 // Constants used in the script for convenience
 const appName = "imodeljs-test-app"
 const bundleId = `bentley.${appName}`;
-const assetsPath = "../../core/backend/src/test/assets";
-const bimFile = "mirukuru.ibim";
+const assetsPath = `${__dirname}/test-models`;
+const bimFile = "JoesHouse.bim";
 
 // Sort function that compares strings numerically from high to low
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
-// Similar to the launchApp function but doesn't retry, adds the --console option, and allows for args.
-Simctl.prototype.launchAppWithConsole = async function (bundleId: string, ...args: [string]) {
-  const { stdout } = await this.exec('launch', { args: ["--console", this.requireUdid('launch'), bundleId, ...args] });
+// Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
+Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], args: [string]) {
+  const { stdout } = await this.exec('launch', {
+    args: [...options, this.requireUdid('launch'), bundleId, ...args],
+    architectures: "x86_64",
+  });
   return stdout.trim();
 }
 
@@ -35,10 +37,6 @@ Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string,
   return undefined;
 };
 
-function runProgram(program: string, args: string[] = [], cwd: string | undefined = undefined) {
-  return execFileSync(program, args, { stdio: ['ignore', 'pipe', 'ignore'], cwd, encoding: "utf8" });
-}
-
 function log(message: string) {
   console.log(message);
 }
@@ -51,21 +49,16 @@ async function main() {
 
   // get all iOS devices
   log("Getting iOS devices");
-  const results = await simctl.getDevices(undefined, 'iOS');
+  const allResults = await simctl.getDevices(undefined, 'iOS');
+  // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
+  // no actual data. The below filters out the empty entries.
+  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => (v as [any]).length > 0).map(([k, v]) => ({[k]:v})));
   var keys = Object.keys(results).sort(numericCompareDescending);
 
   // determine desired device and runtime
   const deviceBaseName = "iPad Pro (11-inch)";
-  var desiredDevice: string;
-  var desiredRuntime: string;
-  const isAppleCpu = runProgram("sysctl", ["-n", "machdep.cpu.brand_string"]).startsWith("Apple");
-  if (isAppleCpu) {
-    desiredDevice = `${deviceBaseName} (1st generation)`;
-    desiredRuntime = "13"; // so that it runs on M1 without requiring the iOS arm64 simulator binaries
-  } else {
-    desiredDevice = `${deviceBaseName} (2nd generation)`;
-    desiredRuntime = keys.length > 0 ? keys[0] : "15"; // use latest runtime if we have any, otherwise 15
-  }
+  var desiredDevice = `${deviceBaseName} (2nd generation)`;
+  var desiredRuntime = keys.length > 0 ? keys[0] : "16";
 
   keys = keys.filter(key => key.startsWith(desiredRuntime));
   var device: { name: string; sdk: string; udid: string; state: string; } | undefined;
@@ -85,10 +78,6 @@ async function main() {
     const sdk = await simctl.getLatestRuntimeVersion(desiredRuntime);
     if (!sdk) {
       log(`ERROR: No runtimes for iOS ${desiredRuntime} found.`);
-      if (isAppleCpu) {
-        log("Note: Ignoring this error on Apple Silicon until a better solution is found.");
-        process.exitCode = 0;
-      }
       return;
     }
     log(`Creating simulator: ${desiredDevice} sdk: ${sdk}`);
@@ -118,21 +107,41 @@ async function main() {
   log("Installing app");
   await simctl.installApp(appPath);
 
-  // Copy the model to the simulator's Documents dir
-  const container = await simctl.getAppContainer(bundleId, "data");
-  log(`Copying ${bimFile} model into the app's Documents.`);
-  await copyFile(`${__dirname}/${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
-
+  const args = ["IMJS_EXIT_AFTER_MODEL_OPENED=1"];
+  const env = process.env;
+  const clientID = env.IMJS_OIDC_CLIENT_ID;
+  const scope = env.IMJS_OIDC_SCOPE;
+  const clientSecret = env.IMJS_OIDC_CLIENT_SECRET;
+  const iTwinID = env.IMJS_ITWIN_ID;
+  const iModelID = env.IMJS_IMODEL_ID;
+  if (clientID && scope && clientSecret && iTwinID && iModelID) {
+    args.concat([
+      `IMJS_OIDC_CLIENT_ID=${clientID}`,
+      `IMJS_OIDC_SCOPE=${scope}`,
+      `IMJS_OIDC_CLIENT_SECRET=${clientSecret}`,
+      `IMJS_ITWIN_ID=${iTwinID}`,
+      `IMJS_IMODEL_ID=${iModelID}`,
+      "IMJS_IGNORE_CACHE=YES",
+    ]);
+    log(`Configured from environment to download iModel ${iModelID} from iModel Hub.`);
+  } else {
+    args.push(`IMJS_STANDALONE_FILENAME=${bimFile}`);
+    // Copy the model to the simulator's Documents dir
+    const container = await simctl.getAppContainer(bundleId, "data");
+    log(`Copying ${bimFile} model into the app's Documents.`);
+    await copyFile(`${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
+  }
   // Launch the app instructing it to open the model and exit
   log("Launching app");
   simctl.execTimeout = 2 * 60 * 1000; // two minutes
-  const launchOutput = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
+  const launchOutput = await simctl.launchAppWithOptions(bundleId, ["--console", "--terminate-running-process"], args);
   // Note: the exit code from the app isn't passed back through simctl so we need to look for a specific string in the output.
-  if (launchOutput.includes("iModel opened")) {
+  if (launchOutput.includes("First render finished.")) {
     process.exitCode = 0;
     log("Success!");
   } else {
     log("Failed.");
+    log(`launchOutput:\n${launchOutput}`);
   }
 
   // Shut down simulator

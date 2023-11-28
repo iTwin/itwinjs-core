@@ -9,24 +9,27 @@
 
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
 import { Range3d } from "../geometry3d/Range";
 import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { Transform } from "../geometry3d/Transform";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { MomentData } from "../geometry4d/MomentData";
-import { Polyface } from "../polyface/Polyface";
+import { IndexedPolyface, Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphOps } from "../topology/Merging";
 import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
-import { AnyCurve, AnyRegion } from "./CurveTypes";
 import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveOps } from "./CurveOps";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
@@ -42,14 +45,8 @@ import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
+import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
-
-/**
- * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and
- * [[collectChains]].
- * @public
- */
-export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
 /**
  * * `properties` is a string with special characters indicating
@@ -111,9 +108,8 @@ export class RegionOps {
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
   /**
-   * Return an xy area for a loop, parity region, or union region.
-   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
-   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * Return a (signed) xy area for a region.
+   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
    * @param root any Loop, ParityRegion, or UnionRegion.
    */
   public static computeXYArea(root: AnyRegion): number | undefined {
@@ -294,6 +290,8 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
+    // Always return UnionRegion for now. But keep return type as AnyRegion:
+    // in the future, we might return the *simplest* region type.
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
@@ -487,7 +485,7 @@ export class RegionOps {
    * [[cloneCurvesWithXYSplits]].
    * * Return simplest form -- single primitive, single path, or bag of curves.
    */
-  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes {
+  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined {
     if (source === undefined)
       return undefined;
     if (source instanceof CurvePrimitive)
@@ -511,7 +509,7 @@ export class RegionOps {
    */
   public static collectInsideAndOutsideOffsets(
     fragments: AnyCurve[], offsetDistance: number, gapTolerance: number,
-  ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
+  ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
     return CurveOps.collectInsideAndOutsideXYOffsets(fragments, offsetDistance, gapTolerance);
   }
   /**
@@ -520,7 +518,7 @@ export class RegionOps {
    * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail
    * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): AnyChain | undefined {
     return CurveOps.collectChains(fragments, gapTolerance);
   }
   /**
@@ -759,6 +757,131 @@ export class RegionOps {
       }
     }
     return range;
+  }
+  /**
+   * Triangulate a stroked Loop or ParityRegion and return the graph.
+   * @param polygons polygons obtained by stroking a Loop or ParityRegion, z-coordinates ignored.
+   * @returns triangulated graph
+   */
+  private static triangulateStrokedRegionComponent(polygons: MultiLineStringDataVariant): HalfEdgeGraph | undefined {
+    let graph: HalfEdgeGraph | undefined;
+    if (Array.isArray(polygons)) {
+      if (polygons.length === 0)
+        return undefined;
+      const firstEntry = polygons[0];
+      if (Point3d.isAnyImmediatePointType(firstEntry)) {
+        graph = Triangulator.createTriangulatedGraphFromSingleLoop(polygons as XYAndZ[] | XAndY[] | number[][]);
+      } else if (polygons.length > 1) {
+        let writablePolygons: IndexedReadWriteXYZCollection[];
+        if (firstEntry instanceof IndexedReadWriteXYZCollection) {
+          writablePolygons = polygons as IndexedReadWriteXYZCollection[];
+        } else {
+          writablePolygons = [];
+          for (const polygon of polygons as LineStringDataVariant[])
+            writablePolygons.push(GrowableXYZArray.create(polygon));
+        }
+        const sortedPolygons = PolygonOps.sortOuterAndHoleLoopsXY(writablePolygons);
+        if (sortedPolygons.length === 1) { // below requires exactly one outer loop!
+          if (graph = Triangulator.createTriangulatedGraphFromLoops(sortedPolygons[0]))
+            Triangulator.flipTriangles(graph);
+        }
+      } else {
+        graph = Triangulator.createTriangulatedGraphFromSingleLoop(firstEntry);
+      }
+    } else {
+      graph = Triangulator.createTriangulatedGraphFromSingleLoop(polygons);
+    }
+    if (!graph) {
+      // Last resort: try full merge. Conveniently, multiple polygons are processed with parity logic.
+      if (graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(polygons, [], (inA, _inB) => inA)) {
+        if (Triangulator.triangulateAllPositiveAreaFaces(graph))
+          Triangulator.flipTriangles(graph);
+      }
+    }
+    return graph;
+  }
+  /** Stroke a Loop or ParityRegion */
+  private static strokeRegionComponent(component: Loop | ParityRegion, options?: StrokeOptions): GrowableXYZArray[] {
+    const strokedComponent = component.cloneStroked(options);
+    // package the stroked region as polygons
+    const polygons: GrowableXYZArray[] = [];
+    if (strokedComponent instanceof Loop) {
+      if (strokedComponent.children.length > 0 && strokedComponent.children[0] instanceof LineString3d)
+        polygons.push(strokedComponent.children[0].packedPoints); // expect only 1
+    } else if (strokedComponent instanceof ParityRegion) {
+      for (const strokedLoop of strokedComponent.children) {
+        if (strokedLoop.children.length > 0 && strokedLoop.children[0] instanceof LineString3d)
+          polygons.push(strokedLoop.children[0].packedPoints); // expect only 1
+      }
+    }
+    return polygons;
+  }
+  /**
+   * Triangulate a Loop or ParityRegion and return the graph.
+   * @param component region, z-coordinates ignored
+   * @param options how to stroke loops
+   * @returns triangulated graph
+   */
+  private static triangulateRegionComponent(component: Loop | ParityRegion, options?: StrokeOptions): HalfEdgeGraph | undefined {
+    const polygons = this.strokeRegionComponent(component, options);
+    return this.triangulateStrokedRegionComponent(polygons);
+  }
+  /**
+   * Facet the region according to stroke options.
+   * @param region a closed xy-planar region, possibly with holes.
+   * * The z-coordinates of the region are ignored. Caller is responsible for rotating the region into plane local coordinates beforehand, and reversing the rotation afterwards.
+   * * For best results, `UnionRegion` input should consist of non-overlapping children.
+   * Caller can ensure this by passing in `region = RegionOps.regionBooleanXY(unionRegion, undefined, RegionBinaryOpType.Union)`.
+   * * For best results, `ParityRegion` input should be correctly oriented (holes have opposite orientation to their containing loop).
+   * Caller can ensure this for non-intersecting loops by passing in `region = RegionOps.sortOuterAndHoleLoopsXY(loops)`.
+   * @param options primarily how to stroke the region boundary, but also how to facet the region interior.
+   * * By default, a triangulation is returned, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
+   * @returns facets for the region, or undefined if facetting failed
+   */
+  public static facetRegionXY(region: AnyRegion, options?: StrokeOptions): IndexedPolyface | undefined {
+    let graph: HalfEdgeGraph | undefined;
+    if (region instanceof UnionRegion) {
+      for (const child of region.children) {
+        const childGraph = RegionOps.triangulateRegionComponent(child, options);
+        if (childGraph) {
+          if (!graph) {
+            graph = childGraph;
+          } else {
+            // Graph concatenation without edge splits, clustering, and merge. We assume disjoint children so that at worst,
+            // components will have unshared adjacent exterior edges that remain after expandConvexFaces. Note that calling
+            // clusterAndMergeXYTheta here can create non-manifold topology!
+            graph.allHalfEdges.push(...childGraph.allHalfEdges);
+          }
+        }
+      }
+    } else {
+      graph = this.triangulateRegionComponent(region, options);
+    }
+    if (!graph)
+      return undefined;
+    if (options?.maximizeConvexFacets)
+      HalfEdgeGraphOps.expandConvexFaces(graph);
+    return PolyfaceBuilder.graphToPolyface(graph, options);
+  }
+  /**
+   * Decompose a polygon with optional holes into an array of convex polygons.
+   * @param polygon polygon and hole loops, e.g., as returned by [[CurveCollection.cloneStroked]] on a Loop or ParityRegion. All z-coordinates are ignored.
+   * @param maximize whether to return maximally convex polygons. If false, triangles are returned.
+   * @returns array of convex polygons, or undefined if triangulation failed
+  */
+  public static convexDecomposePolygonXY(polygon: MultiLineStringDataVariant, maximize: boolean = true): GrowableXYZArray[] | undefined {
+    const graph = RegionOps.triangulateStrokedRegionComponent(polygon);
+    if (!graph)
+      return undefined;
+    if (maximize)
+      HalfEdgeGraphOps.expandConvexFaces(graph);
+    const convexPolygons: GrowableXYZArray[] = [];
+    graph.announceFaceLoops((_graph, seed) => {
+      if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR))
+        convexPolygons.push(GrowableXYZArray.create(seed.collectAroundFace((node) => { return node.getPoint3d(); })));
+      return true;
+    });
+    return convexPolygons;
   }
 }
 /** @internal */

@@ -59,7 +59,7 @@ jobs:
       - task: NodeTool@0
         displayName: Use Node 18
         inputs:
-          versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          versionSpec: 18.x
           checkLatest: true
 
       - script: |
@@ -115,7 +115,7 @@ jobs:
           useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@5.1.x --legacy-peer-deps
+      - script: npm install @bentley/bemetalsmith@5.2.x --legacy-peer-deps
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 

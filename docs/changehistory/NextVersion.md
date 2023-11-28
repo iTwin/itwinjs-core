@@ -7,20 +7,44 @@ Table of contents:
 
 - [Geometry](#geometry)
   - [Clip any curve](#clip-any-curve)
-- [Electron 26 support](#electron-26-support)
-- [Locating and serializing schemas](#locating-and-serializing-schemas)
+- [ECSQL instance properties](#ecsql-instance-properties)
+- [Node 20 Support](#node-20-support)
+- [Electron 27 support](#electron-27-support)
+- [Element aspects require locking](#element-aspects-require-locking)
+- [Display](#display)
 
 ## Geometry
 
 ### Clip any curve
 
-The new [ClipUtils.clipAnyCurve] clips any `CurvePrimitive`, `Path`, or `BagOfCurves` and any region including any `Loop`, `ParityRegion`, or `UnionRegion`. One just needs to pass `AnyCurve` and a `Clipper` and the functions collect portions of any curve that are within the clipper into an array of any curves and returns the array.
+The new [ClipUtilities.clipAnyCurve]($core-geometry) clips any `CurvePrimitive`, `Path`, or `BagOfCurves` and any region including any `Loop`, `ParityRegion`, or `UnionRegion`. One just needs to pass `AnyCurve` and a `Clipper` and the functions collect portions of any curve that are within the clipper into an array of any curves and returns the array.
 
-## Electron 26 support
+## ECSQL Instance properties
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 26](https://www.electronjs.org/blog/electron-26-0).
+ECSQL supports querying instance properties, which are any property in a class selected in ECSql or its derived classes.
 
-## Locating and serializing schemas
+[**ECSQL Instance Properties Documentation**](../learning/ECSQLTutorial/InstanceProps.md)
 
-New APIs like [SchemaLoader]($ecschema-metadata) allow you to [locate schemas](../learning/serializing-xml-schemas.md/#schemas-from-an-imodel) in the context of an iModel.
-You can serialize schemas using the new functions [SchemaXml.writeFile]($ecschema-locaters) and [SchemaXml.writeString]($ecschema-locaters).
+## Node 20 Support
+
+iTwin.js now officially supports Node 20 starting with LTS version of 20.9.0. Node 20 support is in addition to Node 18, not a replacement.
+
+## Electron 27 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 27](https://www.electronjs.org/blog/electron-27-0).
+
+## Element aspects require locking
+
+Inserting, updating or deleting an aspect now requires the exclusive lock be held on its element. This is a new requirement to prevent conflicts that may result in corrupt changesets. Before changes may be made to an element's aspects, you must now acquire its exclusive lock (see `IModelDb.LockControl.acquireLocks`).
+
+## Display
+
+### Colorizing Clip Intersections
+
+Geometry which intersects clip volumes can now be colorized with [ClipStyle.intersectionStyle]($common). The images below illustrate this effect, first with the intersection style turned off, second with it turned on.
+
+![No Intersection Style](./assets/IntersectionStyle-Off.jpg "No intersection style is applied.") ![Default Intersection Style](./assets/IntersectionStyle-Default.jpg "Geometry determined to intersect the clip plane is recolored white at a width of one pixel.")
+
+You can toggle this colorization on and off using [ClipStyle.colorizeIntersection]($common). The style of this colorization can be controled using [ClipStyle.intersectionStyle]($common) by defining a [ClipIntersectionStyle]($common). [ClipIntersectionStyle.color]($common) defines the color to apply to the intersecting geometry, and [ClipIntersectionStyle.width]($common) defines the number of pixels considered to be intersecting the clip volume, which will therefore be colorized. The image below illustrates an altered [ClipStyle.intersectionStyle]($common), with [ClipIntersectionStyle.color]($common) set to red, and [ClipIntersectionStyle.width]($common) set to 5.
+
+![Altered Intersection Style](./assets/IntersectionStyle-Altered.jpg "Geometry determined to intersect the clip plane is recolored red at a width of five pixels.")

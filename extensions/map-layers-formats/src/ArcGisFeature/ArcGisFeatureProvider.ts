@@ -443,7 +443,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       const featureReader = new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
-      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
+      const renderer = new ArcGisGraphicsRenderer({viewport: hit.viewport});
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {

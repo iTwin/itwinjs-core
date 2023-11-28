@@ -381,11 +381,17 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
 
 /** A reference to one of our tile trees. The specific TileTree drawn may change when the desired imagery type or target iModel changes.
- * @internal
+ * @beta
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-  public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
-    super(layerSettings, layerIndex, iModel);
+  /**
+   * Constructor for an ImageryMapLayerTreeReference.
+   * @param layerSettings Map layer settings that are applied to the ImageryMapLayerTreeReference.
+   * @param layerIndex The index of the associated map layer. Usually passed in through [[createMapLayerTreeReference]] in [[MapTileTree]]'s constructor.
+   * @param iModel The iModel containing the ImageryMapLayerTreeReference.
+   */
+  public constructor(args: { layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection }) {
+    super(args.layerSettings, args.layerIndex, args.iModel);
   }
 
   public override get castsShadows() { return false; }
@@ -395,6 +401,7 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }
 
+  /* @internal */
   public override resetTreeOwner() {
     return this.iModel.tiles.resetTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }

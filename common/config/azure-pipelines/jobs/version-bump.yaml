@@ -48,9 +48,11 @@ jobs:
 
       - bash: |
           prevAuthor=$(git log -1 --pretty=format:'%an')
-          echo $prevAuthor
-          if [ "$prevAuthor" = "imodeljs-admin" ]; then
-            echo "Previous commit appears to be from imodeljs-admin. Skipping current nightly bump."
+          prevCommit=$(git log -1 --pretty=format:'%B')
+          authorCheck='imodeljs-admin'
+          commitCheck='^[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+$'
+          if [[ $prevAuthor =~ $authorCheck ]] && [[ $prevCommit =~ $commitCheck ]]; then
+            echo "Previous commit appears to be from a prior nightly build. Skipping current nightly bump."
             exit 1
           fi
         continueOnError: true
@@ -63,9 +65,9 @@ jobs:
     - checkout: self
 
     - task: NodeTool@0
-      displayName: Use Node 18.x
+      displayName: Use Node 20.x
       inputs:
-        versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+        versionSpec: 20.x
         checkLatest: true
 
     - bash: |
@@ -199,9 +201,9 @@ jobs:
       steps:
       - checkout: self
       - task: NodeTool@0
-        displayName: 'Use Node 18.x'
+        displayName: 'Use Node 20.x'
         inputs:
-          versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          versionSpec: 20.x
           checkLatest: true
 
       - bash: |

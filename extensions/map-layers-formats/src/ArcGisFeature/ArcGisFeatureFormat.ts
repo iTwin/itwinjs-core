@@ -13,7 +13,7 @@ export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const urlValidation = ArcGisUtilities.validateUrl(url, "FeatureServer");
     if (urlValidation !== MapLayerSourceStatus.Valid)
-      return {status: urlValidation};
+      return { status: urlValidation };
 
     const source = MapLayerSource.fromJSON({name: "", url, formatId: this.formatId});
     if (!source)

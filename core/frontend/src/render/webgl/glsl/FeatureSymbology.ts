@@ -490,7 +490,7 @@ export function addRenderOrder(builder: ShaderBuilder) {
   });
 }
 
-function addPixelWidthFactor(builder: ShaderBuilder) {
+export function addPixelWidthFactor(builder: ShaderBuilder) {
   builder.addUniform("u_pixelWidthFactor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_pixelWidthFactor", (uniform, params) => {
       params.target.uniforms.bindPixelWidthFactor(uniform);

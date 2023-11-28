@@ -179,7 +179,7 @@ describe("Constant merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant definition conflict: PI -> PII");
+      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
 
     });
 

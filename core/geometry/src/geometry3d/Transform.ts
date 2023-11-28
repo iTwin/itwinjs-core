@@ -84,23 +84,21 @@ export class Transform implements BeJSONFunctions {
         return;
       }
       if (Geometry.isArrayOfNumberArray(json, 3, 4)) {
-        const data = json as number[][];
         this._matrix.setRowValues(
-          data[0][0], data[0][1], data[0][2],
-          data[1][0], data[1][1], data[1][2],
-          data[2][0], data[2][1], data[2][2],
+          json[0][0], json[0][1], json[0][2],
+          json[1][0], json[1][1], json[1][2],
+          json[2][0], json[2][1], json[2][2],
         );
-        this._origin.set(data[0][3], data[1][3], data[2][3]);
+        this._origin.set(json[0][3], json[1][3], json[2][3]);
         return;
       }
       if (Geometry.isNumberArray(json, 12)) {
-        const data = json as number[];
         this._matrix.setRowValues(
-          data[0], data[1], data[2],
-          data[4], data[5], data[6],
-          data[8], data[9], data[10],
+          json[0], json[1], json[2],
+          json[4], json[5], json[6],
+          json[8], json[9], json[10],
         );
-        this._origin.set(data[3], data[7], data[11]);
+        this._origin.set(json[3], json[7], json[11]);
         return;
       }
     }
@@ -434,8 +432,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated result (if
-   * result is given).
+   * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated `result` of sufficient size.
    * * If `p = (x,y,z)` then this method computes `Tp = M*p + o*w` and returns the `Float64Array` formed by `Tp`
    * in the first 3 numbers of the array and `w` as the fourth.
    * * Logically, this is multiplication by the 4x4 matrix formed from the 3x4 instance augmented with fourth row 0001.
@@ -444,7 +441,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated result (if result is given).
+   * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated `result` of sufficient size.
    * * If `p = (x,y,z)` then this method computes `Tp = M*p + o` and returns it as the first 3 elements of the array.
    */
   public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
@@ -691,7 +688,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Multiply `this` Transform times `other` Transform.
-   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a] because:
+   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as `[A*B   Ab+a]` because:
    * ```
    * equation
    * \begin{matrix}
@@ -700,7 +697,7 @@ export class Transform implements BeJSONFunctions {
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
    * \end{matrix}
    * ```
-   * @param other the 'other` Transform to be multiplied to `this` Transform.
+   * @param other the `other` Transform to be multiplied to `this` Transform.
    * @param result optional preallocated `result` to reuse.
    */
   public multiplyTransformTransform(other: Transform, result?: Transform) {

@@ -49,11 +49,14 @@ export class PackedMatrix3dOps {
   }
   /**
    * Multiply 3x3 matrix `a*b`, store in `result`.
-   * * All params assumed length 9, allocated by caller.
-   * * c may alias either input.
+   * @param a left matrix in product. ASSUMED length 9.
+   * @param b right matrix in product. ASSUMED length 9.
+   * @param result optional destination array of length 9. If insufficient length, a new array is returned. May refer to same array as `a` or `b`.
+   * @return matrix product `a*b`
    */
   public static multiplyMatrixMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(9);
+    if (!result || result.length < 9)
+      result = new Float64Array(9);
     PackedMatrix3dOps.loadMatrix(
       result,
       (a[0] * b[0] + a[1] * b[3] + a[2] * b[6]),
@@ -70,11 +73,14 @@ export class PackedMatrix3dOps {
   }
   /**
    * Multiply 3x3 matrix `a*bTranspose`, store in `result`.
-   * * All params assumed length 9, allocated by caller.
-   * * c may alias either input.
+   * @param a left matrix in product. ASSUMED length 9.
+   * @param b transpose of right matrix in product. ASSUMED length 9.
+   * @param result optional destination array of length 9. If insufficient length, a new array is returned. May refer to same array as `a` or `b`.
+   * @return matrix product `a*b^T`
    */
   public static multiplyMatrixMatrixTranspose(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(9);
+    if (!result || result.length < 9)
+      result = new Float64Array(9);
     PackedMatrix3dOps.loadMatrix(
       result,
       (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]),
@@ -91,11 +97,14 @@ export class PackedMatrix3dOps {
   }
   /**
    * Multiply 3x3 matrix `aTranspose*b`, store in `result`.
-   * * All params assumed length 9, allocated by caller.
-   * * c may alias either input.
+   * @param a transpose of left matrix in product. ASSUMED length 9.
+   * @param b right matrix in product. ASSUMED length 9.
+   * @param result optional destination array of length 9. If insufficient length, a new array is returned. May refer to same array as `a` or `b`.
+   * @return matrix product `a^T*b`
    */
   public static multiplyMatrixTransposeMatrix(a: Float64Array, b: Float64Array, result?: Float64Array): Float64Array {
-    if (!result) result = new Float64Array(9);
+    if (!result || result.length < 9)
+      result = new Float64Array(9);
     PackedMatrix3dOps.loadMatrix(
       result,
       (a[0] * b[0] + a[3] * b[3] + a[6] * b[6]),
@@ -117,15 +126,16 @@ export class PackedMatrix3dOps {
     q = a[5]; a[5] = a[7]; a[7] = q;
   }
   /**
-   * Returns the transpose of 3x3 matrix `a`
-   * * If `dest` is passed as argument, then the function copies the transpose of 3x3 matrix `a` into `dest`
-   * * `a` is not changed unless also passed as the dest, i.e., copyTransposed(a,a) transposes `a` in place
+   * Compute transpose of 3x3 matrix `a`, store in `dest`.
+   * @param a source matrix. ASSUMED length 9. Note that `a` is not changed unless also passed as `dest`, i.e., `copyTransposed(a,a)` transposes `a` in place.
+   * @param dest optional destination array of length 9. If insufficient length, a new array is returned. May refer to same array as `a`.
+   * @return matrix `a^T`
    */
   public static copyTransposed(a: Float64Array, dest?: Float64Array): Float64Array {
     if (dest === a) {
       PackedMatrix3dOps.transposeInPlace(dest);
     } else {
-      if (!dest)
+      if (!dest || dest.length < 9)
         dest = new Float64Array(9);
       dest[0] = a[0]; dest[1] = a[3]; dest[2] = a[6];
       dest[3] = a[1]; dest[4] = a[4]; dest[5] = a[7];
@@ -246,11 +256,10 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Constructor
-   * @param coffs optional coefficient array.
-   * * **WARNING:** coffs is captured (i.e., is now owned by the Matrix3d object and can be modified by it).
+   * @param coffs optional coefficient array of length at least 9 (CAPTURED). If undefined or insufficient length, a new array is created.
    */
   public constructor(coffs?: Float64Array) {
-    this.coffs = coffs ? coffs : new Float64Array(9);
+    this.coffs = (coffs && coffs.length >= 9) ? coffs : new Float64Array(9);
     this.inverseCoffs = undefined;
     this.inverseState = InverseMatrixState.unknown;
   }
@@ -286,26 +295,23 @@ export class Matrix3d implements BeJSONFunctions {
     }
     // if json is Matrix3dProps and is an array of arrays
     if (Geometry.isArrayOfNumberArray(json, 3, 3)) {
-      const data = json as number[][];
       this.setRowValues(
-        data[0][0], data[0][1], data[0][2],
-        data[1][0], data[1][1], data[1][2],
-        data[2][0], data[2][1], data[2][2]);
+        json[0][0], json[0][1], json[0][2],
+        json[1][0], json[1][1], json[1][2],
+        json[2][0], json[2][1], json[2][2]);
       return;
     }
     // if json is Matrix3dProps and is an array of numbers
     if (json.length === 9) {
-      const data = json as number[];
       this.setRowValues(
-        data[0], data[1], data[2],
-        data[3], data[4], data[5],
-        data[6], data[7], data[8]);
+        json[0], json[1], json[2],
+        json[3], json[4], json[5],
+        json[6], json[7], json[8]);
       return;
     } else if (json.length === 4) {
-      const data = json as number[];
       this.setRowValues(
-        data[0], data[1], 0,
-        data[2], data[3], 0,
+        json[0], json[1], 0,
+        json[2], json[3], 0,
         0, 0, 1);
       return;
     }
@@ -431,13 +437,14 @@ export class Matrix3d implements BeJSONFunctions {
    * Create a Matrix3d with caller-supplied coefficients and optional inverse coefficients.
    * * The inputs are captured into (i.e., owned by) the new Matrix3d.
    * * The caller is responsible for validity of the inverse coefficients.
+   * * If either array is insufficiently sized, it is ignored.
    * @param coffs (required) array of 9 coefficients.
    * @param inverseCoffs (optional) array of 9 coefficients.
    * @returns a Matrix3d populated by a coffs array.
    */
   public static createCapture(coffs: Float64Array, inverseCoffs?: Float64Array): Matrix3d {
     const result = new Matrix3d(coffs);
-    if (inverseCoffs) {
+    if (inverseCoffs && inverseCoffs.length >= 9) {
       result.inverseCoffs = inverseCoffs;
       result.inverseState = InverseMatrixState.inverseStored;
     } else {
@@ -1803,12 +1810,12 @@ export class Matrix3d implements BeJSONFunctions {
    * @param y y part of multiplied point
    * @param z z part of multiplied point
    * @param w w part of multiplied point
-   * @param result optional preallocated result.
+   * @param result optional preallocated result. If length < 4, a new array is returned.
    */
   public static xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(
     origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array,
   ): Float64Array {
-    if (!result)
+    if (!result || result.length < 4)
       result = new Float64Array(4);
     result[0] = matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z + origin.x * w;
     result[1] = matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z + origin.y * w;
@@ -1828,12 +1835,12 @@ export class Matrix3d implements BeJSONFunctions {
    * @param x x part of multiplied point
    * @param y y part of multiplied point
    * @param z z part of multiplied point
-   * @param result optional preallocated result.
+   * @param result optional preallocated result. If length < 3, a new array is returned.
    */
   public static xyzPlusMatrixTimesCoordinatesToFloat64Array(
     origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array,
   ): Float64Array {
-    if (!result)
+    if (!result || result.length < 3)
       result = new Float64Array(3);
     result[0] = matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z + origin.x;
     result[1] = matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z + origin.y;
@@ -2230,7 +2237,6 @@ export class Matrix3d implements BeJSONFunctions {
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
       PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
       PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
-
       return result;
     }
     if (result === undefined) {

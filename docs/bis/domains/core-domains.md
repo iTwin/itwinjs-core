@@ -6,6 +6,8 @@ The following domains lay out the [Core layer](../guide/intro/bis-organization.m
 
 ### [BisCore](./BisCore.ecschema.md)
 
+#### [Drawings & Sheets](./drawings-sheets.md)
+
 #### [Provenance in BIS](./Provenance-in-BIS.md)
 
 ### [Functional](./Functional.ecschema.md)

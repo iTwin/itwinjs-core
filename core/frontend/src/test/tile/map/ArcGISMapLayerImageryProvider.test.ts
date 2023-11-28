@@ -167,12 +167,13 @@ describe("ArcGISMapLayerImageryProvider", () => {
       geometry: { x: 5, y: 6 },
       geometryType: "esriGeometryPoint",
       tolerance: 0.1,
+      sr: 3857,
       mapExtent: {
         low: { x: 1, y: 3 },
         high: { x: 2, y: 4 },
       },
       imageDisplay: { width: 256, height: 256, dpi: 96 },
-      layers: { prefix: "visible", layerIds: [ "2", "3" ] },
+      layers: { prefix: "top", layerIds: [ "2", "3" ] },
       returnGeometry: true,
       maxAllowableOffset,
     };
@@ -195,7 +196,6 @@ describe("ArcGISMapLayerImageryProvider", () => {
     const provider = new ArcGISMapLayerImageryProvider(settings);
     await provider.initialize();
     const resolveChildren = (_childIds: QuadId[]) => {};
-    const testTile = new ImageryMapTile({contentId: "1-0-0", range: Range3d.createNull(), maximumSize: 512}, {} as ImageryMapTileTree, new QuadId(1,0,0), MapCartoRectangle.createNull());
 
     const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
 
@@ -206,7 +206,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
       } as unknown) as Response));
     });
 
-    await (provider as any)._generateChildIds(testTile, resolveChildren);
+    await (provider as any)._generateChildIds(QuadId.createFromContentId("1_0_0"), resolveChildren);
     chai.expect(fetchStub.calledOnce).to.be.true;
     chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(unsaved.toString());
     chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(saved.toString());
