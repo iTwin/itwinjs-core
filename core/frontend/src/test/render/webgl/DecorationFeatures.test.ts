@@ -38,7 +38,7 @@ describe("Decorations containing Features", () => {
       vp.addFeatureOverrideProvider({
         addFeatureOverrides: (ovrs) => {
           ovrs.setVisibleSubCategory("0x456");
-        }
+        },
       });
 
       expectColors(vp, bgAndDec);
@@ -71,5 +71,3 @@ describe("Decorations containing Features", () => {
     });
   });
 });
-
-
