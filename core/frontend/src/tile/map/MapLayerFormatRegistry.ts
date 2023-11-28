@@ -28,7 +28,7 @@ export class MapLayerFormat {
   /** Register the current format in the [[MapLayerFormatRegistry]]. */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
-  /** @deprecated in 4.2. Use the overload that takes a [[MapL]]. */
+  /** @deprecated in 4.3. Use [[validateSourceObj]]. */
   public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 
   /** Allow a source object to be validated before being attached as a map-layer.
