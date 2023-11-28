@@ -30,6 +30,15 @@ jobs:
         MacOS_node_18_x:
           imageName: macos-latest
           nodeVersion: 18.x
+        Linux_node_20_x:
+          imageName: ubuntu-latest
+          nodeVersion: 20.x
+        Windows_node_20_x:
+          imageName: windows-latest
+          nodeVersion: 20.x
+        MacOS_node_20_x:
+          imageName: macos-latest
+          nodeVersion: 20.x
     pool:
       vmImage: $(imageName)
     steps:

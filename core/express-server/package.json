@@ -1,12 +1,12 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.3.0-dev.30",
+  "version": "4.3.0-dev.31",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^18.0.0 || ^20.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -43,7 +43,7 @@
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
     "@types/mocha": "^10.0.6",
-    "@types/node": "18.16.1",
+    "@types/node": "~18.16.20",
     "@types/sinon": "^17.0.2",
     "@types/supertest": "^2.0.4",
     "@types/express-ws": "^3.0.3",

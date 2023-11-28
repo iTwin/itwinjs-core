@@ -1,5 +1,8 @@
 lockfileVersion: 5.4
 
+overrides:
+  '@azure/msal-node': 2.1.0
+
 importers:
 
   .:
@@ -25,7 +28,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/multiparty': ^0.0.31
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/semver': 7.3.10
       '@types/sinon': ^17.0.2
       '@types/touch': ^3.1.2
@@ -85,7 +88,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
       '@types/multiparty': 0.0.31
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/semver': 7.3.10
       '@types/sinon': 17.0.2
       '@types/touch': 3.1.2
@@ -104,7 +107,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.1
       source-map-loader: 4.0.0_webpack@5.76.0
-      ts-node: 10.8.2_qlbbxiaex6jpgkh4qcqjjxblnu
+      ts-node: 10.8.2_x3yja37h4nvnkgmzh32ve3yzmm
       typescript: 5.0.2
       webpack: 5.76.0
 
@@ -116,7 +119,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       eslint: ^8.44.0
@@ -131,7 +134,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       eslint: 8.44.0
@@ -150,7 +153,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       chai: ^4.3.10
       eslint: ^8.44.0
       flatbuffers: ~1.12.0
@@ -171,7 +173,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
@@ -193,7 +194,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
@@ -219,7 +220,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
@@ -259,7 +260,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.3.10
@@ -302,7 +303,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -326,7 +327,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       almost-equal: ^1.1.0
@@ -353,7 +354,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
@@ -421,7 +422,6 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       chai: ^4.3.10
       eslint: ^8.44.0
       mocha: ^10.2.0
@@ -434,7 +434,6 @@ importers:
       '@itwin/build-tools': link:../../../tools/build
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
@@ -454,7 +453,7 @@ importers:
       '@openid/appauth': ^1.2.6
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       electron: ^27.0.0
       eslint: ^8.44.0
@@ -481,7 +480,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       electron: 27.0.0
       eslint: 8.44.0
@@ -504,7 +503,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@types/supertest': ^2.0.4
       chai: ^4.3.10
@@ -530,7 +529,7 @@ importers:
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       '@types/supertest': 2.0.4
       chai: 4.3.10
@@ -582,7 +581,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': ^17.0.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -624,7 +622,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': 17.0.2
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
@@ -651,7 +648,6 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/file-saver': ^2.0.1
-      '@types/node': 18.16.1
       cpx2: ^3.0.0
       eslint: ^8.44.0
       file-saver: ^2.0.2
@@ -667,7 +663,6 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/file-saver': 2.0.1
-      '@types/node': 18.16.1
       cpx2: 3.0.0
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -681,7 +676,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       debug: ^2.6.9
       eslint: ^8.44.0
@@ -699,7 +694,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       debug: 2.6.9
       eslint: 8.44.0
@@ -720,7 +715,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -745,7 +739,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -770,7 +763,6 @@ importers:
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -798,7 +790,6 @@ importers:
       '@types/i18next': 8.4.2
       '@types/i18next-browser-languagedetector': 2.0.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -822,7 +813,7 @@ importers:
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -847,7 +838,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -873,7 +864,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/superagent': ^4.1.14
       '@types/ws': ^7.0.0
       chai: ^4.3.10
@@ -902,7 +893,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/superagent': 4.1.14
       '@types/ws': 7.2.0
       chai: 4.3.10
@@ -921,7 +912,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
       debug: ^2.6.9
@@ -936,7 +927,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
       debug: 2.6.9
@@ -955,7 +946,6 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': ^17.0.2
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -973,7 +963,6 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': 17.0.2
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -993,7 +982,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       chai: ^4.3.10
       eslint: ^8.44.0
       mocha: ^10.2.0
@@ -1010,7 +998,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
@@ -1027,7 +1014,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -1046,7 +1032,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -1068,7 +1053,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/semver': 7.3.10
       chai: ^4.3.10
       cpx2: ^3.0.0
@@ -1087,7 +1072,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/semver': 7.3.10
       chai: 4.3.10
       cpx2: 3.0.0
@@ -1109,7 +1094,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
       eslint: ^8.44.0
@@ -1127,7 +1112,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 8.44.0
@@ -1176,7 +1161,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       eslint: ^8.44.0
       mocha: ^10.2.0
@@ -1192,7 +1177,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
@@ -1234,7 +1219,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       chai: ^4.3.10
       eslint: ^8.44.0
       mocha: ^10.2.0
@@ -1248,7 +1232,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       chai: 4.3.10
       eslint: 8.44.0
       mocha: 10.2.0
@@ -1299,7 +1282,7 @@ importers:
       '@itwin/oidc-signin-tool': ~3.6.0
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
       electron: ^27.0.0
@@ -1321,7 +1304,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.6.0_ucuw22jbeoimtubr2bfuzfadfa
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 8.44.0
@@ -1350,7 +1333,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -1383,7 +1366,7 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1404,7 +1387,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -1429,7 +1412,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
@@ -1719,7 +1702,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
@@ -1796,7 +1779,7 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
       assert: 2.0.0
@@ -1850,7 +1833,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       chai: ^4.3.10
@@ -1904,7 +1887,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       assert: 2.0.0
       browserify-zlib: 0.2.0
       cpx2: 3.0.0
@@ -1947,7 +1930,7 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
@@ -1999,7 +1982,7 @@ importers:
       '@types/deep-equal': 1.0.0
       '@types/faker': 4.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/rimraf': 2.0.2
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
@@ -2047,7 +2030,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/semver': 7.3.10
       '@types/spdy': ^3.4.4
       assert: ^2.0.0
@@ -2086,7 +2069,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/semver': 7.3.10
       '@types/spdy': 3.4.4
       assert: 2.0.0
@@ -2128,7 +2111,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
@@ -2182,7 +2165,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       assert: 2.0.0
       browserify-zlib: 0.2.0
       buffer: 6.0.3
@@ -2219,7 +2202,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lolex': ^2.1.2
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/object-hash': ^1.3.0
       '@types/semver': 7.3.10
       '@types/sinon': ^17.0.2
@@ -2264,7 +2247,7 @@ importers:
       '@types/faker': 4.1.0
       '@types/lolex': 2.1.2
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/object-hash': 1.3.0
       '@types/semver': 7.3.10
       '@types/sinon': 17.0.2
@@ -2378,7 +2361,6 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       chai: ^4.3.10
@@ -2420,7 +2402,6 @@ importers:
       '@types/deep-equal': 1.0.0
       '@types/faker': 4.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
       chai: 4.3.10
@@ -2468,7 +2449,7 @@ importers:
       '@itwin/reality-data-client': 1.1.0
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.17.20
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
@@ -2522,7 +2503,7 @@ importers:
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       chrome-launcher: 0.15.2
@@ -2544,7 +2525,7 @@ importers:
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.0.2
-      vite: 4.4.9_@types+node@18.16.1
+      vite: 4.4.9_@types+node@18.16.20
       vite-plugin-env-compatible: 1.1.1
       vite-plugin-inspect: 0.7.28_vite@4.4.9
       webpack: 5.76.0
@@ -2694,7 +2675,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       rimraf: ^3.0.2
@@ -2709,7 +2690,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -2725,7 +2706,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       chai: ^4.3.10
       eslint: ^8.44.0
@@ -2745,7 +2726,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       mocha: 10.2.0
@@ -2762,7 +2743,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       fs-extra: ^8.1.0
@@ -2781,7 +2762,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -2797,7 +2778,7 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/fs-extra': ^4.0.7
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       rimraf: ^3.0.2
@@ -2814,7 +2795,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/fs-extra': 4.0.7
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -2830,7 +2811,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       eslint: ^8.44.0
       fs-extra: ^8.1.0
@@ -2849,7 +2830,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       eslint: 8.44.0
       rimraf: 3.0.2
@@ -2888,7 +2869,7 @@ importers:
     specifiers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@microsoft/api-extractor': ~7.36.4
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.1
@@ -2905,7 +2886,7 @@ importers:
       wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
-      '@microsoft/api-extractor': 7.36.4_@types+node@18.16.1
+      '@microsoft/api-extractor': 7.36.4_@types+node@18.16.20
       chalk: 3.0.0
       cpx2: 3.0.0
       cross-spawn: 7.0.1
@@ -2922,7 +2903,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       eslint: 8.44.0
 
   ../../tools/certa:
@@ -2934,7 +2915,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
       canonical-path: ^1.0.0
       detect-port: ~1.3.0
@@ -2968,7 +2949,7 @@ importers:
       '@types/express': 4.17.20
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/yargs': 17.0.19
       electron: 27.0.0
       eslint: 8.44.0
@@ -2990,7 +2971,7 @@ importers:
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.3.10
       chai-string: ^1.5.0
@@ -3023,7 +3004,7 @@ importers:
       '@types/chai-string': 1.4.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 8.44.0
@@ -3075,7 +3056,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
+      '@types/node': ~18.16.20
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       chai-jest-snapshot: ^2.0.0
@@ -3115,7 +3096,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       chai-jest-snapshot: 2.0.0_chai@4.3.10
@@ -3136,7 +3117,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       babel-loader: ~8.2.5
@@ -3161,7 +3141,6 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44_6ndl6d37z3ezupnqjymvncqbpi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 18.16.1
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
       babel-loader: 8.2.5_webpack@5.76.0
@@ -3389,7 +3368,7 @@ packages:
       '@azure/logger': 1.0.4
       '@azure/msal-browser': 2.38.3
       '@azure/msal-common': 7.6.0
-      '@azure/msal-node': 1.18.4
+      '@azure/msal-node': 2.1.0
       events: 3.3.0
       jws: 4.0.0
       open: 8.4.2
@@ -3454,17 +3433,21 @@ packages:
     engines: {node: '>=0.8.0'}
     dev: false
 
+  /@azure/msal-common/14.0.3:
+    resolution: {integrity: sha512-Vl5SsC3zvQ8913GnO5Typox+35M6CaXmO/2FXi35LfMAV3ZB/HLCsldLxylI01c3CmtOm7pICWpOjp/DlQ9RWA==}
+    engines: {node: '>=0.8.0'}
+    dev: false
+
   /@azure/msal-common/7.6.0:
     resolution: {integrity: sha512-XqfbglUTVLdkHQ8F9UQJtKseRr3sSnr9ysboxtoswvaMVaEfvyLtMoHv9XdKUfOc0qKGzNgRFd9yRjIWVepl6Q==}
     engines: {node: '>=0.8.0'}
     dev: false
 
-  /@azure/msal-node/1.18.4:
-    resolution: {integrity: sha512-Kc/dRvhZ9Q4+1FSfsTFDME/v6+R2Y1fuMty/TfwqE5p9GTPw08BPbKgeWinE8JRHRp+LemjQbUZsn4Q4l6Lszg==}
-    engines: {node: 10 || 12 || 14 || 16 || 18}
-    deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
+  /@azure/msal-node/2.1.0:
+    resolution: {integrity: sha512-RiYnw8VdrFJrgTfHAfiAhRehIYN/H8vQ00DGVTYMOtlOkoEbZneK0qs8DV3p2WKVB5GN0cshVSI79N0fVlgbmg==}
+    engines: {node: 18 || 20}
     dependencies:
-      '@azure/msal-common': 13.3.1
+      '@azure/msal-common': 14.0.3
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
     dev: false
@@ -4568,24 +4551,24 @@ packages:
       '@babel/runtime': 7.23.4
     dev: false
 
-  /@microsoft/api-extractor-model/7.27.6_@types+node@18.16.1:
+  /@microsoft/api-extractor-model/7.27.6_@types+node@18.16.20:
     resolution: {integrity: sha512-eiCnlayyum1f7fS2nA9pfIod5VCNR1G+Tq84V/ijDrKrOFVa598BLw145nCsGDMoFenV6ajNi2PR5WCwpAxW6Q==}
     dependencies:
       '@microsoft/tsdoc': 0.14.2
       '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.1
+      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.20
     transitivePeerDependencies:
       - '@types/node'
     dev: false
 
-  /@microsoft/api-extractor/7.36.4_@types+node@18.16.1:
+  /@microsoft/api-extractor/7.36.4_@types+node@18.16.20:
     resolution: {integrity: sha512-21UECq8C/8CpHT23yiqTBQ10egKUacIpxkPyYR7hdswo/M5yTWdBvbq+77YC9uPKQJOUfOD1FImBQ1DzpsdeQQ==}
     hasBin: true
     dependencies:
-      '@microsoft/api-extractor-model': 7.27.6_@types+node@18.16.1
+      '@microsoft/api-extractor-model': 7.27.6_@types+node@18.16.20
       '@microsoft/tsdoc': 0.14.2
       '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.1
+      '@rushstack/node-core-library': 3.59.7_@types+node@18.16.20
       '@rushstack/rig-package': 0.4.1
       '@rushstack/ts-command-line': 4.15.2
       colors: 1.2.5
@@ -4707,7 +4690,7 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@rushstack/node-core-library/3.59.7_@types+node@18.16.1:
+  /@rushstack/node-core-library/3.59.7_@types+node@18.16.20:
     resolution: {integrity: sha512-ln1Drq0h+Hwa1JVA65x5mlSgUrBa1uHL+V89FqVWQgXd1vVIMhrtqtWGQrhTnFHxru5ppX+FY39VWELF/FjQCw==}
     peerDependencies:
       '@types/node': '*'
@@ -4715,7 +4698,7 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       colors: 1.2.5
       fs-extra: 7.0.1
       import-lazy: 4.0.0
@@ -4841,14 +4824,14 @@ packages:
     resolution: {integrity: sha512-a2+YeUjPkztKJu5aIF2yArYFQQp8d51wZ7DavSHjFuY1mqVgidGyzEQ41JIVNy82fXj8yPgy2vJmfIywgESW6w==}
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/cacheable-request/6.0.3:
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/responselike': 1.0.3
 
   /@types/chai-as-promised/7.1.0:
@@ -4879,7 +4862,7 @@ packages:
   /@types/connect/3.4.38:
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/cookiejar/2.1.5:
     resolution: {integrity: sha512-he+DHOWReW0nghN24E1WUqM0efK4kI9oTqDm6XmK8ZPe2djZ90BSNdGnIyCLzCPw7/pogPlGbzI2wHGGmi4O/Q==}
@@ -4888,7 +4871,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/debug/4.1.12:
@@ -4929,7 +4912,7 @@ packages:
   /@types/express-serve-static-core/4.17.41:
     resolution: {integrity: sha512-OaJ7XLaelTgrvlZD8/aa0vvvxZdUmlCn6MtWeB7TkiKW70BQLc9XEPpDLPdbo52ZhXUCrznlWdCHWxJWtdyajA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       '@types/qs': 6.9.10
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -4964,13 +4947,13 @@ packages:
   /@types/fs-extra/4.0.7:
     resolution: {integrity: sha512-BN48b/2F3kL0Ual7tjcHjj0Fl+nuYKtHa0G/xT3Q43HuCpN7rQD5vIx6Aqnl9x10oBI5xMJh8Ly+FQpP205JlA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/fs-extra/8.1.5:
     resolution: {integrity: sha512-0dzKcwO+S8s2kuF5Z9oUWatQJj5Uq/iqphEtE3GQJVRRYm/tD1LglU2UnXi2A8jLq5umkGouOXOR9y0n613ZwQ==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/geojson/7946.0.13:
@@ -4982,13 +4965,13 @@ packages:
     dependencies:
       '@types/events': 3.0.3
       '@types/minimatch': 5.1.2
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/glob/7.2.0:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/google-protobuf/3.15.6:
@@ -5024,13 +5007,13 @@ packages:
   /@types/jsonwebtoken/8.5.9:
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/lodash/4.14.202:
     resolution: {integrity: sha512-OvlIYQK9tNneDlS0VN54LLd5uiPCBOp7gS5Z0f1mjoJYBrtStzgmJBxONW3U6OZqdtNzZPmn9BS/7WI7BFFcFQ==}
@@ -5059,13 +5042,13 @@ packages:
   /@types/multiparty/0.0.31:
     resolution: {integrity: sha512-cAFkeGKH55zJiYUjvXznQ3IdShi15VPcaDYxTm9a/lvLhD5dZgSrS+FmQvdS1/vFVIEolFGM1eZCB1avVpiN3w==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/node-fetch/2.6.9:
     resolution: {integrity: sha512-bQVlnMLFJ2d35DkPNjEPmd9ueO/rh5EiaZt2bhqiSarPjZIuIV6bPQVqcrEyvNo+AfTrRGVazle1tl597w3gfA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       form-data: 4.0.0
     dev: false
 
@@ -5073,13 +5056,13 @@ packages:
     resolution: {integrity: sha512-5E9WgTy95B7i90oISjui9U5Zu7iExUPfU4ygtv4yXEy6zJFE3oQYHCnh5H1jZRPkjphJt2Ml3oQW6M0qtK534A==}
     dev: true
 
-  /@types/node/18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
+  /@types/node/18.16.20:
+    resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
 
   /@types/object-hash/1.3.0:
     resolution: {integrity: sha512-il4NIe4jTx4lfhkKaksmmGHw5EsVkO8sHWkpJHM9m59r1dtsVadLSrJqdE8zU74NENDAsR3oLIOlooRAXlPLNA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/qs/6.9.10:
@@ -5091,13 +5074,13 @@ packages:
   /@types/responselike/1.0.3:
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/rimraf/2.0.2:
     resolution: {integrity: sha512-Hm/bnWq0TCy7jmjeN5bKYij9vw5GrDFWME4IuxV08278NtU/VdGbzsBohcCUJ7+QMqmUq5hpRKB39HeQWJjztQ==}
     dependencies:
       '@types/glob': 5.0.35
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/semver/7.3.10:
@@ -5111,14 +5094,14 @@ packages:
     resolution: {integrity: sha512-x2EM6TJOybec7c52BX0ZspPodMsQUd5L6PRwOunVyVUhXiBSKf3AezDL8Dgvgt5o0UfKNfuA0eMLr2wLT4AiBA==}
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/serve-static/1.15.5:
     resolution: {integrity: sha512-PDRk21MnK70hja/YF8AHfC7yIsiQHn1rcXx7ijCFBX/k+XQJhQT/gw3xekXKJvx+5SXaMMS8oqQy09Mzvz2TuQ==}
     dependencies:
       '@types/http-errors': 2.0.4
       '@types/mime': 3.0.4
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
 
   /@types/sinon-chai/3.2.0:
     resolution: {integrity: sha512-VpsC3L8/ynicaLJB/aVvLCFn+c2tjo5jJ5MGiy7keoN431LSAKv9xhLO9dhx9vSVJHG8cjfshdqU4+W8Occf7w==}
@@ -5141,20 +5124,20 @@ packages:
   /@types/source-map-support/0.4.0:
     resolution: {integrity: sha512-9oVAi1Jlr274pbMGPEe0S3IPImV9knVNafa6E4MookD/fjOZAE6EmLkFX5ZjtZ9OXNPi2FCIZzUSMvwAUUKeSg==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/spdy/3.4.4:
     resolution: {integrity: sha512-N9LBlbVRRYq6HgYpPkqQc3a9HJ/iEtVZToW6xlTtJiMhmRJ7jJdV7TaZQJw/Ve/1ePUsQiCTDc4JMuzzag94GA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/superagent/4.1.14:
     resolution: {integrity: sha512-iiXaOL2wSbnSY4qg0mFPWJHL9iwyEsoNYwaHF2w58/fsVAQJlj+KUfFAFZu+nzbz+b7dUprJEAc+O9vhHHhQTA==}
     dependencies:
       '@types/cookiejar': 2.1.5
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/supertest/2.0.4:
@@ -5166,7 +5149,7 @@ packages:
   /@types/touch/3.1.2:
     resolution: {integrity: sha512-6YYYfTc90glAZBvyjpmz6JFLtBRyLWXckmlNgK4R2czsWg63cRCI9Rb3aKJ6LPbw8jpHf7nZdVvMd6gUg4hVsw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/triple-beam/1.3.5:
@@ -5176,7 +5159,7 @@ packages:
   /@types/tunnel/0.0.3:
     resolution: {integrity: sha512-sOUTGn6h1SfQ+gbgqC364jLFBw2lnFqkgF3q0WovEHRLMrVD1sd5aufqi/aJObLekJO+Aq5z646U4Oxy6shXMA==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/validator/13.11.7:
@@ -5186,7 +5169,7 @@ packages:
   /@types/ws/7.2.0:
     resolution: {integrity: sha512-HnqczxiZ828df9FUh9OyY7vSOelpQNaj+SLEnDvU74rYijp61ggV7dhmDlMky0oYXKLdVuIG4KvExk8DEqzJgQ==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: true
 
   /@types/yargs-parser/21.0.3:
@@ -5203,7 +5186,7 @@ packages:
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
     requiresBuild: true
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     optional: true
 
   /@typescript-eslint/eslint-plugin/5.55.0_odicrze7mzofy3itnjcgazdwoe:
@@ -6460,7 +6443,7 @@ packages:
     engines: {node: '>=12.13.0'}
     hasBin: true
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
       lighthouse-logger: 1.4.2
@@ -7182,7 +7165,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -9285,7 +9268,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -12341,39 +12324,6 @@ packages:
       utf8-byte-length: 1.0.4
     dev: true
 
-  /ts-node/10.8.2_qlbbxiaex6jpgkh4qcqjjxblnu:
-    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': '>=1.2.50'
-      '@swc/wasm': '>=1.2.50'
-      '@types/node': '*'
-      typescript: '>=2.7'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      '@swc/wasm':
-        optional: true
-      '@types/node':
-        optional: true
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.9
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      '@types/node': 18.16.1
-      acorn: 8.11.2
-      acorn-walk: 8.3.0
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.0.2
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-    dev: true
-
   /ts-node/10.8.2_typescript@5.0.2:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
     hasBin: true
@@ -12395,6 +12345,39 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
+      acorn: 8.11.2
+      acorn-walk: 8.3.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.0.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
+  /ts-node/10.8.2_x3yja37h4nvnkgmzh32ve3yzmm:
+    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+      '@types/node':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 18.16.20
       acorn: 8.11.2
       acorn-walk: 8.3.0
       arg: 4.1.3
@@ -12813,7 +12796,7 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.9_@types+node@18.16.1
+      vite: 4.4.9_@types+node@18.16.20
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -12854,7 +12837,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vite/4.4.9_@types+node@18.16.1:
+  /vite/4.4.9_@types+node@18.16.20:
     resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -12882,7 +12865,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
       esbuild: 0.18.20
       postcss: 8.4.31
       rollup: 3.29.4
@@ -13207,7 +13190,7 @@ packages:
   /wkx/0.5.0:
     resolution: {integrity: sha512-Xng/d4Ichh8uN4l0FToV/258EjMGU9MGcA0HV2d9B/ZpZB3lqQm7nkOdZdm5GhKtLLhAE7PiVQwN4eN+2YJJUg==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /wms-capabilities/0.4.0:
