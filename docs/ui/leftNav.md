@@ -14,3 +14,4 @@ defaultState: activeOpen
 - #### Learn AppUI
 
   - [Create Frontstage](./appui/frontstage.md)
+  - [Add UI elements](./appui/ui-items-provider.md)

@@ -2,7 +2,7 @@
 
 **Frontstage** is a layout configuration that resembles a page and allows you to define and implement a layout tailored to a specific task within an application. The configuration provides flexibility and control over the visual presentation of content allowing you to create task-specific page layout that enhances user experience. AppUI provides a standard layout, but a custom layout can be defined and used by the frontstage.
 
-<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/543/iframe.html?args=&id=frontstage-frontstageprovider--overview&viewMode=story"></iframe>
+<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/storybook/iframe.html?args=&id=frontstage-frontstageprovider--overview&viewMode=story"></iframe>
 
 ## Create a Frontstage
 
@@ -37,7 +37,7 @@ Each frontstage has up to four stage panels that are displayed on the side of th
 Additionally a frontstage can contain multiple floating widgets that are not docked to the side of the page.
 Each floating widget and a stage panel section is a widget container which can contain multiple widgets.
 
-<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/543/iframe.html?args=&id=frontstage-frontstageprovider--widget-container&viewMode=story"></iframe>
+<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/storybook/iframe.html?args=&id=frontstage-frontstageprovider--widget-container&viewMode=story"></iframe>
 
 
 ### Create a Standard Frontstage
@@ -52,7 +52,7 @@ To define a frontstage configuration of a standard layout use the [StandardFront
 
 While defining a standard layout you have the capability to provide an initial configuration however the user is in control of most of the UI elements on the screen.
 
-<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/543/iframe.html?args=&id=frontstage-frontstageprovider--interaction&viewMode=story"></iframe>
+<iframe style="width:100%;height:400px" src="https://itwin.github.io/appui/storybook/iframe.html?args=&id=frontstage-frontstageprovider--interaction&viewMode=story"></iframe>
 
 ### Toolbars
 
