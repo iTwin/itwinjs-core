@@ -14,15 +14,12 @@ import {
   ArcGISImageryProvider,
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
-  ImageryMapTile,
-  ImageryMapTileTree,
-  MapCartoRectangle,
   MapLayerImageryProvider,
   QuadId,
 
 } from "../../../tile/internal";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
-import { Range2dProps, Range3d } from "@itwin/core-geometry";
+import { Range2dProps } from "@itwin/core-geometry";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 
 chai.use(chaiAsPromised);
