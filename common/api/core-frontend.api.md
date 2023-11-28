@@ -7757,9 +7757,9 @@ export class MapLayerFeatureRecord {
 
 // @public
 export class MapLayerFormat {
-    // @beta
+    // @internal
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // @beta
+    // @internal (undocumented)
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
