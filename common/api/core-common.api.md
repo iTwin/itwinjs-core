@@ -4537,6 +4537,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     formatId: string;
     // @internal (undocumented)
     modelId?: never;
+    // @beta
+    queryParams?: {
+        [key: string]: string;
+    };
     subLayers?: MapSubLayerProps[];
     url: string;
 }
@@ -4563,6 +4567,14 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    get queryParams(): {
+        [key: string]: string;
+    };
+    // @beta
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
     // (undocumented)
@@ -4571,6 +4583,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
+    // @beta
+    unsavedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     readonly url: string;
     // (undocumented)
