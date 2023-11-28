@@ -9,7 +9,7 @@ import { expectColors } from "../../ExpectColors";
 import { testBlankViewport } from "../../openBlankViewport";
 import { BoxDecorator, TestDecorator } from "../../TestDecorators";
 
-describe.only("Decorations containing Features", () => {
+describe("Decorations containing Features", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterEach(() => TestDecorator.dropAll());
   after(async () => IModelApp.shutdown());
