@@ -309,7 +309,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.url = props.url;
     this.accessKey = props.accessKey;
     if (props.queryParams) {
-      this.savedQueryParams = ImageMapLayerSettings.cloneQueryParams(props.queryParams);
+      this.savedQueryParams = {...props.queryParams};
     }
     this.subLayers = [];
     if (!props.subLayers)
@@ -326,12 +326,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     return new this(props);
   }
 
-  private static cloneQueryParams(input: { [key: string]: string },  result?: { [key: string]: string }) {
-    result = result || {};
-    Object.keys(input).forEach((key) => result![key] = input[key]);
-    return result;
-  }
-
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ImageMapLayerProps {
     const props = super._toJSON() as ImageMapLayerProps;
@@ -342,7 +336,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.subLayers = this.subLayers.map((x) => x.toJSON());
 
     if (this.savedQueryParams)
-      props.queryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
+      props.queryParams = {...this.savedQueryParams};
 
     return props;
   }
@@ -359,9 +353,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone.password = this.password;
     clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
-      clone.unsavedQueryParams = ImageMapLayerSettings.cloneQueryParams(this.unsavedQueryParams);
+      clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
-      clone.savedQueryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
+      clone.savedQueryParams = {...this.savedQueryParams};
 
     return clone;
   }
@@ -375,9 +369,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     props.accessKey = changedProps.accessKey ?? this.accessKey;
     props.subLayers = changedProps.subLayers ?? this.subLayers;
     if (changedProps.queryParams) {
-      props.queryParams = ImageMapLayerSettings.cloneQueryParams(changedProps.queryParams);
+      props.queryParams = {...changedProps.queryParams};
     } else if (this.savedQueryParams) {
-      props.queryParams = ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams);
+      props.queryParams = {...this.savedQueryParams};
     }
 
     return props;
@@ -470,9 +464,13 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @beta
  */
   public get queryParams() {
-    const queryParams: {[key: string]: string} = {};
-    this.savedQueryParams && ImageMapLayerSettings.cloneQueryParams(this.savedQueryParams, queryParams);
-    this.unsavedQueryParams && ImageMapLayerSettings.cloneQueryParams(this.unsavedQueryParams, queryParams);
+    let queryParams: {[key: string]: string} = {};
+    if (this.savedQueryParams)
+      queryParams = {...this.savedQueryParams};
+
+    if (this.unsavedQueryParams)
+      queryParams = {...queryParams, ...this.unsavedQueryParams};
+
     return queryParams;
   }
 }

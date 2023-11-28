@@ -129,11 +129,11 @@ export class MapLayerSource {
     }
 
     if (this.savedQueryParams) {
-      layerSettings.savedQueryParams = MapLayerSource.cloneQueryParams(this.savedQueryParams);
+      layerSettings.savedQueryParams = {...this.savedQueryParams};
     }
 
     if (this.unsavedQueryParams) {
-      layerSettings.unsavedQueryParams = MapLayerSource.cloneQueryParams(this.unsavedQueryParams);
+      layerSettings.unsavedQueryParams = {...this.unsavedQueryParams};
     }
     return layerSettings;
   }
@@ -142,19 +142,16 @@ export class MapLayerSource {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 
-  private static cloneQueryParams(input: { [key: string]: string },  result?: { [key: string]: string }) {
-    result = result || {};
-    Object.keys(input).forEach((key) => result![key] = input[key]);
-    return result;
-  }
-
   /** Get all query parameters
  * @beta
  */
   public get queryParameters() {
-    const queryParams: {[key: string]: string} = {};
-    this.savedQueryParams && MapLayerSource.cloneQueryParams(this.savedQueryParams, queryParams);
-    this.unsavedQueryParams && MapLayerSource.cloneQueryParams(this.unsavedQueryParams, queryParams);
+    let queryParams: {[key: string]: string} = {};
+
+    if (this.savedQueryParams)
+      queryParams = {...this.savedQueryParams};
+    if (this.unsavedQueryParams)
+      queryParams = {...queryParams, ...this.unsavedQueryParams};
     return queryParams;
   }
 
