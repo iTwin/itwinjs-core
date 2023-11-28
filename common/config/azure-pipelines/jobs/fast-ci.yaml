@@ -6,6 +6,7 @@ trigger:
 
 variables:
   - group: Rush Build Cache SAS Token
+  - group: Travis Cobbs - GitHub PAT
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
 
@@ -30,13 +31,13 @@ jobs:
 
     strategy:
       matrix:
-        "Windows_Node_18":
+        "Windows_Node_20":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_18":
+        "Linux_Node_20":
           platform: Linux
           name: $(linux_pool)
-        "MacOS_Node_18":
+        "MacOS_Node_20":
           platform: Darwin
           name: $(mac_pool)
 
@@ -55,11 +56,11 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 18.x
-          buildIos: true
+          nodeVersion: 20.x
+          buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 18.x
+          nodeVersion: 20.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml

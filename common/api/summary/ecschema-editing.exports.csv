@@ -63,7 +63,6 @@ beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
 alpha;SchemaComparer
-alpha;SchemaComparerOptions
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaEditResults

@@ -11,6 +11,7 @@ import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  FormatsMap,
   HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
   PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
   WithCancelEvent,
@@ -20,7 +21,7 @@ import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
 } from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
@@ -456,16 +457,12 @@ function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: Instan
   set.add(key.id);
 }
 
-interface UnitFormatMap {
-  [phenomenon: string]: UnitSystemFormat;
-}
-
 function createNativePlatform(
   id: string,
   workerThreadsCount: number,
   changeTrackingEnabled: boolean,
   caching: PresentationManagerProps["caching"],
-  defaultFormats: UnitFormatMap | undefined,
+  defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
   return new (createDefaultNativePlatform({
@@ -502,18 +499,17 @@ function createNativePlatform(
     return directory ? path.resolve(directory) : "";
   }
 
-  function toNativeUnitFormatsMap(map: UnitFormatMap | undefined): NativePresentationDefaultUnitFormats | undefined {
+  function toNativeUnitFormatsMap(map: FormatsMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;
     }
 
     const nativeFormatsMap: NativePresentationDefaultUnitFormats = {};
-    Object.keys(map).forEach((phenomenon) => {
-      const unitSystemsFormat = map[phenomenon];
-      nativeFormatsMap[phenomenon] = {
+    Object.entries(map).forEach(([phenomenon, formats]) => {
+      nativeFormatsMap[phenomenon] = (Array.isArray(formats) ? formats : [formats]).map((unitSystemsFormat) => ({
         unitSystems: unitSystemsFormat.unitSystems.map(toNativeUnitSystem),
         format: unitSystemsFormat.format,
-      };
+      }));
     });
     return nativeFormatsMap;
   }

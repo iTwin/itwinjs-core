@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "4.3.0-dev.21",
+  "version": "4.3.0-dev.31",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -69,6 +69,7 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*"
   },
   "dependencies": {
