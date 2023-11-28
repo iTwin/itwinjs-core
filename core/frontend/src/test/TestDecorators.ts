@@ -32,6 +32,7 @@ export class BoxDecorator extends TestDecorator {
   public points: Point3d[];
   public viewIndependentOrigin?: Point3d;
   public branchTransform?: Transform;
+  public graphicType: GraphicType;
 
   public constructor(options: {
     viewport: ScreenViewport;
@@ -41,6 +42,7 @@ export class BoxDecorator extends TestDecorator {
     points?: Point3d[];
     viewIndependentOrigin?: Point3d;
     branchTransform?: Transform;
+    graphicType?: GraphicType;
   }) {
     super();
     this.viewport = options.viewport;
@@ -49,6 +51,7 @@ export class BoxDecorator extends TestDecorator {
     this.placement = options.placement;
     this.viewIndependentOrigin = options.viewIndependentOrigin;
     this.branchTransform = options.branchTransform;
+    this.graphicType = options.graphicType ?? GraphicType.Scene;
 
     if (options.points) {
       this.points = options.points;
@@ -76,7 +79,7 @@ export class BoxDecorator extends TestDecorator {
   public decorate(context: DecorateContext): void {
     const builder = context.createGraphic({
       placement: this.placement,
-      type: GraphicType.Scene,
+      type: this.graphicType,
       pickable: this.pickable,
       viewIndependentOrigin: this.viewIndependentOrigin,
     });
@@ -91,7 +94,7 @@ export class BoxDecorator extends TestDecorator {
       graphic = context.createBranch(branch, this.branchTransform);
     }
 
-    context.addDecoration(GraphicType.Scene, graphic);
+    context.addDecoration(this.graphicType, graphic);
   }
 }
 
