@@ -9,7 +9,6 @@ import { AbstractToolbarProps } from "../appui-abstract/items/AbstractToolbarPro
 import { RelativePosition } from "../appui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../appui-abstract/properties/Description";
 import { UiAdmin } from "../appui-abstract/UiAdmin";
-import { loggerCategory } from "../appui-abstract/utils/misc";
 import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
@@ -229,10 +228,4 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
 
-});
-
-describe("loggerCategory", () => {
-  it("loggerCategory passed null should return 'appui-abstract'", () => {
-    expect(loggerCategory(null)).to.eq("appui-abstract");
-  });
 });

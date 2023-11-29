@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Add support for default formats when formatting values in TS (when `Presentation` is initialized with `schemaContextProvider`).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

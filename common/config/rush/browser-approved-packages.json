@@ -672,7 +672,7 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "node-touch",
@@ -751,6 +751,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rxjs",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "rxjs-for-await",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
     },
@@ -804,7 +812,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",
