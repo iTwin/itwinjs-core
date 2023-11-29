@@ -364,7 +364,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Close this IModel, if it is currently open. */
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
   public close(description?: string): void {
     if (!this.isOpen)
       return; // don't continue if already closed
