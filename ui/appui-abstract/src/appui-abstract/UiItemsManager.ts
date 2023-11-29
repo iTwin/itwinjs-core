@@ -15,11 +15,7 @@ import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { UiItemsProvider } from "./UiItemsProvider";
 
-const loggerCategory = (): string => {
-  const category = "appui-abstract.UiItemsManager";
-  return category;
-};
-
+const loggerCategory = "appui-abstract.UiItemsManager";
 /** Action taken by the application on item provided by a UiItemsProvider
  * @public @deprecated in 3.2. This was only used by the previously removed UiItemsArbiter.
  */
@@ -124,10 +120,10 @@ export class UiItemsManager {
     const providerId = overrides?.providerId ?? uiProvider.id;
 
     if (UiItemsManager.getUiItemsProvider(providerId)) {
-      Logger.logInfo(loggerCategory(), `UiItemsProvider (${providerId}) is already loaded`);
+      Logger.logInfo(loggerCategory, `UiItemsProvider (${providerId}) is already loaded`);
     } else {
       UiItemsManager._registeredUiItemsProviders.set(providerId, { provider: uiProvider, overrides });
-      Logger.logInfo(loggerCategory(), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
+      Logger.logInfo(loggerCategory, `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
 
       UiItemsManager.sendRegisteredEvent({ providerId } as UiItemProviderRegisteredEventArgs);
     }
@@ -142,7 +138,7 @@ export class UiItemsManager {
     provider.onUnregister && provider.onUnregister();
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
-    Logger.logInfo(loggerCategory(), `UiItemsProvider (${uiProviderId}) unloaded`);
+    Logger.logInfo(loggerCategory, `UiItemsProvider (${uiProviderId}) unloaded`);
 
     // trigger a refresh of the ui
     UiItemsManager.sendRegisteredEvent({ providerId: uiProviderId } as UiItemProviderRegisteredEventArgs);
