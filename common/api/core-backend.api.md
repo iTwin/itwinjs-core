@@ -2991,7 +2991,7 @@ export abstract class IModelDb extends IModel {
     clearCaches(): void;
     // @internal (undocumented)
     clearFontMap(): void;
-    close(description?: string): void;
+    close(): void;
     // @alpha (undocumented)
     get codeService(): CodeService | undefined;
     // @internal (undocumented)

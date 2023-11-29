@@ -365,7 +365,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
-  public close(description?: string): void {
+  public close(): void {
     if (!this.isOpen)
       return; // don't continue if already closed
 
@@ -377,7 +377,7 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     if (!this.isReadonly)
-      this.saveChanges(description);
+      this.saveChanges();
     this.nativeDb.closeFile();
   }
 
