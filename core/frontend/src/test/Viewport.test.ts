@@ -573,7 +573,7 @@ describe("Viewport", () => {
 
   describe("Map layers", () => {
     // Issue #4436
-    it.only("ignores map layer with invalid format Id", async () => {
+    it("ignores map layer with invalid format Id", async () => {
       await testBlankViewportAsync(async (vp) => {
         const settings = ImageMapLayerSettings.fromJSON({
           formatId: "BadFormat",
