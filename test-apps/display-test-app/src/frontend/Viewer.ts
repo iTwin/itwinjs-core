@@ -406,12 +406,6 @@ export class Viewer extends Window {
       tooltip: "Point cloud settings",
     });
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue985",
-      click: async () => IModelApp.tools.run("TerrainDrape"),
-      tooltip: "TerrainDrape",
-    }));
-
     this.updateTitle();
     this.updateActiveSettings();
   }
