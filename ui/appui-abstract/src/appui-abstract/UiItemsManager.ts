@@ -14,11 +14,9 @@ import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { UiItemsProvider } from "./UiItemsProvider";
-import { getClassName } from "./utils/misc";
 
-const loggerCategory = (obj: any): string => {
-  const className = getClassName(obj);
-  const category = `appui-abstract${(className ? `.${className}` : "")}`;
+const loggerCategory = (): string => {
+  const category = "appui-abstract.UiItemsManager";
   return category;
 };
 
@@ -126,10 +124,10 @@ export class UiItemsManager {
     const providerId = overrides?.providerId ?? uiProvider.id;
 
     if (UiItemsManager.getUiItemsProvider(providerId)) {
-      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${providerId}) is already loaded`);
+      Logger.logInfo(loggerCategory(), `UiItemsProvider (${providerId}) is already loaded`);
     } else {
       UiItemsManager._registeredUiItemsProviders.set(providerId, { provider: uiProvider, overrides });
-      Logger.logInfo(loggerCategory(this), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
+      Logger.logInfo(loggerCategory(), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
 
       UiItemsManager.sendRegisteredEvent({ providerId } as UiItemProviderRegisteredEventArgs);
     }
@@ -144,7 +142,7 @@ export class UiItemsManager {
     provider.onUnregister && provider.onUnregister();
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
-    Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
+    Logger.logInfo(loggerCategory(), `UiItemsProvider (${uiProviderId}) unloaded`);
 
     // trigger a refresh of the ui
     UiItemsManager.sendRegisteredEvent({ providerId: uiProviderId } as UiItemProviderRegisteredEventArgs);
@@ -182,7 +180,7 @@ export class UiItemsManager {
         uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
           .forEach((spec: CommonToolbarItem) => {
             // ignore duplicate ids
-            if (-1 === buttonItems.findIndex((existingItem)=> spec.id === existingItem.id ))
+            if (-1 === buttonItems.findIndex((existingItem) => spec.id === existingItem.id))
               buttonItems.push({ ...spec, providerId });
           });
       }
@@ -211,7 +209,7 @@ export class UiItemsManager {
         uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData)
           .forEach((item: CommonStatusBarItem) => {
             // ignore duplicate ids
-            if (-1 === statusBarItems.findIndex((existingItem)=> item.id === existingItem.id ))
+            if (-1 === statusBarItems.findIndex((existingItem) => item.id === existingItem.id))
               statusBarItems.push({ ...item, providerId });
           });
       }
@@ -238,7 +236,7 @@ export class UiItemsManager {
         uiProvider.provideBackstageItems()    //       should not be considered stage specific. If they need to be hidden
           .forEach((item: BackstageItem) => { //       the isHidden property should be set to a ConditionalBooleanValue
             // ignore duplicate ids
-            if (-1 === backstageItems.findIndex((existingItem)=> item.id === existingItem.id ))
+            if (-1 === backstageItems.findIndex((existingItem) => item.id === existingItem.id))
               backstageItems.push({ ...item, providerId });
           });
       }
@@ -268,7 +266,7 @@ export class UiItemsManager {
         uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
           .forEach((widget: AbstractWidgetProps) => {
             // ignore duplicate ids
-            if (-1 === widgets.findIndex((existingItem)=> widget.id === existingItem.id ))
+            if (-1 === widgets.findIndex((existingItem) => widget.id === existingItem.id))
               widgets.push({ ...widget, providerId });
           });
       }

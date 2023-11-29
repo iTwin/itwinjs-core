@@ -24,7 +24,7 @@ export class IconSpecUtilities {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;
   }
   /** Create an IconSpec for an SVG loaded into web component with svg-loader
-   * @public @deprecated in 4.3. AppUI libraries > 4.6.x support loading SVGs sources without prefixes, eliminating the need for this utility.
+   * @public @deprecated in 4.3. AppUI libraries > 4.7.x support loading SVGs sources without prefixes, eliminating the need for this utility.
   */
   public static createWebComponentIconSpec(srcString: string): string {
     return `${IconSpecUtilities.WEB_COMPONENT_PREFIX}${srcString}`;
@@ -42,7 +42,7 @@ export class IconSpecUtilities {
     return undefined;
   }
   /** Get the SVG Source from an svg-loader IconSpec
-   * @public @deprecated in 4.3. AppUI libraries > 4.6.x support loading SVGs sources without prefixes, eliminating the need for this utility.
+   * @public @deprecated in 4.3. AppUI libraries > 4.7.x support loading SVGs sources without prefixes, eliminating the need for this utility.
   */
 
   public static getWebComponentSource(iconSpec: string): string | undefined {
