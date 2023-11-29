@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix intermittently hanging map layer test",
+      "comment": "",
       "type": "none"
     }
   ],
