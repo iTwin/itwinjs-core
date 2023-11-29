@@ -9,7 +9,7 @@
 import { BentleyError, BentleyStatus, GetMetaDataFunction } from "@itwin/core-bentley";
 
 /** iTwin.js UI UiError class is a subclass of BentleyError. Errors are logged.
- * @public
+ * @public @deprecated in 4.3. Use [[Bentley.BentleyError]] instead.
  */
 export class UiError extends BentleyError {
 
