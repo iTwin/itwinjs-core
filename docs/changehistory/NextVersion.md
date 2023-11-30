@@ -54,12 +54,12 @@ You can toggle this colorization on and off using [ClipStyle.colorizeIntersectio
 
 ### Thematic transparency
 
-[ThematicDisplay]($common) colorizes surfaces in a view using a gradient produced from a list of [Gradient.KeyColor]($common)s. Each of these colors has a transparency value. However, thematic display has always entirely ignored the gradient's transparency values, using the transparency of the surface itself instead.
+[ThematicDisplay]($common) colorizes surfaces in a view using a gradient produced from a list of [Gradient.KeyColor]($common)s and a margin color. Each of these colors has a transparency value. However, thematic display has always entirely ignored the gradient's transparency values, using the transparency of the surface itself instead.
 
 Now, you can use [ThematicGradientSettings.transparencyMode]($common) to specify that the transparency of both the surface and the gradient color should be combined to produce the final transparency value.
 
 ### Analysis style transparency
 
-An [AnalysisStyle]($common) colorizes surfaces in a view using a gradient produced from a list of [Gradient.KeyColor]($common)s. These colors are intended to entirely override the color of every surface to which the style is applied. However, the transparency of the gradient colors has never been consistently applied. That oversight has now been addressed - the transparency of the surface is ignored in favor of the transparency of the gradient color.
+An [AnalysisStyle]($common) colorizes surfaces in a view using a gradient produced from a list of [Gradient.KeyColor]($common)s and a margin color. These colors are intended to entirely override the color of every surface to which the style is applied. However, the transparency of the gradient colors has never been consistently applied. That oversight has now been addressed - the transparency of the surface is ignored in favor of the transparency of the gradient color.
 
 Note: [ThematicGradientSettings.transparencyMode]($common) has no effect on analysis styles.
