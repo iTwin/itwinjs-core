@@ -37,6 +37,16 @@ describe("ElementAspect", () => {
     assert.equal(aspect1.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.asAny.length, 1);
     assert.equal(JSON.stringify(aspect1), `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+
+    // Test getAspects with dot separator
+    const aspect1DotSeparator: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestUniqueAspectNoHandler")[0];
+    assert.exists(aspect1DotSeparator);
+    assert.isTrue(aspect1DotSeparator instanceof ElementUniqueAspect);
+    assert.equal(aspect1DotSeparator.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
+    assert.equal(aspect1DotSeparator.asAny.testUniqueAspectProperty, "Aspect1-Updated");
+    assert.equal(aspect1DotSeparator.asAny.length, 1);
+    assert.equal(JSON.stringify(aspect1DotSeparator), `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+
     // cross-check getAspects against getAspect
     const aspect1X: ElementAspect = iModel.elements.getAspect(aspect1.id);
     assert.exists(aspect1X);
@@ -53,6 +63,16 @@ describe("ElementAspect", () => {
     assert.equal(aspect2.asAny.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.asAny.length);
     assert.equal(JSON.stringify(aspect2), `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+
+    // Test getAspects with dot separator
+    const aspect2DotSeparator: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestUniqueAspect")[0];
+    assert.exists(aspect2DotSeparator);
+    assert.isTrue(aspect2DotSeparator instanceof ElementUniqueAspect);
+    assert.equal(aspect2DotSeparator.classFullName, "DgnPlatformTest:TestUniqueAspect");
+    assert.equal(aspect2DotSeparator.asAny.testUniqueAspectProperty, "Aspect2-Updated");
+    assert.isUndefined(aspect2DotSeparator.asAny.length);
+    assert.equal(JSON.stringify(aspect2DotSeparator), `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+
     // cross-check getAspects against getAspect
     const aspect2X: ElementAspect = iModel.elements.getAspect(aspect2.id);
     assert.exists(aspect2X);
@@ -93,6 +113,27 @@ describe("ElementAspect", () => {
       assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
     });
     assert.equal(JSON.stringify(multiAspectsA), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
+
+    // Test getAspects with dot separator
+    const multiAspectsADotSeparator: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestMultiAspectNoHandler");
+    assert.exists(multiAspectsADotSeparator);
+    assert.isArray(multiAspectsADotSeparator);
+    assert.equal(multiAspectsADotSeparator.length, 2);
+    multiAspectsADotSeparator.forEach((aspect) => {
+      assert.isTrue(aspect instanceof ElementMultiAspect);
+      assert.equal(aspect.schemaName, "DgnPlatformTest");
+      assert.equal(aspect.className, "TestMultiAspectNoHandler");
+      assert.exists(aspect.asAny.testMultiAspectProperty);
+      // cross-check against getting the aspects individually
+      const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
+      assert.exists(aspectX);
+      assert.equal(aspectX.schemaName, aspect.schemaName);
+      assert.equal(aspectX.className, aspect.className);
+      assert.exists(aspectX.asAny.testMultiAspectProperty);
+      assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
+    });
+    assert.equal(JSON.stringify(multiAspectsADotSeparator), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
 
     const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");

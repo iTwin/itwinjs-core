@@ -58,9 +58,7 @@ export * from "./appui-abstract/utils/PointProps";
 export * from "./appui-abstract/utils/UiError";
 export * from "./appui-abstract/utils/UiEventDispatcher";
 export * from "./appui-abstract/utils/UiEvent";
-export * from "./appui-abstract/utils/filter/charCode";
 export * from "./appui-abstract/utils/filter/filters";
-export * from "./appui-abstract/utils/filter/strings";
 
 export * from "./appui-abstract/widget/AbstractWidgetProps";
 export * from "./appui-abstract/widget/StagePanel";

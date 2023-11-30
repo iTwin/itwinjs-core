@@ -2,6 +2,21 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.2.4",
+      "tag": "@itwin/core-frontend_v4.2.4",
+      "date": "Mon, 20 Nov 2023 16:14:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SQ_KM to UNIT_DATA"
+          },
+          {
+            "comment": "Fix Map Feature Info for ArcGIS map services when reprojection is needed."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.3",
       "tag": "@itwin/core-frontend_v4.2.3",
       "date": "Mon, 06 Nov 2023 14:01:52 GMT",

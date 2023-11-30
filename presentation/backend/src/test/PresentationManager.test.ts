@@ -134,6 +134,7 @@ describe("PresentationManager", () => {
           useMmap: 666,
           defaultFormats: {
             length: { unitSystems: ["imperial"], format: formatProps },
+            area: [{ unitSystems: ["usCustomary"], format: formatProps }],
           },
         };
         const expectedCacheConfig = {
@@ -149,7 +150,8 @@ describe("PresentationManager", () => {
             contentCacheSize: 999,
             workerConnectionCacheSize: 123,
             defaultFormats: {
-              length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
+              length: [{ unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) }],
+              area: [{ unitSystems: [NativePresentationUnitSystem.UsCustomary], serializedFormat: JSON.stringify(formatProps) }],
             },
             useMmap: 666,
           });

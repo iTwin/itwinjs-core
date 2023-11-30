@@ -533,6 +533,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Evaluate a point a fractional position and derivative with respect to fraction along this linestring.
    * * See `LineString3d` class comments for description of how fraction relates to the linestring points.
+   * * At interior corners and the end point, the left derivative is returned; at the start point, the right derivative is returned.
    * @param fraction fractional position
    * @param result optional result
    */
