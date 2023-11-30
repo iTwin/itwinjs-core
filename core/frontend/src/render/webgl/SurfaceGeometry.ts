@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
+import { FillFlags, RenderMode, TextureTransparency, ThematicGradientTransparencyMode, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
 import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
@@ -140,7 +140,8 @@ export class SurfaceGeometry extends MeshGeometry {
     const vf = target.currentViewFlags;
 
     // When rendering thematic isolines, we need translucency because they have anti-aliasing.
-    if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines)
+    const thematic = target.wantThematicDisplay && this.supportsThematicDisplay ? target.uniforms.thematic.thematicDisplay : undefined;
+    if (thematic && target.uniforms.thematic.wantIsoLines)
       return "translucent";
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
@@ -166,8 +167,21 @@ export class SurfaceGeometry extends MeshGeometry {
     else
       hasAlpha = this.getColor(target).hasTranslucency;
 
+    if (thematic && thematic.gradientSettings.transparencyMode === ThematicGradientTransparencyMode.MultiplySurfaceAndGradient) {
+      switch (thematic.gradientSettings.textureTransparency) {
+        case TextureTransparency.Opaque:
+          // This surface's alpha gets multiplied by 1 - gradient colors are all opaque.
+          return hasAlpha ? "translucent" : opaquePass;
+        case TextureTransparency.Translucent:
+          // This surface's alpha gets multiplied by < 1 - gradient colors are all translucent.
+          return "translucent";
+        case TextureTransparency.Mixed:
+          // The gradient contains a mix of translucent and opaque colors.
+          return hasAlpha ? "translucent" : `${opaquePass}-translucent`;
+      }
+    }
+
     if (!hasAlpha) {
-      // ###TODO handle TextureTransparency.Mixed; remove Texture.hasTranslucency.
       const tex = this.wantTextures(target, true) ? this.texture : undefined;
       switch (tex?.transparency) {
         case TextureTransparency.Translucent:
