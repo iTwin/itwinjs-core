@@ -28,7 +28,7 @@ vec4 getSensor(int index) {
 const getColor = `
 vec3 getColor(float ndx) {
   if (ndx < 0.0 || ndx > 1.0)
-    return u_marginColor;
+    return u_marginColor.rgb;
 
   return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
 }
@@ -41,7 +41,7 @@ vec3 getColor(float ndx) {
 const getIsoLineColor = `
 vec3 getIsoLineColor(float ndx, float stepCount) {
   if (ndx < 0.01 || ndx > 0.99)
-    return u_marginColor;
+    return u_marginColor.rgb;
 
   ndx += 0.5 / stepCount; // center on step pixels
   return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
@@ -262,7 +262,7 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   });
 
-  frag.addUniform("u_marginColor", VariableType.Vec3, (prog) => {
+  frag.addUniform("u_marginColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_marginColor", (uniform, params) => {
       params.target.uniforms.thematic.bindMarginColor(uniform);
     });

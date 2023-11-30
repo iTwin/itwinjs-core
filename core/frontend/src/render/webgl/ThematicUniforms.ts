@@ -19,7 +19,7 @@ import { ThematicSensors } from "./ThematicSensors";
 import { Angle, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Target } from "./Target";
 import { System } from "./System";
-import { FloatRgb } from "./FloatRGBA";
+import { FloatRgba } from "./FloatRGBA";
 
 /** Maintains state for uniforms related to thematic display.
  * @internal
@@ -31,7 +31,7 @@ export class ThematicUniforms implements WebGLDisposable {
   private _colorMix = 0.0;
   private readonly _axis = new Float32Array(3);
   private readonly _sunDirection = new Float32Array(3);
-  private readonly _marginColor = new Float32Array(3);
+  private readonly _marginColor = new FloatRgba();
   private readonly _displayMode = new Float32Array(1);
   private readonly _fragSettings = new Float32Array(4); // gradientMode, distanceCutoff, stepCount, > 0.0 if multiply gradient alpha
   private _numSensors = 0;
@@ -127,10 +127,7 @@ export class ThematicUniforms implements WebGLDisposable {
     if (ThematicDisplayMode.HillShade === this.thematicDisplay.displayMode)
       this._updateSunDirection(this.thematicDisplay.sunDirection, target.uniforms.frustum.viewMatrix);
 
-    const marginRgb = FloatRgb.fromColorDef(this.thematicDisplay.gradientSettings.marginColor);
-    this._marginColor[0] = marginRgb.red;
-    this._marginColor[1] = marginRgb.green;
-    this._marginColor[2] = marginRgb.blue;
+    this._marginColor.setColorDef(this.thematicDisplay.gradientSettings.marginColor);
 
     this._displayMode[0] = this.thematicDisplay.displayMode;
 
@@ -171,7 +168,7 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public bindMarginColor(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setUniform3fv(this._marginColor);
+      this._marginColor.bind(uniform);
   }
 
   public bindDisplayMode(uniform: UniformHandle): void {
