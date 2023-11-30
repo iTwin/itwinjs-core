@@ -10,7 +10,7 @@ import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonLocationDetail, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
-import { FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
+import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
 import { Polyface, PolyfaceVisitor } from "../Polyface";
 import { PolyfaceQuery } from "../PolyfaceQuery";
 import { MinimumValueTester } from "./MinimumValueTester";
@@ -156,7 +156,9 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
       this.context.numFacetTest++;
       if (pld && this.searchState.isNewMinOrTrigger(pld.a)) {
         const edgeCount = this.context.visitor.pointCount;
-        const fld = NonConvexFacetLocationDetail.createCapture(this.context.visitor.currentReadIndex(), edgeCount, pld);
+        const fld = this.context.convexFacets
+          ? ConvexFacetLocationDetail.createCapture(this.context.visitor.currentReadIndex(), edgeCount, pld)
+          : NonConvexFacetLocationDetail.createCapture(this.context.visitor.currentReadIndex(), edgeCount, pld);
         this.searchState.testAndSave(fld, pld.a);
       }
     }
@@ -211,8 +213,8 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
         const edgeCountA = this.contextA.visitor.pointCount - 1;
         const edgeCountB = this.contextB.visitor.pointCount - 1;
         const fldPair = FacetLocationDetailPair.create(
-          NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA),
-          NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB),
+          this.contextA.convexFacets ? ConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA) : NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA),
+          this.contextB.convexFacets ? ConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB) : NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB),
         );
         this.searchState.testAndSave(fldPair, fldPair.detailA.a);
       }
