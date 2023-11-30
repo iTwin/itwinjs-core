@@ -6,23 +6,11 @@
  * @module RangeSearch
  */
 
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { TaggedDataPair } from "../../geometry3d/TaggedDataPair";
 import { MinimumValueTester } from "./MinimumValueTester";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
-
-/**
- * Carrier structure for a pair of points, each with optional numeric tag.
- * @public
- */
-export class TaggedPoint3dPair extends TaggedDataPair<Point3d, Point3d, number> {
-  /** Constructor, inputs captured */
-  public constructor(pointA: Point3d, pointB: Point3d, tagA?: number, tagB?: number) {
-    super(pointA, pointB, tagA, tagB);
-  }
-}
 
 /**
  * Handler class for searching a range tree containing unordered Point3d data.
@@ -72,20 +60,31 @@ export class Point3dArrayRangeTreeContext {
     );
     return rangeTreeRoot ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points) : undefined;
   }
-  /** Search the range tree for closest point to spacePoint */
+  /**
+   * Search the range tree for closest point to spacePoint.
+   * @return detail with following fields set:
+   * * detail.point = the closest point
+   * * detail.fraction = the index of the closest point in the points array
+   * * detail.a = distance from spacePoint to closest point
+   */
   public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointInArray(spacePoint, this);
     this.numSearch++;
     this._rangeTreeRoot.searchTopDown(handler);
     if (handler.searchState.itemAtMinValue !== undefined && handler.searchState.minValue !== undefined) {
-      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, 0, this.points[handler.searchState.itemAtMinValue]);
-      cld.a = handler.searchState.minValue;   // we return a detail so the caller receives point AND distance
+      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, handler.searchState.itemAtMinValue, this.points[handler.searchState.itemAtMinValue]);
+      cld.a = handler.searchState.minValue;
       return cld;
     }
     return undefined;
   }
-  /** Find a pair of points, one from each of contextA and contextB, with the smallest distance between. */
-  public static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedPoint3dPair | undefined {
+  /** Find a pair of points, one from each of contextA and contextB, with the smallest distance between.
+   * @return pair of details, one per context, each with the following fields set:
+   * * detail.point = the point at closest approach
+   * * detail.fraction = the index of detail.point in the points array
+   * * detail.a = the closest approach distance
+  */
+  public static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): CurveLocationDetailPair | undefined {
     const handler = new TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.getResult();
@@ -147,17 +146,17 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
   /** Context for second set of points */
   public contextB: Point3dArrayRangeTreeContext;
   /** Search state with current min distance point pair */
-  public searchState: MinimumValueTester<TaggedPoint3dPair>;
+  public searchState: MinimumValueTester<CurveLocationDetailPair>;
 
   /** Constructor, all inputs captured */
   public constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
-    this.searchState = MinimumValueTester.create<TaggedPoint3dPair>();
+    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>();
   }
   /** Return the indexed Point3d pair */
-  public getResult(): TaggedPoint3dPair | undefined {
+  public getResult(): CurveLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
     }
@@ -174,7 +173,13 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
     const pointA = this.contextA.points[indexA];
     const pointB = this.contextB.points[indexB];
     const d = pointA.distance(pointB);
-    if (this.searchState.isNewMinOrTrigger(d))
-      this.searchState.testAndSave(new TaggedPoint3dPair(pointA.clone(), pointB.clone(), indexA, indexB), d);
+    if (this.searchState.isNewMinOrTrigger(d)) {
+      const cldPair = CurveLocationDetailPair.createCapture(
+        CurveLocationDetail.createCurveFractionPoint(undefined, indexA, pointA),
+        CurveLocationDetail.createCurveFractionPoint(undefined, indexB, pointB),
+      );
+      cldPair.detailA.a = cldPair.detailB.a = d;
+      this.searchState.testAndSave(cldPair, d);
+    }
   }
 }

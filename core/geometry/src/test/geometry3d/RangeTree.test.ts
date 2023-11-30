@@ -577,7 +577,7 @@ describe("IndexedRangeHeap", () => {
     const contextB1 = Point3dArrayRangeTreeContext.createCapture(pointsB, treeWidth, treeWidth)!;
     const approach1 = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1);
     if (ck.testDefined(approach1) && approach1 !== undefined) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach1.dataA, approach1.dataB], x0, y0, z0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach1.detailA.point, approach1.detailB.point], x0, y0, z0);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearch");
