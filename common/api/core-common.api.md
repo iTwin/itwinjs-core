@@ -9499,6 +9499,7 @@ export class ThematicGradientSettings {
     readonly stepCount: number;
     // (undocumented)
     toJSON(): ThematicGradientSettingsProps;
+    readonly transparencyMode: ThematicGradientTransparencyMode;
 }
 
 // @public
@@ -9509,6 +9510,13 @@ export interface ThematicGradientSettingsProps {
     marginColor?: ColorDefProps;
     mode?: ThematicGradientMode;
     stepCount?: number;
+    transparencyMode?: ThematicGradientTransparencyMode;
+}
+
+// @public
+export enum ThematicGradientTransparencyMode {
+    MultiplySurfaceAndGradient = 1,
+    SurfaceOnly = 0
 }
 
 // @public

@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef } from "../ColorDef";
-import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
+import {
+  ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps, ThematicGradientTransparencyMode,
+} from "../ThematicDisplay";
 
 describe("ThematicGradientSettings", () => {
   it("compares", () => {
@@ -19,6 +21,7 @@ describe("ThematicGradientSettings", () => {
         {value: 1.0, color: ColorDef.white.toJSON()},
       ],
       colorMix: 0.5,
+      transparencyMode: ThematicGradientTransparencyMode.MultiplySurfaceAndGradient,
     };
     const settingsA = ThematicGradientSettings.fromJSON(propsA);
 
@@ -65,6 +68,10 @@ describe("ThematicGradientSettings", () => {
     propsB = settingsA.toJSON();
     propsB.colorMix = 0.6;
     expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.lessThan(0);
+
+    propsB = settingsA.toJSON();
+    propsB.transparencyMode = ThematicGradientTransparencyMode.SurfaceOnly;
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.greaterThan(0);
 
     // Make sure A !== B when B changes the marginColor.
     propsB = settingsA.toJSON();
