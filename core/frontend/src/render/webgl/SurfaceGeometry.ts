@@ -156,6 +156,19 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
       return opaquePass;
 
+    // A gradient texture applied by analysis style always fully determines the transparency of the surface.
+    if (this.hasScalarAnimation && undefined !== target.analysisTexture) {
+      assert(undefined !== target.analysisStyle?.thematic);
+      switch (target.analysisStyle.thematic.thematicSettings.textureTransparency) {
+        case TextureTransparency.Translucent:
+          return "translucent";
+        case TextureTransparency.Opaque:
+          return opaquePass;
+        case TextureTransparency.Mixed:
+          return `${opaquePass}-translucent`;
+      }
+    }
+
     // We have 3 sources of alpha: the material, the texture, and the color.
     // Base alpha comes from the material if it overrides it; otherwise from the color.
     // The texture's alpha is multiplied by the base alpha.
@@ -167,6 +180,7 @@ export class SurfaceGeometry extends MeshGeometry {
     else
       hasAlpha = this.getColor(target).hasTranslucency;
 
+    // Thematic gradient can optionally multiply gradient alpha with surface alpha.
     if (thematic && thematic.gradientSettings.transparencyMode === ThematicGradientTransparencyMode.MultiplySurfaceAndGradient) {
       switch (thematic.gradientSettings.textureTransparency) {
         case TextureTransparency.Opaque:
