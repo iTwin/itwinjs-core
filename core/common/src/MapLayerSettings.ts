@@ -461,10 +461,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.password = password;
   }
 
-  /** Get all query parameters
+  /** Collect all query parameters
  * @beta
  */
-  public get queryParams() {
+  public collectQueryParams() {
     let queryParams: {[key: string]: string} = {};
     if (this.savedQueryParams)
       queryParams = {...this.savedQueryParams};

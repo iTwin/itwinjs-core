@@ -142,10 +142,10 @@ export class MapLayerSource {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
 
-  /** Get all query parameters
+  /** Collect all query parameters
  * @beta
  */
-  public get queryParameters() {
+  public collectQueryParams() {
     let queryParams: {[key: string]: string} = {};
 
     if (this.savedQueryParams)

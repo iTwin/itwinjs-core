@@ -166,7 +166,7 @@ export class ArcGisUtilities {
   */
   public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache, capabilitiesFilter} = args;
-    const metadata = await this.getServiceJson(source.url, source.formatId, source.userName, source.password, source.queryParameters, ignoreCache);
+    const metadata = await this.getServiceJson(source.url, source.formatId, source.userName, source.password, source.collectQueryParams(), ignoreCache);
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };

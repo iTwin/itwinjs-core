@@ -58,15 +58,12 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache} = args;
-    const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
-    const queryParams: {[key: string]: string} = {};
-    savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
-    unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
+    const { url, userName, password } = source;
 
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, queryParams);
+      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -141,13 +138,10 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache} = args;
-    const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
-    const queryParams: {[key: string]: string} = {};
-    savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
-    unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
+    const { url, userName, password } = source;
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, queryParams);
+      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 

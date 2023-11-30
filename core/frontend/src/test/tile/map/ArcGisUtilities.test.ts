@@ -121,7 +121,7 @@ describe ("ArcGisUtilities", () => {
         json: async () => {return {};},
       } as unknown) as Response));
     });
-    await ArcGisUtilities.getServiceJson(source.url, source.formatId, source.userName, source.password, source.queryParameters);
+    await ArcGisUtilities.getServiceJson(source.url, source.formatId, source.userName, source.password, source.collectQueryParams());
 
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];
@@ -141,7 +141,7 @@ describe ("ArcGisUtilities", () => {
     expect(firstCall.args[1]).to.equals(source.formatId);
     expect(firstCall.args[2]).to.eqls(source.userName);
     expect(firstCall.args[3]).to.eqls(source.password);
-    expect(firstCall.args[4]).to.eqls(source.queryParameters);
+    expect(firstCall.args[4]).to.eqls(source.collectQueryParams());
   });
 
   it("should validate proper source", async () => {
