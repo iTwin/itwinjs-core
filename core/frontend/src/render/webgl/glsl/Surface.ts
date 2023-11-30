@@ -494,7 +494,7 @@ const computeBaseColor = `
   // set to black if almost white and reverse white-on-white is on
   bvec3 isAlmostWhite = greaterThan(surfaceColor.rgb, almostWhite);
   surfaceColor.rgb = (u_reverseWhiteOnWhite && isAlmostWhite.r && isAlmostWhite.g && isAlmostWhite.b ? vec3(0.0, 0.0, 0.0) : surfaceColor.rgb);
-  return vec4(surfaceColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
+  return vec4(surfaceColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a * surfaceColor.a);
 `;
 
 const surfaceFlagArray = new Int32Array(SurfaceBitIndex.Count);
