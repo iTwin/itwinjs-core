@@ -227,7 +227,7 @@ export class HubUtility {
     }
 
     perfLogger.dispose();
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
 
     return results;
   }
@@ -282,7 +282,7 @@ export class HubUtility {
     if (nativeDb.queryLocalValue("StandaloneEdit"))
       nativeDb.deleteLocalValue("StandaloneEdit");
     nativeDb.saveChanges();
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
 
     return iModelPathname;
   }
