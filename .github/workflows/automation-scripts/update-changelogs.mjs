@@ -2,8 +2,7 @@
 
 "use strict";
 
-const fs = require('fs');
-const path = require('path');
+import 'zx/globals'
 
 /****************************************************************
 * To run manually:
@@ -11,9 +10,41 @@ const path = require('path');
 * git checkout target branch (master or latest release); git pull
 * git checkout release/X.X.x; git pull (this is the branch that was just patched)
 * uncomment git checkout -b cmd and fix branch name
-* run this file using `zx .github/workflows/automation-scripts/update-changelogs.mjs`
+* run this file using `zx --install .github/workflows/automation-scripts/update-changelogs.mjs`
 * open PR into target branch
 *****************************************************************/
+
+// Sort entries based on version numbers formatted as 'major.minor.patch'
+function sortByVersion(entries) {
+  return entries.sort((a, b) => {
+    const versionA = a.version.split('.').map(Number);
+    const versionB = b.version.split('.').map(Number);
+
+    for (let i = 0; i < 3; i++) {
+      if (versionA[i] < versionB[i]) return 1;
+      if (versionA[i] > versionB[i]) return -1;
+    }
+
+    return 0;
+  });
+}
+
+function fixChangeLogs(files) {
+  const numFiles = files.length;
+  for (let i = 0; i < numFiles; i++) {
+    const currentJson = fs.readJsonSync(`temp-target-changelogs/${files[i]}`);
+    const incomingJson = fs.readJsonSync(`temp-incoming-changelogs/${files[i]}`);
+    // .map creates an array of [changelog version string, changelog entryj] tuples, which is passed into Map and creates a key value pair of the two elements.
+    let combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]);
+    // Map objects do not allow duplicate keys, so this will remove duplicate version numbers
+    let completeEntries = new Map(combinedEntries);
+    // convert entries back into an array and sort by version number
+    completeEntries = sortByVersion(Array.from(completeEntries.values()));
+    currentJson.entries = completeEntries;
+
+    fs.writeJsonSync(`temp-target-changelogs/${files[i]}`, currentJson, { spaces: 2 });
+  }
+}
 
 const targetPath = "./temp-target-changelogs"
 const incomingPath = "./temp-incoming-changelogs"
@@ -32,8 +63,9 @@ targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
 commitMessage = String(commitMessage).replace(/\n/g, '');
 const substring = " Changelogs";
-if (commitMessage.includes(substring))
+if (commitMessage.includes(substring)) {
   commitMessage = commitMessage.replace(substring, '');
+}
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
@@ -53,11 +85,19 @@ await $`git checkout ${targetBranch}`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-target-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-const currentFiles = getFilePaths(targetPath);
-currentFiles.forEach((file, index) => {
-  currentFiles[index] = file.split('/').slice(1);
+const allTargetFiles = fs.readdirSync(targetPath);
+const incomingFiles = fs.readdirSync(incomingPath);
+// Only include packages from Current branch if they DO exist in the Incoming branch, ie. new packages in later versions of itwinjs-core.
+const targetFiles = allTargetFiles.filter((file) => {
+  if (incomingFiles.includes(file)) {
+    return file;
+  }
+  else {
+    console.log(`${file} is not a package in ${currentBranch}. Skipping this package.`);
+  }
 })
-fixChangeLogs(currentFiles);
+
+fixChangeLogs(targetFiles);
 
 // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
 await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
@@ -66,65 +106,15 @@ await $`rm -r ${targetPath}`;
 await $`rm -r ${incomingPath}`;
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;
-/*********************************************************************/
-// Uncomment For Manual runs and fix branch name to appropriate version
-// the version should match your incoming branch
+/*********************************************************************
+* Uncomment For Manual runs and fix branch name to appropriate version
+* the version should match your incoming branch
+*********************************************************************/
 // await $`git checkout -b finalize-release-X.X.X`;
 // targetBranch = "finalize-release-X.X.X"
-/*********************************************************************/
 await $`git add .`;
 await $`git commit -m "${commitMessage} Changelogs"`;
 await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
 await $`git push origin HEAD:${targetBranch}`;
-
-// Read all files in the directory
-function getFilePaths(directoryPath) {
-  let filePaths = [];
-  const files = fs.readdirSync(directoryPath);
-  files.forEach(file => {
-    const filePath = path.join(directoryPath, file);
-    filePaths.push(filePath);
-  });
-  return filePaths
-}
-
-function loadJsonFiles(filePath) {
-  // Load each JSON file
-  const data = fs.readFileSync(filePath);
-  const jsonData = JSON.parse(data);
-  return jsonData;
-}
-
-function sortByVersion(entries) {
-  return entries.sort((a, b) => {
-    const versionA = a.version.split('.').map(Number);
-    const versionB = b.version.split('.').map(Number);
-
-    for (let i = 0; i < 3; i++) {
-      if (versionA[i] < versionB[i]) return 1;
-      if (versionA[i] > versionB[i]) return -1;
-    }
-
-    return 0;
-  });
-}
-
-function fixChangeLogs(files) {
-  const numFiles = files.length;
-  for (let i = 0; i < numFiles; i++) {
-    const currentJson = loadJsonFiles(`temp-target-changelogs/${files[i]}`);
-    const incomingJson = loadJsonFiles(`temp-incoming-changelogs/${files[i]}`);
-    let completeEntries = new Map([...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]));
-    completeEntries = sortByVersion(Array.from(completeEntries.values()));
-    currentJson.entries = completeEntries;
-
-    let jsonString = JSON.stringify(currentJson, null, 2);
-    jsonString = jsonString + '\n';
-    fs.writeFileSync(`temp-target-changelogs/${files[i]}`, jsonString, (err) => {
-      if (err)
-        console.error("Error Writing JSON file");
-    });
-  }
-}
