@@ -178,7 +178,7 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public bindFragSettings(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setUniform3fv(this._fragSettings);
+      uniform.setUniform4fv(this._fragSettings);
   }
 
   public bindTexture(uniform: UniformHandle, unit: TextureUnit): void {
