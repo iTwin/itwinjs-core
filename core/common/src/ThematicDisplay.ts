@@ -40,7 +40,7 @@ export enum ThematicGradientTransparencyMode {
   /** Ignore the gradient's transparency, applying only the surface's own transparency. */
   SurfaceOnly = 0,
   /** The final transparency is computed from the product of the surface and gradient alpha channels.
-   * (Alpha is the inverse of transparency, where `alpha` = `255 - transparency`).
+   * (Alpha is the inverse of transparency, where `alpha = (255 - transparency) / 255`).
    * If the gradient color is opaque, this produces the same result as [[SurfaceOnly]].
    */
   MultiplySurfaceAndGradient = 1,
