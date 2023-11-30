@@ -45,12 +45,22 @@ export class MapLayerFormat {
     return this.validateSource(args.source.url, args.source.userName, args.source.password, args.ignoreCache);
   }
 
-  /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
-   * @internal
-  */
+  /**
+   * Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile tree.
+   * @param _settings The map layer settings to be applied to the imagery provider.
+   * @returns Returns the new imagery provider.
+   * @beta
+   */
   public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
 
-  /** @internal */
+  /**
+   * Creates a MapLayerTileTreeReference for this map layer format.
+   * @param _layerSettings Map layer settings that are applied to the MapLayerTileTreeReference.
+   * @param _layerIndex The index of the associated map layer.
+   * @param _iModel The iModel containing the MapLayerTileTreeReference.
+   * @returns Returns the new tile tree reference.
+   * @beta
+   */
   public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;

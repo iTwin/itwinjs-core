@@ -1417,12 +1417,12 @@ export class ArcGisUtilities {
         maxLod?: number;
     };
     static isEpsg3857Compatible(tileInfo: any): boolean;
-    static validateSource(source: MapLayerSource, opts?: ArcGisValidateSourceOptions): Promise<MapLayerSourceValidation>;
+    static validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
 }
 
 // @beta
-export interface ArcGisValidateSourceOptions extends ValidateSourceOptions {
+export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
     capabilitiesFilter: string[];
 }
 
@@ -7757,17 +7757,16 @@ export class MapLayerFeatureRecord {
 
 // @public
 export class MapLayerFormat {
-    // @internal
+    // @beta
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
-    // @internal (undocumented)
+    // @beta
     static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined;
     // (undocumented)
     static formatId: string;
     static register(): void;
-    // @deprecated (undocumented)
-    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation>;
     // @beta
-    static validateSourceObj(_source: MapLayerSource, _opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation>;
+    static validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
+    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -7795,10 +7794,10 @@ export class MapLayerFormatRegistry {
     register(formatClass: MapLayerFormatType): void;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
-    // @deprecated (undocumented)
+    // @beta (undocumented)
+    validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
+    // (undocumented)
     validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
-    // @beta
-    validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation>;
 }
 
 // @public
@@ -7950,6 +7949,10 @@ export interface MapLayerScaleRangeVisibility {
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
+    // @beta
+    collectQueryParams(): {
+        [key: string]: string;
+    };
     // (undocumented)
     formatId: string;
     // @internal (undocumented)
@@ -7960,10 +7963,6 @@ export class MapLayerSource {
     name: string;
     // (undocumented)
     password?: string;
-    // @beta
-    get queryParameters(): {
-        [key: string]: string;
-    };
     // @beta
     savedQueryParams?: {
         [key: string]: string;
@@ -15344,8 +15343,10 @@ export interface UserPreferencesAccess {
 }
 
 // @beta
-export interface ValidateSourceOptions {
+export interface ValidateSourceArgs {
     ignoreCache?: boolean;
+    // (undocumented)
+    source: MapLayerSource;
 }
 
 // @public

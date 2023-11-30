@@ -57,7 +57,7 @@ internal;ArcGISMapLayerImageryProvider
 internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
-beta;ArcGisValidateSourceOptions 
+beta;ArcGisValidateSourceArgs 
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AttachToViewportArgs = Viewport
@@ -934,7 +934,7 @@ public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
-beta;ValidateSourceOptions
+beta;ValidateSourceArgs
 public;VaryingType
 internal;VertexIndices 
 internal;VertexKey
