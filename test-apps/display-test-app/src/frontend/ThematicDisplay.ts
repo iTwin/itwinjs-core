@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@itwin/frontend-devtools";
+import {
+  CheckBox, ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider,
+} from "@itwin/frontend-devtools";
 import { Point3d, Range1d } from "@itwin/core-geometry";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
-  ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientTransparencyMode, ViewFlags,
 } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
@@ -107,6 +109,7 @@ export class ThematicDisplayEditor {
   private readonly _thematicRangeLow: LabeledNumericInput;
   private readonly _thematicRangeHigh: LabeledNumericInput;
   private readonly _thematicColorMix: Slider;
+  private readonly _alphaCheckbox: CheckBox;
   private readonly _thematicAxisX: LabeledNumericInput;
   private readonly _thematicAxisY: LabeledNumericInput;
   private readonly _thematicAxisZ: LabeledNumericInput;
@@ -300,6 +303,18 @@ export class ThematicDisplayEditor {
         return props;
       }),
     });
+
+    this._alphaCheckbox = createCheckBox({
+      parent: thematicControlsDiv,
+      name: "Multiply gradient alpha",
+      id: "thematic_alpha",
+      handler: (cb) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.gradientSettings!.transparencyMode = ThematicGradientTransparencyMode[cb.checked ? "MultiplySurfaceAndGradient" : "SurfaceOnly"];
+        return props;
+      }),
+    });
+    this._alphaCheckbox.div.style.textAlign = "left";
 
     const spanRange = document.createElement("span");
     spanRange.style.display = "flex";
