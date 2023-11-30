@@ -9,6 +9,7 @@ import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import { IModelApp } from "../../../IModelApp";
 import {
+  ArcGisGetServiceJsonArgs,
   ArcGISIdentifyRequestUrl,
   ArcGISIdentifyRequestUrlProps,
   ArcGISImageryProvider,
@@ -41,7 +42,7 @@ function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
 }
 
 function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any) {
-  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _queryParams?: {[key: string]: string}, _ignoreCache?: boolean, _requireToken?: boolean) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_args: ArcGisGetServiceJsonArgs) {
     return json;
   });
 }

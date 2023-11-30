@@ -60,7 +60,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
-      metadata = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password, this._settings.collectQueryParams());
+      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
     } catch (_e) {
     }

@@ -6,13 +6,13 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { MapLayerSource, MapLayerSourceStatus } from "../../../core-frontend";
-import { ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
+import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 
 function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any ) {
-  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _queryParams?: {[key: string]: string}, _ignoreCache?: boolean, _requireToken?: boolean) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_args: ArcGisGetServiceJsonArgs) {
     return json;
   });
 }
@@ -121,7 +121,7 @@ describe ("ArcGisUtilities", () => {
         json: async () => {return {};},
       } as unknown) as Response));
     });
-    await ArcGisUtilities.getServiceJson(source.url, source.formatId, source.userName, source.password, source.collectQueryParams());
+    await ArcGisUtilities.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams()});
 
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];
@@ -137,11 +137,12 @@ describe ("ArcGisUtilities", () => {
 
     expect(stub.calledOnce).to.be.true;
     const firstCall = stub.getCalls()[0];
-    expect(firstCall.args[0]).to.equals(source.url);
-    expect(firstCall.args[1]).to.equals(source.formatId);
-    expect(firstCall.args[2]).to.eqls(source.userName);
-    expect(firstCall.args[3]).to.eqls(source.password);
-    expect(firstCall.args[4]).to.eqls(source.collectQueryParams());
+    const args = firstCall.args[0];
+    expect(args.url).to.equals(source.url);
+    expect(args.formatId).to.equals(source.formatId);
+    expect(args.userName).to.eqls(source.userName);
+    expect(args.password).to.eqls(source.password);
+    expect(args.queryParams).to.eqls(source.collectQueryParams());
   });
 
   it("should validate proper source", async () => {

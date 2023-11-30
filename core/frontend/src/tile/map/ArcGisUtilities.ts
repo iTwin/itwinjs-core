@@ -35,12 +35,25 @@ export interface ArcGISServiceMetadata {
   accessTokenRequired: boolean;
 }
 
-/** Options for validating ArcGIS sources
- * @beta
+/** Arguments for validating ArcGIS sources
+ * @internal
  */
 export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
   /** List of capabilities 'keyword' that needs to be advertised in the service's metadata in order to be valid.  For example: 'Map', 'Query', etc*/
   capabilitiesFilter: string[];
+}
+
+/** Arguments for fetching service metadata
+ * @internal
+ */
+export interface ArcGisGetServiceJsonArgs  {
+  url: string;
+  formatId: string;
+  userName?: string;
+  password?: string;
+  queryParams?: {[key: string]: string};
+  ignoreCache?: boolean;
+  requireToken?: boolean;
 }
 
 /**
@@ -166,7 +179,7 @@ export class ArcGisUtilities {
   */
   public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache, capabilitiesFilter} = args;
-    const metadata = await this.getServiceJson(source.url, source.formatId, source.userName, source.password, source.collectQueryParams(), ignoreCache);
+    const metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -238,7 +251,8 @@ export class ArcGisUtilities {
    * @param requireToken Flag to indicate if a token is required
    */
 
-  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, queryParams?: {[key: string]: string},  ignoreCache?: boolean, requireToken?: boolean ): Promise<ArcGISServiceMetadata|undefined> {
+  public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
+    const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)

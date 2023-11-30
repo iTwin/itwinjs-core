@@ -9,7 +9,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisFeatureProvider } from "../../map-layers-formats";
 import * as sinon from "sinon";
-import { ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { ArcGisGetServiceJsonArgs, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
@@ -99,7 +99,7 @@ function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
 }
 
 function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any ) {
-  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _queryParams?: {[key: string]: string}, _ignoreCache?: boolean, _requireToken?: boolean) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_args: ArcGisGetServiceJsonArgs) {
     return json;
   });
 }
@@ -1199,6 +1199,7 @@ describe("ArcGisFeatureProvider", () => {
       drawingInfo,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     (drawingInfo.renderer.defaultSymbol as any) = null;  // Force no default symbology
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
