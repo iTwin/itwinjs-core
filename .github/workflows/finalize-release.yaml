@@ -31,6 +31,6 @@ jobs:
         run: |
           npm i -g zx
           npm install -g @microsoft/rush
-          zx ./.github/workflows/automation-scripts/update-changelogs.mjs
+          zx --install ./.github/workflows/automation-scripts/update-changelogs.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
