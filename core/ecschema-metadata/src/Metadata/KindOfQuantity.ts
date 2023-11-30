@@ -113,7 +113,7 @@ export class KindOfQuantity extends SchemaItem {
         returnValue.unitAndLabels = [];
 
       if (undefined !== match[i + 2]) // matches '|'
-        returnValue.unitAndLabels.push([match[i + 1], match[i + 3] === undefined ? "" : match[i + 3]]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
+        returnValue.unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
       else
         returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
 
