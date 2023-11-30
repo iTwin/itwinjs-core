@@ -62,13 +62,10 @@ let commitMessage = await $`git log --format=%B -n 1`;
 targetBranch = String(targetBranch).replace(/\n/g, '');
 currentBranch = String(currentBranch).replace(/\n/g, '');
 commitMessage = String(commitMessage).replace(/\n/g, '');
-<<<<<<< HEAD
-=======
 const substring = " Changelogs";
 if (commitMessage.includes(substring)) {
   commitMessage = commitMessage.replace(substring, '');
 }
->>>>>>> a48d022542 (Fix update-changelogs to consider new pkgs (#6230))
 
 console.log(`target branch: ${targetBranch}`);
 console.log(`current branch: ${currentBranch}`);
