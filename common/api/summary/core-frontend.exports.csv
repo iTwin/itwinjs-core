@@ -46,6 +46,7 @@ internal;ArcGisErrorCode
 internal;class ArcGisGeometryBaseRenderer 
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
+internal;ArcGisGetServiceJsonArgs
 internal;ArcGisGraphicsRenderer 
 internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
@@ -57,7 +58,7 @@ internal;ArcGISMapLayerImageryProvider
 internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
-beta;ArcGisValidateSourceArgs 
+internal;ArcGisValidateSourceArgs 
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AttachToViewportArgs = Viewport

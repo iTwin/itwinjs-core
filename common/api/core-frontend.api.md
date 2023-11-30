@@ -1244,6 +1244,26 @@ export interface ArcGisGeometryRenderer {
 }
 
 // @internal
+export interface ArcGisGetServiceJsonArgs {
+    // (undocumented)
+    formatId: string;
+    // (undocumented)
+    ignoreCache?: boolean;
+    // (undocumented)
+    password?: string;
+    // (undocumented)
+    queryParams?: {
+        [key: string]: string;
+    };
+    // (undocumented)
+    requireToken?: boolean;
+    // (undocumented)
+    url: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     constructor(props: ArcGisGraphicsRendererProps);
     // (undocumented)
@@ -1408,9 +1428,7 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, queryParams?: {
-        [key: string]: string;
-    }, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
+    static getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata | undefined>;
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
@@ -1421,7 +1439,7 @@ export class ArcGisUtilities {
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
 }
 
-// @beta
+// @internal
 export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
     capabilitiesFilter: string[];
 }
