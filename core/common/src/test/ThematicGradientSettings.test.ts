@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef } from "../ColorDef";
+import { TextureTransparency } from "../TextureProps";
 import {
   ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps, ThematicGradientTransparencyMode,
 } from "../ThematicDisplay";
@@ -86,5 +87,32 @@ describe("ThematicGradientSettings", () => {
       {value: 1.0, color: ColorDef.green.toJSON()},
     ],
     expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.not.equal(0);
+  });
+
+  it("computes texture transparency", () => {
+    const op = ColorDef.red;
+    const tr = ColorDef.blue.withTransparency(127);
+
+    function expectTransparency(expected: "opaque" | "transparent" | "mixed", margin: ColorDef, custom?: ColorDef[]): void {
+      const props: ThematicGradientSettingsProps = {
+        colorScheme: undefined !== custom ? ThematicGradientColorScheme.Custom : ThematicGradientColorScheme.BlueRed,
+        marginColor: margin.toJSON(),
+        customKeys: custom ? custom.map((x) => { return { value: 0.5, color: x.toJSON() }; }) : undefined,
+      };
+
+      const remap = { "opaque": TextureTransparency.Opaque, "transparent": TextureTransparency.Translucent, "mixed": TextureTransparency.Mixed };
+      const settings = ThematicGradientSettings.fromJSON(props);
+      expect(settings.textureTransparency).to.equal(remap[expected]);
+    }
+
+    expectTransparency("opaque", op);
+    expectTransparency("mixed", tr);
+
+    expectTransparency("opaque", op, [op, op]);
+    expectTransparency("transparent", tr, [tr, tr]);
+    expectTransparency("mixed", op, [tr, tr]);
+    expectTransparency("mixed", tr, [op, op]);
+    expectTransparency("mixed", op, [tr, op]);
+    expectTransparency("mixed", tr, [tr, op]);
   });
 });

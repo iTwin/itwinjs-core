@@ -10,6 +10,7 @@ import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
+import { TextureTransparency } from "./TextureProps";
 
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
@@ -119,6 +120,29 @@ export class ThematicGradientSettings {
   public static readonly defaults = new ThematicGradientSettings({});
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
+
+  /** @alpha */
+  public get textureTransparency(): TextureTransparency {
+    let transp = TextureTransparency.Opaque;
+    if (ThematicGradientColorScheme.Custom === this.colorScheme) {
+      let haveOpaque = false;
+      let haveTransparent = false;
+      for (const key of this.customKeys) {
+        const isOpaque = key.color.isOpaque;
+        haveOpaque = haveOpaque || isOpaque;
+        haveTransparent = haveTransparent || !isOpaque;
+      }
+
+      if (haveTransparent)
+        transp = haveOpaque ? TextureTransparency.Mixed : TextureTransparency.Translucent;
+    }
+
+    if (transp !== TextureTransparency.Mixed)
+      if (this.marginColor.isOpaque !== (transp === TextureTransparency.Opaque))
+        transp = TextureTransparency.Mixed;
+
+    return transp;
+  }
 
   public equals(other: ThematicGradientSettings): boolean {
     if (this.mode !== other.mode || this.stepCount !== other.stepCount || !this.marginColor.equals(other.marginColor)
