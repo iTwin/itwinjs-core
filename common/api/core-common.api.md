@@ -9497,6 +9497,8 @@ export class ThematicGradientSettings {
     readonly marginColor: ColorDef;
     readonly mode: ThematicGradientMode;
     readonly stepCount: number;
+    // @alpha (undocumented)
+    get textureTransparency(): TextureTransparency;
     // (undocumented)
     toJSON(): ThematicGradientSettingsProps;
     readonly transparencyMode: ThematicGradientTransparencyMode;

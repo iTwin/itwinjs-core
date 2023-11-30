@@ -100,7 +100,7 @@ describe("ThematicGradientSettings", () => {
         customKeys: custom ? custom.map((x) => { return { value: 0.5, color: x.toJSON() }; }) : undefined,
       };
 
-      const remap = { "opaque": TextureTransparency.Opaque, "transparent": TextureTransparency.Translucent, "mixed": TextureTransparency.Mixed };
+      const remap = { opaque: TextureTransparency.Opaque, transparent: TextureTransparency.Translucent, mixed: TextureTransparency.Mixed };
       const settings = ThematicGradientSettings.fromJSON(props);
       expect(settings.textureTransparency).to.equal(remap[expected]);
     }

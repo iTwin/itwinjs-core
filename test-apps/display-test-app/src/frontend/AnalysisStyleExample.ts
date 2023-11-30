@@ -36,9 +36,11 @@ function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): 
     const displacementChannel = auxdata.channels.find((x) => x.inputName === channel.inputName && x.dataType === AuxChannelDataType.Vector);
     const thematicSettings: ThematicGradientSettingsProps = {};
     if (channel.name.endsWith("Height")) {
-      thematicSettings.colorScheme = ThematicGradientColorScheme.Custom;
-      thematicSettings.customKeys = seaMountain.map((x) => { return { value: x[0], color: ColorDef.computeTbgrFromComponents(x[1], x[2], x[3], x[4]) }; });
       thematicSettings.mode = ThematicGradientMode.SteppedWithDelimiter;
+      thematicSettings.colorScheme = ThematicGradientColorScheme.Custom;
+      thematicSettings.customKeys = seaMountain.map((x) => {
+        return { value: x[0], color: ColorDef.computeTbgrFromComponents(x[1], x[2], x[3], x[4]) };
+      });
     }
 
     assert(undefined !== channel.scalarRange);
