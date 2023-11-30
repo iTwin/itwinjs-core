@@ -228,8 +228,7 @@ describe("IndexedRangeHeap", () => {
     let numCase = 0;
     for (const pointBFactor of [1, 4]) {
       for (const uz of [0, -3]) {
-        // This array collects min-distance during a sequence of searches with differing tree structures.  They should all produce the same result!
-        const distanceSequence: number[] = [];
+        const distanceSequence: number[] = [];  // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
         for (const treeFlare of [2, 4, 6]) {
           // a patch of a sphere, facing along the x axis
           const pointsA = Sample.createGridPointsOnEllipsoid(
@@ -242,7 +241,6 @@ describe("IndexedRangeHeap", () => {
             AngleSweep.createStartEndDegrees(-40, 60),
             AngleSweep.createStartEndDegrees(-30, 30),
           );
-          // some
           // uz = 0 makes a patch of sphere somewhat above, to the right, and facing back at the one for pointsA.
           //    (close approach is near bottom of pointsB patch)
           // uz > 0 is moved downward and has its x axis tipped downward
@@ -306,6 +304,7 @@ describe("IndexedRangeHeap", () => {
           }
           const dMinAB = handler.minDistance;
           ck.testLE(dMinAB, dMin, "Full search min distance should be less than or equal to sampled min distance");
+          distanceSequence.push(dMinAB);
         }
         for (let i = 1; i < distanceSequence.length; i++)
           ck.testCoordinate(distanceSequence[0], distanceSequence[i], { distance0: distanceSequence[0], treeCase: i, distance: distanceSequence[i] });
@@ -319,7 +318,7 @@ describe("IndexedRangeHeap", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-    const y0 = 0;
+    let y0 = 0;
     const z0 = 0;
 
     const pointsA = Sample.createGridPointsOnEllipsoid(
@@ -334,33 +333,50 @@ describe("IndexedRangeHeap", () => {
     );
 
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
+    const distanceSequence: number[][] = [];  // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
+    let numCase = 0;
 
     for (const treeWidth of [2, 4, 8]) {
-      const searcher = Point3dArrayRangeTreeContext.createCapture(pointsA, treeWidth, treeWidth);
-      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
-      if (ck.testType(searcher, Point3dArrayRangeTreeContext)) {
-        for (let u = 0; u <= 0.999999999; u += 0.025) {
-          const xyz = path.fractionToPoint(u);
-          const cld = searcher.searchForClosestPoint(xyz);
-          if (ck.testType(cld, CurveLocationDetail)) {
-            const xyz1 = cld.point;
-            if (ck.testType(xyz1, Point3d)) {
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, xyz1], x0, y0, z0);
+      for (const numResultsPerLeaf of [treeWidth, 1]) {
+        distanceSequence.push([]);
+        const searcher = Point3dArrayRangeTreeContext.createCapture(pointsA, treeWidth, numResultsPerLeaf);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
+        if (ck.testType(searcher, Point3dArrayRangeTreeContext)) {
+          for (let u = 0; u <= 0.999999999; u += 0.025) {
+            const xyz = path.fractionToPoint(u);
+            const cld = searcher.searchForClosestPoint(xyz);
+            if (ck.testType(cld, CurveLocationDetail)) {
+              const xyz1 = cld.point;
+              if (ck.testType(xyz1, Point3d))
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, xyz1], x0, y0, z0);
+              if (ck.testCoordinate(xyz1.distance(xyz), cld.a, "cld.a corresponds to distance from cld.point"))
+                distanceSequence[numCase].push(cld.a);
             }
           }
+          ck.show({
+            treeWidth,
+            numResultsPerLeaf,
+            numRangeTestTrue: searcher.numRangeTestTrue,
+            numRangeTestFalse: searcher.numRangeTestFalse,
+            numPointTest: searcher.numPointTest,
+            searches: searcher.numSearch,
+            searchesTimesPoints: searcher.numSearch * pointsA.length,
+            fraction: searcher.numPointTest / (searcher.numSearch * pointsA.length),
+          });
         }
-        ck.show({
-          treeWidth,
-          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
-          searches: searcher.numSearch,
-          searchesTimesPoints: searcher.numSearch * pointsA.length,
-          fraction: searcher.numPointTest / (searcher.numSearch * pointsA.length),
-        });
+        y0 += 100;
+        numCase++;
       }
       x0 += 100;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointPointSearch");
+    const numSearchesPerCase = distanceSequence[0].length;
+    for (let i = 1; i < distanceSequence.length; i++)
+      for (let j = 0; j < numSearchesPerCase; j++)
+        if (ck.testExactNumber(numSearchesPerCase, distanceSequence[i].length, "same number of searches per test case"))
+          ck.testExactNumber(distanceSequence[0][j], distanceSequence[i][j], { distance0J: distanceSequence[0][j], i, j, distanceIJ: distanceSequence[i][j] });
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -384,21 +400,26 @@ describe("IndexedRangeHeap", () => {
           const cld = searcher.searchForClosestPoint(xyz);
           if (ck.testType(cld, CurveLocationDetail)) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
-            const distance = xyz.distance(cld.point);
-            const indexAndFraction = linestring.globalFractionToSegmentIndexAndLocalFraction(cld.fraction);
-            const segmentIndex = indexAndFraction.index;
-            // const segmentFraction = indexAndFraction.fraction;
-
-            const i1 = Math.min(segmentIndex + 4, wavePoints.length);
-            for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++) {
-              ck.testLE(distance, xyz.distance(wavePoints[i]));
+            ck.testCoordinate(cld.a, xyz.distance(cld.point), "cld.a corresponds to distance from cld.point");
+            if (ck.testType(cld.childDetail, CurveLocationDetail, "child detail recorded") && cld.childDetail) {
+              const segmentIndex = cld.childDetail.a;
+              const localFraction = cld.childDetail.fraction;
+              if (ck.testType(cld.curve, LineString3d, "cld.curve defined") && cld.curve) {
+                ck.testPoint3d(cld.point, cld.curve.fractionToPoint(cld.fraction), "cld.fraction is global linestring param");
+                ck.testCoordinate(cld.fraction, cld.curve.segmentIndexAndLocalFractionToGlobalFraction(segmentIndex, localFraction), "cld.childDetail has segment index and param");
+              }
+              const i1 = Math.min(segmentIndex + 4, wavePoints.length);
+              for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++)
+                ck.testLE(cld.a, xyz.distance(wavePoints[i]));
             }
           }
         }
         ck.show({
           numPoints: wavePoints.length,
           treeWidth,
-          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numPointTest,
+          numRangeTestTrue: searcher.numRangeTestTrue,
+          numRangeTestFalse: searcher.numRangeTestFalse,
+          numPointTest: searcher.numPointTest,
           searches: searcher.numSearch,
           searchesTimesPoints: searcher.numSearch * wavePoints.length,
           fraction: searcher.numPointTest / (searcher.numSearch * wavePoints.length),
@@ -413,7 +434,7 @@ describe("IndexedRangeHeap", () => {
   it("PolyfaceMultiSearch", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const x0 = 0;
+    let x0 = 0;
     let y0 = 0;
     const z0 = 0;
     const strokeOptions = StrokeOptions.createForFacets();
@@ -426,38 +447,41 @@ describe("IndexedRangeHeap", () => {
       x0 += 2;
     }
     */
+    // Franke surface is ..
+    // range [0,1] in both directions
+    // very non-planar quads -- definitely need to triangulate!!
+    // frankeSize 5 is pretty minimal
+    //             10 looks good for lots of tests.
+    const frankeSize = 20;
+    const polyface = Sample.createMeshFromFrankeSurface(frankeSize, strokeOptions)!;
+    const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
+
     for (const treeWidth of [2, 4, 8]) {
-      // Franke surface is ..
-      // range [0,1] in both directions
-      // very non-planar quads -- definitely need to triangulate!!
-      // frankelSize 5 is pretty minimal
-      //             10 looks good for lots of tests.
-      const frankelSize = 20;
-      const polyface = Sample.createMeshFromFrankeSurface(frankelSize, strokeOptions)!;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, z0);
-      const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
       const visitor = polyface.createVisitor(0);
       const searcher = PolyfaceRangeTreeContext.createCapture(visitor, treeWidth, treeWidth);
       if (ck.testType(searcher, PolyfaceRangeTreeContext)) {
-        for (let u = 0; u <= 1.00001; u += 0.010) {
-          const xyz = path.fractionToPoint(u);
-          const facetLocationDetail = searcher.searchForClosestPoint(xyz);
-          if (ck.testDefined(facetLocationDetail) && facetLocationDetail !== undefined) {
-            const closestPoint = facetLocationDetail.point;
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, closestPoint], x0, y0, z0);
-            // const segmentFraction = cld.fraction;
-            const distance = xyz.distance(closestPoint);
-            for (let i = 0; i < polyface.data.point.length; i += 7) {
-              const di = polyface.data.point.distanceIndexToPoint(i, xyz)!;
-              ck.testLE(distance, di);
+        x0 = 0;
+        for (const searchInterior of [false, true]) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface, path], x0, y0, z0);
+          for (let u = 0; u <= 1.00001; u += 0.010) {
+            const xyz = path.fractionToPoint(u);
+            const facetLocationDetail = searcher.searchForClosestPoint(xyz, searchInterior);
+            if (ck.testDefined(facetLocationDetail) && facetLocationDetail !== undefined) {
+              const closestPoint = facetLocationDetail.point;
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, closestPoint], x0, y0, z0);
+              const distance = facetLocationDetail.a;
+              for (let i = 0; i < polyface.data.point.length; i += 7) {
+                const di = polyface.data.point.distanceIndexToPoint(i, xyz)!;
+                ck.testLE(distance, di);
+              }
             }
           }
+          x0 += 2;
         }
         const numFacets = polyface.facetCount;
         const searchesTimesFacets = searcher.numSearch * numFacets;
         ck.show({
-          frankelSize,
+          frankeSize,
           numFacets: polyface.facetCount,
           treeWidth,
           numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numFacetTest,
@@ -471,6 +495,7 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("PolyfacePolyfaceSearch", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -479,20 +504,6 @@ describe("IndexedRangeHeap", () => {
     const z0 = 0;
     const strokeOptions = StrokeOptions.createForFacets();
     strokeOptions.shouldTriangulate = true;
-    /*
-    // output the 4 distinct components of the Franke surface . . .
-    for (const termSelect of [0x01, 0x02, 0x04, 0x08]) {
-      const surface = Sample.createMeshFromFrankeSurface(25, strokeOptions, termSelect);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, surface, x0, y0, z0);
-      x0 += 2;
-    }
-    */
-    //    const treeWidth = 3;
-    // Franke surface is ..
-    // range [0,1] in both directions
-    // very non-planar quads -- definitely need to triangulate!!
-    // frankelSize 5 is pretty minimal
-    //             10 looks good for lots of tests.
     const frankeSizeA = 12;
     const frankeSizeB = 6;
     const polyfaceA = Sample.createMeshFromFrankeSurface(frankeSizeA, strokeOptions, [0.5, 0.5, 0.5, 1])!;
@@ -522,22 +533,11 @@ describe("IndexedRangeHeap", () => {
       numFacetTimeNumFacet: numFacetA * numFacetB,
       testFraction: contextA.numFacetTest / (numFacetA * numFacetB),
     });
-    /*
-    for (const multipliers of [
-      [1, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, 1],
-    ]) {
-      x0 += 2;
-      const polyface = Sample.createMeshFromFrankeSurface(frankelSize, strokeOptions, multipliers)!;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, z0);
-    }
-    */
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("PolylinePolylineSearcher", () => {
+
+  it("PolylinePolylineSearch", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -580,7 +580,7 @@ describe("IndexedRangeHeap", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach1.dataA, approach1.dataB], x0, y0, z0);
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearcher");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearch");
     expect(ck.getNumErrors()).equals(0);
   });
 
