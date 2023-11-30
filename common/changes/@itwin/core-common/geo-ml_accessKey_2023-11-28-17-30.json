@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Custom query parameters can now be configured on map layer objects.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
