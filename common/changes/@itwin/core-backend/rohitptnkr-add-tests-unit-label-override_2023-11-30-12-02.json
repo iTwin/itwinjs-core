@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added tests for composite format unit labels/overrides",
+      "comment": "",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "Added tests for composite format unit labels/overrides, fixed format string parsing logic",
+      "comment": "",
       "type": "none"
     }
   ],
