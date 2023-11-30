@@ -3,7 +3,6 @@
 "use strict";
 
 import 'zx/globals'
-// const fs = require('fs-extra');
 
 /****************************************************************
 * To run manually:
@@ -15,7 +14,7 @@ import 'zx/globals'
 * open PR into target branch
 *****************************************************************/
 
-// Sort entries based on version numbers formatted as 'X.X.X'
+// Sort entries based on version numbers formatted as 'major.minor.patch'
 function sortByVersion(entries) {
   return entries.sort((a, b) => {
     const versionA = a.version.split('.').map(Number);
@@ -35,7 +34,7 @@ function fixChangeLogs(files) {
   for (let i = 0; i < numFiles; i++) {
     const currentJson = fs.readJsonSync(`temp-target-changelogs/${files[i]}`);
     const incomingJson = fs.readJsonSync(`temp-incoming-changelogs/${files[i]}`);
-    // .map creates an array of [number version, object obj] tuples, which is passed into Map and creates a key value pair of the two elements.
+    // .map creates an array of [changelog version string, changelog entryj] tuples, which is passed into Map and creates a key value pair of the two elements.
     let combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]);
     // Map objects do not allow duplicate keys, so this will remove duplicate version numbers
     let completeEntries = new Map(combinedEntries);
