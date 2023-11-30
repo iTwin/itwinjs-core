@@ -166,7 +166,7 @@ export function setupMobileRpc() {
      In a simple app, the RPC server may be the only handle retaining the UV loop.
      Thus, we install a temporary timer on suspend to prevent the loop from exiting prematurely.
   */
-  let retainUvLoop: NodeJS.Timer | undefined;
+  let retainUvLoop: NodeJS.Timeout | undefined;
   const pendingMessages: Array<string | Uint8Array> = [];
 
   function usePendingSender() {

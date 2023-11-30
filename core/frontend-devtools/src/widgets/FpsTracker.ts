@@ -17,7 +17,7 @@ import { createCheckBox } from "../ui/CheckBox";
 export class FpsTracker {
   private readonly _label: HTMLLabelElement;
   private _metrics?: PerformanceMetrics;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: number;
   private readonly _vp: Viewport;
 
   public constructor(parent: HTMLElement, viewport: Viewport) {
@@ -36,7 +36,7 @@ export class FpsTracker {
 
   private clearInterval(): void {
     if (undefined !== this._curIntervalId) {
-      clearInterval(this._curIntervalId);
+      window.clearInterval(this._curIntervalId);
       this._curIntervalId = undefined;
     }
   }
@@ -45,7 +45,7 @@ export class FpsTracker {
     this._vp.continuousRendering = enabled;
     if (enabled) {
       this._metrics = new PerformanceMetrics(false, true);
-      this._curIntervalId = setInterval(() => this.updateFPS(), 500);
+      this._curIntervalId = window.setInterval(() => this.updateFPS(), 500);
       this._label.innerText = "Tracking FPS...";
     } else {
       this._metrics = undefined;
