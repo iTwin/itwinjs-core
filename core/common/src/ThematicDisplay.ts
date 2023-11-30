@@ -110,7 +110,10 @@ export class ThematicGradientSettings {
   /** The percentage to mix in the original color with the thematic display gradient color (0-1).
    * Applies to background map terrain and point clouds only.  Defaults to 0. */
   public readonly colorMix: number;
-  /** Specifies how the transparency is computed. Defaults to [[ThematicGradientTransparencyMode.SurfaceOnly]]. */
+  /** Specifies how the transparency is computed. Defaults to [[ThematicGradientTransparencyMode.SurfaceOnly]].
+   * @note This property is ignored for gradients applied using an [[AnalysisStyle]] via [[AnalysisStyleThematic]] - in that case, only the color and
+   * transparency of the thematic gradient are applied.
+   */
   public readonly transparencyMode: ThematicGradientTransparencyMode;
 
   public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
