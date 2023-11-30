@@ -2,7 +2,7 @@
 
 "use strict";
 
-import 'zx/globals';
+import 'zx/globals'
 // const fs = require('fs-extra');
 
 /****************************************************************
@@ -11,17 +11,11 @@ import 'zx/globals';
 * git checkout target branch (master or latest release); git pull
 * git checkout release/X.X.x; git pull (this is the branch that was just patched)
 * uncomment git checkout -b cmd and fix branch name
-* run this file using `zx .github/workflows/automation-scripts/update-changelogs.mjs`
+* run this file using `zx --install .github/workflows/automation-scripts/update-changelogs.mjs`
 * open PR into target branch
 *****************************************************************/
 
-// function loadJsonFiles(filePath) {
-//   // Load each JSON file
-//   const data = fs.readFileSync(filePath);
-//   const jsonData = JSON.parse(data);
-//   return jsonData;
-// }
-
+// Sort entries based on version numbers formatted as 'X.X.X'
 function sortByVersion(entries) {
   return entries.sort((a, b) => {
     const versionA = a.version.split('.').map(Number);
@@ -41,17 +35,15 @@ function fixChangeLogs(files) {
   for (let i = 0; i < numFiles; i++) {
     const currentJson = fs.readJsonSync(`temp-target-changelogs/${files[i]}`);
     const incomingJson = fs.readJsonSync(`temp-incoming-changelogs/${files[i]}`);
-    // .map creates an array of [version num, entry obj], which is passed into Map and creates a key value pair of the two elements.
-    // Map objects do not allow duplicate keys, so this will remove duplicate versions
-    let completeEntries = new Map([...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]));
+    // .map creates an array of [number version, object obj] tuples, which is passed into Map and creates a key value pair of the two elements.
+    let combinedEntries = [...currentJson.entries, ...incomingJson.entries].map((obj) => [obj['version'], obj]);
+    // Map objects do not allow duplicate keys, so this will remove duplicate version numbers
+    let completeEntries = new Map(combinedEntries);
     // convert entries back into an array and sort by version number
     completeEntries = sortByVersion(Array.from(completeEntries.values()));
     currentJson.entries = completeEntries;
 
-    let jsonString = JSON.stringify(currentJson, null, 2);
-    jsonString = jsonString + '\n';
-    // clean up fs
-    fs.writeJsonSync(`temp-target-changelogs/${files[i]}`, jsonString);
+    fs.writeJsonSync(`temp-target-changelogs/${files[i]}`, currentJson, { spaces: 2 });
   }
 }
 
@@ -127,4 +119,3 @@ await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
 await $`git push origin HEAD:${targetBranch}`;
-
