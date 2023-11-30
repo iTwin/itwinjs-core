@@ -4555,6 +4555,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings;
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
+    // @beta
+    collectQueryParams(): {
+        [key: string]: string;
+    };
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
@@ -4567,10 +4571,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
-    // @beta
-    get queryParams(): {
-        [key: string]: string;
-    };
     // @beta
     savedQueryParams?: {
         [key: string]: string;
