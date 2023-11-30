@@ -4,14 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import sinon from "sinon";
 import { WmsCapabilities } from "../../../tile/map/WmsCapabilities";
+import { fakeTextFetch } from "./MapLayerTestUtilities";
 
 const mapProxyDatasetNbLayers = 9;
+
 describe("WmsCapabilities", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
 
   it("should parse WMS 1.1.1 capabilities", async () => {
 
-    const capabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_111.xml");
+    const response = await fetch("assets/wms_capabilities/mapproxy_111.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
+    const capabilities = await WmsCapabilities.create("https://fake/url");
 
     expect(capabilities).to.not.undefined;
     if (capabilities === undefined)
@@ -37,12 +48,13 @@ describe("WmsCapabilities", () => {
     for (const subLayerCrs of subLayersCrs.values()) {
       expect(subLayerCrs).to.include("EPSG:4326");
     }
-
   });
 
   it("should parse WMS 1.3.0 capabilities", async () => {
-
-    const capabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_130.xml");
+    const response = await fetch("assets/wms_capabilities/mapproxy_130.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
+    const capabilities = await WmsCapabilities.create("https://fake/url2");
 
     expect(capabilities).to.not.undefined;
     if (capabilities === undefined)
@@ -69,6 +81,21 @@ describe("WmsCapabilities", () => {
       expect(subLayerCrs).to.include("EPSG:4326");
     }
 
+  });
+
+  it("should request proper URL", async () => {
+
+    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+      return new Response();
+    });
+    const sampleUrl = "https://service.server.com/rest/WMS";
+    const params = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const queryParams: {[key: string]: string} = {};
+    params.forEach((value: string, key: string) =>  queryParams[key] = value);
+    await WmsCapabilities.create(sampleUrl, undefined, true, queryParams);
+    expect(fetchStub.calledOnce).to.be.true;
+    const firstCall = fetchStub.getCalls()[0];
+    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMS&${params.toString()}`);
   });
 
 });
