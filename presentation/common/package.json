@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "3.7.17",
+  "version": "3.8.0-dev.0",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -46,9 +46,9 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.7.17",
-    "@itwin/core-common": "workspace:^3.7.17",
-    "@itwin/core-quantity": "workspace:^3.7.17"
+    "@itwin/core-bentley": "workspace:^3.8.0-dev.0",
+    "@itwin/core-common": "workspace:^3.8.0-dev.0",
+    "@itwin/core-quantity": "workspace:^3.8.0-dev.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
