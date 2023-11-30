@@ -1,6 +1,6 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Mon, 20 Nov 2023 16:14:45 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Nov 2023 17:06:23 GMT and should not be manually modified.
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
@@ -130,6 +130,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Updated to work with async schema loading changes made to ecschema-metadata
 - Update to eslint@8
 - Removed obsolete EC rule 102 - Abstract class must have abstract base class.
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
 
 ## 3.7.16
 Mon, 16 Oct 2023 12:49:08 GMT
