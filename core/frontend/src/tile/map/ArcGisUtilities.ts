@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceOptions} from "../internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../internal";
 import { IModelApp } from "../../IModelApp";
 
 /** @packageDocumentation
@@ -38,7 +38,7 @@ export interface ArcGISServiceMetadata {
 /** Options for validating ArcGIS sources
  * @beta
  */
-export interface ArcGisValidateSourceOptions extends ValidateSourceOptions {
+export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
   /** List of capabilities 'keyword' that needs to be advertised in the service's metadata in order to be valid.  For example: 'Map', 'Query', etc*/
   capabilitiesFilter: string[];
 }
@@ -164,8 +164,9 @@ export class ArcGisUtilities {
    * @param source Source to validate.
    * @param opts Validation options
   */
-  public static async validateSource(source: MapLayerSource, opts?: ArcGisValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const metadata = await this.getServiceJson(source.url, source.formatId, source.userName, source.password, source.queryParameters, opts?.ignoreCache);
+  public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    const {source, ignoreCache, capabilitiesFilter} = args;
+    const metadata = await this.getServiceJson(source.url, source.formatId, source.userName, source.password, source.queryParameters, ignoreCache);
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -187,8 +188,8 @@ export class ArcGisUtilities {
       const capabilities: string = json.capabilities;
       capsArray = capabilities.split(",").map((entry) => entry.toLowerCase());
 
-      const filtered = capsArray.filter((element, _index, _array) => opts?.capabilitiesFilter.includes(element));
-      hasCapabilities = (filtered.length === opts?.capabilitiesFilter.length);
+      const filtered = capsArray.filter((element, _index, _array) => capabilitiesFilter.includes(element));
+      hasCapabilities = (filtered.length === capabilitiesFilter.length);
     }
     if (!hasCapabilities) {
       return { status: MapLayerSourceStatus.InvalidFormat};

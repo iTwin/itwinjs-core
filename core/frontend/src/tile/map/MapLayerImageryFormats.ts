@@ -21,7 +21,7 @@ import {
   MapLayerSourceValidation,
   MapLayerTileTreeReference,
   TileUrlImageryProvider,
-  ValidateSourceOptions,
+  ValidateSourceArgs,
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
@@ -47,22 +47,22 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
-  /** @deprecated in 4.2. Use the overload that takes a [[MapLayerSource]]. */
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const source =  MapLayerSource.fromJSON({name: "", formatId: WmsMapLayerFormat.formatId, url});
     if (source === undefined)
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmsMapLayerFormat.validateSourceObj(source, {ignoreCache});
+    return WmsMapLayerFormat.validate({source, ignoreCache});
   }
 
-  public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
+  public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    const {source, ignoreCache} = args;
     const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
     const queryParams: {[key: string]: string} = {};
     savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
     unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
-    const ignoreCache = opts?.ignoreCache;
+
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
@@ -136,15 +136,15 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmtsMapLayerFormat.validateSourceObj(source, {ignoreCache});
+    return WmtsMapLayerFormat.validate({source, ignoreCache});
   }
 
-  public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
+  public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    const {source, ignoreCache} = args;
     const { url, userName, password, savedQueryParams, unsavedQueryParams } = source;
     const queryParams: {[key: string]: string} = {};
     savedQueryParams && Object.keys(savedQueryParams).forEach((key) => queryParams[key] = savedQueryParams[key]);
     unsavedQueryParams && Object.keys(unsavedQueryParams).forEach((key) => queryParams[key] = unsavedQueryParams[key]);
-    const ignoreCache = opts?.ignoreCache;
     try {
       const subLayers: MapSubLayerProps[] = [];
       const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, queryParams);
@@ -205,16 +205,16 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmtsMapLayerFormat.validateSourceObj(source, {ignoreCache});
+    return WmtsMapLayerFormat.validate({source, ignoreCache});
   }
 
-  public static override async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const urlValidation = ArcGisUtilities.validateUrl(source.url, "MapServer");
+  public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    const urlValidation = ArcGisUtilities.validateUrl(args.source.url, "MapServer");
     if (urlValidation !== MapLayerSourceStatus.Valid)
       return {status: urlValidation};
 
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
-    return ArcGisUtilities.validateSource(source, {...opts, capabilitiesFilter: []});
+    return ArcGisUtilities.validateSource({...args, capabilitiesFilter: []});
   }
 
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {

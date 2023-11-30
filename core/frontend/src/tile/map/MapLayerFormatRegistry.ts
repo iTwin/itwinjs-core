@@ -28,13 +28,22 @@ export class MapLayerFormat {
   /** Register the current format in the [[MapLayerFormatRegistry]]. */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
-  /** @deprecated in 4.3. Use [[validateSourceObj]]. */
+  /**
+   * Allow a source of a specific format to be validated before being attached as a map-layer.
+   * @param _url The URL of the source.
+   * @param _userName The username to access the source if needed.
+   * @param _password The password to access the source if needed.
+   * @param _ignoreCache Flag to skip cache lookup (i.e. force a new server request).
+   * @returns Validation Status. If successful, a list of available sub-layers may also be returned.
+   */
   public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 
   /** Allow a source object to be validated before being attached as a map-layer.
     * @beta
   */
-  public static async validateSourceObj(_source: MapLayerSource, _opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+  public static async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    return this.validateSource(args.source.url, args.source.userName, args.source.password, args.ignoreCache);
+  }
 
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
    * @internal
@@ -52,7 +61,8 @@ export class MapLayerFormat {
 /** Options for validating sources
  * @beta
  */
-export interface ValidateSourceOptions {
+export interface ValidateSourceArgs {
+  source: MapLayerSource;
   /** Disable cache lookup during validate process  */
   ignoreCache?: boolean;
 }
@@ -168,29 +178,38 @@ export class MapLayerFormatRegistry {
     return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
   }
 
-  /** @deprecated in 4.2. Use the overload that takes a [[MapLayerSource]]. */
-  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const entry = this._formats.get(formatId);
-    const format = entry?.type;
-    if (format === undefined)
+  /** @beta*/
+  public async validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
+
+  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+
+  /** @internal*/
+  public async validateSource(formatIdOrArgs: string|ValidateSourceArgs, url?: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    let format: typeof MapLayerFormat | undefined;
+    let args: ValidateSourceArgs | undefined;
+
+    if (typeof formatIdOrArgs == "string" && url !== undefined) {
+      const formatId = formatIdOrArgs;
+      const entry = this._formats.get(formatId);
+      format = entry?.type;
+      if (format !== undefined) {
+        const source =  MapLayerSource.fromJSON({name: "", formatId, url});
+        if (source !== undefined) {
+          args = {source, ignoreCache};
+          source.userName = userName;
+          source.password = password;
+        }
+
+      }
+    } else if (typeof formatIdOrArgs !== "string") {
+      const entry = this._formats.get(formatIdOrArgs.source.formatId);
+      format = entry?.type;
+    }
+
+    if (!args || !format)
       return { status: MapLayerSourceStatus.InvalidFormat };
 
-    const source =  MapLayerSource.fromJSON({name: "", formatId, url});
-    if (source === undefined)
-      return { status: MapLayerSourceStatus.InvalidFormat };
-    source.userName = userName;
-    source.password = password;
-
-    return format.validateSourceObj(source, {ignoreCache});
-  }
-
-  /** Allow a source object to be validated before being attached as a map-layer.
-   * @beta
-   */
-  public async validateSourceObj(source: MapLayerSource, opts?: ValidateSourceOptions): Promise<MapLayerSourceValidation> {
-    const entry = this._formats.get(source.formatId);
-    const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSourceObj(source, opts);
+    return format.validate(args);
   }
 }
 

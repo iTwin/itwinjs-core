@@ -7,7 +7,7 @@
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import {
   ArcGisUtilities,
-  ArcGisValidateSourceOptions,
+  ArcGisValidateSourceArgs,
   MapLayerSource,
   MapLayerSourceStatus,
 } from "@itwin/core-frontend";
@@ -31,7 +31,7 @@ describe("ArcGisFeatureFormats", () => {
 
   it("should validateSource", async () => {
 
-    const fakeMethod = async (_source: MapLayerSource, _opts?: ArcGisValidateSourceOptions) => {
+    const fakeMethod = async (_args?: ArcGisValidateSourceArgs) => {
       return {status: MapLayerSourceStatus.Valid};
 
     };
@@ -51,15 +51,16 @@ describe("ArcGisFeatureFormats", () => {
     source.userName = "username1";
     source.password = "password1";
 
-    await ArcGisFeatureMapLayerFormat.validateSourceObj(source, {ignoreCache: true});
+    await ArcGisFeatureMapLayerFormat.validate({source, ignoreCache: true});
 
     expect(validateSourceStub.calledOnce).to.be.true;
     const firstCall = validateSourceStub.getCalls()[0];
-    const actualSource = firstCall.args[0];
-    expect(JSON.stringify(actualSource.toJSON())).to.equals(JSON.stringify(source.toJSON()));
-    expect(actualSource.userName).to.equals(source.userName);
-    expect(actualSource.password).to.equals(source.password);
-    expect(firstCall.args[1]).to.eqls({capabilitiesFilter: ["query"], ignoreCache: true} );
+    const actualArgs = firstCall.args[0];
+    expect(JSON.stringify(actualArgs.source)).to.eql(JSON.stringify(source.toJSON()));
+    expect(actualArgs.source.userName).to.equals(source.userName);
+    expect(actualArgs.source.password).to.eql(source.password);
+    expect(actualArgs.capabilitiesFilter).to.eql(["query"] );
+    expect(actualArgs.ignoreCache).to.eql(true);
   });
 
 });

@@ -133,7 +133,7 @@ describe ("ArcGisUtilities", () => {
     const stub = stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
     const source = getSampleSourceWithQueryParamsAndCreds();
 
-    await ArcGisUtilities.validateSource(source, {ignoreCache: true, capabilitiesFilter: []});
+    await ArcGisUtilities.validateSource({source, ignoreCache: true, capabilitiesFilter: []});
 
     expect(stub.calledOnce).to.be.true;
     const firstCall = stub.getCalls()[0];
@@ -146,13 +146,13 @@ describe ("ArcGisUtilities", () => {
 
   it("should validate proper source", async () => {
     stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
-    const  result = ArcGisUtilities.validateSource(getSampleSource()!, {capabilitiesFilter: []});
+    const  result = ArcGisUtilities.validateSource({source: getSampleSource()!, capabilitiesFilter: []});
     expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
   });
 
   it("validate should detect invalid coordinate system ", async () => {
     stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false});
-    const  result = ArcGisUtilities.validateSource(getSampleSource()!, {capabilitiesFilter: []});
+    const  result = ArcGisUtilities.validateSource({source: getSampleSource()!, capabilitiesFilter: []});
     expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
   });
 

@@ -100,7 +100,7 @@ export class MapLayerSource {
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSourceObj(this, {ignoreCache});
+    return IModelApp.mapLayerFormatRegistry.validateSource({source: this, ignoreCache});
   }
 
   /** @internal*/

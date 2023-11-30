@@ -88,7 +88,7 @@ describe("MapLayerImageryFormats", () => {
         return new Response();
       });
       const urlObj = new URL(url);
-      await IModelApp.mapLayerFormatRegistry.validateSourceObj(source);
+      await IModelApp.mapLayerFormatRegistry.validateSource({source});
       expect(stub.called).to.be.true;
       expect(stub.getCall(0).args[0]).to.equals(urlObj.toString());
 
@@ -98,7 +98,7 @@ describe("MapLayerImageryFormats", () => {
       source.unsavedQueryParams = {};
       param1.forEach((value: string, key: string) => source.savedQueryParams![key] = value);
       param2.forEach((value: string, key: string) => source.unsavedQueryParams![key] = value);
-      await IModelApp.mapLayerFormatRegistry.validateSourceObj(source, {ignoreCache: true});
+      await IModelApp.mapLayerFormatRegistry.validateSource({source, ignoreCache: true});
       expect(stub.called).to.be.true;
       expect(stub.getCall(1).args[0]).to.equals(urlObj.toString());
     };
