@@ -434,7 +434,7 @@ export class CheckpointManager {
     }
 
     const isValid = checkpoint.iModelId === nativeDb.getIModelId() && checkpoint.changeset.id === nativeDb.getCurrentChangeset().id;
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
     if (!isValid)
       IModelJsFs.removeSync(fileName);
 

@@ -154,7 +154,7 @@ export class BriefcaseManager {
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
             briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
-            db.closeIModel();
+            db.closeFile();
           } catch (_err) {
           }
         }
@@ -246,7 +246,7 @@ export class BriefcaseManager {
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.saveChanges();
-      nativeDb.closeIModel();
+      nativeDb.closeFile();
     }
     return response;
   }
@@ -282,7 +282,7 @@ export class BriefcaseManager {
         iModelId: db.getIModelId(),
         briefcaseId: db.getBriefcaseId(),
       };
-      db.closeIModel();
+      db.closeFile();
 
       if (accessToken) {
         if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
