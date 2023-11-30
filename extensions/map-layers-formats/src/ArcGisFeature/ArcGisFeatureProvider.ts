@@ -300,7 +300,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      metadata = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password, this._settings.queryParams, this._accessTokenRequired);
+      metadata = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password, this._settings.collectQueryParams(), this._accessTokenRequired);
     } catch {
 
     }
