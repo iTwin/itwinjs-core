@@ -7,7 +7,9 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
+import {
+  Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ThematicGradientTransparencyMode,
+} from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
@@ -31,7 +33,7 @@ export class ThematicUniforms implements WebGLDisposable {
   private readonly _sunDirection = new Float32Array(3);
   private readonly _marginColor = new Float32Array(3);
   private readonly _displayMode = new Float32Array(1);
-  private readonly _fragSettings = new Float32Array(3); // gradientMode, distanceCutoff, stepCount
+  private readonly _fragSettings = new Float32Array(4); // gradientMode, distanceCutoff, stepCount, > 0.0 if multiply gradient alpha
   private _numSensors = 0;
   private _gradientDimension = _getGradientDimension();
   private _thematicDisplay?: ThematicDisplay;
@@ -138,6 +140,7 @@ export class ThematicUniforms implements WebGLDisposable {
     this._fragSettings[1] = (undefined === sensorSettings) ? 0 : this.thematicDisplay.sensorSettings.distanceCutoff;
 
     this._fragSettings[2] = Math.min(this.thematicDisplay.gradientSettings.stepCount, this._gradientDimension);
+    this._fragSettings[3] = this.thematicDisplay.gradientSettings.transparencyMode === ThematicGradientTransparencyMode.SurfaceOnly ? 0.0 : 1.0;
 
     // If we want sensors and have no distance cutoff, then create a global shared sensor texture.
     if (target.wantThematicSensors && !(this._distanceCutoff > 0)) {

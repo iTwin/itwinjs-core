@@ -269,7 +269,7 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
   });
 
   // gradientMode, distanceCutoff, stepCount
-  builder.addUniform("u_thematicSettings", VariableType.Vec3, (prog) => {
+  builder.addUniform("u_thematicSettings", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_thematicSettings", (uniform, params) => {
       params.target.uniforms.thematic.bindFragSettings(uniform);
     });
