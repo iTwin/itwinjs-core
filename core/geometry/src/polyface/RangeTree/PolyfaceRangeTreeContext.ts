@@ -72,12 +72,14 @@ export class PolyfaceRangeTreeContext {
     return rangeTreeRoot ? new PolyfaceRangeTreeContext(rangeTreeRoot, visitor, convexFacets) : undefined;
   }
   /**
-   * Search the range tree for the facet closest to spacePoint
-   * @param spacePoint point from which to compute distances
+   * Search the range tree for closest facet(s) to spacePoint.
+   * @param spacePoint point to test
+   * @param maxDist collect points at no more than this distance from spacePoint. If undefined, return only the closest point.
    * @param searchFacetInterior whether to include facet interiors in search. Default is false: just consider facet boundaries.
-  */
-  public searchForClosestPoint(spacePoint: Point3d, searchFacetInterior: boolean = false): FacetLocationDetail | undefined {
-    const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this, searchFacetInterior);
+   * @return closest point detail(s) with detail.a set to the distance from spacePoint to detail.point
+   */
+  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetail | FacetLocationDetail[] | undefined {
+    const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this, maxDist, searchFacetInterior);
     this.numSearch++;
     const numFacet = PolyfaceQuery.visitorClientFacetCount(this.visitor);
     // seed the search with a few points -- this reduces early trips deep into early ranges that are far from spacePoint.
@@ -88,18 +90,20 @@ export class PolyfaceRangeTreeContext {
     for (let i = testStep; i + 1 < numFacet; i += testStep)
       handler.processAppData(i);
     this._rangeTreeRoot.searchTopDown(handler);
-    return handler.searchState.itemAtMinValue;
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
   /**
-   * Find a pair of points, one from each polyface in contextA and contextB, with the smallest distance between.
-   * @param contextA context for first facet set
-   * @param contextB context for second facet set
-   * @param searchFacetInterior whether to include facet interiors in search (`this.convexFacets` must be true). Default is false: just consider facet boundaries.
+   * Search the range trees for closest approach(es) between the polyfaces.
+   * @param contextA first polyface context
+   * @param contextB second polyface context
+   * @param maxDist collect close approaches separated by no more than this distance. If undefined, return only the closest approach.
+   * @param searchFacetInterior whether to include facet interiors in search (`context.convexFacets` must be true for both contexts). Default is false: just consider facet boundaries.
+   * @return closest approach detail pair(s), one per context, with detail.a set to the approach distance
   */
-  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false): FacetLocationDetailPair | undefined {
-    const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, searchFacetInterior);
+  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetailPair | FacetLocationDetailPair[] | undefined {
+    const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, maxDist, searchFacetInterior);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
-    return handler.getResult();
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
 }
 
@@ -121,14 +125,31 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
    * Constructor
    * @param spacePoint cloned
    * @param context captured
+   * @param maxDist collect points at no more than this distance from spacePoint
    * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
    */
-  public constructor(spacePoint: Point3d, context: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false) {
+  public constructor(spacePoint: Point3d, context: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
     super();
     this.context = context;
-    this.searchState = MinimumValueTester.create();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<FacetLocationDetail>(maxDist);
     this.spacePoint = spacePoint.clone();
     this.searchFacetInterior = searchFacetInterior;
+  }
+  /** Return the current closest point */
+  public getResult(): FacetLocationDetail | undefined {
+    if (this.searchState.minValue !== undefined && this.searchState.itemAtMinValue !== undefined) {
+      return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  /** Return the collected closest points (if collecting) */
+  public getSavedItems(): FacetLocationDetail[] | undefined {
+    if (this.searchState.savedItems.length > 0) {
+      return this.searchState.savedItems;
+    }
+    return undefined;
   }
   /**
    * Return true if appData within the range should be offered to `processAppData`.
@@ -181,19 +202,29 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   /** Constructor
    * @param contextA captured
    * @param contextB captured
+   * @param maxDist collect points at no more than this separation distance
    * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
   */
-  public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior: boolean = false) {
+  public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
-    this.searchState = MinimumValueTester.create<FacetLocationDetailPair>();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<FacetLocationDetailPair>(maxDist);
     this.searchFacetInterior = searchFacetInterior && contextA.convexFacets && contextB.convexFacets;
   }
   /** Return the facets with closest approach */
   public getResult(): FacetLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  /** Return the collected close approaches (if collecting) */
+  public getSavedItems(): FacetLocationDetailPair[] | undefined {
+    if (this.searchState.savedItems.length > 0) {
+      return this.searchState.savedItems;
     }
     return undefined;
   }

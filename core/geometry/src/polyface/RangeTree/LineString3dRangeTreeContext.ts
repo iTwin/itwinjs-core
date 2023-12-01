@@ -65,9 +65,14 @@ export class LineString3dRangeTreeContext {
     );
     return rangeTreeRoot ? new LineString3dRangeTreeContext(rangeTreeRoot, linestring) : undefined;
   }
-  /** Search the range tree for the closest linestring point to spacePoint */
-  public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
-    const handler = new SingleTreeSearchHandlerForClosestPointOnLineString3d(spacePoint, this);
+  /**
+   * Search the range tree for closest point(s) to spacePoint.
+   * @param spacePoint point to test
+   * @param maxDist collect points at no more than this distance from spacePoint. If undefined, return only the closest point.
+   * @return closest point detail(s) with detail.a set to the distance from spacePoint to detail.point
+   */
+  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined {
+    const handler = new SingleTreeSearchHandlerForClosestPointOnLineString3d(spacePoint, this, maxDist);
     this.numSearch++;
     // seed the search with a few segments -- this reduces early trips deep into ranges that are far from spacePoint.
     const numTest = Geometry.clamp(Math.floor(this.lineString.numPoints() / 20), 2, 7);
@@ -77,13 +82,19 @@ export class LineString3dRangeTreeContext {
     for (let i = testStep; i + 1 < this.lineString.numPoints(); i += testStep)
       handler.processAppData(i);
     this._rangeTreeRoot.searchTopDown(handler);
-    return handler.searchState.itemAtMinValue;
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
-  /** Find a pair of points, one from each polyline in contextA and contextB, with the smallest distance between. */
-  public static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined {
-    const handler = new TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach(contextA, contextB);
+  /**
+   * Search the range trees for closest approach(es) between the polylines.
+   * @param contextA first polyline context
+   * @param contextB second polyline context
+   * @param maxDist collect close approaches separated by no more than this distance. If undefined, return only the closest approach.
+   * @return closest approach detail pair(s), one per context, with detail.a set to the approach distance
+  */
+  public static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
+    const handler = new TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach(contextA, contextB, maxDist);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
-    return handler.getResult();
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
 }
 
@@ -103,12 +114,29 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
    * Constructor
    * @param spacePoint cloned
    * @param context captured
+   * @param maxDist collect points at no more than this distance from spacePoint
    */
-  public constructor(spacePoint: Point3d, context: LineString3dRangeTreeContext) {
+  public constructor(spacePoint: Point3d, context: LineString3dRangeTreeContext, maxDist?: number) {
     super();
     this.context = context;
-    this.searchState = MinimumValueTester.create<CurveLocationDetail>();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<CurveLocationDetail>(maxDist);
     this.spacePoint = spacePoint.clone();
+  }
+  /** Return the current closest point */
+  public getResult(): CurveLocationDetail | undefined {
+    if (this.searchState.minValue !== undefined && this.searchState.itemAtMinValue !== undefined) {
+      return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  /** Return the collected closest points (if collecting) */
+  public getSavedItems(): CurveLocationDetail[] | undefined {
+    if (this.searchState.savedItems.length > 0) {
+      return this.searchState.savedItems;
+    }
+    return undefined;
   }
   /**
    * Return true if appData within the range should be offered to `processAppData`.
@@ -149,20 +177,34 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
   /** Search state with current min distance point pair */
   public searchState: MinimumValueTester<CurveLocationDetailPair>;
 
-  /** Constructor, all inputs captured */
-  public constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext) {
+  /**
+   * Constructor
+   * @param contextA captured
+   * @param contextB captured
+   * @param maxDist collect points at no more than this separation distance
+   */
+  public constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
-    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>(maxDist);
   }
   /**
-   * Return the segments with closest approach.
-   * * Details contain linestring and segment data, cf. [[LineString3d.convertLocalToGlobalDetail]]
+   * Return the current closest approach.
+   * * Details contain linestring *and* segment data, cf. [[LineString3d.convertLocalToGlobalDetail]]
    */
   public getResult(): CurveLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  /** Return the collected close approaches (if collecting) */
+  public getSavedItems(): CurveLocationDetailPair[] | undefined {
+    if (this.searchState.savedItems.length > 0) {
+      return this.searchState.savedItems;
     }
     return undefined;
   }

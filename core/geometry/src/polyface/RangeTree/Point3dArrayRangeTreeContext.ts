@@ -61,33 +61,34 @@ export class Point3dArrayRangeTreeContext {
     return rangeTreeRoot ? new Point3dArrayRangeTreeContext(rangeTreeRoot, points) : undefined;
   }
   /**
-   * Search the range tree for closest point to spacePoint.
-   * @return detail with following fields set:
+   * Search the range tree for closest point(s) to spacePoint.
+   * @param spacePoint point to test
+   * @param maxDist collect points at no more than this distance from spacePoint. If undefined, return only the closest point.
+   * @return closest point detail(s) with following fields set:
    * * detail.point = the closest point
    * * detail.fraction = the index of the closest point in the points array
    * * detail.a = distance from spacePoint to closest point
    */
-  public searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
-    const handler = new SingleTreeSearchHandlerForClosestPointInArray(spacePoint, this);
+  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined {
+    const handler = new SingleTreeSearchHandlerForClosestPointInArray(spacePoint, this, maxDist);
     this.numSearch++;
     this._rangeTreeRoot.searchTopDown(handler);
-    if (handler.searchState.itemAtMinValue !== undefined && handler.searchState.minValue !== undefined) {
-      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, handler.searchState.itemAtMinValue, this.points[handler.searchState.itemAtMinValue]);
-      cld.a = handler.searchState.minValue;
-      return cld;
-    }
-    return undefined;
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
-  /** Find a pair of points, one from each of contextA and contextB, with the smallest distance between.
-   * @return pair of details, one per context, each with the following fields set:
+  /**
+   * Search the range trees for closest approach(es) between the point arrays.
+   * @param contextA first point array context
+   * @param contextB second point array context
+   * @param maxDist collect close approaches separated by no more than this distance. If undefined, return only the closest approach.
+   * @return closest approach detail pair(s), one per context, each with the following fields set:
    * * detail.point = the point at closest approach
    * * detail.fraction = the index of detail.point in the points array
    * * detail.a = the closest approach distance
   */
-  public static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): CurveLocationDetailPair | undefined {
-    const handler = new TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB);
+  public static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
+    const handler = new TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB, maxDist);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
-    return handler.getResult();
+    return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
 }
 
@@ -107,12 +108,38 @@ class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHand
    * Constructor
    * @param spacePoint cloned
    * @param context captured
+   * @param maxDist collect points at no more than this distance from spacePoint
    */
-  public constructor(spacePoint: Point3d, context: Point3dArrayRangeTreeContext) {
+  public constructor(spacePoint: Point3d, context: Point3dArrayRangeTreeContext, maxDist?: number) {
     super();
     this.context = context;
-    this.searchState = MinimumValueTester.create<number>();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<number>(maxDist);
     this.spacePoint = spacePoint.clone();
+  }
+  /** Return the current closest point */
+  public getResult(): CurveLocationDetail | undefined {
+    if (this.searchState.minValue !== undefined && this.searchState.itemAtMinValue !== undefined) {
+      const iPoint = this.searchState.itemAtMinValue;
+      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, iPoint, this.context.points[iPoint]);
+      cld.a = this.searchState.minValue;
+      return cld;
+    }
+    return undefined;
+  }
+  /** Return the collected closest points (if collecting) */
+  public getSavedItems(): CurveLocationDetail[] | undefined {
+    if (this.searchState.savedItems.length === 0)
+      return undefined;
+    const cldArray: CurveLocationDetail[] = [];
+    for (let i = 0; i < this.searchState.savedItems.length; ++i) {
+      const iPoint = this.searchState.savedItems[i];
+      const cld = CurveLocationDetail.createCurveFractionPoint(undefined, iPoint, this.context.points[iPoint]);
+      cld.a = this.searchState.savedValues[i];
+      cldArray.push(cld);
+    }
+    return cldArray;
   }
   /**
    * Return true if appData within the range should be offered to `processAppData`.
@@ -148,17 +175,31 @@ export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extend
   /** Search state with current min distance point pair */
   public searchState: MinimumValueTester<CurveLocationDetailPair>;
 
-  /** Constructor, all inputs captured */
-  public constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext) {
+  /**
+   * Constructor
+   * @param contextA captured
+   * @param contextB captured
+   * @param maxDist collect points at no more than this separation distance
+   */
+  public constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number) {
     super();
     this.contextA = contextA;
     this.contextB = contextB;
-    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>();
+    if (maxDist !== undefined && maxDist < 0)
+      maxDist = undefined;
+    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>(maxDist);
   }
-  /** Return the indexed Point3d pair */
+  /** Return the current closest approach */
   public getResult(): CurveLocationDetailPair | undefined {
     if (this.searchState.minValue !== undefined) {
       return this.searchState.itemAtMinValue;
+    }
+    return undefined;
+  }
+  /** Return the collected close approaches (if collecting) */
+  public getSavedItems(): CurveLocationDetailPair[] | undefined {
+    if (this.searchState.savedItems.length > 0) {
+      return this.searchState.savedItems;
     }
     return undefined;
   }
