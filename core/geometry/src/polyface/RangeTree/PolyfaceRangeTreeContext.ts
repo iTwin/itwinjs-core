@@ -240,12 +240,12 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
     if (this.contextA.visitor.moveToReadIndex(indexA) && this.contextB.visitor.moveToReadIndex(indexB)) {
       const pldPair = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point, undefined, this.searchFacetInterior);
       this.contextA.numFacetTest++;
-      if (pldPair && this.searchState.isNewMinOrTrigger(pldPair.dataA.a)) {
+      if (pldPair && this.searchState.isNewMinOrTrigger(pldPair.detailA.a)) {
         const edgeCountA = this.contextA.visitor.pointCount - 1;
         const edgeCountB = this.contextB.visitor.pointCount - 1;
         const fldPair = FacetLocationDetailPair.create(
-          this.contextA.convexFacets ? ConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA) : NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.dataA),
-          this.contextB.convexFacets ? ConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB) : NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.dataB),
+          this.contextA.convexFacets ? ConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA) : NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA),
+          this.contextB.convexFacets ? ConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB) : NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB),
         );
         this.searchState.testAndSave(fldPair, fldPair.detailA.a);
       }

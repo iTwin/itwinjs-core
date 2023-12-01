@@ -24,7 +24,6 @@ import { PolylineOps } from "./PolylineOps";
 import { Range1d, Range3d } from "./Range";
 import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
-import { TaggedDataPair } from "./TaggedDataPair";
 import { XAndY, XYAndZ } from "./XYZProps";
 
 /**
@@ -114,13 +113,40 @@ export class PolygonLocationDetail {
 }
 
 /**
- * Carrier structure for a pair of PolygonLocationDetail objects, each with an optional tag whose type defaults to number (e.g., an index).
+ * A pair of PolygonLocationDetail.
  * @public
  */
-export class PolygonLocationDetailPair<TagType = number> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
-  /** Constructor, inputs captured */
-  public constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType) {
-    super(detailA, detailB, tagA, tagB);
+export class PolygonLocationDetailPair {
+  /** The first of the two details. */
+  public detailA: PolygonLocationDetail;
+  /** The second of the two details. */
+  public detailB: PolygonLocationDetail;
+
+  /** Constructor, captures inputs */
+  private constructor(detailA?: PolygonLocationDetail, detailB?: PolygonLocationDetail) {
+    this.detailA = detailA ? detailA : PolygonLocationDetail.create();
+    this.detailB = detailB ? detailB : PolygonLocationDetail.create();
+  }
+  /** Create an instance by capturing inputs */
+  public static create(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, result?: PolygonLocationDetailPair): PolygonLocationDetailPair {
+    if (!result)
+      return new PolygonLocationDetailPair(detailA, detailB);
+    result.detailA = detailA;
+    result.detailB = detailB;
+    return result;
+  }
+  /** Make a deep copy of this PolygonLocationDetailPair */
+  public clone(result?: PolygonLocationDetailPair): PolygonLocationDetailPair {
+    result = result ? result : new PolygonLocationDetailPair();
+    result.detailA.copyContentsFrom(this.detailA);
+    result.detailB.copyContentsFrom(this.detailB);
+    return result;
+  }
+  /** Swap the details of A, B */
+  public swapDetails() {
+    const q = this.detailA;
+    this.detailA = this.detailB;
+    this.detailB = q;
   }
 }
 
@@ -1305,7 +1331,8 @@ export class PolygonOps {
    * @param polygonA first polygon
    * @param polygonB second polygon
    * @param dMax optional largest approach distance to consider
-   * @param _searchInterior if true, include CONVEX polygon interiors in computations. If false (default): return closest approach between polygon boundaries only.
+   * @param _searchInterior If true, include (convex) polygon interiors in computations.
+   * If false (default): return closest approach between polygon boundaries only, using [[PolylineOps.closestApproach]].
    * @return pair of details, one per polygon. The `a` field of each detail stores the closest approach distance.
    */
   public static closestApproach(
@@ -1320,11 +1347,11 @@ export class PolygonOps {
     const polyB = this.cloneIfClosed(polygonB);
     const cld = this._workCLDPair = PolylineOps.closestApproach(polyA, false, polyB, false, dMax, this._workCLDPair);
     if (cld && cld.detailA.childDetail && cld.detailB.childDetail) {
-      result = new PolygonLocationDetailPair(
+      result = PolygonLocationDetailPair.create(
         PolygonLocationDetail.createAtVertexOrEdge(cld.detailA.point, cld.detailA.childDetail.a, cld.detailA.childDetail.fraction),
         PolygonLocationDetail.createAtVertexOrEdge(cld.detailB.point, cld.detailB.childDetail.a, cld.detailB.childDetail.fraction),
       );
-      result.dataA.a = result.dataB.a = cld.detailA.a;
+      result.detailA.a = result.detailB.a = cld.detailA.a;
     }
     return result;
   }
