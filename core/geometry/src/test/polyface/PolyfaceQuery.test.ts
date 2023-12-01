@@ -276,19 +276,20 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-// implement a do-nothing visitor NOT backed by a Polyface
+// implement a minimal visitor NOT backed by a Polyface
 class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   private _index: number;
   private _numIndices: number;
-  public constructor(numIndices: number) {
+  public constructor(numIndicesAndVertices: number) {
     super();
-    this._numIndices = numIndices;
+    this._numIndices = numIndicesAndVertices;
     this._index = -1;
   }
   public moveToReadIndex(index: number): boolean {
     if (index < 0 || index >= this._numIndices)
       return false;
     this._index = index;
+    this.pointIndex = [index];  // each "face loop" is a singleton array holding a unique index
     return true;
   }
   public currentReadIndex(): number {
@@ -299,24 +300,25 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   }
   public reset(): void {
     this._index = -1;
+    this.pointIndex = [];
   }
   public clientPolyface(): Polyface | undefined {
     return undefined; // highly unusual
   }
   public clientPointIndex(_i: number): number {
-    return 0;
+    return this.pointIndex[0];
   }
   public clientParamIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientNormalIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientColorIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientAuxIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public setNumWrap(_numWrap: number): void {
   }
@@ -331,14 +333,16 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
 it("CountVisitableFacets", () => {
   const ck = new Checker();
   const mesh = ImportedSample.createPolyhedron62();
-  if (ck.testDefined(mesh) && undefined !== mesh) {
+  if (ck.testType(mesh, IndexedPolyface)) {
+    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(mesh));
+    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(mesh));
     const visitor = mesh.createVisitor(0);
     ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
     ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
   }
   // test a visitor without polyface backing
   const visitor0 = new VisitorSansMesh(5);
-  ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
+  ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
   ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
   expect(ck.getNumErrors()).equals(0);
 });

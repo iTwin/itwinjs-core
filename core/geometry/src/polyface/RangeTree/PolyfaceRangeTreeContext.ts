@@ -109,6 +109,7 @@ export class PolyfaceRangeTreeContext {
 
 /**
  * Helper class for searching for the closest point in a polyface.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring FacetLocationDetail).
  * @internal
  */
 class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchHandler<number> {
@@ -187,6 +188,7 @@ class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTreeSearchH
 }
 /**
  * Helper class for searching for the closest approach between polyfaces.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring FacetLocationDetail).
  * @internal
  */
 export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
@@ -238,6 +240,7 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
     this.contextA.visitor.setNumWrap(1);  // closed polygons are more efficient for PolygonOps.closestApproach
     this.contextB.visitor.setNumWrap(1);
     if (this.contextA.visitor.moveToReadIndex(indexA) && this.contextB.visitor.moveToReadIndex(indexB)) {
+      // ASSUME: not worth sending in maxDist here...
       const pldPair = PolygonOps.closestApproach(this.contextA.visitor.point, this.contextB.visitor.point, undefined, this.searchFacetInterior);
       this.contextA.numFacetTest++;
       if (pldPair && this.searchState.isNewMinOrTrigger(pldPair.detailA.a)) {

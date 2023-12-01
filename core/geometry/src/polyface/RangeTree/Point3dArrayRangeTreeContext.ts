@@ -94,6 +94,7 @@ export class Point3dArrayRangeTreeContext {
 
 /**
  * Helper class for searching for the closest point in a set of points.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
  * @internal
  */
 class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHandler<number> {
@@ -165,6 +166,7 @@ class SingleTreeSearchHandlerForClosestPointInArray extends SingleTreeSearchHand
 
 /**
  * Helper class for searching for the closest approach between sets of points.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
  * @internal
  */
 export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {

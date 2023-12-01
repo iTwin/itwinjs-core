@@ -11,12 +11,13 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
-import { Geometry } from "../../Geometry";
+import { Geometry, PolygonLocation } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolygonLocationDetail, PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { SortablePolygon } from "../../geometry3d/SortablePolygon";
@@ -306,6 +307,7 @@ describe("PolygonOps", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "intersectRay3d");
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("closestApproach", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -350,5 +352,70 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "closestApproach");
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Coverage", () => {
+    const ck = new Checker();
+    const polylineA = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)];
+    const polylineB = [Point3d.create(1, 1, -1), Point3d.create(1, 1, 3), Point3d.create(4, 1, 0)];
+    const polygonA = [...polylineA, polylineA[0]];
+    const polygonB = [...polylineB, polylineB[0]];
+    const polygons = [polygonA, polygonB];
+    PolylineOps.removeClosurePoint(polygons);
+    ck.testPoint3dArray(polygons[0], polylineA, "removeClosurePoint of first array");
+    ck.testPoint3dArray(polygons[1], polylineB, "removeClosurePoint of second array");
+
+    const result = PolygonLocationDetailPair.create(PolygonLocationDetail.create(), PolygonLocationDetail.create());
+    const detailA = PolygonLocationDetail.createAtVertexOrEdge(polylineA[0], 0, 0.0);
+    const detailB = PolygonLocationDetail.createAtVertexOrEdge(polylineB[0], 0, 0.0);
+    const pldPairA = PolygonLocationDetailPair.create(detailA, detailB, result);
+    ck.testTrue(pldPairA === result, "same pointers when create with result");
+    ck.testTrue(pldPairA.detailA === detailA, "same detailA pointers when create with result");
+    ck.testTrue(pldPairA.detailB === detailB, "same detailB pointers when create with result");
+
+    const result1 = PolygonLocationDetailPair.create(PolygonLocationDetail.create(), PolygonLocationDetail.create());
+    const pldPairB = pldPairA.clone(result1);
+    ck.testTrue(pldPairB === result1, "same pointers when clone with result");
+    ck.testTrue(pldPairB.detailA === result1.detailA, "same detailA pointers when clone with result");
+    ck.testTrue(pldPairB.detailB === result1.detailB, "same detailB pointers when clone with result");
+
+    const pldPairC = pldPairA.clone();
+    ck.testFalse(pldPairC === pldPairA, "different pointers when clone without result");
+    ck.testFalse(pldPairA.detailA === pldPairC.detailA, "different detailA pointers when clone without result");
+    ck.testFalse(pldPairA.detailB === pldPairC.detailB, "different detailB pointers when clone without result");
+    pldPairC.swapDetails();
+    ck.testPoint3d(pldPairB.detailA.point, pldPairC.detailB.point, "PolygonLocationDetailPair.swapDetails A");
+    ck.testPoint3d(pldPairB.detailB.point, pldPairC.detailA.point, "PolygonLocationDetailPair.swapDetails B");
+
+    ck.testExactNumber(PolygonOps.sumTriangleAreasXY([Point3d.createZero(), Point3d.create(1,1,1)]), 0.0, "PolygonOps.sumTriangleAreasXY on degenerate polygon");
+    let area = PolygonOps.sumTriangleAreasXY(polylineA);
+    ck.testCoordinate(area, 0.5, "PolygonOps.sumTriangleAreasXY on triangle");
+    const dart = [Point3d.create(0,0), Point3d.create(-1,1), Point3d.create(-4,-4), Point3d.create(1,0)];
+    area = PolygonOps.sumTriangleAreasXY(dart);
+    ck.testCoordinate(area, 6.0, "PolygonOps.sumTriangleAreasXY on concave poly");
+    area = PolygonOps.sumTriangleAreasPerpendicularToUpVector(GrowableXYZArray.create(dart), Vector3d.createZero());
+    ck.testCoordinate(area, 6.0, "PolygonOps.sumTriangleAreasPerpendicularToUpVector on GrowableXYZArray with tiny upVector");
+
+    const pld = PolygonOps.closestPoint(dart, Point3d.create(0.1, 0.1));
+    ck.testTrue(pld.code === PolygonLocation.InsidePolygonProjectsToVertex, "PolygonOps.closestPoint on concave poly");
+
+    PolygonOps.forceClosure(dart);
+    ck.testExactNumber(dart.length, 5, "PolygonOps.forceClosure on open input pushes a point");
+    ck.testTrue(Geometry.isSamePoint3d(dart[0], dart[dart.length - 1], 0.0), "PolygonOps.forceClosure on open input pushes the start point");
+    dart[dart.length - 1].x += Geometry.smallFraction;
+    PolygonOps.forceClosure(dart);
+    ck.testExactNumber(dart.length, 5, "PolygonOps.forceClosure on nearly closed input doesn't push a point");
+    ck.testTrue(Geometry.isSamePoint3d(dart[0], dart[dart.length - 1], 0.0), "PolygonOps.forceClosure on nearly closed input sets end point to start point");
+
+    let closedDart = PolygonOps.ensureClosed(dart);
+    ck.testTrue(Array.isArray(closedDart) && closedDart === dart, "PolygonOps.ensureClosed returns input if closed");
+    dart[dart.length - 1].x -= Geometry.smallFraction;
+    closedDart = PolygonOps.ensureClosed(dart);
+    ck.testType(closedDart, GrowableXYZArray, "PolygonOps.ensureClosed returns new GrowableXYZArray if input nearly closed");
+    ck.testExactNumber(closedDart.length, dart.length, "PolygonOps.ensureClosed returns poly of same length if input nearly closed");
+    const openDart = dart.slice(0, -1);
+    closedDart = PolygonOps.ensureClosed(openDart);
+    ck.testType(closedDart, GrowableXYZArray, "PolygonOps.ensureClosed returns new GrowableXYZArray if input open");
+    ck.testExactNumber(closedDart.length, dart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
   });
 });

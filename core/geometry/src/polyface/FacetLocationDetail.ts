@@ -320,7 +320,7 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
   public get isValid(): boolean {
     return this._isValid && this._detail.isValid;
   }
-  /** Whether the facet is convex. */
+  /** Whether the facet is convex. Always returns false, as convexity is unknown to this detail. */
   public get isConvex(): boolean {
     return false;
   }

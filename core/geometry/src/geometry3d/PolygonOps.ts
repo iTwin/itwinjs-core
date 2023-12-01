@@ -1303,12 +1303,12 @@ export class PolygonOps {
   }
   /**
    * Return a closed polygon, cloning only if necessary.
-   * * If the first and last points are not identical, call `forceClosure` on a clone of the polygon and return it.
-   * * If the first and last points are identical, return the polygon.
+   * * If the first and last points are not identical, call [[forceClosure]] on a clone of the polygon and return it.
+   * * If the first and last points are already identical, just return the input.
    * @param polygon input polygon
    * @param tolerance closure distance tolerance
    */
-  public static cloneIfClosed(polygon: Point3d[] | IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance): Point3d[] | IndexedXYZCollection {
+  public static ensureClosed(polygon: Point3d[] | IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance): Point3d[] | IndexedXYZCollection {
     if (polygon.length >= 2) {
       let forceClosure = false;
       if (polygon instanceof IndexedXYZCollection)
@@ -1343,8 +1343,8 @@ export class PolygonOps {
   ): PolygonLocationDetailPair | undefined {
     // TODO: handle interior close approaches as well...
     let result: PolygonLocationDetailPair | undefined;
-    const polyA = this.cloneIfClosed(polygonA);
-    const polyB = this.cloneIfClosed(polygonB);
+    const polyA = this.ensureClosed(polygonA);
+    const polyB = this.ensureClosed(polygonB);
     const cld = this._workCLDPair = PolylineOps.closestApproach(polyA, false, polyB, false, dMax, this._workCLDPair);
     if (cld && cld.detailA.childDetail && cld.detailB.childDetail) {
       result = PolygonLocationDetailPair.create(

@@ -100,6 +100,7 @@ export class LineString3dRangeTreeContext {
 
 /**
  * Helper class for searching for the closest point in a linestring.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
  * @internal
  */
 class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSearchHandler<number> {
@@ -167,6 +168,7 @@ class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSea
 
 /**
  * Helper class for searching for the closest approach between linestrings.
+ * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
  * @internal
  */
 export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {

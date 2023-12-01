@@ -5,14 +5,14 @@
 
 import { expect } from "chai";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Geometry } from "../../Geometry";
+import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
@@ -67,7 +67,8 @@ function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
 describe("LineSegment3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
-    const segmentA = LineSegment3d.createXYXY(1, 2, 6, 3, 1);
+    const result = LineSegment3d.createXYXY(0, 0, 0, 0);  // cover result arg in next line
+    const segmentA = LineSegment3d.createXYXY(1, 2, 6, 3, 1, result);
 
     exerciseLineSegment3d(ck, segmentA);
 
@@ -88,6 +89,15 @@ describe("LineSegment3d", () => {
     ck.testFalse(segmentF.isAlmostEqual(segmentA));
     segmentF.reverseInPlace();
     ck.testTrue(segmentF.isAlmostEqual(segmentA));
+
+    const fraction = 0.27;
+    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0,1,0]), AxisOrder.XYZ);
+    const localRangeFirstHalf = segmentA.rangeBetweenFractions(0, fraction, worldToLocal?.inverse());
+    ck.testRange3d(localRangeFirstHalf, Range3d.createXYZXYZ(0, 0, 0, fraction * segmentA.curveLength(), 0, 0), "rangeBetweenFractions with Transform");
+
+    const xRange = segmentA.projectedParameterRange(Vector3d.create(1,0,0));
+    if (ck.testType(xRange, Range1d, "projectedParameterRange returns a range"))
+      ck.testRange1d(xRange, Range1d.createXX(1, 6), "projectedParameterRange returns the expected range");
 
     ck.checkpoint("LineSegment3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
@@ -176,6 +186,17 @@ describe("LineSegment3d", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approachAB.detailA.point, approachAB.detailB.point], x0, y0, z0);
         }
       }
+    }
+
+    // cover the remaining uncovered case
+    const seg0 = LineSegment3d.createXYXY(0, -Geometry.smallMetricDistanceSquared, 1, 0);
+    const seg1 = LineSegment3d.createXYXY(2, 1, 3, 1);
+    const approach = LineSegment3d.closestApproach(seg0, false, seg1, true);
+    if (ck.testType(approach, CurveLocationDetailPair, "closestApproach returns a pair of details")) {
+      ck.testCoordinate(approach.detailA.a, 1.0, "closestApproach returns expected distance on detailA");
+      ck.testCoordinate(approach.detailB.a, 1.0, "closestApproach returns expected distance on detailB");
+      ck.testPoint3d(approach.detailA.point, seg0.point1Ref, "closestApproach returns expected point on seg0");
+      ck.testPoint3d(approach.detailB.point, Point3d.create(1, 1), "closestApproach returns expected point on extended seg1");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproachParallelSegments");
     expect(ck.getNumErrors()).equals(0);

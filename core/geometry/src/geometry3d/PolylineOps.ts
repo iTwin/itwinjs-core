@@ -199,7 +199,7 @@ export class PolylineOps {
     }
   }
   /**
-   * Remove closure points a polyline or array of polylines
+   * Remove closure points of a polyline or array of polylines
    * @param data points.
    */
   public static removeClosurePoint(data: Point3d[] | Point3d[][]) {
