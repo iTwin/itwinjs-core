@@ -26,7 +26,7 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
-    "@types/node": "18.16.1",
+    "@types/node": "~18.16.20",
     "@types/yargs": "17.0.19",
     "eslint": "^8.44.0",
     "rimraf": "^3.0.2",

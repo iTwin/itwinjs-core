@@ -395,4 +395,50 @@ export abstract class MapLayerImageryProvider {
               ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
     }
   }
+
+  /** Append custom parameters for settings to provided URL object.
+   *  Make sure custom parameters do no override query parameters already part of the URL (lower case comparison)
+   * @internal
+   */
+  protected appendCustomParams(url: string) {
+    if (!this._settings.savedQueryParams && !this._settings.unsavedQueryParams)
+      return url;
+
+    // create a lower-case array of keys
+    const currentParams: string[] = [];
+    const currentUrl = new URL(url);
+    currentUrl.searchParams.forEach((_value, key, _parent) => {
+      currentParams.push(key.toLowerCase());
+    });
+
+    const urlParamsFromIndexArray = (indexArray?: {[key: string]: string}, result?: URLSearchParams): URLSearchParams  => {
+      const urlParams = (result ? result : new URLSearchParams());
+      if (!indexArray)
+        return urlParams;
+      Object.keys(indexArray).forEach((key) => {
+        if (!currentParams.includes(key.toLowerCase()))
+          urlParams.append(key, indexArray[key]);
+      });
+      return urlParams;
+    };
+
+    const params = urlParamsFromIndexArray(this._settings.savedQueryParams);
+    urlParamsFromIndexArray(this._settings.unsavedQueryParams, params);
+
+    const getSeparator = (u: string) => {
+      let separator = "&";
+      if (u.includes("?")) {
+        if (u.endsWith("?"))
+          separator = "";
+      } else {
+        separator = "?";
+      }
+      return separator;
+    };
+    if ( params.size > 0) {
+      url = `${url}${getSeparator(url)}${params.toString()}`;
+    }
+
+    return url;
+  }
 }

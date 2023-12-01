@@ -256,6 +256,7 @@ import {
   ThematicDisplayMode,
   ThematicGradientColorScheme,
   ThematicGradientMode,
+  ThematicGradientTransparencyMode,
   TxnAction,
   TypeOfChange,
   // @public real(s) from @itwin/core-common
@@ -459,6 +460,7 @@ const extensionExports = {
   ThematicDisplayMode,
   ThematicGradientColorScheme,
   ThematicGradientMode,
+  ThematicGradientTransparencyMode,
   Tile,
   TileAdmin,
   TileBoundingBoxes,

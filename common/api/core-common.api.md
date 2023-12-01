@@ -4342,6 +4342,8 @@ export interface HttpServerRequest extends BackendReadable {
         [header: string]: string | string[] | undefined;
     };
     // (undocumented)
+    headersDistinct: NodeJS.Dict<string[]>;
+    // (undocumented)
     httpVersion: string;
     // (undocumented)
     httpVersionMajor: number;
@@ -4371,6 +4373,8 @@ export interface HttpServerRequest extends BackendReadable {
     trailers: {
         [key: string]: string | undefined;
     };
+    // (undocumented)
+    trailersDistinct: NodeJS.Dict<string[]>;
     // (undocumented)
     url?: string;
 }
@@ -4533,6 +4537,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     formatId: string;
     // @internal (undocumented)
     modelId?: never;
+    // @beta
+    queryParams?: {
+        [key: string]: string;
+    };
     subLayers?: MapSubLayerProps[];
     url: string;
 }
@@ -4547,6 +4555,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings;
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
+    // @beta
+    collectQueryParams(): {
+        [key: string]: string;
+    };
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
@@ -4559,6 +4571,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
     // (undocumented)
@@ -4567,6 +4583,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
+    // @beta
+    unsavedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     readonly url: string;
     // (undocumented)
@@ -9493,8 +9513,11 @@ export class ThematicGradientSettings {
     readonly marginColor: ColorDef;
     readonly mode: ThematicGradientMode;
     readonly stepCount: number;
+    // @alpha (undocumented)
+    get textureTransparency(): TextureTransparency;
     // (undocumented)
     toJSON(): ThematicGradientSettingsProps;
+    readonly transparencyMode: ThematicGradientTransparencyMode;
 }
 
 // @public
@@ -9505,6 +9528,13 @@ export interface ThematicGradientSettingsProps {
     marginColor?: ColorDefProps;
     mode?: ThematicGradientMode;
     stepCount?: number;
+    transparencyMode?: ThematicGradientTransparencyMode;
+}
+
+// @public
+export enum ThematicGradientTransparencyMode {
+    MultiplySurfaceAndGradient = 1,
+    SurfaceOnly = 0
 }
 
 // @public

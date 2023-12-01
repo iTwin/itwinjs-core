@@ -4,14 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import sinon from "sinon";
 import { WmtsCapabilities } from "../../../tile/map/WmtsCapabilities";
+import { fakeTextFetch } from "./MapLayerTestUtilities";
 
 describe("WmtsCapabilities", () => {
   const SMALL_DEGREES_DIFFERENCE = 1.0e-8;
   const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
 
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
   it("should parse USGS WMTS capabilities", async () => {
-    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/USGSHydroCached_capabilities.xml");
+    const response = await fetch("assets/wmts_capabilities/USGSHydroCached_capabilities.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
+
+    const capabilities = await WmtsCapabilities.create("https://fake/url");
+
     expect(capabilities?.version).to.equal("1.0.0");
 
     // Test GetCapabilities operation metadata
@@ -120,7 +133,11 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should parse sample OGC WMTS capabilities", async () => {
-    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/OGCSample_capabilities.xml");
+    const response = await fetch("assets/wmts_capabilities/OGCSample_capabilities.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
+
+    const capabilities = await WmtsCapabilities.create("https://fake/url1");
 
     // Test ServiceIdentification metadata
     expect(capabilities?.serviceIdentification).to.not.undefined;
@@ -207,7 +224,11 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should parse Great artesian basin sample", async () => {
-    const capabilities = await WmtsCapabilities.create("assets/wmts_capabilities/great-artesian-basin.xml");
+    const response = await fetch("assets/wmts_capabilities/great-artesian-basin.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
+
+    const capabilities = await WmtsCapabilities.create("https://fake/url2");
     // I check only things that are different from other datasets
 
     //  Check the layer styles
@@ -224,5 +245,20 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents?.tileMatrixSets.length).to.equal(6);
     const googleTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
     expect(googleTms?.length).to.equal(2);
+  });
+
+  it("should request proper URL", async () => {
+
+    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+      return new Response();
+    });
+    const sampleUrl = "https://service.server.com/rest/WMTS";
+    const searchParams = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const queryParams: {[key: string]: string} = {};
+    searchParams.forEach((value: string, key: string) =>  queryParams[key] = value);
+    await WmtsCapabilities.create(sampleUrl, undefined, true, queryParams);
+    expect(fetchStub.calledOnce).to.be.true;
+    const firstCall = fetchStub.getCalls()[0];
+    expect(firstCall.args[0]).to.equals(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
 });

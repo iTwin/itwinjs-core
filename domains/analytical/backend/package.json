@@ -1,11 +1,11 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "4.3.0-dev.29",
+  "version": "4.3.0-dev.34",
   "main": "lib/cjs/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^18.0.0 || ^20.0.0"
   },
   "scripts": {
     "build": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.3.0-dev.29",
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.29",
-    "@itwin/core-common": "workspace:^4.3.0-dev.29"
+    "@itwin/core-backend": "workspace:^4.3.0-dev.34",
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.34",
+    "@itwin/core-common": "workspace:^4.3.0-dev.34"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -49,7 +49,7 @@
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/node": "~18.16.20",
     "@types/semver": "7.3.10",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",

@@ -60,7 +60,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
-      metadata = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
+      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
     } catch (_e) {
     }
@@ -90,6 +90,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let errorCode: number | undefined;
     const urlObj = new URL(url);
+    const queryParams = this._settings.collectQueryParams();
+    Object.keys(queryParams).forEach((paramKey) => {
+      if (!urlObj.searchParams.has(paramKey))
+        urlObj.searchParams.append(paramKey, queryParams[paramKey]);
+    });
 
     if (this._accessTokenRequired && this._accessClient) {
       this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
@@ -98,7 +103,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         password: this._settings.password });
     }
 
-    let response = await  fetch(urlObj.toString(), options);
+    let response = await fetch(urlObj.toString(), options);
 
     if ((this._lastAccessToken && response.status === 400)
        || response.headers.get("content-type")?.toLowerCase().includes("htm")) {

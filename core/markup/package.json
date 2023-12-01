@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "4.3.0-dev.29",
+  "version": "4.3.0-dev.34",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -42,10 +42,10 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.3.0-dev.29",
-    "@itwin/core-common": "workspace:^4.3.0-dev.29",
-    "@itwin/core-frontend": "workspace:^4.3.0-dev.29",
-    "@itwin/core-geometry": "workspace:^4.3.0-dev.29"
+    "@itwin/core-bentley": "workspace:^4.3.0-dev.34",
+    "@itwin/core-common": "workspace:^4.3.0-dev.34",
+    "@itwin/core-frontend": "workspace:^4.3.0-dev.34",
+    "@itwin/core-geometry": "workspace:^4.3.0-dev.34"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -57,7 +57,6 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
