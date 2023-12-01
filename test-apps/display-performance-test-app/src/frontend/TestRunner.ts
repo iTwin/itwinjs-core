@@ -874,9 +874,14 @@ export class TestRunner {
       const dbgCtl = test.viewport.target.debugControl;
       if (undefined !== dbgCtl) {
         const cmdCounts = dbgCtl.getRenderCommands();
+        let numPrimitives = 0;
         if (undefined !== cmdCounts) {
-          for (const cc of cmdCounts)
+          for (const cc of cmdCounts) {
             rowData.set(cc.name, cc.count);
+            if ("Primitives" === cc.name)
+              numPrimitives = cc.count;
+          }
+          rowData.set("Primitives Per Tile", 0 === numPrimitives ? -1 : numPrimitives / test.numSelectedTiles);
         }
       }
     }
