@@ -106,6 +106,7 @@ The below represents the string literal syntax. All italicized values are to be 
         }
       }
     ```
+
   - If the unit label override is kept unset `TestFormat[TestUnitMajor]`, the final label will default to the unit's display label `TestUnitMajorLabel`.
   - If the unit label override is set to an empty string `TestFormat[TestUnitMajor|]`, the final label will set to an empty string.
   - If the unit label override is set to a valid `TestFormat[TestUnitMajor|centimetre]`, the final label will be the overriden string `centimetre`.
