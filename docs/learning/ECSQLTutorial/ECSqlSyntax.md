@@ -479,6 +479,8 @@ SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
 
 ## REGEXP ( *regex*, *value* )
 
+Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax).
+
 ```sql
 SELECT DisplayLabel FROM meta.ECClassDef c WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
 
@@ -498,6 +500,7 @@ Terrain Void
 
 ## REGEXP_EXTRACT ( *value*, *regex* [, *rewrite*] )
 
+Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax).
 This function can be used to extract or rewrite the output. Parameter `rewrite` is made of group reference where `\0` refer to text captured by whole regex specified. `\1`, `\2` `...` refer to regex capture group in that order.
 
 ```sql
