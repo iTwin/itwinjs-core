@@ -92,10 +92,10 @@ The below represents the string literal syntax. All italicized values are to be 
 | Override first Label  | f:AmerFI[u:FT&#124;feet]           | f:AmerFI[u:FT&#124;feet][u:IN]   |
 | Change units          | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid                      |
 
-  #### Format overrides with null/empty unit labels
+ #### Format overrides with null/empty unit labels
   - Consider the below units and format:
 
-    ```json
+  ```json
       "TestUnit": { "schemaItemType": "Unit", "label": "TestUnitLabel" },
 
       "TestFormat": {
@@ -105,8 +105,7 @@ The below represents the string literal syntax. All italicized values are to be 
           "units": [{ "name": "TestUnitMajor" }]
         }
       }
-    ```
-
+  ```
   - If the unit label override is kept unset `TestFormat[TestUnitMajor]`, the final label will default to the unit's display label `TestUnitMajorLabel`.
   - If the unit label override is set to an empty string `TestFormat[TestUnitMajor|]`, the final label will set to an empty string.
   - If the unit label override is set to a valid `TestFormat[TestUnitMajor|centimetre]`, the final label will be the overriden string `centimetre`.
