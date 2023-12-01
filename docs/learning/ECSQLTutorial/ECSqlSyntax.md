@@ -41,7 +41,7 @@
 | `AND`    | AND op              | `(1=1 AND 1=1)` *output `TRUE`* |
 | `NOT`    | NOT unary op        | `NOT (1=1)` *output `FALSE`*    |
 
-## Scalar built-in functions
+## Scalar SQLite built-in functions
 
 Following is list of built-in scalar functions
 
@@ -78,6 +78,94 @@ Following is list of built-in scalar functions
 | `unhex(X[,Y])`       | The `unhex(X,Y)` function returns a `BLOB` value which is the decoding of the hexadecimal string `X`. [Read more.](https://www.sqlite.org/lang_corefunc.html#unhex)                                                                                                                                                                                      |
 | `upper(X)`           | The `upper(X)` function returns a copy of input string `X` in which all lower-case ASCII characters are converted to their upper-case equivalent. [Read more.](https://www.sqlite.org/lang_corefunc.html#upper)                                                                                                                                                                                      |
 
+## ECSQL Built-In functions
+
+Following is list of built-in scalar functions
+
+ECSQL allows use of these built-in functions:
+
+1. `ec_classname()` - Gets the formatted/qualified class name, given ECClassId as input
+2. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
+
+## ec_classname( *ecclassId* [, *format-string* | *format-id* )
+
+For the specified ecClassId, returns the class name as a string formatted according to the specified format-string
+
+### Parameters
+
+`ecclassId`: An integer which could be a constant, column or a parameter.
+`format-string | format-id`:  Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
+
+| format-id | format-string | output                    |
+| --------- | ------------- | ------------------------- |
+| 0         | `s:c`         | BisCore:Element (default) |
+| 1         | `a:c`         | bis:Element               |
+| 2         | `s`           | BisCore                   |
+| 3         | `a`           | bis                       |
+| 4         | `c`           | Element                   |
+| 5         | `s.c`         | BisCore.Element           |
+| 6         | `a.c`         | bis.Element               |
+
+### Returns
+
+className as specified by format, or `NULL` if it was unable to resolve `ECClassId`, or if the format specifier was not recognized.
+
+Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERROR` if the incorrect number of arguments was passed in.
+
+### Example
+
+```sql
+-- returns schema-name:classname
+SELECT ec_classname(ECClassId, 's:c') FROM bis:Element
+
+-- same as 'sa:cn' - returns schema-alias:classname
+SELECT ec_classname(ECClassId, 1) FROM bis:Element
+
+-- returns schema-name, after filtering on it
+SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 's') = 'BisCore'
+
+-- returns schema-alias after filtering on it
+SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 3) = 'bis'
+
+-- only get classname and filter on classname
+SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'c') = 'PUMP'
+```
+
+## ec_classId('*schema-name-or-alias* : | . *classname*' )
+
+For the specified (qualified) class name, returns the `ECCassId`.
+
+Note that this function can also take in two arguments - in the following form where *schema-name-or-alias* and *classname* can be specified separately.
+`ec_classid[ '<schema-name-or-alias>',  '<classname>')`
+
+## Parameters
+
+Can take either one or two parameters:
+`schema-name-or-alias`: Schema name or alias e.g. bis (alias) or BisCore (name)
+`class-name`: Name of the class e.g. Element
+
+### Returns
+
+The function return a integer `ECClassId` or `NULL` if the name could not be resolved.
+
+Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERROR` if the incorrect number of arguments was passed in.
+
+### Example
+
+```sql
+-- alias or schema name both can be specified
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm.PUMP'), ec_classid('opm.VALVE'))
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant.PUMP'), ec_classid('OpenPlant.VALVE'))
+
+-- both '.' and ':' delimiter can be used
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm:PUMP'), ec_classid('opm:VALVE'))
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant:PUMP'), ec_classid('OpenPlant:VALVE'))
+
+-- schema name or alias and class name can be specified as two arguments
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm', 'PUMP'), ec_classid('opm', 'VALVE'))
+SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant', 'PUMP'), ec_classid('OpenPlant', 'VALVE'))
+```
+
 ## Window functions
 
 A window function is an SQL function where the input values are taken from a "window" of one or more rows in the results set of a SELECT statement.
@@ -85,6 +173,7 @@ A window function is an SQL function where the input values are taken from a "wi
 Window functions are distinguished from other SQL functions by the presence of an OVER clause. If a function has an OVER clause, then it is a window function. If it lacks an OVER clause, then it is an ordinary aggregate or scalar function. Window functions might also have a FILTER clause in between the function and the OVER clause.
 
 Here is an example using the built-in row_number() window function:
+
 ```sql
 SELECT row_number() OVER (ORDER BY a) AS row_number FROM test.Foo;
 ```
@@ -95,6 +184,7 @@ SELECT row_number() OVER (ORDER BY a) AS row_number FROM test.Foo;
 
 Named window definition clauses may also bee added to a `SELECT` statement using a `WINDOW` clause and then referred to by name within window function invocations.
 For example:
+
 ```sql
 SELECT x, y, row_number() OVER win1, rank() OVER win2
 FROM t0
@@ -104,6 +194,7 @@ ORDER BY x;
 ```
 
 It is possible to define one window in terms of another. Specifically, the shorthand allows the new window to implicitly copy the PARTITION BY and optionally ORDER BY clauses of the base window. For example, in the following:
+
 ```sql
 SELECT group_concat(b, '.') OVER (
   win ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
@@ -119,6 +210,7 @@ WINDOW win AS (PARTITION BY a ORDER BY c);
 For the purpose of computing window functions, the result set of a query is divided into one or more "partitions". A partition consists of all rows that have the same value for all terms of the `PARTITION BY` clause in the window-defn. If there is no `PARTITION BY` clause, then the entire result set of the query is a single partition. Window function processing is performed separately for each partition.
 
 For example:
+
 ```sql
 SELECT row_number() over (PARTITION BY a) FROM test.Foo;
 ```
@@ -128,6 +220,7 @@ SELECT row_number() over (PARTITION BY a) FROM test.Foo;
 ### Window frame specifications
 
 The `frame specification` determines which output rows are read by an `aggregate window function`. The `frame specification` consists of four parts:
+
 - A frame type,
 - A starting frame boundary,
 - An ending frame boundary,
@@ -138,6 +231,7 @@ Ending frame boundary and `EXCLUDE` clause are `optional`.
 #### Frame type
 
 There are three frame types: `ROWS`, `GROUPS`, and `RANGE`. The frame type determines how the starting and ending boundaries of the frame are measured.
+
 - `ROWS`: The ROWS frame type means that the starting and ending boundaries for the frame are determined by counting individual rows relative to the current row.
 - `GROUPS`: The GROUPS frame type means that the starting and ending boundaries are determine by counting "groups" relative to the current group. A "group" is a set of rows that all have equivalent values for all all terms of the window ORDER BY clause. ("Equivalent" means that the IS operator is true when comparing the two values.) In other words, a group consists of all peers of a row.
 - `RANGE`: The RANGE frame type requires that the `ORDER BY` clause of the window have exactly one term. Call that term `X`. With the `RANGE` frame type, the elements of the frame are determined by computing the value of expression `X` for all rows in the partition and framing those rows for which the value of `X` is within a certain range of the value of `X` for the current row.
@@ -147,11 +241,12 @@ There are three frame types: `ROWS`, `GROUPS`, and `RANGE`. The frame type deter
 #### Frame boundaries
 
 There are five ways to describe starting and ending frame boundaries:
+
 - `UNBOUNDED PRECEDING`: The frame boundary is the first row in the partition.
 - `<expr> PRECEDING`: `<expr>` must be a non-negative constant numeric expression. The boundary is a row that is `<expr>` "units" prios to the current row. The meaning of "units" here depends on the frame type:
-    - `ROWS`: The frame boundary is the row that is `<expr>` rows before the current row, or the first row of the partition if there are fewer than `<expr>` rows before the current row. `<expr>` must be an integer.
-    - `GROUPS`: A "group" is a set of peer rows - rows that all have the same values for every term in the `ORDER BY` clause. The frame boundary is the group that is `<expr>` groups before the group containing the current row, or the first group of the partition if there are fewer than `<expr>` groups before the current row.
-    - `RANGE`: For this form, the `ORDER BY` clause of the window definition must have a single term. Call that `ORDER BY` term `X`. Let `Xi` be the value of the X expression for the i-th row in the partition and let `Xc` be the value of `X` for the current row. Informally, a `RANGE` bound is the first row for which Xi is within the <expr> of Xc.
+  - `ROWS`: The frame boundary is the row that is `<expr>` rows before the current row, or the first row of the partition if there are fewer than `<expr>` rows before the current row. `<expr>` must be an integer.
+  - `GROUPS`: A "group" is a set of peer rows - rows that all have the same values for every term in the `ORDER BY` clause. The frame boundary is the group that is `<expr>` groups before the group containing the current row, or the first group of the partition if there are fewer than `<expr>` groups before the current row.
+  - `RANGE`: For this form, the `ORDER BY` clause of the window definition must have a single term. Call that `ORDER BY` term `X`. Let `Xi` be the value of the X expression for the i-th row in the partition and let `Xc` be the value of `X` for the current row. Informally, a `RANGE` bound is the first row for which Xi is within the <expr> of Xc.
 - `CURRENT ROW`: The current row. For `RANGE` and `GROUPS` frame types, peers of the current row are also included in the frame, unless specifically excluded by the `EXCLUDE` clause.
 - `<expr> FOLLOWING`: This is the same as `<expr> PRECEDING` except that the boundary is `<expr>` units after the current rather than before the current row.
 - `UNBOUNDED FOLLOWING`: The frame boundary is the last row in the partition.
@@ -161,6 +256,7 @@ There are five ways to describe starting and ending frame boundaries:
 #### The `EXCLUDE` clause
 
 The optional `EXCLUDE` clause may take any of the following four forms:
+
 - `EXCLUDE NO OTHERS`: This is the default. In this case no rows are excluded from the window frame as defined by its starting and ending frame boundaries.
 - `EXCLUDE CURRENT ROW`: In this case the current row is excluded from the window frame. Peers of the current row remain in the frame for the `GROUPS` and `RANGE` frame types.
 - `EXCLUDE GROUP`: In this case the current row and all other rows that are peers of the current row are excluded from the frame. When processing an `EXCLUDE` clause, all rows with the same `ORDER BY` values, or all rows in the partition if there is no `ORDER BY` clause, are considered peers, even if the frame type is `ROWS`.
@@ -169,6 +265,7 @@ The optional `EXCLUDE` clause may take any of the following four forms:
 [Read more.](https://www.sqlite.org/windowfunctions.html#the_exclude_clause)
 
 Here are some examples with window frames:
+
 ```sql
 SELECT
 group_concat(b, '.') OVER (
@@ -378,4 +475,48 @@ SELECT IIF(Length > 1.0, 'Big', 'Small') FROM test.Foo;
 
 -- Returns DisplayLabel if Name is NULL, and Name otherwise
 SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
+```
+
+## REGEXP ( *regex*, *value* )
+
+```sql
+SELECT DisplayLabel FROM meta.ECClassDef c WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
+
+DisplayLabel
+--------------------
+Terrain Boundary
+Terrain Breakline
+Terrain Drape Boundary
+Terrain Drape Void
+Terrain Hole
+Terrain Island
+Terrain Reference
+Terrain Source Contour
+Terrain Spot Elevation
+Terrain Void
+```
+
+## REGEXP_EXTRACT ( *value*, *regex* [, *rewrite*] )
+
+This function can be used to extract or rewrite the output. Parameter `rewrite` is made of group reference where `\0` refer to text captured by whole regex specified. `\1`, `\2` `...` refer to regex capture group in that order.
+
+```sql
+-- In follow we rewrite the string by swapping first and second capture group
+SELECT
+    REGEXP_EXTRACT(DisplayLabel,'(\w+)\s+(\w+)', '\2,\1')
+FROM meta.ECClassDef c
+    WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
+
+REGEXP_EXTRACT(ECClassDef.[DisplayLabel],'(\w+)\s+(\w+)','\2,\1')
+-----------------------------------------------------------------
+Boundary,Terrain
+Breakline,Terrain
+Drape,Terrain
+Drape,Terrain
+Hole,Terrain
+Island,Terrain
+Reference,Terrain
+Source,Terrain
+Spot,Terrain
+Void,Terrain
 ```
