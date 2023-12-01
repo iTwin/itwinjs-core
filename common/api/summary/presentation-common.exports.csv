@@ -150,6 +150,7 @@ public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestO
 public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;FormatOptions
+public;FormatsMap
 internal;getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined
 public;getInstancesCount: (keys: Readonly
@@ -431,6 +432,7 @@ public;traverseContent(visitor: IContentVisitor, content: Content): void
 public;traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void
 public;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
+public;UnitSystemFormat
 internal;UnsetRulesetVariableParams 
 alpha;UPDATE_FULL = "FULL"
 alpha;UpdateInfo

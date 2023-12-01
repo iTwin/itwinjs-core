@@ -155,9 +155,8 @@ If given the option of using a local file path or using iModelHub, the program w
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
 * To specify a remote iModel, set `iTwinId` and `iModelId`. External saved views will be downloaded as well.
-* To specify the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost, set "frontendTilesUrlTemplate".  It can include special tokens: `{iModel.key}` or
-`{iModel.filename}` (e.g.: "<http://localhost:8080{iModel.key}-tiles/3dft/>" or "<http://localhost:8080/MshX/{iModel.filename}/>"). These will get replaced by the value of iModel.key or just the iModel filename
- (no path or extension), correspondingly.
+* To specify the url for @itwin/frontend-tiles to obtain tile trees for spatial views, served over localhost, set "frontendTilesUrlTemplate".  It can include special tokens: `{iModel.key}`,
+`{iModel.filename}` and `{iModel.extension}`.  These will get replaced by the value of iModel.key, just the iModel filename (no path or extension), or just the iModel extension (including .), correspondingly (e.g.: "<http://localhost:8080{iModel.key}-tiles/3dft/>" or "<http://localhost:8080/MshX/{iModel.filename}{iModel.extension}/>").
  Note that the contents of iModel.key in DPTA is a GUID.
 
 The json config file allows you to specify settings for the entire test run, for a specific model, and for a specific test performed on a given model. Priority for settings will be given first to those for a specific test, then for a specific model, and finally for the entire test run. For example: if transparency is set to true for the entire test run, but a specific test changes transparency to false, that specific test will NOT have transparency even though the rest of the tests run WILL have transparency.
@@ -300,7 +299,7 @@ Below is an example json config file:
 
 ## Performance file output
 
-The performance data output is in csv format (and is intended to be saved as a csv file, though you may specify otherwise), and you should be able to open the performance file in Excel as well, for easier viewing. The string "End of Tests-----------" will be appended to the end of the csv file once the entire performance test run has been completed.
+The performance data output is in csv format (and is intended to be saved as a csv file, though you may specify otherwise), and you should be able to open the performance file in Excel as well, for easier viewing. The string "End of Tests-----------" will be appended to the end of the csv file once the entire performance test run has been completed.  Note that you will only get performance data for tests which have the 'testType' set to 'timings' or 'both'.
 
 The performance data file should always contain the following column headers:
 
@@ -321,6 +320,10 @@ The performance data file should always contain the following column headers:
 
 * ReadPixels Selector - a string representation of the Pixel.Selector used in the readPixels call; this will be blank if readPixels is not called
 * Tile Loading Time - the time it takes to load all of the tiles for this model (in ms)
+* Num Selected Tiles - the number of tiles used to draw the view
+* Selected Tile GPU MB - the amount of memory requested from the GPU for the graphics of the tiles selected for display
+* Tile Tree GPU MB - the amount of memory requested from the GPU for the graphics of the tiles selected for display plus any recently used or parent tiles which are still on the GPU
+* Total GPU MB - the total amount of memory requested (and not yet relinquished) from the GPU by the render system, including frame buffers, textures, graphics, etc.
 * Scene Time - the time it takes to load the scene, i.e. the time it takes to do everything in the renderFrame() function except for the drawFrame() call (in ms)
 * Begin Paint - the time it takes to call the _beginPaint() function (in ms)
 * Planar Classifiers - the time it takes to call the drawPlanarClassifiers() function (in ms)
@@ -353,6 +356,15 @@ The performance data file may also contain any or all of the below column header
 * Effective FPS - the effective total time converted to fps (frames per second); this is an estimate of what the actual fps would be if it wasn’t throttled down to a maximum of 60 fps
 * Actual Total Time - the total time it takes to get from starting to render a frame to starting to render the next frame (i.e. the time it takes to get from point A until you hit point A again)
 * Actual FPS - the actual total time converted into fps (frames per second); this should be a fairly accurate reflection of the fps value gathered when running in display-test-app
+
+The 'renderCmdStats' flag when set to true will also output the following columns whether or not the 'minimize' flag is set to true:
+
+* Primitives - a count of the number of primitives in the command lists used to draw the view
+* Batches - a count of the number of batches in the command lists used to draw the view
+* Branches - a count of the number of branches in the command lists used to draw the view
+* Primitives Per Tile - the average number of primitives per selected tile used to draw the view
+
+Note that setting the 'renderCmdStats' flag to true while also setting the 'minimize' flag to true will also output the 'Num Selected Tiles' and 'Tile Tree GPU MB' columns described earlier.
 
 The 'View Flags' column contains a string representation of view flag specifications that differ from those defaults found in the ViewFlags class. This string representation may consist of any or all of the following:
 

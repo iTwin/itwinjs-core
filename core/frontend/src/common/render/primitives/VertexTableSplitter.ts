@@ -330,6 +330,18 @@ class VertexTableSplitter {
     const vertex = new Uint32Array(vertSize);
     const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
 
+    let extractFeatureIndex: () => number;
+    if (this._input.vertices.usesUnquantizedPositions) {
+      const vertexBytes = new Uint8Array(vertex.buffer);
+      extractFeatureIndex = () => {
+        return vertexBytes[3]
+          | (vertexBytes[7] << 8)
+          | (vertexBytes[11] << 16);
+      };
+    } else {
+      extractFeatureIndex = () => vertex[2] & 0x00ffffff;
+    }
+
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.
       const vertexOffset = index * vertSize;
@@ -337,7 +349,7 @@ class VertexTableSplitter {
         vertex[i] = vertexTable[vertexOffset + i];
 
       // Determine to which element the vertex belongs and find the corresponding Node.
-      const featureIndex = vertex[2] & 0x00ffffff;
+      const featureIndex = extractFeatureIndex();
       if (curState.featureIndex !== featureIndex) {
         curState.featureIndex = featureIndex;
         const nodeId = this._computeNodeId(featureIndex);
@@ -673,7 +685,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
 
   const mat = args.params.surface.material;
   const atlasOffset = undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
-  const atlasInfo = atlasOffset ? { offset: atlasOffset, createMaterial: args.createMaterial } : undefined;
+  const atlasInfo = undefined !== atlasOffset ? { offset: atlasOffset, createMaterial: args.createMaterial } : undefined;
 
   const nodes = VertexTableSplitter.split({
     indices: args.params.surface.indices,

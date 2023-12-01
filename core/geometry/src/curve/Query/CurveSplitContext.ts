@@ -8,7 +8,7 @@
  */
 
 import { Geometry } from "../../Geometry";
-import { AnyCurve } from "../CurveChain";
+import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";

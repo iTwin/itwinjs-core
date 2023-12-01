@@ -9,6 +9,7 @@ import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import { IModelApp } from "../../../IModelApp";
 import {
+  ArcGisGetServiceJsonArgs,
   ArcGISIdentifyRequestUrl,
   ArcGISIdentifyRequestUrlProps,
   ArcGISImageryProvider,
@@ -20,6 +21,7 @@ import {
 } from "../../../tile/internal";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { Range2dProps } from "@itwin/core-geometry";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 
 chai.use(chaiAsPromised);
 
@@ -27,7 +29,7 @@ const sampleSource = { formatId: "ArcGIS", url: "https://localhost/Mapserver", n
 
 function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
 
-  sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
+  return sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
     const test = {
       headers: { "content-type": "application/json" },
       json: async () => {
@@ -36,6 +38,12 @@ function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
       status: 200,
     } as unknown;   // By using unknown type, I can define parts of Response I really need
     return (test as Response);
+  });
+}
+
+function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any) {
+  return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_args: ArcGisGetServiceJsonArgs) {
+    return json;
   });
 }
 
@@ -55,9 +63,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
-    });
+    stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false});
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
     await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError, "Invalid coordinate system");
@@ -68,9 +74,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
-    });
+    stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
     await provider.initialize();
@@ -86,13 +90,11 @@ describe("ArcGISMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      const dataset = JSON.parse(JSON.stringify(ArcGISMapLayerDataset.UsaTopoMaps));
-
-      // Fake an unknown CS
-      dataset.tileInfo.spatialReference.latestWkid = 1234;
-      return {content: dataset, accessTokenRequired:false};
-    });
+    const dataset = JSON.parse(JSON.stringify(ArcGISMapLayerDataset.UsaTopoMaps));
+    // Fake an unknown CS
+    dataset.tileInfo.spatialReference.latestWkid = 1234;
+    const responseJson = {content: dataset, accessTokenRequired:false};
+    stubGetServiceJson(sandbox, responseJson);
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
     await provider.initialize();
@@ -163,12 +165,13 @@ describe("ArcGISMapLayerImageryProvider", () => {
       geometry: { x: 5, y: 6 },
       geometryType: "esriGeometryPoint",
       tolerance: 0.1,
+      sr: 3857,
       mapExtent: {
         low: { x: 1, y: 3 },
         high: { x: 2, y: 4 },
       },
       imageDisplay: { width: 256, height: 256, dpi: 96 },
-      layers: { prefix: "visible", layerIds: [ "2", "3" ] },
+      layers: { prefix: "top", layerIds: [ "2", "3" ] },
       returnGeometry: true,
       maxAllowableOffset,
     };
@@ -177,4 +180,33 @@ describe("ArcGISMapLayerImageryProvider", () => {
     expect(firstCall.args[2]).to.equals(3);
   });
 
+  it("should pass fetch function to ArcGISTileMap object", async () => {
+    const settings = ImageMapLayerSettings.fromJSON(sampleSource);
+    const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
+    const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_"] ]);
+    settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
+    settings.savedQueryParams = indexedArrayFromUrlParams(saved);
+    if (!settings)
+      chai.assert.fail("Could not create settings");
+
+    stubGetServiceJson(sandbox, {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false});
+
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    await provider.initialize();
+    const resolveChildren = (_childIds: QuadId[]) => {};
+
+    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+
+      return Promise.resolve((({
+        status: 200,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => {},
+      } as unknown) as Response));
+    });
+
+    await (provider as any)._generateChildIds(QuadId.createFromContentId("1_0_0"), resolveChildren);
+    chai.expect(fetchStub.calledOnce).to.be.true;
+    chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(unsaved.toString());
+    chai.expect(fetchStub.getCall(0).args[0].toString()).to.contains(saved.toString());
+  });
 });

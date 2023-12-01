@@ -241,6 +241,7 @@ export class ViewCreator3d {
    * Get the Id of the default view.
    */
   private async _getDefaultViewId(): Promise<Id64String | undefined> {
+    // eslint-disable-next-line deprecation/deprecation
     const viewId = await this._imodel.views.queryDefaultViewId();
     if (viewId !== Id64.invalid)
       return viewId;

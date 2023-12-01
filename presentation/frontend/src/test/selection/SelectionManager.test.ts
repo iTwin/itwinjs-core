@@ -818,4 +818,43 @@ describe("SelectionManager", () => {
 
   });
 
+  describe("getHiliteSetIterator", () => {
+
+    let factory: sinon.SinonStub<[{ imodel: IModelConnection }], HiliteSetProvider>;
+
+    beforeEach(() => {
+      const providerMock = moq.Mock.ofType<HiliteSetProvider>();
+      providerMock.setup(async (x) => x.getHiliteSet(moq.It.isAny())).returns(async () => ({}));
+      factory = sinon.stub(HiliteSetProvider, "create").returns(providerMock.object);
+    });
+
+    afterEach(() => {
+      factory.restore();
+    });
+
+    it("creates provider once for imodel", () => {
+      const imodelMock1 = moq.Mock.ofType<IModelConnection>();
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+
+      // call for the first with an imodel should create a provider
+      selectionManager.getHiliteSetIterator(imodelMock1.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock1.object });
+      factory.resetHistory();
+
+      // second call with same imodel shouldn't create a new provider
+      selectionManager.getHiliteSetIterator(imodelMock1.object);
+      expect(factory).to.not.be.called;
+
+      // another imodel - new provider
+      selectionManager.getHiliteSetIterator(imodelMock2.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock2.object });
+      factory.resetHistory();
+
+      // make sure we still have provider for the first imodel
+      selectionManager.getHiliteSetIterator(imodelMock1.object);
+      expect(factory).to.not.be.called;
+    });
+
+  });
+
 });

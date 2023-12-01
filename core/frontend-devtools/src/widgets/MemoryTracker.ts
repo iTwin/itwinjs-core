@@ -178,7 +178,7 @@ export class MemoryTracker {
   private readonly _stats = new RenderMemory.Statistics();
   private readonly _vp: Viewport;
   private readonly _div: HTMLDivElement;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: number;
   private _memIndex = MemIndex.None;
   private readonly _totalElem: HTMLElement;
   private readonly _totalTreesElem: HTMLElement;
@@ -270,7 +270,7 @@ export class MemoryTracker {
 
   private clearInterval(): void {
     if (undefined !== this._curIntervalId) {
-      clearInterval(this._curIntervalId);
+      window.clearInterval(this._curIntervalId);
       this._curIntervalId = undefined;
     }
   }
@@ -287,7 +287,7 @@ export class MemoryTracker {
     }
 
     if (undefined === this._curIntervalId) {
-      this._curIntervalId = setInterval(() => this.update(), 1000);
+      this._curIntervalId = window.setInterval(() => this.update(), 1000);
       this._div.style.display = "block";
     }
 

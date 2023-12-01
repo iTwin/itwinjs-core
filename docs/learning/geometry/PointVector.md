@@ -2,7 +2,7 @@
 
 ## Notes on compact table notation
 
-- Many arguments which might be strongly typed as `Point3d`, `Vector3d`, `Point3d`, `Vector3d` are weakly typed as `XYandZ` or `XandY`.
+- Many arguments that could be strongly typed as `Point3d`, `Vector3d`, `Point2d`, or `Vector2d` are weakly typed as `XYAndZ` or `XAndY`.
   - These allow any object that has `x` and `y` properties to be passed as inputs.
 - Many methods have optional result args.
   - The optional arg is NOT indicated here.
@@ -43,20 +43,19 @@ Typical names in the tables are:
 | create from index in packed xyzxyz..  | p = Point3d.createFromPacked (Float64Array, pointIndex) | | | |
 | unweight from indexed in packed xyzwxyzw.. |p = Point3d.createFromPackedXYZW (Float64Array, pointIndex) | | | |
 | create scaled copy | p = Point3d.createScale (pointA: XYAndZ, scalefactor) | | | |
-| create sum of 2 weighted | p = Point3d.createAdd2Scaled (pointA: XYZAndZ, scaleA, pointB: XYAndZ: pointB, scaleB) | v = Vector3d.createAdd2Scaled (pointA: XYZAndZ, scaleA, pointB: XYAndZ: pointB, scaleB)| | |
+| create sum of 2 weighted | p = Point3d.createAdd2Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number) | v = Vector3d.createAdd2Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number,)| | |
 | create sum of 2 weighted | | v = Vector3d.createAdd2ScaledXYZ (ax, ay, az, scaleA, bx, by, bz, scaleB)| | |
-| create sum of 3 weighted | p = Point3d.createAdd3Scaled (pointA: XYZAndZ, scaleA, pointB: XYAndZ: pointB, scaleB, XYAndZ: pointC, scaleC) |v = Vector3d.createAdd3Scaled (pointA: XYZAndZ, scaleA, pointB: XYAndZ: pointB, scaleB, XYAndZ: pointC, scaleC) | | |
+| create sum of 3 weighted | p = Point3d.createAdd3Scaled (pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number) |v = Vector3d.createAdd3Scaled (pointA: XYAndZ, scaleA, pointB: XYAndZ: pointB, scaleB, XYAndZ: pointC, scaleC) | | |
 | Create from polar radius, angle, and z | | p = Point3d.createPolar (radius, angle, z) | p = Point2d.createPolar (radius, angle)| |
-| Create from spherical radius, xy angle, elevation angle | | p = Pointd.createSpherical (radius, xyAngle, elevationAngle) | | |
+| Create from spherical radius, xy angle, elevation angle | | p = Point3d.createSpherical (radius, xyAngle, elevationAngle) | | |
 
 ## "create" via instance methods on existing objects
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
-| vector from start to end | newVector = point.vectorTo (otherXYAndZ)  | newVector = vector.vectorTo(otherXYandZ) | newVector = point.vectorTo (otherXAndY) | newVector = vector.vectorTo (otherXAndY) |
+| vector from start to end | newPoint = point.vectorTo (otherXYAndZ)  | newVector = vector.vectorTo(otherXYandZ) | newPoint = point.vectorTo (otherXAndY) | newVector = vector.vectorTo (otherXAndY) |
 | | | vector = Vector3d.createStartEnd (pointA, pointB) | | vector = Vector2d.createStartEnd (pointA, pointB)|
 | | | vector = Vector3d.createStartEndXYZXYZ (ax, ay, az, bx, by, bz) | | |
-| vector from start to end | newVector = vector.vectorTo(otherXYandZ)  | newVector = point.vectorTo (otherXYAndZ) | newVector = vector.vectorTo (otherXAndY)| newVector = point.vectorTo (otherXAndY) |
 | clone as same type | newPoint = p.clone () | newVector = v.clone () |newPoint = p.clone () | newVector = v.clone () |
 | unit vector from start to end | newVector = point.unitVectorTo (otherXYAndZ) | newVector = point.unitVectorTo (otherXYAndZ) | newVector = point.unitVectorTo (otherXYAndZ) | newVector = point.unitVectorTo (otherXAndY) |
 | vector of specified length from start to end | newVector = point.scaledVectorTo (otherXYAndZ, length) | newVector = vector.scaledVectorTo (otherXYAndZ, length) |  | |
@@ -69,8 +68,8 @@ Typical names in the tables are:
 | return normalized vector | | `newVector = oldVector.normalize () : Vector3d \| undefined` | |`newVector = oldVector.normalize () : Vector2d \| undefined` |
 | attempt to normalize in place.  If near zero length, leave unchanged and return `false` | | vector.normalizeInPlace () : boolean | | |
 | clone negated | | newVector = oldVector.negate () | | newVector = oldVector.negate ()|
-| vector rotated 90 degrees COUNERCLOCKWISE in XY plane, preserving z | | newVector = oldVector.rotate99CCWXY () | | newVector = oldVector.rotate99CCWXY ()|
-| vector rotated 90 degrees CLOCKWISE in XY plane, preserving z | | | | newVector = oldVector.rotate99CWXY ()|
+| vector rotated 90 degrees COUNTERCLOCKWISE in XY plane, preserving z | | newVector = oldVector.rotate90CCWXY () | | newVector = oldVector.rotate90CCWXY ()|
+| vector rotated 90 degrees CLOCKWISE in XY plane, preserving z | | | | newVector = oldVector.rotate90CWXY ()|
 | vector rotated by angle in XY plane, preserving z | | newVector = oldVector.rotateXY () | |newVector = oldVector.rotateXY () |
 | unit vector rotated 90 degrees in xy plane | | newVector = oldVector.unitPerpendicularXY () | |newVector = oldVector.unitPerpendicularXY () |
 | vector rotated 90 degrees towards a target vector.  Rotation is in the plane containing both inputs. | | newVector = oldVector.rotate90Towards () | | |
@@ -117,7 +116,7 @@ Typical names in the tables are:
 | in the instance, accumulate cross product of vectors from (baseX. baseY, baseZ) to (ax, ay, az) and (bx, by, bz) | | vector.addCrossProductToTargetsInPlace (baseX, baseY, baseZ, ax, ay, az, bx, by, bz) | |
 | dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | | a = basePoint.dotVectorsToTargets (pointA, pointB) | |
 | dot product of instance vector with vector from startPoint to endPoint.  | | a = vector.dotProductStartEnd (startPoint, endPoint)  : number| | a = vector.dotProductStartEnd (startPoint, endPoint) : number |
-| dot product of instance vector with vector from startPoint to endPoint.  endPoint given as x,y,z,w to be unweighted. returns zero if weight is zero.| | a = vector.dotProductStartEndXYZW (startPoint, x,y,x,z)  : number| | | |
+| dot product of instance vector with vector from startPoint to endPoint.  endPoint given as x,y,z,w to be unweighted. returns zero if weight is zero.| | a = vector.dotProductStartEndXYZW (startPoint, x,y,z,w)  : number| | | |
 | squared magnitude of cross product | | value = vectorA.crossProductMagnitudeSquared (vectorB) | | |
 | magnitude of cross product | | value = vectorA.crossProductMagnitude (vectorB) | | |
 
@@ -147,7 +146,7 @@ Typical names in the tables are:
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
 | set coordinates from number args | p.set (x,y,z) | v.set(x,y,z) | p.set(x,y) | v.set (x,y) |
-| set coordinates to zero | p.setZero () | v.setZero () | p.setZero | v.setZero () |
+| set coordinates to zero | p.setZero () | v.setZero () | p.setZero () | v.setZero () |
 | set coordinates as vector between inputs | | v.setStartEnd (basePoint, targetPoint) | | | |
 | set coordinates from other objects| `p.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | `v.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | p.setFrom (other?: XAndY) | v.setFrom (other?: XAndY) |
 | scale coordinates | p.scaleInPlace (scaleFactor) | v.scaleInPlace (scaleFactor) | | |

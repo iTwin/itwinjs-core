@@ -15,16 +15,17 @@ import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Angle } from "../geometry3d/Angle";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Range1dArray } from "../numerics/Range1dArray";
 import { ClipPlane } from "./ClipPlane";
 import { ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * An AlternatingConvexClipTreeNode is a node in a tree structure in which
@@ -171,7 +172,7 @@ export class AlternatingCCTreeNode implements PolygonClipper {
    * @param arrayCache cache for reusable GrowableXYZArray.
    */
   public appendPolygonClip(
-    xyz: GrowableXYZArray,
+    xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,
@@ -541,7 +542,7 @@ export class AlternatingCCTreeNodeCurveClipper {
    */
   public appendCurveCollectionClip(root: AlternatingCCTreeNode, curve: CurveCollection,
     insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]) {
-    for (const cp of curve.children!) {
+    for (const cp of curve.children) {
       if (cp instanceof CurvePrimitive)
         this.appendSingleClipPrimitive(root, cp, insideIntervals, outsideIntervals);
       else if (cp instanceof CurveCollection)

@@ -18,7 +18,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 
 describe("IModelHost", () => {
-  const opts = { cacheDir: path.join(__dirname, ".cache") };
+  const opts = { cacheDir: TestUtils.getCacheDir() };
   beforeEach(async () => {
     await TestUtils.shutdownBackend();
   });
@@ -45,6 +45,17 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
+  });
+
+  it("should properly cleanup beforeExit event listeners on shutdown", async () => {
+    const beforeCount = process.listenerCount("beforeExit");
+    for (let i = 0; i <= 15; i++) {
+      await IModelHost.startup();
+      await IModelHost.shutdown();
+
+    }
+    const afterCount = process.listenerCount("beforeExit");
+    expect(beforeCount).to.be.equal(afterCount);
   });
 
   it("should call logger sync function", async () => {

@@ -99,7 +99,16 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
   let curMsgId = 0;
   let terminated = false;
 
-  const worker = new Worker(workerJsPath);
+  let worker: Worker;
+  const sameOrigin = workerJsPath.substring(0, globalThis.origin.length) === globalThis.origin;
+  if (sameOrigin || !workerJsPath.startsWith("http")) {
+    worker = new Worker(workerJsPath);
+  } else {
+    const workerBlob = new Blob([`importScripts("${workerJsPath}");`]);
+    const workerBlobUrl = URL.createObjectURL(workerBlob);
+    worker = new Worker(workerBlobUrl);
+  }
+
   worker.onmessage = (e: MessageEvent) => {
     const response = e.data as WorkerResponse;
     assert(typeof response === "object");

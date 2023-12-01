@@ -250,6 +250,9 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
+// @beta
+export type AnyDb = IModelDb | ECDb;
+
 // @public
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
@@ -430,7 +433,7 @@ export namespace BlobContainer {
     }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<UriAndId>;
+        create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
@@ -438,6 +441,9 @@ export namespace BlobContainer {
         updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
     }
     export type ContainerToken = AccessToken;
+    export interface CreatedContainerProps extends UriAndId {
+        provider: Provider;
+    }
     export interface CreateNewContainerProps {
         // @internal
         containerId?: ContainerId;
@@ -456,8 +462,6 @@ export namespace BlobContainer {
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        // (undocumented)
-        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
@@ -492,6 +496,8 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // @internal
+    executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
@@ -614,6 +620,18 @@ export class CategorySelector extends DefinitionElement {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface ChangedECInstance {
+    // (undocumented)
+    $meta?: ChangeMetaData;
+    // (undocumented)
+    [key: string]: any;
+    // (undocumented)
+    ECClassId?: Id64String;
+    // (undocumented)
+    ECInstanceId: Id64String;
+}
+
 // @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
@@ -635,10 +653,63 @@ export class ChangedElementsDb implements IDisposable {
     processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
+// @beta
+export interface ChangeFormatArgs {
+    includeNullColumns?: true;
+    includeOpCode?: true;
+    includePrimaryKeyInUpdateNew?: true;
+    includeStage?: true;
+    includeTableName?: true;
+}
+
+// @beta
+export interface ChangeInstanceKey {
+    changeType: "inserted" | "updated" | "deleted";
+    classFullName: string;
+    id: Id64String;
+}
+
+// @beta
+export interface ChangeMetaData {
+    changeIndexes: number[];
+    className?: string;
+    fallbackClassId?: Id64String;
+    op: SqliteChangeOp;
+    stage: SqliteValueStage;
+    tables: string[];
+}
+
 // @public
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
     readonly changeset: ChangesetIndexOrId;
+}
+
+// @beta
+export class ChangesetECAdaptor implements IDisposable {
+    constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
+    acceptClass(classFullName: string): ChangesetECAdaptor;
+    acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
+    acceptTable(table: string): ChangesetECAdaptor;
+    close(): void;
+    readonly debugFlags: {
+        replaceBlobWithEllipsis: boolean;
+        replaceGeomWithEllipsis: boolean;
+        replaceGuidWithEllipsis: boolean;
+    };
+    deleted?: ChangedECInstance;
+    // (undocumented)
+    readonly disableMetaData: boolean;
+    dispose(): void;
+    inserted?: ChangedECInstance;
+    get isDeleted(): boolean;
+    isECTable(tableName: string): boolean;
+    get isInserted(): boolean;
+    get isUpdated(): boolean;
+    get op(): SqliteChangeOp;
+    // (undocumented)
+    readonly reader: SqliteChangesetReader;
+    step(): boolean;
 }
 
 // @internal (undocumented)
@@ -833,9 +904,25 @@ export namespace CloudSqlite {
         showOnlyFinished?: boolean;
         startFromId?: number;
     }
+    // @internal
+    export interface BcvStats {
+        readonly activeClients?: number;
+        readonly attachedContainers?: number;
+        readonly lockedCacheslots: number;
+        readonly ongoingPrefetches?: number;
+        readonly populatedCacheslots: number;
+        readonly totalCacheslots: number;
+        readonly totalClients?: number;
+    }
+    // @internal
+    export interface BcvStatsFilterOptions {
+        addClientInformation?: boolean;
+    }
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
+        readonly nClient: number;
+        readonly nPrefetch: number;
         readonly state: "" | "copied" | "deleted";
         readonly totalBlocks: number;
         readonly transactions: boolean;
@@ -902,6 +989,8 @@ export namespace CloudSqlite {
         onDisconnect?: (container: CloudContainer, detach: boolean) => void;
         // (undocumented)
         onDisconnected?: (container: CloudContainer, detach: boolean) => void;
+        // @internal
+        queryBcvStats(filterOptions?: BcvStatsFilterOptions): CloudSqlite.BcvStats;
         queryDatabase(dbName: string): CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
@@ -910,6 +999,7 @@ export namespace CloudSqlite {
         releaseWriteLock(): void;
         get storageType(): string;
         uploadChanges(): Promise<void>;
+        get writeLockExpires(): string;
     }
     // (undocumented)
     export interface CloudHttpProps {
@@ -999,10 +1089,11 @@ export namespace CloudSqlite {
     }
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     // @internal (undocumented)
-    export interface LockAndOpenArgs {
+    export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
+        openMode?: OpenMode;
         user: string;
     }
     export enum LoggingMask {
@@ -1043,6 +1134,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
     }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
+        {};
 }
 
 // @alpha
@@ -1637,6 +1729,7 @@ export class ECDb implements IDisposable {
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
+    getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     // @internal (undocumented)
@@ -2966,7 +3059,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
+    readonly nativeDb: IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3023,6 +3116,8 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
+    // @internal
+    get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -3042,7 +3137,7 @@ export namespace IModelDb {
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
-        getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
+        getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
@@ -3133,6 +3228,7 @@ export namespace IModelDb {
         // @beta (undocumented)
         saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
+        // @deprecated
         setDefaultViewId(viewId: Id64String): void;
         // @beta (undocumented)
         get viewStore(): ViewStore.CloudAccess;
@@ -3228,7 +3324,7 @@ export class IModelHost {
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
-    static shutdown(): Promise<void>;
+    static shutdown(this: void): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
     // @internal
@@ -4214,6 +4310,13 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     setRange(range: Range3d): void;
 }
 
+// @beta
+export class PartialECChangeUnifier {
+    appendFrom(adaptor: ChangesetECAdaptor): void;
+    get instances(): IterableIterator<ChangedECInstance>;
+    stripMetaData(): void;
+}
+
 // @public
 export abstract class PhysicalElement extends SpatialElement {
     protected constructor(props: PhysicalElementProps, iModel: IModelDb);
@@ -4406,6 +4509,12 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryLocalChangesArgs {
+    readonly includedClasses?: string[];
+    readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4586,6 +4695,35 @@ export class Schemas {
     static getRegisteredSchema(schemaName: string): typeof Schema | undefined;
     static registerSchema(schema: typeof Schema): void;
     static unregisterSchema(schemaName: string): boolean;
+}
+
+// @internal (undocumented)
+export namespace SchemaSync {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        // (undocumented)
+        getUri(): string;
+        static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
+    }
+    const // (undocumented)
+    setTestCache: (iModel: IModelDb, cacheName: string) => void;
+    const // (undocumented)
+    withLockedAccess: (iModel: TestCacheIModel, args: {
+        operationName: string;
+        openMode?: OpenMode;
+        user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    initializeForIModel: (arg: {
+        iModel: IModelDb;
+        containerProps: CloudSqlite.ContainerProps;
+    }) => Promise<void>;
+    export class SchemaSyncDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        readonly myVersion = "4.0.0";
+    }
 }
 
 // @public
@@ -4919,6 +5057,54 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     toJSON(): SpatialViewDefinitionProps;
 }
 
+// @beta
+export interface SqliteChange {
+    $op?: SqliteChangeOp;
+    $stage?: SqliteValueStage;
+    $table?: string;
+    [key: string]: any;
+}
+
+// @beta
+export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
+
+// @beta
+export class SqliteChangesetReader implements IDisposable {
+    protected constructor(
+    db?: AnyDb | undefined);
+    get changeIndex(): number;
+    close(): void;
+    get columnCount(): number;
+    readonly db?: AnyDb | undefined;
+    get disableSchemaCheck(): boolean;
+    dispose(): void;
+    getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
+    getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined;
+    getChangeValuesObject(stage: SqliteValueStage, args?: ChangeFormatArgs): SqliteChange | undefined;
+    getColumnNames(tableName: string): string[];
+    getPrimaryKeyColumnNames(): string[];
+    get hasRow(): boolean;
+    get isIndirect(): boolean;
+    get op(): SqliteChangeOp;
+    static openFile(args: {
+        readonly fileName: string;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openLocalChanges(args: {
+        iModel: IModelJsNative.DgnDb;
+        includeInMemoryChanges?: true;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    get primaryKeyValues(): SqliteValueArray;
+    step(): boolean;
+    get tableName(): string;
+}
+
+// @beta
+export interface SqliteChangesetReaderArgs {
+    readonly db?: AnyDb;
+    readonly disableSchemaCheck?: true;
+    readonly invert?: true;
+}
+
 // @public
 export class SQLiteDb {
     abandonChanges(): void;
@@ -5110,6 +5296,9 @@ export class SqliteValue {
     get type(): SqliteValueType;
     get value(): any;
 }
+
+// @beta
+export type SqliteValueStage = "Old" | "New";
 
 // @public
 export enum SqliteValueType {
@@ -5422,6 +5611,8 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRootChanged(props: RelationshipProps): void;
     queryFirstTxnId(): TxnIdString;
+    // @beta
+    queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
