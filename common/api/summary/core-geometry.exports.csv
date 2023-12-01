@@ -284,10 +284,8 @@ public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour
 public;SweepLineStringToFacetsOptions
-public;TaggedDataPair
 public;TaggedNumericConstants
 public;TaggedNumericData
-public;TaggedPoint3dPair 
 internal;TorusImplicit
 public;TorusPipe 
 public;Transform 

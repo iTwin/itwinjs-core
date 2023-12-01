@@ -3484,8 +3484,8 @@ export class LineString3dRangeTreeContext {
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
-    static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext): CurveLocationDetailPair | undefined;
-    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined;
+    searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined;
 }
 
 // @public
@@ -4465,8 +4465,8 @@ export class Point3dArrayRangeTreeContext {
     numRangeTestTrue: number;
     numSearch: number;
     points: Point3d[];
-    static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext): TaggedPoint3dPair | undefined;
-    searchForClosestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined;
+    searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined;
 }
 
 // @public
@@ -4862,8 +4862,8 @@ export class PolyfaceRangeTreeContext {
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
-    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean): FacetLocationDetailPair | undefined;
-    searchForClosestPoint(spacePoint: Point3d, searchFacetInterior?: boolean): FacetLocationDetail | undefined;
+    static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior?: boolean): FacetLocationDetailPair | FacetLocationDetailPair[] | undefined;
+    searchForClosestPoint(spacePoint: Point3d, maxDist?: number, searchFacetInterior?: boolean): FacetLocationDetail | FacetLocationDetail[] | undefined;
     visitor: PolyfaceVisitor;
 }
 
@@ -4921,8 +4921,12 @@ export class PolygonLocationDetail {
 }
 
 // @public
-export class PolygonLocationDetailPair<TagType = number> extends TaggedDataPair<PolygonLocationDetail, PolygonLocationDetail, TagType> {
-    constructor(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, tagA?: TagType, tagB?: TagType);
+export class PolygonLocationDetailPair {
+    clone(result?: PolygonLocationDetailPair): PolygonLocationDetailPair;
+    static create(detailA: PolygonLocationDetail, detailB: PolygonLocationDetail, result?: PolygonLocationDetailPair): PolygonLocationDetailPair;
+    detailA: PolygonLocationDetail;
+    detailB: PolygonLocationDetail;
+    swapDetails(): void;
 }
 
 // @public
@@ -5920,18 +5924,6 @@ export class SweepLineStringToFacetsOptions {
 }
 
 // @public
-export class TaggedDataPair<DataTypeA, DataTypeB, TagType> {
-    constructor(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType);
-    dataA: DataTypeA;
-    dataB: DataTypeB;
-    setAll(dataA: DataTypeA, dataB: DataTypeB, tagA?: TagType, tagB?: TagType): void;
-    setData(dataA: DataTypeA, dataB: DataTypeB): void;
-    setTags(tagA?: TagType, tagB?: TagType): void;
-    tagA?: TagType;
-    tagB?: TagType;
-}
-
-// @public
 export namespace TaggedNumericConstants {
     export enum SubdivisionControlCode {
         AbsoluteTolerance = -101,
@@ -5969,11 +5961,6 @@ export class TaggedNumericData {
     tagB: number;
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
-}
-
-// @public
-export class TaggedPoint3dPair extends TaggedDataPair<Point3d, Point3d, number> {
-    constructor(pointA: Point3d, pointB: Point3d, tagA?: number, tagB?: number);
 }
 
 // @internal
@@ -6249,11 +6236,12 @@ export interface TrigValues {
 
 // @internal
 export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, searchFacetInterior?: boolean);
+    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior?: boolean);
     contextA: PolyfaceRangeTreeContext;
     contextB: PolyfaceRangeTreeContext;
     getCurrentDistance(): number;
     getResult(): FacetLocationDetailPair | undefined;
+    getSavedItems(): FacetLocationDetailPair[] | undefined;
     processAppDataPair(indexA: number, indexB: number): void;
     searchFacetInterior: boolean;
     searchState: MinimumValueTester<FacetLocationDetailPair>;
@@ -6261,24 +6249,26 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
 
 // @internal
 export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext);
+    constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number);
     contextA: LineString3dRangeTreeContext;
     contextB: LineString3dRangeTreeContext;
     getCurrentDistance(): number;
     getResult(): CurveLocationDetailPair | undefined;
+    getSavedItems(): CurveLocationDetailPair[] | undefined;
     processAppDataPair(indexA: number, indexB: number): void;
     searchState: MinimumValueTester<CurveLocationDetailPair>;
 }
 
 // @internal
 export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext);
+    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number);
     contextA: Point3dArrayRangeTreeContext;
     contextB: Point3dArrayRangeTreeContext;
     getCurrentDistance(): number;
-    getResult(): TaggedPoint3dPair | undefined;
+    getResult(): CurveLocationDetailPair | undefined;
+    getSavedItems(): CurveLocationDetailPair[] | undefined;
     processAppDataPair(indexA: number, indexB: number): void;
-    searchState: MinimumValueTester<TaggedPoint3dPair>;
+    searchState: MinimumValueTester<CurveLocationDetailPair>;
 }
 
 // @public
