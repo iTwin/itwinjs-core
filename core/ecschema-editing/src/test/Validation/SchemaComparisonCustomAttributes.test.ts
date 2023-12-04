@@ -200,7 +200,7 @@ describe("Custom attributes class comparison tests", () => {
           },
         },
       }, context);
-      
+
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         references: [
@@ -211,11 +211,11 @@ describe("Custom attributes class comparison tests", () => {
         ],
         customAttributes: [
           {
-            className: "DummyReference.customAttributeOne"
+            className: "DummyReference.customAttributeOne",
           },
           {
-            className: "DummyReference.customAttributeTwo"
-          }
+            className: "DummyReference.customAttributeTwo",
+          },
         ],
       }, context);
 
@@ -229,8 +229,8 @@ describe("Custom attributes class comparison tests", () => {
         ],
         customAttributes: [
           {
-            className: "DummyReference.customAttributeOne"
-          }
+            className: "DummyReference.customAttributeOne",
+          },
         ],
       }, context);
 
@@ -239,7 +239,7 @@ describe("Custom attributes class comparison tests", () => {
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(false);
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeTwo")).to.equal(true);
-    })
+    });
 
     it("should not report custom attribute instance class missing for referenced class with same full name", async () => {
       const context = new SchemaContext();

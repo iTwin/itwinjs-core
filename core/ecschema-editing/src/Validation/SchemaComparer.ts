@@ -880,7 +880,7 @@ export class SchemaComparer {
     const schemaNameA = itemKeyA ? itemKeyA.schemaName : undefined;
     const schemaNameB = itemKeyB ? itemKeyB.schemaName : undefined;
 
-    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || ( nameA === nameB && schemaNameA === schemaNameB );
+    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
   }
 
   /**
@@ -901,5 +901,4 @@ export class SchemaComparer {
     }
     return false;
   }
-  
 }
