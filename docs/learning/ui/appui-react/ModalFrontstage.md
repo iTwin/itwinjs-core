@@ -2,7 +2,7 @@
 
 A **Modal Frontstage** is accessed from another frontstage or the Backstage.
 It may contain any content along with a Back button.
-It does not use zones or stage panels.
+It does not use stage panels.
 
 The usual use-cases are for application settings and data management user interfaces.
 
@@ -35,7 +35,7 @@ class SampleModalPage extends React.Component {
 
 ## Code to Open Modal Frontstage
 
-The following code instantiates a modal frontstage and calls `FrontstageManager.openModalFrontstage` to open the modal frontstage.
+The following code instantiates a modal frontstage and calls `UiFramework.frontstages.openModalFrontstage` to open the modal frontstage.
 
 ```ts
 const modalFrontstage = new SampleModalFrontstage();
