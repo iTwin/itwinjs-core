@@ -127,7 +127,7 @@ export class SweepLineStringToFacetsOptions {
 }
 
 /**
- * Options carrier for cloneWithHolesFilled
+ * Options carrier for [[fillSimpleHoles]]
  * @public
  */
 export interface HoleFillOptions {

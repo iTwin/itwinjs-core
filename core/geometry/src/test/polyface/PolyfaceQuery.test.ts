@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry, PolygonLocation } from "../../Geometry";
@@ -42,7 +44,6 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
-import { JointOptions } from "../../curve/OffsetOptions";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -610,7 +611,7 @@ describe("MarkVisibility", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-describe("ReOrientFacets", () => {
+describe("ReorientFacets", () => {
   it("TwoFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -667,6 +668,34 @@ describe("ReOrientFacets", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "ManyFlips");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MeshClosure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const testCases = ["./src/test/testInputs/polyface/closedMesh.imjs", "./src/test/testInputs/polyface/almostClosedMesh.imjs"];
+    for (const testCase of testCases) {
+      const mesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as IndexedPolyface;
+      if (ck.testType(mesh, IndexedPolyface, "input successfully parsed")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+        const range = mesh.range();
+        let isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        if (!isTopologicallyClosed) {
+          // almostClosedMesh has two degenerate triangles with only 2 edges, and a degenerate hexagon with only 3 edges,
+          // which can be seen in the allGeometry if the following compress is skipped.
+          mesh.data.compress();
+          const typicalBoundary = PolyfaceQuery.collectBoundaryEdges(mesh, true, false, false);
+          ck.testUndefined(typicalBoundary, "compressed mesh anomalous boundary removed successfully");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, typicalBoundary, x0);
+          isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        }
+        ck.testBoolean(isTopologicallyClosed, 2 === mesh.expectedClosure, "expected closure agrees with topo closure");
+        x0 += range.xLength();
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MeshClosure");
     expect(ck.getNumErrors()).equals(0);
   });
 
