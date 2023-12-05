@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Handle SI and METRIC unit systems as a single unit system. This fixes a problem where temperatures are formatted in Kelvin even though metric was requested.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

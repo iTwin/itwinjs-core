@@ -9,7 +9,7 @@ Table of contents:
   - [Clip any curve](#clip-any-curve)
 - [ECSQL instance properties](#ecsql-instance-properties)
 - [Node 20 support](#node-20-support)
-- [Electron 27 support](#electron-27-support)
+- [Electron 27 and Electron 28 support](#electron-27-and-electron-28-support)
 - [Element aspects require locking](#element-aspects-require-locking)
 - [Display](#display)
   - [Colorizing clip intersections](#colorizing-clip-intersections)
@@ -32,9 +32,9 @@ ECSQL supports querying instance properties, which are any property in a class s
 
 iTwin.js now officially supports Node 20 starting with LTS version of 20.9.0. Node 20 support is in addition to Node 18, not a replacement.
 
-## Electron 27 support
+## Electron 27 and Electron 28 support
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 27](https://www.electronjs.org/blog/electron-27-0).
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 27](https://www.electronjs.org/blog/electron-27-0) and [Electron 28](https://releases.electronjs.org/release/v28.0.0).
 
 ## Element aspects require locking
 

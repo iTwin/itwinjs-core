@@ -880,7 +880,7 @@ export class SchemaComparer {
     const schemaNameA = itemKeyA ? itemKeyA.schemaName : undefined;
     const schemaNameB = itemKeyB ? itemKeyB.schemaName : undefined;
 
-    return nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB;
+    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
   }
 
   /**
@@ -896,10 +896,7 @@ export class SchemaComparer {
         const classNameB = caB[0];
         const classItemKeyA = containerA.schema.getSchemaItemKey(classNameA);
         const classItemKeyB = containerB.schema.getSchemaItemKey(classNameB);
-        const areSameByName = this.areItemsSameByName(classItemKeyA, classItemKeyB, containerA.schema.name, containerB.schema.name);
-        if (areSameByName) {
-          return true;
-        }
+        return this.areItemsSameByName(classItemKeyA, classItemKeyB, containerA.schema.name, containerB.schema.name);
       }
     }
     return false;
