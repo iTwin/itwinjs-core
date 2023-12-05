@@ -39,7 +39,7 @@
     "@itwin/core-bentley": "workspace:^4.3.0-dev.36",
     "@itwin/core-common": "workspace:^4.3.0-dev.36",
     "@itwin/core-frontend": "workspace:^4.3.0-dev.36",
-    "electron": ">=23.0.0 <28.0.0"
+    "electron": ">=23.0.0 <29.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -53,7 +53,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "~18.16.20",
     "chai": "^4.3.10",
-    "electron": "^27.0.0",
+    "electron": "^28.0.0",
     "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
