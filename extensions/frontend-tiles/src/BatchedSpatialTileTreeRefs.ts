@@ -6,12 +6,13 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
-  AttachToViewportArgs, IModelConnection, SpatialModelState, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialModelState, SpatialTileTreeReferences, SpatialViewState,
+  TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
-import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
+import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -172,10 +173,10 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
       if (url) {
         this.setTreeRefs(new BatchedSpatialTileTreeReferences(url, view));
       } else {
-        this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
+        this.setTreeRefs(createSpatialTileTreeReferences(view));
       }
     }).catch(() => {
-      this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
+      this.setTreeRefs(createSpatialTileTreeReferences(view));
     });
   }
 
@@ -239,7 +240,7 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
 
   if (null === entry) {
     // No tileset exists for this iModel - use default tile generation instead.
-    return createFallbackSpatialTileTreeReferences(view);
+    return createSpatialTileTreeReferences(view);
   }
 
   if (entry instanceof Promise)

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
@@ -11,7 +12,15 @@ import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwi
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
-function isTileset3d(json: unknown): json is schema.Tileset {
+interface BatchedTilesetProps extends schema.Tileset {
+  extensions: {
+    BENTLEY_BatchedTileset?: {
+      includedModels: Id64String[];
+    };
+  }
+}
+
+function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
   if (typeof json !== "object")
     return false;
 
@@ -69,7 +78,7 @@ export class BatchedTilesetReader {
   public readonly baseUrl: URL;
 
   public constructor(json: unknown, iModel: IModelConnection, baseUrl: URL) {
-    if (!isTileset3d(json))
+    if (!isBatchedTileset(json))
       throw new Error("Invalid tileset JSON");
 
     this._iModel = iModel;
@@ -114,6 +123,8 @@ export class BatchedTilesetReader {
   public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
     const root = this._tileset.root;
     const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
+    const extension = this._tileset.extensions?.BENTLEY_BatchedTileSet;
+    const includedModels = extension ? new Set<Id64String>(extension.includedModels) : undefined;
 
     return {
       id: "spatial-models",
@@ -123,6 +134,7 @@ export class BatchedTilesetReader {
       priority: TileLoadPriority.Primary,
       rootTile: this.readTileParams(root),
       reader: this,
+      includedModels,
     };
   }
 }
