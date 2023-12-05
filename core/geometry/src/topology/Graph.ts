@@ -174,7 +174,7 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public faceTag?: any;
   /** Immutable ID useful for debugging. */
-  private _id: any;
+  private _id: number;
   /** ID assigned sequentially during construction --- useful for debugging. */
   public get id() {
     return this._id;
@@ -286,14 +286,14 @@ export class HalfEdge implements HalfEdgeUserData {
     heB._edgeMate = heA;
   }
   /**
-   * Create a new vertex within the edge from base.
-   * * Insert it "within" the base edge.
-   * * This requires two new half edges.
+   * Create a new vertex within the edge beginning at `baseA`.
+   * * This creates two new nodes in their own vertex loop.
    * * If the base is undefined, create a single-edge loop.
-   * * This (unlike pinch) breaks the edgeMate pairing of the base edge.
-   * * This preserves xyz and i properties at all existing vertices.
-   * * On each side, if edgeTag is present, it is copied to the new edge.
-   * @returns the reference to the half edge created.
+   * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
+   * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
+   * each node of the input edge gets a new node as its edge mate.
+   * * On each side of the edge, if edgeTag is present, it is copied to the new node on that side.
+   * @returns reference to the half edge created, the new face successor of `baseA`.
    */
   public static splitEdge(
     baseA: undefined | HalfEdge,
@@ -332,15 +332,14 @@ export class HalfEdge implements HalfEdgeUserData {
     return newA;
   }
   /**
-   * * Create a new sliver face "inside" an existing edge.
-   * * Insert it "within" the base edge.
-   * * This requires two new half edges.
-   * * if the base is undefined, create a single-edge loop.
-   * * This (unlike pinch) breaks the edgeMate pairing of the base edge.
-   * * This preserves xyz and i properties at all existing vertices.
-   * * The two new half edges are a sliver face (via their predecessor and successor)
-   * * Each new edge mates to one existing edge.
-   * @returns Returns the reference to the half edge created.
+   * Create a new sliver face "inside" an existing edge.
+   * * This creates two nodes that are each face predecessor and successor to the other.
+   * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
+   * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
+   * each node of the input edge gets a new node as its edge mate.
+   * * New nodes get the xyz and i values shared by the nodes in the vertex loops into which they are placed.
+   * * New nodes' faceTag and edgeTag are `undefined`.
+   * @returns reference to the half edge created in the vertex loop of baseA.
    */
   public static splitEdgeCreateSliverFace(
     baseA: HalfEdge,
@@ -367,9 +366,9 @@ export class HalfEdge implements HalfEdgeUserData {
     HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.NULL_FACE,
   ];
   /**
-   * Copy "edge based" content of `fromNode` to `toNode`.
+   * Copy "edge based" content of `fromNode` to `toNode`:
    * * edgeTag
-   * * Masks in _edgePropertyMasks: EXTERIOR, BOUNDARY_EDGE, NULL_FACE, PRIMARY_EDGE
+   * * masks EXTERIOR, BOUNDARY_EDGE, NULL_FACE, PRIMARY_EDGE
    */
   public static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void {
     toNode.edgeTag = fromNode.edgeTag;
@@ -421,10 +420,7 @@ export class HalfEdge implements HalfEdgeUserData {
     } while (node !== this);
   }
 
-  /**
-   * Set x,y,z at all nodes around a vertex.
-   * @param mask mask to apply to the half edges around this HalfEdge's vertex loop.
-   */
+  /** Set x,y,z at all nodes around a vertex. */
   public setXYZAroundVertex(x: number, y: number, z: number): void {
     let node: HalfEdge = this;
     do {
@@ -690,7 +686,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param y1 y coordinate for second node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge {
+  public static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge {
     const node0 = new HalfEdge(x0, y0);
     const node1 = new HalfEdge(x1, y1);
     node0._faceSuccessor = node0._facePredecessor = node0._edgeMate = node1;
@@ -740,15 +736,15 @@ export class HalfEdge implements HalfEdgeUserData {
     return node;
   }
   /** Return the id of a node. Useful for collector methods. */
-  public static nodeToId(node: HalfEdge): any {
+  public static nodeToId(node: HalfEdge): number {
     return node.id;
   }
   /** Return the id of a node as string. Useful for collector methods. */
-  public static nodeToIdString(node: HalfEdge): any {
+  public static nodeToIdString(node: HalfEdge): string {
     return node.id.toString();
   }
   /** Return the [id, mask, [x,y]] of a node. Useful for collector methods. */
-  public static nodeToIdMaskXY(node: HalfEdge): { id: any, mask: any, xy: number[] } {
+  public static nodeToIdMaskXY(node: HalfEdge): { id: number, mask: string, xy: number[] } {
     return { id: node.id, mask: HalfEdge.nodeToMaskString(node), xy: [node.x, node.y] };
   }
   /** Return the [id, mask, [x,y]] of a node as string. Useful for collector methods. */
@@ -1387,36 +1383,39 @@ export class HalfEdgeGraph {
     );
   }
   /**
-   * Insert a vertex in the edge beginning at `base`.
-   * * This creates two half edges.
-   * * The base of the new edge is after the (possibly `undefined`) start node in its face loop.
-   * * The existing mate retains its base xyz and i properties but is no longer the mate of base.
-   * * The base and existing mate each become mates with the new half edge.
-   * @returns the reference to the half edge created.
+   * Create a new vertex within the edge beginning at `base`.
+   * * This creates two new nodes in their own vertex loop.
+   * * If the base is undefined, create a single-edge loop.
+   * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
+   * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
+   * each node of the input edge gets a new node as its edge mate.
+   * * On each side of the edge, if edgeTag is present, it is copied to the new node on that side.
+   * @returns reference to the half edge created, the new face successor of `base`.
    */
   public splitEdge(base: undefined | HalfEdge, xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0): HalfEdge {
     return HalfEdge.splitEdge(base, xA, yA, zA, iA, this.allHalfEdges);
   }
   /**
-   * Create a sliver face "within" an edge.
-   * * This creates two half edges.
-   * * The existing edges both stay in their same face loops and retain coordinates and i value.
-   * * Each existing edge's mate is a new edge (rather than original mate).
-   * * Coordinates are copied to the new edges at respective vertices.
-   * * New faceTag and edgeTag `undefined`.
-   * * i members are copied around their respective vertices.
-   * @returns the reference to the half edge created.
+   * Create a new sliver face "inside" an existing edge.
+   * * This creates two nodes that are each face predecessor and successor to the other.
+   * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
+   * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
+   * each node of the input edge gets a new node as its edge mate.
+   * * New nodes get the xyz and i values shared by the nodes in the vertex loops into which they are placed.
+   * * New nodes' faceTag and edgeTag are `undefined`.
+   * @returns reference to the half edge created in the vertex loop of baseA.
    */
   public splitEdgeCreateSliverFace(base: HalfEdge): HalfEdge {
     return HalfEdge.splitEdgeCreateSliverFace(base, this.allHalfEdges);
   }
   /**
-   * Insert a vertex in the edge beginning at `base`, with coordinates specified as a fraction along the existing edge.
-   * * This creates two half edges.
-   * * The base of the new edge is after the (possibly `undefined`) start node in its face loop.
-   * * The existing mate retains its base xyz and i properties but is no longer the mate of base.
-   * * The base and existing mate each become mates with the new half edge.
-   * @returns the reference to the half edge created.
+   * Create a new vertex within the edge beginning at `base`, with coordinates specified by a fraction along the edge.
+   * * This creates two new nodes in their own vertex loop.
+   * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
+   * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
+   * each node of the input edge gets a new node as its edge mate.
+   * * On each side of the edge, if edgeTag is present, it is copied to the new node on that side.
+   * @returns reference to the half edge created, the new face successor of `base`.
    */
   public splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge {
     return HalfEdge.splitEdge(
