@@ -226,7 +226,7 @@ describe("ChangedElements", () => {
 
     ChangedElementsManager.cleanUp();
 
-    newIModel.closeIModel();
+    newIModel.closeFile();
   });
 
   it("Create ChangedElements Cache and process changesets while rolling Db without caching", async () => {
@@ -295,6 +295,6 @@ describe("ChangedElements", () => {
 
     ChangedElementsManager.cleanUp();
 
-    newIModel.closeIModel();
+    newIModel.closeFile();
   });
 });

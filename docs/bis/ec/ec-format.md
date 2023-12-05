@@ -101,7 +101,12 @@ Supported scientific type:
 
 **includeZero** determines whether to keep a segment of the composite even if its magnitude is zero. By default, this is true.
 
-**units (1..4)** an optional array of unit + label override objects.  A single units entry formats a value like `42.42 ft`.  If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`
+**units (1..4)** an optional array of unit + label override objects.
+  - A single units entry formats a value like `42.42 ft`.
+  - If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`.
+  - Unit labels are optional. If not specified, the label will be set as the unit's diplay label.
+  - If a unit label is explicitly set to an empty string, no label will be shown for that unit and the label will remain an empty string.
+  - Unit labels specified in the composite format definition can be overriden as part of the format override in a KindOfQuantity. See [format override](./kindofquantity.md/#format-overrides).
 
 ## Examples
 
@@ -171,5 +176,24 @@ This format does not specify any units so it may only be used in a [format overr
         "KeepDecimalPoint",
         "ShowUnitLabel"
       ]
+    }
+```
+
+This format specifies units which have labels that are intentionally missing or set to an empty string.
+
+```json
+    "MyMetersFormat": {
+      "schemaItemType": "Format",
+      "label": "real",
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "composite": {
+        "units": [{ "name": "Units.KM" }, { "name": "Units.M", "label": "" }, { "name": "Units.CM", "label": "centimeter" }, { "name": "Units.MM", "label": "millimeter" }]
+      }
     }
 ```

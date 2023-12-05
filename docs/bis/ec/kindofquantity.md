@@ -59,8 +59,11 @@ The below represents the string literal syntax. All italicized values are to be 
   - `formatName(precision)[First Unit][Second Unit][Third Unit][Fourth Unit]`
 - Overrides may not change units if any are originally defined in the base format, they may only change the display label.
 - Up to 4 per format string
+- As unit labels are optional, they can be kept unset or they can be set to an empty string.
+- When a unit label is not specified in the override, the label will get defaulted to the display label of the unit. The label if it exists in the composite format will be ignored in this case. See example [Null unit label in override](#format-overrides-with-nullempty-unit-labels).
+- When a unit label is explicitly set to an empty string, no label will be shown for that unit and the final label will remain an empty string. See example [Empty unit label in override](#format-overrides-with-nullempty-unit-labels).
 - Example
-  - `[u:M|meters]`
+  - `[u:KM][u:M|meters][u:CM|][u:MM|millimetre]`
 
 #### Parts of a Unit Override
 
@@ -79,12 +82,30 @@ The below represents the string literal syntax. All italicized values are to be 
 
 ### Examples
 
-- The format string `f:DefaultRealU[u:M][u:CM][u:MM]` will override the first unit to be `u:M`, the second unit to be `u:CM` and the third unit to be `u:MM`
+  #### The format string `f:DefaultRealU[u:M][u:CM][u:MM]` will override the first unit to be `u:M`, the second unit to be `u:CM` and the third unit to be `u:MM`
 
-- For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
+  #### For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
 
 | Intention             | Invalid way                        | Valid way                        |
 |-----------------------|------------------------------------|----------------------------------|
 | Override second Label | f:AmerFI[u:IN&#124;inches]         | f:AmerFI[u:FT][u:IN&#124;inches] |
 | Override first Label  | f:AmerFI[u:FT&#124;feet]           | f:AmerFI[u:FT&#124;feet][u:IN]   |
 | Change units          | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid                      |
+
+ #### Format overrides with null/empty unit labels
+  - Consider the below units and format:
+
+  ```json
+      "TestUnit": { "schemaItemType": "Unit", "label": "TestUnitLabel" },
+
+      "TestFormat": {
+        "schemaItemType": "Format",
+        "composite": {
+          "spacer": "-",
+          "units": [{ "name": "TestUnitMajor" }]
+        }
+      }
+  ```
+  - If the unit label override is kept unset `TestFormat[TestUnitMajor]`, the final label will default to the unit's display label `TestUnitMajorLabel`.
+  - If the unit label override is set to an empty string `TestFormat[TestUnitMajor|]`, the final label will set to an empty string.
+  - If the unit label override is set to a valid `TestFormat[TestUnitMajor|centimetre]`, the final label will be the overriden string `centimetre`.

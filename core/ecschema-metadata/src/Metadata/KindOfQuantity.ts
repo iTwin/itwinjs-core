@@ -102,7 +102,7 @@ export class KindOfQuantity extends SchemaItem {
     }
 
     let i = 4;
-    while (i < match.length) {
+    while (i < match.length - 1) {  // The regex match ends with an empty last value, which causes problems when exactly 4 unit overrides as specified, so ignore this last empty value
       if (undefined === match[i])
         break;
       // Unit override required
@@ -113,7 +113,7 @@ export class KindOfQuantity extends SchemaItem {
         returnValue.unitAndLabels = [];
 
       if (undefined !== match[i + 2]) // matches '|'
-        returnValue.unitAndLabels.push([match[i + 1], match[i + 3]]); // add unit name and label override
+        returnValue.unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
       else
         returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
 
