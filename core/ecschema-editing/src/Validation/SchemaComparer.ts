@@ -791,6 +791,32 @@ export class SchemaComparer {
         const bType = primitiveTypeB !== undefined ? primitiveTypeToString(primitiveTypeB) : undefined;
         promises.push(this._reporter.reportPropertyDelta(propertyA, "primitiveType", aType, bType, this._compareDirection));
       }
+
+      const minLengthB = propertyB && propertyB.isPrimitive() ? propertyB.minLength : undefined;
+      if (propertyA.minLength !== minLengthB) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "minLength", propertyA.minLength, minLengthB, this._compareDirection));
+      }
+
+      // valid for primitive and enumeration properties
+      const maxLengthB = propertyB && propertyB.isPrimitive() ? propertyB.maxLength : undefined;
+      if (propertyA.maxLength !== maxLengthB) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "maxLength", propertyA.maxLength, maxLengthB, this._compareDirection));
+      }
+
+      const minValueB = propertyB && propertyB.isPrimitive() ? propertyB.minValue : undefined;
+      if (propertyA.minValue !== minValueB) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "minValue", propertyA.minValue, minValueB, this._compareDirection));
+      }
+
+      const maxValueB = propertyB && propertyB.isPrimitive() ? propertyB.maxValue : undefined;
+      if (propertyA.maxValue !== maxValueB) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "maxValue", propertyA.maxValue, maxValueB, this._compareDirection));
+      }
+
+      const extendedTypeNameB = propertyB && propertyB.isPrimitive() ? propertyB.extendedTypeName : undefined;
+      if (propertyA.extendedTypeName !== extendedTypeNameB) {
+        promises.push(this._reporter.reportPropertyDelta(propertyA, "extendedTypeName", propertyA.extendedTypeName, extendedTypeNameB, this._compareDirection));
+      }
     }
 
     if (propertyA.isStruct()) {
