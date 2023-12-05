@@ -214,6 +214,7 @@ export class MapLayerFormatRegistry {
     } else if (typeof formatIdOrArgs !== "string") {
       const entry = this._formats.get(formatIdOrArgs.source.formatId);
       format = entry?.type;
+      args = formatIdOrArgs;
     }
 
     if (!args || !format)
