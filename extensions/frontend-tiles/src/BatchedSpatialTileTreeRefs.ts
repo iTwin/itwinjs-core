@@ -35,7 +35,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     const script = view.displayStyle.scheduleScript;
     this._currentScript = script?.requiresBatching ? script : undefined;
 
-    const includedModels = spec.props.extensions?.BENTLEY_BatchedTileset?.includedModels;
+    const includedModels = spec.props.extensions?.BENTLEY_BatchedTileSet?.includedModels;
     this._excludedRefs = includedModels ? createSpatialTileTreeReferences(view, new Set(includedModels)) : {
       update: () => { },
       setDeactivated: () => { },

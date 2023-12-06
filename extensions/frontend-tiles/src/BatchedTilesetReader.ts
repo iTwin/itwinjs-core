@@ -15,7 +15,7 @@ import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 /** @internal */
 export interface BatchedTilesetProps extends schema.Tileset {
   extensions?: {
-    BENTLEY_BatchedTileset?: {
+    BENTLEY_BatchedTileSet?: {
       includedModels: Id64String[];
     };
   }
