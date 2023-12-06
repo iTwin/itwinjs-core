@@ -2488,6 +2488,9 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
 
+// @internal
+export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
+
 // @internal (undocumented)
 export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined;
 
