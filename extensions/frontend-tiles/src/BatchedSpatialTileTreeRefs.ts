@@ -23,20 +23,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
   private _realityTreeRefs = new Map<Id64String, TileTreeReference>();
   private _onModelSelectorChanged?: () => void;
-  /** Provides tile trees for models that were not included in the batched tileset.
-   * Initialized after the TileTree is loaded.
-   */
-  private _excludedRefs?: SpatialTileTreeReferences | "none";
-
-  private get excludedRefs(): SpatialTileTreeReferences | undefined {
-    if (undefined === this._excludedRefs) {
-      const tree = this._primaryRef.batchedTree;
-      if (tree)
-        this._excludedRefs = tree.includedModels ? createSpatialTileTreeReferences(this._view, tree.includedModels) : "none";
-    }
-
-    return typeof this._excludedRefs === "object" ? this._excludedRefs : undefined;
-  }
 
   public constructor(baseUrl: URL, view: SpatialViewState) {
     this._view = view;
@@ -85,11 +71,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     for (const realityTreeRef of this._realityTreeRefs.values())
       yield realityTreeRef;
-
-    const excluded = this.excludedRefs;
-    if (excluded)
-      for (const ref of excluded)
-        yield ref;
   }
 
   private populateAnimatedReferences(treeOwner: TileTreeOwner): void {

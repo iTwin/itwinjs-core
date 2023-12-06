@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, RenderSchedule,
@@ -12,7 +11,6 @@ import {
   AnimationNodeId, formatAnimationBranchId, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
-import { BatchedTileTree } from "./BatchedTileTree";
 
 /** @internal */
 export abstract class BatchedTileTreeReference extends TileTreeReference {
@@ -25,12 +23,6 @@ export abstract class BatchedTileTreeReference extends TileTreeReference {
 
   public override get treeOwner(): TileTreeOwner {
     return this._treeOwner;
-  }
-
-  public get batchedTree(): BatchedTileTree | undefined {
-    const tree = this._treeOwner.tileTree;
-    assert(undefined === tree || tree instanceof BatchedTileTree);
-    return tree;
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
