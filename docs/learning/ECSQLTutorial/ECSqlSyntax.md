@@ -1,14 +1,29 @@
 # ECSql Syntax & Features
 
+1. Operators
+    1. [Bitwise operator](#bitwise-operator)
+    1. [Arithmetic operator](#arithmetic-operator)
+    1. [String operator](#string-operator)
+    1. [Boolean operator](#boolean-operator)
+1. Built-in functions
+    1. [Scalar SQLite built-in functions](#scalar-sqlite-built-in-functions)
+    1. [ECSQL Built-In functions](#ecsql-built-in-functions)
+1. [Window functions](#window-functions)
+1. [DATE, TIME & TIMESTAMP Literals](#date-time--timestamp-literals)
+1. [NULL, NUMBER, STRING & BOOLEAN Literals](#null-number-string--boolean-literals)
+1. [CASE-WHEN-THEN-ELSE](#case-when-then-else)
+1. [IIF (*condition-expr*, *true-expr*, *false-expr*)](#iif-condition-expr-true-expr-false-expr)
+1. [Instance query](#instance-query)
+
 ## Bitwise operator
 
 | Operator | Description         | Example                                          |
 |----------|---------------------|--------------------------------------------------|
-| `\|`     | Bitwise OR          | `(3\|4 )` *output `7`*                           |
 | `&`      | Bitwise AND         | `(4&2 )`  *output `0`*                           |
+| `~`      | Bitwise NOT urinary | `( ~1 )`   *output `-2` or `0xfffffffffffffffe`* |
+| `\|`     | Bitwise OR          | `(3\|4 )` *output `7`*                           |
 | `<<`     | Bitwise shift left  | `(1<<2)` *output `4`*                            |
 | `>>`     | Bitwise shift right | `(4>>1)` *output `2`*                            |
-| `~`      | Bitwise NOT urinary | `( ~1 )`   *output `-2` or `0xfffffffffffffffe`* |
 
 ## Arithmetic operator
 
@@ -85,9 +100,13 @@ Following is list of built-in scalar functions
 ECSQL allows use of these built-in functions:
 
 1. `ec_classname()` - Gets the formatted/qualified class name, given ECClassId as input
-2. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
+1. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
+1. `regexp()` - test if a text matches a regex.
+1. `regexp_extract()` - extract and rewrite matching regex group from a string value.
+1. `strToGuid()` - covert string guid to binary guid.
+1. `guidToStr()` - covert binary guid to string guid.
 
-## ec_classname( *ecclassId* [, *format-string* | *format-id* )
+## ec_classname( *ecclassId* [, *format-string* | *format-id*] )
 
 For the specified ecClassId, returns the class name as a string formatted according to the specified format-string
 
@@ -164,6 +183,70 @@ SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant:PUMP'), ec_c
 -- schema name or alias and class name can be specified as two arguments
 SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm', 'PUMP'), ec_classid('opm', 'VALVE'))
 SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant', 'PUMP'), ec_classid('OpenPlant', 'VALVE'))
+
+```
+
+### REGEXP ( *regex*, *value* )
+
+Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax) engine.
+
+```sql
+SELECT DisplayLabel FROM meta.ECClassDef c WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
+
+DisplayLabel
+--------------------
+Terrain Boundary
+Terrain Breakline
+Terrain Drape Boundary
+Terrain Drape Void
+Terrain Hole
+Terrain Island
+Terrain Reference
+Terrain Source Contour
+Terrain Spot Elevation
+Terrain Void
+```
+
+### REGEXP_EXTRACT ( *value*, *regex* [, *rewrite*] )
+
+Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax) engine.
+This function can be used to extract or rewrite the output. Parameter `rewrite` is made of group reference where `\0` refer to text captured by whole regex specified. `\1`, `\2` `...` refer to regex capture group in that order.
+
+```sql
+-- In follow we rewrite the string by swapping first and second capture group
+SELECT
+    REGEXP_EXTRACT(DisplayLabel,'(\w+)\s+(\w+)', '\2,\1')
+FROM meta.ECClassDef c
+    WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
+
+REGEXP_EXTRACT(ECClassDef.[DisplayLabel],'(\w+)\s+(\w+)','\2,\1')
+-----------------------------------------------------------------
+Boundary,Terrain
+Breakline,Terrain
+Drape,Terrain
+Drape,Terrain
+Hole,Terrain
+Island,Terrain
+Reference,Terrain
+Source,Terrain
+Spot,Terrain
+Void,Terrain
+```
+
+### StrToGuid( *guid-string* )
+
+When `GUID` is stored a binary, it need to be converted for comparison purpose.
+
+```sql
+SELECT * FROM BisCore.Element WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
+```
+
+### GuidToString( *binary-guid* )
+
+When `GUID` is stored a binary, it need to be converted for comparison purpose.
+
+```sql
+SELECT * FROM BisCore.Element WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
 ```
 
 ## Window functions
@@ -193,7 +276,7 @@ WINDOW win1 AS (ORDER BY y RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW),
 ORDER BY x;
 ```
 
-It is possible to define one window in terms of another. Specifically, the shorthand allows the new window to implicitly copy the PARTITION BY and optionally ORDER BY clauses of the base window. For example, in the following:
+It is possible to define one window in terms of another. Specifically, the shorthand allows the new window to implicitly copy the `PARTITION BY` and optionally `ORDER BY` clauses of the base window. For example, in the following:
 
 ```sql
 SELECT group_concat(b, '.') OVER (
@@ -232,9 +315,9 @@ Ending frame boundary and `EXCLUDE` clause are `optional`.
 
 There are three frame types: `ROWS`, `GROUPS`, and `RANGE`. The frame type determines how the starting and ending boundaries of the frame are measured.
 
-- `ROWS`: The ROWS frame type means that the starting and ending boundaries for the frame are determined by counting individual rows relative to the current row.
-- `GROUPS`: The GROUPS frame type means that the starting and ending boundaries are determine by counting "groups" relative to the current group. A "group" is a set of rows that all have equivalent values for all all terms of the window ORDER BY clause. ("Equivalent" means that the IS operator is true when comparing the two values.) In other words, a group consists of all peers of a row.
-- `RANGE`: The RANGE frame type requires that the `ORDER BY` clause of the window have exactly one term. Call that term `X`. With the `RANGE` frame type, the elements of the frame are determined by computing the value of expression `X` for all rows in the partition and framing those rows for which the value of `X` is within a certain range of the value of `X` for the current row.
+- `ROWS`: The `ROWS` frame type means that the starting and ending boundaries for the frame are determined by counting individual rows relative to the current row.
+- `GROUPS`: The `GROUPS` frame type means that the starting and ending boundaries are determine by counting "groups" relative to the current group. A "group" is a set of rows that all have equivalent values for all all terms of the window ORDER BY clause. ("Equivalent" means that the IS operator is true when comparing the two values.) In other words, a group consists of all peers of a row.
+- `RANGE`: The `RANGE` frame type requires that the `ORDER BY` clause of the window have exactly one term. Call that term `X`. With the `RANGE` frame type, the elements of the frame are determined by computing the value of expression `X` for all rows in the partition and framing those rows for which the value of `X` is within a certain range of the value of `X` for the current row.
 
 [Read more.](https://www.sqlite.org/windowfunctions.html#frame_type)
 
@@ -246,7 +329,7 @@ There are five ways to describe starting and ending frame boundaries:
 - `<expr> PRECEDING`: `<expr>` must be a non-negative constant numeric expression. The boundary is a row that is `<expr>` "units" prios to the current row. The meaning of "units" here depends on the frame type:
   - `ROWS`: The frame boundary is the row that is `<expr>` rows before the current row, or the first row of the partition if there are fewer than `<expr>` rows before the current row. `<expr>` must be an integer.
   - `GROUPS`: A "group" is a set of peer rows - rows that all have the same values for every term in the `ORDER BY` clause. The frame boundary is the group that is `<expr>` groups before the group containing the current row, or the first group of the partition if there are fewer than `<expr>` groups before the current row.
-  - `RANGE`: For this form, the `ORDER BY` clause of the window definition must have a single term. Call that `ORDER BY` term `X`. Let `Xi` be the value of the X expression for the i-th row in the partition and let `Xc` be the value of `X` for the current row. Informally, a `RANGE` bound is the first row for which Xi is within the <expr> of Xc.
+  - `RANGE`: For this form, the `ORDER BY` clause of the window definition must have a single term. Call that `ORDER BY` term `X`. Let `Xi` be the value of the `X` expression for the i-th row in the partition and let `Xc` be the value of `X` for the current row. Informally, a `RANGE` bound is the first row for which Xi is within the <expr> of Xc.
 - `CURRENT ROW`: The current row. For `RANGE` and `GROUPS` frame types, peers of the current row are also included in the frame, unless specifically excluded by the `EXCLUDE` clause.
 - `<expr> FOLLOWING`: This is the same as `<expr> PRECEDING` except that the boundary is `<expr>` units after the current rather than before the current row.
 - `UNBOUNDED FOLLOWING`: The frame boundary is the last row in the partition.
@@ -303,7 +386,7 @@ ECSql supports the following built-in window functions:
 | `last_value(expr)`            | The function `last_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the last row in the window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                     |
 | `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                |
 
-## Date/Time Literal
+## DATE, TIME & TIMESTAMP Literals
 
 ### `TIMESTAMP`
 
@@ -455,7 +538,7 @@ SELECT
 FROM test.Foo
 ```
 
-## IIF ( *condition-expr*, *true-expr* , *false-expr* )
+## IIF (*condition-expr*, *true-expr*, *false-expr*)
 
 ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> THEN <true-expr> ELSE <false-expr> END`
 
@@ -477,49 +560,250 @@ SELECT IIF(Length > 1.0, 'Big', 'Small') FROM test.Foo;
 SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
 ```
 
-## REGEXP ( *regex*, *value* )
+## Instance query
 
-Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax).
+### What is instance property?
 
-```sql
-SELECT DisplayLabel FROM meta.ECClassDef c WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
+Instance property is any property in a class selected in ECSql or its derived classes.
 
-DisplayLabel
---------------------
-Terrain Boundary
-Terrain Breakline
-Terrain Drape Boundary
-Terrain Drape Void
-Terrain Hole
-Terrain Island
-Terrain Reference
-Terrain Source Contour
-Terrain Spot Elevation
-Terrain Void
-```
+### How to access instance property?
 
-## REGEXP_EXTRACT ( *value*, *regex* [, *rewrite*] )
-
-Regex uses [google/re2](https://github.com/google/re2/wiki/Syntax).
-This function can be used to extract or rewrite the output. Parameter `rewrite` is made of group reference where `\0` refer to text captured by whole regex specified. `\1`, `\2` `...` refer to regex capture group in that order.
+In ECSQL instance property can be accessed by using the `$->` operator.
 
 ```sql
--- In follow we rewrite the string by swapping first and second capture group
-SELECT
-    REGEXP_EXTRACT(DisplayLabel,'(\w+)\s+(\w+)', '\2,\1')
-FROM meta.ECClassDef c
-    WHERE REGEXP('Terrain\s\w+', c.DisplayLabel);
-
-REGEXP_EXTRACT(ECClassDef.[DisplayLabel],'(\w+)\s+(\w+)','\2,\1')
------------------------------------------------------------------
-Boundary,Terrain
-Breakline,Terrain
-Drape,Terrain
-Drape,Terrain
-Hole,Terrain
-Island,Terrain
-Reference,Terrain
-Source,Terrain
-Spot,Terrain
-Void,Terrain
+SELECT $->CodeValue FROM bis.Element WHERE $->CodeValue IS NOT NULL LIMIT 1;
+--
+SELECT e.$->CodeValue FROM bis.Element e LIMIT 1;
 ```
+
+### How it works?
+
+Instance property allows relaxed access to any property within a hierarchy or selected class. It allows full access to the underlying instance of a class using its base class. We can think of it as if `$` represent the full instance not just properties of the selected class.
+
+Following ECSQL will return only properties declared in `BisCore.Element`
+
+```sql
+    SELECT * FROM BisCore.Element WHERE ECInstanceId = 0xc000000018a
+```
+
+ECInstanceId|ECClassId|Model|Last Modified|Code Specification|Code Scope|Code|User Label|Parent|Federation GUID|JSON Properties
+------------|---------|-----|-------------|------------------|----------|----|----------|------|---------------|---------------
+`0x8000000014c`|`0x710`|`{Id:0x80000000003,RelECClassId:0x51}`|`2020-09-13T21:03:39.281Z`|`{Id:0x1,RelECClassId:0x59}`|`{Id:0x1,RelECClassId:0x5b}`|`NULL`|`Computer`|`NULL`|`NULL`|`NULL`
+
+While following return all properties of respective derived class of `BisCore.Element`
+
+```sql
+    SELECT $ FROM BisCore.Element WHERE ECInstanceId = 0xc000000018a
+```
+
+above return one column and it contain serialized json instance with all properties
+
+```json
+{
+  "ECInstanceId": "0x8000000014c",
+  "ECClassId": "0x710",
+  "Model": {
+    "Id": "0x80000000003",
+    "RelECClassId": "0x51"
+  },
+  "LastMod": "2020-09-13T21:03:39.281Z",
+  "CodeSpec": {
+    "Id": "0x1",
+    "RelECClassId": "0x59"
+  },
+  "CodeScope": {
+    "Id": "0x1",
+    "RelECClassId": "0x5b"
+  },
+  "UserLabel": "Computer",
+  "Category": {
+    "Id": "0x70000000034",
+    "RelECClassId": "0xa8"
+  },
+  "InSpatialIndex": true,
+  "Origin": {
+    "X": -20.17197015358312,
+    "Y": -12.999908317386943,
+    "Z": -5.363399999999998
+  },
+  "Yaw": -9.610521879999869,
+  "Pitch": 0,
+  "Roll": 0,
+  "BBoxLow": {
+    "X": -0.2844601562499974,
+    "Y": -0.34431570637657166,
+    "Z": -0.00034867627660684075
+  },
+  "BBoxHigh": {
+    "X": 0.4287276153476725,
+    "Y": 0.0297172168743558,
+    "Z": 0.5207000000000108
+  },
+  "GeometryStream": "encoding=base64;Ug==",
+  "TypeDefinition": {
+    "Id": "0x80000000145",
+    "RelECClassId": "0xcc"
+  },
+  "TypeId": "382002",
+  "RevitId": "381840",
+  "Timestamp": "2020-09-10T13:36:41.000",
+  "LastModifier": "kiran.patkar",
+  "ELEM_TYPE_PARAM": "Computer",
+  "ELEM_CATEGORY_PARAM": "Specialty Equipment",
+  "STRUCTURAL_ANALYTICAL_MODEL": false,
+  "INSTANCE_ELEVATION_PARAM": 0.7366000000000033,
+  "SYMBOL_ID_PARAM": "Computer",
+  "IFC_GUID": "84f9c43a-0eef-4a55-b00e-a4ee3cda61e8-0005d390",
+  "PHASE_CREATED": "New Construction",
+  "ELEM_FAMILY_AND_TYPE_PARAM": "Computer",
+  "HOST_AREA_COMPUTED": 0.818624848267919,
+  "PHASE_DEMOLISHED": "None",
+  "ELEM_FAMILY_PARAM": "Computer",
+  "SCHEDULE_LEVEL_PARAM": "B1-CONCOURSE",
+  "INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM": "B1-CONCOURSE",
+  "WALL_ATTR_ROOM_BOUNDING": true,
+  "INSTANCE_OFFSET_POS_PARAM": true,
+  "INSTANCE_MOVES_WITH_GRID_PARAM": true,
+  "INSTANCE_STRUCT_USAGE_PARAM": 0,
+  "SKETCH_PLANE_PARAM": "<not associated>",
+  "INSTANCE_HEAD_HEIGHT_PARAM": 0.7366000000000033,
+  "INSTANCE_SILL_HEIGHT_PARAM": 0.7366000000000033,
+  "FLOOR_HEIGHTABOVELEVEL_PARAM": 0.7366000000000033,
+  "STRUCTURAL_ELEVATION_AT_BOTTOM": -5.3634000000000075,
+  "STRUCTURAL_ELEVATION_AT_TOP": -4.842699999999992,
+  "STRUCTURAL_ELEVATION_AT_BOTTOM_SURVEY": -5.3634000000000075,
+  "STRUCTURAL_ELEVATION_AT_TOP_SURVEY": -4.842699999999992,
+  "HOST_ID_PARAM": "None",
+  "INSTANCE_FREE_HOST_PARAM": "Floor : Tile mosaic 30mm 2",
+  "INSTANCE_FREE_HOST_OFFSET_PARAM": 0.7366000000000033,
+  "HOST_VOLUME_COMPUTED": 0.006083188590931392,
+  "FAMILY_LEVEL_PARAM": "B1-CONCOURSE",
+  "Asset_Tag": "COMPUTER 005"
+}
+```
+
+Take a property `Asset_Tag` which might be property that exist on some instance of derived hierarchy of `bis.Element` and we like to find any instance of `Bis.Element` where `$->Asset_Tag ='COMPUTER 005'`
+
+```sql
+    SELECT ECInstanceId FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005'
+```
+
+|ECInstanceId|
+|-------------|
+|0x8000000014c|
+
+Similarly we can read any set of properties and also filter by them
+
+```sql
+    SELECT $->RevitId, $->LastModifier  FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005'
+```
+
+|$ -> RevitId        | $ -> LastModifier|
+|----------------------|-------------------|
+|381840              |kiran.patkar|
+
+ECSql will apply a property filter on selected rows such that those instances which has at least one property out of set of instance property must exists. This improve performance.
+
+```sql
+    SELECT $->ThisPropertyDoesNotExists from Bis.Element;
+```
+
+If `ThisPropertyDoesNotExists` does not exists in `Bis.Element` derived hierarchy then no row will be returned. ECSql filter only include rows that must have at least one instance property. If any instance does not have any instance property requested then it will will be skipped.
+
+### Accessing composite properties like `NavigationProperty`, `Point2d`, `Point3d` or `Struct`s
+
+Only top level instance property can be accessed via `$-><prop>` syntax. Doing something like `$->Model.Id` will not not work as of now. It might be supported in future but as of now any access-string within a composite property is not supported, if its the only property selected then zero row will be returned.
+
+Following type of properties can directly be use in filters and return strong type value.
+
+- DateTime
+- Integer
+- Long
+- Binary
+- String
+- Double
+
+Here is example of `RevitId` use with `IN()` clause.
+
+```sql
+    SELECT $ from Bis.Element WHERE $->RevitId In ( 1000, 2000, 3000 );
+```
+
+While composite properties are returned as `JSON`.
+
+```sql
+    SELECT $->Model from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+```
+
+above will return following
+
+|$ -> Model|
+|--------------------|
+|`{"Id":"0x80000000003","RelECClassId":"0x51"}`|
+
+While following will not return any row
+
+```sql
+    SELECT $->Model.Id from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+```
+
+But you can still do following to get child property
+
+```sql
+    SELECT JSON_EXTRACT($->Model, '$.Id') AS ModelId from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+```
+
+above will return following
+
+ModelId|
+--------------------|
+`0x80000000003`|
+
+## Optional and non-optional instance properties
+
+By default, all properties accessed via instance accessor i.e. `$->prop` must exist in the class identifying the row for that row to qualify for output.
+
+If the user uses `?` after a property accessor e.g. `$->prop?`  then it will be considered optional, and the row class will not be checked to see if the `prop` exists or not.
+
+The following query will return no row if there is no subclass of `Bis.Element` that has both properties `CodeValue` and `Foo` in it.
+
+```sql
+  SELECT ECClassId, ECInstanceId
+  FROM Bis.Element
+      WHERE $->CodeValue = 'Profiling' OR $->Foo = 'Hello'
+  LIMIT 1
+  ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+On the other hand, the following query makes `Foo` optional by adding `?` at the end like `$->Foo?`. This will exclude this property from the list of instance properties that must exist in the class of a row for it to qualify for output.
+
+```sql
+  SELECT ECClassId, ECInstanceId
+  FROM Bis.Element
+      WHERE $->CodeValue = 'Profiling' OR $->Foo? = 'Hello'
+  LIMIT 1
+  ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+> Note: Optional property may slow down performance while non-optional properties will improve the performance of instance query.
+
+## Limitation
+
+1. Only top level property is allowed.
+2. Only following primitive type value can be use in filter directly. Any composite type will require `JSON_EXTRACT()` to extract child value before using it in query.
+    - DateTime
+    - Integer
+    - Long
+    - Binary
+    - String
+    - Double
+3. Currently indexes are not supported on instance properties.
+4. MetaData a.k.a `ColumnInfo` is dynamically updated only for primitive properties selected for output. All other properties will get generic `ColumnInfo` with a string property and `extendType=JSON`.
+
+## Performance
+
+Generally speaking the performance of instance prop is pretty good though it involve overhead of extracting either property value or complete instance.
+
+- Try use regular properties accessor where possible.
+- Do not use instance property access for local properties of class been selected.
+- Try avoiding filtering queries by instance properties. Though it fast be without a index it could be slow depending on number of rows to which filter will be applied.
