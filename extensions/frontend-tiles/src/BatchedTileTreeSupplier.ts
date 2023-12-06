@@ -9,12 +9,12 @@ import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
-import { BatchedTilesetReader } from "./BatchedTilesetReader";
+import { BatchedTilesetReader, BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
 
 /** @internal */
 export interface BatchedTileTreeId {
-  baseUrl: URL;
+  spec: BatchedTilesetSpec;
   script?: RenderSchedule.Script;
 }
 
@@ -25,14 +25,9 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: BatchedTileTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const baseUrl = treeId.baseUrl;
-    const url = new URL("tileset.json", baseUrl);
-    url.search = baseUrl.search;
+    const spec = treeId.spec;
     try {
-      const response = await fetch(url.toString());
-      const json = await response.json();
-
-      const reader = new BatchedTilesetReader(json, iModel, baseUrl);
+      const reader = new BatchedTilesetReader(spec, iModel);
       const params = await reader.readTileTreeParams();
 
       params.script = treeId.script;

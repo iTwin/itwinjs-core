@@ -12,7 +12,8 @@ import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwi
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
-interface BatchedTilesetProps extends schema.Tileset {
+/** @internal */
+export interface BatchedTilesetProps extends schema.Tileset {
   extensions: {
     BENTLEY_BatchedTileset?: {
       includedModels: Id64String[];
@@ -34,6 +35,22 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
     props.geometricError = props.root.geometricError;
 
   return true;
+}
+
+/** @internal */
+export interface BatchedTilesetSpec {
+  baseUrl: URL;
+  props: BatchedTilesetProps;
+}
+
+/** @internal */
+export namespace BatchedTilesetSpec {
+  export function create(baseUrl: URL, json: unknown) {
+    if (!isBatchedTileset(json))
+      throw new Error("Invalid tileset JSON");
+
+    return { baseUrl, props: json };
+  }
 }
 
 function rangeFromBoundingVolume(vol: schema.BoundingVolume): Range3d {
@@ -77,13 +94,10 @@ export class BatchedTilesetReader {
   private readonly _tileset: schema.Tileset;
   public readonly baseUrl: URL;
 
-  public constructor(json: unknown, iModel: IModelConnection, baseUrl: URL) {
-    if (!isBatchedTileset(json))
-      throw new Error("Invalid tileset JSON");
-
+  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection) {
     this._iModel = iModel;
-    this._tileset = json;
-    this.baseUrl = baseUrl;
+    this._tileset = spec.props;
+    this.baseUrl = spec.baseUrl;
   }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
