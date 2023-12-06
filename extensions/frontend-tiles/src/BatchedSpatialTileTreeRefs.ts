@@ -84,6 +84,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     for (const realityTreeRef of this._realityTreeRefs.values())
       yield realityTreeRef;
+
+    for (const excludedRef of this._excludedRefs)
+      yield excludedRef;
   }
 
   private populateAnimatedReferences(treeOwner: TileTreeOwner): void {
@@ -124,6 +127,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public update(): void {
+    this._excludedRefs.update();
     this._models.setViewedModels(this._view.modelSelector.models);
     this.populateRealityModels();
     if (this._onModelSelectorChanged)
@@ -132,10 +136,12 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   public attachToViewport(args: AttachToViewportArgs): void {
     this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
+    this._excludedRefs.attachToViewport(args);
   }
 
   public detachFromViewport(): void {
     this._onModelSelectorChanged = undefined;
+    this._excludedRefs.detachFromViewport();
   }
 
   public setDeactivated(): void {
