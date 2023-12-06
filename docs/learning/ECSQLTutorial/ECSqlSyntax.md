@@ -28,6 +28,22 @@
 1. [ORDER BY clause](#order-by-clause)
 1. [Parameters](#parameters)
 1. [Compound SELECT](#compound-select)
+1. JOINs
+    1. [JOIN USING](#join-using)
+
+## JOIN USING
+
+Join using automatically uses relationship definition to join two classes
+
+Syntax: `JOIN <end-class> USING <relationship> [FORWARD|BACKWARD]`
+
+In following we join from `Bis.Element` to `Bis.Element` using `bis.ElementOwnsChildElements`. Where child element is `t0` and parent is `t1`. If we use `FORWARD` then `t0` will become child and `t1` will be parent.
+
+```sql
+    SELECT *
+    FROM bis.Element t0
+        JOIN bis.Element t1 USING bis.ElementOwnsChildElements BACKWARD
+```
 
 ## Compound SELECT
 
