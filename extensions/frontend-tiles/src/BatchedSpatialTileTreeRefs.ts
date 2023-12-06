@@ -23,7 +23,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private _currentScript?: RenderSchedule.Script;
   private _primaryRef!: PrimaryBatchedTileTreeReference;
   private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
-  private _realityTreeRefs = new Map<Id64String, TileTreeReference>();
   private _onModelSelectorChanged?: () => void;
   /** Provides tile trees for models that are not included in the batched tile set. */
   private readonly _excludedRefs: SpatialTileTreeReferences;
@@ -54,7 +53,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._primaryRef = new PrimaryBatchedTileTreeReference(treeOwner, this._models);
 
     this.populateAnimatedReferences(treeOwner);
-    this.populateRealityModels();
 
     const onScriptChanged = (newScript: RenderSchedule.Script | undefined) => {
       if (!newScript?.requiresBatching)
@@ -82,9 +80,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     for (const animatedRef of this._animatedRefs)
       yield animatedRef;
 
-    for (const realityTreeRef of this._realityTreeRefs.values())
-      yield realityTreeRef;
-
     for (const excludedRef of this._excludedRefs)
       yield excludedRef;
   }
@@ -108,28 +103,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  private populateRealityModels(): void {
-    const prevRefs = this._realityTreeRefs;
-    this._realityTreeRefs = new Map<Id64String, TileTreeReference>();
-    for (const modelId of this._models.viewedRealityModelIds) {
-      let ref = prevRefs.get(modelId);
-      if (!ref) {
-        const model = this._view.iModel.models.getLoaded(modelId);
-        if (model && model instanceof SpatialModelState) {
-          assert(model.isRealityModel);
-          ref = model.createTileTreeReference(this._view);
-        }
-      }
-
-      if (ref)
-        this._realityTreeRefs.set(modelId, ref);
-    }
-  }
-
   public update(): void {
     this._excludedRefs.update();
     this._models.setViewedModels(this._view.modelSelector.models);
-    this.populateRealityModels();
     if (this._onModelSelectorChanged)
       this._onModelSelectorChanged();
   }
