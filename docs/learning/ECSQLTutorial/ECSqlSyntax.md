@@ -24,6 +24,54 @@
 1. [LIMIT clause](#limit-clause)
 1. [GROUP BY clause](#group-by-clause)
 1. [Common table expression](#common-table-expression)
+1. [Type filter](#type-filter)
+1. [ORDER BY clause](#order-by-clause)
+
+## ORDER BY clause
+
+Sort result by set of expressions in ascending or descending order. It is also use to order nulls in result set by putting them in front or last of results.
+
+Syntax:
+```sql
+ORDER BY
+    <expr> [ASC|DESC] [NULLS FIRST|LAST] [,...]
+```
+
+Order classes by schema and then class name.
+
+```sql
+SELECT * FROM meta.ECClassDef ORDER BY Schema.Id, Name
+```
+
+Order by DisplayLabel but put null values first.
+
+```sql
+SELECT * FROM meta.ECClassDef ORDER BY DisplayLabel NULLS FIRST
+```
+
+## Type filter
+
+Filter `ECClassId` by set of classes in polymorphic or non-polymorphic manner.
+
+Syntax: `<classId> IS [NOT] ( [ALL|ONLY] <class-name>[, ...])`
+
+Select element where it is of type `PUMP` or `PIPE`.
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS (plant.PUMP, plant.PIPE)
+```
+
+Select element where it is exactly of type `PUMP` or `PIPE`.
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS (ONLY plant.PUMP, ONLY plant.PIPE)
+```
+
+Find all the element that is not of type `PUMP` or `PIPE`
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS NOT (plant.PUMP, plant.PIPE)
+```
 
 ## Common table expression
 
