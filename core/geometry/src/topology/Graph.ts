@@ -173,9 +173,8 @@ export class HalfEdge implements HalfEdgeUserData {
    * * edge split operations are expected to copy this to new sub-edges.
    */
   public faceTag?: any;
-  /** Immutable ID useful for debugging. */
   private _id: number;
-  /** ID assigned sequentially during construction --- useful for debugging. */
+  /** Immutable ID assigned sequentially during construction --- useful for debugging. */
   public get id() {
     return this._id;
   }
