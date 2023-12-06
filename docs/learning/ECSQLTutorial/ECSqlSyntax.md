@@ -26,12 +26,38 @@
 1. [Common table expression](#common-table-expression)
 1. [Type filter](#type-filter)
 1. [ORDER BY clause](#order-by-clause)
+1. [Parameters](#parameters)
+
+## Parameters
+
+ECSQL support named and positional parameters.
+
+### Named parameters
+
+Name parameter can be use to bind parameter by name.
+
+Syntax: `:<parameter-name>`
+
+```sql
+    SELECT * FROM meta.ECClassDef WHERE Name = :className
+```
+
+### Positional parameters
+
+Positional parameter are bind by position from left to right.
+
+Syntax: `?`
+
+```sql
+    SELECT * FROM meta.ECClassDef WHERE Name = ? AND DisplayLabel = ?
+```
 
 ## ORDER BY clause
 
 Sort result by set of expressions in ascending or descending order. It is also use to order nulls in result set by putting them in front or last of results.
 
 Syntax:
+
 ```sql
 ORDER BY
     <expr> [ASC|DESC] [NULLS FIRST|LAST] [,...]
