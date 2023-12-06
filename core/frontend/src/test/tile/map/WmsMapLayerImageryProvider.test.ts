@@ -3,43 +3,132 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RequestBasicCredentials } from "../../../request/Request";
-import { EmptyLocalization, ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
-import chai from "chai";
-import chaiAsPromised from "chai-as-promised";
-import sinon from "sinon";
-import { IModelApp } from "../../../IModelApp";
+import { Cartographic, EmptyLocalization, ImageMapLayerSettings, MapLayerProps, MapSubLayerSettings, ServerError } from "@itwin/core-common";
+import * as sinon from "sinon";
+import * as chai from "chai";
 import {
+  ImageryMapTileTree,
+  MapCartoRectangle,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
+  QuadId,
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
+import { IModelApp } from "../../../IModelApp";
+import { RequestBasicCredentials } from "../../../request/Request";
 import { Point2d } from "@itwin/core-geometry";
-import { ByteStream } from "@itwin/core-bentley";
-
-chai.use(chaiAsPromised);
+import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
-
-const createFakeTileResponse = (contentType: string, data?: Uint8Array) => {
-  const test = {
-    headers: new Headers( { "content-type" : contentType}),
-    arrayBuffer: async () => {
-      return Promise.resolve(data ? ByteStream.fromUint8Array(data).arrayBuffer : undefined);
-    },
-    status: 200,
-  } as unknown;   // By using unknown type, I can define parts of Response I really need
-  return (test as Response );
-};
 
 describe("WmsMapLayerImageryProvider", () => {
   const sandbox = sinon.createSandbox();
 
+  beforeEach(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+  });
+
   afterEach(async () => {
     sandbox.restore();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("construct proper tile url", async () => {
+
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getCrsSupport" as any).callsFake(() => {
+      return {support3857: true, support4326: false};
+    });
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getVisibleLayers" as any).callsFake(() => {
+      return [MapSubLayerSettings.fromJSON({name: "sublayer"})];
+    });
+
+    // stub BBOX to avoid any floating point related issues
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getEPSG3857ExtentString" as any).callsFake(() => {
+      return "1,2,3,4";
+    });
+
+    sandbox.stub(WmsCapabilities, "create").callsFake(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+      return {} as WmsCapabilities;
+    });
+
+    const settings = ImageMapLayerSettings.fromJSON({formatId:"WMS", name: "", url: "https://sub.service.com/service"});
+    let  provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    let url = await provider.constructUrl(0,0,0);
+    const refUrl = "https://sub.service.com/service?SERVICE=WMS&VERSION=undefined&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=TRUE&LAYERS=sublayer&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&STYLES=&BBOX=1,2,3,4";
+    chai.expect(url).to.equals(refUrl);
+
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
+    provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.equals(`${refUrl}&${param1.toString()}&${param2.toString()}`);
+
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    settings.unsavedQueryParams.SERVICE = "BAD";
+    provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.equals(refUrl);
+  });
+
+  it("construct proper tooltip url", async () => {
+
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getCrsSupport" as any).callsFake(() => {
+      return {support3857: true, support4326: false};
+    });
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getVisibleLayers" as any).callsFake(() => {
+      return [MapSubLayerSettings.fromJSON({name: "sublayer"})];
+    });
+
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getQueryableLayers" as any).callsFake(() => {
+      return ["sublayer"];
+    });
+
+    // stub BBOX to avoid any floating point related issues
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "getEPSG3857ExtentString" as any).callsFake(() => {
+      return "1,2,3,4";
+    });
+
+    sandbox.stub(MapCartoRectangle.prototype, "worldToLocal" ).callsFake((point: Point2d, _result?: Point2d) => {
+      return point;
+    });
+
+    sandbox.stub(WmsCapabilities, "create").callsFake(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+      return {featureInfoFormats: ["text/html"] } as WmsCapabilities;
+    });
+
+    const stub = sandbox.stub(WmsMapLayerImageryProvider.prototype, "toolTipFromUrl" as any).callsFake(async () => {
+    });
+    const settings = ImageMapLayerSettings.fromJSON({formatId:"WMS", name: "", url: "https://sub.service.com/service"});
+    const  provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    await provider.getToolTip([], new QuadId(0,0,0),  Cartographic.createZero(), ({getTileRectangle: ()=> MapCartoRectangle.createZero()} as unknown) as ImageryMapTileTree);
+    const refUrl = "https://sub.service.com/service?SERVICE=WMS&VERSION=undefined&REQUEST=GetFeatureInfo&LAYERS=sublayer&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&BBOX=1,2,3,4&QUERY_LAYERS=sublayer&x=0&y=256&info_format=text/html";
+    chai.expect(stub.called).to.be.true;
+    chai.expect(stub.getCall(0).args[1]).to.equals(refUrl);
+
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
+    settings.savedQueryParams = {};
+    settings.unsavedQueryParams = {};
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
+
+    await provider.getToolTip([], new QuadId(0,0,0),  Cartographic.createZero(), ({getTileRectangle: ()=> MapCartoRectangle.createZero()} as unknown)as  ImageryMapTileTree);
+
+    chai.expect(stub.called).to.be.true;
+    chai.expect(stub.getCall(1).args[1]).to.equals(`${refUrl}&${param1.toString()}&${param2.toString()}`);
   });
 
   it("initialize() should handle 401 error from WmsCapabilities", async () => {
@@ -153,10 +242,9 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/continents.xml");
-    sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      return  fakeCapabilities;
-    });
+    const response = await fetch("assets/wms_capabilities/continents.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
 
     let provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
@@ -198,19 +286,18 @@ describe("WmsMapLayerImageryProvider", () => {
   it("should create a GetMap requests URL in WMS 1.1.1", async () => {
     const layerPros: MapLayerProps = {
       formatId: "WMS",
-      url: "https://localhost/wms",
+      url: "https://localhost/wms2",
       name: "Test WMS",
       subLayers: [
         {name: "Default", id:0, visible:true},
       ]};
-    const settings =ImageMapLayerSettings.fromJSON(layerPros);
+    const settings = ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_111.xml");
-    sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      return  fakeCapabilities;
-    });
+    const response = await fetch("assets/wms_capabilities/mapproxy_111.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
 
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
@@ -235,7 +322,7 @@ describe("WmsMapLayerImageryProvider", () => {
   it("should create a GetMap requests URL in WMS 1.3.0", async () => {
     const layerPros: MapLayerProps = {
       formatId: "WMS",
-      url: "https://localhost/wms",
+      url: "https://localhost/wms3",
       name: "Test WMS",
       subLayers: [
         {name: "Default", id:0, visible:true},
@@ -244,10 +331,9 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
-    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/mapproxy_130.xml");
-    sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      return  fakeCapabilities;
-    });
+    const response = await fetch("assets/wms_capabilities/mapproxy_130.xml");
+    const text = await response.text();
+    fakeTextFetch(sandbox, text);
 
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
@@ -268,19 +354,6 @@ describe("WmsMapLayerImageryProvider", () => {
     const refPoint2 = Point2d.create(85.05112878, 180);
     chai.expect(p1.isAlmostEqual(refPoint1)).to.be.true;
     chai.expect(p2.isAlmostEqual(refPoint2)).to.be.true;
-  });
-});
-//
-// This suite depends on IModelApp
-describe("MapLayerImageryProvider with IModelApp", () => {
-  const sandbox = sinon.createSandbox();
-  beforeEach(async () => {
-    await IModelApp.startup({ localization: new EmptyLocalization() });
-  });
-
-  afterEach(async () => {
-    sandbox.restore();
-    await IModelApp.shutdown();
   });
 
   it("loadTile() should call IModelApp.notifications.outputMessage", async () => {
@@ -334,38 +407,4 @@ describe("MapLayerImageryProvider with IModelApp", () => {
     // Event should not have been triggered again
     chai.expect(raiseEventSpy.getCalls().length).to.equals(1);
   });
-});
-
-const wmtsSampleSource = { formatId: "WMTS", url: "https://localhost/wmts", name: "Test WMTS" };
-describe("WmtsMapLayerImageryProvider", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(async () => {
-    sandbox.restore();
-  });
-
-  it("initialize() should handle unknown exception from WmsCapabilities", async () => {
-    const settings =ImageMapLayerSettings.fromJSON(wmtsSampleSource);
-    if (!settings)
-      chai.assert.fail("Could not create settings");
-
-    sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
-    });
-    const provider = new WmsMapLayerImageryProvider(settings);
-    await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
-  });
-
-  it("initialize() should handle unknown exception from WmtsCapabilities", async () => {
-    const settings =ImageMapLayerSettings.fromJSON(wmtsSampleSource);
-    if (!settings)
-      chai.assert.fail("Could not create settings");
-
-    sandbox.stub(WmtsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
-    });
-    const provider = new WmtsMapLayerImageryProvider(settings);
-    await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
-  });
-
 });

@@ -720,4 +720,24 @@ describe("Composite Formats tests:", () => {
     }
   });
 
+  it("Composite Format with empty and unset labels", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const compositeFormat = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{name: "Units.KM"},{name: "Units.M", label: ""},{name: "Units.CM", label: "CM"},{name: "Units.MM", label: "'"}],
+      },
+      formatTraits: ["keepSingleZero", "applyRounding"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+    const format = new Format("test");
+    assert.isDefined(format);
+
+    await format.fromJSON(unitsProvider, compositeFormat).catch(() => { });
+    expect(JSON.stringify(format.toJSON().composite)).to.eql(`{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`);
+  });
 });

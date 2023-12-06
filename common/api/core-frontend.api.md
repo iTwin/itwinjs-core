@@ -1244,6 +1244,26 @@ export interface ArcGisGeometryRenderer {
 }
 
 // @internal
+export interface ArcGisGetServiceJsonArgs {
+    // (undocumented)
+    formatId: string;
+    // (undocumented)
+    ignoreCache?: boolean;
+    // (undocumented)
+    password?: string;
+    // (undocumented)
+    queryParams?: {
+        [key: string]: string;
+    };
+    // (undocumented)
+    requireToken?: boolean;
+    // (undocumented)
+    url: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     constructor(props: ArcGisGraphicsRendererProps);
     // (undocumented)
@@ -1374,7 +1394,7 @@ export interface ArcGISServiceMetadata {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction, nbLods?: number);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
@@ -1408,15 +1428,20 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
+    static getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata | undefined>;
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };
     static isEpsg3857Compatible(tileInfo: any): boolean;
-    static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
+}
+
+// @internal
+export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
+    capabilitiesFilter: string[];
 }
 
 // @internal
@@ -3620,6 +3645,9 @@ export class FetchCloudStorage implements FrontendStorage {
     // (undocumented)
     uploadInMultipleParts(_input: FrontendUploadInMultiplePartsInput): Promise<void>;
 }
+
+// @internal (undocumented)
+export type FetchFunction = (url: URL, options?: RequestInit) => Promise<Response>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -7280,7 +7308,7 @@ export abstract class InteractiveTool extends Tool {
 }
 
 // @internal (undocumented)
-export const internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[];
+export const internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[];
 
 // @public (undocumented)
 export class IntersectDetail extends SnapDetail {
@@ -7754,7 +7782,9 @@ export class MapLayerFormat {
     // (undocumented)
     static formatId: string;
     static register(): void;
-    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    // @beta
+    static validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
+    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -7782,6 +7812,8 @@ export class MapLayerFormatRegistry {
     register(formatClass: MapLayerFormatType): void;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
+    // @beta (undocumented)
+    validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
     // (undocumented)
     validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
@@ -7793,6 +7825,8 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
+    // @internal
+    protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
@@ -7933,6 +7967,10 @@ export interface MapLayerScaleRangeVisibility {
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
+    // @beta
+    collectQueryParams(): {
+        [key: string]: string;
+    };
     // (undocumented)
     formatId: string;
     // @internal (undocumented)
@@ -7943,17 +7981,22 @@ export class MapLayerSource {
     name: string;
     // (undocumented)
     password?: string;
+    // @beta
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
-    toJSON(): {
-        url: string;
-        name: string;
+    toJSON(): Omit<MapLayerSourceProps, "formatId"> & {
         formatId: string;
-        transparentBackground: boolean | undefined;
     };
     // (undocumented)
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
+    // @beta
+    unsavedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     url: string;
     // (undocumented)
@@ -7967,6 +8010,10 @@ export interface MapLayerSourceProps {
     baseMap?: boolean;
     formatId?: string;
     name: string;
+    // @beta
+    queryParams?: {
+        [key: string]: string;
+    };
     transparentBackground?: boolean;
     url: string;
 }
@@ -15315,6 +15362,13 @@ export interface UserPreferencesAccess {
     save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
 }
 
+// @beta
+export interface ValidateSourceArgs {
+    ignoreCache?: boolean;
+    // (undocumented)
+    source: MapLayerSource;
+}
+
 // @public
 export enum VaryingType {
     Float = 0,
@@ -17337,7 +17391,9 @@ export class WmsCapabilities {
     // (undocumented)
     get cartoRange(): MapCartoRectangle | undefined;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {
+        [key: string]: string;
+    }): Promise<WmsCapabilities | undefined>;
     // (undocumented)
     get featureInfoFormats(): string[] | undefined;
     // (undocumented)
@@ -17453,7 +17509,9 @@ export class WmtsCapabilities {
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
-    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
+    static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {
+        [key: string]: string;
+    }): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
     // (undocumented)
