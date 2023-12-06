@@ -14,6 +14,247 @@
 1. [CASE-WHEN-THEN-ELSE](#case-when-then-else)
 1. [IIF (*condition-expr*, *true-expr*, *false-expr*)](#iif-condition-expr-true-expr-false-expr)
 1. [Instance query](#instance-query)
+1. [Pragmas](#pragmas)
+    1. [help](#pragma-help)
+    1. [ecdb_ver](#pragma-ecdb_ver)
+    1. [experimental_features_enabled](#pragma-experimental_features_enabled)
+    1. [integrity_check](#pragma-integrity_check-experimental)
+1. [LIKE operator](#like-operator)
+1. [CAST operator](#cast-operator)
+1. [LIMIT clause](#limit-clause)
+1. [GROUP BY clause](#group-by-clause)
+1. [Common table expression](#common-table-expression)
+
+## Common table expression
+
+Syntax:
+
+```sql
+WITH [RECLUSIVE]
+    <cte-name>([args...]) AS (
+        <query1>
+        [UNION <query2>]
+    )[, <next-cte-block>]
+    <query3>
+```
+
+A simple example of cte.
+
+```sql
+WITH RECURSIVE
+    c(i) AS (
+        SELECT 1
+        UNION
+        SELECT i + 1 FROM c WHERE i < 4 ORDER BY 1
+    )
+    SELECT i FROM c
+    /*
+        i
+        ------------------
+        1
+        2
+        3
+        4
+    */
+```
+
+Generate mandelbrot set using CTE.
+
+```sql
+      WITH RECURSIVE
+        [xaxis]([x]) AS(
+          VALUES (- 2.0)
+          UNION ALL
+          SELECT [x] + 0.05
+          FROM   [xaxis]
+          WHERE  [x] < 1.2
+        ),
+        [yaxis]([y]) AS(
+          VALUES (- 1.0)
+          UNION ALL
+          SELECT [y] + 0.1
+          FROM   [yaxis]
+          WHERE  [y] < 1.0
+        ),
+        [m]([iter], [cx], [cy], [x], [y]) AS(
+          SELECT
+                0,
+                [x],
+                [y],
+                0.0,
+                0.0
+          FROM   [xaxis],
+                [yaxis]
+          UNION ALL
+          SELECT
+                [iter] + 1,
+                [cx],
+                [cy],
+                [x] * [x] - [y] * [y] + [cx],
+                2.0 * [x] * [y] + [cy]
+          FROM   [m]
+          WHERE  ([x] * [x] + [y] * [y]) < 4.0 AND [iter] < 28
+        ),
+        [m2]([iter], [cx], [cy]) AS(
+          SELECT
+                MAX ([iter]),
+                [cx],
+                [cy]
+          FROM   [m]
+          GROUP  BY
+                    [cx],
+                    [cy]
+        ),
+        [a]([t]) AS(
+          SELECT GROUP_CONCAT (SUBSTR (' .+*#', 1 + (CASE WHEN [iter] / 7 > 4 THEN 4 ELSE [iter] / 7 END), 1), '')
+          FROM   [m2]
+          GROUP  BY [cy]
+        )
+      SELECT GROUP_CONCAT (RTRIM ([t]), CHAR (0xa)) mandelbrot_set
+      FROM   [a];
+      /*
+                                        ....#
+                                       ..#*..
+                                     ..+####+.
+                                .......+####....   +
+                               ..##+*##########+.++++
+                              .+.##################+.
+                  .............+###################+.+
+                  ..++..#.....*#####################+.
+                 ...+#######++#######################.
+              ....+*################################.
+     #############################################...
+              ....+*################################.
+                 ...+#######++#######################.
+                  ..++..#.....*#####################+.
+                  .............+###################+.+
+                              .+.##################+.
+                               ..##+*##########+.++++
+                                .......+####....   +
+                                     ..+####+.
+                                       ..#*..
+                                        ....#
+                                        +.
+     */
+```
+
+## GROUP BY clause
+
+Syntax: `GROUP BY <expr-list> [HAVING <group-filter-expr]`
+
+Count instances of each type of class.
+
+```sql
+    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    FROM [BisCore].[Element]
+    GROUP BY [ECClassId]
+    LIMIT 3
+    /*
+    ClassName                   | InstanceCount
+    ----------------------------|--------------
+    BisCore:DrawingCategory     | 328
+    BisCore:AnnotationTextStyle | 22
+    BisCore:AuxCoordSystem2d    | 2
+    */
+```
+
+Count instances of each type of class by filter out group with count less then 10.
+
+```sql
+    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    FROM [BisCore].[Element]
+    GROUP BY [ECClassId]
+    HAVING COUNT(*)>10
+    LIMIT 3;
+    /*
+    ClassName                   | InstanceCount
+    ----------------------------|--------------
+    BisCore:DrawingCategory     | 328
+    BisCore:AnnotationTextStyle | 22
+    BisCore:CategorySelector    | 313
+    */
+```
+
+## LIMIT clause
+
+Limit the number of rows returned by query. The clause also set offset from which the limit on rows is applied. [Read sqlite docs](https://www.sqlite.org/lang_select.html#limitoffset)
+
+Syntax: `LIMIT <limit> [OFFSET <offset>]`
+
+```sql
+    -- return only 10 rows.
+    SELECT 1 FROM meta.ECClassDef LIMIT 10
+
+    -- return only 10 rows from offset 10
+    SELECT 1 FROM meta.ECClassDef LIMIT 10 OFFSET 10
+```
+
+## CAST operator
+
+Allow converting primitive value from one type to another.
+
+Syntax: `CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])`
+
+Example:
+
+```sql
+    SELECT CAST(3.14159265 AS TEXT);
+    -- 3.14159265
+    SELECT CAST('3.14159265' AS REAL);
+    -- 3.1416
+    SELECT CAST('3.14159265' AS INTEGER);
+    -- 3
+```
+
+## LIKE operator
+
+Match value to a pattern.
+
+Syntax: `<expr> [NOT] LIKE <pattern> [ESCAPE '<char>']`
+
+- The percent sign `%` represents zero, one, or multiple characters
+- The underscore sign `_` represents one, single character
+
+Find classes with name start with `IL`.
+
+```sql
+    -- find classes
+    SELECT Name FROM meta.ECClassDef WHERE Name  LIKE 'IL%' LIMIT 3;
+    /*
+    Name
+    --------------------
+    ILinearElement
+    ILinearElementProvidedBySource
+    ILinearElementSource
+    */
+```
+
+`NOT LIKE` example
+
+```sql
+    -- find classes
+    SELECT Name FROM meta.ECClassDef WHERE Name NOT LIKE 'IL%' LIMIT 3;
+    /*
+    Name
+    --------------------
+    __x002A__U2_23086
+    __x0037__12__x002F__7020
+    __x0037__12__x002F__7030ElementAspect
+    */
+```
+
+when searching for `%` or `_` we need to escape expression.
+
+```sql
+    SELECT Name FROM meta.ECClassDef WHERE Name   LIKE '\_%' ESCAPE '\' LIMIT 3;
+    /*
+    Name
+    --------------------
+    __x002A__U2_23086
+    __x0037__12__x002F__7020
+    __x0037__12__x002F__7030ElementAspect
+    */
+```
 
 ## Bitwise operator
 
@@ -116,7 +357,7 @@ For the specified ecClassId, returns the class name as a string formatted accord
 `format-string | format-id`:  Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
 
 | format-id | format-string | output                    |
-| --------- | ------------- | ------------------------- |
+|-----------|---------------|---------------------------|
 | 0         | `s:c`         | BisCore:Element (default) |
 | 1         | `a:c`         | bis:Element               |
 | 2         | `s`           | BisCore                   |
@@ -368,23 +609,23 @@ If a `FILTER` clause is provided, then only rows for which the expr is true are 
 
 ECSql supports the following built-in window functions:
 
-| Function                      | Description                                                                                                                                                                                                                                                                                                                                       |
-|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `row_number()`                | The `row_number()` function returns a number of the row within the current partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                                                         |
-| `rank()`                      | The `rank()` function returns a row_number() of the first peer in each group - the rank of the current row with gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                         |
-| `dense_rank()`                | The `dense_rank()` function returns a number of the current row's peer group within its partition - the rank of the current row without gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                 |
-| `percent_rank()`              | The `percent_rank()` function returns a value between `0.0` and `1.0` equal to `(rank - 1) / (partition-rows - 1)`, where `rank` is the value returned by `rank()` and `partition-rows` is the total number of rows in the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                         |
-| `cume_dist()`                 | The `cume_dist()` function returns a number, which is calculated as `row-number / partition-rows`, where `row-number` is the value returned by `row_number()` for the last peer in the last group and `partition-rows` the number of rows in the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)   |
-| `ntile(N)`                    | The `ntile(N)` function divides the partition into `N` groups as evenly as possible and assigns an integer between `1` and `N` to each group. Argument `N` is handled as an integer. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                          |
-| `lag(expr)`                   | The first form of the `lag()` function returns the result of evaluating expression `expr` agains the previous row in the partition. Or, if there is no previous row, `NULL`. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                  |
-| `lag(expr, offset)`           | If the `offset` argument is provided, then it must be a non-negative integer. In this case the value returned is the result of evaluating `expr` against the row `offset` rows after the current row within the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                    |
-| `lag(expr, offset, default)`  | If the `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                    |
-| `lead(expr)`                  | The first form of the `lead()` function returns the result of evaluating expression `expr` against the next row in the partition. Or, if there is no next row, `NULL`. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                        |
-| `lead(expr, offset)`          | If the `offset` argument is provided, then it must be a non-negative integer. In this case the value returned is the result of evaluating `expr` against the row `offset` rows after the current row within partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                        |
-| `lead(expr, offset, default)` | If `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                        |
-| `first_value(expr)`           | The function `first_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the first row in thw window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                   |
-| `last_value(expr)`            | The function `last_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the last row in the window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                     |
-| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                |
+| Function                      | Description                                                                                                                                                                                                                                                                                                                                     |
+|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `row_number()`                | The `row_number()` function returns a number of the row within the current partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                                                       |
+| `rank()`                      | The `rank()` function returns a row_number() of the first peer in each group - the rank of the current row with gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                       |
+| `dense_rank()`                | The `dense_rank()` function returns a number of the current row's peer group within its partition - the rank of the current row without gaps. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                               |
+| `percent_rank()`              | The `percent_rank()` function returns a value between `0.0` and `1.0` equal to `(rank - 1) / (partition-rows - 1)`, where `rank` is the value returned by `rank()` and `partition-rows` is the total number of rows in the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                       |
+| `cume_dist()`                 | The `cume_dist()` function returns a number, which is calculated as `row-number / partition-rows`, where `row-number` is the value returned by `row_number()` for the last peer in the last group and `partition-rows` the number of rows in the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions) |
+| `ntile(N)`                    | The `ntile(N)` function divides the partition into `N` groups as evenly as possible and assigns an integer between `1` and `N` to each group. Argument `N` is handled as an integer. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                        |
+| `lag(expr)`                   | The first form of the `lag()` function returns the result of evaluating expression `expr` agains the previous row in the partition. Or, if there is no previous row, `NULL`. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                |
+| `lag(expr, offset)`           | If the `offset` argument is provided, then it must be a non-negative integer. In this case the value returned is the result of evaluating `expr` against the row `offset` rows after the current row within the partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                  |
+| `lag(expr, offset, default)`  | If the `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                  |
+| `lead(expr)`                  | The first form of the `lead()` function returns the result of evaluating expression `expr` against the next row in the partition. Or, if there is no next row, `NULL`. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                      |
+| `lead(expr, offset)`          | If the `offset` argument is provided, then it must be a non-negative integer. In this case the value returned is the result of evaluating `expr` against the row `offset` rows after the current row within partition. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                      |
+| `lead(expr, offset, default)` | If `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                      |
+| `first_value(expr)`           | The function `first_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the first row in thw window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                 |
+| `last_value(expr)`            | The function `last_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the last row in the window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                   |
+| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                              |
 
 ## DATE, TIME & TIMESTAMP Literals
 
@@ -461,16 +702,16 @@ output
 
 ECSQL support following primitive types but not all can be declared as literal in ECSQL though can be inserted/updated and queried in ECSQL.
 
-| Type      | Declared in ECSQL | Descriptions                                 |
-|-----------|-------------------|----------------------------------------------|
-| `Integer` | Yes               | 32bit integer                                |
-| `Long`    | Yes               | 64bit integer                                |
+| Type      | Declared in ECSQL | Descriptions                                |
+|-----------|-------------------|---------------------------------------------|
+| `Integer` | Yes               | 32bit integer                               |
+| `Long`    | Yes               | 64bit integer                               |
 | `Double`  | Yes               | Stored as 8-byte IEEE floating point number |
-| `String`  | Yes               | UTF-8 encoded string                         |
-| `Boolean` | Yes               | True/False. stored as single byte integer     |
-| `Point2d` | No                | *Cannot be declared in ECSQL*                |
-| `Point3d` | No                | *Cannot be declared in ECSQL*                |
-| `Binary`  | No                | *Cannot be declared in ECSQL*                |
+| `String`  | Yes               | UTF-8 encoded string                        |
+| `Boolean` | Yes               | True/False. stored as single byte integer   |
+| `Point2d` | No                | *Cannot be declared in ECSQL*               |
+| `Point3d` | No                | *Cannot be declared in ECSQL*               |
+| `Binary`  | No                | *Cannot be declared in ECSQL*               |
 
 ```sql
 -- integer / long
@@ -586,9 +827,9 @@ Following ECSQL will return only properties declared in `BisCore.Element`
     SELECT * FROM BisCore.Element WHERE ECInstanceId = 0xc000000018a
 ```
 
-ECInstanceId|ECClassId|Model|Last Modified|Code Specification|Code Scope|Code|User Label|Parent|Federation GUID|JSON Properties
-------------|---------|-----|-------------|------------------|----------|----|----------|------|---------------|---------------
-`0x8000000014c`|`0x710`|`{Id:0x80000000003,RelECClassId:0x51}`|`2020-09-13T21:03:39.281Z`|`{Id:0x1,RelECClassId:0x59}`|`{Id:0x1,RelECClassId:0x5b}`|`NULL`|`Computer`|`NULL`|`NULL`|`NULL`
+|ECInstanceId|ECClassId|Model|Last Modified|Code Specification|Code Scope|Code|User Label|Parent|Federation GUID|JSON Properties|
+|------------|---------|-----|-------------|------------------|----------|----|----------|------|---------------|---------------|
+|`0x8000000014c`|`0x710`|`{Id:0x80000000003,RelECClassId:0x51}`|`2020-09-13T21:03:39.281Z`|`{Id:0x1,RelECClassId:0x59}`|`{Id:0x1,RelECClassId:0x5b}`|`NULL`|`Computer`|`NULL`|`NULL`|`NULL`|
 
 While following return all properties of respective derived class of `BisCore.Element`
 
@@ -698,9 +939,9 @@ Similarly we can read any set of properties and also filter by them
     SELECT $->RevitId, $->LastModifier  FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005'
 ```
 
-|$ -> RevitId        | $ -> LastModifier|
-|----------------------|-------------------|
-|381840              |kiran.patkar|
+|$ -> RevitId        | $ -> LastModifier  |
+|--------------------|--------------------|
+|381840              |kiran.patkar        |
 
 ECSql will apply a property filter on selected rows such that those instances which has at least one property out of set of instance property must exists. This improve performance.
 
@@ -755,9 +996,9 @@ But you can still do following to get child property
 
 above will return following
 
-ModelId|
---------------------|
-`0x80000000003`|
+|ModelId|
+|--------------------|
+|`0x80000000003`|
 
 ## Optional and non-optional instance properties
 
@@ -807,3 +1048,90 @@ Generally speaking the performance of instance prop is pretty good though it inv
 - Try use regular properties accessor where possible.
 - Do not use instance property access for local properties of class been selected.
 - Try avoiding filtering queries by instance properties. Though it fast be without a index it could be slow depending on number of rows to which filter will be applied.
+
+## Pragmas
+
+### `PRAGMA help`
+
+Print out list of pragma supported by ECSQL.
+
+```sql
+PRAGMA help
+```
+
+| pragma                        | type   | descr                                                                 |
+|-------------------------------|--------|-----------------------------------------------------------------------|
+| checksum                      | global | checksum([ec_schema OR ec_map OR db_schema]) return sha1 checksum for data. |
+| ecdb_ver                      | global | return current and file profile versions                              |
+| experimental_features_enabled | global | enable/disable experimental features                                  |
+| explain_query                 | global | explain query plan                                                    |
+| help                          | global | return list of pragma supported                                       |
+| integrity_check               | global | performs integrity checks on ECDb                                     |
+| parse_tree                    | global | parse_tree(ecsql) return parse tree of ecsql.                         |
+| disqualify_type_index         | class  | set/get disqualify_type_index flag for a given ECClass                |
+
+### `PRAGMA ecdb_ver`
+
+Print out ECDb current profile version supported by software and file profile version.
+
+```sql
+PRAGMA ecdb_ver
+```
+
+| current | file    |
+|---------|---------|
+| 4.0.0.4 | 4.0.0.2 |
+
+### `PRAGMA experimental_features_enabled`
+
+Enable experimental feature in ECSQL on current connection.
+
+```sql
+PRAGMA experimental_features_enabled=true
+```
+
+to switch off
+
+```sql
+PRAGMA experimental_features_enabled=false
+```
+
+to check if flag is currently set.
+
+```sql
+PRAGMA experimental_features_enabled
+
+// experimental_features_enabled
+// -----------------------------
+// False
+```
+
+### `PRAGMA integrity_check` (experimental)
+
+1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check of be_* tables. Issues are returned as a list of tables/indexes/triggers which was not found or have different DDL.
+2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes.  Issues are returned as a list of tables/columns which was not found or have different DDL.
+3. `check_data_columns` - checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
+4. `check_nav_class_ids` - checks if `RelClassId` of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
+5. `check_nav_ids` - checks if `Id` of a Navigation property matches a valid row primary class.
+6. `check_linktable_fk_class_ids` - checks if `SourceECClassId` or `TargetECClassId`  of a link table matches a valid ECClassId.
+7. `check_linktable_fk_ids`- checks if `SourceECInstanceId` or `TargetECInstanceId`  of a link table matches a valid row in primary class.
+8. `check_class_ids`- checks persisted `ECClassId` in all data tables and make sure they are valid.
+9. `check_schema_load` - checks if all schemas can be loaded into memory.
+
+```sql
+PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
+```
+
+output of above will look like listing all check with result and time took to run the test.
+
+| sno | check                        | result | elapsed_sec |
+|-----|------------------------------|--------|-------------|
+| 1   | check_data_columns           | True   | 0.005       |
+| 2   | check_ec_profile             | True   | 0.001       |
+| 3   | check_nav_class_ids          | True   | 0.179       |
+| 4   | check_nav_ids                | True   | 0.403       |
+| 5   | check_linktable_fk_class_ids | True   | 0.001       |
+| 6   | check_linktable_fk_ids       | False  | 0.003       |
+| 7   | check_class_ids              | True   | 0.039       |
+| 8   | check_data_schema            | True   | 0.000       |
+| 9   | check_schema_load            | True   | 0.000       |
