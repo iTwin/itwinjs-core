@@ -25,6 +25,8 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
   private _realityTreeRefs = new Map<Id64String, TileTreeReference>();
   private _onModelSelectorChanged?: () => void;
+  /** Provides tile trees for models that are not included in the batched tile set. */
+  private readonly _excludedRefs: SpatialTileTreeReferences;
 
   public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
     this._view = view;
@@ -32,6 +34,15 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     const script = view.displayStyle.scheduleScript;
     this._currentScript = script?.requiresBatching ? script : undefined;
+
+    const includedModels = spec.props.extensions?.BENTLEY_BatchedTileset?.includedModels;
+    this._excludedRefs = includedModels ? createSpatialTileTreeReferences(view, new Set(includedModels)) : {
+      update: () => { },
+      setDeactivated: () => { },
+      attachToViewport: () => { },
+      detachFromViewport: () => { },
+      [Symbol.iterator]: () => { return { next: () => { return { done: true, value: undefined } } } },
+    };
 
     this.load(spec, view.iModel);
 
