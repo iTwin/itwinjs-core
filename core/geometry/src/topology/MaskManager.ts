@@ -57,7 +57,7 @@ export class MaskManager {
     this._freeMasks &= ~mask;
     return mask;
   }
-  /** Return the mask that was "in use" so it is not "in ues" anymore. */
+  /** Return the borrowed mask so it is not "in use" anymore. */
   public dropMask(mask: number) {
     mask &= this._originalFreeMasks; // prevent "drop" of mask that is not in the pool.
     this._freeMasks |= mask;
