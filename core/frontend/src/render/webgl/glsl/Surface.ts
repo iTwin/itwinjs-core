@@ -494,7 +494,7 @@ const computeBaseColor = `
   // set to black if almost white and reverse white-on-white is on
   bvec3 isAlmostWhite = greaterThan(surfaceColor.rgb, almostWhite);
   surfaceColor.rgb = (u_reverseWhiteOnWhite && isAlmostWhite.r && isAlmostWhite.g && isAlmostWhite.b ? vec3(0.0, 0.0, 0.0) : surfaceColor.rgb);
-  return vec4(surfaceColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
+  return vec4(surfaceColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a * surfaceColor.a);
 `;
 
 const surfaceFlagArray = new Int32Array(SurfaceBitIndex.Count);
@@ -628,16 +628,12 @@ export const discardClassifiedByAlpha = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
-const discardByTextureAlpha = `
-  if (isSurfaceBitSet(kSurfaceBit_HasTexture)) {
-    float cutoff = abs(u_alphaCutoff);
-    if (kRenderPass_Translucent == u_renderPass)
-      return u_alphaCutoff > 0.0 && alpha >= cutoff;
-    else
-      return alpha < cutoff;
-  }
-
-  return false;
+const discardByAlphaCutoff = `
+  float cutoff = abs(u_alphaCutoff);
+  if (kRenderPass_Translucent == u_renderPass)
+    return u_alphaCutoff > 0.0 && alpha >= cutoff;
+  else
+    return alpha < cutoff;
 `;
 
 function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
@@ -654,7 +650,7 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
     });
   });
 
-  frag.set(FragmentShaderComponent.DiscardByAlpha, discardByTextureAlpha);
+  frag.set(FragmentShaderComponent.DiscardByAlpha, discardByAlphaCutoff);
 }
 
 /** @internal */

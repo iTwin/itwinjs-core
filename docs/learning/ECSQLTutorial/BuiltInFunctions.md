@@ -85,4 +85,4 @@ SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm', 'PUMP'), ec_clas
 SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant', 'PUMP'), ec_classid('OpenPlant', 'VALVE'))
 ```
 
-[**< Previous**](./ConditionalExpr.md)
+[**< Previous**](./ConditionalExpr.md) &nbsp; | &nbsp; [**Next >**](./InstanceProps.md)

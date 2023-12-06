@@ -34,6 +34,7 @@ export interface TestSetProps extends TestConfigProps {
 export interface TestSetsProps extends TestConfigProps {
   signIn?: boolean;
   minimize?: boolean;
+  renderCmdStats?: boolean;
   testSet: TestSetProps[];
 }
 
@@ -141,6 +142,7 @@ class OverrideProvider {
 export class TestRunner {
   private readonly _config: TestConfigStack;
   private readonly _minimizeOutput: boolean;
+  private readonly _outputRenderCmdStats: boolean;
   private readonly _testSets: TestSetProps[];
   private readonly _logFileName: string;
   private readonly _testNamesImages = new Map<string, number>();
@@ -171,6 +173,7 @@ export class TestRunner {
     this._lastRestartConfig = this.curConfig;
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
+    this._outputRenderCmdStats = true === props.renderCmdStats;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
     this._savedViewsFetcher = savedViewsFetcher;
 
@@ -863,6 +866,26 @@ export class TestRunner {
       rowData.set("Total GPU MB", test.totalGpuBytes / (1024 * 1024));
     }
 
+    if (this._outputRenderCmdStats) {
+      if (this._minimizeOutput) {
+        rowData.set("Num Selected Tiles", test.numSelectedTiles);
+        rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
+      }
+      const dbgCtl = test.viewport.target.debugControl;
+      if (undefined !== dbgCtl) {
+        const cmdCounts = dbgCtl.getRenderCommands();
+        let numPrimitives = 0;
+        if (undefined !== cmdCounts) {
+          for (const cc of cmdCounts) {
+            rowData.set(cc.name, cc.count);
+            if ("Primitives" === cc.name)
+              numPrimitives = cc.count;
+          }
+          rowData.set("Primitives Per Tile", 0 === numPrimitives ? -1 : numPrimitives / test.numSelectedTiles);
+        }
+      }
+    }
+
     const setGpuData = (name: string) => {
       if (name === "CPU Total Time")
         name = "Total";
@@ -1058,8 +1081,8 @@ export class TestRunner {
 
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
-    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-    if ("terminate" === this.curConfig.onException)
+    const terminateErr = await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if (terminateErr || "terminate" === this.curConfig.onException)
       await DisplayPerfRpcInterface.getClient().terminate();
   }
 }

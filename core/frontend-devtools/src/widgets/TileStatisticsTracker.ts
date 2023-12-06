@@ -56,7 +56,7 @@ export class TileStatisticsTracker {
   private readonly _statElements: HTMLElement[] = [];
   private readonly _div: HTMLDivElement;
   private readonly _vp: Viewport;
-  private _curIntervalId?: NodeJS.Timer;
+  private _curIntervalId?: number;
 
   public constructor(parent: HTMLElement, vp: Viewport) {
     this._vp = vp;
@@ -138,7 +138,7 @@ export class TileStatisticsTracker {
 
   private clearInterval(): void {
     if (undefined !== this._curIntervalId) {
-      clearInterval(this._curIntervalId);
+      window.clearInterval(this._curIntervalId);
       this._curIntervalId = undefined;
     }
   }
@@ -152,7 +152,7 @@ export class TileStatisticsTracker {
       // Currently off - turn on.
       this._div.style.display = "block";
       this.update();
-      this._curIntervalId = setInterval(() => this.update(), 500);
+      this._curIntervalId = window.setInterval(() => this.update(), 500);
     }
   }
 

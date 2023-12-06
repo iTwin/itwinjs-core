@@ -132,6 +132,8 @@ interface ViewAttachmentInfo extends ViewAttachmentProps {
 class ViewAttachmentsInfo {
   private _attachments: Id64Array | ViewAttachmentInfo[];
 
+  public get attachments() { return this._attachments; }
+
   private constructor(attachments: Id64Array | ViewAttachmentInfo[]) {
     this._attachments = attachments;
   }
@@ -162,9 +164,20 @@ class ViewAttachmentsInfo {
     return this.isLoaded ? this._props.map((x) => x.id!) : [...this._ids];
   }
 
-  public clone(): ViewAttachmentsInfo {
-    // No reason to clone the array.
-    return new ViewAttachmentsInfo(this._attachments);
+  public clone(iModel: IModelConnection): ViewAttachmentsInfo {
+    let attachments = this._attachments;
+    if (this.isLoaded) {
+      // Need to clone the attached ViewStates.
+      attachments = attachments.map((attachment) => {
+        assert(typeof attachment !== "string");
+        return {
+          ...attachment,
+          attachedView: attachment.attachedView.clone(iModel),
+        };
+      });
+    }
+
+    return new ViewAttachmentsInfo(attachments);
   }
 
   public preload(options: HydrateViewStateRequestProps) {
@@ -364,7 +377,17 @@ export class SheetViewState extends ViewState2d {
 
   /** Strictly for testing. @internal */
   public get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>> {
-    return this._attachmentsInfo.viewAttachmentProps;
+    return this._attachmentsInfo.viewAttachmentProps.map((x) => {
+      return {
+        ...x,
+        attachedView: undefined,
+      };
+    });
+  }
+
+  /** Strictly for testing. @internal */
+  public get viewAttachmentInfos(): Id64Array | Array<{ attachedView: ViewState }> {
+    return this._attachmentsInfo.attachments;
   }
 
   /** Strictly for testing. @internal */
@@ -382,7 +405,7 @@ export class SheetViewState extends ViewState2d {
     if (categories instanceof SheetViewState) {
       // we are coming from clone...
       this.sheetSize = categories.sheetSize.clone();
-      this._attachmentsInfo = categories._attachmentsInfo.clone();
+      this._attachmentsInfo = categories._attachmentsInfo.clone(iModel);
       this._viewedExtents = categories._viewedExtents.clone();
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);

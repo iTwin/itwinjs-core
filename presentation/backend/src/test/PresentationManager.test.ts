@@ -28,8 +28,9 @@ import {
   createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
   createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
-import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
+import {
+  NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
+} from "../presentation-backend/NativePlatform";
 import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
@@ -133,6 +134,7 @@ describe("PresentationManager", () => {
           useMmap: 666,
           defaultFormats: {
             length: { unitSystems: ["imperial"], format: formatProps },
+            area: [{ unitSystems: ["usCustomary"], format: formatProps }],
           },
         };
         const expectedCacheConfig = {
@@ -148,7 +150,8 @@ describe("PresentationManager", () => {
             contentCacheSize: 999,
             workerConnectionCacheSize: 123,
             defaultFormats: {
-              length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
+              length: [{ unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) }],
+              area: [{ unitSystems: [NativePresentationUnitSystem.UsCustomary], serializedFormat: JSON.stringify(formatProps) }],
             },
             useMmap: 666,
           });
@@ -252,7 +255,7 @@ describe("PresentationManager", () => {
 
       it("sets up primary ruleset directories if supplied", () => {
         const dirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
+        const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
         using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => {
           pm;
@@ -260,47 +263,13 @@ describe("PresentationManager", () => {
         addon.verifyAll();
       });
 
-      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
-        const addonDirs = [path.join("/test", "primary-presentation-rules")];
-        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => {
-          pm;
-        });
-        addon.verifyAll();
-      });
-
-      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
-        const addonDirs = [path.join("/backend-test", "primary-presentation-rules")];
-        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
-        addon.verifyAll();
-      });
-
       it("sets up supplemental ruleset directories if supplied", () => {
         const dirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules"), "test1", "test2"];
+        const addonDirs = ["test1", "test2"];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
         using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (_pm: PresentationManager) => { });
-        addon.verifyAll();
-      });
-
-      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
-        const addonDirs = [path.join("/test", "supplemental-presentation-rules")];
-        addon
-          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
-          .verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (_pm: PresentationManager) => { });
-        addon.verifyAll();
-      });
-
-      it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
-        const addonDirs = [path.join("/backend-test", "supplemental-presentation-rules")];
-        addon
-          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
-          .verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 
@@ -518,8 +487,8 @@ describe("PresentationManager", () => {
     let manager: PresentationManager;
 
     beforeEach(() => {
-      addonMock.reset();
       manager = new PresentationManager({ addon: addonMock.object });
+      addonMock.reset();
     });
 
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
@@ -2094,7 +2063,7 @@ describe("PresentationManager", () => {
           params: {
             keys: getKeysForContentRequest(new KeySet(elementKeys)),
             descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.PropertyPane,
+              displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
@@ -2198,7 +2167,7 @@ describe("PresentationManager", () => {
           params: {
             keys: getKeysForContentRequest(new KeySet(elementKeys)),
             descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.PropertyPane,
+              displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",

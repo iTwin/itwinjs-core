@@ -33,8 +33,8 @@ if (undefined !== argv.gatherFullReport)
   shouldGenerateFullReport = true;
 
 // create output file
-const trimmedApiSignature = (argv.apiSignature.split('.'))[0];
-const sigFileName = path.basename(path.normalize(trimmedApiSignature));
+const apiSignatureFileName = path.parse(argv.apiSignature).name;
+const sigFileName = (apiSignatureFileName.split('.'))[0]
 const sigFilePath = path.join(argv.outDir, `${shouldGenerateFullReport ? "summary" : sigFileName}.exports.csv`);
 
 const outputLines = [];

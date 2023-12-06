@@ -69,8 +69,6 @@ class TerrainDraper implements TileUser {
     range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
     range.extendZOnly(maxDistance);
 
-    const sweepDir = Vector3d.unitZ();
-
     // when current point is near start point, create a polygon to drape
     let polygon: Loop | undefined;
     const isClosed = (inPoints.length > 2) && Geometry.isDistanceWithinTol(inPoints.distanceIndexIndex(0, inPoints.length - 1)!, 100 * tolerance);
@@ -86,10 +84,11 @@ class TerrainDraper implements TileUser {
 
     for (const polyface of collector.polyfaces) {
       if (polygon) {
-        const mesh = PolyfaceClip.drapeRegion(polyface, polygon, sweepDir);
+        const mesh = PolyfaceClip.drapeRegion(polyface, polygon);
         if (mesh?.tryTranslateInPlace(0, 0, 10 * tolerance)) // shift up to see it better
           outMeshes.push(mesh);
       } else {
+        const sweepDir = Vector3d.unitZ();
         const options = SweepLineStringToFacetsOptions.create(sweepDir, undefined, true, true, true, true);
         outStrings.push(...PolyfaceQuery.sweepLineStringToFacets(inPoints, polyface, options));
       }

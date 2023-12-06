@@ -76,6 +76,7 @@ Or simply use the provided sample below:
 - [Lesson 9: Class Filter](./ClassFilter.md)
 - [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
 - [Lesson 11: Built-In functions](./BuiltInFunctions.md)
+- [Lesson 12: Instance Props](./InstanceProps.md)
 
 ---
 

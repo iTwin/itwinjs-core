@@ -8,7 +8,7 @@
   },
   "version": "1.8.0",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^18.0.0 || ^20.0.0"
   },
   "private": true,
   "scripts": {
@@ -39,7 +39,9 @@
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
     "ios": "ts-node --skip-project ./runIosSimulator.ts",
     "ios:all": "npm run build:mobile && npm run build:ios-app && npm run ios",
-    "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build"
+    "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build",
+    "android": "./runAndroidEmulator.py",
+    "android:all": "npm run build:mobile && npm run android"
   },
   "repository": {},
   "dependencies": {
@@ -89,14 +91,14 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^26.2.1",
+    "electron": "^28.0.0",
     "esbuild-plugin-external-global": "^1.0.1",
     "eslint": "^8.44.0",
     "express": "^4.16.3",
     "express-ws": "^5.0.2",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
-    "node-simctl": "~7.1.4",
+    "node-simctl": "~7.2.1",
     "npm-run-all": "^4.1.5",
     "null-loader": "^4.0.1",
     "react": "^18.0.0",

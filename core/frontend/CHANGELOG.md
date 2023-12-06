@@ -1,6 +1,57 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 06 Oct 2023 04:02:58 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+### Updates
+
+- Add SQ_KM to UNIT_DATA
+- Fix Map Feature Info for ArcGIS map services when reprojection is needed.
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+### Updates
+
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+### Updates
+
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- Fix failure to preserve name when creating a BlankConnection.
+- remove `require` call preventing pure ESM usage
+- Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo
+- Fix schedule script symbology issue
+- Fixed ignore material not using default material params
+- IModelConnection.createQueryReader is now public
+- Improved content type detection for 3D Tiles tilesets.
+- Add BriefcaseTxns events raised when applying external txns.
+- Add an option to premultiply a model display transform
+- Allow creation of cross-origin web workers
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
 
 ## 4.1.8
 Fri, 06 Oct 2023 04:00:18 GMT
@@ -149,6 +200,21 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT

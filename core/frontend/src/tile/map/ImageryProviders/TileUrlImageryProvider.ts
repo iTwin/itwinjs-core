@@ -32,6 +32,7 @@ export class TileUrlImageryProvider extends MapLayerImageryProvider {
       url = `${url}{level}/{column}/{row}.png`;
     }
 
-    return url.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
+    const tmpUrl = url.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
+    return this.appendCustomParams(tmpUrl);
   }
 }

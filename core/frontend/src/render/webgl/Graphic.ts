@@ -418,6 +418,8 @@ export class WorldDecorations extends Branch {
 
     // World decorations ignore all the symbology overrides for the "scene" geometry...
     this.branch.symbologyOverrides = new FeatureSymbology.Overrides();
+    // Make all subcategories visible.
+    this.branch.symbologyOverrides.ignoreSubCategory = true;
   }
 
   public init(decs: GraphicList): void {

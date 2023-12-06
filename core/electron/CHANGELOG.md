@@ -1,6 +1,39 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Fri, 06 Oct 2023 04:02:58 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Mitigate GHSA-j7hp-h8jx-5ppr by bumping electron to first patched version (26.2.1)
+- Add support for Electron 26
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
 
 ## 4.1.8
 Fri, 06 Oct 2023 04:00:18 GMT
@@ -98,6 +131,21 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add support for Electron 24.
 - Drop Electron 14, 15, 16, 17, 22. Start supporting Electron 23.
 - Stopped registering any rpcs by default
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT

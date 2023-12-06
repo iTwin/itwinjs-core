@@ -48,9 +48,7 @@ export class SchemaMerger {
 
     // It is important to compare the schema items by name, not full name as otherwise
     // we'd often see differences when comparing two different schemas.
-    await schemaComparer.compareSchemas(sourceSchema, targetSchema, {
-      compareItemFullName: false,
-    });
+    await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
     return changesList[0];
   }

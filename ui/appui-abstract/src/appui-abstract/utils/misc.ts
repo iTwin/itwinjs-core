@@ -8,6 +8,7 @@
 
 /** Gets the class name for an object.
  * @internal
+ * @deprecated in 4.3. Please use your own implementation in the future.  Though internal, this requires deprecation due to known public usage in @itwin/core-react.
  */
 export const getClassName = (obj: any): string => {
   let className = "";
@@ -23,14 +24,5 @@ export const getClassName = (obj: any): string => {
   }
 
   return className;
-};
-
-/** Gets category to use for adding Log entries
- *  @internal
- */
-export const loggerCategory = (obj: any): string => {
-  const className = getClassName(obj);
-  const category = `appui-abstract${(className ? `.${className}` : "")}`;
-  return category;
 };
 

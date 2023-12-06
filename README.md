@@ -19,7 +19,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 ## Prerequisites
 
 - [Git](https://git-scm.com/)
-- [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 18. The Node installation also includes the **npm** package manager.
+- [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 20. The Node installation also includes the **npm** package manager.
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
@@ -37,6 +37,14 @@ Each package has its own **node_modules** directory that contains symbolic links
 The `-v` option for `rush` is short for `--verbose` which results in a more verbose command.
 
 The above commands iterate and perform their action against each package in the monorepo.
+
+If you get an error similar to the following, it means that the repo has stopped making use of an npm package that was used in the past.
+
+```
+[Error: ENOENT: no such file or directory, stat '/.../itwinjs-core/test-apps/display-test-app/node_modules/@bentley/react-scripts']
+```
+
+To fix this build error, you should completely remove the node_modules directory that is referenced in the error with `rush purge`, and then rerun `rush install`.
 
 For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
