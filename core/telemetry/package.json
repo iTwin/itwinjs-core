@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-telemetry",
-  "version": "4.3.0-dev.36",
+  "version": "4.3.0-dev.37",
   "description": "iTwin.js Telemetry Client",
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
