@@ -57,7 +57,6 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
