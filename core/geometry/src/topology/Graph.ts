@@ -45,14 +45,16 @@ export enum HalfEdgeMask {
   /**
    * Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other, will have EXTERIOR only on the outside.
-   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both sides.
+   * * An edge inserted "within a purely exterior face" can have EXTERIOR on both sides.
    * * An interior edge (such as added during triangulation) will have no EXTERIOR bits.
+   * * Visualization can be found at geometry/internaldocs/Graph.md
    */
   EXTERIOR = 0x00000001,
   /**
-   * Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
+   * Mask commonly set (on both sides) of original geometry edges that are transition from outside to inside.
    * * At the moment of creating an edge from primary user boundary loop coordinates, the fact that an edge is BOUNDARY
    * is often clear even though there is uncertainty about which side should be EXTERIOR.
+   * * Visualization can be found at geometry/internaldocs/Graph.md
    */
   BOUNDARY_EDGE = 0x00000002,
   /**
@@ -294,7 +296,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Create a new vertex within the edge beginning at `baseA`.
    * * This creates two new nodes in their own vertex loop.
-   * * If the base is undefined, create a single-edge loop.
+   * * If the base is `undefined`, create a single-edge loop.
    * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
    * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
    * each node of the input edge gets a new node as its edge mate.
@@ -774,10 +776,14 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public static nodeToMaskString(node: HalfEdge): string {
     let s = "";
-    if (node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) s += "B";
-    if (node.isMaskSet(HalfEdgeMask.PRIMARY_EDGE)) s += "P";
-    if (node.isMaskSet(HalfEdgeMask.EXTERIOR)) s += "X";
-    if (node.isMaskSet(HalfEdgeMask.NULL_FACE)) s += "N";
+    if (node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE))
+      s += "B";
+    if (node.isMaskSet(HalfEdgeMask.PRIMARY_EDGE))
+      s += "P";
+    if (node.isMaskSet(HalfEdgeMask.EXTERIOR))
+      s += "X";
+    if (node.isMaskSet(HalfEdgeMask.NULL_FACE))
+      s += "N";
     return s;
   }
   /** Return [x,y] with coordinates of node. */
@@ -808,7 +814,11 @@ export class HalfEdge implements HalfEdgeUserData {
       result,
     );
   }
-  /** Test if `spaceNode` is in the sector at `sectorNode`. */
+  /**
+   * Test if `spaceNode` is in the sector of `sectorNode`.
+   * * The sector is create by 2 walls: edge of `sectorNode` and edge of `sectorNode.facePredecessor`.
+   * * This can also be seen as if `spaceNode` is visible from `sectorNode`.
+   */
   public static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean {
     // remark: fussy details ported from native code. The obscure cases seemed "unlikely" at first. But pre-existing
     // unit tests for triangulation pinged just about everything. So it really matters to do the "0" cases this way
@@ -876,7 +886,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param nodeB the second node in the chain; the node at the sector vertex.
    * @param nodeC the third node in the chain, nominally the face successor of nodeB.
    * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors. Typically this is a
-   * fraction of the sector's face's signed area. We can't compute area here, so if undefined, zero tolerance is used.
+   * fraction of the sector's face's signed area. We can't compute area here, so if `undefined`, zero tolerance is used.
    * @returns true iff the sector is convex. A degenerate sector, where the incident edges overlap, returns false.
    */
   public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, signedAreaTol: number = 0): boolean {
@@ -895,7 +905,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * (convex) or a right turn (not-convex). Note that if we have a convex face, then to traverse it in ccw orientation,
    * we always do left turns. However, if the face is not convex, we make both left and right turns.
    * * This computation ignores z-coordinates.
-   * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors. If undefined, a fraction
+   * @param signedAreaTol optional signed area tolerance to use in test for parallel vectors. If `undefined`, a fraction
    * (`Geometry.smallMetricDistanceSquared`) of the computed signed area is used. Pass 0 to skip toleranced computation.
    * @returns true iff the sector is convex. A degenerate sector, where the incident edges overlap, returns false.
    */
@@ -1206,7 +1216,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Compute fractional coordinates of the intersection of edges from given base nodes.
-   * * If parallel or colinear, return undefined.
+   * * If parallel or colinear, return `undefined`.
    * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
    * @param nodeA0 base node of edge A.
    * @param nodeB0 base node of edge B.
@@ -1234,7 +1244,7 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Compute fractional position (possibly outside 0..1) of the intersection of a horizontal line with an edge.
-   * * If the edge is horizontal with (approximate) identical y, return the node.
+   * * If the edge is horizontal with (approximate) identical y, return the base node.
    * * If the edge is horizontal with different y, return `undefined`.
    * @param node0 base node of edge.
    * @param y y coordinate of the horizontal line.
@@ -1400,7 +1410,7 @@ export class HalfEdgeGraph {
   /**
    * Create a new vertex within the edge beginning at `base`.
    * * This creates two new nodes in their own vertex loop.
-   * * If the base is undefined, create a single-edge loop.
+   * * If the base is `undefined`, create a single-edge loop.
    * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
    * * Unlike [[pinch]], this breaks the edgeMate pairing of the input edge:
    * each node of the input edge gets a new node as its edge mate.
