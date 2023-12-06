@@ -15,10 +15,10 @@ import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 /** @internal */
 export interface BatchedTilesetProps extends schema.Tileset {
   extensions?: {
-    BENTLEY_BatchedTileSet?: {
+    BENTLEY_BatchedTileSet?: { // eslint-disable-line @typescript-eslint/naming-convention
       includedModels: Id64String[];
     };
-  }
+  };
 }
 
 function isBatchedTileset(json: unknown): json is BatchedTilesetProps {

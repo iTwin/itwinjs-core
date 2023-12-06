@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
-  AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialModelState, SpatialTileTreeReferences, SpatialViewState,
+  AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
@@ -40,7 +40,13 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       setDeactivated: () => { },
       attachToViewport: () => { },
       detachFromViewport: () => { },
-      [Symbol.iterator]: () => { return { next: () => { return { done: true, value: undefined } } } },
+      [Symbol.iterator]: () => {
+        return {
+          next: () => {
+            return { done: true, value: undefined };
+          },
+        };
+      },
     };
 
     this.load(spec, view.iModel);
