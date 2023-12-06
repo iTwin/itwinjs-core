@@ -49,12 +49,14 @@ describe("Schema merge tests", () => {
     }, schemaContext);
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedContext = new SchemaContext();
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
 
     expect(mergedSchema).is.not.equal(targetSchema, "Unexpected reference to same schema");
-    expect(mergedSchema.context).is.not.equal(targetSchema.context, "Unexpected reference to same context");
+    expect(mergedSchema.context).is.equal(mergedContext, "Unexpected reference to same context");
     expect(mergedSchema.name).equals(targetJson.name, "Unexpected name");
     expect(mergedSchema.schemaKey.version.toString(false)).equals(targetJson.version, "Unexpected version");
+    expect(mergedSchema.context).equals(mergedContext, "Merged schema is not in the merging schema context");
     expect([...mergedSchema.getItems()]).has.lengthOf(1);
   });
 

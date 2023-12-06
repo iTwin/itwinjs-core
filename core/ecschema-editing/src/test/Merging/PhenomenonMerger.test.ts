@@ -48,7 +48,7 @@ describe("Phenomenon merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourcePhenomenon = await sourceSchema.getItem<Phenomenon>("testPhenomenon");
       const mergedPhenomenon = await mergedSchema.getItem<Phenomenon>("testPhenomenon");
@@ -87,7 +87,7 @@ describe("Phenomenon merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
     });
   });
 });

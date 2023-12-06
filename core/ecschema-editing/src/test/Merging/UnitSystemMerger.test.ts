@@ -46,7 +46,7 @@ describe("Unit system merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
       const mergedUnitSystem = await mergedSchema.getItem<UnitSystem>("testUnitSystem");
       const sourceUnitSystem = await sourceSchema.getItem<UnitSystem>("testUnitSystem");
       expect(mergedUnitSystem!.toJSON()).to.deep.equal(sourceUnitSystem!.toJSON());

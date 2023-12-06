@@ -82,7 +82,8 @@ describe("Constant merger tests", () => {
       };
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedContext = new SchemaContext();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
       const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
       const mergedConstantToJSON = mergedConstant!.toJSON(false, false);
 
@@ -130,7 +131,8 @@ describe("Constant merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedContext = new SchemaContext();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
       const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
       expect((mergedConstant?.phenomenon)?.fullName).to.be.equals("ReferenceSchema.testPhenomenon");
     });
@@ -179,7 +181,7 @@ describe("Constant merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
 
     });
 
@@ -229,7 +231,7 @@ describe("Constant merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
     });
 
     it("it should throw error if denominator conflict exist", async () => {
@@ -278,7 +280,7 @@ describe("Constant merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
     });
   });
 });

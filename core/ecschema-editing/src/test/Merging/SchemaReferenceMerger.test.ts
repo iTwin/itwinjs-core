@@ -6,6 +6,7 @@ import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import "chai-as-promised";
+import { copySchemaContext } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -27,6 +28,8 @@ describe("Schema reference tests", () => {
 
   it("should merge missing schema references", async () => {
     const sourceSchemaContext = new SchemaContext();
+    const targetSchemaContext = new SchemaContext();
+
     // For this test case we need two schema mocks we reference.
     // they can be empty, it's just there to get resolved by the schema context.
     await Schema.fromJson({
@@ -61,7 +64,8 @@ describe("Schema reference tests", () => {
     }, new SchemaContext());
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedContext = await copySchemaContext(targetSchemaContext);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
 
     expect(sourceSchema.toJSON().references).deep.eq(mergedSchema.toJSON().references);
   });
@@ -106,7 +110,8 @@ describe("Schema reference tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedContext = await copySchemaContext(targetSchemaContext);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
     const bisCoreReference = await mergedSchema.getReference("BisCore");
     expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
   });
@@ -151,7 +156,8 @@ describe("Schema reference tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedContext = await copySchemaContext(targetSchemaContext);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, mergedContext);
     const bisCoreReference = await mergedSchema.getReference("BisCore");
     expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
   });
@@ -196,6 +202,7 @@ describe("Schema reference tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger();
-    await expect(merger.merge(targetSchema, sourceSchema)).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
+    const mergedContext = await copySchemaContext(targetSchemaContext);
+    await expect(merger.merge(targetSchema, sourceSchema, mergedContext)).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
   });
 });

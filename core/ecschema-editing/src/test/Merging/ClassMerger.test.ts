@@ -55,7 +55,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEntity = await sourceSchema.getItem<EntityClass>("TestClass");
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
@@ -81,7 +81,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
       expect(mergedEntity?.baseClass).not.undefined;
@@ -122,7 +122,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
       expect(mergedEntity?.baseClass).not.undefined;
@@ -153,7 +153,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEntity = await sourceSchema.getItem<EntityClass>("TestClass");
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
@@ -185,7 +185,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEntity = await sourceSchema.getItem<EntityClass>("TestClass");
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
@@ -222,7 +222,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
       expect(mergedEntity).not.undefined;
 
@@ -262,7 +262,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestClass");
       expect(mergedEntity).not.undefined;
 
@@ -299,7 +299,7 @@ describe("Class merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "Failed to merge 'TestProp' property: not supported type");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith(Error, "Failed to merge 'TestProp' property: not supported type");
     });
   });
 });

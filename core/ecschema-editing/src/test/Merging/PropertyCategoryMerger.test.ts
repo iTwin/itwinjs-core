@@ -40,7 +40,7 @@ describe("PropertyCategory merge tests", () => {
     }, new SchemaContext());
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
     const sourceCategory = await sourceSchema.getItem<PropertyCategory>("TestPropertyCategory");
     const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
@@ -71,7 +71,7 @@ describe("PropertyCategory merge tests", () => {
     }, new SchemaContext());
 
     const merger = new SchemaMerger();
-    const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+    const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
     const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
     expect(mergedCategory!.toJSON()).deep.eq({
       schemaItemType:"PropertyCategory",
