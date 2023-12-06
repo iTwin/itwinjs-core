@@ -31,12 +31,14 @@ export class BatchedTileTree extends TileTree {
   public readonly reader: BatchedTilesetReader;
   public readonly scheduleScript?: RenderSchedule.Script;
   public readonly decoder: ImdlDecoder;
+  public readonly includedModels?: Set<Id64String>;
 
   public constructor(params: BatchedTileTreeParams) {
     super(params);
     this._rootTile = new BatchedTile(params.rootTile, this);
     this.reader = params.reader;
     this.scheduleScript = params.script;
+    this.includedModels = params.includedModels;
 
     this.decoder = acquireImdlDecoder({
       type: BatchType.Primary,
