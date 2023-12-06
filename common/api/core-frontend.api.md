@@ -7989,7 +7989,9 @@ export class MapLayerSource {
         [key: string]: string;
     };
     // (undocumented)
-    toJSON(): MapLayerSourceProps;
+    toJSON(): Omit<MapLayerSourceProps, "formatId"> & {
+        formatId: string;
+    };
     // (undocumented)
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
