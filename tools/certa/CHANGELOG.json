@@ -2,6 +2,24 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/certa_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Electron 27."
+          },
+          {
+            "comment": "Add support for Node 20."
+          },
+          {
+            "comment": "Add support for Electron 28"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/certa_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",

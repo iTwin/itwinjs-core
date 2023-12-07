@@ -2,6 +2,18 @@
   "name": "@itwin/frontend-devtools",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/frontend-devtools_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added 'fdt clip intersection' keyin"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/frontend-devtools_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",

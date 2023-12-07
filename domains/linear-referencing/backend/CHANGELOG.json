@@ -2,6 +2,18 @@
   "name": "@itwin/linear-referencing-backend",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/linear-referencing-backend_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Node 20."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/linear-referencing-backend_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",

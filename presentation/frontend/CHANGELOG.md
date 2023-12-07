@@ -1,6 +1,14 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Dec 2023 17:43:09 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. 
+- Add support for default formats when formatting values on the frontend (when `Presentation` is initialized with `schemaContextProvider`).
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT

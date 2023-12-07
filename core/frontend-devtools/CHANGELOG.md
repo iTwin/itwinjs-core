@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Dec 2023 17:43:09 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added 'fdt clip intersection' keyin
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT

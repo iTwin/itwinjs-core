@@ -2,6 +2,24 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/presentation-common_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Handle SI and METRIC unit systems as a single unit system. This fixes a problem where temperatures are formatted in Kelvin even though metric was requested."
+          },
+          {
+            "comment": "Add formatting for kind of quantity point properties."
+          },
+          {
+            "comment": "Add support for default formats in `KoqPropertyValueFormatter`."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/presentation-common_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",

@@ -1,6 +1,17 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Dec 2023 17:43:09 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Add support for Node 20.
+- Fixed `getElementProperties` function to pass correct content options when loading properties.
+- Load built-in rulesets as code rather than separately delivered assets
+- Allow specifying formatting props for multiple unit systems per phenomenon.
+- Add support for default formats when formatting values in TS (when `Presentation` is initialized with `schemaContextProvider`).
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
