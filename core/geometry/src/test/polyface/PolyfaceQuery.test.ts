@@ -44,6 +44,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
+import { LinearSweep, SweepContour } from "../../core-geometry";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -700,7 +701,6 @@ describe("ReorientFacets", () => {
   });
 
   it("MoebiusStrip", () => {
-
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -1369,6 +1369,43 @@ describe("Intersections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("FacetShape", () => {
+  it("Convexity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const options = StrokeOptions.createForFacets();
+    const polyface = Sample.createMeshFromFrankeSurface(30, options)!;
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface), "Franke surface (quads) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface, true), "Franke surface (quads) is manifold");
+
+    options.shouldTriangulate = true;
+    const polyface1 = Sample.createMeshFromFrankeSurface(30, options)!;
+    const visitor1 = polyface1.createVisitor();
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(visitor1), "Franke surface (triangulated) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface1, true), "Franke surface (triangulated) is manifold");
+
+    options.shouldTriangulate = false;
+    const dartPoints = [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)];
+    const sweptDart = LinearSweep.createZSweep(dartPoints, 0, 3, true);
+    if (ck.testType(sweptDart, LinearSweep, "created swept dart solid")) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addLinearSweep(sweptDart);
+      const polyface2 = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface2);
+      ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface2), "Swept dart (triangulated) has convex facets");
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2), "Swept dart (triangulated) is closed");
+      const polyface3 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface2);
+      if (ck.testType(polyface3, IndexedPolyface, "clone with max planar facets successful")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface3, 5);
+        ck.testFalse(PolyfaceQuery.areFacetsConvex(polyface3), "Swept dart (max planar facets) has at least one non-convex facet");
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface3), "Swept dart (max planar facets) is closed");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FacetShape", "Convexity");
     expect(ck.getNumErrors()).equals(0);
   });
 });

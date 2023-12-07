@@ -60,7 +60,7 @@ export class PolyfaceRangeTreeContext {
    */
   public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4, convexFacets: boolean = false): PolyfaceRangeTreeContext | undefined {
     if (visitor instanceof Polyface)
-      return this.createCapture(visitor.createVisitor(0), maxChildPerNode, maxAppDataPerLeaf);
+      return this.createCapture(visitor.createVisitor(0), maxChildPerNode, maxAppDataPerLeaf, convexFacets);
     const numFacet = PolyfaceQuery.visitorClientFacetCount(visitor);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       (index: number): Range3d => { visitor.moveToReadIndex(index); return visitor.range(); },

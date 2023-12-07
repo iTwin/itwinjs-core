@@ -9,6 +9,7 @@
 /**
  * Data carrier for use when repeatedly testing items (of parameterized type T) to determine the one with a minimum associated value.
  * * Optionally pushes to arrays of items and values when the value does not exceed a given trigger.
+ * * * The item at minimum value is still recorded, even if the minimum value exceeds the trigger value.
  * * When comparing a potential minimum value to an undefined value, the number is always accepted as the new minimum.
  * @internal
  */
@@ -57,12 +58,12 @@ export class MinimumValueTester<T>{
   }
   /**
    * Test a new item with value.
-   * * Save the new item and value if either:
-   *   * this.value is undefined
-   *   * new value is less than this.value.
    * * Push the new item and value to the saved arrays if both:
-   *   * triggerForSavingToArray is defined
-   *   * the new value is less than or equal to that value.
+   *   * `this.triggerForSavingToArray` is defined
+   *   * the new value is less than or equal to `this.triggerForSavingToArray`.
+   * * Save the new item and value if either:
+   *   * `this.minValue` is undefined
+   *   * new value is less than `this.minValue`.
    * @param item item to be saved (captured!) if value conditions are met
    * @param value numeric value being minimized.
    * @returns true if and only if the input value is the new minimum value.

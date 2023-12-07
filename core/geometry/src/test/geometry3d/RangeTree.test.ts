@@ -5,23 +5,27 @@
 
 import { expect } from "chai";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions } from "../../core-geometry";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
+import { Geometry, PolygonLocation } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ConvexFacetLocationDetail, FacetLocationDetailPair } from "../../polyface/FacetLocationDetail";
+import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
 import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
 import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
 import { Sample } from "../../serialization/GeometrySamples";
+import { LinearSweep } from "../../solid/LinearSweep";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -389,9 +393,10 @@ describe("IndexedRangeHeap", () => {
     const z0 = 0;
 
     const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 95, 0);
+    const linestring = LineString3d.create(wavePoints);
     const path = BezierCurve3d.create([Point3d.create(-1, 5, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
+
     for (const treeWidth of [2]) {
-      const linestring = LineString3d.create(wavePoints);
       const searcher = LineString3dRangeTreeContext.createCapture(linestring, treeWidth, treeWidth);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, wavePoints, x0, y0, z0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
@@ -411,7 +416,7 @@ describe("IndexedRangeHeap", () => {
               }
               const i1 = Math.min(segmentIndex + 4, wavePoints.length);
               for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++)
-                ck.testLE(cld.a, xyz.distance(wavePoints[i]));
+                ck.testLE(cld.a, xyz.distance(wavePoints[i]), "computed point is at minimum distance locally");
             }
           }
         }
@@ -429,6 +434,58 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PolylineMultiSearch1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const z0 = 0;
+
+    const wavePoints = Sample.createSquareWave(Point3d.create(0, 0, 0), 0.8, 1.1, 0.4, 95, 0);
+    const linestring = LineString3d.create(wavePoints);
+    const path = BezierCurve3d.create([Point3d.create(-1, 5, 0), Point3d.create(10, 3, 8), Point3d.create(80, 12, 5), Point3d.create(120, -6, -2)])!;
+
+    // test and cover the trigger arrays
+    const context = LineString3dRangeTreeContext.createCapture(linestring);
+    if (ck.testType(context, LineString3dRangeTreeContext)) {
+      for (const maxDist of [8.5, 7, 5.5]) { // largest min dist is 8
+        let numSingleton = 0;
+        let numArray = 0;
+        for (let u = 0; u <= 1.00001; u += 0.010) {
+          const xyz = path.fractionToPoint(u);
+          const result = context.searchForClosestPoint(xyz, maxDist);
+          if (ck.testDefined(result, "search with maxDist found closest point or close points")) {
+            if (Array.isArray(result)) {
+              ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+              ++numArray;
+              const minCld = context.searchForClosestPoint(xyz)! as CurveLocationDetail;
+              let minArrayDist = maxDist;
+              const closestArrayPt = Point3d.createZero();
+              for (const cld of result) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
+                ck.testLE(cld.a, maxDist, "values in saved array do not exceed the trigger");
+                ck.testLE(minCld.a, cld.a, "values in saved array are not closer than closest point");
+                if (cld.a < minArrayDist) {
+                  minArrayDist = cld.a;
+                  closestArrayPt.setFrom(cld.point);
+                }
+              }
+              ck.testPoint3d(minCld.point, closestArrayPt, "closest point found in saved array");
+            } else if (ck.testType(result, CurveLocationDetail)) {
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, xyz, 0.3, x0, y0, z0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, result.point], x0, y0, z0);
+              ++numSingleton;
+            }
+          }
+        }
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [linestring, path], x0, y0, z0);
+        ck.show({ numArray, numSingleton });
+        y0 += 10;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch1");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -496,7 +553,137 @@ describe("IndexedRangeHeap", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("PolyfaceMultiSearch1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+    const strokeOptions = StrokeOptions.createForFacets();
+    strokeOptions.shouldTriangulate = true;
+    const frankeSize = 20;
+    const polyface = Sample.createMeshFromFrankeSurface(frankeSize, strokeOptions)!;
+    const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
 
+    // test and cover the trigger arrays
+    const context = PolyfaceRangeTreeContext.createCapture(polyface, undefined, undefined, true);
+    if (ck.testType(context, PolyfaceRangeTreeContext)) {
+      for (const maxDist of [.27, 0.2, 0.05] ) { // largest min dist is 0.2574
+        let numSingleton = 0;
+        let numArray = 0;
+        for (let u = 0; u <= 1.00001; u += 0.05) {
+          const xyz = path.fractionToPoint(u);
+          const result = context.searchForClosestPoint(xyz, maxDist, true);
+          if (ck.testDefined(result, "search with maxDist found closest point or close points") && result) {
+            if (Array.isArray(result)) {
+              ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+              ++numArray;
+              const minFld = context.searchForClosestPoint(xyz, undefined, true)! as FacetLocationDetail;
+              let minArrayDist = maxDist;
+              const closestArrayPt = Point3d.createZero();
+              for (const fld of result) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, fld.point], x0, y0, z0);
+                ck.testLE(fld.a, maxDist, "values in saved array do not exceed the trigger");
+                ck.testLE(minFld.a, fld.a, "values in saved array are not closer than closest point");
+                if (fld.a < minArrayDist) {
+                  minArrayDist = fld.a;
+                  closestArrayPt.setFrom(fld.point);
+                }
+              }
+              ck.testPoint3d(minFld.point, closestArrayPt, "closest point found in saved array");
+            } else {
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, xyz, 0.03, x0, y0, z0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, result.point], x0, y0, z0);
+              ++numSingleton;
+            }
+          }
+        }
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface, path], x0, y0, z0);
+        ck.show({numArray, numSingleton});
+        x0 += 2;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch1");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PolyfaceMultiSearch2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+
+    // test and cover convex/nonconvex facets
+    const dartPoints = [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)];
+    const sweepHeight = 3;
+    const sweptDart = LinearSweep.createZSweep(dartPoints, 0, sweepHeight, true);
+    if (ck.testType(sweptDart, LinearSweep, "created swept dart solid")) {
+      const builder = PolyfaceBuilder.create();
+      builder.addLinearSweep(sweptDart);
+      let polyface1 = builder.claimPolyface();
+      if (ck.testType(polyface1, IndexedPolyface)) {
+        const xyScale = 1.5;
+        const translation = Point3d.create(0.75, 0.75, -1);
+        let helixPts = Sample.createHelixPoints(5, 60, Transform.createRowValues(xyScale, 0, 0, translation.x, 0, xyScale, 0, translation.y, 0, 0, 1, translation.z));
+        helixPts = [Point3d.create(0.25, 0.25, -1), ...helixPts, Point3d.create(0.45, 0.45, sweepHeight + 1)];
+        const curveOptions = InterpolationCurve3dOptions.create({ fitPoints: helixPts });
+        const helix = InterpolationCurve3d.create(curveOptions);
+        if (ck.testType(helix, InterpolationCurve3d, "created helical interpolation curve")) {
+          let convexHits = 0;
+          let nonConvexHits = 0;
+          for (const convexFacets of [true, false]) {
+            if (!convexFacets)
+              polyface1 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface1)!;  // non-convex top and bottom facets!
+            const context1 = PolyfaceRangeTreeContext.createCapture(polyface1, undefined, undefined, convexFacets);
+            if (ck.testType(context1, PolyfaceRangeTreeContext)) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface1, helix], x0, y0, z0);
+              let insideToEdge = 0;
+              let insideToVertex = 0;
+              let onEdge = 0;
+              let onVertex = 0;
+              let numAttempts = 0;
+              for (let u = 0; u <= 1.00001; u += 0.05) {
+                ++numAttempts;
+                const xyz = helix.fractionToPoint(u);
+                const fld = context1.searchForClosestPoint(xyz, undefined, true);
+                if (ck.testDefined(fld, "search found closest point") && fld && !Array.isArray(fld)) {
+                  if (fld.isConvex)
+                    ++convexHits;
+                  else
+                    ++nonConvexHits;
+                  if (fld.classify === PolygonLocation.InsidePolygonProjectsToEdgeInterior)
+                    ++insideToEdge;
+                  else if (fld.classify === PolygonLocation.InsidePolygonProjectsToVertex)
+                    ++insideToVertex;
+                  else if (fld.classify === PolygonLocation.OnPolygonEdgeInterior)
+                    ++onEdge;
+                  else if (fld.classify === PolygonLocation.OnPolygonVertex)
+                    ++onVertex;
+                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, fld.point], x0, y0, z0);
+                }
+              }
+              if (convexFacets) {
+                ck.testExactNumber(numAttempts, convexHits, "all hits convex");
+                ck.testExactNumber(6, insideToEdge);
+                ck.testExactNumber(0, insideToVertex);
+                ck.testExactNumber(11, onEdge);
+                ck.testExactNumber(4, onVertex);
+              } else {
+                ck.testExactNumber(numAttempts, nonConvexHits, "all hits nonconvex");
+                ck.testExactNumber(7, insideToEdge);
+                ck.testExactNumber(1, insideToVertex, "helix end projects just inside top face concave sector");
+                ck.testExactNumber(9, onEdge);
+                ck.testExactNumber(4, onVertex);
+              }
+            }
+            x0 += 5;
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch2");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("PolyfacePolyfaceSearch", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
