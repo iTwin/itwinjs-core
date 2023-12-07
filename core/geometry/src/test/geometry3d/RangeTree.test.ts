@@ -17,7 +17,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
+import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair } from "../../polyface/FacetLocationDetail";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";

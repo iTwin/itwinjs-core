@@ -44,7 +44,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
-import { LinearSweep, SweepContour } from "../../core-geometry";
+import { LinearSweep } from "../../core-geometry";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
