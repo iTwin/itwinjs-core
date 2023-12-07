@@ -1,6 +1,16 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Thu, 07 Dec 2023 18:52:09 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Improve documentation
+- Custom query parameters can now be configured on map layers objects.
+- Improved MapFeatureInfo display of decorations outside of project extent.
+- Added missing `@itwin/core-frontend` peer dependency
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
