@@ -8,404 +8,41 @@
 1. Built-in functions
     1. [Scalar SQLite built-in functions](#scalar-sqlite-built-in-functions)
     1. [ECSQL Built-In functions](#ecsql-built-in-functions)
+1. [ECSQLOPTIONS or OPTIONS clause](#ecsqloptions-or-options-clause)
 1. [Window functions](#window-functions)
 1. [DATE, TIME & TIMESTAMP Literals](#date-time--timestamp-literals)
 1. [NULL, NUMBER, STRING & BOOLEAN Literals](#null-number-string--boolean-literals)
 1. [CASE-WHEN-THEN-ELSE](#case-when-then-else)
 1. [IIF (*condition-expr*, *true-expr*, *false-expr*)](#iif-condition-expr-true-expr-false-expr)
+1. [LIKE operator](#like-operator)
+1. [CAST operator](#cast-operator)
+1. [LIMIT clause](#limit-clause)
+1. [GROUP BY clause](#group-by-clause)
+1. [CTE (*Common table expression*)](#common-table-expression)
+1. [Type filter](#type-filter)
+1. [ORDER BY clause](#order-by-clause)
+1. [ECSQL Parameters](#ecsql-parameters)
+1. [Compound SELECT](#compound-select)
+1. JOINs
+    1. [JOIN USING](#join-using)
+    1. [INNER JOIN](#inner-join)
+    1. [OUTER JOIN](#outer-join)
 1. [Instance query](#instance-query)
 1. [Pragmas](#pragmas)
     1. [help](#pragma-help)
     1. [ecdb_ver](#pragma-ecdb_ver)
     1. [experimental_features_enabled](#pragma-experimental_features_enabled)
     1. [integrity_check](#pragma-integrity_check-experimental)
-1. [LIKE operator](#like-operator)
-1. [CAST operator](#cast-operator)
-1. [LIMIT clause](#limit-clause)
-1. [GROUP BY clause](#group-by-clause)
-1. [Common table expression](#common-table-expression)
-1. [Type filter](#type-filter)
-1. [ORDER BY clause](#order-by-clause)
-1. [Parameters](#parameters)
-1. [Compound SELECT](#compound-select)
-1. JOINs
-    1. [JOIN USING](#join-using)
-
-## JOIN USING
-
-Join using automatically uses relationship definition to join two classes
-
-Syntax: `JOIN <end-class> USING <relationship> [FORWARD|BACKWARD]`
-
-In following we join from `Bis.Element` to `Bis.Element` using `bis.ElementOwnsChildElements`. Where child element is `t0` and parent is `t1`. If we use `FORWARD` then `t0` will become child and `t1` will be parent.
+1. [ECSQL Keywords](#ecsql-keywords)
 
 ```sql
-    SELECT *
-    FROM bis.Element t0
-        JOIN bis.Element t1 USING bis.ElementOwnsChildElements BACKWARD
-```
+[WITH [RECURSIVE] <cte-blocks>]
+SELECT <expr-list> [
+    FROM <class-ref>
+]
 
-## Compound SELECT
+<expr-list>: <expr> [AS] [alias] [,...]
 
-Result of `SELECT` statement can be combined with other select statements using one of following operator.
-
-1. `UNION` - take a union of result of two queries such that there is no duplicate results.
-1. `UNION ALL` - take a union of results of two queries.
-1. `INTERSECT` - take only rows that are common in both queries.
-1. `EXCEPT` - take rows from first queries that are not present in second query.
-
-Simple union with no duplicate rows
-
-```sql
-SELECT 1 a ,2 b
-UNION
-SELECT 1 a, 2 b
-/*
-a | b
-------
-1 | 2
-*/
-```
-
-Simple union with duplicate rows
-
-```sql
-SELECT 1 a ,2 b
-UNION ALL
-SELECT 1 a, 2 b
-/*
-a | b
-------
-1 | 2
-1 | 2
-*/
-```
-
-Simple intersect return only common results
-
-```sql
-SELECT 1 a ,2 b
-INTERSECT
-SELECT 1 a, 2 b
-/*
-a | b
-------
-1 | 2
-*/
-```
-
-Except return exclude result from first query by second.
-
-```sql
-SELECT 1 a ,2 b
-EXCEPT
-SELECT 1 a, 2 b
-/*
-a | b
-------
-*/
-```
-
-## Parameters
-
-ECSQL support named and positional parameters.
-
-### Named parameters
-
-Name parameter can be use to bind parameter by name.
-
-Syntax: `:<parameter-name>`
-
-```sql
-    SELECT * FROM meta.ECClassDef WHERE Name = :className
-```
-
-### Positional parameters
-
-Positional parameter are bind by position from left to right.
-
-Syntax: `?`
-
-```sql
-    SELECT * FROM meta.ECClassDef WHERE Name = ? AND DisplayLabel = ?
-```
-
-## ORDER BY clause
-
-Sort result by set of expressions in ascending or descending order. It is also use to order nulls in result set by putting them in front or last of results.
-
-Syntax:
-
-```sql
-ORDER BY
-    <expr> [ASC|DESC] [NULLS FIRST|LAST] [,...]
-```
-
-Order classes by schema and then class name.
-
-```sql
-SELECT * FROM meta.ECClassDef ORDER BY Schema.Id, Name
-```
-
-Order by DisplayLabel but put null values first.
-
-```sql
-SELECT * FROM meta.ECClassDef ORDER BY DisplayLabel NULLS FIRST
-```
-
-## Type filter
-
-Filter `ECClassId` by set of classes in polymorphic or non-polymorphic manner.
-
-Syntax: `<classId> IS [NOT] ( [ALL|ONLY] <class-name>[, ...])`
-
-Select element where it is of type `PUMP` or `PIPE`.
-
-```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS (plant.PUMP, plant.PIPE)
-```
-
-Select element where it is exactly of type `PUMP` or `PIPE`.
-
-```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS (ONLY plant.PUMP, ONLY plant.PIPE)
-```
-
-Find all the element that is not of type `PUMP` or `PIPE`
-
-```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS NOT (plant.PUMP, plant.PIPE)
-```
-
-## Common table expression
-
-Syntax:
-
-```sql
-WITH [RECLUSIVE]
-    <cte-name>([args...]) AS (
-        <query1>
-        [UNION <query2>]
-    )[, <next-cte-block>]
-    <query3>
-```
-
-A simple example of cte.
-
-```sql
-WITH RECURSIVE
-    c(i) AS (
-        SELECT 1
-        UNION
-        SELECT i + 1 FROM c WHERE i < 4 ORDER BY 1
-    )
-    SELECT i FROM c
-    /*
-        i
-        ------------------
-        1
-        2
-        3
-        4
-    */
-```
-
-Generate mandelbrot set using CTE.
-
-```sql
-      WITH RECURSIVE
-        [xaxis]([x]) AS(
-          VALUES (- 2.0)
-          UNION ALL
-          SELECT [x] + 0.05
-          FROM   [xaxis]
-          WHERE  [x] < 1.2
-        ),
-        [yaxis]([y]) AS(
-          VALUES (- 1.0)
-          UNION ALL
-          SELECT [y] + 0.1
-          FROM   [yaxis]
-          WHERE  [y] < 1.0
-        ),
-        [m]([iter], [cx], [cy], [x], [y]) AS(
-          SELECT
-                0,
-                [x],
-                [y],
-                0.0,
-                0.0
-          FROM   [xaxis],
-                [yaxis]
-          UNION ALL
-          SELECT
-                [iter] + 1,
-                [cx],
-                [cy],
-                [x] * [x] - [y] * [y] + [cx],
-                2.0 * [x] * [y] + [cy]
-          FROM   [m]
-          WHERE  ([x] * [x] + [y] * [y]) < 4.0 AND [iter] < 28
-        ),
-        [m2]([iter], [cx], [cy]) AS(
-          SELECT
-                MAX ([iter]),
-                [cx],
-                [cy]
-          FROM   [m]
-          GROUP  BY
-                    [cx],
-                    [cy]
-        ),
-        [a]([t]) AS(
-          SELECT GROUP_CONCAT (SUBSTR (' .+*#', 1 + (CASE WHEN [iter] / 7 > 4 THEN 4 ELSE [iter] / 7 END), 1), '')
-          FROM   [m2]
-          GROUP  BY [cy]
-        )
-      SELECT GROUP_CONCAT (RTRIM ([t]), CHAR (0xa)) mandelbrot_set
-      FROM   [a];
-      /*
-                                        ....#
-                                       ..#*..
-                                     ..+####+.
-                                .......+####....   +
-                               ..##+*##########+.++++
-                              .+.##################+.
-                  .............+###################+.+
-                  ..++..#.....*#####################+.
-                 ...+#######++#######################.
-              ....+*################################.
-     #############################################...
-              ....+*################################.
-                 ...+#######++#######################.
-                  ..++..#.....*#####################+.
-                  .............+###################+.+
-                              .+.##################+.
-                               ..##+*##########+.++++
-                                .......+####....   +
-                                     ..+####+.
-                                       ..#*..
-                                        ....#
-                                        +.
-     */
-```
-
-## GROUP BY clause
-
-Syntax: `GROUP BY <expr-list> [HAVING <group-filter-expr]`
-
-Count instances of each type of class.
-
-```sql
-    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
-    FROM [BisCore].[Element]
-    GROUP BY [ECClassId]
-    LIMIT 3
-    /*
-    ClassName                   | InstanceCount
-    ----------------------------|--------------
-    BisCore:DrawingCategory     | 328
-    BisCore:AnnotationTextStyle | 22
-    BisCore:AuxCoordSystem2d    | 2
-    */
-```
-
-Count instances of each type of class by filter out group with count less then 10.
-
-```sql
-    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
-    FROM [BisCore].[Element]
-    GROUP BY [ECClassId]
-    HAVING COUNT(*)>10
-    LIMIT 3;
-    /*
-    ClassName                   | InstanceCount
-    ----------------------------|--------------
-    BisCore:DrawingCategory     | 328
-    BisCore:AnnotationTextStyle | 22
-    BisCore:CategorySelector    | 313
-    */
-```
-
-## LIMIT clause
-
-Limit the number of rows returned by query. The clause also set offset from which the limit on rows is applied. [Read sqlite docs](https://www.sqlite.org/lang_select.html#limitoffset)
-
-Syntax: `LIMIT <limit> [OFFSET <offset>]`
-
-```sql
-    -- return only 10 rows.
-    SELECT 1 FROM meta.ECClassDef LIMIT 10
-
-    -- return only 10 rows from offset 10
-    SELECT 1 FROM meta.ECClassDef LIMIT 10 OFFSET 10
-```
-
-## CAST operator
-
-Allow converting primitive value from one type to another.
-
-Syntax: `CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])`
-
-Example:
-
-```sql
-    SELECT CAST(3.14159265 AS TEXT);
-    -- 3.14159265
-    SELECT CAST('3.14159265' AS REAL);
-    -- 3.1416
-    SELECT CAST('3.14159265' AS INTEGER);
-    -- 3
-```
-
-## LIKE operator
-
-Match value to a pattern.
-
-Syntax: `<expr> [NOT] LIKE <pattern> [ESCAPE '<char>']`
-
-- The percent sign `%` represents zero, one, or multiple characters
-- The underscore sign `_` represents one, single character
-
-Find classes with name start with `IL`.
-
-```sql
-    -- find classes
-    SELECT Name FROM meta.ECClassDef WHERE Name  LIKE 'IL%' LIMIT 3;
-    /*
-    Name
-    --------------------
-    ILinearElement
-    ILinearElementProvidedBySource
-    ILinearElementSource
-    */
-```
-
-`NOT LIKE` example
-
-```sql
-    -- find classes
-    SELECT Name FROM meta.ECClassDef WHERE Name NOT LIKE 'IL%' LIMIT 3;
-    /*
-    Name
-    --------------------
-    __x002A__U2_23086
-    __x0037__12__x002F__7020
-    __x0037__12__x002F__7030ElementAspect
-    */
-```
-
-when searching for `%` or `_` we need to escape expression.
-
-```sql
-    SELECT Name FROM meta.ECClassDef WHERE Name   LIKE '\_%' ESCAPE '\' LIMIT 3;
-    /*
-    Name
-    --------------------
-    __x002A__U2_23086
-    __x0037__12__x002F__7020
-    __x0037__12__x002F__7030ElementAspect
-    */
 ```
 
 ## Bitwise operator
@@ -642,6 +279,47 @@ When `GUID` is stored a binary, it need to be converted for comparison purpose.
 SELECT * FROM BisCore.Element WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
 ```
 
+## ECSQLOPTIONS or OPTIONS clause
+
+`ECSQLOPTIONS` which can also be written as just `OPTIONS` use to specify flags thats will effect processing of ECSQL statement.
+
+Syntax: `<select-stmt> OPTIONS option[=val] [,...]`
+
+Here is list of supported options
+
+1. `USE_JS_PROP_NAMES` returns json from instance accessor, compilable with iTwin.js typescript.
+1. `DO_NOT_TRUNCATE_BLOB` return full blob instead of truncating it when using instance accessor.
+1. `ENABLE_EXPERIMENTAL_FEATURES` enable experimental features.
+
+Get instance as json which is compatible with itwin.js.
+
+```sql
+SELECT $ FROM Bis.Element OPTIONS USE_JS_PROP_NAMES
+/*
+$
+--------------------
+{
+   "id":"0x1",
+   "className":"BisCore.Subject",
+   "model":{
+      "id":"0x1",
+      "relClassName":"BisCore.ModelContainsElements"
+   },
+   "lastMod":"2023-12-06T15:24:45.785Z",
+   "codeSpec":{
+      "id":"0x1f",
+      "relClassName":"BisCore.CodeSpecSpecifiesCode"
+   },
+   "codeScope":{
+      "id":"0x1",
+      "relClassName":"BisCore.ElementScopesCode"
+   },
+   "codeValue":"Subject of this imodel",
+   "description":""
+}
+*/
+```
+
 ## Window functions
 
 A window function is an SQL function where the input values are taken from a "window" of one or more rows in the results set of a SELECT statement.
@@ -777,7 +455,7 @@ ECSql supports the following built-in window functions:
 | `lead(expr, offset, default)` | If `default` is also provided, then it is returned instead of `NULL` if the row identified by `offset` does not exist. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                                                                                                                      |
 | `first_value(expr)`           | The function `first_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the first row in thw window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                 |
 | `last_value(expr)`            | The function `last_value(expr)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the last row in the window frame for each row. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                   |
-| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)                                              |
+| `nth_value(expr, N)`          | The functions `nth_value(expr, N)` calculates the window frame for each row in the same way as an aggregate window function. It returns the value of `expr` evaluated against the row `N` in the window frame. [Read more.](https://www.sqlite.org/windowfunctions.html#built_in_window_functions)
 
 ## DATE, TIME & TIMESTAMP Literals
 
@@ -951,6 +629,458 @@ SELECT IIF(Length > 1.0, 'Big', 'Small') FROM test.Foo;
 
 -- Returns DisplayLabel if Name is NULL, and Name otherwise
 SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
+```
+
+## LIKE operator
+
+Match value to a pattern.
+
+Syntax: `<expr> [NOT] LIKE <pattern> [ESCAPE '<char>']`
+
+- The percent sign `%` represents zero, one, or multiple characters
+- The underscore sign `_` represents one, single character
+
+Find classes with name start with `IL`.
+
+```sql
+    -- find classes
+    SELECT Name FROM meta.ECClassDef WHERE Name  LIKE 'IL%' LIMIT 3;
+    /*
+    Name
+    --------------------
+    ILinearElement
+    ILinearElementProvidedBySource
+    ILinearElementSource
+    */
+```
+
+`NOT LIKE` example
+
+```sql
+    -- find classes
+    SELECT Name FROM meta.ECClassDef WHERE Name NOT LIKE 'IL%' LIMIT 3;
+    /*
+    Name
+    --------------------
+    __x002A__U2_23086
+    __x0037__12__x002F__7020
+    __x0037__12__x002F__7030ElementAspect
+    */
+```
+
+when searching for `%` or `_` we need to escape expression.
+
+```sql
+    SELECT Name FROM meta.ECClassDef WHERE Name   LIKE '\_%' ESCAPE '\' LIMIT 3;
+    /*
+    Name
+    --------------------
+    __x002A__U2_23086
+    __x0037__12__x002F__7020
+    __x0037__12__x002F__7030ElementAspect
+    */
+```
+
+## CAST operator
+
+Allow converting primitive value from one type to another.
+
+Syntax: `CAST(<expr> AS [TEXT | INTEGER | REAL | BLOB | TIMESTAMP])`
+
+Example:
+
+```sql
+    SELECT CAST(3.14159265 AS TEXT);
+    -- 3.14159265
+    SELECT CAST('3.14159265' AS REAL);
+    -- 3.1416
+    SELECT CAST('3.14159265' AS INTEGER);
+    -- 3
+```
+
+## LIMIT clause
+
+Limit the number of rows returned by query. The clause also set offset from which the limit on rows is applied. [Read sqlite docs](https://www.sqlite.org/lang_select.html#limitoffset)
+
+Syntax: `LIMIT <limit> [OFFSET <offset>]`
+
+```sql
+    -- return only 10 rows.
+    SELECT 1 FROM meta.ECClassDef LIMIT 10
+
+    -- return only 10 rows from offset 10
+    SELECT 1 FROM meta.ECClassDef LIMIT 10 OFFSET 10
+```
+
+## GROUP BY clause
+
+Syntax: `GROUP BY <expr-list> [HAVING <group-filter-expr]`
+
+Count instances of each type of class.
+
+```sql
+    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    FROM [BisCore].[Element]
+    GROUP BY [ECClassId]
+    LIMIT 3
+    /*
+    ClassName                   | InstanceCount
+    ----------------------------|--------------
+    BisCore:DrawingCategory     | 328
+    BisCore:AnnotationTextStyle | 22
+    BisCore:AuxCoordSystem2d    | 2
+    */
+```
+
+Count instances of each type of class by filter out group with count less then 10.
+
+```sql
+    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    FROM [BisCore].[Element]
+    GROUP BY [ECClassId]
+    HAVING COUNT(*)>10
+    LIMIT 3;
+    /*
+    ClassName                   | InstanceCount
+    ----------------------------|--------------
+    BisCore:DrawingCategory     | 328
+    BisCore:AnnotationTextStyle | 22
+    BisCore:CategorySelector    | 313
+    */
+```
+
+## Common table expression
+
+Syntax:
+
+```sql
+WITH [RECLUSIVE]
+    <cte-name>([args...]) AS (
+        <query1>
+        [UNION <query2>]
+    )[, <next-cte-block>]
+    <query3>
+```
+
+A simple example of cte.
+
+```sql
+WITH RECURSIVE
+    c(i) AS (
+        SELECT 1
+        UNION
+        SELECT i + 1 FROM c WHERE i < 4 ORDER BY 1
+    )
+    SELECT i FROM c
+    /*
+        i
+        ------------------
+        1
+        2
+        3
+        4
+    */
+```
+
+Generate mandelbrot set using CTE.
+
+```sql
+      WITH RECURSIVE
+        [xaxis]([x]) AS(
+          VALUES (- 2.0)
+          UNION ALL
+          SELECT [x] + 0.05
+          FROM   [xaxis]
+          WHERE  [x] < 1.2
+        ),
+        [yaxis]([y]) AS(
+          VALUES (- 1.0)
+          UNION ALL
+          SELECT [y] + 0.1
+          FROM   [yaxis]
+          WHERE  [y] < 1.0
+        ),
+        [m]([iter], [cx], [cy], [x], [y]) AS(
+          SELECT
+                0,
+                [x],
+                [y],
+                0.0,
+                0.0
+          FROM   [xaxis],
+                [yaxis]
+          UNION ALL
+          SELECT
+                [iter] + 1,
+                [cx],
+                [cy],
+                [x] * [x] - [y] * [y] + [cx],
+                2.0 * [x] * [y] + [cy]
+          FROM   [m]
+          WHERE  ([x] * [x] + [y] * [y]) < 4.0 AND [iter] < 28
+        ),
+        [m2]([iter], [cx], [cy]) AS(
+          SELECT
+                MAX ([iter]),
+                [cx],
+                [cy]
+          FROM   [m]
+          GROUP  BY
+                    [cx],
+                    [cy]
+        ),
+        [a]([t]) AS(
+          SELECT GROUP_CONCAT (SUBSTR (' .+*#', 1 + (CASE WHEN [iter] / 7 > 4 THEN 4 ELSE [iter] / 7 END), 1), '')
+          FROM   [m2]
+          GROUP  BY [cy]
+        )
+      SELECT GROUP_CONCAT (RTRIM ([t]), CHAR (0xa)) mandelbrot_set
+      FROM   [a];
+      /*
+                                        ....#
+                                       ..#*..
+                                     ..+####+.
+                                .......+####....   +
+                               ..##+*##########+.++++
+                              .+.##################+.
+                  .............+###################+.+
+                  ..++..#.....*#####################+.
+                 ...+#######++#######################.
+              ....+*################################.
+     #############################################...
+              ....+*################################.
+                 ...+#######++#######################.
+                  ..++..#.....*#####################+.
+                  .............+###################+.+
+                              .+.##################+.
+                               ..##+*##########+.++++
+                                .......+####....   +
+                                     ..+####+.
+                                       ..#*..
+                                        ....#
+                                        +.
+     */
+```
+
+## Type filter
+
+Filter `ECClassId` by set of classes in polymorphic or non-polymorphic manner.
+
+Syntax: `<classId> IS [NOT] ( [ALL|ONLY] <class-name>[, ...])`
+
+Select element where it is of type `PUMP` or `PIPE`.
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS (plant.PUMP, plant.PIPE)
+```
+
+Select element where it is exactly of type `PUMP` or `PIPE`.
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS (ONLY plant.PUMP, ONLY plant.PIPE)
+```
+
+Find all the element that is not of type `PUMP` or `PIPE`
+
+```sql
+    SELECT * FROM Bis.Element WHERE ECClassId IS NOT (plant.PUMP, plant.PIPE)
+```
+
+## ORDER BY clause
+
+Sort result by set of expressions in ascending or descending order. It is also use to order nulls in result set by putting them in front or last of results.
+
+Syntax:
+
+```sql
+ORDER BY
+    <expr> [ASC|DESC] [NULLS FIRST|LAST] [,...]
+```
+
+Order classes by schema and then class name.
+
+```sql
+SELECT * FROM [meta].[ECClassDef] ORDER BY [Schema].[Id], Name
+```
+
+Order by DisplayLabel but put null values first.
+
+```sql
+SELECT * FROM [meta].[ECClassDef] ORDER BY [DisplayLabel] NULLS FIRST
+```
+
+## ECSQL Parameters
+
+ECSQL support named and positional parameters.
+
+### Named parameters
+
+Name parameter can be use to bind parameter by name.
+
+Syntax: `:<parameter-name>`
+
+```sql
+SELECT * FROM [meta].[ECClassDef] WHERE [Name] = :className
+```
+
+### Positional parameters
+
+Positional parameter are bind by position from left to right.
+
+Syntax: `?`
+
+```sql
+SELECT * FROM [meta].[ECClassDef] WHERE [Name] = ? AND [DisplayLabel] = ?
+```
+
+## JOIN USING
+
+Join using automatically uses relationship definition to join two classes
+
+Syntax: `JOIN <end-class> USING <relationship> [FORWARD|BACKWARD]`
+
+In following we join from `Bis.Element` to `Bis.Element` using `bis.ElementOwnsChildElements`. Where child element is `t0` and parent is `t1`. If we use `FORWARD` then `t0` will become child and `t1` will be parent.
+
+```sql
+    SELECT *
+    FROM bis.Element t0
+        JOIN bis.Element t1 USING bis.ElementOwnsChildElements BACKWARD
+```
+
+## Compound SELECT
+
+Result of `SELECT` statement can be combined with other select statements using one of following operator.
+
+1. `UNION` - take a union of result of two queries such that there is no duplicate results.
+1. `UNION ALL` - take a union of results of two queries.
+1. `INTERSECT` - take only rows that are common in both queries.
+1. `EXCEPT` - take rows from first queries that are not present in second query.
+
+Simple union with no duplicate rows
+
+```sql
+SELECT 1 a ,2 b
+UNION
+SELECT 1 a, 2 b
+/*
+a | b
+------
+1 | 2
+*/
+```
+
+Simple union with duplicate rows
+
+```sql
+SELECT 1 a ,2 b
+UNION ALL
+SELECT 1 a, 2 b
+/*
+a | b
+------
+1 | 2
+1 | 2
+*/
+```
+
+Simple intersect return only common results
+
+```sql
+SELECT 1 a ,2 b
+INTERSECT
+SELECT 1 a, 2 b
+/*
+a | b
+------
+1 | 2
+*/
+```
+
+Except return exclude result from first query by second.
+
+```sql
+SELECT 1 a ,2 b
+EXCEPT
+SELECT 1 a, 2 b
+/*
+a | b
+------
+*/
+```
+
+## OUTER JOIN
+
+Outer joins are joins that return matched values and unmatched values from either or both classes.
+
+There are three type of OUTER JOIN.
+
+1. LEFT JOIN
+2. RIGHT JOIN
+3. FULL JOIN
+
+### LEFT JOIN
+
+`LEFT JOIN` returns only unmatched rows from the left class, as well as matched rows in both classes
+
+```sql
+
+SELECT * FROM (SELECT null b) t LEFT JOIN  (SELECT 1 b) r ON t.b=r.b;
+/*
+b        |b_1
+----------------------------
+NULL     |NULL
+*/
+```
+
+### RIGHT JOIN
+
+`RIGHT JOIN` returns only unmatched rows from the right class, as well as matched rows in both classes
+
+```sql
+
+SELECT * FROM (SELECT null b) t RIGHT JOIN  (SELECT 1 b) r ON t.b=r.b;
+/*
+b        |b_1
+----------------------------
+NULL     |1
+*/
+```
+
+### FULL JOIN
+
+`FULL JOIN` returns all the rows from both joined classes, whether they have a matching row or not.
+
+```sql
+SELECT * FROM (SELECT null b) t FULL JOIN  (SELECT 1 b) r ON t.b=r.b;
+/*
+b        |b_1
+----------------------------
+NULL     |NULL
+NULL     |1
+*/
+```
+
+## INNER JOIN
+
+Join to a class or subquery.
+
+Syntax: `[INNER] JOIN <class|subquery> ON <join-expr>`
+
+```sql
+SELECT [schema].[Name] [Schema], [class].[Name] [Class]
+FROM [meta].[ECClassDef] [class]
+    INNER JOIN [meta].[ECSchemaDef] [schema] ON [class].[Schema].[Id] =  [schema].[ECInstanceId]
+ORDER BY [schema].[Name], [class].[Name]
+LIMIT 4;
+
+/*
+Schema              |Class
+-----------------------------------------
+BisCore             |AnnotationElement2d
+BisCore             |AnnotationFrameStyle
+BisCore             |AnnotationLeaderStyle
+BisCore             |AnnotationTextStyle
+*/
 ```
 
 ## Instance query
@@ -1287,3 +1417,27 @@ output of above will look like listing all check with result and time took to ru
 | 7   | check_class_ids              | True   | 0.039       |
 | 8   | check_data_schema            | True   | 0.000       |
 | 9   | check_schema_load            | True   | 0.000       |
+
+## ECSQL Keywords
+
+| Key | Keywords                                                                                                                                |
+|-----|-----------------------------------------------------------------------------------------------------------------------------------------|
+| A   | `ALL`, `AND`, `ANY`, `AS`, `ASC`, `AVG`                                                                                                 |
+| B   | `BACKWARD`, `BETWEEN`, `BINARY`, `BLOB`, `BOOLEAN`, `BY`                                                                                |
+| C   | `CASE`, `CAST`, `COLLATE`, `COUNT`, `CROSS`. `CUME_DIST`, `CURRENT`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_TIMESTAMP`                |
+| D   | `DATE`, `DELETE`, `DENSE_RANK`, `DESC`, `DISTINCT`, `DOUBLE`                                                                            |
+| E   | `ECSQLOPTIONS`, `ELSE`, `END`, `ESCAPE`, `EVERY`, `EXCEPT`, `EXCLUDE`, `EXISTS`                                                         |
+| F   | `FALSE`, `FILTER`, `FIRST`, `FIRST_VALUE`, `FLOAT`, `FOLLOWING`, `FOR`, `FORWARD`, `FROM`, `FULL`                                       |
+| G   | `GROUP`, `GROUP_CONCAT`, `GROUPS`, `HAVING`                                                                                             |
+| I   | `IIF`, `IN`, `INNER`, `INSERT`, `INT`, `INTEGER`, `INT64`, `INTERSECT`, `INTO`, `IS`                                                    |
+| J   | `JOIN`                                                                                                                                  |
+| L   | `LAG`, `LAST`, `LAST_VALUE`, `LEAD`, `LEFT`, `LIKE`, `LIMIT`, `LONG`                                                                    |
+| M   | `MATCH`, `MAX` ,`MIN`                                                                                                                   |
+| N   | `NATURAL`, `NO`, `NOCASE`, `NOT`, `NTH_VALUE`, `NTILE`, `NULL`, `NULLS`                                                                 |
+| O   | `OFFSET`, `ON`, `ONLY`, `OPTIONS`, `OR`, `ORDER`, `OTHERS`, `OUTER`, `OVER`                                                             |
+| P   | `PARTITION`, `PERCENT_RANK`, `PRAGMA`, `PRECEDING`, `RANGE`, `RANK`, `REAL`, `RECURSIVE`, `RIGHT`, `ROW`, `ROW_NUMBER`, `ROWS`, `RTRIM` |
+| S   | `SELECT`, `SET`, `SOME`, `STRING`, `SUM`                                                                                                |
+| T   | `THEN`, `TIES`, `TIME`, `TIMESTAMP`, `TOTAL`, `TRUE`                                                                                    |
+| U   | `UNBOUNDED`, `UNION`, `UNIQUE`, `UNKNOWN`, `UPDATE`, `USING`                                                                            |
+| V   | `VALUE`, `VALUES` ,`VARCHAR`                                                                                                            |
+| W   | `WHEN`, `WHERE`, `WINDOW`, `WITH`                                                                                                       |
