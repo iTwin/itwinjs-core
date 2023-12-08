@@ -167,6 +167,12 @@
       }
     },
     {
+      "version": "3.8.0",
+      "tag": "@itwin/core-quantity_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.17",
       "tag": "@itwin/core-quantity_v3.7.17",
       "date": "Mon, 20 Nov 2023 18:24:23 GMT",
