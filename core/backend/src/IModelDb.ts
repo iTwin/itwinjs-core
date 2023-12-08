@@ -351,7 +351,7 @@ export abstract class IModelDb extends IModel {
     (this.nativeDb as any).closeIModel = () => {
       if (!this.isReadonly)
         this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
-      
+
       this.nativeDb.closeFile();
     };
 
