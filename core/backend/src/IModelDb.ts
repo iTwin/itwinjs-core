@@ -345,7 +345,7 @@ export abstract class IModelDb extends IModel {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
 
-    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeDb
+    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
     (this.nativeDb as any).closeIModel = () => this.nativeDb.closeFile();
