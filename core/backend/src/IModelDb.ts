@@ -344,6 +344,17 @@ export abstract class IModelDb extends IModel {
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
+    // Make closeIModel available so their code doesn't break.
+    (this.nativeDb as any).closeIModel = () => {
+      if (!this.isReadonly)
+        this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+
+      this.nativeDb.closeFile();
+    };
+
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
