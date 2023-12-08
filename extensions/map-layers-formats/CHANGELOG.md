@@ -1,6 +1,6 @@
 # Change Log - @itwin/map-layers-formats
 
-This log was last generated on Thu, 07 Dec 2023 18:52:09 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Dec 2023 15:26:18 GMT and should not be manually modified.
 
 ## 4.3.0
 Thu, 07 Dec 2023 17:43:09 GMT
@@ -141,6 +141,11 @@ Mon, 22 May 2023 15:34:14 GMT
 
 - Update to eslint@8
 - Upgrade TypeScript compile target to es2021.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
 
 ## 3.7.17
 Mon, 20 Nov 2023 18:24:23 GMT
