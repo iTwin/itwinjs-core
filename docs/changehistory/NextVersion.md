@@ -3,14 +3,3 @@ publish: false
 ---
 # NextVersion
 
-Table of contents:
-
-- [iModels](#imodels)
-  - [Support for future feature updates on schema level](#support-for-future-feature-updates-on-schema-level)
-
-## iModels
-
-### Support for future feature updates on schema level
-
-The consumed imodel native Addon in this release introduces support for limiting certain elements in a schema to specific software versions.
-This will enable us to add new features to our software and selectively turn it off on older versions of the software, instead of the older version refusing to load the data entirely.
