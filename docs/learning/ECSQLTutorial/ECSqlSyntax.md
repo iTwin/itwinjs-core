@@ -34,6 +34,7 @@
     1. [experimental_features_enabled](#pragma-experimental_features_enabled)
     1. [integrity_check](#pragma-integrity_check-experimental)
 1. [ECSQL Keywords](#ecsql-keywords)
+1. [Escaping keywords](#escaping-keywords)
 
 ```sql
 [WITH [RECURSIVE] <cte-blocks>]
@@ -1441,3 +1442,15 @@ output of above will look like listing all check with result and time took to ru
 | U   | `UNBOUNDED`, `UNION`, `UNIQUE`, `UNKNOWN`, `UPDATE`, `USING`                                                                            |
 | V   | `VALUE`, `VALUES` ,`VARCHAR`                                                                                                            |
 | W   | `WHEN`, `WHERE`, `WINDOW`, `WITH`                                                                                                       |
+
+## Escaping keywords
+
+ECSQL has large set of [keywords](#ecsql-keywords). Keywords sometime appear in query as class name, property name or parameter name, cte block name or aliases and will result in query to fail. To fix it the keyword need to be quoted or escaped. Following is different ways keywords can be escaped. In ECSQL is preferred to escape using square brackets e.g. `[keyword]`.
+
+| Escape | description
+|---------|--------------|
+|**"*keyword*"**|A keyword in double-quotes is an identifier.|
+|**[*keyword*]**|A keyword enclosed in square brackets is an identifier. This is not standard SQL. This quoting mechanism is used by MS Access and SQL Server and is included in SQLite for compatibility.|
+|**\`*keyword*\`** |A keyword enclosed in grave accents (ASCII code 96) is an identifier. This is not standard SQL. This quoting mechanism is used by MySQL and is included in SQLite for compatibility.|
+
+>As best practice it good idea to escape at least escape all user defined identifiers like alias and properties name even when they are not currently keywords. They may become keyword in future as ECSQL evolve and may break your query.
