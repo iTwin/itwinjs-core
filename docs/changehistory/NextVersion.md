@@ -3,12 +3,6 @@ publish: false
 ---
 # NextVersion
 
----
-deltaDoc: true
-version: '3.8.0'
----
-# 3.8.0 Change Notes
-
 Table of contents:
 
 - [iModels](#imodels)
