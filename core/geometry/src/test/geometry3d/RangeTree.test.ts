@@ -968,4 +968,29 @@ describe("IndexedRangeHeap", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("PolyfaceRoundtrip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const polyface = Sample.createMeshFromFrankeSurface(50)!;
+    const graph = PolyfaceQuery.convertToHalfEdgeGraph(polyface); // coverage
+    const builder = PolyfaceBuilder.create();
+    builder.addGraph(graph);
+    const polyface1 = builder.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface, polyface1]);
+    ck.testExactNumber(polyface.facetCount, 2500, "expected number facets");
+    ck.testExactNumber(polyface.facetCount, polyface1.facetCount, "roundtrip thru graph preserves facets");
+
+    const contextA = PolyfaceRangeTreeContext.createCapture(polyface.createVisitor())!;
+    const contextB = PolyfaceRangeTreeContext.createCapture(polyface1.createVisitor())!;
+    const approach = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB);
+    if (ck.testType(approach, FacetLocationDetailPair)) {
+      ck.testType(approach.detailA, NonConvexFacetLocationDetail);
+      ck.testType(approach.detailB, NonConvexFacetLocationDetail);
+      ck.testCoordinate(approach.detailA.a, 0, "expect no gap between mesh and its roundtrip");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point]);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceRoundTrip");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
