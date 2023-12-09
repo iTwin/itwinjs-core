@@ -17,7 +17,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair } from "../../polyface/FacetLocationDetail";
+import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
@@ -342,6 +342,7 @@ describe("IndexedRangeHeap", () => {
     let numCase = 0;
 
     for (const treeWidth of [2, 4, 8]) {
+      y0 = 0;
       for (const numResultsPerLeaf of [treeWidth, 1]) {
         distanceSequence.push([]);
         const searcher = Point3dArrayRangeTreeContext.createCapture(pointsA, treeWidth, numResultsPerLeaf);
@@ -370,10 +371,10 @@ describe("IndexedRangeHeap", () => {
             fraction: searcher.numPointTest / (searcher.numSearch * pointsA.length),
           });
         }
-        y0 += 100;
+        y0 += 15;
         numCase++;
       }
-      x0 += 100;
+      x0 += 15;
     }
     const numSearchesPerCase = distanceSequence[0].length;
     for (let i = 1; i < distanceSequence.length; i++)
@@ -382,6 +383,69 @@ describe("IndexedRangeHeap", () => {
           ck.testExactNumber(distanceSequence[0][j], distanceSequence[i][j], { distance0J: distanceSequence[0][j], i, j, distanceIJ: distanceSequence[i][j] });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PointCloudMultiSearch1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const z0 = 0;
+
+    const pointsA = Sample.createGridPointsOnEllipsoid(
+      Transform.createRowValues(
+        5, 0, 0, 0,
+        0, 2, 0, 0,
+        0, 0, 3, 0,
+      ),
+      36, 52,
+      AngleSweep.createStartEndDegrees(-40, 60),
+      AngleSweep.createStartEndDegrees(-30, 195),
+    );
+
+    const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
+
+    // test and cover the trigger arrays
+    const context = Point3dArrayRangeTreeContext.createCapture(pointsA);
+    if (ck.testType(context, Point3dArrayRangeTreeContext)) {
+      y0 = 0;
+      for (const maxDist of [5.6, 3, 1]) { // largest min dist is 5.51
+        let numSingleton = 0;
+        let numArray = 0;
+        for (let u = 0; u <= 0.999999999; u += 0.025) {
+          const xyz = path.fractionToPoint(u);
+          const result = context.searchForClosestPoint(xyz, maxDist);
+          if (ck.testDefined(result, "search with maxDist found closest point or close points")) {
+            if (Array.isArray(result)) {
+              ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+              ++numArray;
+              const minCld = context.searchForClosestPoint(xyz)! as CurveLocationDetail;
+              let minArrayDist = maxDist;
+              const closestArrayPt = Point3d.createZero();
+              for (const cld of result) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, cld.point], x0, y0, z0);
+                ck.testLE(cld.a, maxDist, "values in saved array do not exceed the trigger");
+                ck.testLE(minCld.a, cld.a, "values in saved array are not closer than closest point");
+                if (cld.a < minArrayDist) {
+                  minArrayDist = cld.a;
+                  closestArrayPt.setFrom(cld.point);
+                }
+              }
+              ck.testPoint3d(minCld.point, closestArrayPt, "closest point found in saved array");
+            } else if (ck.testType(result, CurveLocationDetail)) {
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, xyz, 0.1, x0, y0, z0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, result.point], x0, y0, z0);
+              ++numSingleton;
+            }
+          }
+        }
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.02, x0, y0, z0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z0);
+        ck.show({ numArray, numSingleton });
+        y0 += 10;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch1");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -711,6 +775,7 @@ describe("IndexedRangeHeap", () => {
     if (ck.testType(approach, FacetLocationDetailPair)) {
       ck.testType(approach.detailA, ConvexFacetLocationDetail);
       ck.testType(approach.detailB, ConvexFacetLocationDetail);
+      ck.testExactNumber(approach.detailA.a, approach.detailB.a, "recorded min dist is the same in both details");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point], x0, y0, z0);
     }
     const numFacetA = polyfaceA.facetCount;
@@ -723,6 +788,65 @@ describe("IndexedRangeHeap", () => {
       testFraction: contextA.numFacetTest / (numFacetA * numFacetB),
     });
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PolyfacePolyfaceSearch1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const frankeSizeA = 30;
+    const frankeSizeB = 60;
+    const polyfaceA = Sample.createMeshFromFrankeSurface(frankeSizeA, undefined, [0.5, 0.5, 0.5, 1])!;
+    const polyfaceB = Sample.createMeshFromFrankeSurface(frankeSizeB, undefined, [0, 0, 0, 4])!;
+    const transform = Transform.createRowValues(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 1.5,
+    );
+    polyfaceB.tryTransformInPlace(transform);
+    const contextA = PolyfaceRangeTreeContext.createCapture(polyfaceA.createVisitor(), 3, 3)!;
+    const contextB = PolyfaceRangeTreeContext.createCapture(polyfaceB.createVisitor(), 3, 3)!;
+
+    let numSingleton = 0;
+    let numArray = 0;
+    for (const maxDist of [0.6, 0.53, 0.4] ) { // min dist is ~0.52
+      const result = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+        if (Array.isArray(result)) {
+          ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+          ++numArray;
+          const minFld = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB)! as FacetLocationDetailPair;
+          let minArrayDist = maxDist;
+          const closestArrayPtA = Point3d.createZero();
+          const closestArrayPtB = Point3d.createZero();
+          for (const fld of result) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [fld.detailA.point, fld.detailB.point], x0);
+            ck.testExactNumber(fld.detailA.a, fld.detailB.a, "recorded min dist is the same in both details");
+            ck.testType(fld.detailA, NonConvexFacetLocationDetail);
+            ck.testType(fld.detailB, NonConvexFacetLocationDetail);
+            ck.testLE(fld.detailA.a, maxDist, "values in saved array do not exceed the trigger");
+            ck.testLE(minFld.detailA.a, fld.detailA.a, "values in saved array are not closer than closest point");
+            if (fld.detailA.a < minArrayDist) {
+              minArrayDist = fld.detailA.a;
+              closestArrayPtA.setFrom(fld.detailA.point);
+              closestArrayPtB.setFrom(fld.detailB.point);
+            }
+          }
+          ck.testPoint3d(minFld.detailA.point, closestArrayPtA, "closest point found in saved array for input A");
+          ck.testPoint3d(minFld.detailB.point, closestArrayPtB, "closest point found in saved array for input B");
+        } else {
+          ck.testLE(maxDist, result.detailA.a, "singleton result expected when maxDist doesn't exceed min dist");
+          ck.testType(result.detailA, NonConvexFacetLocationDetail);
+          ck.testType(result.detailB, NonConvexFacetLocationDetail);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [result.detailA.point, result.detailB.point], x0);
+          ++numSingleton;
+        }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyfaceA, polyfaceB], x0);
+      x0 += 3;
+      }
+    }
+    ck.show({numArray, numSingleton});
+    GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch1");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -754,6 +878,43 @@ describe("IndexedRangeHeap", () => {
     if (ck.testType(polylineApproach, CurveLocationDetailPair))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polylineApproach.detailA.point, polylineApproach.detailB.point], x0, y0, z0);
 
+    // test and cover the trigger arrays
+    let numSingleton = 0;
+    let numArray = 0;
+    for (const maxDist of [0.5, 0.1, 0.02] ) { // min dist is ~0.025
+      x0 += 20;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
+      const result = LineString3dRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+        if (Array.isArray(result)) {
+          ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+          ++numArray;
+          const minCld = polylineApproach as CurveLocationDetailPair;
+          let minArrayDist = maxDist;
+          const closestArrayPtA = Point3d.createZero();
+          const closestArrayPtB = Point3d.createZero();
+          for (const cld of result) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [cld.detailA.point, cld.detailB.point], x0);
+            ck.testExactNumber(cld.detailA.a, cld.detailB.a, "recorded min dist is the same in both details");
+            ck.testLE(cld.detailA.a, maxDist, "values in saved array do not exceed the trigger");
+            ck.testLE(minCld.detailA.a, cld.detailA.a, "values in saved array are not closer than closest point");
+            if (cld.detailA.a < minArrayDist) {
+              minArrayDist = cld.detailA.a;
+              closestArrayPtA.setFrom(cld.detailA.point);
+              closestArrayPtB.setFrom(cld.detailB.point);
+            }
+          }
+          ck.testPoint3d(minCld.detailA.point, closestArrayPtA, "closest point found in saved array for input A");
+          ck.testPoint3d(minCld.detailB.point, closestArrayPtB, "closest point found in saved array for input B");
+        } else {
+          ck.testLE(maxDist, result.detailA.a, "singleton result expected when maxDist doesn't exceed min dist");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [result.detailA.point, result.detailB.point], x0);
+          ++numSingleton;
+        }
+      }
+    }
+    ck.show({numArray, numSingleton});
+
     x0 += 20;
     const shiftB = Transform.createTranslationXYZ(0, 3, 4);
     shiftB.multiplyPoint3dArrayInPlace(pointsB);
@@ -765,6 +926,43 @@ describe("IndexedRangeHeap", () => {
     const approach1 = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1);
     if (ck.testType(approach1, CurveLocationDetailPair))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach1.detailA.point, approach1.detailB.point], x0, y0, z0);
+
+    // test and cover the trigger arrays
+    numSingleton = 0;
+    numArray = 0;
+    for (const maxDist of [0.5, 0.2, 0.02] ) { // min dist is ~0.13
+      x0 += 20;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
+      const result = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1, maxDist);
+      if (ck.testDefined(result, "two-tree search with maxDist succeeded") && result) {
+        if (Array.isArray(result)) {
+          ck.testTrue(result.length > 1, "array is only returned when > 1 points are found within trigger distance");
+          ++numArray;
+          const minCld = approach1 as CurveLocationDetailPair;
+          let minArrayDist = maxDist;
+          const closestArrayPtA = Point3d.createZero();
+          const closestArrayPtB = Point3d.createZero();
+          for (const cld of result) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [cld.detailA.point, cld.detailB.point], x0);
+            ck.testExactNumber(cld.detailA.a, cld.detailB.a, "recorded min dist is the same in both details");
+            ck.testLE(cld.detailA.a, maxDist, "values in saved array do not exceed the trigger");
+            ck.testLE(minCld.detailA.a, cld.detailA.a, "values in saved array are not closer than closest point");
+            if (cld.detailA.a < minArrayDist) {
+              minArrayDist = cld.detailA.a;
+              closestArrayPtA.setFrom(cld.detailA.point);
+              closestArrayPtB.setFrom(cld.detailB.point);
+            }
+          }
+          ck.testPoint3d(minCld.detailA.point, closestArrayPtA, "closest point found in saved array for input A");
+          ck.testPoint3d(minCld.detailB.point, closestArrayPtB, "closest point found in saved array for input B");
+        } else {
+          ck.testLE(maxDist, result.detailA.a, "singleton result expected when maxDist doesn't exceed min dist");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [result.detailA.point, result.detailB.point], x0);
+          ++numSingleton;
+        }
+      }
+    }
+    ck.show({numArray, numSingleton});
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearch");
     expect(ck.getNumErrors()).equals(0);
