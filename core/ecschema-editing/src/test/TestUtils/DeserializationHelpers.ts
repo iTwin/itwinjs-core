@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "@xmldom/xmldom";
-import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import { ISchemaLocater, Schema, SchemaContext, SchemaGraphUtil, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
@@ -17,6 +17,21 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
     ...referenceJson,
   };
 }
+
+export async function copySchemaContext(schemaContext: SchemaContext): Promise<SchemaContext> {
+  const copiedContext = new SchemaContext();
+  const orderedSchemaList = schemaContext.getKnownSchemas();
+  for(const schema of schemaContext.getKnownSchemas()) {
+    SchemaGraphUtil.buildDependencyOrderedSchemaList(schema, orderedSchemaList);
+  }
+
+  for(const schema of orderedSchemaList) {
+    await Schema.fromJson(schema.toJSON(), copiedContext);
+  }
+
+  return copiedContext;
+}
+
 export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _schemaList: Map<string, Object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;

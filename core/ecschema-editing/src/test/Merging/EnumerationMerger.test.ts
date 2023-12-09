@@ -51,7 +51,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEnumeration = await sourceSchema.getItem<Enumeration>("TestEnumeration");
       const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
@@ -92,7 +92,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
       const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
       expect(mergedEnumeration!.toJSON()).deep.eq({
         schemaItemType: "Enumeration",
@@ -160,7 +160,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEnumeration = await sourceSchema.getItem<Enumeration>("TestEnumeration");
       const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
@@ -205,7 +205,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema, new SchemaContext());
 
       const sourceEnumeration = await sourceSchema.getItem<Enumeration>("TestEnumeration");
       const mergedEnumeration = await mergedSchema.getItem<Enumeration>("TestEnumeration");
@@ -249,7 +249,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
     });
 
     it("should throw an error if enumerator value attribute conflict exist", async () => {
@@ -290,7 +290,7 @@ describe("Enumeration merge tests", () => {
       }, new SchemaContext());
 
       const merger = new SchemaMerger();
-      await expect(merger.merge(targetSchema, sourceSchema)).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+      await expect(merger.merge(targetSchema, sourceSchema, new SchemaContext())).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
 
     });
   });

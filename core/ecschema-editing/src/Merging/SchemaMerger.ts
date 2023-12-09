@@ -6,7 +6,7 @@
  * @module Merging
  */
 
-import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaContextEditor } from "../Editing/Editor";
@@ -55,14 +55,21 @@ export class SchemaMerger {
 
   /**
    * Copy the SchemaItems of the source schemas to the target schema.
-   * @param targetSchema  The schema the SchemaItems gets merged to.
-   * @param sourceSchema  The schema the SchemaItems gets copied from.
-   * @returns             The merged target schema.
+   * @param targetSchema        The schema the SchemaItems gets merged to.
+   * @param sourceSchema        The schema the SchemaItems gets copied from.
+   * @param mergeSchemaContext  The schema context, the schemas gets merged in. Callers have to
+   *                            ensure this context already contains the referenced schemas.
+   * @returns                   The merged target schema.
    */
-  public async merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
+  public async merge(targetSchema: Schema, sourceSchema: Schema, mergeSchemaContext: SchemaContext): Promise<Schema> {
+
+    // Creates a copy of the target schema, to avoid altering an existing schema that
+    // might be used in a different workflow already.
+    targetSchema = await copySchema(targetSchema, mergeSchemaContext);
+
     const schemaChanges = await this.getSchemaChanges(targetSchema, sourceSchema);
     const mergeContext: SchemaMergeContext = {
-      editor: new SchemaContextEditor(targetSchema.context),
+      editor:       new SchemaContextEditor(mergeSchemaContext),
       targetSchema,
       sourceSchema,
     };
@@ -82,8 +89,6 @@ export class SchemaMerger {
     await CAClassMerger.mergeChanges(mergeContext, itemChanges.customAttributeClasses);
     await ClassMerger.mergeChanges(mergeContext, itemChanges.classes);
 
-    // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
-    //       merge into a temporary schema and eventually swap that with the given instance.
     return targetSchema;
   }
 }
@@ -116,4 +121,15 @@ function * filterChangesByItemType<TChange extends SchemaItemChanges>(changes: M
       yield change;
     }
   }
+}
+
+/**
+ * Creates a copy of the given schema instance. The schema is copied using
+ * JSON serialization.
+ * @param schemaToCopy  The schema to copy
+ * @returns             The copied schema.
+ */
+async function copySchema(schemaToCopy: Schema, schemaContext: SchemaContext): Promise<Schema> {
+  const schemaJson = schemaToCopy.toJSON();
+  return Schema.fromJson(schemaJson, schemaContext);
 }

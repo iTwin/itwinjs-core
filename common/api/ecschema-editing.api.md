@@ -1440,7 +1440,7 @@ export class SchemaItemMissing extends SchemaItemChange {
 
 // @beta
 export class SchemaMerger {
-    merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    merge(targetSchema: Schema, sourceSchema: Schema, mergeSchemaContext: SchemaContext): Promise<Schema>;
 }
 
 // @alpha
