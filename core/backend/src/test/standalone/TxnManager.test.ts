@@ -31,7 +31,7 @@ describe("TxnManager", () => {
     };
     nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
     nativeDb.deleteAllTxns();
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
   };
 
   beforeEach(async () => {

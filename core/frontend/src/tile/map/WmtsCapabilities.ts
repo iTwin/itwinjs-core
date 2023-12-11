@@ -551,14 +551,24 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined> {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
     }
 
-    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
+    const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
+    tmpUrl.searchParams.append("request", "GetCapabilities");
+    tmpUrl.searchParams.append("service", "WMTS");
+    if (queryParams) {
+      Object.keys(queryParams).forEach((paramKey) => {
+        if (!tmpUrl.searchParams.has(paramKey))
+          tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
+      });
+    }
+
+    const xmlCapabilities = await getXml(tmpUrl.toString(), credentials);
     if (!xmlCapabilities)
       return undefined;
 

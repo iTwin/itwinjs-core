@@ -21,7 +21,6 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "isVariableSetInNpmrcFile": () => (/* binding */ isVariableSetInNpmrcFile),
 /* harmony export */   "syncNpmrc": () => (/* binding */ syncNpmrc)
 /* harmony export */ });
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ 657147);
@@ -34,19 +33,22 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * This function reads the content for given .npmrc file path, and also trims
+ * As a workaround, copyAndTrimNpmrcFile() copies the .npmrc file to the target folder, and also trims
  * unusable lines from the .npmrc file.
+ *
+ * Why are we trimming the .npmrc lines?  NPM allows environment variables to be specified in
+ * the .npmrc file to provide different authentication tokens for different registry.
+ * However, if the environment variable is undefined, it expands to an empty string, which
+ * produces a valid-looking mapping with an invalid URL that causes an error.  Instead,
+ * we'd prefer to skip that line and continue looking in other places such as the user's
+ * home directory.
  *
  * @returns
  * The text of the the .npmrc.
  */
-// create a global _combinedNpmrc for cache purpose
-const _combinedNpmrcMap = new Map();
-function _trimNpmrcFile(sourceNpmrcPath) {
-    const combinedNpmrcFromCache = _combinedNpmrcMap.get(sourceNpmrcPath);
-    if (combinedNpmrcFromCache !== undefined) {
-        return combinedNpmrcFromCache;
-    }
+function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
+    logger.info(`Transforming ${sourceNpmrcPath}`); // Verbose
+    logger.info(`  --> "${targetNpmrcPath}"`);
     let npmrcFileLines = fs__WEBPACK_IMPORTED_MODULE_0__.readFileSync(sourceNpmrcPath).toString().split('\n');
     npmrcFileLines = npmrcFileLines.map((line) => (line || '').trim());
     const resultLines = [];
@@ -55,13 +57,8 @@ function _trimNpmrcFile(sourceNpmrcPath) {
     // Comment lines start with "#" or ";"
     const commentRegExp = /^\s*[#;]/;
     // Trim out lines that reference environment variables that aren't defined
-    for (let line of npmrcFileLines) {
+    for (const line of npmrcFileLines) {
         let lineShouldBeTrimmed = false;
-        //remove spaces before or after key and value
-        line = line
-            .split('=')
-            .map((line) => line.trim())
-            .join('=');
         // Ignore comment lines
         if (!commentRegExp.test(line)) {
             const environmentVariables = line.match(expansionRegExp);
@@ -88,28 +85,6 @@ function _trimNpmrcFile(sourceNpmrcPath) {
         }
     }
     const combinedNpmrc = resultLines.join('\n');
-    //save the cache
-    _combinedNpmrcMap.set(sourceNpmrcPath, combinedNpmrc);
-    return combinedNpmrc;
-}
-/**
- * As a workaround, copyAndTrimNpmrcFile() copies the .npmrc file to the target folder, and also trims
- * unusable lines from the .npmrc file.
- *
- * Why are we trimming the .npmrc lines?  NPM allows environment variables to be specified in
- * the .npmrc file to provide different authentication tokens for different registry.
- * However, if the environment variable is undefined, it expands to an empty string, which
- * produces a valid-looking mapping with an invalid URL that causes an error.  Instead,
- * we'd prefer to skip that line and continue looking in other places such as the user's
- * home directory.
- *
- * @returns
- * The text of the the .npmrc with lines containing undefined variables commented out.
- */
-function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
-    logger.info(`Transforming ${sourceNpmrcPath}`); // Verbose
-    logger.info(`  --> "${targetNpmrcPath}"`);
-    const combinedNpmrc = _trimNpmrcFile(sourceNpmrcPath);
     fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(targetNpmrcPath, combinedNpmrc);
     return combinedNpmrc;
 }
@@ -141,16 +116,6 @@ function syncNpmrc(sourceNpmrcFolder, targetNpmrcFolder, useNpmrcPublish, logger
     catch (e) {
         throw new Error(`Error syncing .npmrc file: ${e}`);
     }
-}
-function isVariableSetInNpmrcFile(sourceNpmrcFolder, variableKey) {
-    const sourceNpmrcPath = `${sourceNpmrcFolder}/.npmrc`;
-    //if .npmrc file does not exist, return false directly
-    if (!fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(sourceNpmrcPath)) {
-        return false;
-    }
-    const trimmedNpmrcFile = _trimNpmrcFile(sourceNpmrcPath);
-    const variableKeyRegExp = new RegExp(`^${variableKey}=`, 'm');
-    return trimmedNpmrcFile.match(variableKeyRegExp) !== null;
 }
 //# sourceMappingURL=npmrcUtilities.js.map
 
@@ -395,23 +360,6 @@ function _getRushTempFolder(rushCommonFolder) {
     }
 }
 /**
- * Compare version strings according to semantic versioning.
- * Returns a positive integer if "a" is a later version than "b",
- * a negative integer if "b" is later than "a",
- * and 0 otherwise.
- */
-function _compareVersionStrings(a, b) {
-    const aParts = a.split(/[.-]/);
-    const bParts = b.split(/[.-]/);
-    const numberOfParts = Math.max(aParts.length, bParts.length);
-    for (let i = 0; i < numberOfParts; i++) {
-        if (aParts[i] !== bParts[i]) {
-            return (Number(aParts[i]) || 0) - (Number(bParts[i]) || 0);
-        }
-    }
-    return 0;
-}
-/**
  * Resolve a package specifier to a static version
  */
 function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
@@ -431,23 +379,12 @@ function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
             (0,_utilities_npmrcUtilities__WEBPACK_IMPORTED_MODULE_4__.syncNpmrc)(sourceNpmrcFolder, rushTempFolder, undefined, logger);
             const npmPath = getNpmPath();
             // This returns something that looks like:
-            // ```
-            // [
-            //   "3.0.0",
-            //   "3.0.1",
-            //   ...
-            //   "3.0.20"
-            // ]
-            // ```
-            //
-            // if multiple versions match the selector, or
-            //
-            // ```
-            // "3.0.0"
-            // ```
-            //
-            // if only a single version matches.
-            const npmVersionSpawnResult = child_process__WEBPACK_IMPORTED_MODULE_0__.spawnSync(npmPath, ['view', `${name}@${version}`, 'version', '--no-update-notifier', '--json'], {
+            //  @microsoft/rush@3.0.0 '3.0.0'
+            //  @microsoft/rush@3.0.1 '3.0.1'
+            //  ...
+            //  @microsoft/rush@3.0.20 '3.0.20'
+            //  <blank line>
+            const npmVersionSpawnResult = child_process__WEBPACK_IMPORTED_MODULE_0__.spawnSync(npmPath, ['view', `${name}@${version}`, 'version', '--no-update-notifier'], {
                 cwd: rushTempFolder,
                 stdio: []
             });
@@ -455,21 +392,16 @@ function _resolvePackageVersion(logger, rushCommonFolder, { name, version }) {
                 throw new Error(`"npm view" returned error code ${npmVersionSpawnResult.status}`);
             }
             const npmViewVersionOutput = npmVersionSpawnResult.stdout.toString();
-            const parsedVersionOutput = JSON.parse(npmViewVersionOutput);
-            const versions = Array.isArray(parsedVersionOutput)
-                ? parsedVersionOutput
-                : [parsedVersionOutput];
-            let latestVersion = versions[0];
-            for (let i = 1; i < versions.length; i++) {
-                const version = versions[i];
-                if (_compareVersionStrings(version, latestVersion) > 0) {
-                    latestVersion = version;
-                }
-            }
+            const versionLines = npmViewVersionOutput.split('\n').filter((line) => !!line);
+            const latestVersion = versionLines[versionLines.length - 1];
             if (!latestVersion) {
                 throw new Error('No versions found for the specified version range.');
             }
-            return latestVersion;
+            const versionMatches = latestVersion.match(/^.+\s\'(.+)\'$/);
+            if (!versionMatches) {
+                throw new Error(`Invalid npm output ${latestVersion}`);
+            }
+            return versionMatches[1];
         }
         catch (e) {
             throw new Error(`Unable to resolve version ${version} of package ${name}: ${e}`);

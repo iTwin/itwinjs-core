@@ -2,6 +2,42 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/core-backend_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Inserting, updating and deleting of an element aspect requires exclusive lock on the element that owns it"
+          },
+          {
+            "comment": "Add changeset reader api"
+          },
+          {
+            "comment": "Save changes before closing IModels opened in ReadWrite mode"
+          },
+          {
+            "comment": "vDirection is deprecated"
+          },
+          {
+            "comment": "Add `ECDb.getSchemaProps`"
+          },
+          {
+            "comment": "Add support for Node 20."
+          },
+          {
+            "comment": "Change reserved SQLite keywords from tests."
+          },
+          {
+            "comment": "modified getAspects to handle dot separator in full class name"
+          },
+          {
+            "comment": "lint fix"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/core-backend_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",
@@ -342,6 +378,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.8.0",
+      "tag": "@itwin/core-backend_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.17",
+      "tag": "@itwin/core-backend_v3.7.17",
+      "date": "Mon, 20 Nov 2023 18:24:23 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.16",

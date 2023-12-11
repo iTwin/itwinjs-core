@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../internal";
 import { IModelApp } from "../../IModelApp";
 
 /** @packageDocumentation
@@ -33,6 +33,27 @@ export interface ArcGISServiceMetadata {
 
   /** Indicates if an access token is required to access the service */
   accessTokenRequired: boolean;
+}
+
+/** Arguments for validating ArcGIS sources
+ * @internal
+ */
+export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
+  /** List of capabilities 'keyword' that needs to be advertised in the service's metadata in order to be valid.  For example: 'Map', 'Query', etc*/
+  capabilitiesFilter: string[];
+}
+
+/** Arguments for fetching service metadata
+ * @internal
+ */
+export interface ArcGisGetServiceJsonArgs  {
+  url: string;
+  formatId: string;
+  userName?: string;
+  password?: string;
+  queryParams?: {[key: string]: string};
+  ignoreCache?: boolean;
+  requireToken?: boolean;
 }
 
 /**
@@ -153,17 +174,12 @@ export class ArcGisUtilities {
 
   /**
    * Attempt to access an ArcGIS service, and validate its service metadata.
-   * @param url URL of the source to validate.
-   * @param formatId Format Id of the source.
-   * @param capabilitiesFilter List of capabilities 'keyword' that needs to be advertised in the service's metadata
-   * in order to be valid.  For example: 'Map', 'Query', etc
-   * @param userName Username to use for legacy token based security.
-   * @param password Password to use for legacy token based security.
-   * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
-   * @return Validation Status. If successful, a list of available sub-layers will also be returned.
-   */
-  public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const metadata = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
+   * @param source Source to validate.
+   * @param opts Validation options
+  */
+  public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
+    const {source, ignoreCache, capabilitiesFilter} = args;
+    const metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -173,7 +189,7 @@ export class ArcGisUtilities {
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        return (userName || password) ? {status: MapLayerSourceStatus.InvalidCredentials} : {status: MapLayerSourceStatus.RequireAuth};
+        return (source.userName || source.password) ? {status: MapLayerSourceStatus.InvalidCredentials} : {status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials};
     }
@@ -234,17 +250,33 @@ export class ArcGisUtilities {
    * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
    * @param requireToken Flag to indicate if a token is required
    */
-  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata|undefined> {
+
+  public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
+    const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
     }
+    const appendParams = (urlObj: URL, params?: {[key: string]: string}) => {
+      if (params) {
+        Object.keys(params).forEach((paramKey) => {
+          if (!urlObj.searchParams.has(paramKey))
+            urlObj.searchParams.append(paramKey, params[paramKey]);
+        });
+      }
+    };
+
+    const createUrlObj = () => {
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      appendParams(tmpUrl, queryParams);
+      return tmpUrl;
+    };
 
     let accessTokenRequired = false;
     try {
-      let tmpUrl = new URL(url);
-      tmpUrl.searchParams.append("f", "json");
+      let tmpUrl = createUrlObj();
 
       // In some cases, caller might already know token is required, so append it immediately
       if (requireToken) {
@@ -265,8 +297,7 @@ export class ArcGisUtilities {
         // If token required
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
-          tmpUrl = new URL(url);
-          tmpUrl.searchParams.append("f", "json");
+          tmpUrl = createUrlObj();
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
           response = await fetch(tmpUrl.toString(), { method: "GET" });
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);

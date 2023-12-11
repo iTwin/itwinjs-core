@@ -772,7 +772,12 @@ export class Geometry {
       columnA.w, columnB.w, columnC.w,
     );
   }
-  /** 2D cross product of vectors with the vectors presented as numbers. */
+  /**
+   * 2D cross product of vectors with the vectors presented as numbers.
+   * * Sign of 2d cross product is positive <=> sweeping from first vector to second vector is ccw orientation.
+   * * Sign of 2d cross product is negative <=> sweeping from first vector to second vector is clockwise orientation.
+   * * 2d cross product is 0 <=> parallel/antiparallel vectors.
+   */
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vy - uy * vx;
   }
@@ -797,7 +802,14 @@ export class Geometry {
       ux * vy - uy * vx,
     );
   }
-  /** 2D dot product of vectors with the vectors presented as numbers. */
+  /**
+   * 2D dot product of vectors with the vectors presented as numbers.
+   * * Sign of dot product is positive <=> vectorA points into the same half-space as vectorB.
+   * * Sign of dot product is negative <=> vectorA points into opposite half-space as vectorB.
+   * * Dot product is 0 <=> perpendicular vectors.
+   * * **Note:** half-space is defined in terms of a vector, by the perpendicular plane at its origin (it splits
+   * the universe into two halves).
+   */
   public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vx + uy * vy;
   }

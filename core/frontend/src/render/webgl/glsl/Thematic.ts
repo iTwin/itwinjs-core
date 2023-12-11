@@ -26,11 +26,11 @@ vec4 getSensor(int index) {
 // A stepped gradient texture is arranged with single unique color pixels for each step. The dimension of a stepped gradient texture is stepCount.
 // A smooth gradient texture is arranged with blended color pixels across the entire span of the texture. The dimension of a smooth gradient texture is the system's maximum texture size.
 const getColor = `
-vec3 getColor(float ndx) {
+vec4 getColor(float ndx) {
   if (ndx < 0.0 || ndx > 1.0)
     return u_marginColor;
 
-  return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
+  return TEXTURE(s_texture, vec2(0.0, ndx));
 }
 `;
 
@@ -39,12 +39,12 @@ vec3 getColor(float ndx) {
 // specifically to ensure that the texels sampled result in lines of overall singular colors - no stepping into the
 // neighboring bands.
 const getIsoLineColor = `
-vec3 getIsoLineColor(float ndx, float stepCount) {
+vec4 getIsoLineColor(float ndx, float stepCount) {
   if (ndx < 0.01 || ndx > 0.99)
     return u_marginColor;
 
   ndx += 0.5 / stepCount; // center on step pixels
-  return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
+  return TEXTURE(s_texture, vec2(0.0, ndx));
 }
 `;
 
@@ -114,7 +114,8 @@ const applyThematicColorPostlude = `
   float gradientMode = u_thematicSettings.x;
   float stepCount = u_thematicSettings.z;
 
-  vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  vec4 rgba = (kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx);
+  rgba.a = baseColor.a * (u_thematicSettings.w > 0.0 ? rgba.a : 1.0);
   rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
@@ -140,7 +141,8 @@ const applyThematicColorPostludeForPointClouds = `
   float gradientMode = u_thematicSettings.x;
   float stepCount = u_thematicSettings.z;
 
-  vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
+  vec4 rgba = (kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx);
+  rgba.a = baseColor.a * (u_thematicSettings.w > 0.0 ? rgba.a : 1.0);
   rgba = mix(rgba, baseColor, u_thematicColorMix);
 
   if (kThematicGradientMode_IsoLines == gradientMode) {
@@ -262,14 +264,14 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   });
 
-  frag.addUniform("u_marginColor", VariableType.Vec3, (prog) => {
+  frag.addUniform("u_marginColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_marginColor", (uniform, params) => {
       params.target.uniforms.thematic.bindMarginColor(uniform);
     });
   });
 
   // gradientMode, distanceCutoff, stepCount
-  builder.addUniform("u_thematicSettings", VariableType.Vec3, (prog) => {
+  builder.addUniform("u_thematicSettings", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_thematicSettings", (uniform, params) => {
       params.target.uniforms.thematic.bindFragSettings(uniform);
     });

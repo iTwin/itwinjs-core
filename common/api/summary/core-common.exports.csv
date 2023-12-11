@@ -797,6 +797,7 @@ public;ThematicGradientColorScheme
 public;ThematicGradientMode
 public;ThematicGradientSettings
 public;ThematicGradientSettingsProps
+public;ThematicGradientTransparencyMode
 public;ThumbnailFormatProps
 public;ThumbnailProps 
 internal;TileContentDescription 

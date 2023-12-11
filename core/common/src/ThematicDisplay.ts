@@ -10,6 +10,7 @@ import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
+import { TextureTransparency } from "./TextureProps";
 
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
@@ -25,6 +26,24 @@ export enum ThematicGradientMode {
   SteppedWithDelimiter = 2,
   /** Apply isolines to the scene to achieve an effect similar to a contour map. Can only be used with [[ThematicDisplayMode.Height]]. */
   IsoLines = 3,
+}
+
+/** Describes how transparency is computed when applying a thematic gradient to a surface.
+ * Each [[Gradient.KeyColor]] in [[ThematicGradientSettings.customKeys]] has a transparency value.
+ * Each surface to which the gradient is applied has its own transparency.
+ * The transparency mode determines how these two values are combined to compute the final transparency.
+ * @see [[ThematicGradientSettings.transparencyMode]].
+ * @public
+ * @extensions
+ */
+export enum ThematicGradientTransparencyMode {
+  /** Ignore the gradient's transparency, applying only the surface's own transparency. */
+  SurfaceOnly = 0,
+  /** The final transparency is computed from the product of the surface and gradient alpha channels.
+   * (Alpha is the inverse of transparency, where `alpha = (255 - transparency) / 255`).
+   * If the gradient color is opaque, this produces the same result as [[SurfaceOnly]].
+   */
+  MultiplySurfaceAndGradient = 1,
 }
 
 /** A color scheme used to generate the colors of a thematic gradient within an applied range.
@@ -67,6 +86,8 @@ export interface ThematicGradientSettingsProps {
   customKeys?: Gradient.KeyColorProps[];
   /** See [[ThematicGradientSettings.colorMix]]. */
   colorMix?: number;
+  /** See [[ThematicGradientSettings.transparencyMode]]. */
+  transparencyMode?: ThematicGradientTransparencyMode;
 }
 
 /** Thematic settings specific to creating a color gradient used by [[ThematicDisplay]].
@@ -89,6 +110,11 @@ export class ThematicGradientSettings {
   /** The percentage to mix in the original color with the thematic display gradient color (0-1).
    * Applies to background map terrain and point clouds only.  Defaults to 0. */
   public readonly colorMix: number;
+  /** Specifies how the transparency is computed. Defaults to [[ThematicGradientTransparencyMode.SurfaceOnly]].
+   * @note This property is ignored for gradients applied using an [[AnalysisStyle]] via [[AnalysisStyleThematic]] - in that case, only the color and
+   * transparency of the thematic gradient are applied.
+   */
+  public readonly transparencyMode: ThematicGradientTransparencyMode;
 
   public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
@@ -98,26 +124,37 @@ export class ThematicGradientSettings {
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
-  public equals(other: ThematicGradientSettings): boolean {
-    if (this.mode !== other.mode)
-      return false;
-    if (this.stepCount !== other.stepCount)
-      return false;
-    if (!this.marginColor.equals(other.marginColor))
-      return false;
-    if (this.colorScheme !== other.colorScheme)
-      return false;
-    if (this.customKeys.length !== other.customKeys.length)
-      return false;
-    if (this.colorMix !== other.colorMix)
-      return false;
+  /** @alpha */
+  public get textureTransparency(): TextureTransparency {
+    let transp = TextureTransparency.Opaque;
+    if (ThematicGradientColorScheme.Custom === this.colorScheme) {
+      let haveOpaque = false;
+      let haveTransparent = false;
+      for (const key of this.customKeys) {
+        const isOpaque = key.color.isOpaque;
+        haveOpaque = haveOpaque || isOpaque;
+        haveTransparent = haveTransparent || !isOpaque;
+      }
 
-    for (let i = 0; i < this.customKeys.length; i++) {
-      if (!Gradient.keyColorEquals(this.customKeys[i], other.customKeys[i]))
-        return false;
+      if (haveTransparent)
+        transp = haveOpaque ? TextureTransparency.Mixed : TextureTransparency.Translucent;
     }
 
-    return true;
+    if (transp !== TextureTransparency.Mixed)
+      if (this.marginColor.isOpaque !== (transp === TextureTransparency.Opaque))
+        transp = TextureTransparency.Mixed;
+
+    return transp;
+  }
+
+  public equals(other: ThematicGradientSettings): boolean {
+    if (this.mode !== other.mode || this.stepCount !== other.stepCount || !this.marginColor.equals(other.marginColor)
+      || this.colorScheme !== other.colorScheme || this.customKeys.length !== other.customKeys.length
+      || this.colorMix !== other.colorMix || this.transparencyMode !== other.transparencyMode) {
+      return false;
+    }
+
+    return this.customKeys.every((key, index) => Gradient.keyColorEquals(key, other.customKeys[index]));
   }
 
   /** Compares two sets of thematic gradient settings.
@@ -139,11 +176,12 @@ export class ThematicGradientSettings {
       return diff;
     if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0)
       return diff;
+    if ((diff = compareNumbers(lhs.transparencyMode, rhs.transparencyMode)) !== 0)
+      return diff;
 
-    for (let i = 0; i < lhs.customKeys.length; i++) {
+    for (let i = 0; i < lhs.customKeys.length; i++)
       if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0)
         return diff;
-    }
 
     return diff;
   }
@@ -156,6 +194,7 @@ export class ThematicGradientSettings {
       this.marginColor = ColorDef.fromJSON();
       this.colorScheme = ThematicGradientColorScheme.BlueRed;
       this.colorMix = 0.0;
+      this.transparencyMode = ThematicGradientTransparencyMode.SurfaceOnly;
     } else {
       this.mode = (json.mode !== undefined && json.mode !== null) ? json.mode : ThematicGradientMode.Smooth;
       if (this.mode < ThematicGradientMode.Smooth || this.mode > ThematicGradientMode.IsoLines)
@@ -182,6 +221,7 @@ export class ThematicGradientSettings {
       }
 
       this.colorMix = json.colorMix ?? 0.0;
+      this.transparencyMode = json.transparencyMode ?? ThematicGradientTransparencyMode.SurfaceOnly;
     }
   }
 
@@ -207,6 +247,9 @@ export class ThematicGradientSettings {
     if (0 !== this.colorMix)
       props.colorMix = this.colorMix;
 
+    if (ThematicGradientTransparencyMode.SurfaceOnly !== this.transparencyMode)
+      props.transparencyMode = this.transparencyMode;
+
     if (this.customKeys.length > 0)
       props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() }; });
 
@@ -228,6 +271,7 @@ export class ThematicGradientSettings {
       colorScheme: undefined !== changedProps.colorScheme ? changedProps.colorScheme : this.colorScheme,
       customKeys: undefined !== changedProps.customKeys ? changedProps.customKeys : this.customKeys.map((key) => ({ value: key.value, color: key.color.tbgr })),
       colorMix: undefined !== changedProps.colorMix ? changedProps.colorMix : this.colorMix,
+      transparencyMode: changedProps.transparencyMode ?? this.transparencyMode,
     };
 
     return ThematicGradientSettings.fromJSON(props);

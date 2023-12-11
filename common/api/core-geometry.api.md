@@ -2534,7 +2534,7 @@ export class HalfEdge implements HalfEdgeUserData {
     countEdgesAroundVertex(): number;
     countMaskAroundFace(mask: HalfEdgeMask, value?: boolean): number;
     countMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): number;
-    static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge;
+    static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge;
     static createHalfEdgePair(heArray: HalfEdge[] | undefined): HalfEdge;
     static createHalfEdgePairWithCoordinates(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, xB: number | undefined, yB: number | undefined, zB: number | undefined, iB: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
     static crossProductXYAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number;
@@ -2570,7 +2570,7 @@ export class HalfEdge implements HalfEdgeUserData {
     static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
     i: number;
-    get id(): any;
+    get id(): number;
     isEqualXY(other: XAndY | HalfEdge): boolean;
     isFaceConvex(tolerance?: number): boolean;
     get isIsolatedEdge(): boolean;
@@ -2581,13 +2581,13 @@ export class HalfEdge implements HalfEdgeUserData {
     static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, signedAreaTol?: number): boolean;
     isSectorConvex(signedAreaTol?: number): boolean;
     maskBits: number;
-    static nodeToId(node: HalfEdge): any;
+    static nodeToId(node: HalfEdge): number;
     static nodeToIdMaskXY(node: HalfEdge): {
-        id: any;
-        mask: any;
+        id: number;
+        mask: string;
         xy: number[];
     };
-    static nodeToIdString(node: HalfEdge): any;
+    static nodeToIdString(node: HalfEdge): string;
     static nodeToIdXYString(node: HalfEdge): string;
     static nodeToIdXYZString(node: HalfEdge): string;
     static nodeToMaskString(node: HalfEdge): string;

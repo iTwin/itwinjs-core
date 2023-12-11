@@ -7,7 +7,17 @@
  */
 
 import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
-import { getFormatProps, InvertedUnit, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider, Unit } from "@itwin/ecschema-metadata";
+import {
+  getFormatProps,
+  InvertedUnit,
+  KindOfQuantity,
+  SchemaContext,
+  SchemaKey,
+  SchemaMatchType,
+  SchemaUnitProvider,
+  Unit,
+  UnitSystem,
+} from "@itwin/ecschema-metadata";
 
 /**
  * A data structure that associates unit systems with property value formatting props. The associations are used for
@@ -140,9 +150,9 @@ async function getKoqFormatProps(
   defaultFormats: FormatsMap | undefined,
   unitSystem?: UnitSystemKey,
 ) {
-  const unitSystems = getUnitSystemGroupNames(unitSystem);
+  const unitSystemMatchers = getUnitSystemGroupMatchers(unitSystem);
   // use one of KOQ presentation format that matches requested unit system
-  const presentationFormat = await getKoqPresentationFormat(koq, unitSystems);
+  const presentationFormat = await getKoqPresentationFormat(koq, unitSystemMatchers);
   if (presentationFormat) {
     return getFormatProps(presentationFormat);
   }
@@ -155,7 +165,9 @@ async function getKoqFormatProps(
     // istanbul ignore else
     if (phenomenon && defaultFormats[phenomenon.name.toUpperCase()]) {
       const defaultPhenomenonFormats = defaultFormats[phenomenon.name.toUpperCase()];
-      for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats) ? /* istanbul ignore next */ defaultPhenomenonFormats : [defaultPhenomenonFormats]) {
+      for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
+        ? /* istanbul ignore next */ defaultPhenomenonFormats
+        : [defaultPhenomenonFormats]) {
         if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
           return defaultUnitSystemFormat.format;
         }
@@ -165,7 +177,7 @@ async function getKoqFormatProps(
 
   // use persistence unit format if it matches requested unit system and matching presentation format was not found
   const persistenceUnitSystem = await persistenceUnit.unitSystem;
-  if (persistenceUnitSystem && unitSystems.includes(persistenceUnitSystem.name.toUpperCase())) {
+  if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
     return getPersistenceUnitFormatProps(persistenceUnit);
   }
 
@@ -177,9 +189,9 @@ async function getKoqFormatProps(
   return undefined;
 }
 
-async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystems: string[]) {
+async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystemMatchers: Array<(unitSystem: UnitSystem) => boolean>) {
   const presentationFormats = koq.presentationFormats;
-  for (const system of unitSystems) {
+  for (const matcher of unitSystemMatchers) {
     for (const format of presentationFormats) {
       const unit = format.units && format.units[0][0];
       // istanbul ignore if
@@ -187,7 +199,7 @@ async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystems: string
         continue;
       }
       const currentUnitSystem = await unit.unitSystem;
-      if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+      if (currentUnitSystem && matcher(currentUnitSystem)) {
         return format;
       }
     }
@@ -214,16 +226,20 @@ function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): Fo
   };
 }
 
-function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
-  switch (unitSystem) {
+function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey) {
+  function createMatcher(name: string | string[]) {
+    const names = Array.isArray(name) ? name : [name];
+    return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
+  }
+  switch (groupKey) {
     case "imperial":
-      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "metric":
-      return ["SI", "METRIC", "INTERNATIONAL", "FINANCE"];
+      return [["SI", "METRIC"], "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usCustomary":
-      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usSurvey":
-      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
   }
   return [];
 }
