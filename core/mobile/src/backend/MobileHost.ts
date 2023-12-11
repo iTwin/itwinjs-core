@@ -103,6 +103,7 @@ export class MobileHost {
   public static readonly onOrientationChanged = new BeEvent();
   public static readonly onEnterForeground = new BeEvent();
   public static readonly onEnterBackground = new BeEvent();
+  public static readonly onConnected = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
   public static readonly onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
 
