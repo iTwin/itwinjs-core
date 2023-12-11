@@ -816,8 +816,12 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Test if `spaceNode` is in the sector of `sectorNode`.
-   * * The sector is create by 2 walls: edge of `sectorNode` and edge of `sectorNode.facePredecessor`.
-   * * This can also be seen as if `spaceNode` is visible from `sectorNode`.
+   * * The sector at `sectorNode` is defined by two rays starting at `sectorNode` and extending along the edges
+   * owned by `sectorNode` and its face predecessor.
+   * * In general, this method returns `true` if the coordinates of `spaceNode` are _strictly_ inside this sector
+   * (not on the rays).
+   * * Interpretation is whether a viewer at `sectorNode` can see `spaceNode` between the two rays.
+   * * Degenerate sectors of 180 or 360 degrees have special handling.
    */
   public static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean {
     // remark: fussy details ported from native code. The obscure cases seemed "unlikely" at first. But pre-existing

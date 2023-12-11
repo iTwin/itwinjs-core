@@ -53,7 +53,7 @@ export class HalfEdgePointerInspector {
       this.numMatePairError++;
   }
   /**
-   * Return true if all pointer pairings are correct for a complete half edge graph:
+   * Return true if all pointer pairings are correct for a closed half edge graph (with no boundary):
    * * For each he:  `he.edgeMate.edgeMate === he`
    * * For each he:  `he.faceSuccessor.facePredecessor === he`
    * * For each he:  `he.facePredecessor.faceSuccessor === he`
@@ -66,7 +66,7 @@ export class HalfEdgePointerInspector {
       && this.numMatePairError === 0;
   }
   /**
-   * Return true if all counts are correct for a half edge graph that has complete pairings:
+   * Return true if all pointer pairings are correct for a half edge graph with possible boundary:
    * * For each he:  `he.edgeMate.edgeMate === he`
    * * For each he:  `he.faceSuccessor.facePredecessor === he`
    * * For each he:  `he.facePredecessor.faceSuccessor === he`

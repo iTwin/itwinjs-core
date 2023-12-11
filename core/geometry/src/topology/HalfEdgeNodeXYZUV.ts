@@ -54,9 +54,12 @@ export class NodeXYZUV {
     this._node = other.node;
   }
   /**
-   * Create a `NodeXYZUV` with
-   * * x,y,z at `node` coords.
-   * * u,v as dotXY and crossXY of the ray direction and distances from the ray origin to the `node`.
+   * Create a `NodeXYZUV` with:
+   * * node from the given HalfEdge.
+   * * x,y,z as the coordinates of `node`.
+   * * u as the xy dot product of vectorA with `ray.direction`, where vectorA is the vector from ray origin to
+   * `node` coordinates.
+   * * v as the xy cross product of `ray.direction` with vectorA.
    */
   public static createNodeAndRayOrigin(node: HalfEdge, ray: Ray3d, result?: NodeXYZUV): NodeXYZUV {
     const x = node.x;

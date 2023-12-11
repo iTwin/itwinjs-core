@@ -54,7 +54,7 @@ export class GraphChecker {
       const nodeC = nodeA.vertexSuccessor;
       Point3d.create(nodeA.x, nodeA.y, 0, xyzA);
       Point3d.create(nodeB.x, nodeB.y, 0, xyzB);
-      // if both ends are trivial (isolated vertex or isolated edge)
+      // if both ends are trivial (this is a disconnected edge or vertex) just output the segment
       if (nodeA.countEdgesAroundVertex() <= 1 && nodeB.countEdgesAroundVertex() <= 1) {
         data.push(LineSegment3d.create(xyzA, xyzB));
       } else {
@@ -637,7 +637,7 @@ describe("VUGraph", () => {
       },
     );
     ck.testLT(numNodes, NUM_NODES, "early exit when visit edgeA");
-    // early exit from full-graph face loops
+    // early exit from full-graph vertex loops
     const NUM_VERTEX_LOOPS = 3;
     numNodes = 0;
     graph.announceVertexLoops(
@@ -647,7 +647,7 @@ describe("VUGraph", () => {
       },
     );
     ck.testLT(numNodes, NUM_VERTEX_LOOPS, "early exit when vertex loop does not contain edgeB");
-    // early exit from full-graph vertex loops
+    // early exit from full-graph face loops
     numNodes = 0;
     graph.announceFaceLoops(
       (_g: HalfEdgeGraph, node: HalfEdge) => {
