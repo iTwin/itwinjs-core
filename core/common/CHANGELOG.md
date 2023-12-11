@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Dec 2023 15:26:18 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Add tests for `QueryBinder`.
+- Added support for recoloring geometry intersecting a clip volume
+- Custom query parameters can now be configured on map layer objects.
+- Add support for transparency in thematic display gradient.
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
@@ -143,6 +153,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Implemented constant lod texture mapping mode.
 - Add interfaces representing 3d tileset schema.
 - add Atmosphere class as a property of Environment
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
 
 ## 3.7.17
 Mon, 20 Nov 2023 18:24:23 GMT

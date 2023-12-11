@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Dec 2023 15:26:18 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Inserting, updating and deleting of an element aspect requires exclusive lock on the element that owns it
+- Add changeset reader api
+- Save changes before closing IModels opened in ReadWrite mode
+- vDirection is deprecated
+- Add `ECDb.getSchemaProps`
+- Add support for Node 20.
+- Change reserved SQLite keywords from tests.
+- modified getAspects to handle dot separator in full class name
+- lint fix
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
@@ -184,6 +199,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Fix for timing issue in core tests
 - allow passing a custom schema read context to IModelDb.importSchemas
 - Added test to verify Id serialization to hex for system properties.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
 
 ## 3.7.17
 Mon, 20 Nov 2023 18:24:23 GMT

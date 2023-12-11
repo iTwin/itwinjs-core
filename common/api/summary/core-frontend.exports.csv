@@ -151,6 +151,7 @@ internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelSt
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 public;CreateRenderMaterialArgs 
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
+internal;createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set
 internal;createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
