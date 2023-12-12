@@ -70,9 +70,6 @@ export class Entities extends ECClasses {
 
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
     const newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
     if (newClass === undefined)
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
