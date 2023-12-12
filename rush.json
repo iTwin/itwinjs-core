@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  // Do note set rush to versions 5.100.0 - 5.112.1 since "preminor" bump type not supported in those versions. Details: https://github.com/microsoft/rushstack/issues/4445
+  // Do not set rush to versions 5.100.0 - 5.112.1 since "preminor" bump type not supported in those versions. Details: https://github.com/microsoft/rushstack/issues/4445
   "rushVersion": "5.112.2",
   "pnpmVersion": "7.32.2",
   "nodeSupportedVersionRange": "^18.12.0 || ^20.9.0",
