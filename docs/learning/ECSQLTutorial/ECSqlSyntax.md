@@ -8,6 +8,10 @@
 1. Built-in functions
     1. [Scalar SQLite built-in functions](#scalar-sqlite-built-in-functions)
     1. [ECSQL Built-In functions](#ecsql-built-in-functions)
+1. [JSON1 virtual classes](#json1-virtual-classes)
+    1. [json_tree()](#json_tree)
+    1. [json_each()](#json_each)
+1. [Polymorphic vs non-polymorphic query](#polymorphic-vs-non-polymorphic-query)
 1. [ECSQLOPTIONS or OPTIONS clause](#ecsqloptions-or-options-clause)
 1. [Window functions](#window-functions)
 1. [DATE, TIME & TIMESTAMP Literals](#date-time--timestamp-literals)
@@ -268,6 +272,93 @@ When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
 ```sql
 SELECT * FROM [BisCore].[Element] WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
+```
+
+## JSON1 virtual classes
+
+This EC wrapper for JSON1 SQLite extension. It allow you to enumerate json document as table.
+
+### json_tree()
+
+Recursively iterate over all items in json.
+
+```sql
+select s.* from json1.json_tree('{
+        "planet": "mars",
+        "gravity": "3.721 m/s²",
+        "surface_area": "144800000 km²",
+        "distance_from_sun":"227900000 km",
+        "radius" : "3389.5 km",
+        "orbital_period" : "687 days",
+        "moons": ["Phobos", "Deimos"]
+    }') s;
+```
+
+key                 |value               |type                |atom                |parent   |fullkey             |path
+--------------------|--------------------|--------------------|---------------------|---------|-----------------------|---------------------
+NULL                |{"planet":"mars","gravity":"3.721 m/sy","surface_area":"144800000 kmy","distance_from_sun":"227900000 km","radius":"3389.5 km","orbital_period":"687 days","moons":["Phobos","Deimos"]}|object              |NULL                |NULL     |$                   |$
+planet              |mars                |text                |mars                |0        |$.planet            |$
+gravity             |3.721 m/sy          |text                |3.721 m/sy          |0        |$.gravity           |$
+surface_area        |144800000 kmy       |text                |144800000 kmy       |0        |$."surface_area"    |$
+distance_from_sun   |227900000 km        |text                |227900000 km        |0        |$."distance_from_sun"|$
+radius              |3389.5 km           |text                |3389.5 km           |0        |$.radius            |$
+orbital_period      |687 days            |text                |687 days            |0        |$."orbital_period"  |$
+moons               |["Phobos","Deimos"] |array               |NULL                |0        |$.moons             |$
+0                   |Phobos              |text                |Phobos              |14       |$.moons[0]          |$.moons
+1                   |Deimos              |text                |Deimos              |14       |$.moons[1]          |$.moons
+
+### json_each()
+
+Iterate top level json and return each entry as row.
+
+```sql
+select s.* from json1.json_each('{
+        "planet": "mars",
+        "gravity": "3.721 m/s²",
+        "surface_area": "144800000 km²",
+        "distance_from_sun":"227900000 km",
+        "radius" : "3389.5 km",
+        "orbital_period" : "687 days",
+        "moons": ["Phobos", "Deimos"]
+    }') s;
+```
+
+outputs following result
+
+key                 |value               |type                |atom                |parent   |fullkey             |path
+--------------------|---------------------|-------------------|---------------------|--------|--------------------|--------------------------
+planet              |mars                |text                |mars                |NULL     |$.planet            |$
+gravity             |3.721 m/sy          |text                |3.721 m/sy          |NULL     |$.gravity           |$
+surface_area        |144800000 kmy       |text                |144800000 kmy       |NULL     |$."surface_area"    |$
+distance_from_sun   |227900000 km        |text                |227900000 km        |NULL     |$."distance_from_sun"|$
+radius              |3389.5 km           |text                |3389.5 km           |NULL     |$.radius            |$
+orbital_period      |687 days            |text                |687 days            |NULL     |$."orbital_period"  |$
+moons               |["Phobos","Deimos"] |array               |NULL                |NULL     |$.moons             |$
+
+
+## Polymorphic vs non-polymorphic query
+
+ECSQL support polymorphic query by default unless use use `ONLY` keyword.
+
+Syntax: `[ALL|ONLY] <className>`
+
+### Polymorphic query
+
+```sql
+SELECT * FORM [BisCore].[GeometricElement3d] Limit 10
+
+-- following is same as above and all GeometricElement3d and its derived classes will be returned.
+SELECT * FORM ALL [BisCore].[GeometricElement3d] Limit 10
+
+```
+
+### Non-Polymorphic query
+
+Restrict result to exactly a single type of class.
+
+```sql
+SELECT * FORM ONLY [BisCore].[GeometricElement3d] Limit 10
+
 ```
 
 ## ECSQLOPTIONS or OPTIONS clause
