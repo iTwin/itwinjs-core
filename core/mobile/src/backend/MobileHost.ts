@@ -102,7 +102,7 @@ export class MobileHost {
   /**
    * Raised when the mobile OS informs a mobile app that it is running low on memory.
    *
-   * __Note:__ iOS and iPadOS send this warning so often as to make it not very useful.
+   * @note iOS and iPadOS send this warning so often as to make it not very useful.
    */
   public static readonly onMemoryWarning = new BeEvent();
   /**
@@ -120,7 +120,7 @@ export class MobileHost {
   /**
    * Raised after a mobile backend connects to the mobile frontend.
    *
-   * __Note:__ this will be raised at startup, and it will also be raised every time the app returns
+   * @note this will be raised at startup, and it will also be raised every time the app returns
    * to the foreground from the background.
    */
   public static readonly onConnected = new BeEvent();
