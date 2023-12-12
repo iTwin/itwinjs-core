@@ -36,16 +36,6 @@
 1. [ECSQL Keywords](#ecsql-keywords)
 1. [Escaping keywords](#escaping-keywords)
 
-```sql
-[WITH [RECURSIVE] <cte-blocks>]
-SELECT <expr-list> [
-    FROM <class-ref>
-]
-
-<expr-list>: <expr> [AS] [alias] [,...]
-
-```
-
 ## Bitwise operator
 
 | Operator | Description         | Example                                          |
@@ -269,7 +259,7 @@ Void,Terrain
 When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
 ```sql
-SELECT * FROM BisCore.Element WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
+SELECT * FROM [BisCore].[Element] WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
 ```
 
 ### GuidToString( *binary-guid* )
@@ -277,7 +267,7 @@ SELECT * FROM BisCore.Element WHERE FederationGuid = StrToGuid('407bfa18-944d-11
 When `GUID` is stored a binary, it need to be converted for comparison purpose.
 
 ```sql
-SELECT * FROM BisCore.Element WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
+SELECT * FROM [BisCore].[Element] WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
 ```
 
 ## ECSQLOPTIONS or OPTIONS clause
@@ -583,17 +573,17 @@ Only primitive type can be used with WHEN, THEN and ELSE. Primitive does not inc
 -- CASE without ELSE. Returns NULL if the IF case is not met
 SELECT
     CASE
-         WHEN Length > 1 THEN 'Big'
+         WHEN [Length] > 1 THEN 'Big'
     END
 FROM test.Foo
 
 -- CASE with ELSE. If Length is not greater than 1 then the ELSE expression is returned.
 SELECT
     CASE
-        WHEN Length > 1 THEN 'Big'
+        WHEN [Length] > 1 THEN 'Big'
         ELSE 'Small'
     END
-FROM test.Foo
+FROM [test].[Foo]
 
 -- Multiple CASE with ELSE
 SELECT
@@ -607,7 +597,7 @@ SELECT
         WHEN weekDay=7 THEN 'Sun'
         ELSE 'Wrong value'
     END
-FROM test.Foo
+FROM [test].[Foo]
 ```
 
 ## IIF (*condition-expr*, *true-expr*, *false-expr*)
@@ -626,10 +616,10 @@ ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> 
 
 ```sql
 -- Returns 'Big' if Length is greater than 1, and 'Small' otherwise
-SELECT IIF(Length > 1.0, 'Big', 'Small') FROM test.Foo;
+SELECT IIF([Length] > 1.0, 'Big', 'Small') FROM [test].[Foo];
 
 -- Returns DisplayLabel if Name is NULL, and Name otherwise
-SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
+SELECT IIF([Name] IS NULL, [DisplayLabel], [Name]) FROM [test].[Foo];
 ```
 
 ## LIKE operator
@@ -645,7 +635,7 @@ Find classes with name start with `IL`.
 
 ```sql
     -- find classes
-    SELECT Name FROM meta.ECClassDef WHERE Name  LIKE 'IL%' LIMIT 3;
+    SELECT Name FROM [meta].[ECClassDef] WHERE [Name]  LIKE 'IL%' LIMIT 3;
     /*
     Name
     --------------------
@@ -659,7 +649,7 @@ Find classes with name start with `IL`.
 
 ```sql
     -- find classes
-    SELECT Name FROM meta.ECClassDef WHERE Name NOT LIKE 'IL%' LIMIT 3;
+    SELECT Name FROM [meta].[ECClassDef] WHERE [Name] NOT LIKE 'IL%' LIMIT 3;
     /*
     Name
     --------------------
@@ -672,7 +662,7 @@ Find classes with name start with `IL`.
 when searching for `%` or `_` we need to escape expression.
 
 ```sql
-    SELECT Name FROM meta.ECClassDef WHERE Name   LIKE '\_%' ESCAPE '\' LIMIT 3;
+    SELECT Name FROM [meta].[ECClassDef] WHERE [Name] LIKE '\_%' ESCAPE '\' LIMIT 3;
     /*
     Name
     --------------------
@@ -720,7 +710,7 @@ Syntax: `GROUP BY <expr-list> [HAVING <group-filter-expr]`
 Count instances of each type of class.
 
 ```sql
-    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    SELECT EC_CLASSNAME([ECClassId]) [ClassName], COUNT(*) [InstanceCount]
     FROM [BisCore].[Element]
     GROUP BY [ECClassId]
     LIMIT 3
@@ -736,7 +726,7 @@ Count instances of each type of class.
 Count instances of each type of class by filter out group with count less then 10.
 
 ```sql
-    SELECT EC_CLASSNAME(ECClassId) ClassName, COUNT(*) InstanceCount
+    SELECT EC_CLASSNAME([ECClassId]) [ClassName], COUNT(*) [InstanceCount]
     FROM [BisCore].[Element]
     GROUP BY [ECClassId]
     HAVING COUNT(*)>10
@@ -770,9 +760,9 @@ WITH RECURSIVE
     c(i) AS (
         SELECT 1
         UNION
-        SELECT i + 1 FROM c WHERE i < 4 ORDER BY 1
+        SELECT i + 1 FROM [c] WHERE i < 4 ORDER BY 1
     )
-    SELECT i FROM c
+    SELECT i FROM [c]
     /*
         i
         ------------------
@@ -783,84 +773,29 @@ WITH RECURSIVE
     */
 ```
 
-Generate mandelbrot set using CTE.
+Query assembly hierarchy where Depth is greater then `10` and limit row to `100`.
 
 ```sql
-      WITH RECURSIVE
-        [xaxis]([x]) AS(
-          VALUES (- 2.0)
-          UNION ALL
-          SELECT [x] + 0.05
-          FROM   [xaxis]
-          WHERE  [x] < 1.2
-        ),
-        [yaxis]([y]) AS(
-          VALUES (- 1.0)
-          UNION ALL
-          SELECT [y] + 0.1
-          FROM   [yaxis]
-          WHERE  [y] < 1.0
-        ),
-        [m]([iter], [cx], [cy], [x], [y]) AS(
-          SELECT
-                0,
-                [x],
-                [y],
-                0.0,
-                0.0
-          FROM   [xaxis],
-                [yaxis]
-          UNION ALL
-          SELECT
-                [iter] + 1,
-                [cx],
-                [cy],
-                [x] * [x] - [y] * [y] + [cx],
-                2.0 * [x] * [y] + [cy]
-          FROM   [m]
-          WHERE  ([x] * [x] + [y] * [y]) < 4.0 AND [iter] < 28
-        ),
-        [m2]([iter], [cx], [cy]) AS(
-          SELECT
-                MAX ([iter]),
-                [cx],
-                [cy]
-          FROM   [m]
-          GROUP  BY
-                    [cx],
-                    [cy]
-        ),
-        [a]([t]) AS(
-          SELECT GROUP_CONCAT (SUBSTR (' .+*#', 1 + (CASE WHEN [iter] / 7 > 4 THEN 4 ELSE [iter] / 7 END), 1), '')
-          FROM   [m2]
-          GROUP  BY [cy]
-        )
-      SELECT GROUP_CONCAT (RTRIM ([t]), CHAR (0xa)) mandelbrot_set
-      FROM   [a];
-      /*
-                                        ....#
-                                       ..#*..
-                                     ..+####+.
-                                .......+####....   +
-                               ..##+*##########+.++++
-                              .+.##################+.
-                  .............+###################+.+
-                  ..++..#.....*#####################+.
-                 ...+#######++#######################.
-              ....+*################################.
-     #############################################...
-              ....+*################################.
-                 ...+#######++#######################.
-                  ..++..#.....*#####################+.
-                  .............+###################+.+
-                              .+.##################+.
-                               ..##+*##########+.++++
-                                .......+####....   +
-                                     ..+####+.
-                                       ..#*..
-                                        ....#
-                                        +.
-     */
+WITH RECURSIVE
+    assembly ([Id], [ParentId], [Code], [Label], [AssemblyPath], [Depth]) AS (
+        SELECT
+            [r].[ECInstanceId],
+            [r].[Parent].[Id],
+            [r].[CodeValue],
+            [r].[UserLabel],
+            COALESCE([r].[CodeValue], [r].[UserLabel]), 1
+        FROM [BisCore].[Element] [r]
+        WHERE [r].[Parent].[Id] IS NULL
+        UNION ALL
+        SELECT
+            [c].[ECInstanceId],
+            [c].[Parent].[Id],
+            [c].[CodeValue],
+            [c].[UserLabel],
+            [p].[AssemblyPath] || '->' || COALESCE([c].[CodeValue], [c].[UserLabel]), [Depth] + 1
+        FROM [bis].[Element] [c]
+            JOIN [assembly] [p] ON [p].[Id] = [c].[Parent].[Id]
+) SELECT * FROM [assembly] WHERE [Depth] > 10 LIMIT 100
 ```
 
 ## Type filter
@@ -1107,7 +1042,7 @@ Instance property allows relaxed access to any property within a hierarchy or se
 Following ECSQL will return only properties declared in `BisCore.Element`
 
 ```sql
-    SELECT * FROM BisCore.Element WHERE ECInstanceId = 0xc000000018a
+    SELECT * FROM [BisCore].[Element] WHERE ECInstanceId = 0xc000000018a
 ```
 
 |ECInstanceId|ECClassId|Model|Last Modified|Code Specification|Code Scope|Code|User Label|Parent|Federation GUID|JSON Properties|
@@ -1117,7 +1052,7 @@ Following ECSQL will return only properties declared in `BisCore.Element`
 While following return all properties of respective derived class of `BisCore.Element`
 
 ```sql
-    SELECT $ FROM BisCore.Element WHERE ECInstanceId = 0xc000000018a
+    SELECT $ FROM [BisCore].[Element] WHERE ECInstanceId = 0xc000000018a
 ```
 
 above return one column and it contain serialized json instance with all properties
