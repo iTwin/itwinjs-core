@@ -160,19 +160,19 @@ Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERRO
 
 ```sql
 -- returns schema-name:classname
-SELECT ec_classname(ECClassId, 's:c') FROM bis:Element
+SELECT ec_classname([ECClassId], 's:c') FROM [BisCore].[Element]
 
 -- same as 'sa:cn' - returns schema-alias:classname
-SELECT ec_classname(ECClassId, 1) FROM bis:Element
+SELECT ec_classname([ECClassId], 1) FROM bis:Element
 
 -- returns schema-name, after filtering on it
-SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 's') = 'BisCore'
+SELECT * FROM [BisCore].[Element] WHERE ec_classname([ECClassId], 's') = 'BisCore'
 
 -- returns schema-alias after filtering on it
-SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 3) = 'bis'
+SELECT * FROM [BisCore].[Element] WHERE ec_classname([ECClassId], 3) = 'bis'
 
 -- only get classname and filter on classname
-SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'c') = 'PUMP'
+SELECT * FROM [BisCore].[Element] WHERE ec_classname([ECClassId], 'c') = 'PUMP'
 ```
 
 ## ec_classId('*schema-name-or-alias* : | . *classname*' )
@@ -198,16 +198,16 @@ Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERRO
 
 ```sql
 -- alias or schema name both can be specified
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm.PUMP'), ec_classid('opm.VALVE'))
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant.PUMP'), ec_classid('OpenPlant.VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('opm.PUMP'), ec_classid('opm.VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('OpenPlant.PUMP'), ec_classid('OpenPlant.VALVE'))
 
 -- both '.' and ':' delimiter can be used
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm:PUMP'), ec_classid('opm:VALVE'))
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant:PUMP'), ec_classid('OpenPlant:VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('opm:PUMP'), ec_classid('opm:VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('OpenPlant:PUMP'), ec_classid('OpenPlant:VALVE'))
 
 -- schema name or alias and class name can be specified as two arguments
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('opm', 'PUMP'), ec_classid('opm', 'VALVE'))
-SELECT * FROM bis.Element WHERE ECClassId IN (ec_classid('OpenPlant', 'PUMP'), ec_classid('OpenPlant', 'VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('opm', 'PUMP'), ec_classid('opm', 'VALVE'))
+SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IN (ec_classid('OpenPlant', 'PUMP'), ec_classid('OpenPlant', 'VALVE'))
 
 ```
 
@@ -335,7 +335,6 @@ radius              |3389.5 km           |text                |3389.5 km        
 orbital_period      |687 days            |text                |687 days            |NULL     |$."orbital_period"  |$
 moons               |["Phobos","Deimos"] |array               |NULL                |NULL     |$.moons             |$
 
-
 ## Polymorphic vs non-polymorphic query
 
 ECSQL support polymorphic query by default unless use use `ONLY` keyword.
@@ -376,7 +375,7 @@ Here is list of supported options
 Get instance as json which is compatible with itwin.js.
 
 ```sql
-SELECT $ FROM Bis.Element OPTIONS USE_JS_PROP_NAMES
+SELECT $ FROM [BisCore].[Element] OPTIONS USE_JS_PROP_NAMES
 /*
 $
 --------------------
@@ -898,19 +897,19 @@ Syntax: `<classId> IS [NOT] ( [ALL|ONLY] <class-name>[, ...])`
 Select element where it is of type `PUMP` or `PIPE`.
 
 ```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS (plant.PUMP, plant.PIPE)
+    SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IS (plant.PUMP, plant.PIPE)
 ```
 
 Select element where it is exactly of type `PUMP` or `PIPE`.
 
 ```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS (ONLY plant.PUMP, ONLY plant.PIPE)
+    SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IS (ONLY plant.PUMP, ONLY plant.PIPE)
 ```
 
 Find all the element that is not of type `PUMP` or `PIPE`
 
 ```sql
-    SELECT * FROM Bis.Element WHERE ECClassId IS NOT (plant.PUMP, plant.PIPE)
+    SELECT * FROM [BisCore].[Element] WHERE [ECClassId] IS NOT (plant.PUMP, plant.PIPE)
 ```
 
 ## ORDER BY clause
@@ -966,12 +965,12 @@ Join using automatically uses relationship definition to join two classes
 
 Syntax: `JOIN <end-class> USING <relationship> [FORWARD|BACKWARD]`
 
-In following we join from `Bis.Element` to `Bis.Element` using `bis.ElementOwnsChildElements`. Where child element is `t0` and parent is `t1`. If we use `FORWARD` then `t0` will become child and `t1` will be parent.
+In following we join from `Bis.Element` to `BisCore.Element` using `BisCore.ElementOwnsChildElements`. Where child element is `t0` and parent is `t1`. If we use `FORWARD` then `t0` will become child and `t1` will be parent.
 
 ```sql
     SELECT *
-    FROM bis.Element t0
-        JOIN bis.Element t1 USING bis.ElementOwnsChildElements BACKWARD
+    FROM [BisCore].[Element] t0
+        JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] BACKWARD
 ```
 
 ## Compound SELECT
@@ -1121,9 +1120,9 @@ Instance property is any property in a class selected in ECSql or its derived cl
 In ECSQL instance property can be accessed by using the `$->` operator.
 
 ```sql
-SELECT $->CodeValue FROM bis.Element WHERE $->CodeValue IS NOT NULL LIMIT 1;
+SELECT $->[CodeValue] FROM [BisCore].[Element] WHERE $->[CodeValue] IS NOT NULL LIMIT 1;
 --
-SELECT e.$->CodeValue FROM bis.Element e LIMIT 1;
+SELECT e.$->[CodeValue] FROM [BisCore].[Element] e LIMIT 1;
 ```
 
 ### How it works?
@@ -1235,7 +1234,7 @@ above return one column and it contain serialized json instance with all propert
 Take a property `Asset_Tag` which might be property that exist on some instance of derived hierarchy of `bis.Element` and we like to find any instance of `Bis.Element` where `$->Asset_Tag ='COMPUTER 005'`
 
 ```sql
-    SELECT ECInstanceId FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005'
+    SELECT [ECInstanceId] FROM [BisCore].[Element] WHERE $->[Asset_Tag] ='COMPUTER 005'
 ```
 
 |ECInstanceId|
@@ -1245,7 +1244,7 @@ Take a property `Asset_Tag` which might be property that exist on some instance 
 Similarly we can read any set of properties and also filter by them
 
 ```sql
-    SELECT $->RevitId, $->LastModifier  FROM Bis.Element WHERE $->Asset_Tag ='COMPUTER 005'
+    SELECT $->[RevitId], $->[LastModifier]  FROM [BisCore].[Element] WHERE $->[Asset_Tag] ='COMPUTER 005'
 ```
 
 |$ -> RevitId        | $ -> LastModifier  |
@@ -1255,7 +1254,7 @@ Similarly we can read any set of properties and also filter by them
 ECSql will apply a property filter on selected rows such that those instances which has at least one property out of set of instance property must exists. This improve performance.
 
 ```sql
-    SELECT $->ThisPropertyDoesNotExists from Bis.Element;
+    SELECT $->[ThisPropertyDoesNotExists] from [BisCore].[Element];
 ```
 
 If `ThisPropertyDoesNotExists` does not exists in `Bis.Element` derived hierarchy then no row will be returned. ECSql filter only include rows that must have at least one instance property. If any instance does not have any instance property requested then it will will be skipped.
@@ -1276,13 +1275,13 @@ Following type of properties can directly be use in filters and return strong ty
 Here is example of `RevitId` use with `IN()` clause.
 
 ```sql
-    SELECT $ from Bis.Element WHERE $->RevitId In ( 1000, 2000, 3000 );
+    SELECT $ from [BisCore].[Element] WHERE $->RevitId In ( 1000, 2000, 3000 );
 ```
 
 While composite properties are returned as `JSON`.
 
 ```sql
-    SELECT $->Model from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+    SELECT $->[Model] from [RevitDynamic].[Computer] where [ECInstanceId] = 0x8000000014c;
 ```
 
 above will return following
@@ -1294,13 +1293,13 @@ above will return following
 While following will not return any row
 
 ```sql
-    SELECT $->Model.Id from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+    SELECT $->[Model].[Id] from [RevitDynamic].[Computer] where [ECInstanceId] = 0x8000000014c;
 ```
 
 But you can still do following to get child property
 
 ```sql
-    SELECT JSON_EXTRACT($->Model, '$.Id') AS ModelId from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+    SELECT JSON_EXTRACT($->[Model], '$.Id') AS ModelId from [RevitDynamic].[Computer] where [ECInstanceId] = 0x8000000014c;
 ```
 
 above will return following
@@ -1319,7 +1318,7 @@ The following query will return no row if there is no subclass of `Bis.Element` 
 
 ```sql
   SELECT ECClassId, ECInstanceId
-  FROM Bis.Element
+  FROM [BisCore].[Element]
       WHERE $->CodeValue = 'Profiling' OR $->Foo = 'Hello'
   LIMIT 1
   ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -1329,7 +1328,7 @@ On the other hand, the following query makes `Foo` optional by adding `?` at the
 
 ```sql
   SELECT ECClassId, ECInstanceId
-  FROM Bis.Element
+  FROM [BisCore].[Element]
       WHERE $->CodeValue = 'Profiling' OR $->Foo? = 'Hello'
   LIMIT 1
   ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
@@ -1337,16 +1336,79 @@ On the other hand, the following query makes `Foo` optional by adding `?` at the
 
 > Note: Optional property may slow down performance while non-optional properties will improve the performance of instance query.
 
+## Accessing composite properties
+
+Only top level instance properties can be accessed using instance property accessor syntax `$-><prop>`.\
+Using `$-><prop>.<sub prop>` will not work at the moment and will return zero rows.\
+Only following property types can be used directly and they return strong type values:
+
+- Binary
+- DateTime
+- Double
+- Integer
+- Long
+- String
+
+```sql
+-- Composite property will be returned as a JSON
+  SELECT $->Model from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+
+-- Output:{"Id":"0x80000000003","RelECClassId":"0x51"}
+```
+
+```sql
+-- Following will not return any rows
+  SELECT $->Model.Id from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+
+-- However, the child property can be accessed using JSON_EXTRACT()
+  SELECT JSON_EXTRACT($->Model, '$.Id') AS ModelId from RevitDynamic.Computer where ECInstanceId = 0x8000000014c;
+
+-- Output: 0x80000000003
+```
+
+## Examples
+
+```sql
+-- Instance Access
+SELECT $ FROM [BisCore].[Element] WHERE [ECInstanceId] = 0xc000000018a
+
+-- Instance property access
+SELECT $->[CodeValue] FROM [bis].[Element] WHERE $->[CodeValue] IS NOT NULL LIMIT 1;
+SELECT [e].$->[CodeValue] FROM [bis].[Element] [e] LIMIT 1;
+
+-- Nested select
+SELECT * FROM (SELECT $ FROM [meta].[ECClassDef]);
+SELECT $ FROM (SELECT * FROM [meta].[ECClassDef]);
+
+-- Instance access in different clauses
+SELECT $ FROM [meta].[ECClassDef] WHERE $->[ECInstanceId] < 3;
+SELECT $ FROM [meta].[ECClassDef] WHERE $->[ECInstanceId] < 3 ORDER BY $->ECClassId;
+SELECT $ FROM [meta].[ECClassDef] WHERE $->[Name] LIKE 'Class%' ORDER BY $->[ECInstanceId] DESC;
+SELECT $->[RevitId], $->[LastModifier]  FROM [Bis].[Element] WHERE $->[Asset_Tag] ='COMPUTER 005';
+SELECT $->[Name] from [meta].[ECClassDef] WHERE $->[ECInstanceId] = 1;
+SELECT $ from [Bis].[Element] WHERE $->[RevitId] In ( 1000, 2000, 3000 );
+
+SELECT [ECInstanceId], Name
+  FROM [meta].[ECClassDef]
+    WHERE [Name] in (
+      SELECT $->[Name]
+      FROM [meta].[ECClassDef]
+        WHERE $->[ECInstanceId] = 1);
+
+SELECT *
+  FROM (
+    SELECT $
+    FROM [meta].[ECClassDef]
+      WHERE $->[Schema].[Id] in (
+        SELECT [Schema].[Id]
+        FROM [meta].[ECClassDef]
+          WHERE [Schema].[Id] < 3) ORDER BY $->[ECClassId]);
+```
+
 ## Limitation
 
 1. Only top level property is allowed.
-2. Only following primitive type value can be use in filter directly. Any composite type will require `JSON_EXTRACT()` to extract child value before using it in query.
-    - DateTime
-    - Integer
-    - Long
-    - Binary
-    - String
-    - Double
+2. Only primitive type values can be accessed in the filter directly. Any composite type will require `JSON_EXTRACT()` to extract child value before it can be used in a query. Refer [Accessing Composite Properties](#accessing-composite-properties)
 3. Currently indexes are not supported on instance properties.
 4. MetaData a.k.a `ColumnInfo` is dynamically updated only for primitive properties selected for output. All other properties will get generic `ColumnInfo` with a string property and `extendType=JSON`.
 
