@@ -183,6 +183,8 @@ export class MobileHost {
     // (undocumented)
     static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     // (undocumented)
+    static readonly onConnected: BeEvent<Listener>;
+    // (undocumented)
     static readonly onEnterBackground: BeEvent<Listener>;
     // (undocumented)
     static readonly onEnterForeground: BeEvent<Listener>;
