@@ -11,7 +11,6 @@ import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 

@@ -220,7 +220,7 @@ export class RpcInvocation {
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = await RpcMarshaling.serialize(this.protocol, value);
+    const result = RpcMarshaling.serialize(this.protocol, value);
     return this.fulfill(result, value);
   }
 
@@ -229,7 +229,7 @@ export class RpcInvocation {
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = await RpcMarshaling.serialize(this.protocol, reason);
+    const result = RpcMarshaling.serialize(this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
