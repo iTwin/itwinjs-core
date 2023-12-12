@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { BeTimePoint, Id64String } from "@itwin/core-bentley";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
@@ -22,6 +22,7 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
+  includedModels?: Set<Id64String>;
 }
 
 /** @internal */

@@ -117,7 +117,7 @@ export class MapLayerSource {
 
     return undefined;
   }
-  public toJSON(): MapLayerSourceProps {
+  public toJSON(): Omit<MapLayerSourceProps, "formatId"> & {formatId: string}  {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
   }
 

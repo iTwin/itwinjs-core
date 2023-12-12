@@ -185,5 +185,125 @@ describe("Custom attributes class comparison tests", () => {
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(true);
     });
 
+    it("should not report custom attribute instance class missing for top level referenced custom attribute if same full name", async ()=> {
+      const context = new SchemaContext();
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefJson,
+        items: {
+          customAttributeOne: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+          customAttributeTwo: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        references: [
+          {
+            name: "DummyReference",
+            version: "01.00.01",
+          },
+        ],
+        customAttributes: [
+          {
+            className: "DummyReference.customAttributeOne",
+          },
+          {
+            className: "DummyReference.customAttributeTwo",
+          },
+        ],
+      }, context);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        references: [
+          {
+            name: "DummyReference",
+            version: "01.00.01",
+          },
+        ],
+        customAttributes: [
+          {
+            className: "DummyReference.customAttributeOne",
+          },
+        ],
+      }, context);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(false);
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeTwo")).to.equal(true);
+    });
+
+    it("should not report custom attribute instance class missing for referenced class with same full name", async () => {
+      const context = new SchemaContext();
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefJson,
+        items: {
+          customAttributeOne: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        references: [
+          {
+            name: "DummyReference",
+            version: "01.00.01",
+          },
+        ],
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            customAttributes: [
+              {
+                className: "DummyReference.customAttributeOne",
+                showClasses: true,
+              },
+            ],
+          },
+        },
+      }, context);
+
+      const schemaB = await Schema.fromJson({
+        ...schemaBJson,
+        references: [
+          {
+            name: "DummyReference",
+            version: "01.00.01",
+          },
+        ],
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            customAttributes: [
+              {
+                className: "DummyReference.customAttributeOne",
+                showClasses: true,
+              },
+            ],
+          },
+          customAttributeOne: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(false);
+    });
+
   });
 });

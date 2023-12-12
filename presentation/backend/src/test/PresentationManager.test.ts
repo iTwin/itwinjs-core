@@ -2063,7 +2063,7 @@ describe("PresentationManager", () => {
           params: {
             keys: getKeysForContentRequest(new KeySet(elementKeys)),
             descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.PropertyPane,
+              displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
@@ -2167,7 +2167,7 @@ describe("PresentationManager", () => {
           params: {
             keys: getKeysForContentRequest(new KeySet(elementKeys)),
             descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.PropertyPane,
+              displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",

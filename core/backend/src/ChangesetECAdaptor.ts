@@ -72,7 +72,7 @@ class ECDbMap {
               AND ([cs].[Name] = :className))
     `;
     return this.db.withPreparedSqliteStatement(sql, (stmt) => {
-      const parts = classFullName.indexOf(".") ? classFullName.split(".") : classFullName.split(":");
+      const parts = classFullName.indexOf(".") !== -1 ? classFullName.split(".") : classFullName.split(":");
       stmt.bindString(":schemaNameOrAlias", parts[0]);
       stmt.bindString(":className", parts[1]);
       const classIds = [];

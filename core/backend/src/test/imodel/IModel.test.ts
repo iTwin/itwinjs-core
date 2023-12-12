@@ -2182,7 +2182,7 @@ describe("iModel", () => {
       getITwinId: () => iTwinId,
       getCurrentChangeset: () => changeset,
       setIModelDb: () => { },
-      closeIModel: () => { },
+      closeFile: () => { },
     };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
