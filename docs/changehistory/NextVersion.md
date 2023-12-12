@@ -7,8 +7,8 @@ Table of contents:
 
 - [Geometry](#geometry)
   - [Clip any curve](#clip-any-curve)
-- [ECSql enhancements](#ecsq- enhancements)
-  - [Instance properties](#instance properties)
+- [ECSql enhancements](#ecsq-enhancements)
+  - [Instance properties](#instance-properties)
   - [Window functions](#window-functions)
 
 - [Node 20 support](#node-20-support)
@@ -34,6 +34,7 @@ ECSQL supports querying instance properties, which are any property in a class s
 [**ECSQL Instance Properties Documentation**](../learning/ECSQLTutorial/ECSqlSyntax.md#instance-query)
 
 ### Window functions
+
 112233
 ECSQL now supports [window functions](../learning/ECSQLTutorial/ECSqlSyntax.md#window-functions). **This functionality add following new keywords that might collide with alias, parameter, property or class name and may break existing queries.** Application need to [escape](../learning/ECSQLTutorial/ECSqlSyntax.md#escaping-keywords) those name or try escaping all names in their queries to be on safe side in future.
 
