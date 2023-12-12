@@ -7,6 +7,7 @@ import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { BaseClassDelta, ChangeType, ClassChanges, EntityMixinChanges, PropertyValueChange } from "../Validation/SchemaChanges";
+import { ClassPropertyMerger } from "./ClassPropertyMerger";
 
 /**
  * @internal
@@ -159,6 +160,10 @@ export class ClassMerger<TClass extends ECClass> {
       }
 
       await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
+      const mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
+      if (mergeResults.errorMessage !== undefined) {
+        throw new Error(mergeResults.errorMessage);
+      }
     }
   }
 }
