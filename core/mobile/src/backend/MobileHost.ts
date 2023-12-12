@@ -99,12 +99,38 @@ export interface MobileHostOpts extends NativeHostOpts {
 export class MobileHost {
   private static _device?: MobileDevice;
   public static get device() { return this._device!; }
+  /**
+   * Raised when the mobile OS informs a mobile app that it is running low on memory.
+   *
+   * __Note:__ iOS and iPadOS send this warning so often as to make it not very useful.
+   */
   public static readonly onMemoryWarning = new BeEvent();
+  /**
+   * Raised when the device orientation changes on a device running a mobile app.
+   */
   public static readonly onOrientationChanged = new BeEvent();
+  /**
+   * Raised after a mobile app returns to the foreground.
+   */
   public static readonly onEnterForeground = new BeEvent();
+  /**
+   * Raised when a mobile app is about to enter the background.
+   */
   public static readonly onEnterBackground = new BeEvent();
+  /**
+   * Raised after a mobile backend connects to the mobile frontend.
+   *
+   * __Note:__ this will be raised at startup, and it will also be raised every time the app returns
+   * to the foreground from the background.
+   */
   public static readonly onConnected = new BeEvent();
+  /**
+   * Raised when a mobile app is about to be terminated by the mobile OS.
+   */
   public static readonly onWillTerminate = new BeEvent();
+  /**
+   * Raised when the native auth client informs the mobile host that the access token has changed.
+   */
   public static readonly onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
 
   /** Send a notification to the MobileApp connected to this MobileHost. */
