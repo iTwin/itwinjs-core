@@ -2,6 +2,27 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.3.0",
+      "tag": "@itwin/core-common_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add tests for `QueryBinder`."
+          },
+          {
+            "comment": "Added support for recoloring geometry intersecting a clip volume"
+          },
+          {
+            "comment": "Custom query parameters can now be configured on map layer objects."
+          },
+          {
+            "comment": "Add support for transparency in thematic display gradient."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/core-common_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",
@@ -219,6 +240,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.8.0",
+      "tag": "@itwin/core-common_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.17",
