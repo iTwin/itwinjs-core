@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as lolex from "lolex";
+import * as fakeTimers from "@sinonjs/fake-timers";
 import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
@@ -11,9 +11,9 @@ import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, Tempor
 
 describe("TemporaryStorage", () => {
 
-  let clock: lolex.Clock;
+  let clock: fakeTimers.InstalledClock;
   beforeEach(() => {
-    clock = lolex.install();
+    clock = fakeTimers.install();
   });
   afterEach(() => {
     clock.uninstall();

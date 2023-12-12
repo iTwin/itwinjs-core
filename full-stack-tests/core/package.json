@@ -51,12 +51,12 @@
     "@itwin/imodels-client-management": "^3.0.0",
     "@itwin/reality-data-client": "1.1.0",
     "azurite": "^3.24.0",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
     "electron": "^28.0.0",
     "fs-extra": "^8.1.0",
-    "sinon-chai": "^3.2.0",
-    "sinon": "^15.0.4"
+    "sinon-chai": "^3.7.0",
+    "sinon": "^17.0.1"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -68,9 +68,9 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
     "assert": "^2.0.0",
     "babel-loader": "~8.2.5",
