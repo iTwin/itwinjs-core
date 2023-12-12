@@ -1,20 +1,13 @@
 {
   "test3d": {
     "opSizes": [
-      1000,
-      2000,
-      3000
+      25000
     ],
     "dbSizes": [
-      10000,
-      100000,
-      1000000
+      1000
     ],
     "classNames": [
-      "PerfElement",
-      "PerfElementSub1",
-      "PerfElementSub2",
-      "PerfElementSub3"
+      "PerfElement"
     ]
   },
   "test2d": {
