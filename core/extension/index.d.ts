@@ -378,6 +378,7 @@ export {
 	ThematicDisplayMode,
 	ThematicGradientColorScheme,
 	ThematicGradientMode,
+	ThematicGradientTransparencyMode,
 	TxnAction,
 	TypeOfChange
 } from "@itwin/core-common";

@@ -261,6 +261,7 @@ export const {
 	ThematicDisplayMode,
 	ThematicGradientColorScheme,
 	ThematicGradientMode,
+	ThematicGradientTransparencyMode,
 	TxnAction,
 	TypeOfChange,
 } = ext.exports;

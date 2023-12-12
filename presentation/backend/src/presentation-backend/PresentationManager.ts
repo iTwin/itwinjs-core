@@ -584,7 +584,7 @@ export class PresentationManager {
       const content = await this.getContent({
         ...optionsNoElementClasses,
         descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
+          displayType: DefaultContentDisplayTypes.Grid,
           contentFlags: ContentFlags.ShowLabels,
         },
         rulesetOrId: "ElementProperties",

@@ -1,6 +1,28 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 20 Nov 2023 16:16:07 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Dec 2023 15:26:18 GMT and should not be manually modified.
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added support for recoloring geometry intersecting a clip volume
+- Add SQ_KM to UNIT_DATA
+- Promote APIs required to implement a MapLayerFormat to beta
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Fix Map Feature Info for ArcGIS map services when reprojection is needed.
+- Custom query parameters can now be configured on map layers objects.
+- Improved ArcGIS feature info coordinates reprojection outside project extent.
+- Improved content type detection for 3D Tiles tilesets.
+- Updated realitydata url to new reality-management API url. Added tests for new url.
+- Add support for transparent gradients in thematic display and analysis styles.
+- Fix SpatialModelState.isRealityModel returning false for reality models that don't store a tileset URL.
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+- Enable display of all subcategories for non-scene decorations.
+- Fix incorrect transparency for text rendered as raster glyphs.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
@@ -200,6 +222,16 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
 
 ## 3.7.16
 Mon, 16 Oct 2023 12:49:07 GMT

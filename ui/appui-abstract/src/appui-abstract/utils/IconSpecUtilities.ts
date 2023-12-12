@@ -6,8 +6,10 @@
  * @module Utilities
  */
 
+/* eslint-disable deprecation/deprecation */
+
 /** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
- * @public
+ * @public @deprecated in 4.3. AppUI libraries >= 4.7.x support loading SVGs sources without prefixes, eliminating the need for these utilities.
  */
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec loaded with the Sprite loader */
@@ -22,7 +24,7 @@ export class IconSpecUtilities {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;
   }
   /** Create an IconSpec for an SVG loaded into web component with svg-loader
-   * @public
+   * @public @deprecated in 4.3. AppUI libraries > 4.7.x support loading SVGs sources without prefixes, eliminating the need for this utility.
   */
   public static createWebComponentIconSpec(srcString: string): string {
     return `${IconSpecUtilities.WEB_COMPONENT_PREFIX}${srcString}`;
@@ -40,7 +42,7 @@ export class IconSpecUtilities {
     return undefined;
   }
   /** Get the SVG Source from an svg-loader IconSpec
-   * @public
+   * @public @deprecated in 4.3. AppUI libraries > 4.7.x support loading SVGs sources without prefixes, eliminating the need for this utility.
   */
 
   public static getWebComponentSource(iconSpec: string): string | undefined {

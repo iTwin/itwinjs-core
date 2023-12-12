@@ -48,12 +48,17 @@ export interface MapLayerSourceProps {
   formatId?: string;
   /** Name */
   name: string;
-  /** URL */
+  /** URL of the source's endpoint. */
   url: string;
   /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
   /** Indicate if this source definition should be used as a base map. Defaults to false. */
   baseMap?: boolean;
+
+  /** List of query parameters that will get appended to the source.
+   * @beta
+  */
+  queryParams?: { [key: string]: string };
 }
 
 /** A source for map layers. These may be catalogued for convenient use by users or applications.
@@ -68,23 +73,34 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
+  /** List of query parameters that will get appended to the source URL that should be be persisted part of the JSON representation.
+   * @beta
+  */
+  public savedQueryParams?: { [key: string]: string };
+
+  /** List of query parameters that will get appended to the source URL that should *not* be be persisted part of the JSON representation.
+   * @beta
+  */
+  public unsavedQueryParams?: { [key: string]: string };
+
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
+    this.savedQueryParams = savedQueryParams;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.queryParams);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.userName, this.password, ignoreCache);
+    return IModelApp.mapLayerFormatRegistry.validateSource({source: this, ignoreCache});
   }
 
   /** @internal*/
@@ -101,8 +117,8 @@ export class MapLayerSource {
 
     return undefined;
   }
-  public toJSON() {
-    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
+  public toJSON(): Omit<MapLayerSourceProps, "formatId"> & {formatId: string}  {
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
   }
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
@@ -112,12 +128,33 @@ export class MapLayerSource {
       layerSettings?.setCredentials(this.userName, this.password);
     }
 
+    if (this.savedQueryParams) {
+      layerSettings.savedQueryParams = {...this.savedQueryParams};
+    }
+
+    if (this.unsavedQueryParams) {
+      layerSettings.unsavedQueryParams = {...this.unsavedQueryParams};
+    }
     return layerSettings;
   }
 
   private getCredentials(): RequestBasicCredentials | undefined {
     return this.userName && this.password ? { user: this.userName, password: this.password } : undefined;
   }
+
+  /** Collect all query parameters
+ * @beta
+ */
+  public collectQueryParams() {
+    let queryParams: {[key: string]: string} = {};
+
+    if (this.savedQueryParams)
+      queryParams = {...this.savedQueryParams};
+    if (this.unsavedQueryParams)
+      queryParams = {...queryParams, ...this.unsavedQueryParams};
+    return queryParams;
+  }
+
 }
 
 /** A collection of [[MapLayerSource]] objects.

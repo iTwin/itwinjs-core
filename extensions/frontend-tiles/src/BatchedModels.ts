@@ -6,11 +6,10 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { ModelExtentsProps } from "@itwin/core-common";
-import { IModelConnection, SpatialModelState, SpatialViewState } from "@itwin/core-frontend";
+import { IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 
 interface ModelMetadata {
   extents?: Range3d;
-  isRealityModel: boolean;
 }
 
 export class BatchedModels {
@@ -20,7 +19,6 @@ export class BatchedModels {
   private readonly _viewedModelIdPairs = new Id64.Uint32Set();
   private readonly _metadata = new Map<Id64String, ModelMetadata>();
   private _modelRangePromise?: Promise<void>;
-  public readonly viewedRealityModelIds = new Set<Id64String>();
 
   public constructor(view: SpatialViewState) {
     this._iModel = view.iModel;
@@ -32,20 +30,14 @@ export class BatchedModels {
     this._viewedModelIdPairs.clear();
     this._viewedModelIdPairs.addIds(models);
     this._viewedExtents.setNull();
-    this.viewedRealityModelIds.clear();
 
     this._modelRangePromise = undefined;
     const rangeQueryModels: Id64String[] = [];
 
     for (const modelId of models) {
       let metadata = this._metadata.get(modelId);
-      if (!metadata) {
-        const model = this._iModel.models.getLoaded(modelId);
-        this._metadata.set(modelId, metadata = { isRealityModel: model instanceof SpatialModelState && model.isRealityModel });
-      }
-
-      if (metadata.isRealityModel)
-        this.viewedRealityModelIds.add(modelId);
+      if (!metadata)
+        this._metadata.set(modelId, metadata = { });
 
       if (undefined === metadata.extents)
         rangeQueryModels.push(modelId);

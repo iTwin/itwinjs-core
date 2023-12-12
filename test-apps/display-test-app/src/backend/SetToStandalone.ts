@@ -54,7 +54,7 @@ function setToStandalone(iModelName: string) {
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveChanges(); // save change to briefcaseId
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
   } catch (err: any) {
     log(err.message);
   }
