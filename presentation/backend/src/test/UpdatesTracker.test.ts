@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as lolex from "lolex";
+import * as fakeTimers from "@sinonjs/fake-timers";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { using } from "@itwin/core-bentley";
@@ -15,11 +15,11 @@ import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 describe("UpdatesTracker", () => {
   const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
   const imodelDbMock = moq.Mock.ofType<IModelDb>();
-  let clock: lolex.Clock;
+  let clock: fakeTimers.InstalledClock;
   beforeEach(() => {
     nativePlatformMock.reset();
     imodelDbMock.reset();
-    clock = lolex.install();
+    clock = fakeTimers.install();
   });
   afterEach(() => {
     clock.uninstall();

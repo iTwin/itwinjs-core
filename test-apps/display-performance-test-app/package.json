@@ -56,7 +56,7 @@
     "@itwin/imodels-client-management": "^3.0.0",
     "@itwin/reality-data-client": "1.1.0",
     "@itwin/oidc-signin-tool": "~3.6.0",
-    "body-parser": "^1.18.2"
+    "body-parser": "^1.20.2"
   },
   "devDependencies": {
     "@itwin/perf-tools": "workspace:*",
@@ -64,10 +64,10 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "browserslist-to-esbuild": "^1.2.0",
     "@types/body-parser": "^1.17.0",
-    "@types/express": "^4.16.1",
+    "@types/express": "^4.17.20",
     "@types/node": "~18.16.20",
     "child_process": "^1.0.2",
-    "chrome-launcher": "^0.15.0",
+    "chrome-launcher": "^0.15.2",
     "cross-env": "^5.1.4",
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
@@ -75,7 +75,7 @@
     "electron": "^28.0.0",
     "esbuild-plugin-external-global": "^1.0.1",
     "eslint": "^8.44.0",
-    "express": "^4.16.3",
+    "express": "^4.18.2",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
     "null-loader": "^4.0.1",
