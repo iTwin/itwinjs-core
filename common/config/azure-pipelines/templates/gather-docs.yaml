@@ -99,6 +99,6 @@ steps:
       project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
       pipeline: 7436 # iTwin.js/Docs/iTwin.js Docs - YAML
       buildVersionToDownload: latestFromBranch
-      branchName: refs/heads/release/4.2.x
+      branchName: refs/heads/release/4.3.x
       artifactName: .updated.json
       targetPath: ${{ parameters.stagingDir }}/config/
