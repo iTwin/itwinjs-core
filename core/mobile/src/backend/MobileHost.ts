@@ -11,7 +11,6 @@ import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
@@ -200,16 +199,15 @@ export class MobileHost {
     if (!this.isValid) {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       // set global device interface.
+      // NOTE: __iTwinJsNativeBridge is used by backend native code.
       (global as any).__iTwinJsNativeBridge = this._device;
       this.onMemoryWarning.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyMemoryWarning");
       });
       this.onOrientationChanged.addListener(() => {
-        // If there is no connection to the frontend, MobileHost.notifyMobileFrontend will just
-        // crash the app. So only notify if there is a connection to the frontend.
-        if (MobileRpcProtocol.obtainInterop().connectionId !== 0) {
+        try {
           MobileHost.notifyMobileFrontend("notifyOrientationChanged");
-        }
+        } catch (_ex) { } // Ignore: frontend is not currently connected
       });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");

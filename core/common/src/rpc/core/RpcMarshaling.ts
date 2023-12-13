@@ -55,7 +55,7 @@ export class RpcMarshaling {
   private constructor() { }
 
   /** Serializes a value. */
-  public static async serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue> {
+  public static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
     const serialized = RpcSerializedValue.create();
 
     if (typeof (value) === "undefined") {
