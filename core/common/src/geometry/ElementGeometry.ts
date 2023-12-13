@@ -1051,6 +1051,14 @@ export namespace ElementGeometry {
       props.rotation = YawPitchRollAngles.createFromMatrix3d(Matrix3d.createRowValues(transform.form3d00(), transform.form3d01(), transform.form3d02(), transform.form3d10(), transform.form3d11(), transform.form3d12(), transform.form3d20(), transform.form3d21(), transform.form3d22()));
     }
 
+    const glyphOriginToPoint2d = (origin: EGFBAccessors.TextStringGlyphOrigin | null) => {
+      if (!origin)
+        throw new Error("Value cannot be null.");
+      return new Point2d(origin.x(), origin.y());
+    }
+    props.glyphIds = Array(ppfb.glyphIdsLength()).map((_, i) => ppfb.glyphIds(i) ?? 0);
+    props.glyphOrigins = Array(ppfb.glyphOriginsLength()).map((_, i) => glyphOriginToPoint2d(ppfb.glyphOrigins(i)));
+
     if (undefined === localToWorld)
       return props;
 
@@ -1075,6 +1083,17 @@ export namespace ElementGeometry {
 
     const textOffset = fbb.createString(text.text);
     const styleOffset = EGFBAccessors.TextStringStyle.createTextStringStyle(fbb, 1, 0, text.font, undefined === text.bold ? false : text.bold, undefined === text.italic ? false : text.italic, undefined === text.underline ? false : text.underline, text.height, undefined === text.widthFactor ? 1.0 : text.widthFactor);
+    const glyphs = (() => {
+      if (!text.glyphIds || !text.glyphOrigins)
+        return undefined;
+      const glyphIdsOffset = builder.createGlyphIdsVector(fbb, [...text.glyphIds].reverse());
+      builder.startGlyphOriginsVector(fbb, text.glyphOrigins.length);
+      for (const origin of [...text.glyphOrigins].reverse()) {
+        EGFBAccessors.TextStringGlyphOrigin.createTextStringGlyphOrigin(fbb, origin.x, origin.y);
+      }
+      const glyphOriginsOffset = fbb.endVector();
+      return { glyphIdsOffset, glyphOriginsOffset };
+    })();
 
     builder.startTextString(fbb);
 
@@ -1091,6 +1110,12 @@ export namespace ElementGeometry {
       const coffs = matrix.coffs;
       const transformOffset = EGFBAccessors.TextStringTransform.createTextStringTransform(fbb, coffs[0], coffs[1], coffs[2], origin.x, coffs[3], coffs[4], coffs[5], origin.y, coffs[6], coffs[7], coffs[8], origin.z);
       builder.addTransform(fbb, transformOffset);
+    }
+
+    if (glyphs) {
+      builder.addRange(fbb, EGFBAccessors.TextStringRange.createTextStringRange(fbb, 0, 0, 20741, 2500));
+      builder.addGlyphIds(fbb, glyphs.glyphIdsOffset);
+      builder.addGlyphOrigins(fbb, glyphs.glyphOriginsOffset);
     }
 
     const mLoc = builder.endTextString(fbb);

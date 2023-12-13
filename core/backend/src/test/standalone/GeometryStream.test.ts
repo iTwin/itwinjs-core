@@ -209,6 +209,8 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
             const angles = YawPitchRollAngles.fromJSON(text?.rotation);
             const otherAngles = YawPitchRollAngles.fromJSON(other?.rotation);
             assert.isTrue(angles.isAlmostEqual(otherAngles));
+            assert.sameOrderedMembers(text?.glyphIds ?? [], other?.glyphIds ?? []);
+            assert.sameOrderedMembers(text?.glyphOrigins ?? [], other?.glyphOrigins ?? []);
           }
           break;
         case ElementGeometryOpcode.Image:
@@ -1755,6 +1757,8 @@ describe("ElementGeometry", () => {
       bold: true,
       origin: testOrigin,
       rotation: testAngles,
+      glyphIds: [1, 2, 3],
+      glyphOrigins: [new Point2d(0.0, 0.0), new Point2d(1000.0, 0.0), new Point2d(2000.0, 0.0)],
     };
 
     const entry = ElementGeometry.fromTextString(textProps);
