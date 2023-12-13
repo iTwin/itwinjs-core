@@ -170,6 +170,11 @@ async function beforeTest() {
 
 async function elementInsertTest() {
 
+  if (process.pid) {
+    // eslint-disable-next-line no-console
+    console.log(process.pid);
+  }
+
   await new Promise((resolve) => readline.question("Begin insert test y/n:", (usrInput: string) => {
     if (usrInput === "y"){
       resolve(readline.close());
