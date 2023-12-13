@@ -6,8 +6,17 @@
  * @module Geometry
  */
 
-import { Point2d, Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Transform, Vector3d, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { FontId } from "../Fonts";
+
+/**
+ * Optional cached text layout information used to support legacy proxy graphics.
+ */
+export interface TextStringGlyphData {
+  glyphIds: number[];
+  glyphOrigins: Point2d[];
+  range: Range2d;
+}
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
@@ -33,10 +42,6 @@ export interface TextStringProps {
   origin?: XYZProps;
   /** Optional rotation relative to element's placement. Default is identity matrix */
   rotation?: YawPitchRollProps;
-  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
-  glyphIds?: number[];
-  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
-  glyphOrigins?: Point2d[];
 }
 
 /** A single line of text, all with the same font, styles (underline, bold, italic), and size.
@@ -63,10 +68,6 @@ export class TextString {
   public readonly origin: Point3d;
   /** Rotation relative to element's placement */
   public readonly rotation: YawPitchRollAngles;
-  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
-  glyphIds?: number[];
-  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
-  glyphOrigins?: Point2d[];
   public get width() { return this.height * (this.widthFactor ? this.widthFactor : 1.0); }
 
   public constructor(props: TextStringProps) {
@@ -94,10 +95,6 @@ export class TextString {
       val.origin = this.origin;
     if (!this.rotation.isIdentity())
       val.rotation = this.rotation;
-    if (this.glyphIds)
-      val.glyphIds = this.glyphIds;
-    if (this.glyphOrigins)
-      val.glyphOrigins = this.glyphOrigins;
 
     return val;
   }

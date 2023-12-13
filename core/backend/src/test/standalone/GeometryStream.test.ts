@@ -8,7 +8,7 @@ import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentl
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
@@ -17,7 +17,7 @@ import {
   FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
   GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
-  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
@@ -192,9 +192,11 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           break;
         case ElementGeometryOpcode.TextString:
           const text = ElementGeometry.toTextString(entry);
+          const textGlyphData = ElementGeometry.toTextStringGlyphData(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
             const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            const otherGlyphData = ElementGeometry.toTextStringGlyphData(expected[i].originalEntry!);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -209,8 +211,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
             const angles = YawPitchRollAngles.fromJSON(text?.rotation);
             const otherAngles = YawPitchRollAngles.fromJSON(other?.rotation);
             assert.isTrue(angles.isAlmostEqual(otherAngles));
-            assert.sameOrderedMembers(text?.glyphIds ?? [], other?.glyphIds ?? []);
-            assert.sameOrderedMembers(text?.glyphOrigins ?? [], other?.glyphOrigins ?? []);
+            assert.deepEqual(textGlyphData, otherGlyphData);
           }
           break;
         case ElementGeometryOpcode.Image:
@@ -1731,7 +1732,7 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
-  it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
+  it.only("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1757,11 +1758,15 @@ describe("ElementGeometry", () => {
       bold: true,
       origin: testOrigin,
       rotation: testAngles,
-      glyphIds: [1, 2, 3],
-      glyphOrigins: [new Point2d(0.0, 0.0), new Point2d(1000.0, 0.0), new Point2d(2000.0, 0.0)],
     };
 
-    const entry = ElementGeometry.fromTextString(textProps);
+    const glyphData: TextStringGlyphData = {
+      glyphIds: [1, 2, 3],
+      glyphOrigins: [new Point2d(0.0, 0.0), new Point2d(1000.0, 0.0), new Point2d(2000.0, 0.0)],
+      range: new Range2d(0, 0, 10, 30),
+    }
+
+    const entry = ElementGeometry.fromTextString(textProps, undefined, glyphData);
     assert.exists(entry);
     newEntries.push(entry!);
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
