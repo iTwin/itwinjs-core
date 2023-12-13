@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 08 Dec 2023 15:26:18 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Dec 2023 17:26:56 GMT and should not be manually modified.
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:54 GMT
+
+### Updates
+
+- Fix a breaking internal API change affecting @itwin/imodels-access-backend"
 
 ## 4.3.0
 Thu, 07 Dec 2023 17:43:09 GMT
