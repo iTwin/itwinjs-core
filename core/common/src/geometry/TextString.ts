@@ -33,9 +33,9 @@ export interface TextStringProps {
   origin?: XYZProps;
   /** Optional rotation relative to element's placement. Default is identity matrix */
   rotation?: YawPitchRollProps;
-  /** Optional cached text layout information. If undefined, it will be computed at display time. Default is undefined. */
+  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
   glyphIds?: number[];
-  /** Optional cached text layout information. If undefined, it will be computed at display time. Default is undefined. */
+  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
   glyphOrigins?: Point2d[];
 }
 
@@ -63,9 +63,9 @@ export class TextString {
   public readonly origin: Point3d;
   /** Rotation relative to element's placement */
   public readonly rotation: YawPitchRollAngles;
-  /** Optional cached text layout information. If undefined, it will be computed at display time. Default is undefined. */
+  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
   glyphIds?: number[];
-  /** Optional cached text layout information. If undefined, it will be computed at display time. Default is undefined. */
+  /** Optional cached text layout information used to support legacy proxy graphics. If undefined, it will be computed at display time. Default is undefined. */
   glyphOrigins?: Point2d[];
   public get width() { return this.height * (this.widthFactor ? this.widthFactor : 1.0); }
 
