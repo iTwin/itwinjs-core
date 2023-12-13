@@ -47,6 +47,8 @@ That abstraction is a huge simplification for ECSQL users. The database schema o
 > - ECSQL has the same syntax as SQL
 > - ECSQL targets the business data model (ECSchemas)
 
+Look [here](./ECsqlSyntax.md) to learn more about supported features in ECSQL.
+
 ---
 
 [**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)
