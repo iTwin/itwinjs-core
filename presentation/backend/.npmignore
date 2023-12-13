@@ -7,7 +7,7 @@
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-!lib/**/assets/**/*
+!lib/**/*.json
 
 # then ignore some stuff again
 lib/**/test/**

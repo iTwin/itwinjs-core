@@ -71,6 +71,7 @@ alpha;SchemaItemChanges
 beta;class SchemaItemDiagnostic
 alpha;SchemaItemEditResults
 alpha;SchemaItemMissing 
+beta;SchemaMerger
 alpha;SchemaReferenceDelta 
 alpha;SchemaReferenceMissing 
 beta;SchemaValidater

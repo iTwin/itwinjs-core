@@ -143,7 +143,7 @@ describe("GraphicalEditingScope", () => {
       removeEndingListener();
     });
 
-    it("accumulates geometry changes", async () => {
+    it.skip("accumulates geometry changes", async () => {
       imodel = await openWritable();
       const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();

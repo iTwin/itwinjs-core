@@ -6,22 +6,23 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
-import { SpatialTileTreeReferences } from '@itwin/core-frontend';
 
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-// @internal (undocumented)
-export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
-
 // @beta
 export interface FrontendTilesOptions {
     computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
+    // @internal
+    enableEdges?: boolean;
     maxLevelsToSkip?: number;
 }
 
-// @internal (undocumented)
-export function getMaxLevelsToSkip(): number;
+// @internal
+export const frontendTilesOptions: {
+    maxLevelsToSkip: number;
+    enableEdges: boolean;
+};
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;

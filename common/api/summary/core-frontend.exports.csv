@@ -46,7 +46,9 @@ internal;ArcGisErrorCode
 internal;class ArcGisGeometryBaseRenderer 
 internal;ArcGisGeometryReaderJSON
 internal;ArcGisGeometryRenderer
+internal;ArcGisGetServiceJsonArgs
 internal;ArcGisGraphicsRenderer 
+internal;ArcGisGraphicsRendererProps
 internal;ArcGISIdentifyImageDisplayProps
 internal;ArcGISIdentifyLayersProps
 internal;ArcGISIdentifyRequestUrl
@@ -56,6 +58,7 @@ internal;ArcGISMapLayerImageryProvider
 internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
+internal;ArcGisValidateSourceArgs 
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AttachToViewportArgs = Viewport
@@ -148,6 +151,7 @@ internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelSt
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 public;CreateRenderMaterialArgs 
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
+internal;createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set
 internal;createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
@@ -217,6 +221,7 @@ public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
 internal;FetchCloudStorage 
+internal;FetchFunction = (url: URL, options?: RequestInit) => Promise
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -373,7 +378,7 @@ public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): st
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 beta;ImageryMapLayerFormat 
-internal;ImageryMapLayerTreeReference 
+beta;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
@@ -441,7 +446,7 @@ public;class InputCollector
 public;InputSource
 public;InstancedGraphicParams
 public;class InteractiveTool 
-internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
+internal;internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[]
 public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions
@@ -480,6 +485,7 @@ public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
 beta;MapFeatureInfo
+beta;MapFeatureInfoOptions
 beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
@@ -506,7 +512,7 @@ public;MapLayerSourceProps
 beta;MapLayerSources
 public;MapLayerSourceStatus
 public;MapLayerSourceValidation
-internal;class MapLayerTileTreeReference 
+beta;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 beta;MapSubLayerFeatureInfo
 public;MapTile 
@@ -562,6 +568,7 @@ internal;metersToRange(inputMeters: number, minimumOutput?: number, maximumOutpu
 internal;MockRender
 public;ModalOptions
 public;ModalReturn
+beta;ModelDisplayTransform
 beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
@@ -929,6 +936,7 @@ public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
+beta;ValidateSourceArgs
 public;VaryingType
 internal;VertexIndices 
 internal;VertexKey

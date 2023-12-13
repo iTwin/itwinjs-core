@@ -6,12 +6,15 @@
  * @module Tiles
  */
 
-import { request } from "../../request/Request";
 import { assert, compareStrings, Dictionary } from "@itwin/core-bentley";
-import { ArcGisUtilities, MapLayerAccessClient, QuadId } from "../internal";
+import { QuadId } from "../internal";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 
+/** @internal */
+export type FetchFunction = (url: URL, options?: RequestInit) => Promise<Response>;
+
 const nonVisibleChildren = [false, false, false, false];
+
 /** @internal */
 export class ArcGISTileMap {
   public  tileMapRequestSize = 32;
@@ -20,12 +23,12 @@ export class ArcGISTileMap {
   private _callQueues: Array<Promise<boolean[]>> | undefined;
   private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
-  private _accessClient: MapLayerAccessClient|undefined;
+  private _fetchFunc: FetchFunction;
   private _settings: ImageMapLayerSettings;
 
-  constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient) {
+  constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction, nbLods?: number ){
     this._restBaseUrl = restBaseUrl;
-    this._accessClient = accessClient;
+    this._fetchFunc = fetchFunc;
     this._settings = settings;
     if (nbLods !== undefined && nbLods > 0) {
       this._callQueues = new Array<Promise<boolean[]>>(nbLods).fill(Promise.resolve<boolean[]>(nonVisibleChildren));
@@ -34,20 +37,8 @@ export class ArcGISTileMap {
   }
   protected async fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any> {
     const tmpUrl = `${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`;
-    const urlObj = new URL(tmpUrl);
-    try {
-      if (this._accessClient) {
-        await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
-          mapLayerUrl: new URL(this._settings.url),
-          userName: this._settings.userName,
-          password: this._settings.password,
-        });
-      }
-
-    } catch {
-    }
-
-    return request(urlObj.toString(), "json");
+    const response = await this._fetchFunc(new URL(tmpUrl));
+    return response.json();
   }
 
   protected getAvailableTilesFromCache(tiles: QuadId[]): {allTilesFound: boolean, available: boolean[]} {

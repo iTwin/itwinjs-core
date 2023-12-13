@@ -10,6 +10,10 @@ import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, Enumeratio
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 
+type MutableEnumerator = {
+  -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]
+};
+
 /**
  * @alpha
  * A class allowing you to create schema items of type Enumeration.
@@ -76,5 +80,37 @@ export class Enumerations {
       throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
 
     (enumeration as MutableEnumeration).addEnumerator(enumerator);
+  }
+
+  public async setEnumeratorLabel(enumerationKey: SchemaItemKey, enumeratorName: string, label: string | undefined): Promise<void> {
+    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
+
+    if (enumeration === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+
+    if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
+
+    const enumerator = enumeration.getEnumeratorByName(enumeratorName);
+    if (enumerator === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
+
+    (enumerator as MutableEnumerator).label = label;
+  }
+
+  public async setEnumeratorDescription(enumerationKey: SchemaItemKey, enumeratorName: string, description: string | undefined): Promise<void> {
+    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
+
+    if (enumeration === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
+
+    if (enumeration.schemaItemType !== SchemaItemType.Enumeration)
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
+
+    const enumerator = enumeration.getEnumeratorByName(enumeratorName);
+    if (enumerator === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Enumerator ${enumeratorName} does not exists in Enumeration ${enumeration.fullName}.`);
+
+    (enumerator as MutableEnumerator).description = description;
   }
 }

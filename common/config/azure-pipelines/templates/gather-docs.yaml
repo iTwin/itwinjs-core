@@ -37,7 +37,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
-      defaultBranch: refs/heads/release/4.0.x
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # Download BIS Docs artifact

@@ -12,11 +12,11 @@ variables:
   - group: iModel.js Integration Test Users
 
 jobs:
-  - job: Node_18_x
+  - job: Node_20_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+          nodeVersion: 20.x

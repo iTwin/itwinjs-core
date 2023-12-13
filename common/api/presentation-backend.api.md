@@ -23,7 +23,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Entity } from '@itwin/core-backend';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
-import { FormatProps } from '@itwin/core-quantity';
+import { FormatsMap } from '@itwin/presentation-common';
 import { HierarchyCompareInfo } from '@itwin/presentation-common';
 import { HierarchyCompareOptions } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
@@ -49,6 +49,7 @@ import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
+import { UnitSystemFormat as UnitSystemFormat_2 } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpdateInfo } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
@@ -282,9 +283,7 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     caching?: PresentationManagerCachingConfig;
-    defaultFormats?: {
-        [phenomenon: string]: UnitSystemFormat;
-    };
+    defaultFormats?: FormatsMap;
     // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
@@ -300,6 +299,7 @@ export interface PresentationManagerProps {
     localeDirectories?: string[];
     // @deprecated
     mode?: PresentationManagerMode;
+    // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     // @alpha
@@ -413,13 +413,8 @@ export interface SingleManagerPresentationProps extends PresentationPropsBase {
     useSingleManager?: boolean;
 }
 
-// @public
-export interface UnitSystemFormat {
-    // (undocumented)
-    format: FormatProps;
-    // (undocumented)
-    unitSystems: UnitSystemKey[];
-}
+// @public @deprecated
+export type UnitSystemFormat = UnitSystemFormat_2;
 
 // (No @packageDocumentation comment for this package)
 

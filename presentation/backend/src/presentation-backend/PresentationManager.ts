@@ -8,13 +8,13 @@
 
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentFormatter, ContentPropertyValueFormatter,
-  ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions,
+  UnitSystemFormat as CommonUnitSystemFormat, ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentFormatter,
+  ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo, HierarchyCompareOptions,
   HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions,
   isSingleElementPropertiesRequestOptions, KeySet, KoqPropertyValueFormatter, LabelDefinition, LocalizationHelper,
   MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
@@ -183,11 +183,9 @@ export interface PresentationManagerCachingConfig {
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
  * @public
+ * @deprecated in 4.3. The type has been moved to `@itwin/presentation-common` package.
  */
-export interface UnitSystemFormat {
-  unitSystems: UnitSystemKey[];
-  format: FormatProps;
-}
+export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
  * Data structure for multiple element properties request response.
@@ -237,6 +235,8 @@ export interface PresentationManagerProps {
    *   - `{source file being executed}.js`
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
+   *
+   * @deprecated in 4.2. This attribute is not used anymore - the package is not using private assets anymore.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
@@ -284,9 +284,7 @@ export interface PresentationManagerProps {
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
    */
-  defaultFormats?: {
-    [phenomenon: string]: UnitSystemFormat;
-  };
+  defaultFormats?: FormatsMap;
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
@@ -534,8 +532,11 @@ export class PresentationManager {
       return undefined;
 
     if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel));
-      const formatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), requestOptions.unitSystem);
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
+      const formatter = new ContentFormatter(
+        new ContentPropertyValueFormatter(koqPropertyFormatter),
+        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
+      );
       await formatter.formatContent(content);
     }
 
@@ -583,7 +584,7 @@ export class PresentationManager {
       const content = await this.getContent({
         ...optionsNoElementClasses,
         descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
+          displayType: DefaultContentDisplayTypes.Grid,
           contentFlags: ContentFlags.ShowLabels,
         },
         rulesetOrId: "ElementProperties",

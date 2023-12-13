@@ -191,24 +191,32 @@ export interface FrontendTilesOptions {
    * fill them. However, tiles close to the viewer (and therefore likely of most interest to them) will refine to an appropriate level of detail more quickly.
    */
   maxLevelsToSkip?: number;
+  /** Specifies whether to permit the user to enable visible edges or wireframe mode for batched tiles.
+   * The currently-deployed mesh export service does not produce edges, so this currently defaults to `false` to avoid user confusion.
+   * Set it to `true` if you are loading tiles created with a version of the exporter that does produce edges.
+   * ###TODO delete this option once we deploy an edge-producing version of the exporter to production.
+   * @internal
+   */
+  enableEdges?: boolean;
 }
 
-/** @internal */
-export const createFallbackSpatialTileTreeReferences = SpatialTileTreeReferences.create;
-
-let maxLevelsToSkip = 4;
-
-/** @internal */
-export function getMaxLevelsToSkip(): number {
-  return maxLevelsToSkip;
-}
+/** Global configuration initialized by [[initializeFrontendTiles]].
+ * @internal
+ */
+export const frontendTilesOptions = {
+  maxLevelsToSkip: 4,
+  enableEdges: false,
+};
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
  * @beta
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
-    maxLevelsToSkip = options.maxLevelsToSkip;
+    frontendTilesOptions.maxLevelsToSkip = options.maxLevelsToSkip;
+
+  if (options.enableEdges)
+    frontendTilesOptions.enableEdges = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
     async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken() })

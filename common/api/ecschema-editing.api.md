@@ -47,6 +47,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItem } from '@itwin/ecschema-metadata';
 import { SchemaItemFormatProps } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
+import { SchemaItemProps } from '@itwin/ecschema-metadata';
 import { SchemaItemType } from '@itwin/ecschema-metadata';
 import { SchemaItemUnitProps } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
@@ -1369,6 +1370,8 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly relationships: RelationshipClasses;
     get schemaContext(): SchemaContext;
+    // @internal (undocumented)
+    readonly schemaItems: SchemaItems;
     setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults>;
     // (undocumented)
     readonly structs: Structs;
@@ -1433,6 +1436,11 @@ export interface SchemaItemEditResults {
 export class SchemaItemMissing extends SchemaItemChange {
     get defaultChangeType(): ChangeType;
     toString(): string;
+}
+
+// @beta
+export class SchemaMerger {
+    merge(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
 }
 
 // @alpha

@@ -6,6 +6,7 @@
  * @module iModels
  */
 
+import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
@@ -244,6 +245,16 @@ export class TxnManager {
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
+
+  /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
+   * notified that we've modified the briefcase.
+   */
+  private touchWatchFile(): void {
+    // This is an async call. We don't have any reason to await it.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    touch(this._iModel.watchFilePathName, { nocreate: true });
+  }
+
   /** @internal */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
     (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
@@ -292,6 +303,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onCommitted() {
+    this.touchWatchFile();
     this.onCommitted.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
@@ -323,6 +335,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onAfterUndoRedo(isUndo: boolean) {
+    this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }

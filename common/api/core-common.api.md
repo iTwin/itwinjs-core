@@ -1169,13 +1169,37 @@ export interface ClassifierTileTreeId {
 }
 
 // @public
+export class ClipIntersectionStyle {
+    readonly color: RgbColor;
+    static create(color?: RgbColor, width?: number): ClipIntersectionStyle;
+    // (undocumented)
+    static readonly defaults: ClipIntersectionStyle;
+    // (undocumented)
+    static fromJSON(props?: ClipIntersectionStyleProps): ClipIntersectionStyle;
+    // (undocumented)
+    get matchesDefaults(): boolean;
+    toJSON(): ClipIntersectionStyleProps | undefined;
+    readonly width: number;
+}
+
+// @public
+export interface ClipIntersectionStyleProps {
+    color?: RgbColorProps;
+    width?: number;
+}
+
+// @public
 export class ClipStyle {
+    readonly colorizeIntersection: boolean;
+    // @deprecated (undocumented)
     static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
+    static create(style: ClipStyleCreateArgs): ClipStyle;
     readonly cutStyle: CutStyle;
     static readonly defaults: ClipStyle;
     // (undocumented)
     static fromJSON(props?: ClipStyleProps): ClipStyle;
     readonly insideColor?: RgbColor;
+    readonly intersectionStyle?: ClipIntersectionStyle;
     get matchesDefaults(): boolean;
     readonly outsideColor?: RgbColor;
     readonly produceCutGeometry: boolean;
@@ -1183,9 +1207,21 @@ export class ClipStyle {
 }
 
 // @public
+export interface ClipStyleCreateArgs {
+    colorizeIntersection?: boolean;
+    cutStyle?: CutStyle;
+    insideColor?: RgbColor;
+    intersectionStyle?: ClipIntersectionStyle;
+    outsideColor?: RgbColor;
+    produceCutGeometry?: boolean;
+}
+
+// @public
 export interface ClipStyleProps {
+    colorizeIntersection?: boolean;
     cutStyle?: CutStyleProps;
     insideColor?: RgbColorProps;
+    intersectionStyle?: ClipIntersectionStyleProps;
     outsideColor?: RgbColorProps;
     produceCutGeometry?: boolean;
 }
@@ -4306,6 +4342,8 @@ export interface HttpServerRequest extends BackendReadable {
         [header: string]: string | string[] | undefined;
     };
     // (undocumented)
+    headersDistinct: NodeJS.Dict<string[]>;
+    // (undocumented)
     httpVersion: string;
     // (undocumented)
     httpVersionMajor: number;
@@ -4335,6 +4373,8 @@ export interface HttpServerRequest extends BackendReadable {
     trailers: {
         [key: string]: string | undefined;
     };
+    // (undocumented)
+    trailersDistinct: NodeJS.Dict<string[]>;
     // (undocumented)
     url?: string;
 }
@@ -4497,6 +4537,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     formatId: string;
     // @internal (undocumented)
     modelId?: never;
+    // @beta
+    queryParams?: {
+        [key: string]: string;
+    };
     subLayers?: MapSubLayerProps[];
     url: string;
 }
@@ -4511,6 +4555,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings;
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
+    // @beta
+    collectQueryParams(): {
+        [key: string]: string;
+    };
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
@@ -4523,6 +4571,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    savedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
     // (undocumented)
@@ -4531,6 +4583,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
+    // @beta
+    unsavedQueryParams?: {
+        [key: string]: string;
+    };
     // (undocumented)
     readonly url: string;
     // (undocumented)
@@ -6988,6 +7044,34 @@ export class QueryOptionsBuilder {
     setUsePrimaryConnection(val: boolean): this;
 }
 
+// @internal (undocumented)
+export enum QueryParamType {
+    // (undocumented)
+    Blob = 10,
+    // (undocumented)
+    Boolean = 0,
+    // (undocumented)
+    Double = 1,
+    // (undocumented)
+    Id = 2,
+    // (undocumented)
+    IdSet = 3,
+    // (undocumented)
+    Integer = 4,
+    // (undocumented)
+    Long = 5,
+    // (undocumented)
+    Null = 6,
+    // (undocumented)
+    Point2d = 7,
+    // (undocumented)
+    Point3d = 8,
+    // (undocumented)
+    String = 9,
+    // (undocumented)
+    Struct = 11
+}
+
 // @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)
@@ -7970,7 +8054,7 @@ export class RpcManager {
 // @internal (undocumented)
 export class RpcMarshaling {
     static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-    static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
+    static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
 }
 
 // @internal
@@ -9429,8 +9513,11 @@ export class ThematicGradientSettings {
     readonly marginColor: ColorDef;
     readonly mode: ThematicGradientMode;
     readonly stepCount: number;
+    // @alpha (undocumented)
+    get textureTransparency(): TextureTransparency;
     // (undocumented)
     toJSON(): ThematicGradientSettingsProps;
+    readonly transparencyMode: ThematicGradientTransparencyMode;
 }
 
 // @public
@@ -9441,6 +9528,13 @@ export interface ThematicGradientSettingsProps {
     marginColor?: ColorDefProps;
     mode?: ThematicGradientMode;
     stepCount?: number;
+    transparencyMode?: ThematicGradientTransparencyMode;
+}
+
+// @public
+export enum ThematicGradientTransparencyMode {
+    MultiplySurfaceAndGradient = 1,
+    SurfaceOnly = 0
 }
 
 // @public

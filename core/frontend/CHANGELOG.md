@@ -1,6 +1,121 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 17 Aug 2023 07:50:06 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Dec 2023 17:26:56 GMT and should not be manually modified.
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:55 GMT
+
+_Version update only_
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added support for recoloring geometry intersecting a clip volume
+- Add SQ_KM to UNIT_DATA
+- Promote APIs required to implement a MapLayerFormat to beta
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Fix Map Feature Info for ArcGIS map services when reprojection is needed.
+- Custom query parameters can now be configured on map layers objects.
+- Improved ArcGIS feature info coordinates reprojection outside project extent.
+- Improved content type detection for 3D Tiles tilesets.
+- Updated realitydata url to new reality-management API url. Added tests for new url.
+- Add support for transparent gradients in thematic display and analysis styles.
+- Fix SpatialModelState.isRealityModel returning false for reality models that don't store a tileset URL.
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+- Enable display of all subcategories for non-scene decorations.
+- Fix incorrect transparency for text rendered as raster glyphs.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+### Updates
+
+- Add SQ_KM to UNIT_DATA
+- Fix Map Feature Info for ArcGIS map services when reprojection is needed.
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+### Updates
+
+- When assigning to SpatialViewState.modelSelector, notify tile tree references of the change.
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+### Updates
+
+- Fix status code when invalid credentials are provided for an ArcGIS service.
+- Remove maximum depth constraint for reality tile trees.
+- Clone view attachments when cloning a sheet or drawing view.
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- Fix failure to preserve name when creating a BlankConnection.
+- remove `require` call preventing pure ESM usage
+- Added parameter to specify pixel tolerance of Viewport.getMapFeatureInfo
+- Fix schedule script symbology issue
+- Fixed ignore material not using default material params
+- IModelConnection.createQueryReader is now public
+- Improved content type detection for 3D Tiles tilesets.
+- Add BriefcaseTxns events raised when applying external txns.
+- Add an option to premultiply a model display transform
+- Allow creation of cross-origin web workers
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
+
+## 4.1.7
+Thu, 28 Sep 2023 21:41:33 GMT
+
+_Version update only_
+
+## 4.1.6
+Tue, 12 Sep 2023 15:38:52 GMT
+
+### Updates
+
+- Allow creation of cross-origin web workers
+
+## 4.1.5
+Fri, 08 Sep 2023 13:37:23 GMT
+
+_Version update only_
+
+## 4.1.4
+Thu, 07 Sep 2023 18:26:02 GMT
+
+_Version update only_
+
+## 4.1.3
+Wed, 30 Aug 2023 15:35:27 GMT
+
+_Version update only_
+
+## 4.1.2
+Wed, 23 Aug 2023 15:25:29 GMT
+
+_Version update only_
 
 ## 4.1.1
 Fri, 18 Aug 2023 13:02:53 GMT
@@ -112,6 +227,31 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
+
+## 3.7.14
+Fri, 29 Sep 2023 16:57:16 GMT
+
+_Version update only_
 
 ## 3.7.13
 Tue, 08 Aug 2023 19:49:18 GMT

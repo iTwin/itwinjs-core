@@ -485,6 +485,17 @@ export class ClipColorTool extends Tool {
     static toolId: string;
 }
 
+// @beta
+export class ClipIntersectionTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface ColorInput {
     // (undocumented)

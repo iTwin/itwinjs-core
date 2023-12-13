@@ -6,8 +6,6 @@
 import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
 import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
-/* eslint-disable deprecation/deprecation */
-
 const PUSH = "__push__";
 
 /** @internal */
@@ -49,7 +47,7 @@ export class ElectronPushConnection<T> extends RpcPushConnection<T> {
   }
 
   public async send(messageData: any) {
-    const result = await RpcMarshaling.serialize(this._ipc.protocol, messageData);
+    const result = RpcMarshaling.serialize(this._ipc.protocol, messageData);
     const fulfillment: RpcRequestFulfillment = { result, rawResult: messageData, interfaceName: PUSH, id: this.channel.id, status: ++this._next };
     this._ipc.sendResponse(fulfillment, undefined);
   }

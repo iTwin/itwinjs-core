@@ -64,6 +64,10 @@ export abstract class ArrayProperty extends Property {
     get minOccurs(): number;
     // (undocumented)
     protected _minOccurs: number;
+    // @internal
+    protected setMaxOccurs(maxOccurs: number): void;
+    // @internal
+    protected setMinOccurs(minOccurs: number): void;
 }
 
 // @beta (undocumented)
@@ -1082,6 +1086,16 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     get minValue(): number | undefined;
     // (undocumented)
     protected _minValue?: number;
+    // @internal
+    protected setExtendedTypeName(extendedTypeName: string): void;
+    // @internal
+    protected setMaxLength(maxLength: number): void;
+    // @internal
+    protected setMaxValue(maxValue: number): void;
+    // @internal
+    protected setMinLength(minLength: number): void;
+    // @internal
+    protected setMinValue(minValue: number): void;
     toJSON(): PrimitiveOrEnumPropertyBaseProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1215,8 +1229,18 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get propertyType(): PropertyType;
     get schema(): Schema;
+    // @internal
+    protected setCategory(category: LazyLoadedPropertyCategory): void;
+    // @internal
+    protected setDescription(description: string): void;
+    // @internal
+    protected setIsReadOnly(isReadOnly: boolean): void;
+    // @internal
+    protected setLabel(label: string): void;
     // (undocumented)
     protected setName(name: ECName): void;
+    // @internal
+    protected setPriority(priority: number): void;
     toJSON(): PropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1838,7 +1862,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
     readonly unitSystem: string;
 }
 
-// @alpha
+// @beta
 export class SchemaJsonLocater implements ISchemaLocater {
     constructor(_getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -1881,9 +1905,10 @@ export interface SchemaKeyProps {
     readonly write: number;
 }
 
-// @alpha
+// @beta
 export class SchemaLoader {
     constructor(getSchema: SchemaPropsGetter);
+    get context(): SchemaContext;
     getSchema<T extends Schema>(schemaName: string): T;
     tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
@@ -1937,7 +1962,7 @@ export interface SchemaProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal

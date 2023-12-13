@@ -198,7 +198,10 @@ class Joint {
       maxTest,
     );
   }
-  /** Execute `joint.annotateJointMode()` at all joints on the chain to set some of the joints attributes. */
+  /**
+   * Execute `joint.annotateJointMode()` at all joints on the chain to set some of the joints' attributes,
+   * such as whether to extend both curves to intersection or to fill the gap between curves.
+   */
   public static annotateChain(start: Joint | undefined, options: JointOptions, maxTest: number = 100) {
     if (start)
       Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
@@ -230,6 +233,7 @@ class Joint {
     if (this.curve0 && this.curve1) {
       const ray0 = this.curve0.fractionToPointAndDerivative(1.0);
       const ray1 = this.curve1.fractionToPointAndDerivative(0.0);
+      ray0.direction.z = ray1.direction.z = 0.0;  // xy-offset
       const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1); // intersection of the 2 ray lines
       if (intersection.approachType === CurveCurveApproachType.Intersection) {
         if (intersection.detailA.fraction >= 0.0 && intersection.detailB.fraction <= 0.0) {
@@ -309,15 +313,16 @@ class Joint {
       this.flexure = JointMode.Cap;
       this.fraction0 = 1.0;
     } else if (this.curve0 && this.curve1) { // joints at the middle of the chain
-      if (this.curve0.endPoint().isAlmostEqual(this.curve1.startPoint())) { // joint between colinear segments
+      if (this.curve0.endPoint().isAlmostEqualXY(this.curve1.startPoint())) { // joint between colinear xy-segments
         this.fraction0 = 1.0;
         this.fraction1 = 0.0;
         this.flexure = JointMode.Trim;
       } else if (this.curve0 instanceof LineSegment3d && this.curve1 instanceof LineSegment3d) { // pair of lines
         const ray0 = this.curve0.fractionToPointAndDerivative(0.0);
         const ray1 = this.curve1.fractionToPointAndDerivative(0.0);
+        ray0.direction.z = ray1.direction.z = 0.0;  // xy-offset
         const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1); // intersection of the 2 ray lines
-        if (intersection.approachType === CurveCurveApproachType.Intersection) {
+        if (intersection.approachType === CurveCurveApproachType.Intersection || intersection.approachType === CurveCurveApproachType.PerpendicularChord) {
           this.fraction0 = intersection.detailA.fraction;
           this.fraction1 = intersection.detailB.fraction;
           if (this.fraction0 >= 1.0 && this.fraction1 <= 0.0) { // need to extend
@@ -437,7 +442,7 @@ class Joint {
 }
 
 /**
- * Context for building a wire offset.
+ * Context for building a wire xy-offset.
  * @internal
  */
 export class PolygonWireOffsetContext {
@@ -452,6 +457,7 @@ export class PolygonWireOffsetContext {
     basePointA: Point3d, basePointB: Point3d, distance: number,
   ): CurvePrimitive | undefined {
     Vector3d.createStartEnd(basePointA, basePointB, this._unitAlong);
+    this._unitAlong.z = 0.0;  // xy-offset
     if (this._unitAlong.normalizeInPlace()) {
       this._unitAlong.rotate90CCWXY(this._unitPerp);
       const segment = LineSegment3d.create(
@@ -464,8 +470,8 @@ export class PolygonWireOffsetContext {
     return undefined;
   }
   /**
-   * Construct a wire (not area) that is offset from given polyline or polygon (which must be in xy-plane or in
-   *  a plane parallel to xy-plane).
+   * Construct a wire (not area) that is offset from given polyline or polygon.
+   * * For best results, points should be in a horizontal plane because z-coordinates are ignored.
    * * This is a simple wire offset (in the form of a line string), not an area.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * See [[JointOptions]] class doc for offset construction rules.
@@ -477,36 +483,33 @@ export class PolygonWireOffsetContext {
   public constructPolygonWireXYOffset(
     points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions,
   ): CurveChain | undefined {
-    /**
-     * if "wrap = true", then first and last point in the points array must be close; otherwise
-     * generated offset will be invalid.
-     */
-    if (wrap && !points[0].isAlmostEqual(points[points.length - 1])) {
-      wrap = false;
-    }
-    /** create raw offsets as a linked list (joint0) */
+    if (wrap && !points[0].isAlmostEqual(points[points.length - 1]))
+      wrap = false; // no wrap possible for polylines
+    // create raw offset segments as a linked list of Joints, starting with joint0
     const options = JointOptions.create(leftOffsetDistanceOrOptions);
     const numPoints = points.length;
-    let fragment0 = PolygonWireOffsetContext.createOffsetSegment(points[0], points[1], options.leftOffsetDistance);
-    let joint0 = new Joint(undefined, fragment0, points[0]);
-    let newJoint;
-    let previousJoint = joint0;
-    for (let i = 1; i + 1 < numPoints; i++) {
-      const fragment1 = PolygonWireOffsetContext.createOffsetSegment(points[i], points[i + 1], options.leftOffsetDistance);
-      newJoint = new Joint(fragment0, fragment1, points[i]);
-      Joint.link(previousJoint, newJoint);
-      previousJoint = newJoint;
-      fragment0 = fragment1;
+    let fragment0: CurvePrimitive | undefined;
+    let joint0, previousJoint: Joint | undefined;
+    for (let i = 0; i + 1 < numPoints; ++i) {
+      if (!previousJoint) { // start the linked list at the first nontrivial xy-segment
+        if (fragment0 = PolygonWireOffsetContext.createOffsetSegment(points[i], points[i + 1], options.leftOffsetDistance))
+          previousJoint = joint0 = new Joint(undefined, fragment0, points[i]);
+      } else {
+        const fragment1 = PolygonWireOffsetContext.createOffsetSegment(points[i], points[i + 1], options.leftOffsetDistance);
+        if (fragment1) {  // append the next nontrivial xy-segment
+          const newJoint = new Joint(fragment0, fragment1, points[i]);
+          Joint.link(previousJoint, newJoint);
+          previousJoint = newJoint;
+          fragment0 = fragment1;
+        }
+      }
     }
-    if (wrap)
-      Joint.link(previousJoint, joint0);
-    else {
-      newJoint = new Joint(fragment0, undefined, points[numPoints - 1]);
-      Joint.link(previousJoint, newJoint);
-    }
-    /** annotateChain sets some of the joints attributes (including how to extend curves or fill the gap between curves) */
+    if (!fragment0 || !previousJoint || !joint0)
+      return undefined; // no edge with positive xy-length
+    const lastJoint = wrap ? joint0 : new Joint(fragment0, undefined, points[numPoints - 1]);
+    Joint.link(previousJoint, lastJoint);
     Joint.annotateChain(joint0, options, numPoints);
-    /** make limited passes through the Joint chain until no self-intersections are removed */
+    // make limited passes through the Joint chain until no self-intersections are removed
     for (let pass = 0; pass++ < 5;) {
       const state = Joint.removeDegeneratePrimitives(joint0, options, numPoints);
       joint0 = state.newStart;
@@ -519,10 +522,8 @@ export class PolygonWireOffsetContext {
       }
       */
     }
-    // Joint.collectPrimitivesFromChain(joint0, result, numPoints);
-    /** turn the Joint linked list into a CurveCollection (Loop or Path). trimming is done in collectStrokesFromChain */
     const chain = LineString3d.create();
-    Joint.collectStrokesFromChain(joint0, chain, numPoints);
+    Joint.collectStrokesFromChain(joint0, chain, numPoints);  // compute offset corners (by extension/trim)
     const n = chain.packedPoints.length;
     if (n > 1) {
       if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
@@ -535,7 +536,7 @@ export class PolygonWireOffsetContext {
 }
 
 /**
- * Context for building a wire offset from a Path or Loop of CurvePrimitives
+ * Context for building a wire xy-offset from a Path or Loop of CurvePrimitives
  * @internal
  */
 export class CurveChainWireOffsetContext {

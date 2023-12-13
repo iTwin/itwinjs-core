@@ -168,7 +168,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir });
+      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir, cacheSize: "50G" });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
@@ -332,6 +332,7 @@ export class CheckpointManager {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
+      const prevLogLevel = Logger.getLevel(NativeLoggerCategory.SQLite) ?? LogLevel.Error; // Get log level before we set it to None.
       Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
@@ -359,7 +360,7 @@ export class CheckpointManager {
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
-        Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.Error); // Turn logging back on after applying changesets.
+        Logger.setLevel(NativeLoggerCategory.SQLite, prevLogLevel); // Set logging to what it was before we started applying changesets.
         db.saveChanges();
         db.close();
       }
@@ -433,7 +434,7 @@ export class CheckpointManager {
     }
 
     const isValid = checkpoint.iModelId === nativeDb.getIModelId() && checkpoint.changeset.id === nativeDb.getCurrentChangeset().id;
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
     if (!isValid)
       IModelJsFs.removeSync(fileName);
 

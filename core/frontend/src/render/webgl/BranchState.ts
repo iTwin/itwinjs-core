@@ -113,9 +113,16 @@ export class BranchState {
   }
 
   public static createForDecorations(): BranchState {
-    const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
-
-    return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
+    const viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
+    const symbologyOverrides = new FeatureSymbology.Overrides();
+    symbologyOverrides.ignoreSubCategory = true;
+    return new BranchState({
+      viewFlags,
+      transform: Transform.createIdentity(),
+      symbologyOverrides,
+      edgeSettings: EdgeSettings.create(undefined),
+      is3d: true,
+    });
   }
 
   public withViewCoords(): BranchState {

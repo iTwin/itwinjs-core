@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
@@ -94,6 +94,19 @@ describe("ECDb", () => {
     });
   });
 
+  it("should be able to get schema props", () => {
+    const fileName = "schema-props.ecdb";
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+      assert.isTrue(testECDb.isOpen);
+    });
+    using(new ECDb(), (ecdb) => {
+      ecdb.openDb(ecdbPath);
+      const schema = ecdb.getSchemaProps("ECDbMeta");
+      assert.equal(schema.name, "ECDbMeta");
+    });
+  });
+
   it("Run plain SQL", () => {
     const fileName = "plainseql.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
@@ -163,5 +176,66 @@ describe("ECDb", () => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
     });
+  });
+
+  it("test unit labels in composite formats", () => {
+    const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "TestCompositeFormats.ecdb");
+    const xmlpathOriginal = path.join(outDir, "compositeFormats1.ecschema.xml");
+
+    IModelJsFs.writeFileSync(xmlpathOriginal, `<?xml version="1.0" encoding="utf-8" ?>
+    <ECSchema schemaName="TestCompositeFormats" alias="tcf" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="Units" version="01.00.00" alias="u" />
+      <Unit typeName="TestUnit" displayLabel="Test Unit" definition="u:M" numerator="1.0" phenomenon="u:LENGTH" unitSystem="u:METRIC" />
+      <Format typeName="TestFormat" displayLabel="TestFormat" roundFactor="0.3" type="Fractional" showSignOption="OnlyNegative" formatTraits="TrailZeroes|KeepSingleZero" precision="4" decimalSeparator="." thousandSeparator="," uomSeparator=" ">
+        <Composite>
+          <Unit>u:KM</Unit>
+          <Unit label="m">TestUnit</Unit>
+          <Unit label="">u:CM</Unit>
+          <Unit label="mm">u:MM</Unit>
+        </Composite>
+      </Format>
+      <KindOfQuantity typeName="TestKOQ2" description="Test KOQ2" displayLabel="TestKOQ2" persistenceUnit="u:M" presentationUnits="TestFormat" relativeError="10e-3" />
+    </ECSchema>`);
+    ecdb.importSchema(xmlpathOriginal);
+    ecdb.saveChanges();
+
+    const expectedLabels = [undefined, "m", "", "mm"];
+    let index = 0;
+    ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
+      for (let i: number = 1; i <= 4; i++) {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        expect(stmt.getRow().label).to.eql(expectedLabels[index++]);
+      }
+    });
+
+    const xmlpathUpdated = path.join(outDir, "compositeFormats2.ecschema.xml");
+    IModelJsFs.writeFileSync(xmlpathUpdated, `<?xml version="1.0" encoding="utf-8" ?>
+    <ECSchema schemaName="TestCompositeFormats" alias="tcf" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="Units" version="01.00.00" alias="u" />
+      <Unit typeName="TestUnit" displayLabel="Test Unit" definition="u:M" numerator="1.0" phenomenon="u:LENGTH" unitSystem="u:METRIC" />
+      <Format typeName="TestFormat" displayLabel="TestFormat" roundFactor="0.3" type="Fractional" showSignOption="OnlyNegative" formatTraits="TrailZeroes|KeepSingleZero" precision="4" decimalSeparator="." thousandSeparator="," uomSeparator=" ">
+        <Composite spacer="=" includeZero="False">
+          <Unit label="">u:KM</Unit>
+          <Unit label="m">TestUnit</Unit>
+          <Unit>u:CM</Unit>
+          <Unit label="mm">u:MM</Unit>
+        </Composite>
+      </Format>
+      <KindOfQuantity typeName="TestKOQ2" description="Test KOQ2" displayLabel="TestKOQ2" persistenceUnit="u:M" presentationUnits="TestFormat" relativeError="10e-3" />
+    </ECSchema>`);
+
+    ecdb.importSchema(xmlpathUpdated);
+    ecdb.saveChanges();
+
+    const expectedLabelsUpdated = ["", "m", undefined, "mm"];
+    index = 0;
+    ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
+      for (let i: number = 1; i <= 4; i++) {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        expect(stmt.getRow().label).to.eql(expectedLabelsUpdated[index++]);
+      }
+    });
+
+    ecdb.closeDb();
   });
 });

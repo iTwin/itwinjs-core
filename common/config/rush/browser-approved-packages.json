@@ -219,16 +219,12 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "@itwin/ecql-common",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -343,10 +339,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/projects-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
@@ -377,6 +369,10 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "@sinonjs/fake-timers",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -643,10 +639,6 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
-      "name": "lolex",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },
@@ -672,7 +664,7 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "nodemon",
@@ -747,6 +739,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rxjs",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "rxjs-for-await",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
     },
@@ -791,12 +791,16 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "touch",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",
@@ -808,7 +812,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "typescript",

@@ -66,7 +66,7 @@ interface TemporaryValue<T> {
  */
 export class TemporaryStorage<T> implements IDisposable {
 
-  private _timer?: NodeJS.Timer;
+  private _timer?: NodeJS.Timeout;
   protected _values: Map<string, TemporaryValue<T>>;
   public readonly props: TemporaryStorageProps<T>;
 

@@ -6,7 +6,7 @@
  * @module UiAdmin
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, BeUiEvent } from "@itwin/core-bentley";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
@@ -16,10 +16,13 @@ import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc
 import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
-import { PointProps } from "./utils/PointProps";
-import { loggerCategory } from "./utils/misc";
 import { MessagePresenter } from "./notification/MessagePresenter";
-import { UiError } from "./utils/UiError";
+
+interface XAndY { readonly x: number, readonly y: number }
+
+interface BentleyErrorWithCategory extends BentleyError {
+  category: string;
+}
 
 /** The Generic UI Event args contains information useful for any UI message
  * @public
@@ -72,8 +75,12 @@ export class UiAdmin {
 
   /** The MessagePresenter used to display messages. */
   public static get messagePresenter(): MessagePresenter {
-    if (!UiAdmin._messagePresenter)
-      throw new UiError(loggerCategory(this), "UiAdmin.messagePresenter not set");
+    if (!UiAdmin._messagePresenter) {
+      const error = new BentleyError(BentleyStatus.ERROR, "UiAdmin.messagePresenter not set") as BentleyErrorWithCategory;
+      error.category = "messagePresenter";
+      throw error;
+    }
+
     return UiAdmin._messagePresenter;
   }
   public static set messagePresenter(mp: MessagePresenter) {
@@ -92,10 +99,12 @@ export class UiAdmin {
   public onInitialized() { }
 
   /** Get the cursor X and Y position. */
-  public get cursorPosition(): PointProps { return { x: 0, y: 0 }; }
+  public get cursorPosition(): XAndY { return { x: 0, y: 0 }; }
 
-  /** Create a PointProps object. */
-  public createXAndY(x: number, y: number): PointProps { return { x, y }; }
+  /** Create a PointProps object.
+  * @deprecated in 4.2.x. Please use @core/geometry [[XAndY]] or a custom implementation.
+  */
+  public createXAndY(x: number, y: number): XAndY { return { x, y }; }
 
   /** Determines if focus is set to Home */
   public get isFocusOnHome(): boolean { return false; }
@@ -109,7 +118,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the menu was displayed, false if the menu could not be displayed.
    */
-  public showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean {
+  public showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -124,7 +133,7 @@ export class UiAdmin {
    * @return true if the Toolbar was displayed, false if the Toolbar could not be displayed.
    */
   public showToolbar(
-    _toolbarProps: AbstractToolbarProps, _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
+    _toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean {
     return false;
   }
@@ -139,7 +148,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the button was displayed, false if the button could not be displayed.
    */
-  public showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean {
+  public showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -158,7 +167,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the calculator was displayed, false if the calculator could not be displayed.
    */
-  public showCalculator(_initialValue: number, _resultIcon: string, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -173,7 +182,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  public showAngleEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -185,7 +194,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  public showLengthEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -197,7 +206,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  public showHeightEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -210,7 +219,7 @@ export class UiAdmin {
    * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
-  public showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: PointProps, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+  public showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 
@@ -227,7 +236,7 @@ export class UiAdmin {
    * @return true if the display element was displayed, false if the display element could not be displayed.
    */
   public showHTMLElement(
-    _displayElement: HTMLElement, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc,
+    _displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }
@@ -249,7 +258,7 @@ export class UiAdmin {
    */
   public showCard(
     _content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined,
-    _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
+    _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }
@@ -267,7 +276,7 @@ export class UiAdmin {
    * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
    */
   public openToolSettingsPopup(
-    _dataProvider: UiDataProvider, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc,
+    _dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc,
     _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
     return false;
   }

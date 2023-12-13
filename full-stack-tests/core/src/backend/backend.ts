@@ -9,7 +9,7 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
@@ -70,6 +70,11 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
+  }
+
+  public async closeAndReopenDb(key: string): Promise<void> {
+    const iModel = BriefcaseDb.findByKey(key);
+    return iModel.executeWritable(async () => undefined);
   }
 }
 

@@ -70,6 +70,7 @@ describe("convertEC2Schemas", () => {
       const row = stmt.getRow();
       propNamesInEntityClass.push(row.name);
     }
+    stmt.dispose();
     assert.equal(rowCount, 9);
 
     assert.isFalse(propNamesInEntityClass.includes("Id"));  // The Id property is a reserved keyword and should have been renamed
@@ -93,6 +94,7 @@ describe("convertEC2Schemas", () => {
       const row = stmt.getRow();
       propNamesInStructClass.push(row.name);
     }
+    stmt.dispose();
     assert.equal(rowCount, 3);
 
     assert.isTrue(propNamesInStructClass.includes("Id")); // The Id property is not a reserved keyword for Struct classes and should not be renamed

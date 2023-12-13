@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
@@ -11,7 +12,16 @@ import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwi
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
-function isTileset3d(json: unknown): json is schema.Tileset {
+/** @internal */
+export interface BatchedTilesetProps extends schema.Tileset {
+  extensions?: {
+    BENTLEY_BatchedTileSet?: { // eslint-disable-line @typescript-eslint/naming-convention
+      includedModels: Id64String[];
+    };
+  };
+}
+
+function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
   if (typeof json !== "object")
     return false;
 
@@ -25,6 +35,22 @@ function isTileset3d(json: unknown): json is schema.Tileset {
     props.geometricError = props.root.geometricError;
 
   return true;
+}
+
+/** @internal */
+export interface BatchedTilesetSpec {
+  baseUrl: URL;
+  props: BatchedTilesetProps;
+}
+
+/** @internal */
+export namespace BatchedTilesetSpec {
+  export function create(baseUrl: URL, json: unknown) {
+    if (!isBatchedTileset(json))
+      throw new Error("Invalid tileset JSON");
+
+    return { baseUrl, props: json };
+  }
 }
 
 function rangeFromBoundingVolume(vol: schema.BoundingVolume): Range3d {
@@ -68,13 +94,10 @@ export class BatchedTilesetReader {
   private readonly _tileset: schema.Tileset;
   public readonly baseUrl: URL;
 
-  public constructor(json: unknown, iModel: IModelConnection, baseUrl: URL) {
-    if (!isTileset3d(json))
-      throw new Error("Invalid tileset JSON");
-
+  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection) {
     this._iModel = iModel;
-    this._tileset = json;
-    this.baseUrl = baseUrl;
+    this._tileset = spec.props;
+    this.baseUrl = spec.baseUrl;
   }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
@@ -82,6 +105,20 @@ export class BatchedTilesetReader {
     const geometricError = json.geometricError;
     const range = rangeFromBoundingVolume(json.boundingVolume);
     const isLeaf = undefined === json.children || json.children.length === 0;
+
+    let transformToRoot;
+    if (undefined !== parent) {
+      const localToParent = json.transform ? transformFromJSON(json.transform) : undefined;
+      const parentToRoot = parent.transformToRoot;
+      if (localToParent) {
+        if (parentToRoot)
+          localToParent.multiplyTransformTransform(parentToRoot, localToParent);
+
+        transformToRoot = localToParent;
+      } else {
+        transformToRoot = parentToRoot;
+      }
+    }
 
     // ###TODO evaluate this. The geometric errors in the tiles seem far too small.
     const maximumSizeScale = 8;
@@ -93,12 +130,15 @@ export class BatchedTilesetReader {
       isLeaf,
       maximumSize: maximumSizeScale * RealityModelTileUtils.maximumSizeFromGeometricTolerance(range, geometricError),
       childrenProps: isLeaf ? undefined : json.children,
+      transformToRoot,
     };
   }
 
   public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
     const root = this._tileset.root;
     const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
+    const extension = this._tileset.extensions?.BENTLEY_BatchedTileSet;
+    const includedModels = extension ? new Set<Id64String>(extension.includedModels) : undefined;
 
     return {
       id: "spatial-models",
@@ -108,6 +148,7 @@ export class BatchedTilesetReader {
       priority: TileLoadPriority.Primary,
       rootTile: this.readTileParams(root),
       reader: this,
+      includedModels,
     };
   }
 }
