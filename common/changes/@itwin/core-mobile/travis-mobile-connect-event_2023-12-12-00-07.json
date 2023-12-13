@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Add onConnected event to MobileHost.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}

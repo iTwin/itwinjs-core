@@ -1,8 +1,14 @@
+# `Visualization of Exterior and Boundary HalfEdge`
+
+Exterior HalfEdges (nodes) are shown by green and Boundary HalfEdges (nodes) are shown by blue:
+
+<img src="./figs/Graph/exteriorBoundaryHalfEdges.png" width="400">
+
 # `Visualization of Some of HalfEdge Functions`
 
 Here is visualization of some the HalfEdge functions (`createHalfEdgePair`, `splitEdge`, and `splitEdgeCreateSliverFace`). Note that edges of the graph are indicated by black lines and vertices of the graph are indicated by black dots. HalfEdges (nodes) are indicated by non-black dots. The arrow emanating from a node points to its faceSuccessor node.
 
-![>](./figs/Graph/HalfEdgeAPI.png)
+![>](./figs/Graph/halfEdgeAPI.png)
 
 # `Signed Area of a Face`
 

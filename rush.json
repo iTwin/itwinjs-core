@@ -1,7 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  // DO NOT UPGRADE the rush version. Reason: https://github.com/microsoft/rushstack/issues/4445
-  "rushVersion": "5.99.0",
+  "rushVersion": "5.112.2",
   "pnpmVersion": "7.32.2",
   "nodeSupportedVersionRange": "^18.12.0 || ^20.9.0",
   "projectFolderMinDepth": 2,
