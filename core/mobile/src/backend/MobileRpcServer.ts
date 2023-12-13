@@ -83,6 +83,7 @@ export class MobileRpcServer {
       this._createSender();
       this._sendPending();
       (global as any).__iTwinJsRpcReady = true;
+      MobileHost.onConnected.raiseEvent();
     });
   }
 
