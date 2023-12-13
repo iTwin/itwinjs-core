@@ -9225,6 +9225,8 @@ export class TextString {
     constructor(props: TextStringProps);
     bold?: boolean;
     font: FontId;
+    glyphIds?: number[];
+    glyphOrigins?: Point2d[];
     // (undocumented)
     height: number;
     italic?: boolean;
@@ -9254,6 +9256,8 @@ export interface TextStringPrimitive {
 export interface TextStringProps {
     bold?: boolean;
     font: FontId;
+    glyphIds?: number[];
+    glyphOrigins?: Point2d[];
     // (undocumented)
     height: number;
     italic?: boolean;
