@@ -16,7 +16,7 @@ We begin the lesson by using a simple ECSQL similar to the ones used at the begi
 > SELECT UserLabel, ECClassId FROM bis.SpatialElement
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT UserLabel, ECClassId FROM bis.SpatialElement"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT UserLabel, ECClassId FROM bis.SpatialElement"></iframe>
 
 This example illustrates that polymorphism is pretty obvious. All examples throughout the tutorial up to here were polymorphic queries, and we did not have to mention or even explain it. It has worked intuitively. If we now take a closer look at what the ECSQL does, you can notice this:
 
@@ -36,7 +36,7 @@ Now let's turn the query into a non-polymorphic one.
 > SELECT CodeValue, ECClassId FROM ONLY bis.SpatialElement
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT CodeValue, UserLabel FROM ONLY bis.SpatialElement"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT CodeValue, UserLabel FROM ONLY bis.SpatialElement"></iframe>
 
 As expected the query does not return anything, because [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement) is an abstract class, and hence cannot have any instances. It is more meaningful to query against a non-abstract class.
 
@@ -50,7 +50,7 @@ As expected the query does not return anything, because [SpatialElement](../../b
 > SELECT ECInstanceid, UserLabel FROM ONLY Generic.PhysicalObject
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceid, UserLabel FROM ONLY Generic.PhysicalObject"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECInstanceid, UserLabel FROM ONLY Generic.PhysicalObject"></iframe>
 
 Let's go back to explore more how to work with the ECClassId to tell between subclasses of a polymorphic query.
 
@@ -64,7 +64,7 @@ Let's go back to explore more how to work with the ECClassId to tell between sub
 > SELECT UserLabel, ECClassId FROM bis.SpatialElement WHERE ECClassId BETWEEN 0 AND 200
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT UserLabel, ECClassId FROM bis.SpatialElement WHERE ECClassId BETWEEN 0 AND 200"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT UserLabel, ECClassId FROM bis.SpatialElement WHERE ECClassId BETWEEN 0 AND 200"></iframe>
 
 As usually the class ids are not known, you need to look them up first. You can do so by joining to the [ECDbMeta ECSchema](../ECDbMeta.ecschema.md). This allows you to specify the subclasses by name rather than by id. The [ECDbMeta ECSchema](../ECDbMeta.ecschema.md) is covered in more detail in the advanced lesson about [Meta queries](./MetaQueries.md).
 
@@ -78,7 +78,7 @@ As usually the class ids are not known, you need to look them up first. You can 
 > SELECT SpatialElement.UserLabel, SpatialElement.ECClassId, ECClassDef.Name  FROM bis.SpatialElement JOIN meta.ECClassDef ON SpatialElement.ECClassId=ECClassDef.ECInstanceId WHERE ECClassDef.Name IN ('LightLocation','PhysicalObject')
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT SpatialElement.UserLabel, SpatialElement.ECClassId, ECClassDef.Name  FROM bis.SpatialElement JOIN meta.ECClassDef ON SpatialElement.ECClassId=ECClassDef.ECInstanceId WHERE ECClassDef.Name IN ('LightLocation','PhysicalObject')"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT SpatialElement.UserLabel, SpatialElement.ECClassId, ECClassDef.Name  FROM bis.SpatialElement JOIN meta.ECClassDef ON SpatialElement.ECClassId=ECClassDef.ECInstanceId WHERE ECClassDef.Name IN ('LightLocation','PhysicalObject')"></iframe>
 
 The following shows how you can perform simple statistics on the distribution of instances across the [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement) subclasses.
 
@@ -92,7 +92,7 @@ The following shows how you can perform simple statistics on the distribution of
 > SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT ECClassId, count(*) ElementCount FROM bis.SpatialElement GROUP BY ECClassId"></iframe>
 
 ---
 
