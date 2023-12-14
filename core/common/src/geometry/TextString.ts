@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Point2d, Point3d, Range2d, Transform, Vector3d, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { FontId } from "../Fonts";
 
 /**

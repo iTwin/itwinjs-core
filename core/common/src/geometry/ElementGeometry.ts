@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, XYProps, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -1073,14 +1073,14 @@ export namespace ElementGeometry {
       if (!origin)
         throw new Error("Value cannot be null.");
       return new Point2d(origin.x(), origin.y());
-    }
-    const textStringRangeToRange2d = (range: EGFBAccessors.TextStringRange | null) => range ? new Range2d(range.lowx(), range.lowy(), range.highx(), range.highy()) : null;
+    };
+    const textStringRangeToRange2d = (r: EGFBAccessors.TextStringRange | null) => r ? new Range2d(r.lowx(), r.lowy(), r.highx(), r.highy()) : null;
     const range = textStringRangeToRange2d(ppfb.range());
     const glyphIds = Array.from({ length: ppfb.glyphIdsLength() }, (_, i) => ppfb.glyphIds(i) ?? 0);
     const glyphOrigins = Array.from({ length: ppfb.glyphOriginsLength() }, (_, i) => glyphOriginToPoint2d(ppfb.glyphOrigins(i)));
-    if (!range || range.isNull || glyphIds.length == 0 || glyphOrigins.length == 0)
+    if (!range || range.isNull || glyphIds.length === 0 || glyphOrigins.length === 0)
       return undefined;
-    return { glyphIds, glyphOrigins, range }
+    return { glyphIds, glyphOrigins, range };
   }
 
   /** Create entry from a [[TextString]] */

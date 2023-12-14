@@ -1761,7 +1761,7 @@ describe("ElementGeometry", () => {
       glyphIds: [1, 2, 3],
       glyphOrigins: [new Point2d(0.0, 0.0), new Point2d(1000.0, 0.0), new Point2d(2000.0, 0.0)],
       range: new Range2d(0, 0, 10, 30),
-    }
+    };
 
     const entry = ElementGeometry.fromTextString(textProps, undefined, glyphData);
     assert.exists(entry);
