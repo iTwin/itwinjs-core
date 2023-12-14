@@ -1102,7 +1102,7 @@ export namespace ElementGeometry {
         return undefined;
       const glyphIdsOffset = builder.createGlyphIdsVector(fbb, glyphs.glyphIds);
       builder.startGlyphOriginsVector(fbb, glyphs.glyphOrigins.length);
-      for (const origin of glyphs.glyphOrigins) {
+      for (const origin of [...glyphs.glyphOrigins].reverse()) {
         EGFBAccessors.TextStringGlyphOrigin.createTextStringGlyphOrigin(fbb, origin.x, origin.y);
       }
       const glyphOriginsOffset = fbb.endVector();

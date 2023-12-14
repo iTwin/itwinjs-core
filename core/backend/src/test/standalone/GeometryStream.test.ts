@@ -192,11 +192,9 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           break;
         case ElementGeometryOpcode.TextString:
           const text = ElementGeometry.toTextString(entry);
-          const textGlyphData = ElementGeometry.toTextStringGlyphData(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
             const other = ElementGeometry.toTextString(expected[i].originalEntry!);
-            const otherGlyphData = ElementGeometry.toTextStringGlyphData(expected[i].originalEntry!);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -211,7 +209,6 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
             const angles = YawPitchRollAngles.fromJSON(text?.rotation);
             const otherAngles = YawPitchRollAngles.fromJSON(other?.rotation);
             assert.isTrue(angles.isAlmostEqual(otherAngles));
-            assert.deepEqual(textGlyphData, otherGlyphData);
           }
           break;
         case ElementGeometryOpcode.Image:
@@ -1732,7 +1729,7 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
-  it.only("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
+  it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1769,6 +1766,9 @@ describe("ElementGeometry", () => {
     const entry = ElementGeometry.fromTextString(textProps, undefined, glyphData);
     assert.exists(entry);
     newEntries.push(entry!);
+    // We can't validate glyph data later from the TextString in the DB because the native TextString will re-compute them if the font isn't embedded.
+    // So, just verify that we are passing the correct flatbuffer here.
+    assert.deepEqual(entry ? ElementGeometry.toTextStringGlyphData(entry) : undefined, glyphData);
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
