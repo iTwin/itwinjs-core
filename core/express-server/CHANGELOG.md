@@ -1,6 +1,11 @@
 # Change Log - @itwin/express-server
 
-This log was last generated on Wed, 13 Dec 2023 17:26:56 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Dec 2023 20:24:02 GMT and should not be manually modified.
+
+## 4.3.2
+Thu, 14 Dec 2023 20:23:02 GMT
+
+_Version update only_
 
 ## 4.3.1
 Wed, 13 Dec 2023 17:25:55 GMT
