@@ -36,7 +36,7 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 >
 > ```ts
 > const spaceElement: SpatialElement = iModelDb.elements.getElement(
->   "0x1000000001f"
+>   "0x1000000001f",
 > ) as SpatialElement;
 >
 > iModelDb.withPreparedStatement(
@@ -47,7 +47,7 @@ See also other [ECSQL built-in geometry functions](../GeometrySqlFuncs.md) which
 >       const row: any = stmt.getRow();
 >       console.log(row);
 >     }
->   }
+>   },
 > );
 > ```
 >

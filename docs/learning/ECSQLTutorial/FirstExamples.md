@@ -204,7 +204,7 @@ iModelDb.withPreparedStatement(
     stmt.step();
     const row: any = stmt.getRow();
     console.log("Element count: " + row.elementCount);
-  }
+  },
 );
 ```
 
