@@ -2,6 +2,18 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "4.3.2",
+      "tag": "@itwin/core-quantity_v4.3.2",
+      "date": "Thu, 14 Dec 2023 20:23:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.1",
+      "tag": "@itwin/core-quantity_v4.3.1",
+      "date": "Wed, 13 Dec 2023 17:25:55 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.3.0",
       "tag": "@itwin/core-quantity_v4.3.0",
       "date": "Thu, 07 Dec 2023 17:43:09 GMT",

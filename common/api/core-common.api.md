@@ -8056,7 +8056,7 @@ export class RpcManager {
 // @internal (undocumented)
 export class RpcMarshaling {
     static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-    static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
+    static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
 }
 
 // @internal

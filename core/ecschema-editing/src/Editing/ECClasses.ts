@@ -141,6 +141,31 @@ export class ECClasses {
     return { itemKey: classKey, propertyName: name };
   }
 
+  public async createEnumerationArrayProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    await mutableClass.createPrimitiveArrayProperty(name, type);
+    return { itemKey: classKey, propertyName: name };
+  }
+
+  public async createEnumerationArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, props: PrimitiveArrayPropertyProps): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
+    await newProperty.fromJSON(props);
+    return { itemKey: classKey, propertyName: name };
+  }
+
   public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
