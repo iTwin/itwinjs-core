@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Expose `ParticleCollectionBuilder` for extensions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
