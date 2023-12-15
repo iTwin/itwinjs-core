@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add support to create an EcefLocation class directly from a transformation matrix",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
