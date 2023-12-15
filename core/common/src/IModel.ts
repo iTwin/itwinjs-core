@@ -299,11 +299,10 @@ export class EcefLocation implements EcefLocationProps {
   public static createFromTransform(transform: Transform): EcefLocation {
     const ecefOrigin = transform.getOrigin();
     const angleFromInput = YawPitchRollAngles.createDegrees(0,0,0);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const locationOrientationFromInputT = YawPitchRollAngles.createFromMatrix3d(transform.getMatrix(), angleFromInput);
     const transformProps =  transform.toJSON();
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: angleFromInput, transform: transformProps });
+    return new EcefLocation({ origin: ecefOrigin, orientation: locationOrientationFromInputT ?? angleFromInput, transform: transformProps });
   }
 
   /** Get the location center of the earth in the iModel coordinate system. */
