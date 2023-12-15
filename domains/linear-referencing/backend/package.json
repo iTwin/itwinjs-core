@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "main": "lib/cjs/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.4.0-dev.3",
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.3",
-    "@itwin/core-common": "workspace:^4.4.0-dev.3",
-    "@itwin/linear-referencing-common": "workspace:^4.4.0-dev.3"
+    "@itwin/core-backend": "workspace:^4.4.0-dev.7",
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.7",
+    "@itwin/core-common": "workspace:^4.4.0-dev.7",
+    "@itwin/linear-referencing-common": "workspace:^4.4.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -50,12 +50,12 @@
     "@itwin/linear-referencing-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"

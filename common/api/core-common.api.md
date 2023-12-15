@@ -2397,6 +2397,7 @@ export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
     readonly cartographicOrigin?: Cartographic;
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
+    static createFromTransform(transform: Transform): EcefLocation;
     get earthCenter(): Point3d;
     getTransform(): Transform;
     isAlmostEqual(other: EcefLocation): boolean;
@@ -2415,6 +2416,7 @@ export interface EcefLocationProps {
     readonly cartographicOrigin?: CartographicProps;
     readonly orientation: YawPitchRollProps;
     readonly origin: XYZProps;
+    readonly transform?: TransformProps;
     readonly xVector?: XYZProps;
     readonly yVector?: XYZProps;
 }
@@ -8054,7 +8056,7 @@ export class RpcManager {
 // @internal (undocumented)
 export class RpcMarshaling {
     static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-    static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
+    static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue;
 }
 
 // @internal

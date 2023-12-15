@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
@@ -41,18 +41,18 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
-    "@types/express": "^4.16.1",
-    "@types/mocha": "^8.2.2",
+    "@types/express": "^4.17.20",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^17.0.2",
     "@types/supertest": "^2.0.4",
-    "@types/express-ws": "^3.0.1",
+    "@types/express-ws": "^3.0.3",
     "chai": "^4.3.10",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^15.0.4",
+    "sinon": "^17.0.1",
     "supertest": "^3.0.0",
     "typescript": "~5.0.2"
   },
@@ -60,7 +60,7 @@
     "@itwin/core-backend": "workspace:*"
   },
   "dependencies": {
-    "express": "^4.16.3",
+    "express": "^4.18.2",
     "express-ws": "^5.0.2"
   },
   "nyc": {

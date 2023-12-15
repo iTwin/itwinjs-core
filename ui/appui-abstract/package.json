@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.3"
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -49,8 +49,8 @@
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@itwin/certa": "workspace:*",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^8.2.2",
-    "@types/sinon": "^10.0.15",
+    "@types/mocha": "^10.0.6",
+    "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
@@ -59,11 +59,11 @@
     "eslint": "^8.44.0",
     "glob": "^7.1.2",
     "ignore-styles": "^5.0.1",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "raf": "^3.4.0",
     "rimraf": "^3.0.2",
-    "sinon": "^15.0.4",
-    "sinon-chai": "^3.2.0",
+    "sinon": "^17.0.1",
+    "sinon-chai": "^3.7.0",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0"

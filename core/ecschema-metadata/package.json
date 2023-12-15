@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -34,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.5",
+    "@bentley/units-schema": "^1.0.7",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
@@ -43,24 +43,24 @@
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^15.0.4",
+    "sinon": "^17.0.1",
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.3",
-    "@itwin/core-quantity": "workspace:^4.4.0-dev.3"
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.7",
+    "@itwin/core-quantity": "workspace:^4.4.0-dev.7"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

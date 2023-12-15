@@ -1,6 +1,6 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {

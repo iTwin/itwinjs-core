@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecsql-common",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "ECSql component that can be reference on backend and frontend",
   "main": "lib/cjs/ecsql-common.js",
   "module": "lib/esm/ecsql-common.js",
@@ -41,10 +41,10 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "chai": "^4.3.10",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"

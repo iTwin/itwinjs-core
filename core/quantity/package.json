@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -39,19 +39,19 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^8.2.2",
-    "@types/sinon": "^10.0.15",
+    "@types/mocha": "^10.0.6",
+    "@types/sinon": "^17.0.2",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^15.0.4",
+    "sinon": "^17.0.1",
     "typescript": "~5.0.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.3"
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.7"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

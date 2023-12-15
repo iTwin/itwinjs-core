@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-orbitgt",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "",
   "main": "lib/cjs/core-orbitgt.js",
   "module": "lib/esm/core-orbitgt.js",
@@ -35,13 +35,13 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "debug": "^2.6.9",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -48,7 +48,7 @@
     "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
     "@bentley/spatial-composition-schema": "^1.0.1",
     "@bentley/structural-physical-schema": "^1.0.1",
-    "@bentley/units-schema": "^1.0.5",
+    "@bentley/units-schema": "^1.0.7",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
@@ -56,17 +56,17 @@
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^17.0.2",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7",
+    "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^15.0.4",
+    "sinon": "^17.0.1",
     "typescript": "~5.0.2"
   },
   "dependencies": {
@@ -75,7 +75,7 @@
     "@xmldom/xmldom": "~0.8.5"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^4.4.0-dev.3"
+    "@itwin/ecschema-metadata": "workspace:^4.4.0-dev.7"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

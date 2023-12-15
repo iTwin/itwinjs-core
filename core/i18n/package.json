@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "4.4.0-dev.3",
+  "version": "4.4.0-dev.7",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.3"
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -50,7 +50,7 @@
     "@types/chai": "4.3.1",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
