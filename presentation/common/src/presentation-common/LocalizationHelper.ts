@@ -6,14 +6,14 @@
  * @module Core
  */
 
-import { Node } from "./hierarchy/Node";
-import { Content } from "./content/Content";
-import { Item } from "./content/Item";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
-import { DisplayValue, Value } from "./content/Value";
-import { Field } from "./content/Fields";
 import { CategoryDescription } from "./content/Category";
+import { Content } from "./content/Content";
+import { Field } from "./content/Fields";
+import { Item } from "./content/Item";
+import { DisplayValue, Value } from "./content/Value";
 import { ElementProperties } from "./ElementProperties";
+import { Node } from "./hierarchy/Node";
+import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
@@ -48,6 +48,11 @@ export class LocalizationHelper {
   public getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]) {
     labelDefinitions.forEach((labelDefinition) => this.translateLabelDefinition(labelDefinition));
     return labelDefinitions;
+  }
+
+  public getLocalizedContentItems(items: Item[]) {
+    items.forEach((item) => this.translateContentItem(item));
+    return items;
   }
 
   public getLocalizedContent(content: Content) {

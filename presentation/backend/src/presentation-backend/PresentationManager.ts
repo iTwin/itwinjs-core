@@ -16,7 +16,7 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
   FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo, HierarchyCompareOptions,
   HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions,
-  isSingleElementPropertiesRequestOptions, KeySet, KoqPropertyValueFormatter, LabelDefinition, LocalizationHelper,
+  isSingleElementPropertiesRequestOptions, Item, KeySet, KoqPropertyValueFormatter, LabelDefinition, LocalizationHelper,
   MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
   Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
@@ -516,6 +516,28 @@ export class PresentationManager {
    */
   public async getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
     return this._detail.getContentSetSize(requestOptions);
+  }
+
+  /**
+   * Retrieves the content set based on the supplied content descriptor.
+   * @beta
+   */
+  public async getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]> {
+    let items = await this._detail.getContentSet({
+      ...requestOptions,
+      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
+    });
+
+    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
+      const formatter = new ContentFormatter(
+        new ContentPropertyValueFormatter(koqPropertyFormatter),
+        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
+      );
+      items = await formatter.formatContentItems(items, requestOptions.descriptor);
+    }
+
+    return this._localizationHelper.getLocalizedContentItems(items);
   }
 
   /**
