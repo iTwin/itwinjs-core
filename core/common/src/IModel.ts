@@ -68,8 +68,9 @@ export interface EcefLocationProps {
   readonly xVector?: XYZProps;
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
   readonly yVector?: XYZProps;
-  /** Optional transform from which all other props will be computed - potentially non-rigid transform if a projection is present. */
-  /**          when provided, will have priority over others props */
+  /** Optional potentially non-rigid transform defining the ECEF location.
+   * @note If this property is supplied, the other properties are ignored.
+   */
   readonly transform?: TransformProps;
 }
 
