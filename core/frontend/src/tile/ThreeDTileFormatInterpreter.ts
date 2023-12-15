@@ -89,8 +89,8 @@ export class ThreeDTileFormatInterpreter  {
             // For georeferenced Reality Meshes, its origin is translated to model origin (0,0,0).
             // Apply range center to translate it back to its original position.
             const worldCenter = !worldToEcefTransform.matrix.isIdentity ? range.center : undefined;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!, worldCenter);
+            if (cartoCenter)
+              ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter, worldCenter);
           }
 
           location = ecefLocation;
