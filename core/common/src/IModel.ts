@@ -46,7 +46,8 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  * of the origin property. This cartographicOrigin is offered as a convenient pre-calculated value representing the location of the ECEF origin.
  * The 3D coordinate system this class represents is positioned at specified origin and the axis positioned according to
  * the other properties.
- * If the xVector and yVector properties are defined then they take precedence over the YawPitchRoll orientation property. The xVector and yVector
+ * If transform property is defined then it will not be computed from other properties.
+ * If the xVector and yVector properties are defined (and transform is not defined) then they take precedence over the YawPitchRoll orientation property. The xVector and yVector
  * represent the direction and scale of the X and Y axes. The Z axis is always perpendicular (according to the right hand rule) to these X-Y axes.
  * The scaling in the Z direction is always unity. The scale of the X and Y axes is represented by the size of the vector length.
  * If the xVector and yVector are not present then the YawPitchRoll properties indicates the angles for all tree axes. Scaling in that case
