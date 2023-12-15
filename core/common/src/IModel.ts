@@ -298,7 +298,6 @@ export class EcefLocation implements EcefLocationProps {
   /** Construct ECEF Location from transform with optional position on the earth used to establish the ECEF origin and orientation. */
   public static createFromTransform(transform: Transform): EcefLocation {
     const ecefOrigin = transform.getOrigin();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const angleFromInput = YawPitchRollAngles.createDegrees(0,0,0);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const locationOrientationFromInputT = YawPitchRollAngles.createFromMatrix3d(transform.getMatrix(), angleFromInput);
