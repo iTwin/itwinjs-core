@@ -110,7 +110,10 @@ export interface ParticleCollectionBuilder {
   finish: () => RenderGraphic | undefined;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export namespace ParticleCollectionBuilder {
   /** Creates a new ParticleCollectionBuilder.
    * @throws Error if size is not greater than zero.
