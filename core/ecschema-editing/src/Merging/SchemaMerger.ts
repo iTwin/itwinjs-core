@@ -6,10 +6,10 @@
  * @module Merging
  */
 
-import { Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
+import { CustomAttribute, CustomAttributeClass, Schema, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { ChangeType, CustomAttributeContainerChanges, SchemaChanges, SchemaItemChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import { SchemaContextEditor } from "../Editing/Editor";
+import { SchemaContextEditor, SchemaEditResults } from "../Editing/Editor";
 import { SchemaItemMerger } from "./SchemaItemMerger";
 
 import mergeSchemaReferences from "./SchemaReferenceMerger";
@@ -86,6 +86,8 @@ export class SchemaMerger {
     await EntityClassMerger.mergeChanges(mergeContext, itemChanges.entityClasses);
     await MixinMerger.mergeChanges(mergeContext, itemChanges.mixins);
 
+    await mergeCustomAttributes(mergeContext, schemaChanges.customAttributeChanges.values());
+
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.
     return targetSchema;
@@ -122,4 +124,42 @@ function * filterChangesByItemType<TChange extends SchemaItemChanges>(changes: M
       yield change;
     }
   }
+}
+
+/**
+ * Merges the custom attribute changes on schema level to the target schema.
+ * @param mergeContext  The current schema merging context.
+ * @param changes       An iterable with custom attribute changes on the schema.
+ * @returns             A SchemaEditResults object.
+ */
+async function mergeCustomAttributes(mergeContext: SchemaMergeContext, changes: Iterable<CustomAttributeContainerChanges>): Promise<SchemaEditResults> {
+  for (const customAttributeContainerChange of changes) {
+    for (const change of customAttributeContainerChange.customAttributeChanges) {
+      if (change.changeType === ChangeType.Missing) {
+        const sourceCustomAttribute = change.diagnostic.messageArgs![0] as CustomAttribute;
+        const [schemaName, itemName] = SchemaItem.parseFullName(sourceCustomAttribute.className);
+        const schemaItemKey = new SchemaItemKey(itemName, mergeContext.sourceSchema.schemaKey.compareByName(schemaName)
+          ? mergeContext.targetSchema.schemaKey
+          : new SchemaKey(schemaName),
+        );
+        const targetCustomAttribute = await mergeContext.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
+        if (targetCustomAttribute === undefined) {
+          return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`};
+        }
+
+        const customAttribute = {
+          ...sourceCustomAttribute,
+          className: targetCustomAttribute.fullName,
+        };
+
+        const results = await mergeContext.editor.addCustomAttribute(mergeContext.targetSchema.schemaKey, customAttribute);
+        if (results.errorMessage !== undefined) {
+          return {  errorMessage: results.errorMessage };
+        }
+      } else {
+        return { errorMessage: `Changes of Custom Attribute ${customAttributeContainerChange.ecTypeName} on ${mergeContext.targetSchema.name} merge is not implemented.`};
+      }
+    }
+  }
+  return { schemaKey: mergeContext.targetSchema.schemaKey };
 }

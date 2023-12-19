@@ -250,5 +250,60 @@ describe("Custom Attribute merge", () => {
         ],
       );
     });
+
+    it("should merge missing schema custom attributes", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        customAttributes: [
+          {
+            className: "SourceSchema.TestCA",
+          },
+          {
+            StringPrimitiveArrayProp: [
+              "SchemaCustomAttribute",
+            ],
+            className: "TestSchema.TestCA",
+          },
+        ],
+        items: {
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Schema",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          TestCA: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Schema",
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      expect(mergedSchema.toJSON().customAttributes).deep.eq(
+        [
+          {
+            className: "TargetSchema.TestCA",
+          },
+          {
+            StringPrimitiveArrayProp: [
+              "SchemaCustomAttribute",
+            ],
+            className: "TestSchema.TestCA",
+          },
+        ],
+      );
+    });
   });
 });
