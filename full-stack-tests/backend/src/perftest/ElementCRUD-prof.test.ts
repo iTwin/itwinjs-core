@@ -14,6 +14,7 @@ import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCa
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 // import { PerfTestUtility } from "./PerfTestUtils";
 import * as fs from "fs-extra";
+import * as readline from "node:readline/promises";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -25,7 +26,7 @@ const values: any = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const readline = require("node:readline").createInterface({
+const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
@@ -170,19 +171,6 @@ async function beforeTest() {
 
 async function elementInsertTest() {
 
-  if (process.pid) {
-    // eslint-disable-next-line no-console
-    console.log(process.pid);
-  }
-
-  await new Promise((resolve) => readline.question("Begin insert test y/n:", (usrInput: string) => {
-    if (usrInput === "y"){
-      resolve(readline.close());
-    } else{
-      readline.close();
-      return;
-    }
-  }));
   for (const name of crudConfig.classNames) {
     for (const size of crudConfig.dbSizes) {
       const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
@@ -226,9 +214,26 @@ async function elementInsertTest() {
   await IModelHost.shutdown();
 }
 
+async function checkToBeginProfile(testPrompt: string): Promise<boolean>{
+  const ans = await rl.question(testPrompt);
+  rl.close();
+  return ans === "y";
+}
+
 async function runTests() {
   await beforeTest();
+
+  if (process.pid) {
+    // eslint-disable-next-line no-console
+    console.log(process.pid);
+  }
+
+  let beginProfile = true;
+  if(!beginProfile)
+    beginProfile = await checkToBeginProfile("Profile insert test y/n:");
+
   await elementInsertTest();
+  // TODO: add Delete Read Update. Use checkToBeginProfile to control which tests get profiled
 }
 
 runTests();
