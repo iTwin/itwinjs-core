@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
+import { CustomAttribute, CustomAttributeClass, ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItem, SchemaItemKey, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
-import { BaseClassDelta, ChangeType, ClassChanges, EntityMixinChanges, PropertyValueChange } from "../Validation/SchemaChanges";
+import { BaseClassDelta, ChangeType, ClassChanges, CustomAttributeContainerChanges, EntityMixinChanges, PropertyValueChange } from "../Validation/SchemaChanges";
 import { ClassPropertyMerger } from "./ClassPropertyMerger";
 
 /**
@@ -124,6 +124,38 @@ export class ClassMerger<TClass extends ECClass> {
     }
   }
 
+  private async mergeCustomAttributes(classKey: SchemaItemKey, changes: Iterable<CustomAttributeContainerChanges>): Promise<SchemaItemEditResults> {
+    for (const customAttributeContainerChange of changes) {
+      for (const change of customAttributeContainerChange.customAttributeChanges) {
+        if (change.changeType === ChangeType.Missing) {
+          const sourceCustomAttribute = change.diagnostic.messageArgs![0] as CustomAttribute;
+          const [schemaName, itemName] = SchemaItem.parseFullName(sourceCustomAttribute.className);
+          const schemaItemKey = new SchemaItemKey(itemName, this.context.sourceSchema.schemaKey.compareByName(schemaName)
+            ? this.context.targetSchema.schemaKey
+            : new SchemaKey(schemaName),
+          );
+          const targetCustomAttribute = await this.context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
+          if (targetCustomAttribute === undefined) {
+            return { errorMessage: `Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`};
+          }
+
+          const customAttribute = {
+            ...sourceCustomAttribute,
+            className: targetCustomAttribute.fullName,
+          };
+
+          const results = await this.context.editor.entities.addCustomAttribute(classKey, customAttribute);
+          if (results.errorMessage !== undefined) {
+            return {  errorMessage: results.errorMessage };
+          }
+        } else {
+          return { errorMessage: `Changes of Custom Attribute ${customAttributeContainerChange.ecTypeName} on ${classKey.name} merge is not implemented.`};
+        }
+      }
+    }
+    return { itemKey: classKey };
+  }
+
   public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
 
@@ -160,7 +192,13 @@ export class ClassMerger<TClass extends ECClass> {
       }
 
       await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
-      const mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
+      let mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
+      if (mergeResults.errorMessage !== undefined) {
+        throw new Error(mergeResults.errorMessage);
+      }
+
+      // merge custom attributes
+      mergeResults = await merger.mergeCustomAttributes(targetItemKey, change.customAttributeChanges.values());
       if (mergeResults.errorMessage !== undefined) {
         throw new Error(mergeResults.errorMessage);
       }
