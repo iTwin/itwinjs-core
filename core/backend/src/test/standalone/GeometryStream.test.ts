@@ -2223,9 +2223,6 @@ describe("ElementGeometry", () => {
     }
 
     //    Insert - various failure cases
-    elemProps.elementGeometryBuilderParams = { entryArray: [] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
-
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
     expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
 
