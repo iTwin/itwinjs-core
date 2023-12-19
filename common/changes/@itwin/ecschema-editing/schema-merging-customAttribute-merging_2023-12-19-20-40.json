@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Added Merge function to merge CustomAttributes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}
