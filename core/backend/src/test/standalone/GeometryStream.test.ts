@@ -2294,6 +2294,28 @@ describe("ElementGeometry", () => {
     }
   });
 
+  it("create and update a GeometricElement3d to test clearing its geometry stream", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const newId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(90, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const newElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(newElemProps.geom);
+    assert.isTrue(newElemProps.placement !== undefined);
+
+    newElemProps.elementGeometryBuilderParams = { entryArray: [] };
+    imodel.elements.updateElement(newElemProps);
+    imodel.saveChanges();
+
+    const updateElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isUndefined(updateElemProps.geom);
+    assert.isTrue(updateElemProps.placement !== undefined);
+    const updatedPlacement = Placement3d.fromJSON(updateElemProps.placement);
+    assert.isTrue(updatedPlacement.bbox.isNull);
+  });
 });
 
 describe("BRepGeometry", () => {
