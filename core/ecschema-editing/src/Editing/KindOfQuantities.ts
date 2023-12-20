@@ -7,6 +7,7 @@
  */
 
 import {
+  DelayedPromiseWithProps,
   ECObjectsError, ECObjectsStatus, Format, InvertedUnit, KindOfQuantityProps, OverrideFormat,
   SchemaItemKey, SchemaItemType, SchemaKey, Unit,
 } from "@itwin/ecschema-metadata";
@@ -19,6 +20,34 @@ import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
  */
 export class KindOfQuantities {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
+
+  public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+    const schema = await this._schemaEditor.getSchema(schemaKey);
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+    const koqItem = (await schema.createKindOfQuantity(name)) as MutableKindOfQuantity;
+
+    const persistenceUnit = await schema.lookupItem<Unit | InvertedUnit>(persistenceUnitKey);
+    if (persistenceUnit === undefined) {
+      return { errorMessage: `Unable to locate unit ${persistenceUnitKey.fullName} in schema ${schema.fullName}.` };
+    }
+
+    if (persistenceUnit.schemaItemType === SchemaItemType.Unit) {
+      koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    }
+
+    if (persistenceUnit.schemaItemType === SchemaItemType.InvertedUnit) {
+      koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    }
+
+    if (displayLabel !== undefined) {
+      koqItem.setDisplayLabel(displayLabel);
+    }
+
+    return { itemKey: koqItem.key };
+  }
+
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)

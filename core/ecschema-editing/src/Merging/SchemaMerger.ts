@@ -19,6 +19,7 @@ import ConstantsMerger from "./ConstantMerger";
 import EntityClassMerger from "./EntityClassMerger";
 import StructClassMerger from "./StructClassMerger";
 import MixinMerger from "./MixinMerger";
+import KindOfQuantityMerger from "./KindOfQuantityMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -78,6 +79,7 @@ export class SchemaMerger {
     await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.unitSystems);
     await SchemaItemMerger.mergeChanges(mergeContext, itemChanges.phenomenons);
     await ConstantsMerger.mergeChanges(mergeContext, itemChanges.constants);
+    await KindOfQuantityMerger.mergeChanges(mergeContext, itemChanges.kindOfQuantities);
 
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
@@ -102,6 +104,7 @@ function getSchemaItemChanges(schemaChanges: SchemaChanges) {
     get constants() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant); },
     get customAttributeClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass); },
     get enumeratations() { return schemaChanges.enumerationChanges.values(); },
+    get kindOfQuantities() { return schemaChanges.kindOfQuantityChanges.values(); },
     get phenomenons() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon); },
     get propertyCategories() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory); },
     get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
