@@ -32,10 +32,10 @@ export class SchemaCompareResultDelegate {
    */
   constructor(schemaA: Schema, schemaB: Schema, ...reporters: ISchemaCompareReporter[]) {
     this._schemaChangeReporters = reporters;
-    const keyMismatch = !schemaA.schemaKey.matches(schemaB.schemaKey);
+    // const keyMismatch = !schemaA.schemaKey.matches(schemaB.schemaKey);
     this._schemaAChanges = new SchemaChanges(schemaA);
-    if (keyMismatch)
-      this._schemaBChanges = new SchemaChanges(schemaB);
+    // if (keyMismatch)
+    this._schemaBChanges = new SchemaChanges(schemaB);
   }
 
   public get schemaChangeReporters(): ISchemaCompareReporter[] {
