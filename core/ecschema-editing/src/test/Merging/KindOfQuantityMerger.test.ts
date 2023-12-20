@@ -37,15 +37,31 @@ describe("KindOfQuantity merge tests", () => {
         schemaItemType: "Phenomenon",
         definition: "TestPhenomenon",
       },
+      TestPhenomenonRate: {
+        schemaItemType: "Phenomenon",
+        definition: "TestPhenomenon * TestPhenomenon(-1)",
+      },
       TU: {
         schemaItemType: "Unit",
         unitSystem: "ReferenceSchema.TestUnitSystem",
         phenomenon: "ReferenceSchema.TestPhenomenon",
-        definition: "TU*TU(-1)",
+        definition: "TU",
       },
-      TU_HORIZONTAL: {
+      KILOTU: {
+        schemaItemType: "Unit",
+        unitSystem: "ReferenceSchema.TestUnitSystem",
+        phenomenon: "ReferenceSchema.TestPhenomenon",
+        definition: "1000*TU",
+      },
+      TU_PER_TU: {
+        schemaItemType: "Unit",
+        unitSystem: "ReferenceSchema.TestUnitSystem",
+        phenomenon: "ReferenceSchema.TestPhenomenonRate",
+        definition: "TU * TU(-1)",
+      },
+      TU_HORIZONTAL_PER_TU_VERTICAL: {
         schemaItemType: "InvertedUnit",
-        invertsUnit: "ReferenceSchema.TU",
+        invertsUnit: "ReferenceSchema.TU_PER_TU",
         unitSystem: "ReferenceSchema.TestUnitSystem",
       },
       TestDecimal: {
@@ -85,7 +101,7 @@ describe("KindOfQuantity merge tests", () => {
             label: "Test",
             description: "Description of koq",
             relativeError: 1.23,
-            persistenceUnit: "ReferenceSchema.TU_HORIZONTAL",
+            persistenceUnit: "ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL",
           },
         },
       }, sourceContext);
@@ -111,18 +127,18 @@ describe("KindOfQuantity merge tests", () => {
           },
         ],
         items: {
-          CUB_TU: {
+          TU_PER_KILOTU: {
             schemaItemType: "Unit",
             unitSystem: "ReferenceSchema.TestUnitSystem",
             phenomenon: "ReferenceSchema.TestPhenomenon",
-            definition: "TU(3)",
+            definition: "ReferenceSchema.TU * ReferenceSchema.KILOTU(-1)",
           },
           TestKoq: {
             schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 1.0002,
-            persistenceUnit: "SourceSchema.CUB_TU",
+            persistenceUnit: "SourceSchema.TU_PER_KILOTU",
           },
         },
       }, sourceContext);
@@ -137,11 +153,11 @@ describe("KindOfQuantity merge tests", () => {
           },
         ],
         items: {
-          CUB_TU: {
+          TU_PER_KILOTU: {
             schemaItemType: "Unit",
             unitSystem: "ReferenceSchema.TestUnitSystem",
             phenomenon: "ReferenceSchema.TestPhenomenon",
-            definition: "TU(3)",
+            definition: "ReferenceSchema.TU * ReferenceSchema.KILOTU(-1)",
           },
         },
       }, targetContext);
@@ -173,7 +189,7 @@ describe("KindOfQuantity merge tests", () => {
             label: "Test",
             description: "Description of koq",
             relativeError: 0.0030480000000000004,
-            persistenceUnit: "ReferenceSchema.TU",
+            persistenceUnit: "ReferenceSchema.TU_PER_TU",
             presentationUnits: [
               "ReferenceSchema.TestDecimal",
             ],
@@ -213,22 +229,22 @@ describe("KindOfQuantity merge tests", () => {
             decimalSeparator: ",",
             thousandSeparator: ".",
           },
-          CUB_TU: {
+          TU_PER_KILOTU: {
             schemaItemType: "Unit",
             unitSystem: "ReferenceSchema.TestUnitSystem",
             phenomenon: "ReferenceSchema.TestPhenomenon",
-            definition: "TU(3)",
+            definition: "ReferenceSchema.TU * ReferenceSchema.KILOTU(-1)",
           },
           TestKoq: {
             schemaItemType: "KindOfQuantity",
             label: "Test",
             description: "Description of koq",
             relativeError: 0.0030480000000000004,
-            persistenceUnit: "ReferenceSchema.TU",
+            persistenceUnit: "ReferenceSchema.TU_PER_TU",
             presentationUnits: [
-              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU|tu/tu]",
-              "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL|undefined]",
-              "SourceSchema.TestFractional(12)[SourceSchema.CUB_TU|tu3]",
+              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
+              "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL]",
+              "SourceSchema.TestFractional(12)[SourceSchema.TU_PER_KLILOTU| tu/ktu]",
             ],
           },
         },
@@ -255,11 +271,11 @@ describe("KindOfQuantity merge tests", () => {
             decimalSeparator: ",",
             thousandSeparator: ".",
           },
-          CUB_TU: {
+          TU_PER_KILOTU: {
             schemaItemType: "Unit",
             unitSystem: "ReferenceSchema.TestUnitSystem",
             phenomenon: "ReferenceSchema.TestPhenomenon",
-            definition: "TU(3)",
+            definition: "ReferenceSchema.TU * ReferenceSchema.KILOTU(-1)",
           },
         },
       }, targetContext);
@@ -272,13 +288,12 @@ describe("KindOfQuantity merge tests", () => {
         label: "Test",
         description: "Description of koq",
         relativeError: 0.0030480000000000004,
-        persistenceUnit: "ReferenceSchema.TU",
+        persistenceUnit: "ReferenceSchema.TU_PER_TU",
         presentationUnits: [
-          "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU|tu/tu]",
-          "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL|undefined]",
-          "TargetSchema.TestFractional(12)[TargetSchema.CUB_TU|tu3]",
+          "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
+          "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL]",
+          "SourceSchema.TestFractional(12)[SourceSchema.TU_PER_KLILOTU| tu/ktu]",
         ],
-      });
     });
   });
 
