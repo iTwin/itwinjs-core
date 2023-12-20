@@ -27,11 +27,17 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
       found = true;
       break;
     }
+
+    if(SchemaCompareCodes.SchemaReferenceMissing === code && 
+      diagnostic.messageArgs?.at(0).fullName === fullNameA){
+      found = true;
+      break;
+    }
   }
   return found;
 }
 
-describe.only("Comparison tests for schemas with same name and version", () => {
+describe("Comparison tests for schemas with same name and version", () => {
   let reporter: SchemaCompareReporter;
   let contextA: SchemaContext;
   let contextB: SchemaContext;
@@ -172,7 +178,7 @@ describe.only("Comparison tests for schemas with same name and version", () => {
       expect(findTestClassThreeMissing).to.be.true;
     });
 
-    it("should test references", async () => {
+    it("should return false to finding references and custom attributes missing from schemaB in schemaAChanges report", async () => {
       await Schema.fromJson({
         ...refOneJson,
         items: {
@@ -245,11 +251,11 @@ describe.only("Comparison tests for schemas with same name and version", () => {
       const schemaAChanges = reporter.changes[0].allDiagnostics;
       const schemaBChanges = reporter.changes[1].allDiagnostics;
 
-      expect(findDiagnostic(schemaAChanges, SchemaCompareCodes.CustomAttributeInstanceClassMissing, "RefOne.testClassRefOne")).to.be.true;
       expect(findDiagnostic(schemaAChanges, SchemaCompareCodes.CustomAttributeInstanceClassMissing, "RefTwo.testClassRefTwo")).to.be.false;
+      expect(findDiagnostic(schemaAChanges, SchemaCompareCodes.SchemaReferenceMissing, "RefTwo")).to.be.false;
 
       expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.CustomAttributeInstanceClassMissing, "RefTwo.testClassRefTwo")).to.be.true;
-
+      expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.SchemaReferenceMissing, "RefTwo")).to.be.true;
     });
   });
 });
