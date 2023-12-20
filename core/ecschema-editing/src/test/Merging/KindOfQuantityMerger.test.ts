@@ -170,7 +170,7 @@ describe("KindOfQuantity merge tests", () => {
         label: "Test",
         description: "Description of koq",
         relativeError: 1.0002,
-        persistenceUnit: "TargetSchema.CUB_TU",
+        persistenceUnit: "TargetSchema.TU_PER_KILOTU",
       });
     });
 
@@ -244,7 +244,7 @@ describe("KindOfQuantity merge tests", () => {
             presentationUnits: [
               "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
               "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL]",
-              "SourceSchema.TestFractional(12)[SourceSchema.TU_PER_KLILOTU| tu/ktu]",
+              "SourceSchema.TestFractional(12)[SourceSchema.TU_PER_KILOTU| tu/ktu]",
             ],
           },
         },
@@ -292,8 +292,9 @@ describe("KindOfQuantity merge tests", () => {
         presentationUnits: [
           "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
           "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL]",
-          "SourceSchema.TestFractional(12)[SourceSchema.TU_PER_KLILOTU| tu/ktu]",
+          "TargetSchema.TestFractional(12)[TargetSchema.TU_PER_KILOTU| tu/ktu]",
         ],
+      });
     });
   });
 
@@ -315,8 +316,8 @@ describe("KindOfQuantity merge tests", () => {
             relativeError: 0.12345,
             persistenceUnit: "ReferenceSchema.TU",
             presentationUnits: [
-              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU|tu/tu]",
-              "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_HORIZONTAL|undefined]",
+              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU]",
+              "ReferenceSchema.TestDecimal(5)[ReferenceSchema.TU_PER_TU|tu/tu]",
             ],
           },
         },
@@ -384,7 +385,7 @@ describe("KindOfQuantity merge tests", () => {
             label: "Test",
             description: "Description of koq",
             relativeError: 1.23,
-            persistenceUnit: "ReferenceSchema.TU_HORIZONTAL",
+            persistenceUnit: "ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL",
           },
         },
       }, targetContext);
