@@ -7,10 +7,10 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
-import { TextString, TextStringProps } from "./TextString";
+import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
 import { ColorDef } from "../ColorDef";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
@@ -1061,8 +1061,30 @@ export namespace ElementGeometry {
     return textString.toJSON();
   }
 
+  /** Returns only the [[TextStringGlyphData]] embedded in the [[TextString]] flatbuffer. This data is only internal to the native display libaries. */
+  export function toTextStringGlyphData(entry: ElementGeometryDataEntry): TextStringGlyphData | undefined {
+    if (ElementGeometryOpcode.TextString !== entry.opcode)
+      return undefined;
+
+    const buffer = new flatbuffers.ByteBuffer(entry.data);
+    const ppfb = EGFBAccessors.TextString.getRootAsTextString(buffer);
+
+    const glyphOriginToPoint2d = (origin: EGFBAccessors.TextStringGlyphOrigin | null): Point2d => {
+      if (!origin)
+        throw new Error("Value cannot be null.");
+      return new Point2d(origin.x(), origin.y());
+    };
+    const textStringRangeToRange2d = (r: EGFBAccessors.TextStringRange | null) => r ? new Range2d(r.lowx(), r.lowy(), r.highx(), r.highy()) : null;
+    const range = textStringRangeToRange2d(ppfb.range());
+    const glyphIds = Array.from({ length: ppfb.glyphIdsLength() }, (_, i) => ppfb.glyphIds(i) ?? 0);
+    const glyphOrigins = Array.from({ length: ppfb.glyphOriginsLength() }, (_, i) => glyphOriginToPoint2d(ppfb.glyphOrigins(i)));
+    if (!range || range.isNull || glyphIds.length === 0 || glyphOrigins.length === 0)
+      return undefined;
+    return { glyphIds, glyphOrigins, range };
+  }
+
   /** Create entry from a [[TextString]] */
-  export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
+  export function fromTextString(text: TextStringProps, worldToLocal?: Transform, glyphs?: TextStringGlyphData): ElementGeometryDataEntry | undefined {
     if (undefined !== worldToLocal) {
       const localText = new TextString(text);
       if (!localText.transformInPlace(worldToLocal))
@@ -1075,6 +1097,17 @@ export namespace ElementGeometry {
 
     const textOffset = fbb.createString(text.text);
     const styleOffset = EGFBAccessors.TextStringStyle.createTextStringStyle(fbb, 1, 0, text.font, undefined === text.bold ? false : text.bold, undefined === text.italic ? false : text.italic, undefined === text.underline ? false : text.underline, text.height, undefined === text.widthFactor ? 1.0 : text.widthFactor);
+    const fbbGlyphs = (() => {
+      if (!glyphs || glyphs.range.isNull)
+        return undefined;
+      const glyphIdsOffset = builder.createGlyphIdsVector(fbb, glyphs.glyphIds);
+      builder.startGlyphOriginsVector(fbb, glyphs.glyphOrigins.length);
+      for (const origin of [...glyphs.glyphOrigins].reverse()) {
+        EGFBAccessors.TextStringGlyphOrigin.createTextStringGlyphOrigin(fbb, origin.x, origin.y);
+      }
+      const glyphOriginsOffset = fbb.endVector();
+      return { glyphIdsOffset, glyphOriginsOffset, range: glyphs.range };
+    })();
 
     builder.startTextString(fbb);
 
@@ -1091,6 +1124,12 @@ export namespace ElementGeometry {
       const coffs = matrix.coffs;
       const transformOffset = EGFBAccessors.TextStringTransform.createTextStringTransform(fbb, coffs[0], coffs[1], coffs[2], origin.x, coffs[3], coffs[4], coffs[5], origin.y, coffs[6], coffs[7], coffs[8], origin.z);
       builder.addTransform(fbb, transformOffset);
+    }
+
+    if (fbbGlyphs) {
+      builder.addRange(fbb, EGFBAccessors.TextStringRange.createTextStringRange(fbb, fbbGlyphs.range.low.x, fbbGlyphs.range.low.y, fbbGlyphs.range.high.x, fbbGlyphs.range.high.y));
+      builder.addGlyphIds(fbb, fbbGlyphs.glyphIdsOffset);
+      builder.addGlyphOrigins(fbb, fbbGlyphs.glyphOriginsOffset);
     }
 
     const mLoc = builder.endTextString(fbb);

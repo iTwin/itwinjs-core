@@ -2,6 +2,24 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "4.3.2",
+      "tag": "@itwin/core-i18n_v4.3.2",
+      "date": "Thu, 14 Dec 2023 20:23:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.1",
+      "tag": "@itwin/core-i18n_v4.3.1",
+      "date": "Wed, 13 Dec 2023 17:25:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.0",
+      "tag": "@itwin/core-i18n_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/core-i18n_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",
@@ -150,6 +168,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.8.0",
+      "tag": "@itwin/core-i18n_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.17",

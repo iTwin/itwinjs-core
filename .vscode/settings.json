@@ -2,9 +2,9 @@
 {
   "debug.internalConsoleOptions": "openOnSessionStart",
   "editor.codeActionsOnSave": {
-    "editor.action.fixAll": true,
-    "source.fixAll.eslint": true,
-    "source.fixAll.markdownlint": true
+    "editor.action.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.markdownlint": "explicit"
   },
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,

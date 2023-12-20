@@ -22,31 +22,44 @@ export class NodeXYZUV {
   private _z: number;
   private _u: number;
   private _v: number;
-
+  /** Constructor */
   private constructor(node: HalfEdge, x: number, y: number, z: number, u: number, v: number) {
-    this._x = x; this._y = y; this._z = z;
-    this._u = u; this._v = v;
+    this._x = x;
+    this._y = y;
+    this._z = z;
+    this._u = u;
+    this._v = v;
     this._node = node;
   }
-  /** Set all content directly from args.
+  /**
+   * Set all content directly from args.
    * @returns `this` reference
    */
   public set(node: HalfEdge, x: number, y: number, z: number, u: number, v: number): NodeXYZUV {
-    this._x = x; this._y = y; this._z = z;
-    this._u = u; this._v = v;
+    this._x = x;
+    this._y = y;
+    this._z = z;
+    this._u = u;
+    this._v = v;
     this._node = node;
     return this;
   }
-
-  public setFrom(other: NodeXYZUV) {
-    this._x = other.x; this._y = other.y; this._z = other.z;
-    this._u = other.u; this._v = other.v;
+  /** Set from `other` */
+  public setFrom(other: NodeXYZUV): void {
+    this._x = other.x;
+    this._y = other.y;
+    this._z = other.z;
+    this._u = other.u;
+    this._v = other.v;
     this._node = other.node;
-
   }
-  /** Create a `NodeXYZUV` with
-   * * x,y,z at ray origin
-   * * u,v as dotXY and crossXY for the ray direction with x,y distances from the ray origin.
+  /**
+   * Create a `NodeXYZUV` with:
+   * * node from the given HalfEdge.
+   * * x,y,z as the coordinates of `node`.
+   * * u as the xy dot product of vectorA with `ray.direction`, where vectorA is the vector from ray origin to
+   * `node` coordinates.
+   * * v as the xy cross product of `ray.direction` with vectorA.
    */
   public static createNodeAndRayOrigin(node: HalfEdge, ray: Ray3d, result?: NodeXYZUV): NodeXYZUV {
     const x = node.x;
@@ -60,31 +73,44 @@ export class NodeXYZUV {
       return result.set(node, x, y, z, u, v);
     return new NodeXYZUV(node, x, y, z, u, v);
   }
-  /** Create a `NodeXYZUV` with explicit node, xyz, uv */
-  public static create(node: HalfEdge,
-    x: number = 0, y: number = 0, z: number = 0, u: number = 0, v: number = 0){
+  /** Create a `NodeXYZUV` with explicit `node`, xyz, uv. */
+  public static create(
+    node: HalfEdge, x: number = 0, y: number = 0, z: number = 0, u: number = 0, v: number = 0,
+  ): NodeXYZUV {
     return new NodeXYZUV(node, x, y, z, u, v);
   }
-
   /** Access the node. */
-  public get node(): HalfEdge { return this._node; }
-  /** Access the x coordinate */
-  public get x(): number { return this._x; }
-  /** Access the y coordinate */
-  public get y(): number { return this._y; }
-  /** Access the z coordinate */
-  public get z(): number { return this._z; }
-  /** Access the u coordinate */
-  public get u(): number { return this._u; }
-  /** Access the v coordinate */
-  public get v(): number { return this._v; }
+  public get node(): HalfEdge {
+    return this._node;
+  }
+  /** Access the x coordinate. */
+  public get x(): number {
+    return this._x;
+  }
+  /** Access the y coordinate. */
+  public get y(): number {
+    return this._y;
+  }
+  /** Access the z coordinate. */
+  public get z(): number {
+    return this._z;
+  }
+  /** Access the u coordinate. */
+  public get u(): number {
+    return this._u;
+  }
+  /** Access the v coordinate. */
+  public get v(): number {
+    return this._v;
+  }
   /** Access the x,y,z coordinates as Point3d with optional caller-supplied result. */
   public getXYZAsPoint3d(result?: Point3d): Point3d {
     return Point3d.create(this._x, this._y, this._z, result);
   }
   /** Access the uv coordinates as Point2d with optional caller-supplied result. */
-  public getUVAsPoint2d(result?: Point2d): Point2d { return Point2d.create(this._u, this._v, result); }
-
+  public getUVAsPoint2d(result?: Point2d): Point2d {
+    return Point2d.create(this._u, this._v, result);
+  }
   /** Toleranced comparison function for u coordinate */
   public classifyU(target: number, tol: number): number {
     const delta = this.u - target;
@@ -92,7 +118,6 @@ export class NodeXYZUV {
       return 0;
     return delta >= 0 ? 1 : -1;
   }
-
   /** Toleranced comparison function for v coordinate */
   public classifyV(target: number, tol: number): number {
     const delta = target - this._v;
@@ -100,5 +125,4 @@ export class NodeXYZUV {
       return 0;
     return delta >= 0 ? 1 : -1;
   }
-
 }

@@ -35,12 +35,12 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^8.2.2",
+    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
     "@types/yargs": "17.0.19",
     "chai": "^4.3.10",
     "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.0.2"
   }

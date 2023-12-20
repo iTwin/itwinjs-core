@@ -2,6 +2,75 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.3.2",
+      "tag": "@itwin/core-frontend_v4.3.2",
+      "date": "Thu, 14 Dec 2023 20:23:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.1",
+      "tag": "@itwin/core-frontend_v4.3.1",
+      "date": "Wed, 13 Dec 2023 17:25:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.0",
+      "tag": "@itwin/core-frontend_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for recoloring geometry intersecting a clip volume"
+          },
+          {
+            "comment": "Add SQ_KM to UNIT_DATA"
+          },
+          {
+            "comment": "Promote APIs required to implement a MapLayerFormat to beta"
+          },
+          {
+            "comment": "Fix status code when invalid credentials are provided for an ArcGIS service."
+          },
+          {
+            "comment": "Fix Map Feature Info for ArcGIS map services when reprojection is needed."
+          },
+          {
+            "comment": "Custom query parameters can now be configured on map layers objects."
+          },
+          {
+            "comment": "Improved ArcGIS feature info coordinates reprojection outside project extent."
+          },
+          {
+            "comment": "Improved content type detection for 3D Tiles tilesets."
+          },
+          {
+            "comment": "Updated realitydata url to new reality-management API url. Added tests for new url."
+          },
+          {
+            "comment": "Add support for transparent gradients in thematic display and analysis styles."
+          },
+          {
+            "comment": "Fix SpatialModelState.isRealityModel returning false for reality models that don't store a tileset URL."
+          },
+          {
+            "comment": "When assigning to SpatialViewState.modelSelector, notify tile tree references of the change."
+          },
+          {
+            "comment": "Enable display of all subcategories for non-scene decorations."
+          },
+          {
+            "comment": "Fix incorrect transparency for text rendered as raster glyphs."
+          },
+          {
+            "comment": "Remove maximum depth constraint for reality tile trees."
+          },
+          {
+            "comment": "Clone view attachments when cloning a sheet or drawing view."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/core-frontend_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",
@@ -390,6 +459,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.8.0",
+      "tag": "@itwin/core-frontend_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.17",

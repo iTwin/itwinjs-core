@@ -505,13 +505,21 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   detachFromViewport(): void;
 }
 
+/** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
+ * not present in the optionally-supplied exclusion list.
+ * @internal
+ */
+export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences {
+  return new SpatialRefs(view, excludedModels);
+}
+
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
  * @internal
  */
 export namespace SpatialTileTreeReferences {
   /** Create a SpatialTileTreeReferences object reflecting the contents of the specified view. */
   export function create(view: SpatialViewState): SpatialTileTreeReferences {
-    return new SpatialRefs(view);
+    return createSpatialTileTreeReferences(view);
   }
 }
 
@@ -604,15 +612,18 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
 class SpatialRefs implements SpatialTileTreeReferences {
   private _allLoaded = false;
   private readonly _view: SpatialViewState;
+  private readonly _excludedModels?: Set<Id64String>;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
   private _scheduleScript?: RenderSchedule.ScriptReference;
   private _sectionCut?: StringifiedClipVector;
 
-  public constructor(view: SpatialViewState) {
+  public constructor(view: SpatialViewState, excludedModels: Set<Id64String> | undefined) {
     this._view = view;
     this._scheduleScript = view.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
     this._sectionCut = this.getSectionCutFromView();
+    if (excludedModels)
+      this._excludedModels = new Set(excludedModels);
   }
 
   public update(): void {
@@ -682,6 +693,9 @@ class SpatialRefs implements SpatialTileTreeReferences {
     cur.clear();
 
     for (const modelId of this._view.modelSelector.models) {
+      if (this._excludedModels && this._excludedModels.has(modelId))
+        continue;
+
       let modelRefs = prev.get(modelId);
       if (!modelRefs) {
         const model = this._view.iModel.models.getLoaded(modelId)?.asGeometricModel3d;

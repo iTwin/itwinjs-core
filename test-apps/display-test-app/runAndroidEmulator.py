@@ -3,6 +3,7 @@ import fileinput
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -351,7 +352,11 @@ def download_upacks_if_needed() -> None:
         os.mkdir(env.upack_dir)
     download_upack_if_needed('androidavd_macos', '33.0.0-1')
     download_upack_if_needed('androidsdk_macos', '33.5.0-0')
-    download_upack_if_needed('openjdk_macos', '11.0.1-0')
+    # If jdk_dir includes a __MACOS subdirectory, it is openjdk 11, and we want 21, so delete the
+    # existing jdk_dir.
+    if os.path.exists(os.path.join(env.jdk_dir, '__MACOSX')):
+        shutil.rmtree(env.jdk_dir)
+    download_upack_if_needed('openjdk_macos', '21.0.1-0')
     log('upacks downloaded.')
 
 def build_test_app() -> None:

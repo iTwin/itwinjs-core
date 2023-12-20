@@ -6,13 +6,9 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
-import { SpatialTileTreeReferences } from '@itwin/core-frontend';
 
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
-
-// @internal (undocumented)
-export const createFallbackSpatialTileTreeReferences: typeof SpatialTileTreeReferences.create;
 
 // @beta
 export interface FrontendTilesOptions {

@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, ThreeDTileFormatInterpreter, TileAdmin } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
-import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import { EcefLocation, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
@@ -227,6 +227,18 @@ describe("RealityDataAccess (#integration)", () => {
         expect(rdSource?.isContextShare).to.be.true;
         const spatialLocation = await rdSource?.getSpatialLocationAndExtents();
         expect(spatialLocation).not.undefined;
+        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
+          // special check to ensure that position are computed the same way as in other Bentley product
+          // using the transform matrix in the reality data 3dTile root file that is used to set ECEFLocation
+          // when creating a blankIModelConnection
+          const rootDocument = await rdSource.getRootDocument(undefined);
+          const worldToEcefTransformInput = ThreeDTileFormatInterpreter.transformFromJson(rootDocument.root.transform);
+          const ecefLocation = spatialLocation?.location as EcefLocation;
+          const worldToEcefTransformComputed = ecefLocation?.getTransform();
+          // when defined and not identity, the computed transform should be almost equal to rd transform
+          if (worldToEcefTransformInput && !worldToEcefTransformInput.isIdentity)
+            expect(worldToEcefTransformInput.isAlmostEqual(worldToEcefTransformComputed));
+        }
       }
     }
   });

@@ -13,10 +13,13 @@ import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaItemMerger } from "./SchemaItemMerger";
 
 import mergeSchemaReferences from "./SchemaReferenceMerger";
-import ClassMerger from "./ClassMerger";
 import CAClassMerger from "./CAClassMerger";
 import EnumerationMerger from "./EnumerationMerger";
 import ConstantsMerger from "./ConstantMerger";
+import EntityClassMerger from "./EntityClassMerger";
+import StructClassMerger from "./StructClassMerger";
+import MixinMerger from "./MixinMerger";
+import { mergeCustomAttributes } from "./CustomAttributeMerger";
 
 /**
  * Defines the context of a Schema merging run.
@@ -80,7 +83,13 @@ export class SchemaMerger {
     // TODO: For now we just do simple copy and merging of properties and classes. For more complex types
     //       with bases classes or relationships, this might need to get extended.
     await CAClassMerger.mergeChanges(mergeContext, itemChanges.customAttributeClasses);
-    await ClassMerger.mergeChanges(mergeContext, itemChanges.classes);
+    await StructClassMerger.mergeChanges(mergeContext, itemChanges.structClasses);
+    await EntityClassMerger.mergeChanges(mergeContext, itemChanges.entityClasses);
+    await MixinMerger.mergeChanges(mergeContext, itemChanges.mixins);
+
+    await mergeCustomAttributes(mergeContext, schemaChanges.customAttributeChanges.values(), async (ca) => {
+      return mergeContext.editor.addCustomAttribute(mergeContext.targetSchema.schemaKey, ca);
+    });
 
     // TODO: For now we directly manipulate the target schema. For error handing purposes, we should first
     //       merge into a temporary schema and eventually swap that with the given instance.
@@ -94,13 +103,15 @@ export class SchemaMerger {
  */
 function getSchemaItemChanges(schemaChanges: SchemaChanges) {
   return {
-    get classes() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass, SchemaItemType.StructClass); },
+    get entityClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.EntityClass); },
     get constants() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Constant); },
     get customAttributeClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.CustomAttributeClass); },
     get enumeratations() { return schemaChanges.enumerationChanges.values(); },
     get phenomenons() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.Phenomenon); },
     get propertyCategories() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.PropertyCategory); },
     get unitSystems() { return filterChangesByItemType(schemaChanges.schemaItemChanges, SchemaItemType.UnitSystem); },
+    get structClasses() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.StructClass); },
+    get mixins() { return filterChangesByItemType(schemaChanges.classChanges, SchemaItemType.Mixin); },
   };
 }
 

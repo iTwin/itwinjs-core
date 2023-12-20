@@ -2,6 +2,42 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "4.3.2",
+      "tag": "@itwin/presentation-backend_v4.3.2",
+      "date": "Thu, 14 Dec 2023 20:23:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.1",
+      "tag": "@itwin/presentation-backend_v4.3.1",
+      "date": "Wed, 13 Dec 2023 17:25:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.0",
+      "tag": "@itwin/presentation-backend_v4.3.0",
+      "date": "Thu, 07 Dec 2023 17:43:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Node 20."
+          },
+          {
+            "comment": "Fixed `getElementProperties` function to pass correct content options when loading properties."
+          },
+          {
+            "comment": "Load built-in rulesets as code rather than separately delivered assets"
+          },
+          {
+            "comment": "Allow specifying formatting props for multiple unit systems per phenomenon."
+          },
+          {
+            "comment": "Add support for default formats when formatting values in TS (when `Presentation` is initialized with `schemaContextProvider`)."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.2.4",
       "tag": "@itwin/presentation-backend_v4.2.4",
       "date": "Mon, 20 Nov 2023 16:14:45 GMT",
@@ -198,6 +234,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "3.8.0",
+      "tag": "@itwin/presentation-backend_v3.8.0",
+      "date": "Fri, 08 Dec 2023 15:23:59 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.17",
