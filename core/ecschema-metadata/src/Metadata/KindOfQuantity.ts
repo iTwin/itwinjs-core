@@ -42,7 +42,6 @@ export class KindOfQuantity extends SchemaItem {
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  /** @internal Used in schema editing. */
   protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) {  this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
