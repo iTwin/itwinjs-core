@@ -112,7 +112,8 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
       return;
     }
 
-    const jsonProps = {} as MutableSchemaItemProps<TItem>;
+    const targetItem = (await this.context.targetSchema.lookupItem<SchemaItem>(targetItemKey));
+    const jsonProps = (targetItem?.toJSON() ?? {}) as MutableSchemaItemProps<TItem>;
     const propertyResolver = await this.createPropertyValueResolver();
 
     for(const change of changes) {

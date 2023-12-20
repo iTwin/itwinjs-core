@@ -283,7 +283,7 @@ describe("KindOfQuantity merge tests", () => {
   });
 
   describe("KindOfQuantity delta tests", () => {
-    it.skip("should merge kind of quantity changes for presentation override formats", async () => {
+    it("should merge kind of quantity changes for presentation override formats", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         references: [
