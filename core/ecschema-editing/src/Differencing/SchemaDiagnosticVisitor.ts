@@ -5,10 +5,18 @@
 /** @packageDocumentation
  * @module Differencing
  */
+
 import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
-import { AnyECType, AnyEnumerator, CustomAttribute, ECClass, EntityClass, Mixin, Property, PropertyProps, Schema, SchemaItem, schemaItemTypeToString } from "@itwin/ecschema-metadata";
-import { ClassDifference, CustomAttributeDifference, DifferenceType, EntityClassDifference, EnumerationDifference, PropertyDifference, SchemaDifference, SchemaItemDifference } from "./SchemaDifference";
+import {
+  AnyECType, AnyEnumerator, CustomAttribute, ECClass, EntityClass, Mixin, Property, PropertyProps,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, schemaItemTypeToString,
+} from "@itwin/ecschema-metadata";
+import {
+  ClassDifference, CustomAttributeDifference, DifferenceType, EntityClassDifference,
+  EnumerationDifference, PropertyDifference, RelationshipClassDifference,
+  RelationshipConstraintDifference, SchemaDifference, SchemaItemDifference,
+} from "./SchemaDifference";
 
 /**
  * @internal
@@ -32,6 +40,18 @@ export class SchemaDiagnosticVisitor {
       schemaChangeType: changeType,
       sourceObject,
     };
+  }
+
+  private getOrAddRelationshipConstraint(relationshipConstraint: RelationshipConstraint, changeType: DifferenceType) {
+    const relationshipDifference = this.getItemDifference<RelationshipClassDifference>(relationshipConstraint.relationshipClass);
+    const constraintDifference: RelationshipConstraintDifference = {
+      schemaChangeType: changeType,
+      sourceObject: relationshipConstraint,
+    };
+
+    return relationshipConstraint.isSource
+      ? relationshipDifference.source ?? (relationshipDifference.source = constraintDifference)
+      : relationshipDifference.target ?? (relationshipDifference.target = constraintDifference);
   }
 
   private getItemDifference<T extends SchemaItemDifference=SchemaItemDifference>(schemaItem: SchemaItem): T {
@@ -65,6 +85,9 @@ export class SchemaDiagnosticVisitor {
     }
     if(ecSchemaObject instanceof Property) {
       return this.getPropertyDifference(ecSchemaObject);
+    }
+    if(ecSchemaObject instanceof RelationshipConstraint) {
+      return this.getOrAddRelationshipConstraint(ecSchemaObject, "changed");
     }
     throw new Error("The given type is not a supported custom attribute container.");
   }
@@ -115,12 +138,15 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.PropertyMissing:
         return this.visitMissingProperty(diagnostic);
 
+      case SchemaCompareCodes.RelationshipConstraintClassMissing:
+        return this.visitMissingRelationshipConstraint(diagnostic);
+      case SchemaCompareCodes.RelationshipConstraintDelta:
+        return this.visitChangedRelationshipConstraint(diagnostic);
+
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing:
         return this.visitMissingCustomAttributeInstance(diagnostic);
 
       // Currently not handled...
-      case SchemaCompareCodes.RelationshipConstraintClassMissing:
-      case SchemaCompareCodes.RelationshipConstraintDelta:
       case SchemaCompareCodes.FormatUnitMissing:
       case SchemaCompareCodes.PresentationUnitMissing:
       case SchemaCompareCodes.UnitLabelOverrideDelta:
@@ -145,7 +171,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedSchemaItem(diagnostic: AnyDiagnostic) {
     const difference: { [name: string]: any } = this.getItemDifference(diagnostic.ecDefinition as SchemaItem);
-    const [propertyName, propertyValue] = diagnostic.messageArgs! as [string, any];
+    const [propertyName, propertyValue] = diagnostic.messageArgs as [string, any];
     if(propertyName !== "schemaItemType" && propertyValue !== undefined) {
       difference[propertyName] = propertyValue;
     }
@@ -221,6 +247,21 @@ export class SchemaDiagnosticVisitor {
 
     const [mixin] = diagnostic.messageArgs as [Mixin];
     classDifference.mixins.push(mixin.fullName);
+  }
+
+  private visitMissingRelationshipConstraint(diagnostic: AnyDiagnostic) {
+    const relationConstraint = diagnostic.ecDefinition as RelationshipConstraint;
+    this.getOrAddRelationshipConstraint(relationConstraint, "missing");
+  }
+
+  private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
+    const relationConstraint = diagnostic.ecDefinition as RelationshipConstraint;
+    const difference = this.getOrAddRelationshipConstraint(relationConstraint, "changed");
+
+    const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
+    if(propertyValue !== undefined) {
+      difference[propertyName] = propertyValue;
+    }
   }
 
   private visitSchemaReference(diagnostic: AnyDiagnostic, changeType: DifferenceType) {
