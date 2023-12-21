@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, SchemaItem } from "@itwin/ecschema-metadata";
+import { Property, Schema, SchemaContext, SchemaItem } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
 
@@ -28,12 +28,19 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: s
       break;
     }
 
-    if(SchemaCompareCodes.SchemaReferenceMissing === code && 
-      diagnostic.messageArgs?.at(0).fullName === fullNameA){
+    if (SchemaCompareCodes.SchemaReferenceMissing === code &&
+      diagnostic.messageArgs?.at(0).fullName === fullNameA) {
+      found = true;
+      break;
+    }
+
+    if (SchemaCompareCodes.PropertyMissing === code &&
+      (diagnostic.ecDefinition as Property).fullName === fullNameA) {
       found = true;
       break;
     }
   }
+
   return found;
 }
 
@@ -256,6 +263,63 @@ describe("Comparison tests for schemas with same name and version", () => {
 
       expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.CustomAttributeInstanceClassMissing, "RefTwo.testClassRefTwo")).to.be.true;
       expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.SchemaReferenceMissing, "RefTwo")).to.be.true;
+    });
+
+    it("should return false to finding property missing diagnostic from schemaB in schemaAChanges", async () => {
+      const schemaA = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          testClassOne: {
+            schemaItemType: "EntityClass",
+            description: "test class one for testing",
+            label: "test class one",
+            properties: [
+              {
+                name: "PropertyOne",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                typeName: "boolean",
+              },
+            ],
+          },
+        },
+      }, contextA);
+
+      const schemaA2 = await Schema.fromJson({
+        ...schemaAJson,
+        items: {
+          testClassOne: {
+            schemaItemType: "EntityClass",
+            description: "test class one for testing",
+            label: "test class one",
+            properties: [
+              {
+                name: "PropertyOne",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                typeName: "boolean",
+              },
+              {
+                name: "PropertyTwo",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                typeName: "int",
+              },
+            ],
+          },
+        },
+      }, contextB);
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaA2);
+
+      const schemaAChanges = reporter.changes[0].allDiagnostics;
+      const schemaBChanges = reporter.changes[1].allDiagnostics;
+
+      expect(findDiagnostic(schemaAChanges, SchemaCompareCodes.PropertyMissing, "testClassOne.PropertyTwo")).to.be.false;
+
+      expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.PropertyMissing, "testClassOne.PropertyTwo")).to.be.true;
+
     });
   });
 });
