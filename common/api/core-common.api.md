@@ -9245,7 +9245,7 @@ export class TextString {
     widthFactor?: number;
 }
 
-// @public
+// @beta
 export interface TextStringGlyphData {
     // (undocumented)
     glyphIds: number[];

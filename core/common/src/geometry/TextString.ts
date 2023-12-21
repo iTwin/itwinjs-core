@@ -11,6 +11,7 @@ import { FontId } from "../Fonts";
 
 /**
  * Optional cached text layout information used to support legacy proxy graphics.
+ * @beta
  */
 export interface TextStringGlyphData {
   glyphIds: number[];
