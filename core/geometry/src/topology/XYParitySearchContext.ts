@@ -8,47 +8,47 @@
  */
 
 /**
- * * XYParitySearchContext is an internal class for callers that can feed points (without extracting to array structures)
+ * `XYParitySearchContext` is an internal class for callers that can feed points (without extracting to array structures)
  * * Most will be via static methods which handle a specific data source.
- *   * PolygonOps.classifyPointInPolygon (x,y,points: XAndY[])
- *   * HalfEdgeGraphSearch.pointInOrOnFaceXY (halfEdgeOnFace, x, y)
+ *   * PolygonOps.classifyPointInPolygon(x,y,points: XAndY[])
+ *   * HalfEdgeGraphSearch.pointInOrOnFaceXY(halfEdgeOnFace, x, y)
  * Use pattern:
- * * Caller must be able walk around polygon producing x,y coordinates (possibly transformed from actual polygon)
+ * * Caller must be able to walk around polygon producing x,y coordinates (possibly transformed from actual polygon).
  * * Caller announce edges to tryStartEdge until finding one acceptable to the search.
  * * Caller then passes additional points up to and including both x0,y0 and x1, y1 of the accepted start edge.
  * Call sequence is:
- *    `context = new XYParitySearchContext`
- *    `repeat {  acquire edge (x0,y0) (x1,y1)} until context.tryStartEdge (x0,y0,x1,y1);`
- *    `for each (x,y) beginning AFTER x1,y1 and ending with (x1,y1) context.advance (x,y)`
- *  `return context.classifyCounts ();`
+ *   * `context = new XYParitySearchContext`
+ *   * `repeat { acquire edge (x0,y0) (x1,y1) } until context.tryStartEdge(x0,y0,x1,y1);`
+ *   * `for each (x,y) beginning AFTER x1,y1 and ending with (x1,y1) context.advance (x,y)`
+ *   * `return context.classifyCounts();`
  */
 export class XYParitySearchContext {
   public xTest: number;
   public yTest: number;
-  public u0: number; // local coordinates of recent point with nonzero v.  Usually "second last point" but points can be skipped if y1 is zero
+  // local coordinates of recent point with nonzero v. Usually "second last point" but points can be skipped if y1 is zero
+  public u0: number;
   public v0: number;
-  public u1: number; // local coordinates of most recent point
+  // local coordinates of most recent point
+  public u1: number;
   public v1: number;
   public numLeftCrossing: number;
   public numRightCrossing: number;
   public numHit: number;
   /**
    * Create a new searcher for specified test point.
-   * @param xTest x coordinate of test point
-   * @param yTest y coordinate of test point
+   * @param xTest x coordinate of test point.
+   * @param yTest y coordinate of test point.
    */
   public constructor(xTest: number, yTest: number) {
     this.xTest = xTest;
     this.yTest = yTest;
-    this.u0 = this.v0 = this.u1 = this.v1 = 0; // Not valid for search -- caller must satisfy tryStartEdge !!!
+    this.u0 = this.v0 = this.u1 = this.v1 = 0; // not valid for search; caller must satisfy tryStartEdge
     this.numLeftCrossing = this.numRightCrossing = 0;
     this.numHit = 0;
   }
   /**
-   * test if x,y is a safe first coordinate to start the search.
-   * * safe start must have non-zero y so that final point test (return to x0,y0) does not need look back for exact crossing logic.
-   * @param x
-   * @param y
+   * Test if (x0,y0) is a safe first coordinate to start the search.
+   * * Safe start must have `y0` different form `this.yTest`.
    */
   public tryStartEdge(x0: number, y0: number, x1: number, y1: number): boolean {
     if (y0 !== this.yTest) {
@@ -60,88 +60,82 @@ export class XYParitySearchContext {
     }
     return false;
   }
-  /** Return true if parity accumulation proceeded normally.
-   * Return false if interrupted for exact hit.
+  /** Update uv0 values with uv1 and update uv1 values with uv2. */
+  private updateUV01(u2: number, v2: number) {
+    this.u0 = this.u1;
+    this.v0 = this.v1;
+    this.u1 = u2;
+    this.v1 = v2;
+    return true;
+  }
+  /**
+   * Check the test point coordinates wrt points (x1,y1) and (x2,y2) in order to count number of edge hits as well as
+   * number of right/left crossings. This would specify the position of test point wtt the face loop.
+   * @returns `true` if we have proceeded normally and `false` if we have exact hit.
    */
-  public advance(x: number, y: number): boolean {
-    const u = x - this.xTest;
-    const v = y - this.yTest;
-    const p = v * this.v1;
+  public advance(x2: number, y2: number): boolean {
+    const u2 = x2 - this.xTest;
+    const v2 = y2 - this.yTest;
+    const p = v2 * this.v1;
+    // test point is above/below both y = y1 and y = y2 lines (the common case)
     if (p > 0) {
-      // The common case -- skittering along above or below the x axis . . .
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      return this.updateUV01(u2, v2);
     }
+    // test point is between y = y1 and y = y2 lines
     if (p < 0) {
-      // crossing within (u1,v1) to (u,v)
-      // both v values are nonzero and of opposite sign, so this division is safe . . .
-      const fraction = -this.v1 / (v - this.v1);
-      const uCross = this.u1 + fraction * (u - this.u1);
+      // both v values are nonzero and of opposite sign so this division is safe
+      const fractionY = -this.v1 / (v2 - this.v1); // always 0 < fractionY < 1
+      const uCross = this.u1 + fractionY * (u2 - this.u1);
+      // we know fractionX = -u1/(u2-u1) and fractionY = -v1/(v2-v1). If the test point is on the line segment from
+      // (x1,y1) to (x2,y2) (i.e., point is on an edge) then fractionX = fractionY or uCross = u1 + fractionY(u2-u1) = 0
       if (uCross === 0.0) {
         this.numHit++;
         return false;
       }
+      // if the test point is on the left side of the line segment from (x1,y1) to (x2,y2) (i.e., we have right crossing)
+      // then fractionX < fractionY or uCross = u1 + fractionY(u2-u1) > 0
       if (uCross > 0)
         this.numRightCrossing++;
       else
         this.numLeftCrossing++;
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      return this.updateUV01(u2, v2);
     }
-    // hard stuff -- one or more exact hits . . .
-    if (v === 0.0) {
-      if (this.v1 === 0.0) {
-        // uh oh -- moving along x axis.  Does it pass through xTest:
-        if (u * this.u1 <= 0.0) {
+    // p = 0; test point is on the line y=y1 or y=y2
+    if (v2 === 0.0) {
+      if (this.v1 === 0.0) { // y1 = y2
+        // test point is on the horizontal line segment from (x1,y1) to (x2,y2)
+        if (u2 * this.u1 <= 0.0) {
           this.numHit++;
           return false;
         }
-        // quietly moving along the scan line, both xy and x1y1 to same side of test point ...
-        // u0 and u1 remain unchanged !!!
-        this.u1 = u;
-        this.v1 = v;
+        // test point on the line y=y1 (or y=y2) but outside the line segment from (x1,y1) to (x2,y2)
+        this.u1 = u2;
+        this.v1 = v2;
         return true;
       }
-      // just moved onto the scan line ...
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      return this.updateUV01(u2, v2);
     }
-    // fall out with v1 = 0
-    // both v0 and v are nonzero.
-    // any along-0 v values that have passed through are on the same side of xTest, so u1 determines crossing
-    const q = this.v0 * v;
-    if (this.u1 > 0) {
-      if (q < 0)
+    // v1 === 0; v0 and v2 are both non-zero
+    const q = this.v0 * v2;
+    if (q < 0) { // both (x0,y0) and (x2,y2) are on the same side of line y=y1
+      if (this.u1 > 0)
         this.numRightCrossing++;
-    } else {
-      if (q < 0)
+      else
         this.numLeftCrossing++;
     }
-    this.u0 = this.u1;
-    this.v0 = this.v1;
-    this.u1 = u;
-    this.v1 = v;
-    return true;
+    return this.updateUV01(u2, v2);
   }
   /**
    * Return classification as ON, IN, or OUT according to hit and crossing counts.
-   * * Any nonzero hit count is ON
+   * * Any nonzero hit count is ON.
    * * Otherwise IN if left crossing count is odd.
-   * @return 0 if ON, 1 if IN, -1 if OUT
+   * @return 0 if ON, 1 if IN, -1 if OUT.
    */
   public classifyCounts(): number | undefined {
     if (this.numHit > 0)
       return 0;
-    const parity = this.numLeftCrossing & 0x01;
+    const parity = this.numLeftCrossing & 0x01; // parity = 1 iff numLeftCrossing is odd
+    // if the test point is inside the face, number of left crossing is always odd
     return (parity === 1) ? 1 : -1;
   }
 }
