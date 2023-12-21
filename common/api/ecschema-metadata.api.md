@@ -803,6 +803,7 @@ export class KindOfQuantity extends SchemaItem {
     fromJSONSync(kindOfQuantityProps: KindOfQuantityProps): void;
     // (undocumented)
     get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined;
+    protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined);
     // (undocumented)
     protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
     get presentationFormats(): Array<Format | OverrideFormat>;

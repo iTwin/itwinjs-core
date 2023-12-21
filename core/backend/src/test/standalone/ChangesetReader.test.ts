@@ -10,7 +10,7 @@ import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
 import { HubMock } from "../../HubMock";
-import { BriefcaseDb } from "../../IModelDb";
+import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -95,10 +95,19 @@ describe("Changeset Reader API", async () => {
         assert.isTrue(Id64.isValidId64(id), "insert worked");
       }
     };
-    const str = new Array(10).join("x");
+    const generatedStr = new Array(10).join("x");
     insertElements(rwIModel, "Test2dElement", 1, () => {
-      return { s: str };
+      return { s: generatedStr };
     });
+
+    const updatedElements = async () => {
+      await rwIModel.locks.acquireLocks({ exclusive: "0x20000000004" });
+      const updatedElement = rwIModel.elements.getElementProps("0x20000000004");
+      (updatedElement as any).s = "updated property";
+      rwIModel.elements.updateElement(updatedElement);
+      rwIModel.saveChanges("user 1: updated data");
+      await rwIModel.pushChanges({ description: "user 1: update property id=0x20000000004", accessToken: adminToken });
+    };
 
     rwIModel.saveChanges("user 1: data");
 
@@ -112,19 +121,19 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 3);
       assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].$meta?.className, "TestDomain.Test2dElement");
+      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[0].$meta?.op, "Inserted");
       assert.equal(changes[0].$meta?.stage, "New");
 
       assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "New");
       assert.isNotNull(changes[1].LastMod);
       assert.isNotNull(changes[1].GeometryGuid);
 
       assert.equal(changes[2].ECInstanceId, "0x20000000001");
-      assert.equal(changes[2].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[2].$meta?.op, "Updated");
       assert.equal(changes[2].$meta?.stage, "Old");
       assert.isNull(changes[2].LastMod);
@@ -164,7 +173,7 @@ describe("Changeset Reader API", async () => {
           "bis_Element",
         ],
         op: "Inserted",
-        className: "TestDomain.Test2dElement",
+        classFullName: "TestDomain:Test2dElement",
         changeIndexes: [
           2,
           1,
@@ -176,7 +185,69 @@ describe("Changeset Reader API", async () => {
     }
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
+
+    await updatedElements();
+
     const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    if ("updated element") {
+      const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const cci = new PartialECChangeUnifier();
+      while (adaptor.step()) {
+        cci.appendFrom(adaptor);
+      }
+
+      const changes = Array.from(cci.instances);
+      assert.equal(changes.length, 4);
+
+      // new value
+      assert.equal(changes[0].ECInstanceId, "0x20000000004");
+      assert.equal(changes[0].ECClassId, "0x140");
+      assert.equal(changes[0].s, "updated property");
+      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
+      assert.equal(changes[0].$meta?.op, "Updated");
+      assert.equal(changes[0].$meta?.stage, "New");
+
+      // old value
+      assert.equal(changes[1].ECInstanceId, "0x20000000004");
+      assert.equal(changes[1].ECClassId, "0x140");
+      assert.equal(changes[1].s, "xxxxxxxxx");
+      assert.equal(changes[1].$meta?.classFullName, "TestDomain:Test2dElement");
+      assert.equal(changes[1].$meta?.op, "Updated");
+      assert.equal(changes[1].$meta?.stage, "Old");
+    }
+    if ("updated element when no classId") {
+      const otherDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+      const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const cci = new PartialECChangeUnifier();
+      while (adaptor.step()) {
+        cci.appendFrom(adaptor);
+      }
+
+      const changes = Array.from(cci.instances);
+      assert.equal(changes.length, 4);
+
+      // new value
+      assert.equal(changes[0].ECInstanceId, "0x20000000004");
+      assert.isUndefined(changes[0].ECClassId);
+      assert.isDefined(changes[0].$meta?.fallbackClassId);
+      assert.equal(changes[0].$meta?.fallbackClassId, "0x3f");
+      assert.isUndefined(changes[0].s);
+      assert.equal(changes[0].$meta?.classFullName, "BisCore:Element");
+      assert.equal(changes[0].$meta?.op, "Updated");
+      assert.equal(changes[0].$meta?.stage, "New");
+
+      // old value
+      assert.equal(changes[1].ECInstanceId, "0x20000000004");
+      assert.isUndefined(changes[1].ECClassId);
+      assert.isDefined(changes[1].$meta?.fallbackClassId);
+      assert.equal(changes[1].$meta?.fallbackClassId, "0x3f");
+      assert.isUndefined(changes[1].s);
+      assert.equal(changes[1].$meta?.classFullName, "BisCore:Element");
+      assert.equal(changes[1].$meta?.op, "Updated");
+      assert.equal(changes[1].$meta?.stage, "Old");
+    }
     if ("test changeset file") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
@@ -187,19 +258,19 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 3);
       assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].$meta?.className, "TestDomain.Test2dElement");
+      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[0].$meta?.op, "Inserted");
       assert.equal(changes[0].$meta?.stage, "New");
 
       assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "New");
       assert.isNotNull(changes[1].LastMod);
       assert.isNotNull(changes[1].GeometryGuid);
 
       assert.equal(changes[2].ECInstanceId, "0x20000000001");
-      assert.equal(changes[2].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[2].$meta?.op, "Updated");
       assert.equal(changes[2].$meta?.stage, "Old");
       assert.isNull(changes[2].LastMod);
@@ -239,7 +310,7 @@ describe("Changeset Reader API", async () => {
           "bis_Element",
         ],
         op: "Inserted",
-        className: "TestDomain.Test2dElement",
+        classFullName: "TestDomain:Test2dElement",
         changeIndexes: [
           2,
           1,
@@ -259,7 +330,7 @@ describe("Changeset Reader API", async () => {
       }
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 1);
-      assert.equal(changes[0].$meta?.className, "TestDomain.Test2dElement");
+      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       adaptor.dispose();
     }
     if ("test ChangesetAdaptor.adaptor()") {
@@ -273,11 +344,11 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 2);
       assert.equal(changes[0].ECInstanceId, "0x20000000001");
-      assert.equal(changes[0].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[0].$meta?.op, "Updated");
       assert.equal(changes[0].$meta?.stage, "New");
       assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.className, "BisCore.DrawingModel");
+      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
       adaptor.dispose();

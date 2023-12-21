@@ -486,6 +486,26 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
+  public async processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled> {
+    if (hit.isModelHit || hit.isMapHit)
+      return EventHandled.No; // model hit = terrain, reality models, background maps, etc - not selectable
+
+    switch (this.selectionMode) {
+      case SelectionMode.Replace:
+        await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
+        break;
+
+      case SelectionMode.Add:
+        await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+        break;
+
+      case SelectionMode.Remove:
+        await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+        break;
+    }
+    return EventHandled.Yes;
+  }
+
   public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     IModelApp.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
     if (EventHandled.Yes === await this.selectDecoration(ev))
@@ -515,24 +535,12 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit !== undefined && !hit.isModelHit && !hit.isMapHit) { // model hit = terrain, reality models, background maps, etc - not selectable
+    if (hit !== undefined) {
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
 
-      switch (this.selectionMode) {
-        case SelectionMode.Replace:
-          await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
-          break;
-
-        case SelectionMode.Add:
-          await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
-          break;
-
-        case SelectionMode.Remove:
-          await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
-          break;
-      }
-      return EventHandled.Yes;
+      if (EventHandled.Yes === await this.processHit(ev, hit))
+        return EventHandled.Yes;
     }
 
     if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))
