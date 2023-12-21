@@ -672,7 +672,7 @@ export interface ChangeInstanceKey {
 // @beta
 export interface ChangeMetaData {
     changeIndexes: number[];
-    className?: string;
+    classFullName?: string;
     fallbackClassId?: Id64String;
     op: SqliteChangeOp;
     stage: SqliteValueStage;
