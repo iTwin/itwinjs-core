@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix issues with ArcGIS tiled Mapserver not showing up with some specific datasets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
