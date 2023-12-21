@@ -6,6 +6,9 @@ import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaDifference } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
+import sourceJson from "./sourceSchema.json";
+import targetJson from "./targetSchema.json";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 function expectPartiallyEquals(actual: any, expected: any, message?: string) {
@@ -19,7 +22,7 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
   }
 }
 
-describe.only("Create Difference Report", () => {
+describe("Create Difference Report", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -40,216 +43,6 @@ describe.only("Create Difference Report", () => {
     name: "EmptySchema",
     version: "1.0.0",
     alias: "empty",
-  };
-
-  const sourceJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "SourceSchema",
-    version: "1.2.3",
-    alias: "source",
-
-    label: "source label",
-    description: "source description",
-
-    references: [
-      {
-        name: "EmptySchema",
-        version: "01.00.00",
-      },
-      {
-        name: "CustomAttributeSchema",
-        version: "01.00.00",
-      },
-      {
-        name: "MissingSchema",
-        version: "04.00.00",
-      },
-    ],
-
-    customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
-
-    items: {
-      AreaPhenomenon: {
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        description: "Area description",
-        definition: "Units.LENGTH(4)",
-      },
-      TestUnitSystem: {
-        schemaItemType: "UnitSystem",
-        name: "IMPERIAL",
-        label: "Imperial",
-      },
-      MissingEnumeration: {
-        schemaItemType: "Enumeration",
-        type: "int",
-        isStrict: true,
-        enumerators: [
-          {
-            name: "EnumeratorOne",
-            label: "Enumerator One",
-            value: 200,
-          },
-        ],
-      },
-      ChangedEnumeration: {
-        schemaItemType: "Enumeration",
-        type: "string",
-        label: "Source ChangedEnumeration",
-        enumerators: [
-          {
-            name: "EnumeratorOne",
-            label: "Enumerator One",
-            value: "1",
-          },
-          {
-            name: "EnumeratorTwo",
-            label: "Enumerator Two",
-            value: "2",
-          },
-          {
-            name: "EnumeratorThree",
-            label: "Enumerator Three",
-            value: "3",
-          },
-        ],
-      },
-      MissingMixin: {
-        schemaItemType: "Mixin",
-        label: "Missing Mixin",
-        appliesTo: "SourceSchema.EmptyAbstractEntity",
-      },
-      TestCategory: {
-        schemaItemType: "PropertyCategory",
-        priority: 4,
-      },
-      MissingStruct: {
-        schemaItemType: "StructClass",
-        properties: [{
-          name: "BooleanProperty",
-          type: "PrimitiveProperty",
-          typeName: "boolean",
-          customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
-        },
-        {
-          name: "IntegerProperty",
-          type: "PrimitiveArrayProperty",
-          typeName: "int",
-        }],
-      },
-      EmptyAbstractEntity: {
-        schemaItemType: "EntityClass",
-        modifier: "Abstract",
-      },
-      ChangedEntity: {
-        schemaItemType: "EntityClass",
-        baseClass: "SourceSchema.EmptyAbstractEntity",
-        description: "The entity got a new base type a fancy description and a mixin",
-        mixins: [
-          "SourceSchema.MissingMixin",
-        ],
-        customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
-      },
-      RelationshipSourceEntity: {
-        schemaItemType: "EntityClass",
-        label: "Source constraint class",
-        modifier: "Abstract",
-      },
-      RelationshipTargetEntity: {
-        schemaItemType: "EntityClass",
-        label: "Target constraint class",
-        baseClass: "SourceSchema.EmptyAbstractEntity",
-        modifier: "Abstract",
-      },
-      RelationshipEntity: {
-        schemaItemType: "RelationshipClass",
-        name: "TestRelationship",
-        strength: "Embedding",
-        strengthDirection: "Forward",
-        source: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Source RoleLabel",
-          abstractConstraint: "SourceSchema.RelationshipSourceEntity",
-          constraintClasses: [
-            "SourceSchema.RelationshipSourceEntity",
-          ],
-        },
-        target: {
-          polymorphic: true,
-          multiplicity: "(0..*)",
-          roleLabel: "Target RoleLabel",
-          customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
-          abstractConstraint: "SourceSchema.EmptyAbstractEntity",
-          constraintClasses: [
-            "SourceSchema.RelationshipTargetEntity",
-          ],
-        },
-      },
-      ChangedBaseClassEntity: {
-        schemaItemType: "EntityClass",
-        baseClass: "SourceSchema.EmptyAbstractEntity",
-      },
-    },
-  };
-
-  const targetJson =  {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "TargetSchema",
-    version: "1.0.0",
-    alias: "target",
-
-    description: "target description",
-
-    references: [
-      {
-        name: "EmptySchema",
-        version: "01.00.00",
-      },
-      {
-        name: "CustomAttributeSchema",
-        version: "01.00.00",
-      },
-    ],
-
-    items: {
-      AreaPhenomenon: {
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        description: "Area description",
-        definition: "Units.LENGTH(4)",
-      },
-      TargetPropertyCategory: {
-        schemaItemType:"PropertyCategory",
-        label:"Target Schema Category",
-        priority: 100000,
-      },
-      ChangedEnumeration: {
-        schemaItemType: "Enumeration",
-        type: "string",
-        isStrict: true,
-        enumerators: [
-          {
-            name: "EnumeratorOne",
-            label: "Enumerator One",
-            value: "1",
-          },
-          {
-            name: "EnumeratorTwo",
-            value: "2",
-          },
-        ],
-      },
-      ChangedEntity: {
-        schemaItemType: "EntityClass",
-      },
-      ChangedBaseClassEntity: {
-        schemaItemType: "EntityClass",
-        baseClass: "TargetSchema.ChangedEntity",
-      },
-    },
   };
 
   let schemaDifference: SchemaDifference;
