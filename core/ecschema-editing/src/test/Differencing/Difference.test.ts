@@ -187,6 +187,10 @@ describe.only("Create Difference Report", () => {
           ],
         },
       },
+      ChangedBaseClassEntity: {
+        schemaItemType: "EntityClass",
+        baseClass: "SourceSchema.EmptyAbstractEntity",
+      },
     },
   };
 
@@ -240,6 +244,10 @@ describe.only("Create Difference Report", () => {
       },
       ChangedEntity: {
         schemaItemType: "EntityClass",
+      },
+      ChangedBaseClassEntity: {
+        schemaItemType: "EntityClass",
+        baseClass: "TargetSchema.ChangedEntity",
       },
     },
   };
@@ -414,6 +422,18 @@ describe.only("Create Difference Report", () => {
     });
   });
 
+  it("should return changed entity with baseclass change", () => {
+    expectPartiallyEquals(schemaDifference.items, {
+      ChangedBaseClassEntity: {
+        schemaChangeType: "changed",
+        baseClass: {
+          schemaChangeType: "changed",
+          className: "SourceSchema.EmptyAbstractEntity",
+        },
+      },
+    });
+  });
+
   it("should return changed entity with baseclass and mixin added", () => {
     expectPartiallyEquals(schemaDifference.items, {
       EmptyAbstractEntity: {
@@ -430,7 +450,10 @@ describe.only("Create Difference Report", () => {
       ChangedEntity: {
         schemaChangeType: "changed",
         schemaItemType: "EntityClass",
-        baseClass: "SourceSchema.EmptyAbstractEntity",
+        baseClass: {
+          schemaChangeType: "missing",
+          className: "SourceSchema.EmptyAbstractEntity",
+        },
         description: "The entity got a new base type a fancy description and a mixin",
         mixins: [
           "SourceSchema.MissingMixin",
@@ -451,7 +474,10 @@ describe.only("Create Difference Report", () => {
         schemaChangeType: "missing",
         schemaItemType: "EntityClass",
         label: "Target constraint class",
-        baseClass: "SourceSchema.EmptyAbstractEntity",
+        baseClass: {
+          schemaChangeType: "missing",
+          className: "SourceSchema.EmptyAbstractEntity",
+        },
         modifier: "Abstract",
       },
       RelationshipEntity: {

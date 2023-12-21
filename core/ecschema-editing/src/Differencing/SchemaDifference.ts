@@ -217,7 +217,10 @@ export interface UnitDifference extends SchemaItemDifference<Unit> {
  */
 export interface ClassDifference<T extends ECClass = ECClass> extends SchemaItemDifference<T> {
   modifier?: string;
-  baseClass?: string;
+  baseClass?: {
+    readonly schemaChangeType: DifferenceType;
+    readonly className: string;
+  };
   properties?: {
     [name: string]: PropertyDifference;
   };

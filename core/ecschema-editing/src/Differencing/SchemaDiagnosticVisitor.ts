@@ -235,8 +235,11 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingBaseClass(diagnostic: AnyDiagnostic) {
     const classDifference = this.getItemDifference<ClassDifference>(diagnostic.ecDefinition as SchemaItem);
-    const [baseClass] = diagnostic.messageArgs as [EntityClass];
-    classDifference.baseClass = baseClass.fullName;
+    const [baseClass, previous] = diagnostic.messageArgs as [EntityClass, EntityClass|undefined];
+    classDifference.baseClass = {
+      schemaChangeType: previous === undefined ? "missing" : "changed",
+      className: baseClass.fullName,
+    };
   }
 
   private visitMissingMixinOnClass(diagnostic: AnyDiagnostic) {
