@@ -10,7 +10,7 @@ import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValue
 
 interface IClassRef {
   classId: Id64String;
-  className: string;
+  classFullName: string;
 }
 
 interface IClassMap {
@@ -142,7 +142,7 @@ class ECDbMap {
       SELECT
       JSON_OBJECT(
         'id', format('0x%x', cs.id),
-        'name', format('%s.%s', ss.Name, cs.Name),
+        'name', format('%s:%s', ss.Name, cs.Name),
         'mapStrategy',
         (
           CASE cm.MapStrategy
@@ -212,7 +212,7 @@ class ECDbMap {
                     SELECT
                       JSON_OBJECT(
                         'classId', format('0x%x', nc.Id),
-                        'className', format('%s.%s', ns.Name, nc.Name)
+                        'classFullName', format('%s:%s', ns.Name, nc.Name)
                       )
                     FROM ec_Class nc
                       JOIN ec_Schema ns ON ns.Id = nc.SchemaId
@@ -224,7 +224,7 @@ class ECDbMap {
                     SELECT
                       JSON_OBJECT(
                         'classId', format('0x%x', nc.Id),
-                        'className', format('%s.%s', ns.Name, nc.Name)
+                        'classFullName', format('%s:%s', ns.Name, nc.Name)
                       )
                     FROM ec_Class nc
                       JOIN ec_Schema ns ON ns.Id = nc.SchemaId
@@ -349,7 +349,7 @@ export interface ChangeMetaData {
   /** list of tables making up this EC change */
   tables: string[];
   /** full name of the class of this EC change */
-  className?: string;
+  classFullName?: string;
   /** sqlite operation that caused the change */
   op: SqliteChangeOp;
   /** version of the value read from sqlite change */
@@ -694,7 +694,7 @@ export class ChangesetECAdaptor implements IDisposable {
         }
 
         let ecClassId: Id64String | undefined = this.reader.op === "Inserted" ? change.inserted?.ECClassId : change.deleted?.ECClassId;
-        const classIdPresetInChange = !ecClassId;
+        const classIdPresentInChange = !ecClassId;
         let classMap: IClassMap | undefined;
         let fallbackClassId: Id64String | undefined;
         if (table.isClassIdVirtual) {
@@ -706,12 +706,9 @@ export class ChangesetECAdaptor implements IDisposable {
             if (primaryKeys.length === 1) {
               ecClassId = this.getClassIdFromDb(this.reader.tableName, this.reader.primaryKeyValues[0] as Id64String);
             }
-            // this is update and does not include ECClassId and it was also not found from db
-            // so its unrecoverable error. Call can skip updates to ignore this error.
-            if (!ecClassId)
-              throw new Error(`change arg must contain 'ECClassId' property.`);
           }
-          classMap = this._mapCache.getClassMap(ecClassId);
+          if (ecClassId)
+            classMap = this._mapCache.getClassMap(ecClassId);
           if (!classMap) {
             // fallback to root map for table.
             classMap = this._mapCache.getClassMap(table.exclusiveRootClassId);
@@ -723,7 +720,7 @@ export class ChangesetECAdaptor implements IDisposable {
         if (!classMap)
           throw new Error(`unable to load class map`);
 
-        if (!classIdPresetInChange && !ecClassId)
+        if (!classIdPresentInChange && !ecClassId)
           ecClassId = classMap.id;
 
         if (this._allowedClasses.size !== 0) {
@@ -734,7 +731,7 @@ export class ChangesetECAdaptor implements IDisposable {
         const $meta = {
           tables: [this.reader.tableName],
           op: this.reader.op,
-          className: classMap.name,
+          classFullName: classMap.name,
           fallbackClassId,
           changeIndexes: [this.reader.changeIndex],
         };
