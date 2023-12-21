@@ -38,8 +38,8 @@ const dataset2 = {
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
-      0, 0, 0, 1,
       0, 0, 0, 0,
+      0, 0, 0, 1,
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0],
@@ -49,16 +49,67 @@ const dataset2 = {
     location:{left:11,top:7,width:8, height:8},
     data: [
       0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
       1, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0],
   },
 
-  available:[true,false,false,true],
+  tilemap3: {
+    adjusted:true,
+    location:{left:11,top:7,width:0, height:0},
+    data: [],
+  },
+
+  availableClipped: [false,false,true,false],
+  available:[false,false,true,true],
+  parentContentId: "9_5_5",
+};
+
+// In this dataset the tilemap does not include any of the requested tiled
+const dataset4 = {
+  tilemap1: {
+    adjusted:true,
+    location:{left:7,top:7,width:1, height:8},
+    data:[
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0],
+  },
+  tilemap2: {
+    adjusted:false,
+    location:{left:10,top:10,width:8, height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
+  },
+  available:[false,false,false,true],
+  parentContentId: "9_5_5",
+};
+
+// This is really a far fetch case where the tile would be clipped, but tilemap is empty
+// Code should survive to this.
+const dataset5 = {
+  tilemap: {
+    adjusted: true,
+    location:{left:7,top:7,width:0, height:0},
+    data:[0],
+  },
+  available:[false,false,false,false],
   parentContentId: "9_5_5",
 };
 
@@ -159,6 +210,7 @@ const fakeFetchFunction = async (_url: URL, _options?: RequestInit): Promise<Res
   return new Response();
 };
 
+// uncomment this to get traces
 // Logger.initializeToConsole();
 // Logger.setLevelDefault(LogLevel.Trace);
 describe("ArcGISTileMap", () => {
@@ -324,33 +376,80 @@ describe("ArcGISTileMap", () => {
 
   });
 
-  // Response contains an adjusted tilemap, a second request need to be made to get all tiles
-  it("Should make second request when response got adjusted", async () => {
+  describe("Clipped Tile map response", () => {
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, row: unknown, column: unknown, _width: unknown, _height: unknown): Promise<any>  {
-      if (row === 7 && column === 7)
-        return dataset2.tilemap1;
-      else
-        return dataset2.tilemap2;
+    // Response contains an adjusted tilemap, a second request need to be made to get all tiles
+    it("Should make second request when response got adjusted (partly clipped)", async () => {
+
+      const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, row: unknown, column: unknown, _width: unknown, _height: unknown): Promise<any>  {
+        if (row === 7 && column === 7)
+          return dataset2.tilemap1;
+        else
+          return dataset2.tilemap2;
+      });
+
+      const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
+      const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
+      expect(getTileMapStub.getCalls().length).to.eql(2);
+      expect(available).to.eql(dataset2.available);
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
-    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
-    expect(getTileMapStub.getCalls().length).to.eql(2);
-    expect(available).to.eql(dataset2.available);
-  });
+    it("Should make second request when response got adjusted (fully clipped)", async () => {
 
-  it("Should stop making request if missing tiles cannot be retrieved", async () => {
+      const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, row: unknown, column: unknown, _width: unknown, _height: unknown): Promise<any>  {
+        if (row === 7 && column === 7)
+          return dataset4.tilemap1;
+        else
+          return dataset4.tilemap2;
+      });
 
-    const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
-      // We return twice the same tile map on purpose to trigger the loop termination
-      return dataset2.tilemap1;
+      const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
+      const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
+      expect(getTileMapStub.getCalls().length).to.eql(2);
+      expect(available).to.eql(dataset4.available);
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
-    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
-    expect(getTileMapStub.getCalls().length).to.eql(2);
-    expect(available).to.eql([ true, false, false, false ]);
+    it("Should return consistent availability response when second request fail", async () => {
+
+      const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, row: unknown, column: unknown, _width: unknown, _height: unknown): Promise<any>  {
+        if (row === 7 && column === 7)
+          return dataset2.tilemap1;
+        else
+          return emptyBundleError;
+      });
+
+      const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
+      const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
+      expect(getTileMapStub.getCalls().length).to.eql(2);
+      expect(available).to.eql(dataset2.availableClipped);
+    });
+
+    it("Should stop making requests when none of missing tiles can be retrieved", async () => {
+
+      const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, _row: unknown, _column: unknown, _width: unknown, _height: unknown): Promise<any>  {
+        return dataset5.tilemap;
+      });
+
+      const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
+      const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
+      expect(getTileMapStub.getCalls().length).to.eql(4);
+      expect(available).to.eql(dataset5.available);
+    });
+
+    it("Should stop making request if only a subset of missing tiles can be retrieved", async () => {
+
+      const getTileMapStub = sandbox.stub(ArcGISTileMap.prototype, "fetchTileMapFromServer" as any).callsFake(async function _(_level: unknown, row: unknown, column: unknown, _width: unknown, _height: unknown): Promise<any>  {
+        if (row === 7 && column === 7)
+          return dataset2.tilemap1;
+        else
+          return dataset2.tilemap3;
+      });
+
+      const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
+      const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
+      expect(getTileMapStub.getCalls().length).to.eql(4);
+      expect(available).to.eql(dataset2.availableClipped);
+    });
   });
 
   it("Test empty tilemap response", async () => {

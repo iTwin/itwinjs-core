@@ -72,6 +72,10 @@ export class ArcGISTileMap {
     // let check if cache doesn't already contain what we are looking for.
     const cacheInfo = this.getAvailableTilesFromCache(childIds);
     if (cacheInfo.allTilesFound) {
+
+      if (cacheInfo.available.includes(false))
+        return cacheInfo.available;
+
       return cacheInfo.available;
     }
 
@@ -151,10 +155,10 @@ export class ArcGISTileMap {
     const level = queryTiles[0].level; // We assume all tiles to be on the same level
 
     let missingQueryTiles = this.collectTilesMissingFromCache(queryTiles);
-    let previousMissingLength: number|undefined;    // Safety: We expect each loop iteration to decrease the number of missing tiles (otherwise something is wrong)
+    let gotAdjusted = false;
+    let nbAttempt = 0; // Safety: We should never be making more requests than the number of queries tiles (otherwise something is wrong)
     while (missingQueryTiles.length > 0
-        && (previousMissingLength === undefined ||  missingQueryTiles.length < previousMissingLength) ) {
-      previousMissingLength = missingQueryTiles.length;
+      && (nbAttempt++ < queryTiles.length) ) {
       const tileMapTopLeft = getTopLeftCorner(missingQueryTiles);
       if (tileMapTopLeft.row === undefined || tileMapTopLeft.column === undefined)
         return available;   // Should not occurs since missingQueryTiles is non empty
@@ -164,9 +168,9 @@ export class ArcGISTileMap {
 
       const logLocationOffset = (newRow: number, newCol: number) =>  `[Row:${newRow !== tileMapTopLeft.row ? `${tileMapTopLeft.row}->${newRow}` : `${newRow}`} Column:${newCol !== tileMapTopLeft.column ? `${tileMapTopLeft.column}->${newCol}` : `${newCol}`}]`;
 
-      // Position the top-left missing tile in the middle of the tilemap
-      // minimizing requests if sibling tiles are requested right after
-      if (queryTiles.length < this.tileMapRequestSize) {
+      // Position the top-left missing tile in the middle of the tilemap; minimizing requests if sibling tiles are requested right after
+      // If previous response got adjusted, don't try to optimize tile map location
+      if (queryTiles.length < this.tileMapRequestSize && !gotAdjusted) {
         const tileMapOffset = this.tileMapOffset - Math.floor(Math.sqrt(queryTiles.length) * 0.5);
         const missingTileBufferSize = Math.ceil(tileMapOffset * 0.5);
         if (this.isCacheMissingTile(level, tileMapRow-missingTileBufferSize, tileMapColumn-missingTileBufferSize, tileMapRow-1, tileMapColumn-1)) {
@@ -191,10 +195,6 @@ export class ArcGISTileMap {
         }
       }
 
-      if (missingQueryTiles.length === previousMissingLength) {
-        Logger.logError(loggerCategory, `Request loop was terminated; unable to get missing tiles; `);
-      }
-
       const json = await this.fetchTileMapFromServer(level, tileMapRow, tileMapColumn, reqWidth, reqHeight);
       let tileMapWidth = reqWidth;
       let tileMapHeight = reqHeight;
@@ -202,6 +202,7 @@ export class ArcGISTileMap {
         // The response width and height might be different than the requested dimensions.
         // Ref: https://developers.arcgis.com/rest/services-reference/enterprise/tile-map.htm
         if (json.adjusted) {
+          gotAdjusted = true;
           // If tilemap size got adjusted, I'm expecting to get adjusted size...
           // otherwise there is something really odd with this server.
           assert(json.location?.width !== undefined && json.location?.height !== undefined);
@@ -238,8 +239,14 @@ export class ArcGISTileMap {
       }
     }  // end loop missing tiles
 
+    if (nbAttempt > queryTiles.length) {
+      Logger.logError(loggerCategory, `Request loop was terminated; unable to get missing tiles; `);
+    }
     // Create final output array from cache
     available = queryTiles.map((quad)=>this._tilesCache.get(quad.contentId) ?? false);
+
+    if (available.includes(false))
+      return available;
 
     return available;
   }
