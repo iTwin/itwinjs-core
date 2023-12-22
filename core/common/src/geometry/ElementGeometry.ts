@@ -133,7 +133,7 @@ export interface ElementGeometryRequest {
  * @beta
  */
 export interface ElementGeometryBuilderParams {
-  /** The geometry stream data */
+  /** The geometry stream data. Calling update element with a zero length array will clear the geometry stream and invalidate the placement. */
   entryArray: ElementGeometryDataEntry[];
   /** If true, create geometry that displays oriented to face the camera */
   viewIndependent?: boolean;
