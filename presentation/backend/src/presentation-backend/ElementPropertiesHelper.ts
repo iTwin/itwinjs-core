@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { from, map, mergeAll, mergeMap, Observable, reduce } from "rxjs";
+import { from, mergeAll, mergeMap, Observable, reduce } from "rxjs";
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
