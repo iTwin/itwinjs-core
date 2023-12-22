@@ -775,6 +775,7 @@ deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
 public;TextString
+beta;TextStringGlyphData
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData

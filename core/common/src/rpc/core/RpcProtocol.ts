@@ -72,7 +72,7 @@ export interface RpcRequestFulfillment {
 /** @internal */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
-    const result = await RpcMarshaling.serialize(undefined, error);
+    const result = RpcMarshaling.serialize(undefined, error);
 
     return {
       interfaceName: request.operation.interfaceDefinition,
@@ -202,7 +202,7 @@ export abstract class RpcProtocol {
       },
       method: request.method,
       path: request.path,
-      parameters: await RpcMarshaling.serialize(request.protocol, request.parameters),
+      parameters: RpcMarshaling.serialize(request.protocol, request.parameters),
       caching: RpcResponseCacheControl.None,
       protocolVersion: RpcProtocol.protocolVersion,
     };

@@ -180,17 +180,12 @@ export class MobileHost {
     // (undocumented)
     static get isValid(): boolean;
     static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>): void;
-    // (undocumented)
     static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
-    // (undocumented)
+    static readonly onConnected: BeEvent<Listener>;
     static readonly onEnterBackground: BeEvent<Listener>;
-    // (undocumented)
     static readonly onEnterForeground: BeEvent<Listener>;
-    // (undocumented)
     static readonly onMemoryWarning: BeEvent<Listener>;
-    // (undocumented)
     static readonly onOrientationChanged: BeEvent<Listener>;
-    // (undocumented)
     static readonly onWillTerminate: BeEvent<Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
