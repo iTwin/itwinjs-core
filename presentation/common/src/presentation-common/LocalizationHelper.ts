@@ -8,6 +8,7 @@
 
 import { CategoryDescription } from "./content/Category";
 import { Content } from "./content/Content";
+import { Descriptor } from "./content/Descriptor";
 import { Field } from "./content/Fields";
 import { Item } from "./content/Item";
 import { DisplayValue, Value } from "./content/Value";
@@ -50,15 +51,20 @@ export class LocalizationHelper {
     return labelDefinitions;
   }
 
+  public getLocalizedContentDescriptor(descriptor: Descriptor) {
+    descriptor.fields.forEach((field) => this.translateContentDescriptorField(field));
+    descriptor.categories.forEach((category) => this.translateContentDescriptorCategory(category));
+    return descriptor;
+  }
+
   public getLocalizedContentItems(items: Item[]) {
     items.forEach((item) => this.translateContentItem(item));
     return items;
   }
 
   public getLocalizedContent(content: Content) {
-    content.contentSet.forEach((item) => this.translateContentItem(item));
-    content.descriptor.fields.forEach((field) => this.translateContentDescriptorField(field));
-    content.descriptor.categories.forEach((category) => this.translateContentDescriptorCategory(category));
+    this.getLocalizedContentDescriptor(content.descriptor);
+    this.getLocalizedContentItems(content.contentSet);
     return content;
   }
 

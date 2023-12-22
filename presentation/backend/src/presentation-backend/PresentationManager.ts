@@ -512,7 +512,8 @@ export class PresentationManager {
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
     const response = await this._detail.getContentDescriptor(requestOptions);
     const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
-    return JSON.parse(response, reviver);
+    const descriptor = JSON.parse(response, reviver);
+    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
   }
 
   /**

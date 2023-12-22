@@ -312,6 +312,7 @@ export class Content {
 
 // @public
 export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    contentFlags?: number;
     displayType: string;
     keys: TKeySet;
     selection?: SelectionInfo;
@@ -339,6 +340,8 @@ export class ContentFormatter {
     constructor(_propertyValueFormatter: ContentPropertyValueFormatter, _unitSystem?: UnitSystemKey | undefined);
     // (undocumented)
     formatContent(content: Content): Promise<Content>;
+    // (undocumented)
+    formatContentItems(items: Item[], descriptor: Descriptor): Promise<Item[]>;
 }
 
 // @public
@@ -1483,6 +1486,10 @@ export class Item {
     inputKeys?: InstanceKey[];
     isFieldMerged(fieldName: string): boolean;
     label: LabelDefinition;
+    // @internal
+    static listFromJSON(json: ItemJSON[] | string): Item[];
+    // @internal
+    static listReviver(key: string, value: any): any;
     mergedFieldNames: string[];
     primaryKeys: InstanceKey[];
     // @internal
@@ -1667,6 +1674,10 @@ export class LocalizationHelper {
     constructor(props: LocalizationHelperProps);
     // (undocumented)
     getLocalizedContent(content: Content): Content;
+    // (undocumented)
+    getLocalizedContentDescriptor(descriptor: Descriptor): Descriptor;
+    // (undocumented)
+    getLocalizedContentItems(items: Item[]): Item[];
     // (undocumented)
     getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
     // (undocumented)
