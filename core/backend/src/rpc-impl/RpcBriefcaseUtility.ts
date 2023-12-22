@@ -93,16 +93,19 @@ export class RpcBriefcaseUtility {
     return BriefcaseDb.open(props);
   }
 
-  private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
+  private static _briefcasePromises: Map<string, Promise<BriefcaseDb>> = new Map();
   private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
-    if (this._briefcasePromise)
-      return this._briefcasePromise;
+    const key = `${args.tokenProps.iModelId}:${args.tokenProps.changeset?.id}:${args.tokenProps.changeset?.index}:${args.syncMode}`;
+    const cachedPromise = this._briefcasePromises.get(key);
+    if (cachedPromise)
+      return cachedPromise;
 
     try {
-      this._briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
-      return await this._briefcasePromise;
+      const briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
+      this._briefcasePromises.set(key, briefcasePromise);
+      return await briefcasePromise;
     } finally {
-      this._briefcasePromise = undefined;  // the download and open is now done
+      this._briefcasePromises.delete(key);  // the download and open is now done
     }
   }
 
