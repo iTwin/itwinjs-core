@@ -6,6 +6,8 @@
  * @module Core
  */
 
+import { forkJoin, from, map, mergeMap, of } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
@@ -13,14 +15,17 @@ import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   UnitSystemFormat as CommonUnitSystemFormat, ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentFormatter,
   ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo, HierarchyCompareOptions,
-  HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions,
-  isSingleElementPropertiesRequestOptions, Item, KeySet, KoqPropertyValueFormatter, LabelDefinition, LocalizationHelper,
-  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
-  Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo,
+  HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, Item, KeySet, KoqPropertyValueFormatter, LabelDefinition,
+  LocalizationHelper, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus,
+  Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
+import {
+  buildElementsProperties, getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName,
+} from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
@@ -599,32 +604,99 @@ export class PresentationManager {
   }
 
   private async getMultipleElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse> {
-    const { elementClasses, ...optionsNoElementClasses } = requestOptions;
-    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const { elementClasses, ...contentOptions } = requestOptions;
+    const workerThreadsCount = (this._props.workerThreadsCount ?? 2);
 
-    const propertiesGetter = async (className: string, ids: string[]) => buildElementsPropertiesInPages(className, ids, async (keys) => {
-      const content = await this.getContent({
-        ...optionsNoElementClasses,
-        descriptor: {
-          displayType: DefaultContentDisplayTypes.Grid,
-          contentFlags: ContentFlags.ShowLabels,
-        },
-        rulesetOrId: "ElementProperties",
-        keys,
-      });
-      return buildElementsProperties(content);
-    });
+    // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
+    // and can be shared across all batch requests for that class. Handling multiple classes at the same time not only increases memory footprint,
+    // but also may push descriptors out of cache, requiring us to recreate them, thus making performance worse. For those reasons we handle at
+    // most `workerThreadsCount / 2` classes in parallel.
+    // istanbul ignore next
+    const classParallelism = workerThreadsCount > 1 ? workerThreadsCount / 2 : 1;
 
-    const ELEMENT_IDS_BATCH_SIZE = 1000;
+    // We want all worker threads to be constantly busy. However, there's some fairly expensive work being done after the worker thread is done,
+    // but before we receive the response. That means the worker thread would be starving if we sent only `workerThreadsCount` requests in parallel.
+    // To avoid that, we keep twice as much requests active.
+    // istanbul ignore next
+    const batchesParallelism = workerThreadsCount > 0 ? workerThreadsCount * 2 : 2;
+
+    const createClassContentRuleset = (fullClassName: string): Ruleset => {
+      const [schemaName, className] = parseFullClassName(fullClassName);
+      return {
+        id: `content/${fullClassName}`,
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "ContentInstancesOfSpecificClasses",
+                classes: {
+                  schemaName,
+                  classNames: [className],
+                  arePolymorphic: false,
+                },
+                handlePropertiesPolymorphically: true,
+              },
+            ],
+          },
+        ],
+      };
+    };
+    const getContentDescriptor = async (ruleset: Ruleset): Promise<Descriptor> => {
+      return (await this.getContentDescriptor({
+        ...contentOptions,
+        rulesetOrId: ruleset,
+        displayType: DefaultContentDisplayTypes.Grid,
+        contentFlags: ContentFlags.ShowLabels,
+        keys: new KeySet(),
+      }))!;
+    };
+
+    const obs = getClassesWithInstances(requestOptions.imodel, elementClasses ?? /* istanbul ignore next */ ["BisCore.Element"]).pipe(
+      map((classFullName) => ({
+        classFullName,
+        ruleset: createClassContentRuleset(classFullName),
+      })),
+      mergeMap(
+        ({ classFullName, ruleset }) =>
+          // use forkJoin to query descriptor and element ids in parallel
+          forkJoin({
+            classFullName: of(classFullName),
+            ruleset: of(ruleset),
+            descriptor: from(getContentDescriptor(ruleset)),
+            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, 1000)),
+          }).pipe(
+            // split incoming stream into individual batch requests
+            mergeMap(({ descriptor, batches }) => from(batches.map((batch) => ({ classFullName, descriptor, batch })))),
+            // request content for each batch, filter by IDs for performance
+            mergeMap(({ descriptor, batch }) => {
+              const filteringDescriptor = new Descriptor(descriptor);
+              filteringDescriptor.instanceFilter = {
+                selectClassName: classFullName,
+                expression: `this.ECInstanceId >= ${Number.parseInt(batch.from, 16)} AND this.ECInstanceId <= ${Number.parseInt(batch.to, 16)}`,
+              };
+              return from(
+                this.getContentSet({
+                  ...contentOptions,
+                  keys: new KeySet(),
+                  descriptor: filteringDescriptor,
+                  rulesetOrId: ruleset,
+                }),
+              ).pipe(
+                map((items) => ({ classFullName, descriptor, items })),
+              );
+            }, batchesParallelism),
+          ),
+        classParallelism,
+      ),
+      map(({ descriptor, items }) => buildElementsProperties(descriptor, items)),
+    );
+
     return {
-      total: elementsCount,
+      total: getElementsCount(requestOptions.imodel, elementClasses),
       async *iterator() {
-        for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
-          const propertiesPage: ElementProperties[] = [];
-          for (const entry of idsByClass) {
-            propertiesPage.push(...(await propertiesGetter(entry[0], entry[1])));
-          }
-          yield propertiesPage;
+        for await (const batch of eachValueFrom(obs)) {
+          yield batch;
         }
       },
     };
@@ -711,16 +783,4 @@ export class PresentationManager {
     const reviver = (key: string, value: any) => (key === "") ? HierarchyCompareInfo.fromJSON(value) : value;
     return JSON.parse(await this._detail.request(params), reviver);
   }
-}
-
-const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
-async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
-  const elementProperties: ElementProperties[] = [];
-  const elementIds = [...ids];
-  while (elementIds.length > 0) {
-    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
-    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
-    elementProperties.push(...(await getter(keys)));
-  }
-  return elementProperties;
 }

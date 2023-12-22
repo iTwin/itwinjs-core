@@ -1,27 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
 
+import { from, map, mergeAll, mergeMap, Observable, reduce } from "rxjs";
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
-  ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContent,
+  CategoryDescription, Content, Descriptor, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem,
+  ElementPropertiesPropertyItem, ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus,
+  ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps,
+  StartContentProps, StartFieldProps, StartItemProps, StartStructProps, traverseContent,
 } from "@itwin/presentation-common";
 
 /** @internal */
-export const buildElementsProperties = (content: Content | undefined): ElementProperties[] => {
-  if (!content || content.contentSet.length === 0)
-    return [];
-
+export const buildElementsProperties = (descriptor: Descriptor, items: Item[]): ElementProperties[] => {
   const builder = new ElementPropertiesBuilder();
-  traverseContent(builder, content);
+  traverseContent(builder, new Content(descriptor, items));
   return builder.items;
 };
 
@@ -40,79 +38,81 @@ export function getElementsCount(db: IModelDb, classNames?: string[]) {
 }
 
 /** @internal */
-export function* iterateElementIds(db: IModelDb, classNames?: string[], limit?: number) {
-  let lastElementId;
-  while (true) {
-    const result = queryElementIds(db, classNames, limit, lastElementId);
-    yield result.ids;
-    lastElementId = result.lastElementId;
-    if (!lastElementId)
-      break;
-  }
+export function parseFullClassName(fullClassName: string): [string, string] {
+  const [schemaName, className] = fullClassName.split(/[:\.]/);
+  return [schemaName, className];
 }
 
-function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, lastElementId?: Id64String) {
-  function createWhereClause() {
-    const classFilter = createElementsFilter("e", classNames);
-    const elementFilter = lastElementId ? `e.ECInstanceId > ?` : undefined;
-    if (!classFilter && !elementFilter)
-      return "";
-    if (classFilter && elementFilter)
-      return `WHERE ${classFilter} AND ${elementFilter}`;
-    return `WHERE ${classFilter ?? ""} ${elementFilter ?? ""}`;
-  }
+function getECSqlName(fullClassName: string) {
+  const [schemaName, className] = parseFullClassName(fullClassName);
+  return `[${schemaName}].[${className}]`;
+}
 
-  const query = `
-    SELECT e.ECInstanceId elId, eSchemaDef.Name || ':' || eClassDef.Name elClassName
-    FROM bis.Element e
-    LEFT JOIN meta.ECClassDef eClassDef ON eClassDef.ECInstanceId = e.ECClassId
-    LEFT JOIN meta.ECSchemaDef eSchemaDef ON eSchemaDef.ECInstanceId = eClassDef.Schema.Id
-    ${createWhereClause()}
-    ORDER BY e.ECInstanceId ASC
-  `;
+/** @internal */
+export function getClassesWithInstances(imodel: IModelDb, fullClassNames: string[]): Observable<string> {
+  return from(fullClassNames).pipe(
+    mergeMap((fullClassName) => {
+      const reader = imodel.createQueryReader(`
+        SELECT s.Name, c.Name
+        FROM ${getECSqlName(fullClassName)} e
+        JOIN meta.ECClassDef c ON c.ECInstanceId = e.ECClassId
+        JOIN meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
+        GROUP BY c.ECInstanceId
+      `);
+      return from(reader.toArray() as Promise<[string, string][]>);
+    }),
+    mergeAll(),
+    reduce<[string, string], Set<string>>((set, [schemaName, className]) => {
+      set.add(`${schemaName}.${className}`);
+      return set;
+    }, new Set()),
+    map((set) => [...set]),
+    mergeAll(),
+  );
+}
 
-  return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    if (lastElementId)
-      stmt.bindId(1, lastElementId);
-
-    const ids = new Map<string, string[]>();
-    let currentClassName = "";
-    let currentIds: string[] = [];
-    let loadedIds = 0;
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const row = stmt.getRow();
-      if (!row.elId || !row.elClassName)
-        continue;
-
-      if (currentClassName !== row.elClassName) {
-        currentClassName = row.elClassName;
-        const existingIds = ids.get(row.elClassName);
-        if (!existingIds) {
-          currentIds = [];
-          ids.set(row.elClassName, currentIds);
-        } else {
-          currentIds = existingIds;
-        }
-      }
-      currentIds.push(row.elId);
-      loadedIds++;
-      if (limit && loadedIds >= limit)
-        return { ids, lastElementId: row.elId };
+/** @internal */
+export async function getBatchedClassElementIds(
+  imodel: IModelDb,
+  fullClassName: string,
+  batchSize: number,
+): Promise<Array<{ from: Id64String, to: Id64String }>> {
+  const batches = [];
+  const reader = imodel.createQueryReader(`SELECT ECInstanceId id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`);
+  let currId: Id64String | undefined;
+  let fromId: Id64String | undefined;
+  let count = 0;
+  while (await reader.step()) {
+    currId = reader.current.toRow().id as Id64String;
+    if (!fromId) {
+      fromId = currId;
     }
-    return { ids, lastElementId: undefined };
-  });
+    if (++count >= batchSize) {
+      batches.push({ from: fromId, to: currId });
+      fromId = undefined;
+      count = 0;
+    }
+  }
+  if (fromId && currId) {
+    batches.push({ from: fromId, to: currId });
+  }
+  return batches;
 }
 
 function createElementsFilter(elementAlias: string, classNames?: string[]) {
-  if (classNames === undefined || classNames.length === 0)
+  if (classNames === undefined || classNames.length === 0) {
     return undefined;
+  }
 
   // check if list contains only valid class names
   const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
   const invalidName = classNames.find((name) => !name.match(classNameRegExp));
   if (invalidName) {
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Encountered invalid class name - ${invalidName}.
-      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`);
+    throw new PresentationError(
+      PresentationStatus.InvalidArgument,
+      `Encountered invalid class name - ${invalidName}.
+      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`,
+    );
   }
 
   return `${elementAlias}.ECClassId IS (${classNames.join(",")})`;
@@ -126,7 +126,7 @@ interface IPropertiesAppender {
 class ElementPropertiesAppender implements IPropertiesAppender {
   private _propertyItems: { [label: string]: ElementPropertiesItem } = {};
   private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
-  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) { }
+  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) {}
 
   public append(label: string, item: ElementPropertiesItem): void {
     this._propertyItems[label] = item;
@@ -159,13 +159,14 @@ class ElementPropertiesAppender implements IPropertiesAppender {
 
 class CategoryItemAppender implements IPropertiesAppender {
   private _items: { [label: string]: ElementPropertiesItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) { }
+  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) {}
   public append(label: string, item: ElementPropertiesItem): void {
     this._items[label] = item;
   }
   public finish(): void {
-    if (Object.keys(this._items).length === 0)
+    if (Object.keys(this._items).length === 0) {
       return;
+    }
 
     this._parentAppender.append(this._category.label, {
       type: "category",
@@ -176,17 +177,18 @@ class CategoryItemAppender implements IPropertiesAppender {
 
 class ArrayItemAppender implements IPropertiesAppender {
   private _items: ElementPropertiesPropertyItem[] = [];
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) { }
+  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) {}
   public append(_label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._items.push(item);
   }
   public finish(): void {
     assert(this._props.valueType.valueFormat === PropertyValueFormat.Array);
-    if (this._props.valueType.memberType.valueFormat === PropertyValueFormat.Primitive)
+    if (this._props.valueType.memberType.valueFormat === PropertyValueFormat.Primitive) {
       this._parentAppender.append(this._props.hierarchy.field.label, this.createPrimitivesArray());
-    else
+    } else {
       this._parentAppender.append(this._props.hierarchy.field.label, this.createStructsArray());
+    }
   }
   private createPrimitivesArray(): ElementPropertiesPrimitiveArrayPropertyItem {
     return {
@@ -212,7 +214,7 @@ class ArrayItemAppender implements IPropertiesAppender {
 
 class StructItemAppender implements IPropertiesAppender {
   private _members: { [label: string]: ElementPropertiesPropertyItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) { }
+  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) {}
   public append(label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._members[label] = item;
@@ -241,10 +243,12 @@ class ElementPropertiesBuilder implements IContentVisitor {
     return appender;
   }
 
-  public startContent(_props: StartContentProps): boolean { return true; }
-  public finishContent(): void { }
+  public startContent(_props: StartContentProps): boolean {
+    return true;
+  }
+  public finishContent(): void {}
 
-  public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void { }
+  public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void {}
 
   public startItem(props: StartItemProps): boolean {
     this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => this._items.push(item));
@@ -267,20 +271,26 @@ class ElementPropertiesBuilder implements IContentVisitor {
     this._appendersStack.pop();
   }
 
-  public startField(_props: StartFieldProps): boolean { return true; }
-  public finishField(): void { }
+  public startField(_props: StartFieldProps): boolean {
+    return true;
+  }
+  public finishField(): void {}
 
   public startStruct(props: StartStructProps): boolean {
     this._appendersStack.push(new StructItemAppender(this._currentAppender, props));
     return true;
   }
-  public finishStruct(): void { this._appendersStack.pop()!.finish(); }
+  public finishStruct(): void {
+    this._appendersStack.pop()!.finish();
+  }
 
   public startArray(props: StartArrayProps): boolean {
     this._appendersStack.push(new ArrayItemAppender(this._currentAppender, props));
     return true;
   }
-  public finishArray(): void { this._appendersStack.pop()!.finish(); }
+  public finishArray(): void {
+    this._appendersStack.pop()!.finish();
+  }
 
   public processMergedValue(props: ProcessMergedValueProps): void {
     this._currentAppender.append(props.mergedField.label, {

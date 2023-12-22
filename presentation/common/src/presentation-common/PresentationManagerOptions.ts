@@ -139,6 +139,11 @@ export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVaria
    * @see [[DefaultContentDisplayTypes]]
    */
   displayType: string;
+  /**
+   * Content flags used for content customization.
+   * @see [[ContentFlags]]
+   */
+  contentFlags?: number;
   /** Input keys for getting the content */
   keys: TKeySet;
   /** Information about the selection event that was the cause of this content request */

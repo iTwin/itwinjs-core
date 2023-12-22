@@ -278,8 +278,10 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetOrId: "ElementProperties",
       keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
     });
-    const properties = buildElementsProperties(content);
-    return properties[0];
+    if (!content) {
+      return undefined;
+    }
+    return buildElementsProperties(content.descriptor, content.contentSet)[0];
   }
 
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */
