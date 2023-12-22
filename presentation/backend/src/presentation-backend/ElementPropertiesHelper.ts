@@ -84,8 +84,7 @@ export function getClassesWithInstances(imodel: IModelDb, fullClassNames: string
       set.add(`${schemaName}.${className}`);
       return set;
     }, new Set()),
-    map((set) => [...set]),
-    mergeAll(),
+    mergeMap((set) => [...set]),
   );
 }
 
