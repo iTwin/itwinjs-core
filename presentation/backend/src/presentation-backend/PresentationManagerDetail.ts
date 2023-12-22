@@ -279,7 +279,7 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetOrId: "ElementProperties",
       keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
     });
-    if (!content) {
+    if (!content || content.contentSet.length === 0) {
       return undefined;
     }
     return buildElementProperties(content.descriptor, content.contentSet[0]);
