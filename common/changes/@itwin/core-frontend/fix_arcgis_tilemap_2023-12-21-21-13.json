@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix issues with ArcGIS tiled Mapserver not showing up with some specific datasets.",
+      "comment": "Fixed an issue preventing tiles published by some specific ArcGIS MapServer to be correctly displayed in the view.",
       "type": "none"
     }
   ],
