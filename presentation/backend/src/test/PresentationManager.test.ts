@@ -2629,6 +2629,89 @@ describe("PresentationManager", () => {
           expect(items).to.deep.eq(expectedResponse);
         }
       });
+
+      it("returns element properties with custom parser", async () => {
+        // what the addon receives
+        imodelMock.setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`)))).returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
+        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            rulesetId: manager.getRulesetId({
+              id: `content/TestSchema.TestClass`,
+              rules: [{
+                ruleType: "Content",
+                specifications: [{
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: {
+                    schemaName: "TestSchema",
+                    classNames: ["TestClass"],
+                    arePolymorphic: false,
+                  },
+                  handlePropertiesPolymorphically: true,
+                }],
+              }],
+            }),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.Grid,
+              contentFlags: ContentFlags.ShowLabels,
+              instanceFilter:{
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+              },
+            },
+            keys: new KeySet(),
+          },
+        };
+
+        // what the addon returns
+        setup(createTestContentDescriptor({
+          displayType: DefaultContentDisplayTypes.Grid,
+          contentFlags: ContentFlags.ShowLabels,
+          fields: [
+            createTestSimpleContentField({
+              name: "test",
+              label: "Test Field",
+              category: createTestCategoryDescription({ label: "Test Category" }),
+            }),
+          ],
+        }).toJSON());
+        setup([
+          createTestContentItem({
+            label: "test one",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+            values: {},
+            displayValues: {},
+          }),
+          createTestContentItem({
+            label: "test two",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+            values: {},
+            displayValues: {},
+          }),
+        ].map((item) => item.toJSON()));
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb, string> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+          contentParser: (_, item) => item.label.displayValue,
+        };
+        const expectedResponse = [
+          "test one",
+          "test two",
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
+      });
     });
 
     describe("getDisplayLabelDefinition", () => {

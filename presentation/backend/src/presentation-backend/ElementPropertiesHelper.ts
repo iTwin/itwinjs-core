@@ -10,17 +10,35 @@ import { from, map, mergeAll, mergeMap, Observable, reduce } from "rxjs";
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  CategoryDescription, Content, Descriptor, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem,
-  ElementPropertiesPropertyItem, ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus,
-  ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps,
-  StartContentProps, StartFieldProps, StartItemProps, StartStructProps, traverseContent,
+  CategoryDescription,
+  Descriptor,
+  ElementProperties,
+  ElementPropertiesItem,
+  ElementPropertiesPrimitiveArrayPropertyItem,
+  ElementPropertiesPropertyItem,
+  ElementPropertiesStructArrayPropertyItem,
+  IContentVisitor,
+  Item,
+  PresentationError,
+  PresentationStatus,
+  ProcessFieldHierarchiesProps,
+  ProcessMergedValueProps,
+  ProcessPrimitiveValueProps,
+  PropertyValueFormat,
+  StartArrayProps,
+  StartCategoryProps,
+  StartContentProps,
+  StartFieldProps,
+  StartItemProps,
+  StartStructProps,
+  traverseContentItem,
 } from "@itwin/presentation-common";
 
 /** @internal */
-export const buildElementsProperties = (descriptor: Descriptor, items: Item[]): ElementProperties[] => {
+export const buildElementProperties = (descriptor: Descriptor, item: Item): ElementProperties => {
   const builder = new ElementPropertiesBuilder();
-  traverseContent(builder, new Content(descriptor, items));
-  return builder.items;
+  traverseContentItem(builder, descriptor, item);
+  return builder.items[0];
 };
 
 /** @internal */

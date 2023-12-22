@@ -16,7 +16,7 @@ import {
   UnitSystemFormat as CommonUnitSystemFormat, ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentFormatter,
   ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, FormatsMap, HierarchyCompareInfo,
   HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey,
   isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, Item, KeySet, KoqPropertyValueFormatter, LabelDefinition,
   LocalizationHelper, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus,
@@ -24,7 +24,7 @@ import {
   SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  buildElementsProperties, getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName,
+  buildElementProperties, getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName,
 } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
@@ -196,9 +196,9 @@ export type UnitSystemFormat = CommonUnitSystemFormat;
  * Data structure for multiple element properties request response.
  * @public
  */
-export interface MultiElementPropertiesResponse {
+export interface MultiElementPropertiesResponse<TParsedContent = ElementProperties> {
   total: number;
-  iterator: () => AsyncGenerator<ElementProperties[]>;
+  iterator: () => AsyncGenerator<TParsedContent[]>;
 }
 
 /**
@@ -591,8 +591,10 @@ export class PresentationManager {
    * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
    * @public
    */
-  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
-  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<ElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
+  public async getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse<TParsedContent>>;
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<ElementProperties | undefined | MultiElementPropertiesResponse<TParsedContent>> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       const elementProperties = await this._detail.getElementProperties(requestOptions);
       // istanbul ignore if
@@ -601,11 +603,15 @@ export class PresentationManager {
       return this._localizationHelper.getLocalizedElementProperties(elementProperties);
     }
 
-    return this.getMultipleElementProperties(requestOptions);
+    return this.getMultipleElementProperties<TParsedContent>(requestOptions);
   }
 
-  private async getMultipleElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse> {
-    const { elementClasses, ...contentOptions } = requestOptions;
+  private async getMultipleElementProperties<TParsedContent>(
+    requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
+    type TParser = Required<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>["contentParser"];
+    const { elementClasses, contentParser, ...contentOptions } = requestOptions;
+    const parser: TParser = contentParser ?? buildElementProperties as TParser;
     const workerThreadsCount = (this._props.workerThreadsCount ?? 2);
 
     // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
@@ -690,7 +696,7 @@ export class PresentationManager {
           ),
         classParallelism,
       ),
-      map(({ descriptor, items }) => buildElementsProperties(descriptor, items)),
+      map(({ descriptor, items }) => items.map((item) => parser(descriptor, item))),
     );
 
     return {

@@ -16,7 +16,7 @@ import {
   PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementsProperties } from "./ElementPropertiesHelper";
+import { buildElementProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
@@ -282,7 +282,7 @@ export class PresentationManagerDetail implements IDisposable {
     if (!content) {
       return undefined;
     }
-    return buildElementsProperties(content.descriptor, content.contentSet)[0];
+    return buildElementProperties(content.descriptor, content.contentSet[0]);
   }
 
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */
