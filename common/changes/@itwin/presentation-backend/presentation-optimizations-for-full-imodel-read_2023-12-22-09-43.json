@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Improve performance of `PresentationManager.getElementProperties` \"multi\" case by ~100%. Add a way to provide custom content parser.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

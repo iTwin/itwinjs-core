@@ -132,4 +132,28 @@ export class Item {
   public static reviver(key: string, value: any): any {
     return key === "" ? Item.fromJSON(value) : value;
   }
+
+  /**
+   * Deserialize items list from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized items list
+   * @internal
+   */
+  public static listFromJSON(json: ItemJSON[] | string): Item[] {
+    if (typeof json === "string") {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      return JSON.parse(json, Item.listReviver);
+    }
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    return json.map(Item.fromJSON).filter((item): item is Item => !!item);
+  }
+
+  /**
+   * Reviver function that can be used as a second argument for
+   * `JSON.parse` method when parsing [[Item]][] objects.
+   * @internal
+   */
+  public static listReviver(key: string, value: any): any {
+    return key === "" ? Item.listFromJSON(value) : value;
+  }
 }

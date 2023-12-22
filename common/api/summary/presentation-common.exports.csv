@@ -131,6 +131,7 @@ public;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | 
 public;ElementPropertiesPropertyItemBase 
 public;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 public;ElementPropertiesRequestOptions
+deprecated;ElementPropertiesRequestOptions
 public;ElementPropertiesStructArrayPropertyItem 
 public;ElementPropertiesStructPropertyItem 
 public;ElementSelectionScopeProps
