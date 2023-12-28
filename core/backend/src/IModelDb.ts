@@ -329,7 +329,11 @@ export abstract class IModelDb extends IModel {
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
-  public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
+  public get pathName(): LocalFileName {
+    // if (!this.isOpen)
+    //   throw new IModelError(IModelStatus.NotOpen, "Db should be open when calling pathName getter.");
+    return this.nativeDb.getFilePath();
+  }
 
   /** Get the full path to this iModel's "watch file".
    * A read-only briefcase opened with `watchForChanges: true` creates this file next to the briefcase file on open, if it doesn't already exist.

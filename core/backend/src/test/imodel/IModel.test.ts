@@ -2460,6 +2460,14 @@ describe("iModel", () => {
     });
   });
 
+  it.only("should throw error when calling pathName on closed iModel", () => {
+    const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "callpathnameclosedimodel.bim"), { rootSubject: { name: "test" } });
+    iModel.close();
+    iModel.close();
+    expect(() => iModel.pathName).to.throw(IModelError);
+    // const iModelPath = iModel.pathName;
+  });
+
   it("Run plain SQL against readonly connection", () => {
     let iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
     const iModelPath = iModel.pathName;
