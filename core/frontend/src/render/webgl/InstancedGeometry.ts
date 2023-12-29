@@ -284,6 +284,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override get isLitSurface() { return this._repr.isLitSurface; }
   public override get hasBakedLighting() { return this._repr.hasBakedLighting; }
   public override get hasAnimation() { return this._repr.hasAnimation; }
+  public override get usesQuantizedPositions() { return this._repr.usesQuantizedPositions; }
   public get qOrigin() { return this._repr.qOrigin; }
   public get qScale() { return this._repr.qScale; }
   public override get materialInfo() { return this._repr.materialInfo; }
