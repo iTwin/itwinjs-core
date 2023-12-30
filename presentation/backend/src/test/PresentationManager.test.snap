@@ -761,6 +761,190 @@ Object {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns content set 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0xfef3000000b3cb",
+      "label": "Yuan Renminbi lime",
+      "name": "Multi-lateral",
+    },
+    "displayValues": Object {
+      "test field": "test display value",
+    },
+    "imageId": "image id",
+    "labelDefinition": Object {
+      "displayValue": "Argentine Peso",
+      "rawValue": "Functionality",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "District",
+        "id": "0x406e0000001bdf",
+      },
+    ],
+    "values": Object {
+      "test field": "test value",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns content set for BisCore:Element instances when concrete key is found 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0x12f58000000306f",
+      "label": "lime Chips Centralized",
+      "name": "Regional",
+    },
+    "displayValues": Object {
+      "test field": "test display value",
+    },
+    "imageId": "test image id",
+    "labelDefinition": Object {
+      "displayValue": "Director",
+      "rawValue": "Refined",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "Armenian Dram",
+        "id": "0x13e25000000ea94",
+      },
+    ],
+    "values": Object {
+      "test field": "test value",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns content set for BisCore:Element instances when concrete key is not found 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0x58d1000000eea3",
+      "label": "Corporate",
+      "name": "Money Market Account",
+    },
+    "displayValues": Object {
+      "test field": "test display value",
+    },
+    "imageId": "test image id",
+    "labelDefinition": Object {
+      "displayValue": "Nebraska",
+      "rawValue": "primary",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "Steel",
+        "id": "0x1450c0000017be8",
+      },
+    ],
+    "values": Object {
+      "test field": "test value",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns content without formatting 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0x4c9d0000009d37",
+      "label": "e-tailers",
+      "name": "Seamless",
+    },
+    "displayValues": Object {},
+    "imageId": "test image id",
+    "labelDefinition": Object {
+      "displayValue": "neural",
+      "rawValue": "grey",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "ability",
+        "id": "0x4776000000b65d",
+      },
+    ],
+    "values": Object {
+      "test field": 1.234,
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns formatted content set 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0x185860000012371",
+      "label": "Human Optional Accounts",
+      "name": "holistic",
+    },
+    "displayValues": Object {
+      "test field": "1.23",
+    },
+    "imageId": "test image id",
+    "labelDefinition": Object {
+      "displayValue": "port",
+      "rawValue": "interactive",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "Chair",
+        "id": "0x306d00000118e0",
+      },
+    ],
+    "values": Object {
+      "test field": 1.234,
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentSet returns localized content set 1`] = `
+Array [
+  Object {
+    "classInfo": Object {
+      "id": "0x16d360000000546",
+      "label": "Personal Loan Account",
+      "name": "open-source",
+    },
+    "displayValues": Object {
+      "test field": "Not specified",
+    },
+    "imageId": "image id",
+    "labelDefinition": Object {
+      "displayValue": "Not specified",
+      "rawValue": "Not specified",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "empower",
+        "id": "0xf4e7000000fcfa",
+      },
+    ],
+    "values": Object {
+      "test field": "Not specified",
+    },
+  },
+]
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects getContentSources returns content sources 1`] = `
 Array [
   Object {
