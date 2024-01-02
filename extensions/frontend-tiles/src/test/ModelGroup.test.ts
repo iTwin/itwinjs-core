@@ -61,7 +61,7 @@ function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs
   expect(actual).to.deep.equal(expected);
 }
 
-describe.only("groupModels", () => {
+describe("groupModels", () => {
   it("groups all models together if no special settings", () => {
     expectGrouping([], {}, []);
     expectGrouping([["0x1"]], {}, ["0x1"]);
