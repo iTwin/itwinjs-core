@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
@@ -43,9 +43,12 @@ export interface ImdlParserOptions {
   data: Uint8Array;
   batchModelId: Id64String;
   is3d: boolean;
+  /** The limit on the width and height of a [[VertexTable]]. */
   maxVertexTableSize: number;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
+  /* see [[ImdlDecodeArgs.modelGroups]]. */
+  modelGroups?: Id64Set[];
 }
 
 /** Arguments provided to [[parseImdlDocument]].

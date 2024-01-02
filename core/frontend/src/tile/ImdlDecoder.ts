@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import type { ByteStream, Id64String } from "@itwin/core-bentley";
+import type { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType } from "@itwin/core-common";
 import type { IModelConnection } from "../IModelConnection";
 import { BatchOptions } from "../render/GraphicBuilder";
@@ -18,12 +18,18 @@ import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal
  * @internal
  */
 export interface ImdlDecodeArgs {
+  /** The encoded tile content. */
   stream: ByteStream;
+  /** The render system used to create graphics from the tile content. */
   system: RenderSystem;
   isLeaf?: boolean;
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   isCanceled?: () => boolean;
+  /** An array of model groups. If supplied, the graphics associated with each group of models will be decoded into a separate GraphciBranch
+   * with [[GraphicBranch.groupNodeId]] set to the index of the group to which the model belongs.
+   */
+  modelGroups?: Id64Set[];
 }
 
 /** An object that can decode graphics in iMdl format.
