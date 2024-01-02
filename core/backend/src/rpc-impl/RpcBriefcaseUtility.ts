@@ -122,6 +122,12 @@ export class RpcBriefcaseUtility {
     return iModelDb;
   }
 
+  public static async open(args: DownloadAndOpenArgs & {syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
+  /**
+   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
+  public static async open(args: DownloadAndOpenArgs & {syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
@@ -187,9 +193,16 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
+  /**
+   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
     if (tokenProps.iModelId)
       await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
+    // eslint-disable-next-line deprecation/deprecation
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 
