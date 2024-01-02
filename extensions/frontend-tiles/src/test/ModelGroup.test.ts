@@ -29,14 +29,14 @@ class GroupingContext implements ModelGroupingContext {
   };
 
   public getModelClip(modelId: Id64String) {
-    return this._clips.find((x) => x.modelId === modelId)
+    return this._clips.find((x) => x.modelId === modelId);
   }
 
   public constructor(args: GroupingContextArgs) {
     this.modelDisplayTransformProvider = {
       getModelDisplayTransform: (modelId: Id64String) => args[modelId]?.transform,
     };
-    
+
     this.displayStyle = {
       settings: {
         getPlanProjectionSettings: (modelId: Id64String) => args[modelId]?.projection,
@@ -64,7 +64,7 @@ function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs
 describe.only("groupModels", () => {
   it("groups all models together if no special settings", () => {
     expectGrouping([], {}, []);
-    expectGrouping([["0x1"]], {}, ["0x1"])
+    expectGrouping([["0x1"]], {}, ["0x1"]);
     expectGrouping([["0x1", "0x2", "0x3"]], {}, ["0x1", "0x3", "0x2"]);
   });
 
@@ -89,7 +89,7 @@ describe.only("groupModels", () => {
         "0x2": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
         "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 3 }) },
       },
-      ["0x1", "0x2", "0x3", "0x4"]
+      ["0x1", "0x2", "0x3", "0x4"],
     );
 
     expectGrouping(
@@ -99,7 +99,7 @@ describe.only("groupModels", () => {
         "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
         "0x4": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
       },
-      ["0x1", "0x2", "0x3", "0x4", "0x5"]
+      ["0x1", "0x2", "0x3", "0x4", "0x5"],
     );
   });
 
@@ -110,7 +110,7 @@ describe.only("groupModels", () => {
         "0x2": { transform: { transform: Transform.createTranslationXYZ(2) } },
         "0x3": { transform: { transform: Transform.createTranslationXYZ(3) } },
       },
-      ["0x1", "0x2", "0x3", "0x4"]
+      ["0x1", "0x2", "0x3", "0x4"],
     );
 
     expectGrouping(
@@ -120,7 +120,7 @@ describe.only("groupModels", () => {
         "0x3": { transform: { transform: Transform.createTranslationXYZ(1) } },
         "0x4": { transform: { transform: Transform.createTranslationXYZ(2) } },
       },
-      ["0x1", "0x2", "0x3", "0x4", "0x5"]
+      ["0x1", "0x2", "0x3", "0x4", "0x5"],
     );
   });
 
@@ -136,7 +136,7 @@ describe.only("groupModels", () => {
         "0x2": { clip: c2 },
         "0x3": { clip: c3 },
       },
-      ["0x1", "0x2", "0x3", "0x4"]
+      ["0x1", "0x2", "0x3", "0x4"],
     );
 
     expectGrouping(
@@ -146,7 +146,7 @@ describe.only("groupModels", () => {
         "0x3": { clip: c1 },
         "0x4": { clip: c2 },
       },
-      ["0x1", "0x2", "0x3", "0x4", "0x5"]
+      ["0x1", "0x2", "0x3", "0x4", "0x5"],
     );
   });
 
@@ -154,7 +154,7 @@ describe.only("groupModels", () => {
     const p1 = PlanProjectionSettings.fromJSON({ elevation: 1 });
     const t1 = { transform: Transform.createTranslationXYZ(1) };
     const c1 = ClipVector.createEmpty();
-    
+
     expectGrouping([["0x1", "0x2"], ["0x3"], ["0x4", "0x5", "0x6"], ["0x7"], ["0x8"], ["0x9"], ["0xa", "0xb"], ["0xc", "0xd"]], {
       "0x1": { projection: p1, transform: t1, clip: c1 },
       "0x2": { projection: p1, transform: t1, clip: c1 },
@@ -167,7 +167,7 @@ describe.only("groupModels", () => {
       "0x9": { clip: c1 },
       "0xa": { transform: t1 },
       "0xb": { transform: t1 },
-    }, ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb", "0xc", "0xd"])
+    }, ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb", "0xc", "0xd"]);
   });
 
   it("associates each animation transform node with corresponding model group", () => {

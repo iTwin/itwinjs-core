@@ -5,7 +5,7 @@
 
 import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings } from "@itwin/core-common";
-import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume, } from "@itwin/core-frontend";
+import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume } from "@itwin/core-frontend";
 
 export interface ModelGroupInfo {
   displayTransform?: ModelDisplayTransform;
@@ -43,7 +43,7 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
     if (!a.clip || !b.clip || a.clip.clipVector !== b.clip.clipVector)
       return false;
   }
-  
+
   if (a.planProjectionSettings || b.planProjectionSettings)
     if (!a.planProjectionSettings || !b.planProjectionSettings || !a.planProjectionSettings.equals(b.planProjectionSettings))
       return false;
@@ -54,7 +54,7 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
 
     if (!!a.displayTransform.premultiply !== !!b.displayTransform.premultiply)
       return false;
-  
+
     if (!a.displayTransform.transform.isAlmostEqual(b.displayTransform.transform))
       return false;
   }
