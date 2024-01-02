@@ -103,7 +103,7 @@ describe.only("groupModels", () => {
         "0x3": { projection: e1 },
         "0x4": { projection: e2 },
       },
-      ["0x1,", "0x2", "0x3", "0x4", "0x5"]
+      ["0x1", "0x2", "0x3", "0x4", "0x5"]
     );
   });
 
