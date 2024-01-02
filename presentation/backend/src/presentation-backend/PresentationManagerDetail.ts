@@ -12,11 +12,11 @@ import {
   DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   FormatsMap,
-  HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
+  HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Item, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
   PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementsProperties } from "./ElementPropertiesHelper";
+import { buildElementProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
@@ -191,6 +191,19 @@ export class PresentationManagerDetail implements IDisposable {
     return JSON.parse(await this.request(params));
   }
 
+  public async getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]> {
+    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentSet,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
+    };
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    return JSON.parse(await this.request(params), Item.listReviver);
+  }
+
   public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
     const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
     const params = {
@@ -266,8 +279,10 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetOrId: "ElementProperties",
       keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
     });
-    const properties = buildElementsProperties(content);
-    return properties[0];
+    if (!content || content.contentSet.length === 0) {
+      return undefined;
+    }
+    return buildElementProperties(content.descriptor, content.contentSet[0]);
   }
 
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */

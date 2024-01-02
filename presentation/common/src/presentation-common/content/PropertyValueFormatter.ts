@@ -12,7 +12,9 @@ import { KindOfQuantityInfo, PropertyInfo } from "../EC";
 import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
 import { ValuesDictionary } from "../Utils";
 import { Content } from "./Content";
+import { Descriptor } from "./Descriptor";
 import { Field, PropertiesField } from "./Fields";
+import { Item } from "./Item";
 import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
 import { DisplayValue, DisplayValuesMap, NestedContentValue, Value } from "./Value";
 
@@ -21,11 +23,15 @@ export class ContentFormatter {
   constructor(private _propertyValueFormatter: ContentPropertyValueFormatter, private _unitSystem?: UnitSystemKey) { }
 
   public async formatContent(content: Content) {
-    const descriptor = content.descriptor;
-    for (const item of content.contentSet) {
+    const formattedItems = await this.formatContentItems(content.contentSet, content.descriptor);
+    return new Content(content.descriptor, formattedItems);
+  }
+
+  public async formatContentItems(items: Item[], descriptor: Descriptor) {
+    return Promise.all(items.map(async (item) => {
       await this.formatValues(item.values, item.displayValues, descriptor.fields, item.mergedFieldNames);
-    }
-    return content;
+      return item;
+    }));
   }
 
   private async formatValues(values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, fields: Field[], mergedFields: string[]) {
@@ -54,7 +60,6 @@ export class ContentFormatter {
       await this.formatValues(nestedValue.values, nestedValue.displayValues, fields, nestedValue.mergedFieldNames);
     }
   }
-
 }
 
 /** @alpha */

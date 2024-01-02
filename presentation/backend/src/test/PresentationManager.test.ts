@@ -37,6 +37,7 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
+import { stubECSqlReader } from "./Helpers";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -1466,6 +1467,315 @@ describe("PresentationManager", () => {
 
     });
 
+    describe("getContentSet", () => {
+
+      it("returns content set", async () => {
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const fieldName = "test field";
+        const category = createTestCategoryDescription();
+        const descriptor = createTestContentDescriptor({
+          categories: [category],
+          fields: [createTestSimpleContentField({
+            category,
+            name: fieldName,
+          })],
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: createRandomLabelDefinition(),
+          imageId: "image id",
+          values: {
+            [fieldName]: "test value",
+          },
+          displayValues: {
+            [fieldName]: "test display value",
+          },
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor,
+          keys,
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns localized content set", async () => {
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const fieldName = "test field";
+        const category = createTestCategoryDescription({ label: "@Presentation:label.notSpecified@" });
+        const descriptor = createTestContentDescriptor({
+          categories: [category],
+          fields: [createTestSimpleContentField({
+            label: "@Presentation:label.notSpecified@",
+            category,
+            name: fieldName,
+          })],
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: {
+            typeName: "string",
+            rawValue: "@Presentation:label.notSpecified@",
+            displayValue: "@Presentation:label.notSpecified@",
+          },
+          imageId: "image id",
+          values: {
+            [fieldName]: "@Presentation:label.notSpecified@",
+          },
+          displayValues: {
+            [fieldName]: "@Presentation:label.notSpecified@",
+          },
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor,
+          keys,
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns content set for BisCore:Element instances when concrete key is found", async () => {
+        // what the addon receives
+        const baseClassKey = { className: "BisCore:Element", id: "0x123" };
+        const concreteClassKey = { className: "concrete:class", id: baseClassKey.id };
+        setupIModelForElementKey(imodelMock, concreteClassKey);
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([concreteClassKey])),
+            descriptorOverrides: {},
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const fieldName = "test field";
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: createRandomLabelDefinition(),
+          imageId: "test image id",
+          values: {
+            [fieldName]: "test value",
+          },
+          displayValues: {
+            [fieldName]: "test display value",
+          },
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: createTestContentDescriptor({ fields: [createTestSimpleContentField({ name: fieldName })] }),
+          keys: new KeySet([baseClassKey]),
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns content set for BisCore:Element instances when concrete key is not found", async () => {
+        // what the addon receives
+        const baseClassKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForNoResultStatement(imodelMock);
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([baseClassKey])),
+            descriptorOverrides: {},
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const fieldName = "test field";
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: createRandomLabelDefinition(),
+          imageId: "test image id",
+          values: {
+            [fieldName]: "test value",
+          },
+          displayValues: {
+            [fieldName]: "test display value",
+          },
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: createTestContentDescriptor({ fields: [createTestSimpleContentField({ name: fieldName })] }),
+          keys: new KeySet([baseClassKey]),
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns formatted content set", async () => {
+        // setup manager to support formatting
+        recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey()]);
+        const fieldName = "test field";
+        const descriptor = createTestContentDescriptor({
+          fields: [
+            createTestPropertiesContentField({
+              name: fieldName,
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+            }),
+          ], displayType: "test",
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: {
+              displayType: descriptor.displayType,
+            },
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const fieldValue = 1.234;
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: createRandomLabelDefinition(),
+          imageId: "test image id",
+          values: {
+            [fieldName]: fieldValue,
+          },
+          displayValues: {},
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor,
+          keys,
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+      it("returns content without formatting", async () => {
+        // setup manager to support formatting
+        recreateManager({ schemaContextProvider: () => new SchemaContext() });
+
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey()]);
+        const fieldName = "test field";
+        const descriptor = createTestContentDescriptor({
+          fields: [
+            createTestPropertiesContentField({
+              name: fieldName,
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+            }),
+          ], displayType: "test",
+        });
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            keys: getKeysForContentRequest(keys),
+            descriptorOverrides: {
+              displayType: descriptor.displayType,
+            },
+            paging: testData.pageOptions,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const fieldValue = 1.234;
+        const addonResponse: ItemJSON[] = [{
+          primaryKeys: [createRandomECInstanceKey()],
+          classInfo: createRandomECClassInfo(),
+          labelDefinition: createRandomLabelDefinition(),
+          imageId: "test image id",
+          values: {
+            [fieldName]: fieldValue,
+          },
+          displayValues: {},
+          mergedFieldNames: [],
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor,
+          keys,
+          omitFormattedValues: true,
+        };
+        const result = await manager.getContentSet(options);
+        verifyWithSnapshot(result, expectedParams);
+      });
+
+    });
+
     describe("getContent", () => {
 
       it("returns content", async () => {
@@ -1906,6 +2216,34 @@ describe("PresentationManager", () => {
     });
 
     describe("getElementProperties", () => {
+      it("returns no properties for invalid element id", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        setup({});
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementId: elementKey.id,
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.be.undefined;
+      });
 
       it("returns single element properties", async () => {
         // what the addon receives
@@ -2047,66 +2385,82 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(expectedResponse);
       });
 
-      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: undefined }));
+      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, ids: string[]) {
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ids.length);
+        imodel.setup((x) => x.createQueryReader(moq.It.is((query) => query.startsWith("SELECT ECInstanceId")))).returns(() => stubECSqlReader(ids.map((id) => ({ id }))));
       }
 
       it("returns multiple elements properties", async () => {
         // what the addon receives
-        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
-        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
-        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+        imodelMock.setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`)))).returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
+        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
 
         const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
+          requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
-            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            rulesetId: manager.getRulesetId({
+              id: `content/TestSchema.TestClass`,
+              rules: [{
+                ruleType: "Content",
+                specifications: [{
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: {
+                    schemaName: "TestSchema",
+                    classNames: ["TestClass"],
+                    arePolymorphic: false,
+                  },
+                  handlePropertiesPolymorphically: true,
+                }],
+              }],
+            }),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
+              instanceFilter:{
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+              },
             },
-            rulesetId: "ElementProperties",
+            keys: new KeySet(),
           },
         };
 
         // what the addon returns
-        const addonContentResponse = new Content(
-          createTestContentDescriptor({
-            fields: [
-              createTestSimpleContentField({
-                name: "test",
-                label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
-              }),
-            ],
-          }),
-          [
-            createTestContentItem({
-              label: "test label 1",
-              classInfo: createTestECClassInfo({ label: "Test Class" }),
-              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
-              values: {
-                test: "test value 1",
-              },
-              displayValues: {
-                test: "test display value 1",
-              },
-            }),
-            createTestContentItem({
-              label: "test label 2",
-              classInfo: createTestECClassInfo({ label: "Test Class" }),
-              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
-              values: {
-                test: "test value 2",
-              },
-              displayValues: {
-                test: "test display value 2",
-              },
+        setup(createTestContentDescriptor({
+          displayType: DefaultContentDisplayTypes.Grid,
+          contentFlags: ContentFlags.ShowLabels,
+          fields: [
+            createTestSimpleContentField({
+              name: "test",
+              label: "Test Field",
+              category: createTestCategoryDescription({ label: "Test Category" }),
             }),
           ],
-        ).toJSON();
-        setup(addonContentResponse);
+        }).toJSON());
+        setup([
+          createTestContentItem({
+            label: "test label 1",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+            values: {
+              test: "test value 1",
+            },
+            displayValues: {
+              test: "test display value 1",
+            },
+          }),
+          createTestContentItem({
+            label: "test label 2",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+            values: {
+              test: "test value 2",
+            },
+            displayValues: {
+              test: "test display value 2",
+            },
+          }),
+        ].map((item) => item.toJSON()));
 
         // test
         const options: MultiElementPropertiesRequestOptions<IModelDb> = {
@@ -2158,59 +2512,75 @@ describe("PresentationManager", () => {
 
       it("returns localized multiple elements properties", async () => {
         // what the addon receives
-        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
-        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
-        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+        imodelMock.setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`)))).returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
+        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
 
         const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
+          requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
-            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            rulesetId: manager.getRulesetId({
+              id: `content/TestSchema.TestClass`,
+              rules: [{
+                ruleType: "Content",
+                specifications: [{
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: {
+                    schemaName: "TestSchema",
+                    classNames: ["TestClass"],
+                    arePolymorphic: false,
+                  },
+                  handlePropertiesPolymorphically: true,
+                }],
+              }],
+            }),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.Grid,
               contentFlags: ContentFlags.ShowLabels,
+              instanceFilter:{
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+              },
             },
-            rulesetId: "ElementProperties",
+            keys: new KeySet(),
           },
         };
 
         // what the addon returns
-        const addonContentResponse = new Content(
-          createTestContentDescriptor({
-            fields: [
-              createTestSimpleContentField({
-                name: "test",
-                label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
-              }),
-            ],
-          }),
-          [
-            createTestContentItem({
-              label: "@Presentation:label.notSpecified@",
-              classInfo: createTestECClassInfo({ label: "Test Class" }),
-              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
-              values: {
-                test: "test value 1",
-              },
-              displayValues: {
-                test: "test display value 1",
-              },
-            }),
-            createTestContentItem({
-              label: "@Presentation:label.notSpecified@",
-              classInfo: createTestECClassInfo({ label: "Test Class" }),
-              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
-              values: {
-                test: "test value 2",
-              },
-              displayValues: {
-                test: "test display value 2",
-              },
+        setup(createTestContentDescriptor({
+          displayType: DefaultContentDisplayTypes.Grid,
+          contentFlags: ContentFlags.ShowLabels,
+          fields: [
+            createTestSimpleContentField({
+              name: "test",
+              label: "Test Field",
+              category: createTestCategoryDescription({ label: "Test Category" }),
             }),
           ],
-        ).toJSON();
-        setup(addonContentResponse);
+        }).toJSON());
+        setup([
+          createTestContentItem({
+            label: "@Presentation:label.notSpecified@",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+            values: {
+              test: "test value 1",
+            },
+            displayValues: {
+              test: "test display value 1",
+            },
+          }),
+          createTestContentItem({
+            label: "@Presentation:label.notSpecified@",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+            values: {
+              test: "test value 2",
+            },
+            displayValues: {
+              test: "test display value 2",
+            },
+          }),
+        ].map((item) => item.toJSON()));
 
         // test
         const options: MultiElementPropertiesRequestOptions<IModelDb> = {
@@ -2260,6 +2630,88 @@ describe("PresentationManager", () => {
         }
       });
 
+      it("returns element properties with custom parser", async () => {
+        // what the addon receives
+        imodelMock.setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`)))).returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
+        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            rulesetId: manager.getRulesetId({
+              id: `content/TestSchema.TestClass`,
+              rules: [{
+                ruleType: "Content",
+                specifications: [{
+                  specType: "ContentInstancesOfSpecificClasses",
+                  classes: {
+                    schemaName: "TestSchema",
+                    classNames: ["TestClass"],
+                    arePolymorphic: false,
+                  },
+                  handlePropertiesPolymorphically: true,
+                }],
+              }],
+            }),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.Grid,
+              contentFlags: ContentFlags.ShowLabels,
+              instanceFilter:{
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+              },
+            },
+            keys: new KeySet(),
+          },
+        };
+
+        // what the addon returns
+        setup(createTestContentDescriptor({
+          displayType: DefaultContentDisplayTypes.Grid,
+          contentFlags: ContentFlags.ShowLabels,
+          fields: [
+            createTestSimpleContentField({
+              name: "test",
+              label: "Test Field",
+              category: createTestCategoryDescription({ label: "Test Category" }),
+            }),
+          ],
+        }).toJSON());
+        setup([
+          createTestContentItem({
+            label: "test one",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+            values: {},
+            displayValues: {},
+          }),
+          createTestContentItem({
+            label: "test two",
+            classInfo: createTestECClassInfo({ label: "Test Class" }),
+            primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+            values: {},
+            displayValues: {},
+          }),
+        ].map((item) => item.toJSON()));
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb, string> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+          contentParser: (_, item) => item.label.displayValue,
+        };
+        const expectedResponse = [
+          "test one",
+          "test two",
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
+      });
     });
 
     describe("getDisplayLabelDefinition", () => {
