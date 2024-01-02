@@ -190,7 +190,7 @@
       "Messages": {
         "MapLayerAttached": "Map layer '{{sourceName}}' attached.",
         "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
-        "MapLayerValidationFailed": "Validation failed for map layer '{{sourceName}}}'",
+        "MapLayerValidationFailed": "Validation failed for map layer '{{sourceName}}'",
         "MapLayerAttachError": "Error '{{error}}' occurred while attaching map layer '{{sourceName}}'",
         "MapLayersIncompatibleFormat": "Format for map layer '{{sourceName}}' is not compatible with service type"
       },
