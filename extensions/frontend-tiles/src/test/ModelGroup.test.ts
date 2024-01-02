@@ -58,7 +58,7 @@ function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs
   const context = new GroupingContext(args);
   const groups = groupModels(context, new Set(modelIds));
   const actual = groups.map((x) => Array.from(x.modelIds).sort());
-  expect(actual).to.deep.equal([...expected].sort());
+  expect(actual).to.deep.equal(expected);
 }
 
 describe.only("groupModels", () => {
@@ -68,13 +68,43 @@ describe.only("groupModels", () => {
     expectGrouping([["0x1", "0x2", "0x3"]], {}, ["0x1", "0x3", "0x2"]);
   });
 
-  it("only groups models specified", () => {
-  });
-
   it("groups all models together if all settings match", () => {
+    const clip = ClipVector.createEmpty();
+    const args: GroupingContextArgs = { };
+    for (const modelId of ["0x1", "0x2", "0x3"]) {
+      args[modelId] = {
+        clip,
+        transform: { transform: Transform.createTranslationXYZ(1, 2, 3) },
+        projection: PlanProjectionSettings.fromJSON({ elevation: 123 }),
+      };
+    }
+
+    expectGrouping([["0x1", "0x2", "0x3"]], args, ["0x1", "0x2", "0x3"]);
   });
 
   it("produces one group per unique plan projection settings", () => {
+    const e1 = PlanProjectionSettings.fromJSON({ elevation: 1 });
+    const e2 = PlanProjectionSettings.fromJSON({ elevation: 2 });
+    const e3 = PlanProjectionSettings.fromJSON({ elevation: 3 });
+
+    expectGrouping(
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+        "0x1": { projection: e1 },
+        "0x2": { projection: e2 },
+        "0x3": { projection: e3 },
+      },
+      ["0x1", "0x2", "0x3", "0x4"]
+    );
+
+    expectGrouping(
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+        "0x1": { projection: e1 },
+        "0x2": { projection: e2 },
+        "0x3": { projection: e1 },
+        "0x4": { projection: e2 },
+      },
+      ["0x1,", "0x2", "0x3", "0x4", "0x5"]
+    );
   });
 
   it("produces one group per unique display transform", () => {
