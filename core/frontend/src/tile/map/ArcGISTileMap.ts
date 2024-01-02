@@ -257,7 +257,7 @@ export class ArcGISTileMap {
     try {
       available = await this.fetchAndReadTilemap(childIds, this.tileMapRequestSize, this.tileMapRequestSize);
     } catch (err) {
-      // if any error occurs, we assume tiles not to be visible
+      // if any error occurs, we assume tiles not to be visible 
       Logger.logError(loggerCategory, `Error while fetching tile map data : ${err}`);
       available = childIds.map(()=>false);
     }
