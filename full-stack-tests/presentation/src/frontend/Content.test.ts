@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import * as chaiJestSnapshot from "chai-jest-snapshot";
 import * as sinon from "sinon";
 import { assert, BeDuration, BeTimePoint, Guid, Id64, using } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { BriefcaseConnection, BriefcaseTxns, IModelConnection, IpcApp, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValue, DisplayValueGroup, DisplayValuesArray, DisplayValuesMap, Field, FieldDescriptor, FormatsMap, InstanceKey, KeySet,
@@ -20,6 +21,8 @@ import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalEleme
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+import { StandaloneDb } from "@itwin/core-backend";
+import { IpcAppFunctions } from "@itwin/core-common";
 
 describe("Content", () => {
 
@@ -1090,3 +1093,70 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   });
   return filteredFields;
 }
+
+describe("Content", () => {
+  let imodelDb: StandaloneDb;
+  let imodelConnection: IModelConnection;
+
+  before(async () => {
+    await initialize();
+
+    const fileName = "./testIModel.bim";
+    if (fs.existsSync(fileName)) {
+      fs.unlinkSync(fileName);
+    }
+    imodelDb = StandaloneDb.createEmpty(fileName, { rootSubject: { name: "test" } });
+    imodelDb.nativeDb.enableTxnTesting();
+
+    // we don't set up an IPC connection, so need to stub some stuff to be able to open
+    // a StandaloneConnection to the StandaloneDb we just created
+    sinon.stub(BriefcaseTxns.prototype, "registerImpl");
+    sinon.stub(IpcApp, "appFunctionIpc").get(() => ({
+      openStandalone: () => imodelDb.getConnectionProps(),
+      closeIModel: () => {},
+    } as unknown as IpcAppFunctions));
+
+    imodelConnection = await BriefcaseConnection.openStandalone(fileName);
+  });
+
+  after(async () => {
+    await imodelConnection.close();
+    imodelDb.close();
+    await terminate();
+  });
+
+  it.only("returns fresh content after iModel update", async () => {
+    const ruleset: Ruleset = {
+      id: "test",
+      rules: [{
+        ruleType: "Content",
+        specifications: [{
+          specType: "SelectedNodeInstances",
+        }],
+      }],
+    };
+    const contentRequestProps = {
+      imodel: imodelConnection,
+      rulesetOrId: ruleset,
+      descriptor: {},
+      keys: new KeySet([{ className: "BisCore.Subject", id: "0x1" }]),
+    };
+
+    const contentBefore = await Presentation.presentation.getContent(contentRequestProps);
+    const codeValueField = getFieldByLabel(contentBefore!.descriptor.fields, "Code")!;
+    const userLabelField = getFieldByLabel(contentBefore!.descriptor.fields, "User Label")!;
+    expect(contentBefore!.contentSet[0].values[codeValueField.name]).to.eq("test");
+    expect(contentBefore!.contentSet[0].values[userLabelField.name]).to.be.undefined;
+
+    const rootSubjectProps = imodelDb.elements.getElementJson({ id: "0x1" });
+    imodelDb.elements.updateElement({
+      ...rootSubjectProps,
+      userLabel: `updated`,
+    });
+    imodelDb.saveChanges();
+
+    const contentAfter = await Presentation.presentation.getContent(contentRequestProps);
+    expect(contentAfter!.contentSet[0].values[codeValueField.name]).to.eq("test");
+    expect(contentAfter!.contentSet[0].values[userLabelField.name]).to.eq("updated");
+  });
+});
