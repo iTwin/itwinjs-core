@@ -412,7 +412,7 @@ export class PartialECChangeUnifier {
    * Combine partial instance with instance with same key if already exists.
    * @param rhs partial instance
    */
-  private combine(rhs: ChangedECInstance): void {
+  private combine(rhs: ChangedECInstance, db?: AnyDb): void {
     if (!rhs.$meta) {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
@@ -424,6 +424,22 @@ export class PartialECChangeUnifier {
       if (lhs.$meta && rhs.$meta) {
         lhs.$meta.tables = [...rhs.$meta?.tables, ...lhs.$meta?.tables];
         lhs.$meta.changeIndexes = [...rhs.$meta?.changeIndexes, ...lhs.$meta?.changeIndexes];
+
+        // we preserve child class name & id when merging instance.
+        if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && db && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
+          const lhsClassId = lhs.$meta.fallbackClassId;
+          const rhsClassId = rhs.$meta.fallbackClassId;
+          const isRhsIsSubClassOfLhs = db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
+            stmt.bindId(1, rhsClassId);
+            stmt.bindId(2, lhsClassId);
+            stmt.step();
+            return stmt.getValue(0).getInteger() === 1;
+          });
+          if (isRhsIsSubClassOfLhs) {
+            lhs.$meta.fallbackClassId = rhs.$meta.fallbackClassId;
+            lhs.$meta.classFullName = rhs.$meta.classFullName;
+          }
+        }
       }
     } else {
       this._cache.set(key, rhs);
@@ -451,13 +467,14 @@ export class PartialECChangeUnifier {
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }
+
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
-      this.combine(adaptor.inserted);
-      this.combine(adaptor.deleted);
+      this.combine(adaptor.inserted, adaptor.reader.db);
+      this.combine(adaptor.deleted, adaptor.reader.db);
     } else if (adaptor.op === "Inserted" && adaptor.inserted) {
-      this.combine(adaptor.inserted);
+      this.combine(adaptor.inserted, adaptor.reader.db);
     } else if (adaptor.op === "Deleted" && adaptor.deleted) {
-      this.combine(adaptor.deleted);
+      this.combine(adaptor.deleted, adaptor.reader.db);
     }
   }
   /**
