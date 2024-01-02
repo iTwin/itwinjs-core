@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, use } from "chai";
+import { expect } from "chai";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings } from "@itwin/core-common";
 import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume } from "@itwin/core-frontend";
@@ -168,6 +168,21 @@ describe.only("groupModels", () => {
       "0xa": { transform: t1 },
       "0xb": { transform: t1 },
     }, ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb", "0xc", "0xd"]);
+
+    const p2 = PlanProjectionSettings.fromJSON({ elevation: 2 });
+    const t2 = { transform: t1.transform, premultiply: true };
+    const c2 = ClipVector.createEmpty();
+
+    expectGrouping([["0x1", "0x2"], ["0x3"], ["0x4", "0x5"], ["0x6"], ["0x7", "0x8"]], {
+      "0x1": { projection: p1, transform: t1 },
+      "0x2": { projection: p1, transform: t1 },
+      "0x3": { projection: p1, transform: t2 },
+      "0x4": { projection: p2, transform: t2 },
+      "0x5": { projection: p2, transform: t2 },
+      "0x6": { projection: p2, transform: t2, clip: c1 },
+      "0x7": { projection: p2, transform: t2, clip: c2 },
+      "0x8": { projection: p2, transform: t2, clip: c2 },
+    }, ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8"]);
   });
 
   it("associates each animation transform node with corresponding model group", () => {
