@@ -13,7 +13,7 @@ class SchemaCompareReporter implements ISchemaCompareReporter {
   }
 }
 
-function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string, _fullNameB?: string, _propertyType?: string) {
+function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string) {
   let found = false;
   for (const diagnostic of diagnostics) {
     if (SchemaCompareCodes.SchemaItemMissing === code &&
