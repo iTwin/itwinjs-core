@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix flaky test caused by order of changes in changeset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
