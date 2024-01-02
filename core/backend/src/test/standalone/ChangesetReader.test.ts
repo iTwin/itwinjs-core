@@ -232,9 +232,9 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[0].ECInstanceId, "0x20000000004");
       assert.isUndefined(changes[0].ECClassId);
       assert.isDefined(changes[0].$meta?.fallbackClassId);
-      assert.equal(changes[0].$meta?.fallbackClassId, "0x3f");
+      assert.equal(changes[0].$meta?.fallbackClassId, "0x3d");
       assert.isUndefined(changes[0].s);
-      assert.equal(changes[0].$meta?.classFullName, "BisCore:Element");
+      assert.equal(changes[0].$meta?.classFullName, "BisCore:GeometricElement2d");
       assert.equal(changes[0].$meta?.op, "Updated");
       assert.equal(changes[0].$meta?.stage, "New");
 
@@ -242,9 +242,9 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].ECInstanceId, "0x20000000004");
       assert.isUndefined(changes[1].ECClassId);
       assert.isDefined(changes[1].$meta?.fallbackClassId);
-      assert.equal(changes[1].$meta?.fallbackClassId, "0x3f");
+      assert.equal(changes[1].$meta?.fallbackClassId, "0x3d");
       assert.isUndefined(changes[1].s);
-      assert.equal(changes[1].$meta?.classFullName, "BisCore:Element");
+      assert.equal(changes[1].$meta?.classFullName, "BisCore:GeometricElement2d");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
     }

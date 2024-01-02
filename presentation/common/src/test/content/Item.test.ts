@@ -8,6 +8,7 @@ import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import { createTestContentItem } from "../_helpers";
 
 describe("Item", () => {
 
@@ -116,6 +117,25 @@ describe("Item", () => {
       expect(item).to.be.undefined;
     });
 
+  });
+
+  describe("listFromJSON", () => {
+    it("parses items from JSON", () => {
+      const items = [
+        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
+        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
+      ];
+      expect(Item.listFromJSON(items.map((i) => i.toJSON()))).to.matchSnapshot();
+    });
+
+    it("parses items from serialized JSON string", () => {
+      const items = [
+        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
+        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
+      ];
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(Item.listFromJSON(JSON.stringify(items))).to.matchSnapshot();
+    });
   });
 
   describe("isFieldMerged", () => {
