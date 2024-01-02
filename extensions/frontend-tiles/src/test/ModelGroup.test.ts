@@ -83,37 +83,91 @@ describe.only("groupModels", () => {
   });
 
   it("produces one group per unique plan projection settings", () => {
-    const e1 = PlanProjectionSettings.fromJSON({ elevation: 1 });
-    const e2 = PlanProjectionSettings.fromJSON({ elevation: 2 });
-    const e3 = PlanProjectionSettings.fromJSON({ elevation: 3 });
-
     expectGrouping(
       [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
-        "0x1": { projection: e1 },
-        "0x2": { projection: e2 },
-        "0x3": { projection: e3 },
+        "0x1": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
+        "0x2": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
+        "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 3 }) },
       },
       ["0x1", "0x2", "0x3", "0x4"]
     );
 
     expectGrouping(
       [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
-        "0x1": { projection: e1 },
-        "0x2": { projection: e2 },
-        "0x3": { projection: e1 },
-        "0x4": { projection: e2 },
+        "0x1": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
+        "0x2": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
+        "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
+        "0x4": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
       },
       ["0x1", "0x2", "0x3", "0x4", "0x5"]
     );
   });
 
   it("produces one group per unique display transform", () => {
+    expectGrouping(
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+        "0x1": { transform: { transform: Transform.createTranslationXYZ(1) } },
+        "0x2": { transform: { transform: Transform.createTranslationXYZ(2) } },
+        "0x3": { transform: { transform: Transform.createTranslationXYZ(3) } },
+      },
+      ["0x1", "0x2", "0x3", "0x4"]
+    );
+
+    expectGrouping(
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+        "0x1": { transform: { transform: Transform.createTranslationXYZ(1) } },
+        "0x2": { transform: { transform: Transform.createTranslationXYZ(2) } },
+        "0x3": { transform: { transform: Transform.createTranslationXYZ(1) } },
+        "0x4": { transform: { transform: Transform.createTranslationXYZ(2) } },
+      },
+      ["0x1", "0x2", "0x3", "0x4", "0x5"]
+    );
   });
 
   it("produces one group per unique clip volume", () => {
+    // NB: Currently clip vectors are only compared by identity, not effective equality.
+    const c1 = ClipVector.createEmpty();
+    const c2 = ClipVector.createEmpty();
+    const c3 = ClipVector.createEmpty();
+
+    expectGrouping(
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+        "0x1": { clip: c1 },
+        "0x2": { clip: c2 },
+        "0x3": { clip: c3 },
+      },
+      ["0x1", "0x2", "0x3", "0x4"]
+    );
+
+    expectGrouping(
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+        "0x1": { clip: c1 },
+        "0x2": { clip: c2 },
+        "0x3": { clip: c1 },
+        "0x4": { clip: c2 },
+      },
+      ["0x1", "0x2", "0x3", "0x4", "0x5"]
+    );
   });
 
   it("produces one group per unique combination of plan projection settings, clip volume, and display transform", () => {
+    const p1 = PlanProjectionSettings.fromJSON({ elevation: 1 });
+    const t1 = { transform: Transform.createTranslationXYZ(1) };
+    const c1 = ClipVector.createEmpty();
+    
+    expectGrouping([["0x1", "0x2"], ["0x3"], ["0x4", "0x5", "0x6"], ["0x7"], ["0x8"], ["0x9"], ["0xa", "0xb"], ["0xc", "0xd"]], {
+      "0x1": { projection: p1, transform: t1, clip: c1 },
+      "0x2": { projection: p1, transform: t1, clip: c1 },
+      "0x3": { projection: p1, clip: c1 },
+      "0x4": { transform: t1, clip: c1 },
+      "0x5": { transform: t1, clip: c1 },
+      "0x6": { transform: t1, clip: c1 },
+      "0x7": { projection: p1, transform: t1 },
+      "0x8": { projection: p1 },
+      "0x9": { clip: c1 },
+      "0xa": { transform: t1 },
+      "0xb": { transform: t1 },
+    }, ["0x1", "0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb", "0xc", "0xd"])
   });
 
   it("associates each animation transform node with corresponding model group", () => {
