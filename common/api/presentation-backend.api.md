@@ -32,6 +32,7 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
+import { Item } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
@@ -123,9 +124,9 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 }
 
 // @public
-export interface MultiElementPropertiesResponse {
+export interface MultiElementPropertiesResponse<TParsedContent = ElementProperties> {
     // (undocumented)
-    iterator: () => AsyncGenerator<ElementProperties[]>;
+    iterator: () => AsyncGenerator<TParsedContent[]>;
     // (undocumented)
     total: number;
 }
@@ -238,6 +239,8 @@ export class PresentationManager {
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
+    // @beta
+    getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     // @internal (undocumented)
@@ -245,7 +248,7 @@ export class PresentationManager {
     getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
-    getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
+    getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse<TParsedContent>>;
     getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
