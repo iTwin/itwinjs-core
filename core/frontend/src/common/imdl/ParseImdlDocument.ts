@@ -309,7 +309,9 @@ class Parser {
       z: this._document.rtcCenter[2] ?? 0,
     } : undefined;
 
-    const nodes = this.parseNodes(featureTable);
+    const primitiveNodes = this.parseNodes(featureTable);
+    const nodes = this.groupPrimitiveNodes(primitiveNodes);
+
     return {
       featureTable,
       nodes,
@@ -379,8 +381,8 @@ class Parser {
     return featureTable;
   }
 
-  private parseNodes(featureTable: Imdl.FeatureTable): Imdl.Node[] {
-    const nodes: Imdl.Node[] = [];
+  private parseNodes(featureTable: Imdl.FeatureTable): Imdl.PrimitivesNode[] {
+    const nodes: Imdl.PrimitivesNode[] = [];
     const docNodes = this._document.nodes;
     const docMeshes = this._document.meshes;
     if (undefined === docNodes.Node_Root) {
@@ -601,6 +603,40 @@ class Parser {
       }
     }
   }
+
+  private groupPrimitiveNodes(inputNodes: Imdl.PrimitivesNode[]): Imdl.Node[] {
+    const modelGroups = this._options.modelGroups;
+    if (!modelGroups?.length)
+      return inputNodes;
+
+    // ###TODO
+    return inputNodes;
+    
+    // const groupNodes: Imdl.GroupNode[] = modelGroups.map((_, groupId) => {
+    //   return { groupId, nodes: [] };
+    // });
+
+    // // Append an extra group for model Ids not present in modelGroups (should not occur).
+    // groupNodes.push({ groupId: modelGroups.length, nodes: [] });
+
+    // for (const inputNode of inputNodes) {
+    //   // Indexed by model group index.
+    //   const splitNodes: Imdl.PrimitivesNode[] = [];
+    //   const getSplitNode = (groupIndex: number) => {
+    //     if (!splitNodes[groupIndex]) {
+    //       const splitNode = splitNodes[groupIndex] = { ...inputNode, primitives: [] };
+    //       groupNodes[groupIndex].nodes.push(splitNode);
+    //     }
+
+    //     return splitNodes[groupIndex];
+    //   }
+
+    //   for (const primitive of inputNode.primitives) {
+      
+    //   }
+    // }
+  }
+
 
   private parseTesselatedPolyline(json: ImdlPolyline): Imdl.TesselatedPolyline | undefined {
     const indices = this.findBuffer(json.indices);
