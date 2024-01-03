@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, ModelFeature, MultiModelPackedFeatureTable,
@@ -635,17 +635,17 @@ class Parser {
     }
 
     const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
-    const feature = ModelFeature.create();
+    const modelIdPair = { lower: 0, upper: 0 };
     const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
-      // ###TODO add a more efficient way to get just the modelId given the feature index.
-      featureTable.getFeature(featureIndex, feature);
+      featureTable.getModelIdPair(featureIndex, modelIdPair);
+      const modelId = Id64.fromUint32PairObject(modelIdPair);
       for (let i = 0; i < modelGroups.length; i++) {
-        if (modelGroups[i].has(feature.modelId))
+        if (modelGroups[i].has(modelId))
           return i;
         }
 
-        return modelGroups.length;
-      }
+      return modelGroups.length;
+    }
 
     for (const inputNode of inputNodes) {
       // Indexed by model group index.
