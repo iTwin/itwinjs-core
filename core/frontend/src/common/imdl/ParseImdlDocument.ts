@@ -436,8 +436,13 @@ class Parser {
     if (!docPrimitives)
       return;
 
+    const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive => x !== undefined);
+    if (primitives.length === 0)
+      return;
+    
     const nodesById = new Map<number, Imdl.AnimationNode>();
-    const getNode = (nodeId: number): Imdl.AnimationNode => {
+    const getNode = (nodeId: number | undefined): Imdl.AnimationNode => {
+      nodeId = nodeId ?? AnimationNodeId.Untransformed;
       let node = nodesById.get(nodeId);
       if (!node) {
         node =  {
@@ -465,6 +470,10 @@ class Parser {
       return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
     };
 
+    this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
+  }
+
+  private splitPrimitives(primitives: Imdl.NodePrimitive[], featureTable: RenderFeatureTable, computeNodeId: ComputeAnimationNodeId, getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode): void {
     const splitArgs = {
       maxDimension: this._options.maxVertexTableSize,
       computeNodeId,
@@ -481,16 +490,13 @@ class Parser {
       return material ? { isAtlas: false, material } : undefined;
     };
 
-    for (const docPrimitive of docPrimitives) {
-      const primitive = this.parseNodePrimitive(docPrimitive);
-      if (!primitive)
-        continue;
-
+    for (const primitive of primitives) {
       switch (primitive.type) {
-        case "pattern":
-          // ###TODO animated area patterns
-          getNode(AnimationNodeId.Untransformed).primitives.push(primitive);
+        case "pattern": {
+          // ###TODO splitting area patterns
+          getPrimitivesNode(undefined).primitives.push(primitive);
           break;
+        }
         case "mesh": {
           const mesh = primitive.params;
           const texMap = mesh.surface.textureMapping;
@@ -528,7 +534,7 @@ class Parser {
             }
 
             assert(p.surface.textureMapping === undefined || p.surface.textureMapping.texture instanceof Texture);
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "mesh",
               params: {
                 vertices: fromVertexTable(p.vertices),
@@ -559,7 +565,7 @@ class Parser {
 
           const split = splitPointStringParams({ ...splitArgs, params });
           for (const [nodeId, p] of split) {
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "point",
               params: {
                 vertices: fromVertexTable(p.vertices),
@@ -584,7 +590,7 @@ class Parser {
 
           const split = splitPolylineParams({ ...splitArgs, params });
           for (const [nodeId, p] of split) {
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "polyline",
               params: {
                 ...p,
