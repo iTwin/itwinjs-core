@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
+  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, ModelFeature, MultiModelPackedFeatureTable,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
   TileHeader, TileReadStatus,
 } from "@itwin/core-common";
@@ -310,7 +310,7 @@ class Parser {
     } : undefined;
 
     const primitiveNodes = this.parseNodes(featureTable);
-    const nodes = this.groupPrimitiveNodes(primitiveNodes);
+    const nodes = this.groupPrimitiveNodes(primitiveNodes, featureTable);
 
     return {
       featureTable,
@@ -610,39 +610,61 @@ class Parser {
     }
   }
 
-  private groupPrimitiveNodes(inputNodes: Imdl.PrimitivesNode[]): Imdl.Node[] {
+  private groupPrimitiveNodes(inputNodes: Imdl.PrimitivesNode[], imdlFeatureTable: Imdl.FeatureTable): Imdl.Node[] {
     const modelGroups = this._options.modelGroups;
     if (!modelGroups?.length)
       return inputNodes;
 
-    // ###TODO
-    return inputNodes;
-    
-    // const groupNodes: Imdl.GroupNode[] = modelGroups.map((_, groupId) => {
-    //   return { groupId, nodes: [] };
-    // });
+    const groupNodes: Imdl.GroupNode[] = [];
+    let orphanNode: Imdl.GroupNode | undefined;
+    const getGroupNode = (groupId: number): Imdl.GroupNode => {
+      assert(groupId <= modelGroups.length);
+      if (groupId === modelGroups.length) {
+        // This would happen if:
+        //  - The tile contains geometry from a model not present in modelGroups (should never occur); or
+        //  - The tile contains an area pattern (we haven't yet implemented splitting for them).
+        // In either case, orphaned geometry will end up getting discarded.
+        return orphanNode ?? (orphanNode = { groupId, nodes: [] });
+      }
 
-    // // Append an extra group for model Ids not present in modelGroups (should not occur).
-    // groupNodes.push({ groupId: modelGroups.length, nodes: [] });
+      let groupNode = groupNodes[groupId];
+      if (!groupNode)
+        groupNodes[groupId] = groupNode = { groupId, nodes: [] };
 
-    // for (const inputNode of inputNodes) {
-    //   // Indexed by model group index.
-    //   const splitNodes: Imdl.PrimitivesNode[] = [];
-    //   const getSplitNode = (groupIndex: number) => {
-    //     if (!splitNodes[groupIndex]) {
-    //       const splitNode = splitNodes[groupIndex] = { ...inputNode, primitives: [] };
-    //       groupNodes[groupIndex].nodes.push(splitNode);
-    //     }
+      return groupNode;
+    }
 
-    //     return splitNodes[groupIndex];
-    //   }
+    const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
+    const feature = ModelFeature.create();
+    const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
+      // ###TODO add a more efficient way to get just the modelId given the feature index.
+      featureTable.getFeature(featureIndex, feature);
+      for (let i = 0; i < modelGroups.length; i++) {
+        if (modelGroups[i].has(feature.modelId))
+          return i;
+        }
 
-    //   for (const primitive of inputNode.primitives) {
-      
-    //   }
-    // }
+        return modelGroups.length;
+      }
+
+    for (const inputNode of inputNodes) {
+      // Indexed by model group index.
+      const splitNodes: Imdl.PrimitivesNode[] = [];
+      const getSplitNode = (groupIndex: number | undefined) => {
+        groupIndex = groupIndex ?? modelGroups.length;
+        if (!splitNodes[groupIndex]) {
+          const splitNode = splitNodes[groupIndex] = { ...inputNode, primitives: [] };
+          getGroupNode(groupIndex).nodes.push(splitNode);
+        }
+
+        return splitNodes[groupIndex];
+      }
+
+      this.splitPrimitives(inputNode.primitives, featureTable, computeNodeId, getSplitNode);
+    }
+
+    return groupNodes.filter<Imdl.GroupNode>((x): x is Imdl.GroupNode => undefined !== x);
   }
-
 
   private parseTesselatedPolyline(json: ImdlPolyline): Imdl.TesselatedPolyline | undefined {
     const indices = this.findBuffer(json.indices);
