@@ -168,6 +168,7 @@ export class HubWrappers {
     assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
+        // eslint-disable-next-line deprecation/deprecation
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
         if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
@@ -197,14 +198,14 @@ export class HubWrappers {
       args.asOf = IModelVersion.latest().toJSON();
 
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
-    const openArgs: DownloadAndOpenArgs = {
+    const openArgs = {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
         changeset,
       },
       activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
-      syncMode: SyncMode.FixedVersion,
+      syncMode: SyncMode.FixedVersion as const,
       forceDownload: args.deleteFirst,
     };
 
