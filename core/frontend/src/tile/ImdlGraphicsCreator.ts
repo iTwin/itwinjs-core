@@ -345,7 +345,13 @@ function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsO
 }
 
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
-  const graphics = [];
+  const graphics: RenderGraphic[] = [];
+  if (undefined !== node.groupId) {
+    // ###TODO: need to create node graphics for each child node and wrap in a group branch - but also
+    // do stuff with layers, animation nodes, etc as in decodeImdlGraphics.
+    return graphics;
+  }
+
   for (const primitive of node.primitives) {
     const graphic = primitive.type === "pattern" ? createPatternGraphic(primitive.params, options) : createPrimitiveGraphic(primitive, options);
     if (graphic)
