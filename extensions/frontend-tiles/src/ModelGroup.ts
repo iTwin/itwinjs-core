@@ -3,9 +3,57 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings } from "@itwin/core-common";
 import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume } from "@itwin/core-frontend";
+
+function equalDisplayTransforms(a: ModelDisplayTransform, b: ModelDisplayTransform): boolean {
+  return !!a.premultiply === !!b.premultiply && a.transform.isAlmostEqual(b.transform);
+}
+
+interface ModelGroupDisplayTransform {
+  modelIds: Id64Set;
+  transform: ModelDisplayTransform;
+}
+
+interface ModelGroupDisplayTransformsState {
+  readonly transforms: ReadonlyArray<ModelGroupDisplayTransform>;
+  readonly groups: ReadonlyArray<CompressedId64Set>;
+}
+
+const emptyState: ModelGroupDisplayTransformsState = { transforms: [], groups: [] };
+
+export class ModelGroupDisplayTransforms {
+  private _state: ModelGroupDisplayTransformsState = emptyState;
+  private readonly _modelIds: Id64Set;
+
+  public constructor(modelIds: Id64Set) {
+    this._modelIds = modelIds;
+  }
+
+  private computeState(provider: ModelDisplayTransformProvider | undefined): ModelGroupDisplayTransformsState {
+    if (!provider)
+      return emptyState;
+
+    const transforms: ModelGroupDisplayTransform[] = [];
+    for (const modelId of this._modelIds) {
+      const transform = provider.getModelDisplayTransform(modelId);
+      if (transform) {
+        let entry = transforms.find((x) => equalDisplayTransforms(transform, x.transform));
+        if (!entry)
+          transforms.push(entry = { transform, modelIds: new Set() });
+
+        entry.modelIds.add(modelId);
+      }
+    }
+
+    if (transforms.length === 0)
+      return emptyState;
+
+    const groups = transforms.map((x) => CompressedId64Set.compressSet(x.modelIds)).sort();
+    return { transforms, groups };
+  }
+}
 
 export interface ModelGroupInfo {
   displayTransform?: ModelDisplayTransform;
@@ -48,16 +96,9 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
     if (!a.planProjectionSettings || !b.planProjectionSettings || !a.planProjectionSettings.equals(b.planProjectionSettings))
       return false;
 
-  if (a.displayTransform || b.displayTransform) {
-    if (!a.displayTransform || !b.displayTransform)
+  if (a.displayTransform || b.displayTransform)
+    if (!a.displayTransform || !b.displayTransform || !equalDisplayTransforms(a.displayTransform, b.displayTransform))
       return false;
-
-    if (!!a.displayTransform.premultiply !== !!b.displayTransform.premultiply)
-      return false;
-
-    if (!a.displayTransform.transform.isAlmostEqual(b.displayTransform.transform))
-      return false;
-  }
 
   return true;
 }
