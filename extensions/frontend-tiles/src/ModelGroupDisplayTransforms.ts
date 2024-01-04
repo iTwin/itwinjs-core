@@ -19,11 +19,11 @@ interface ModelGroupDisplayTransform {
 /** A collection of model Ids grouped according to the unique transforms to be applied to each group. */
 interface ModelGroupDisplayTransformsState {
   readonly transforms: ReadonlyArray<ModelGroupDisplayTransform>;
-  readonly groups: ReadonlyArray<CompressedId64Set>;
+  readonly guid: string;
 }
 
 /** Optimization for the common case in which no display transforms are to be applied. */
-const emptyState: ModelGroupDisplayTransformsState = { transforms: [], groups: [] };
+const emptyState: ModelGroupDisplayTransformsState = { transforms: [], guid: "" };
 
 /** Manages the display transforms to be applied to all of the models in a BatchedTileTree, enabling all models that share an equivalent transform
  * to be drawn together.
@@ -41,6 +41,9 @@ export class ModelGroupDisplayTransforms {
       this.update(provider);
   }
 
+  /** A string uniquely identifying the current grouping. */
+  public get guid(): string { return this._state.guid; }
+
   /** Get the display transform for the specified model.
    * @note This method is guaranteed to return the same object for all models in the same group, at least between calls to `update`.
    */
@@ -53,13 +56,7 @@ export class ModelGroupDisplayTransforms {
   public update(provider: ModelDisplayTransformProvider | undefined): boolean {
     const prevState = this._state;
     this._state = this.computeState(provider);
-    if (this._state === prevState)
-      return false;
-
-    if (this._state.groups.length !== prevState.groups.length)
-      return true;
-
-    return !this._state.groups.every((group, index) => group === prevState.groups[index]);
+    return this._state.guid !== prevState.guid;
   }
 
   private computeState(provider: ModelDisplayTransformProvider | undefined): ModelGroupDisplayTransformsState {
@@ -81,7 +78,7 @@ export class ModelGroupDisplayTransforms {
     if (transforms.length === 0)
       return emptyState;
 
-    const groups = transforms.map((x) => CompressedId64Set.compressSet(x.modelIds)).sort();
-    return { transforms, groups };
+    const guid = transforms.map((x) => CompressedId64Set.compressSet(x.modelIds)).sort().join("_");
+    return { transforms, guid };
   }
 }
