@@ -89,17 +89,13 @@ export interface ModelGroup extends ModelGroupInfo {
 export interface ModelGroupingContext {
   modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
-  displayStyle: {
-    settings: {
-      getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
-    };
-  };
+  getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
   const displayTransform = context.modelGroupDisplayTransforms.getDisplayTransform(modelId);
   const clip = context.getModelClip(modelId);
-  const planProjectionSettings = context.displayStyle.settings.getPlanProjectionSettings(modelId);
+  const planProjectionSettings = context.getPlanProjectionSettings(modelId);
   return { displayTransform, clip, planProjectionSettings };
 }
 

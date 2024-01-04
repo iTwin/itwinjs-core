@@ -22,11 +22,7 @@ interface GroupingContextArgs {
 class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
-  public displayStyle: {
-    settings: {
-      getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
-    };
-  };
+  getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
 
   public getModelClip(modelId: Id64String) {
     return this._clips.find((x) => x.modelId === modelId);
@@ -37,11 +33,7 @@ class GroupingContext implements ModelGroupingContext {
       getModelDisplayTransform: (modelId: Id64String) => args[modelId]?.transform,
     });
 
-    this.displayStyle = {
-      settings: {
-        getPlanProjectionSettings: (modelId: Id64String) => args[modelId]?.projection,
-      },
-    };
+    this.getPlanProjectionSettings = (modelId: Id64String) => args[modelId]?.projection;
 
     for (const modelId of Object.keys(args)) {
       const clip = args[modelId]?.clip;
