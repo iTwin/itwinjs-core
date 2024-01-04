@@ -20,7 +20,7 @@ export interface BatchedTileTreeId {
 
 class BatchedTileTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: BatchedTileTreeId, rhs: BatchedTileTreeId): number {
-    return compareStrings(lhs.toString(), rhs.toString())
+    return compareStrings(lhs.spec.baseUrl.toString(), rhs.spec.baseUrl.toString())
       || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.script, rhs.script);
   }
 
