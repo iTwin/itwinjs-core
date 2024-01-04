@@ -9,9 +9,7 @@
       "@typescript-eslint/parser"
     ]
   },
-  "globalOverrides": {
-    "@azure/msal-node": "2.1.0" // azurite > tedious > @azure/identity > @azure/msal-node 1.x doesn't support Node 20
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
