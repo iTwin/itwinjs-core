@@ -21,39 +21,48 @@ describe("ModelGroupDisplayTransforms", () => {
 
     const viewedModels = new Set(["0x1", "0x2", "0x3", "0x4", "0x5", "0x6"]);
     const tfs = new ModelGroupDisplayTransforms(viewedModels);
-    expect(tfs.update(undefined)).to.be.false;
-    expect(tfs.update(createProvider([]))).to.be.false;
+
+    function update(provider: ModelDisplayTransformProvider | undefined): boolean {
+      const prevGuid = tfs.guid;
+      const updated = tfs.update(provider);
+      const newGuid = tfs.guid;
+      expect(prevGuid !== newGuid).to.equal(updated);
+      return updated;
+    }
+    
+    expect(update(undefined)).to.be.false;
+    expect(update(createProvider([]))).to.be.false;
 
     let provider = createProvider([ createTransform("0x1", 1) ]);
-    expect(tfs.update(provider)).to.be.true;
-    expect(tfs.update(provider)).to.be.false;
-    expect(tfs.update(undefined)).to.be.true;
+    expect(update(provider)).to.be.true;
+    expect(update(provider)).to.be.false;
+    expect(update(undefined)).to.be.true;
     
     // Non-existent model not grouped.
-    expect(tfs.update(createProvider([createTransform("0xabcdef", 1)]))).to.be.false;
+    expect(update(createProvider([createTransform("0xabcdef", 1)]))).to.be.false;
 
     const list = [createTransform("0x1", 1)];
     provider = createProvider(list);
-    expect(tfs.update(provider)).to.be.true;
+    expect(update(provider)).to.be.true;
     list[0].transform = Transform.createTranslationXYZ(2, 3, 4);
-    expect(tfs.update(provider)).to.be.false;
+    expect(update(provider)).to.be.false;
     list[0].premultiply = true;
-    expect(tfs.update(provider)).to.be.false;
+    expect(update(provider)).to.be.false;
     list.push(createTransform("0x2", 2));
-    expect(tfs.update(provider)).to.be.true;
+    expect(update(provider)).to.be.true;
     list[0].transform = list[1].transform.clone();
-    expect(tfs.update(provider)).to.be.false; // premultiply values differ, so grouping remains unchanged.
+    expect(update(provider)).to.be.false; // premultiply values differ, so grouping remains unchanged.
     list[0].premultiply = list[1].premultiply;
-    expect(tfs.update(provider)).to.be.true; // both transforms are now equivalent, so the two models get grouped.
+    expect(update(provider)).to.be.true; // both transforms are now equivalent, so the two models get grouped.
     
     provider = createProvider(list);
-    expect(tfs.update(provider)).to.be.false; // different provider, same grouping.
+    expect(update(provider)).to.be.false; // different provider, same grouping.
 
     list.push(createTransform("0x5", 5));
-    expect(tfs.update(provider)).to.be.true;
+    expect(update(provider)).to.be.true;
     list.splice(0, 1);
-    expect(tfs.update(provider)).to.be.true;
+    expect(update(provider)).to.be.true;
     list.splice(1, 1);
-    expect(tfs.update(provider)).to.be.true;
+    expect(update(provider)).to.be.true;
   });
 });
