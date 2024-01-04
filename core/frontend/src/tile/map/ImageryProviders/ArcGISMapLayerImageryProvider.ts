@@ -273,7 +273,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         const fetch = async (url: URL, options?: RequestInit): Promise<Response> => {
           return this.fetch(url, options);
         };
-        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, fetch, json.tileInfo?.lods?.length);
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, fetch);
       }
     }
 
