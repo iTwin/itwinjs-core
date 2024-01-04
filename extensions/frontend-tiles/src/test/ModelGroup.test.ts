@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings } from "@itwin/core-common";
 import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume } from "@itwin/core-frontend";
-import { groupModels, ModelGroupingContext } from "../ModelGroup";
-import { Id64String } from "@itwin/core-bentley";
+import { groupModels, ModelGroupDisplayTransforms, ModelGroupingContext } from "../ModelGroup";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
 
 interface ModelSettings {
   transform?: ModelDisplayTransform;
@@ -21,7 +21,7 @@ interface GroupingContextArgs {
 
 class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
-  public modelDisplayTransformProvider: ModelDisplayTransformProvider;
+  public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   public displayStyle: {
     settings: {
       getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
@@ -32,10 +32,10 @@ class GroupingContext implements ModelGroupingContext {
     return this._clips.find((x) => x.modelId === modelId);
   }
 
-  public constructor(args: GroupingContextArgs) {
-    this.modelDisplayTransformProvider = {
+  public constructor(args: GroupingContextArgs, modelIds: Id64Set) {
+    this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(modelIds, {
       getModelDisplayTransform: (modelId: Id64String) => args[modelId]?.transform,
-    };
+    });
 
     this.displayStyle = {
       settings: {
@@ -55,8 +55,9 @@ class GroupingContext implements ModelGroupingContext {
 }
 
 function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs, modelIds: Id64String[]): void {
-  const context = new GroupingContext(args);
-  const groups = groupModels(context, new Set(modelIds));
+  const modelIdSet = new Set(modelIds);
+  const context = new GroupingContext(args, modelIdSet);
+  const groups = groupModels(context, modelIdSet);
   const actual = groups.map((x) => Array.from(x.modelIds).sort());
   expect(actual).to.deep.equal(expected);
 }

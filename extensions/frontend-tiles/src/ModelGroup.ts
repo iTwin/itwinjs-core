@@ -27,8 +27,28 @@ export class ModelGroupDisplayTransforms {
   private _state: ModelGroupDisplayTransformsState = emptyState;
   private readonly _modelIds: Id64Set;
 
-  public constructor(modelIds: Id64Set) {
+  public constructor(modelIds: Id64Set, provider?: ModelDisplayTransformProvider) {
     this._modelIds = modelIds;
+    if (provider)
+      this.update(provider);
+  }
+
+  public getDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined {
+    return this._state.transforms.find((x) => x.modelIds.has(modelId))?.transform;
+  }
+
+  // Update the display transforms and the model groupings based on the transforms supplied by `provider`.
+  // Return `true` if the groupings changed as a result.
+  public update(provider: ModelDisplayTransformProvider | undefined): boolean {
+    const prevState = this._state;
+    this._state = this.computeState(provider);
+    if (this._state === prevState)
+      return false;
+
+    if (this._state.groups.length !== prevState.groups.length)
+      return true;
+
+    return !this._state.groups.every((group, index) => group === prevState.groups[index]);
   }
 
   private computeState(provider: ModelDisplayTransformProvider | undefined): ModelGroupDisplayTransformsState {
@@ -67,7 +87,7 @@ export interface ModelGroup extends ModelGroupInfo {
 }
 
 export interface ModelGroupingContext {
-  modelDisplayTransformProvider?: ModelDisplayTransformProvider;
+  modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   displayStyle: {
     settings: {
@@ -77,15 +97,19 @@ export interface ModelGroupingContext {
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
-  const displayTransform = context.modelDisplayTransformProvider?.getModelDisplayTransform(modelId);
+  const displayTransform = context.modelGroupDisplayTransforms.getDisplayTransform(modelId);
   const clip = context.getModelClip(modelId);
   const planProjectionSettings = context.displayStyle.settings.getPlanProjectionSettings(modelId);
   return { displayTransform, clip, planProjectionSettings };
 }
 
 function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
+  // Display transforms are obtained from ModelGroupDisplayTransforms - they are guaranteed to be the same object if they are equivalent.
+  if (a.displayTransform !== b.displayTransform)
+    return false;
+  
   if (a.clip || b.clip) {
-    // ###TODO ClipVector lacks an `isAlmostEqual` method.
+    // ###TODO? ClipVector lacks an `isAlmostEqual` method.
     // For two models belonging to the same clip group, we should have the same exact object.
     // But we won't currently detect two different objects that represent effectively identical clips.
     if (!a.clip || !b.clip || a.clip.clipVector !== b.clip.clipVector)
@@ -94,10 +118,6 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
 
   if (a.planProjectionSettings || b.planProjectionSettings)
     if (!a.planProjectionSettings || !b.planProjectionSettings || !a.planProjectionSettings.equals(b.planProjectionSettings))
-      return false;
-
-  if (a.displayTransform || b.displayTransform)
-    if (!a.displayTransform || !b.displayTransform || !equalDisplayTransforms(a.displayTransform, b.displayTransform))
       return false;
 
   return true;
