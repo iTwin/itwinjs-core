@@ -1,8 +1,5 @@
 lockfileVersion: 5.4
 
-overrides:
-  '@azure/msal-node': 2.1.0
-
 importers:
 
   .:
@@ -1592,7 +1589,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
-      azurite: ^3.24.0
+      azurite: ^3.29.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1637,7 +1634,7 @@ importers:
       '@itwin/itwins-client': 1.2.0
       '@itwin/oidc-signin-tool': 3.6.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.24.0
+      azurite: 3.29.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1702,7 +1699,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
-      azurite: ^3.24.0
+      azurite: ^3.29.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1757,7 +1754,7 @@ importers:
       '@itwin/imodels-client-authoring': 3.0.0
       '@itwin/imodels-client-management': 3.0.0
       '@itwin/reality-data-client': 1.1.0_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.24.0
+      azurite: 3.29.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       electron: 28.0.0
@@ -3355,9 +3352,9 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@azure/identity/2.1.0:
-    resolution: {integrity: sha512-BPDz1sK7Ul9t0l9YKLEa8PHqWU4iCfhGJ+ELJl6c8CP3TpJt2urNCbm0ZHsthmxRsYoMPbz2Dvzj30zXZVmAFw==}
-    engines: {node: '>=12.0.0'}
+  /@azure/identity/3.4.1:
+    resolution: {integrity: sha512-oQ/r5MBdfZTMIUcY5Ch8G7Vv9aIXDkEYyU4Dfqjim4MQN+LY2uiQ57P1JDopMLeHCsZxM4yy8lEdne3tM9Xhzg==}
+    engines: {node: '>=14.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@azure/core-auth': 1.5.0
@@ -3366,15 +3363,13 @@ packages:
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
-      '@azure/msal-browser': 2.38.3
-      '@azure/msal-common': 7.6.0
-      '@azure/msal-node': 2.1.0
+      '@azure/msal-browser': 3.6.0
+      '@azure/msal-node': 2.6.0
       events: 3.3.0
       jws: 4.0.0
       open: 8.4.2
       stoppable: 1.1.0
       tslib: 2.6.2
-      uuid: 8.3.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -3420,34 +3415,23 @@ packages:
       - debug
     dev: false
 
-  /@azure/msal-browser/2.38.3:
-    resolution: {integrity: sha512-2WuLFnWWPR1IdvhhysT18cBbkXx1z0YIchVss5AwVA95g7CU5CpT3d+5BcgVGNXDXbUU7/5p0xYHV99V5z8C/A==}
+  /@azure/msal-browser/3.6.0:
+    resolution: {integrity: sha512-FrFBJXRJMyWXjAjg4cUNZwEKktzfzD/YD9+S1kj2ors67hKoveam4aL0bZuCZU/jTiHTn0xDQGQh2ksCMXTXtA==}
     engines: {node: '>=0.8.0'}
-    deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
     dependencies:
-      '@azure/msal-common': 13.3.1
+      '@azure/msal-common': 14.5.0
     dev: false
 
-  /@azure/msal-common/13.3.1:
-    resolution: {integrity: sha512-Lrk1ozoAtaP/cp53May3v6HtcFSVxdFrg2Pa/1xu5oIvsIwhxW6zSPibKefCOVgd5osgykMi5jjcZHv8XkzZEQ==}
+  /@azure/msal-common/14.5.0:
+    resolution: {integrity: sha512-Gx5rZbiZV/HiZ2nEKfjfAF/qDdZ4/QWxMvMo2jhIFVz528dVKtaZyFAOtsX2Ak8+TQvRsGCaEfuwJFuXB6tu1A==}
     engines: {node: '>=0.8.0'}
     dev: false
 
-  /@azure/msal-common/14.0.3:
-    resolution: {integrity: sha512-Vl5SsC3zvQ8913GnO5Typox+35M6CaXmO/2FXi35LfMAV3ZB/HLCsldLxylI01c3CmtOm7pICWpOjp/DlQ9RWA==}
-    engines: {node: '>=0.8.0'}
-    dev: false
-
-  /@azure/msal-common/7.6.0:
-    resolution: {integrity: sha512-XqfbglUTVLdkHQ8F9UQJtKseRr3sSnr9ysboxtoswvaMVaEfvyLtMoHv9XdKUfOc0qKGzNgRFd9yRjIWVepl6Q==}
-    engines: {node: '>=0.8.0'}
-    dev: false
-
-  /@azure/msal-node/2.1.0:
-    resolution: {integrity: sha512-RiYnw8VdrFJrgTfHAfiAhRehIYN/H8vQ00DGVTYMOtlOkoEbZneK0qs8DV3p2WKVB5GN0cshVSI79N0fVlgbmg==}
-    engines: {node: 18 || 20}
+  /@azure/msal-node/2.6.0:
+    resolution: {integrity: sha512-RWAWCYYrSldIYC47oWtofIun41e6SB9TBYgGYsezq6ednagwo9ZRFyRsvl1NabmdTkdDDXRAABIdveeN2Gtd8w==}
+    engines: {node: 16|| 18 || 20}
     dependencies:
-      '@azure/msal-common': 14.0.3
+      '@azure/msal-common': 14.5.0
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
     dev: false
@@ -5921,8 +5905,8 @@ packages:
     dependencies:
       dequal: 2.0.3
 
-  /azurite/3.24.0:
-    resolution: {integrity: sha512-QJ3OXUW+5JH1JN1XdEOkOgm7WBGS8uKYtWcEdvNX6/srm0UbOXduIxbz7xts0pJfpw5aPslfEzxEl65FTHjL1A==}
+  /azurite/3.29.0:
+    resolution: {integrity: sha512-gzl8+LqereINQ45BuED4DNq9w3ipw0DCYAkGz8xwOFAlwjWey6C3JpolaIjrYNeX4r52bRCt53tPQ2fVCaNcYA==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
@@ -5939,9 +5923,9 @@ packages:
       multistream: 2.1.1
       mysql2: 3.6.5
       rimraf: 3.0.2
-      sequelize: 6.35.1_3pvdes6tx6q2oleh7soyvn3neu
+      sequelize: 6.35.1_gzo4yugsliavo66izmq2nyshee
       stoppable: 1.1.0
-      tedious: 16.6.0
+      tedious: 16.6.1
       to-readable-stream: 2.1.0
       tslib: 2.6.2
       uri-templates: 0.2.0
@@ -10164,7 +10148,7 @@ packages:
     resolution: {integrity: sha512-SQkEP4hmNWjlniS5zdnfIXTk1x7Ome85RDzHlTbBtzE97Gfwz/Ipw4v/Ryk20DWIy3yCNVLVlGKApCnmvYoJbA==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.3.5
+      semver: 7.5.4
     dev: false
 
   /node-abort-controller/3.1.1:
@@ -11529,7 +11513,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.35.1_3pvdes6tx6q2oleh7soyvn3neu:
+  /sequelize/6.35.1_gzo4yugsliavo66izmq2nyshee:
     resolution: {integrity: sha512-UlP5k33nJsN11wCDLaWZXw9bB8w4ESKc5QmG6D04qMimwBwKVNeqRJiaaBlEJdtg8cRK+OJh95dliP+uEi+g9Q==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -11575,7 +11559,7 @@ packages:
       retry-as-promised: 7.0.4
       semver: 7.5.4
       sequelize-pool: 7.1.0
-      tedious: 16.6.0
+      tedious: 16.6.1
       toposort-class: 1.0.1
       uuid: 8.3.2
       validator: 13.11.0
@@ -12145,11 +12129,11 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.2
 
-  /tedious/16.6.0:
-    resolution: {integrity: sha512-Gsi/XzWtJ+oyYsoDHSxjV5k/LzZb/3pJseC1NJoCkQ1VJF66rxj7pRLDF6jOFL4F52uSqOhtYTucs3K1sKYB7g==}
+  /tedious/16.6.1:
+    resolution: {integrity: sha512-KKSDB1OPrPk0WbMPug9YqRbPl44zMjdL2hFyzLEidr2IkItzpV0ZbzW8VA47QIS2oyWhCU7ifIEQY12n23IRDA==}
     engines: {node: '>=16'}
     dependencies:
-      '@azure/identity': 2.1.0
+      '@azure/identity': 3.4.1
       '@azure/keyvault-keys': 4.7.2
       '@js-joda/core': 5.6.1
       bl: 6.0.8
