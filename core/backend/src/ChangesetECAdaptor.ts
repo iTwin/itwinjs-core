@@ -711,7 +711,7 @@ export class ChangesetECAdaptor implements IDisposable {
         }
 
         let ecClassId: Id64String | undefined = this.reader.op === "Inserted" ? change.inserted?.ECClassId : change.deleted?.ECClassId;
-        const classIdPresentInChange = !ecClassId;
+        const classIdPresentInChange = ecClassId !== undefined;
         let classMap: IClassMap | undefined;
         let fallbackClassId: Id64String | undefined;
         if (table.isClassIdVirtual) {
