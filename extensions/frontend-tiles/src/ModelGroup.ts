@@ -11,28 +11,40 @@ function equalDisplayTransforms(a: ModelDisplayTransform, b: ModelDisplayTransfo
   return !!a.premultiply === !!b.premultiply && a.transform.isAlmostEqual(b.transform);
 }
 
+/** A display transform to be applied to a set of models. */
 interface ModelGroupDisplayTransform {
   modelIds: Id64Set;
   transform: ModelDisplayTransform;
 }
 
+/** A collection of model Ids grouped according to the unique transforms to be applied to each group. */
 interface ModelGroupDisplayTransformsState {
   readonly transforms: ReadonlyArray<ModelGroupDisplayTransform>;
   readonly groups: ReadonlyArray<CompressedId64Set>;
 }
 
+/** Optimization for the common case in which no display transforms are to be applied. */
 const emptyState: ModelGroupDisplayTransformsState = { transforms: [], groups: [] };
 
+/** Manages the display transforms to be applied to all of the models in a BatchedTileTree, enabling all models that share an equivalent transform
+ * to be drawn together.
+ * Call `update` whenever the transforms may have changed (e.g., after the viewport's scene is invalidated).
+ * @internal
+ */
 export class ModelGroupDisplayTransforms {
   private _state: ModelGroupDisplayTransformsState = emptyState;
   private readonly _modelIds: Id64Set;
 
+  /** Create a new set of groups for the specified `modelIds`. If `provider` is supplied, the grouping will be applied to those models immediately. */
   public constructor(modelIds: Id64Set, provider?: ModelDisplayTransformProvider) {
     this._modelIds = modelIds;
     if (provider)
       this.update(provider);
   }
 
+  /** Get the display transform for the specified model.
+   * @note This method is guaranteed to return the same object for all models in the same group, at least between calls to `update`.
+   */
   public getDisplayTransform(modelId: Id64String): ModelDisplayTransform | undefined {
     return this._state.transforms.find((x) => x.modelIds.has(modelId))?.transform;
   }
@@ -75,17 +87,26 @@ export class ModelGroupDisplayTransforms {
   }
 }
 
+/** Display settings to be applied to a group of models.
+ * @internal
+ */
 export interface ModelGroupInfo {
   displayTransform?: ModelDisplayTransform;
   clip?: RenderClipVolume;
   planProjectionSettings?: PlanProjectionSettings;
 }
 
+/** Represents a group of models and the display settings to be applied to them.
+ * @internal
+ */
 export interface ModelGroup extends ModelGroupInfo {
   modelIds: Id64Set;
   animationTransformNodeIds?: ReadonlySet<number>;
 }
 
+/** Context supplied to [[groupModels]].
+ * @internal
+ */
 export interface ModelGroupingContext {
   modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
@@ -119,6 +140,9 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
   return true;
 }
 
+/** Group the supplied `modelIds` such that all models that are to be drawn with equivalent display settings are grouped together.
+ * @internal
+ */
 export function groupModels(context: ModelGroupingContext, modelIds: Id64Set): ModelGroup[] {
   const groups: ModelGroup[] = [];
   for (const modelId of modelIds) {
