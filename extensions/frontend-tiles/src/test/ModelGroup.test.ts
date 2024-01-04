@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings } from "@itwin/core-common";
-import { ModelDisplayTransform, ModelDisplayTransformProvider, RenderClipVolume } from "@itwin/core-frontend";
-import { groupModels, ModelGroupDisplayTransforms, ModelGroupingContext } from "../ModelGroup";
-import { Id64Set, Id64String } from "@itwin/core-bentley";
+import { ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
+import { groupModels, ModelGroupingContext } from "../ModelGroup";
+import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 
 interface ModelSettings {
   transform?: ModelDisplayTransform;
