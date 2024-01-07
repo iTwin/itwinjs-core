@@ -25,7 +25,7 @@ import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
-import { ApplyModelTransformTool } from "./DisplayTransform";
+import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransformsTool } from "./DisplayTransform";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
@@ -309,10 +309,12 @@ export class DisplayTestApp {
       ApplyModelTransformTool,
       AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
+      ClearModelTransformsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
+      DisableModelTransformsTool,
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,
