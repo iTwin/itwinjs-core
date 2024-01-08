@@ -162,9 +162,14 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
   }
 
   protected override computeTransform(tree: TileTree): Transform {
-    // ###TODO apply display/elevation transforms
+    const baseTf = super.computeTransform(tree);
     // ###TODO apply schedule script transform
-    return super.computeTransform(tree);
+    // ###TODO apply display/elevation transforms
+    const displayTf = this._groupInfo.displayTransform;
+    if (!displayTf)
+      return baseTf;
+
+    return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
   }
 
   public override getAnimationTransformNodeId() {
