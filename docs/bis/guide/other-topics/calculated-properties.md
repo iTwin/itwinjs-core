@@ -2,14 +2,14 @@
 
 It is not uncommon for BIS schema designers to face the need to handle properties that can be derived from other data already captured by a BIS schema. In general, there are four approaches to consider while introducing calculated or derived properties, each being more appropropriate than the others depending upon workflow, application and performance requirements. These approaches are:
 
-1. Calculated externally
+1. Derived properties calculated externally
 1. Handled via Presentation Rules
 1. Handled via Caches maintained by a Domain library or Application logic
 1. Calculated on the fly, shown via Custom User-Interface
 
 ## Properties Calculated External to the BIS Repository
 
-This approach is particularly applicable to Connectors, which synchronize derived data already calculated in the external data source. In that case, a Connector needs to make sure to include the calculated properties in its target BIS schema, deferring all the calculation responsibility to the external application that created the data in the first place.
+This approach is particularly applicable to Connectors, which can synchronize derived data already calculated in the external data source. In that case, a Connector needs to ensure to include the calculated properties in its target BIS schema, deferring all the calculation responsibility to the external application that created the data in the first place.
 
 With this approach, calculated property values are captured in the BIS repository, being available to both ECSQL querying as well as standard UX controls such as the Property Pane and Grid.
 
@@ -26,7 +26,7 @@ This approach is most appropriate for Calculated properties that meet the follow
 
 ## Cache mantained by a Domain library or Application logic
 
-Another approach to handle a calculated property involves creating it in a BIS schema and storing its calculated values in the BIS repository. As a result, computed values - effectively cached values - can be queried via ECSQL and will be available via standard UX controls.
+Another approach to consider while handling a calculated property involves creating it in a BIS schema and storing its calculated values in the BIS repository. As a result, computed values - effectively cached values - can be queried via ECSQL and will be available via standard UX controls.
 
 However, the process of the actual calculation of property values needs careful analysis in order to make sure that the cached values do not become out-of-date. Typically it involves capturing the calculation logic in a location that every data-writer that can target the schema uses to write to it. The calculation logic will typically be part of a domain library if the involved schema is at one of the Standardized layers in BIS, and thus, it is expected to be shared. Or it will be part of the Application's logic if the calculated property is part of an Application schema.
 
