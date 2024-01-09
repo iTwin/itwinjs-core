@@ -5,7 +5,7 @@
 
 import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
-import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
+import { AnimationNodeId, ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
 /** Display settings to be applied to a group of models.
@@ -88,5 +88,10 @@ export function groupModels(context: ModelGroupingContext, modelIds: Id64Set): M
     }
   }
 
+  // Any group that has animation transforms applied to it must also include untransformed geometry.
+  for (const group of groups)
+    if (group.animationTransformNodeIds)
+      group.animationTransformNodeIds.add(AnimationNodeId.Untransformed);
+  
   return groups;
 }

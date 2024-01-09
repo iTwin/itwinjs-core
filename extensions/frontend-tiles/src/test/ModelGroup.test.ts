@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings } from "@itwin/core-common";
-import { ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
+import { AnimationNodeId, ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
 import { groupModels, ModelGroupingContext } from "../ModelGroup";
 import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 
@@ -59,6 +59,7 @@ function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs
 
   if (expectedNodeIds) {
     const actualNodeIds = groups.map((x) => x.animationTransformNodeIds ? Array.from(x.animationTransformNodeIds) : undefined);
+    expectedNodeIds = expectedNodeIds.map((x) => x ? [...x, AnimationNodeId.Untransformed] : x);
     expect(actualNodeIds).to.deep.equal(expectedNodeIds);
   } else {
     expect(groups.every((x) => undefined === x.animationTransformNodeIds)).to.be.true;
