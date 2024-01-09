@@ -146,8 +146,7 @@ export class XYParitySearchContext {
   public classifyCounts(): number | undefined {
     if (this.numHit > 0)
       return 0;
-    const parity = this.numLeftCrossing & 0x01; // parity = 1 iff numLeftCrossing is odd
-    // if the test point is inside the face, number of left crossing is always odd
+    const parity = this.numLeftCrossing & 0x01;
     return (parity === 1) ? 1 : -1;
   }
 }
