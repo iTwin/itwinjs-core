@@ -14,6 +14,7 @@ interface ModelSettings {
   transform?: ModelDisplayTransform;
   clip?: ClipVector;
   projection?: PlanProjectionSettings;
+  nodeIds?: ReadonlySet<number>;
 }
 
 interface GroupingContextArgs {
@@ -24,6 +25,7 @@ class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
+  getAnimationTransformNodeIds: (modelId: Id64String) => ReadonlySet<number> | undefined;
 
   public getModelClip(modelId: Id64String) {
     return this._clips.find((x) => x.modelId === modelId);
@@ -35,6 +37,7 @@ class GroupingContext implements ModelGroupingContext {
     });
 
     this.getPlanProjectionSettings = (modelId: Id64String) => args[modelId]?.projection;
+    this.getAnimationTransformNodeIds = (modelId: Id64String) => args[modelId]?.nodeIds;
 
     for (const modelId of Object.keys(args)) {
       const clip = args[modelId]?.clip;
@@ -47,12 +50,19 @@ class GroupingContext implements ModelGroupingContext {
   }
 }
 
-function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs, modelIds: Id64String[]): void {
+function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs, modelIds: Id64String[], expectedNodeIds?: Array<number[] | undefined>): void {
   const modelIdSet = new Set(modelIds);
   const context = new GroupingContext(args, modelIdSet);
   const groups = groupModels(context, modelIdSet);
   const actual = groups.map((x) => Array.from(x.modelIds).sort());
   expect(actual).to.deep.equal(expected);
+
+  if (expectedNodeIds) {
+    const actualNodeIds = groups.map((x) => x.animationTransformNodeIds ? Array.from(x.animationTransformNodeIds) : undefined);
+    expect(actualNodeIds).to.deep.equal(expectedNodeIds);
+  } else {
+    expect(groups.every((x) => undefined === x.animationTransformNodeIds)).to.be.true;
+  }
 }
 
 describe("groupModels", () => {
@@ -180,5 +190,33 @@ describe("groupModels", () => {
   });
 
   it("associates each animation transform node with corresponding model group", () => {
+    expectGrouping([["0x1"]], {
+      "0x1": { nodeIds: new Set([1, 2, 3, 4]) },
+    }, ["0x1"], [[1, 2, 3, 4]]);
+
+    expectGrouping([["0x1", "0x2"]], {
+      "0x1": { nodeIds: new Set([1, 2]) },
+      "0x2": { nodeIds: new Set([3, 4]) },
+    }, ["0x1", "0x2"], [[1, 2, 3, 4]]);
+
+    expectGrouping([["0x1", "0x2"]], {
+      "0x1": { },
+      "0x2": { nodeIds: new Set([3, 4])},
+    }, ["0x1", "0x2"], [[3, 4]]);
+    
+    expectGrouping([["0x1"], ["0x2"]], {
+      "0x1": { transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x2": { nodeIds: new Set([3, 4]) },
+    }, ["0x1", "0x2"], [undefined, [3, 4]]);
+    
+    expectGrouping([["0x1"], ["0x2"]], {
+      "0x1": { nodeIds: new Set([1, 2]), transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x2": { nodeIds: new Set([3, 4]) },
+    }, ["0x1", "0x2"], [[1, 2], [3, 4]]);
+
+    expectGrouping([["0x1", "0x2"]], {
+      "0x1": { nodeIds: new Set([1, 2]), transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x2": { nodeIds: new Set([3, 4]), transform: { transform: Transform.createTranslationXYZ(1) }},
+      }, ["0x1", "0x2"], [[1, 2, 3, 4]]);
   });
 });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
-import { PlanProjectionSettings } from "@itwin/core-common";
+import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
@@ -21,8 +21,10 @@ export interface ModelGroupInfo {
  * @internal
  */
 export interface ModelGroup extends ModelGroupInfo {
+  /** The set of models belonging to this group. */
   modelIds: Id64Set;
-  animationTransformNodeIds?: ReadonlySet<number>;
+  /** The union of all [ModelTimeline.transformBatchIds]($common) for all models belonging to this group. */
+  animationTransformNodeIds?: Set<number>;
 }
 
 /** Context supplied to [[groupModels]].
@@ -32,6 +34,7 @@ export interface ModelGroupingContext {
   modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
+  getAnimationTransformNodeIds(modelId: Id64String): ReadonlySet<number> | undefined;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
@@ -74,8 +77,16 @@ export function groupModels(context: ModelGroupingContext, modelIds: Id64Set): M
 
     assert(!group.modelIds.has(modelId));
     group.modelIds.add(modelId);
+    const nodeIds = context.getAnimationTransformNodeIds(modelId);
+    if (nodeIds) {
+      if (!group.animationTransformNodeIds) {
+        group.animationTransformNodeIds = new Set(nodeIds);
+      } else {
+        for (const nodeId of nodeIds)
+          group.animationTransformNodeIds.add(nodeId);
+      }
+    }
   }
 
-  // ###TODO populate animation node Ids, including untransformed, if a schedule script is defined.
   return groups;
 }

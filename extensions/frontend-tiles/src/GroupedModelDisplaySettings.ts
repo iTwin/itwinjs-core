@@ -17,6 +17,7 @@ export interface GroupedModelDisplaySettingsArgs {
   modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
+  getAnimationTransformNodeIds(modelId: Id64String): ReadonlySet<number> | undefined;
 }
 
 /** Groups models that have equivalent display settings.
@@ -43,6 +44,10 @@ export class GroupedModelDisplaySettings implements ModelGroupingContext {
 
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
     return this._args.getPlanProjectionSettings(modelId);
+  }
+
+  public getAnimationTransformNodeIds(modelId: Id64String): ReadonlySet<number> | undefined {
+    return this._args.getAnimationTransformNodeIds(modelId);
   }
 
   /** A string uniquely identifying the current model groupings. This changes when (and only when) the groupings change. */
