@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Fixed typo is information messages.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools"
+}

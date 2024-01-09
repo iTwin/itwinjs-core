@@ -104,6 +104,10 @@ await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh 
 // delete temps
 await $`rm -r ${targetPath}`;
 await $`rm -r ${incomingPath}`;
+// copy {release-version}.md to target branch if the commit that triggered this script run is from a major or minor version bump
+if (commitMessage.endsWith(".0")) {
+  await $`git checkout ${currentBranch} docs/changehistory/${commitMessage}.md`
+}
 // # regen CHANGELOG.md
 await $`rush publish --regenerate-changelogs`;
 /*********************************************************************
