@@ -34,7 +34,7 @@ export interface ModelGroupingContext {
   modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
-  getAnimationTransformNodeIds(modelId: Id64String): ReadonlySet<number> | undefined;
+  getAnimationTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {

@@ -14,7 +14,7 @@ interface ModelSettings {
   transform?: ModelDisplayTransform;
   clip?: ClipVector;
   projection?: PlanProjectionSettings;
-  nodeIds?: ReadonlySet<number>;
+  nodeIds?: ReadonlyArray<number>;
 }
 
 interface GroupingContextArgs {
@@ -25,7 +25,7 @@ class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
-  getAnimationTransformNodeIds: (modelId: Id64String) => ReadonlySet<number> | undefined;
+  getAnimationTransformNodeIds: (modelId: Id64String) => ReadonlyArray<number> | undefined;
 
   public getModelClip(modelId: Id64String) {
     return this._clips.find((x) => x.modelId === modelId);
@@ -192,32 +192,32 @@ describe("groupModels", () => {
 
   it("associates each animation transform node with corresponding model group", () => {
     expectGrouping([["0x1"]], {
-      "0x1": { nodeIds: new Set([1, 2, 3, 4]) },
+      "0x1": { nodeIds: [1, 2, 3, 4] },
     }, ["0x1"], [[1, 2, 3, 4]]);
 
     expectGrouping([["0x1", "0x2"]], {
-      "0x1": { nodeIds: new Set([1, 2]) },
-      "0x2": { nodeIds: new Set([3, 4]) },
+      "0x1": { nodeIds: [1, 2] },
+      "0x2": { nodeIds: [3, 4] },
     }, ["0x1", "0x2"], [[1, 2, 3, 4]]);
 
     expectGrouping([["0x1", "0x2"]], {
       "0x1": { },
-      "0x2": { nodeIds: new Set([3, 4])},
+      "0x2": { nodeIds: [3, 4]},
     }, ["0x1", "0x2"], [[3, 4]]);
     
     expectGrouping([["0x1"], ["0x2"]], {
       "0x1": { transform: { transform: Transform.createTranslationXYZ(1) }},
-      "0x2": { nodeIds: new Set([3, 4]) },
+      "0x2": { nodeIds: [3, 4] },
     }, ["0x1", "0x2"], [undefined, [3, 4]]);
     
     expectGrouping([["0x1"], ["0x2"]], {
-      "0x1": { nodeIds: new Set([1, 2]), transform: { transform: Transform.createTranslationXYZ(1) }},
-      "0x2": { nodeIds: new Set([3, 4]) },
+      "0x1": { nodeIds: [1, 2], transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x2": { nodeIds: [3, 4] },
     }, ["0x1", "0x2"], [[1, 2], [3, 4]]);
 
     expectGrouping([["0x1", "0x2"]], {
-      "0x1": { nodeIds: new Set([1, 2]), transform: { transform: Transform.createTranslationXYZ(1) }},
-      "0x2": { nodeIds: new Set([3, 4]), transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x1": { nodeIds: [1, 2], transform: { transform: Transform.createTranslationXYZ(1) }},
+      "0x2": { nodeIds: [3, 4], transform: { transform: Transform.createTranslationXYZ(1) }},
       }, ["0x1", "0x2"], [[1, 2, 3, 4]]);
   });
 });
