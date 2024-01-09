@@ -15,11 +15,13 @@ import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { loggerCategory } from "./LoggerCategory";
+import { BatchedModelGroups, createBatchedModelGroups } from "./BatchedModelGroups";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private readonly _models: BatchedModels;
+  private readonly _groups: BatchedModelGroups;
   private _currentScript?: RenderSchedule.Script;
   private _primaryRef!: PrimaryBatchedTileTreeReference;
   private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
@@ -49,6 +51,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       },
     };
 
+    this._groups = createBatchedModelGroups(view, new Set(includedModels));
     this.load(spec, view.iModel);
 
     assert(undefined !== this._primaryRef);

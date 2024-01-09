@@ -21,7 +21,7 @@ export interface BatchedModelGroups {
  * This exists to support tilesets that were published before the publisher was updated to include the set of included model Ids.
  * At some point, we will probably want to remove it.
  */
-class EmptyGroups implements BatchedModelGroups {
+class Group implements BatchedModelGroups {
   private readonly _view: SpatialViewState;
   private _scriptValid = false;
   public readonly guid = "";
@@ -70,9 +70,20 @@ class Groups implements BatchedModelGroups, ModelGroupingContext {
     this._includedModelIds = includedModelIds;
     this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(includedModelIds, view.modelDisplayTransformProvider);
 
-    // ###TODO listen for invalidating events.
-    
+    this._view.onModelDisplayTransformProviderChanged.addListener(() => this._transformsValid = false);
+    this._view.details.onModelClipGroupsChanged.addListener(() => this._groupsValid = false);
+    this.listenForDisplayStyleEvents();
+
     this.update();
+  }
+
+  private listenForDisplayStyleEvents(): void {
+    const removeListener = this._view.displayStyle.settings.onPlanProjectionSettingsChanged.addListener(() => this._groupsValid = false);
+    this._view.onDisplayStyleChanged.addListener(() => {
+      this._groupsValid = false;
+      removeListener();
+      this.listenForDisplayStyleEvents();
+    });
   }
 
   public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
@@ -115,4 +126,8 @@ class Groups implements BatchedModelGroups, ModelGroupingContext {
 
     return updated;
   }
+}
+
+export function createBatchedModelGroups(view: SpatialViewState, includedModelIds: Id64Set | undefined): BatchedModelGroups {
+  return includedModelIds?.size ? new Groups(view, includedModelIds) : new Group(view);
 }
