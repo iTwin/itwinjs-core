@@ -13,13 +13,13 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
-import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "./Graph.test";
 
@@ -236,14 +236,13 @@ describe("InsertAndRetriangulateContext", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "insertAndRetriangulate");
     expect(ck.getNumErrors()).equals(0);
   });
-  // cspell:word lisajoue
   it("TriangulateInHull", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 3.29;
     const dTheta = 0.34;
     let x0 = 0;
-    // lisajouePoint3d makes points smeared within distance 1 of the origin.
+    // createRosePoint3d makes points smeared within distance 1 of the origin.
     // nonzero yShift gradually makes points move upward
     // (nb the hull process makes points mostly move left to right)
     for (const yShiftStep of [0.0, 0.01, 0.05]) {
@@ -253,7 +252,7 @@ describe("InsertAndRetriangulateContext", () => {
         const points: Point3d[] = [];
         let yShift = 0.0;
         for (let theta = 0.01 * (numPoints - 8); points.length < numPoints; theta += dTheta) {
-          const point = lisajouePoint3d(theta * theta, a, 0);
+          const point = Sample.createRosePoint3d(theta * theta, a, 0);
           point.y += yShift;
           yShift += yShiftStep;
           points.push(point);
