@@ -16,11 +16,13 @@ import { BatchedTileTree } from "./BatchedTileTree";
 export interface BatchedTileTreeId {
   spec: BatchedTilesetSpec;
   script?: RenderSchedule.Script;
+  modelGroups: string;
 }
 
 class BatchedTileTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: BatchedTileTreeId, rhs: BatchedTileTreeId): number {
     return compareStrings(lhs.spec.baseUrl.toString(), rhs.spec.baseUrl.toString())
+      || compareStrings(lhs.modelGroups, rhs.modelGroups)
       || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.script, rhs.script);
   }
 
