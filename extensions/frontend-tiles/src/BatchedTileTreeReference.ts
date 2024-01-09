@@ -116,9 +116,10 @@ export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
 
 export interface ModelGroupTileTreeReferenceArgs {
   readonly models: BatchedModels;
-  readonly groups: ModelGroup[];
+  readonly groups: ReadonlyArray<ModelGroup>;
   readonly treeOwner: TileTreeOwner;
 }
+
 export class ModelGroupTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
   private readonly _args: ModelGroupTileTreeReferenceArgs;
   private readonly _groupIndex: number;

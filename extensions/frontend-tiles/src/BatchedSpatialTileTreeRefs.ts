@@ -9,7 +9,7 @@ import {
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { AnimatedBatchedTileTreeReference, ModelGroupTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
+import { AnimatedBatchedTileTreeReference, ModelGroupTileTreeReference, ModelGroupTileTreeReferenceArgs, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
 import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
@@ -99,7 +99,17 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   private loadRefs(): void {
     this._refs.length = 0;
-    // ###TODO
+    const groups = this._groups.groups;
+    const args: ModelGroupTileTreeReferenceArgs = {
+      models: this._models,
+      groups,
+      treeOwner: this._treeOwner,
+    };
+
+    for (let i = 0; i < groups.length; i++) {
+      // ###TODO handle animation transform nodes
+      this._refs.push(new ModelGroupTileTreeReference(args, i));
+    }
   }
 
   public [Symbol.iterator](): Iterator<TileTreeReference> {
