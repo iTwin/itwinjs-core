@@ -5,18 +5,21 @@
 import { expect } from "chai";
 import * as chaiJestSnapshot from "chai-jest-snapshot";
 import * as sinon from "sinon";
-import { assert, BeDuration, BeTimePoint, Guid, Id64 } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, Guid, Id64, using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
-  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValue, DisplayValueGroup, DisplayValuesArray, DisplayValuesMap, Field, FieldDescriptor, FormatsMap, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
-import { Presentation } from "@itwin/presentation-frontend";
+import { Presentation, PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 import { buildTestIModelConnection, insertDocumentPartition, insertPhysicalElement, insertPhysicalModel, insertSpatialCategory } from "../IModelSetupUtils";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 describe("Content", () => {
 
@@ -863,6 +866,110 @@ describe("Content", () => {
       }]);
     });
 
+  });
+
+  describe("Property value formatting", () => {
+    const ruleset: Ruleset = {
+      id: Guid.createValue(),
+      rules: [
+        {
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        },
+      ],
+    };
+    const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+    const baseFormatProps = {
+      formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+      type: "Decimal",
+      precision: 4,
+      uomSeparator: " ",
+    };
+
+    it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
+      expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
+    });
+
+    it("formats property value using default format when the property doesn't have format for requested unit system", async () => {
+      const formatProps = {
+        ...baseFormatProps,
+        composite: {
+          units: [{ label: "ft²", name: "Units.SQ_FT" }],
+        },
+      };
+      const defaultFormats = {
+        area: [{ unitSystems: ["imperial" as UnitSystemKey], format: formatProps }],
+      };
+      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
+    });
+
+    it("formats property value using property format when it has one for requested unit system in addition to default format", async () => {
+      const formatProps = {
+        ...baseFormatProps,
+        composite: {
+          units: [{ label: "ft²", name: "Units.SQ_FT" }],
+        },
+      };
+      const defaultFormats = {
+        area: [{ unitSystems: ["metric" as UnitSystemKey], format: formatProps }],
+      };
+      expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
+    });
+
+    it("formats property value using different unit system formats in defaults formats map", async () => {
+      const defaultFormats = {
+        area: [
+          {
+            unitSystems: ["imperial", "usCustomary"] as UnitSystemKey[],
+            format: {
+              ...baseFormatProps,
+              composite: {
+                units: [{ label: "in²", name: "Units.SQ_IN" }],
+              },
+            },
+          },
+          {
+            unitSystems: ["usSurvey"] as UnitSystemKey[],
+            format: {
+              ...baseFormatProps,
+              composite: {
+                units: [{ label: "yrd² (US Survey)", name: "Units.SQ_US_SURVEY_YRD" }],
+              },
+            },
+          },
+        ],
+      };
+      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("23.2692 in²");
+      expect(await getAreaDisplayValue("usCustomary", defaultFormats)).to.eq("23.2692 in²");
+      expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
+    });
+
+    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+      const props: PresentationManagerProps = {
+        defaultFormats,
+        activeLocale: "en-PSEUDO",
+        schemaContextProvider: (schemaIModel) => {
+          const schemas = new SchemaContext();
+          schemas.addLocater(new ECSchemaRpcLocater(schemaIModel));
+          return schemas;
+        },
+      };
+      return using(PresentationManager.create(props), async (manager) => {
+        const descriptor = await manager.getContentDescriptor({
+          imodel,
+          rulesetOrId: ruleset,
+          keys,
+          displayType: "Grid",
+          unitSystem,
+        });
+        expect(descriptor).to.not.be.undefined;
+        const field = getFieldByLabel(descriptor!.fields, "cm2");
+        const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
+        const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
+        expect(displayValues.length).is.eq(1);
+        return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
+      });
+    }
   });
 
   describe("waits for frontend timeout when request exceeds the backend timeout time", () => {

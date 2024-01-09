@@ -216,9 +216,11 @@ export class SweepContour {
   }
   /**
    * Create a UnionOfConvexClipPlaneSets that clips to the swept faceted contour region.
-   * @param sweepVector the sweep direction (does not have to be perpendicular to the contour). If undefined, the sweep direction is perpendicular to the plane of the contour, and no caps are constructed.
+   * @param sweepVector the sweep direction and distance:
+   * * If undefined, the sweep direction is along the contour normal and no caps are constructed (the sweep is infinite in both directions).
+   * * If defined, the returned clipper is inverted if and only if sweepVector is in the opposite half-space as the computed contour normal.
    * @param cap0 construct a clip plane equal to the contour plane. Note that `sweepVector` must be defined.
-   * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`. That is, sweepVector indicates both direction and distance.
+   * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`.
    * @param options how to stroke the contour
    * @returns clipper defined by faceting then sweeping the contour region
    */

@@ -48,7 +48,7 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
   }
 
   public get toolbarLocation(): XAndY {
-    return IModelApp.uiAdmin.createXAndY(this.marker.rect.right, this.marker.rect.top);
+    return { x: this.marker.rect.right, y: this.marker.rect.top };
   }
 
   public get htmlElement() {

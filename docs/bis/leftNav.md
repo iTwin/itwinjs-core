@@ -18,6 +18,7 @@ defaultState: activeOpen
 
   - [Element Fundamentals](./guide/fundamentals/element-fundamentals.md)
   - [Codes](./guide/fundamentals/codes.md)
+  - [FederationGuids](./guide/fundamentals/federationGuids.md)
   - [ElementAspect Fundamentals](./guide/fundamentals/elementaspect-fundamentals.md)
   - [Mixins](./guide/fundamentals/mixins.md)
   - [Model Fundamentals](./guide/fundamentals/model-fundamentals.md)
@@ -87,7 +88,8 @@ defaultState: activeOpen
   - [Overview](./domains/core-domains.md)
   - [Analytical](./domains/Analytical.ecschema.md)
   - [BisCore](./domains/BisCore.ecschema.md)
-  - [Provenance in BIS](./domains/Provenance-in-BIS.md)
+  - [- Drawings & Sheets](./domains/drawings-sheets.md)
+  - [- Provenance in BIS](./domains/Provenance-in-BIS.md)
   - [Functional](./domains/Functional.ecschema.md)
   - [Generic](./domains/Generic.ecschema.md)
   - [PhysicalMaterial](./domains/PhysicalMaterial.ecschema.md)

@@ -5,7 +5,7 @@
 
 import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
-import { Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
@@ -82,14 +82,17 @@ export class ThreeDTileFormatInterpreter  {
           location = centerOfEarth;
           Logger.logTrace(loggerCategory, "RealityData NOT Geolocated", () => ({ ...location }));
         } else {
-          let ecefLocation: EcefLocation;
-          const locationOrientation = YawPitchRollAngles.tryFromTransform(worldToEcefTransform);
+          let ecefLocation = EcefLocation.createFromTransform(worldToEcefTransform);
           // Fix Bug 445630: [RDV][Regression] Orientation of georeferenced Reality Mesh is wrong.
           // Use json.root.transform only if defined and not identity -> otherwise will use a transform computed from cartographic center.
-          if (!worldToEcefTransform.matrix.isIdentity && locationOrientation !== undefined && locationOrientation.angles !== undefined)
-            ecefLocation = new EcefLocation({ origin: locationOrientation.origin, orientation: locationOrientation.angles.toJSON() });
-          else
-            ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+          if (worldToEcefTransform.matrix.isIdentity) {
+            // For georeferenced Reality Meshes, its origin is translated to model origin (0,0,0).
+            // Apply range center to translate it back to its original position.
+            const worldCenter = !worldToEcefTransform.matrix.isIdentity ? range.center : undefined;
+            if (cartoCenter)
+              ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter, worldCenter);
+          }
+
           location = ecefLocation;
           Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity }));
           // iModelDb.setEcefLocation(ecefLocation);

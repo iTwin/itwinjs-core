@@ -1,6 +1,75 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 12 Sep 2023 15:40:33 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+_Version update only_
+
+## 4.3.2
+Thu, 14 Dec 2023 20:23:02 GMT
+
+_Version update only_
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:55 GMT
+
+_Version update only_
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Add tests for `QueryBinder`.
+- Added support for recoloring geometry intersecting a clip volume
+- Custom query parameters can now be configured on map layer objects.
+- Add support for transparency in thematic display gradient.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- ECSqlReader is now public
+- ECSqlReader.formatCurrentRow and ECSqlReader.getRowInternal are now internal
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
+
+## 4.1.7
+Thu, 28 Sep 2023 21:41:33 GMT
+
+_Version update only_
 
 ## 4.1.6
 Tue, 12 Sep 2023 15:38:52 GMT
@@ -99,6 +168,31 @@ Mon, 22 May 2023 15:34:14 GMT
 - Implemented constant lod texture mapping mode.
 - Add interfaces representing 3d tileset schema.
 - add Atmosphere class as a property of Environment
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
+
+## 3.7.14
+Fri, 29 Sep 2023 16:57:16 GMT
+
+_Version update only_
 
 ## 3.7.13
 Tue, 08 Aug 2023 19:49:18 GMT

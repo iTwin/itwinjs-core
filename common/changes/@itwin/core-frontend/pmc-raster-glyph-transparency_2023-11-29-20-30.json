@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix incorrect transparency for text rendered as raster glyphs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

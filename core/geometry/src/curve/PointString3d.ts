@@ -14,6 +14,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
+import { XYZProps } from "../geometry3d/XYZProps";
 import { GeometryQuery } from "./GeometryQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -108,7 +109,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
    * Convert an PointString3d to a JSON object.
    * @return {*} [[x,y,z],...[x,y,z]]
    */
-  public toJSON(): any {
+  public toJSON(): XYZProps[] {
     const value = [];
     for (const p of this._points) value.push(p.toJSON());
     return value;

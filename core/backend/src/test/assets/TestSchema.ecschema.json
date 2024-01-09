@@ -29,9 +29,7 @@
     "BaseEntity": {
       "description": "Base Entity Description",
       "label": "Base Entity",
-      "mixins": [
-        "TestSchema.MixinClass"
-      ],
+      "mixins": ["TestSchema.MixinClass"],
       "modifier": "Abstract",
       "properties": [
         {
@@ -46,9 +44,7 @@
       "modifier": "Abstract",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.BaseEntity"
-        ],
+        "constraintClasses": ["TestSchema.BaseEntity"],
         "multiplicity": "(0..*)",
         "polymorphic": true,
         "roleLabel": "refers to"
@@ -56,9 +52,7 @@
       "strength": "Referencing",
       "strengthDirection": "Forward",
       "target": {
-        "constraintClasses": [
-          "TestSchema.NormalEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.NormalEntityClass"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "is referred to by"
@@ -311,9 +305,7 @@
       "modifier": "Sealed",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.DerivedNormal"
-        ],
+        "constraintClasses": ["TestSchema.DerivedNormal"],
         "multiplicity": "(1..1)",
         "polymorphic": true,
         "roleLabel": "references"
@@ -322,9 +314,7 @@
       "strengthDirection": "Forward",
       "target": {
         "abstractConstraint": "TestSchema.MixinClass",
-        "constraintClasses": [
-          "TestSchema.DerivedMixin"
-        ],
+        "constraintClasses": ["TestSchema.DerivedMixin"],
         "multiplicity": "(0..1)",
         "polymorphic": false,
         "roleLabel": "is referenced by"
@@ -337,9 +327,7 @@
     },
     "Entity": {
       "baseClass": "TestSchema.BaseEntity",
-      "mixins": [
-        "TestSchema.DerivedMixin"
-      ],
+      "mixins": ["TestSchema.DerivedMixin"],
       "properties": [
         {
           "description": "A property override.",
@@ -354,9 +342,7 @@
       "modifier": "Abstract",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.Entity"
-        ],
+        "constraintClasses": ["TestSchema.Entity"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "is embedded by"
@@ -364,9 +350,7 @@
       "strength": "Embedding",
       "strengthDirection": "Backward",
       "target": {
-        "constraintClasses": [
-          "TestSchema.NormalEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.NormalEntityClass"],
         "customAttributes": [
           {
             "className": "TestSchema.CustomRelationshipConstraintAttribute"
@@ -385,9 +369,7 @@
       "modifier": "Sealed",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.Entity"
-        ],
+        "constraintClasses": ["TestSchema.Entity"],
         "multiplicity": "(0..*)",
         "polymorphic": true,
         "roleLabel": "refers to"
@@ -395,9 +377,7 @@
       "strength": "Referencing",
       "strengthDirection": "Forward",
       "target": {
-        "constraintClasses": [
-          "TestSchema.DerivedNormal"
-        ],
+        "constraintClasses": ["TestSchema.DerivedNormal"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "is referred to by"
@@ -414,9 +394,7 @@
       ],
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.Entity"
-        ],
+        "constraintClasses": ["TestSchema.Entity"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "references"
@@ -424,9 +402,7 @@
       "strength": "Referencing",
       "strengthDirection": "Forward",
       "target": {
-        "constraintClasses": [
-          "TestSchema.Entity"
-        ],
+        "constraintClasses": ["TestSchema.Entity"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "is referenced by"
@@ -545,9 +521,7 @@
       "modifier": "Abstract",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.NormalEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.NormalEntityClass"],
         "multiplicity": "(1..*)",
         "polymorphic": true,
         "roleLabel": "is referred to by"
@@ -593,9 +567,7 @@
       "strengthDirection": "Forward",
       "target": {
         "abstractConstraint": "TestSchema.AbstractEntityClass",
-        "constraintClasses": [
-          "TestSchema.AbstractEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.AbstractEntityClass"],
         "multiplicity": "(0..*)",
         "polymorphic": false,
         "roleLabel": "is referred to by"
@@ -605,9 +577,7 @@
       "modifier": "Abstract",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.NormalEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.NormalEntityClass"],
         "multiplicity": "(0..*)",
         "polymorphic": true,
         "roleLabel": "references"
@@ -616,9 +586,7 @@
       "strengthDirection": "Forward",
       "target": {
         "abstractConstraint": "TestSchema.MixinClass",
-        "constraintClasses": [
-          "TestSchema.DerivedMixin"
-        ],
+        "constraintClasses": ["TestSchema.DerivedMixin"],
         "multiplicity": "(0..1)",
         "polymorphic": true,
         "roleLabel": "is referenced by"
@@ -884,9 +852,7 @@
       "modifier": "Abstract",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.SealedEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.SealedEntityClass"],
         "multiplicity": "(0..1)",
         "polymorphic": false,
         "roleLabel": "is held by"
@@ -894,9 +860,7 @@
       "strength": "Holding",
       "strengthDirection": "Backward",
       "target": {
-        "constraintClasses": [
-          "TestSchema.NormalEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.NormalEntityClass"],
         "customAttributes": [
           {
             "className": "TestSchema.CustomRelationshipConstraintAttribute"
@@ -914,9 +878,7 @@
       "modifier": "Sealed",
       "schemaItemType": "RelationshipClass",
       "source": {
-        "constraintClasses": [
-          "TestSchema.SealedEntityClass"
-        ],
+        "constraintClasses": ["TestSchema.SealedEntityClass"],
         "multiplicity": "(1..1)",
         "polymorphic": true,
         "roleLabel": "holds"
@@ -1072,7 +1034,7 @@
   "references": [
     {
       "name": "CoreCustomAttributes",
-      "version": "01.00.03"
+      "version": "01.00.04"
     }
   ],
   "version": "01.00.00"

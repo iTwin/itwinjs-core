@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Point2d, Range2d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
@@ -27,7 +27,7 @@ import { createPointStringParams } from "../../../render/primitives/PointStringP
 import { MeshArgs, PolylineArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 
 interface Point {
-  x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
+  x: number; // quantized or unquantized x coordinate - y will be x+1 and z will be x+5.
   color: number; // color index
   feature: number; // feature index
 }
@@ -68,31 +68,76 @@ function makeFeatureIndex(points: Point[]): FeatureIndex {
   return featureIndex;
 }
 
-function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): PointStringParams {
-  const colorIndex = makeColorIndex(points, colors);
-  const featureIndex = makeFeatureIndex(points);
+function makePointList(pts: Point[], quantized: boolean): QPoint3dList | (Array<Point3d> & { range: Range3d }) {
+  if (quantized) {
+    const qpts = new QPoint3dList();
+    for (const point of pts)
+      qpts.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
 
-  const qpoints = new QPoint3dList();
-  for (const point of points)
-    qpoints.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
+    return qpts;
+  }
 
+  const points = [] as unknown as Array<Point3d> & { range: Range3d };
+  points.range = new Range3d();
+  for (const pt of pts) {
+    const point = new Point3d(pt.x, pt.x + 1, pt.x + 5);
+    points.push(point);
+    points.range.extend(point);
+  }
+
+  return points;
+}
+
+function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unquantized: boolean): PointStringParams {
+  const colorIndex = makeColorIndex(pts, colors);
+  const featureIndex = makeFeatureIndex(pts);
+
+  const points = makePointList(pts, !unquantized);
   const args: PolylineArgs = {
     colors: colorIndex,
     features: featureIndex,
     width: 1,
     linePixels: LinePixels.Solid,
     flags: { isPlanar: true, isDisjoint: true },
-    points: qpoints,
+    points,
     polylines: [[...new Array<number>(points.length).keys()] ],
   };
 
   const params = createPointStringParams(args)!;
   expect(params).not.to.be.undefined;
+  expect(params.vertices.usesUnquantizedPositions).to.equal(unquantized);
+  expectBaseVertices(params.vertices, pts);
+
   return params;
 }
 
 function getVertexTableData(vertexTable: VertexTable, numExtraRgba: number): Uint32Array {
-  return new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+  let data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+  if (!vertexTable.usesUnquantizedPositions)
+    return data;
+
+  // Unquantized data is transposed for more efficient access on GPU.
+  data = data.slice();
+  const bytes = new Uint8Array(data.buffer);
+  const swapBytes = (u32Idx: number, i0: number, i1: number) => {
+    const u8Idx = u32Idx * 4;
+    const tmp = bytes[u8Idx + i0];
+    bytes[u8Idx + i0] = bytes[u8Idx + i1];
+    bytes[u8Idx + i1] = tmp;
+  };
+
+  for (let i = 0; i < vertexTable.numVertices; i++) {
+    const idx = i * vertexTable.numRgbaPerVertex;
+
+    swapBytes(idx, 1, 4);
+    swapBytes(idx, 2, 8);
+    swapBytes(idx, 3, 12);
+    swapBytes(idx, 6, 9);
+    swapBytes(idx, 7, 13);
+    swapBytes(idx, 11, 14);
+  }
+
+  return data;
 }
 
 function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[]): void {
@@ -115,30 +160,48 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
 
 function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasColorIndex = true): void {
   const data = getVertexTableData(vertexTable, 0);
+
+  const fpts = new Float32Array(data.buffer);
+  const getVertex = vertexTable.usesUnquantizedPositions ? (idx: number) => {
+    const x = fpts[idx];
+    return {
+      x,
+      y: fpts[idx + 1],
+      z: fpts[idx + 2],
+      featureIndex: data[idx + 3],
+      colorIndex: (data[idx + 4] & 0x0000ffff),
+    };
+  } : (idx: number) => {
+    const x = data[idx] & 0xffff;
+    return {
+      x,
+      y: (data[idx] & 0xffff0000) >>> 16,
+      z: data[idx + 1] & 0xffff,
+      colorIndex: (data[idx + 1] & 0xffff0000) >>> 16,
+      featureIndex: data[idx + 2] & 0x00ffffff,
+    };
+  };
+
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
-    const x = data[idx] & 0xffff;
-    const y = (data[idx] & 0xffff0000) >>> 16;
-    const z = data[idx + 1] & 0xffff;
-    const colorIndex = (data[idx + 1] & 0xffff0000) >>> 16;
-    const featureIndex = data[idx + 2] & 0x00ffffff;
+    const vert = getVertex(idx);
 
     const pt = expectedPts[i];
-    expect(x).to.equal(pt.x);
-    expect(y).to.equal(pt.x + 1);
-    expect(z).to.equal(pt.x + 5);
+    expect(vert.x).to.equal(pt.x);
+    expect(vert.y).to.equal(pt.x + 1);
+    expect(vert.z).to.equal(pt.x + 5);
 
     // Textured meshes don't use color tables and may reuse the color index for other purposes like normal.
     if (hasColorIndex)
-      expect(colorIndex).to.equal(pt.color);
+      expect(vert.colorIndex).to.equal(pt.color);
 
-    expect(featureIndex).to.equal(pt.feature);
+    expect(vert.featureIndex).to.equal(pt.feature);
   }
 }
 
 function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
   const vertexTable = params.vertices;
-  expect(vertexTable.numRgbaPerVertex).to.equal(3);
+  expect(vertexTable.numRgbaPerVertex).to.equal(vertexTable.usesUnquantizedPositions ? 5 : 3);
   expect(vertexTable.numVertices).to.equal(expectedPts.length);
   expectColors(vertexTable, expectedColors);
 
@@ -441,69 +504,74 @@ describe("VertexTableSplitter", () => {
     };
   }
 
-  it("splits point string params based on node Id", () => {
-    const featureTable = makePackedFeatureTable("0x1", "0x2", "0x10000000002");
+  for (let iUnquantized = 0; iUnquantized < 2; iUnquantized++) {
+    const unquantized = iUnquantized > 0;
+    describe(unquantized ? "Unquantized" : "Quantized", () => {
+      it("splits point string params based on node Id", () => {
+        const featureTable = makePackedFeatureTable("0x1", "0x2", "0x10000000002");
 
-    const points: Point[] = [
-      { x: 1, color: 0, feature: 0 },
-      { x: 0, color: 0, feature: 1 },
-      { x: 5, color: 0, feature: 2 },
-      { x: 4, color: 0, feature: 1 },
-      { x: 2, color: 0, feature: 2 },
-    ];
+        const points: Point[] = [
+          { x: 1, color: 0, feature: 0 },
+          { x: 0, color: 0, feature: 1 },
+          { x: 5, color: 0, feature: 2 },
+          { x: 4, color: 0, feature: 1 },
+          { x: 2, color: 0, feature: 2 },
+        ];
 
-    const params = makePointStringParams(points, ColorDef.red);
-    expectPointStrings(params, ColorDef.red, points);
+        const params = makePointStringParams(points, ColorDef.red, unquantized);
+        expectPointStrings(params, ColorDef.red, points);
 
-    const split = splitPointStringParams({
-      params, featureTable, maxDimension: 2048,
-      computeNodeId: makeComputeNodeId(featureTable, (id) => id.upper > 0 ? 1 : 0),
+        const split = splitPointStringParams({
+          params, featureTable, maxDimension: 2048,
+          computeNodeId: makeComputeNodeId(featureTable, (id) => id.upper > 0 ? 1 : 0),
+        });
+        expect(split.size).to.equal(2);
+
+        expectPointStrings(split.get(0)!, ColorDef.red, [
+          { x: 1, color: 0, feature: 0 },
+          { x: 0, color: 0, feature: 1 },
+          { x: 4, color: 0, feature: 1 },
+        ]);
+
+        expectPointStrings(split.get(1)!, ColorDef.red, [
+          { x: 5, color: 0, feature: 2 },
+          { x: 2, color: 0, feature: 2 },
+        ]);
+      });
+
+      it("reconstructs or collapses color tables and remaps color indices", () => {
+        const featureTable = makePackedFeatureTable("0x1", "0x2");
+
+        const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+
+        const points = [
+          { x: 1, color: 2, feature: 0 },
+          { x: 2, color: 0, feature: 0 },
+          { x: 3, color: 1, feature: 1 },
+          { x: 4, color: 1, feature: 1 },
+        ];
+
+        const params = makePointStringParams(points, colors, unquantized);
+        expectPointStrings(params, colors, points);
+
+        const split = splitPointStringParams({
+          params, featureTable, maxDimension: 2048,
+          computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+        });
+        expect(split.size).to.equal(2);
+
+        expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
+          { x: 1, color: 0, feature: 0 },
+          { x: 2, color: 1, feature: 0 },
+        ]);
+
+        expectPointStrings(split.get(2)!, ColorDef.green, [
+          { x: 3, color: 0, feature: 1 },
+          { x: 4, color: 0, feature: 1 },
+        ]);
+      });
     });
-    expect(split.size).to.equal(2);
-
-    expectPointStrings(split.get(0)!, ColorDef.red, [
-      { x: 1, color: 0, feature: 0 },
-      { x: 0, color: 0, feature: 1 },
-      { x: 4, color: 0, feature: 1 },
-    ]);
-
-    expectPointStrings(split.get(1)!, ColorDef.red, [
-      { x: 5, color: 0, feature: 2 },
-      { x: 2, color: 0, feature: 2 },
-    ]);
-  });
-
-  it("reconstructs or collapses color tables and remaps color indices", () => {
-    const featureTable = makePackedFeatureTable("0x1", "0x2");
-
-    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
-
-    const points = [
-      { x: 1, color: 2, feature: 0 },
-      { x: 2, color: 0, feature: 0 },
-      { x: 3, color: 1, feature: 1 },
-      { x: 4, color: 1, feature: 1 },
-    ];
-
-    const params = makePointStringParams(points, colors);
-    expectPointStrings(params, colors, points);
-
-    const split = splitPointStringParams({
-      params, featureTable, maxDimension: 2048,
-      computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
-    });
-    expect(split.size).to.equal(2);
-
-    expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
-      { x: 1, color: 0, feature: 0 },
-      { x: 2, color: 1, feature: 0 },
-    ]);
-
-    expectPointStrings(split.get(2)!, ColorDef.green, [
-      { x: 3, color: 0, feature: 1 },
-      { x: 4, color: 0, feature: 1 },
-    ]);
-  });
+  }
 
   it("produces rectangular vertex tables", () => {
     setMaxTextureSize(6);
@@ -530,7 +598,7 @@ describe("VertexTableSplitter", () => {
       { x: 8, color: 2, feature: 3 },
     ];
 
-    const params = makePointStringParams(points, colors);
+    const params = makePointStringParams(points, colors, false);
     expectPointStrings(params, colors, points);
 
     const split = splitPointStringParams({
@@ -566,7 +634,6 @@ describe("VertexTableSplitter", () => {
       { x: 8, color: 0, feature: 3 },
     ]);
   });
-
   function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
     let colors: ColorDef | ColorDef[] = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Save changes before closing IModels opened in ReadWrite mode",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

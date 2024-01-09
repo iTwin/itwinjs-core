@@ -33,6 +33,7 @@ export interface HttpServerRequest extends BackendReadable {
   headers: { [header: string]: string | string[] | undefined };
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
+  trailersDistinct: NodeJS.Dict<string[]>;
   rawTrailers: string[];
   setTimeout(msecs: number, callback: () => void): void;
   setTimeout(msecs: number, callback: () => void): this;
@@ -46,6 +47,7 @@ export interface HttpServerRequest extends BackendReadable {
   method: string;
   ip?: string;
   header: (field: string) => string | undefined;
+  headersDistinct: NodeJS.Dict<string[]>;
 }
 
 /** An HTTP server response object.

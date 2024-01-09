@@ -300,7 +300,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      metadata = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password, this._accessTokenRequired);
+      metadata = await ArcGisUtilities.getServiceJson({
+        url: url.toString(), formatId: this._settings.formatId,
+        userName: this._settings.userName, password: this._settings.password,
+        queryParams: this._settings.collectQueryParams(), requireToken: this._accessTokenRequired});
     } catch {
 
     }
@@ -443,7 +446,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       const featureReader = new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
-      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
+      const renderer = new ArcGisGraphicsRenderer({viewport: hit.viewport});
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {

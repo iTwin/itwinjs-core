@@ -101,6 +101,99 @@ Supported scientific type:
 
 **includeZero** determines whether to keep a segment of the composite even if its magnitude is zero. By default, this is true.
 
-## Sub-Elements
+**units (1..4)** an optional array of unit + label override objects.
+  - A single units entry formats a value like `42.42 ft`.
+  - If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`.
+  - Unit labels are optional. If not specified, the label will be set as the unit's diplay label.
+  - If a unit label is explicitly set to an empty string, no label will be shown for that unit and the label will remain an empty string.
+  - Unit labels specified in the composite format definition can be overriden as part of the format override in a KindOfQuantity. See [format override](./kindofquantity.md/#format-overrides).
 
-[Unit](./ec-unit.md) _(1..4)_
+## Examples
+
+This format will result in values split between feet and inches with a precision of 1/8th of an inch.  e.g. a value of 12.54166 feet would be formatted as `12'-6 1/2"`, a value of 1 meter would be formatted as `3'-3 3/8"`.
+
+```json
+    "AmerFI": {
+      "schemaItemType": "Format",
+      "label": "FeetInches",
+      "type": "Fractional",
+      "precision": 8,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "uomSeparator": "",
+      "composite": {
+        "spacer": "-",
+        "units": [
+          {
+            "name": "Units.FT",
+            "label": "'"
+          },
+          {
+            "name": "Units.IN",
+            "label": "\""
+          }
+        ]
+      }
+    }
+```
+
+This format specifies only one unit, decimal formatting and not label override.  So 12.5466 feet would be formatted as `3.8227 m` and a value of 1 meter would be formatted as `1.0 m`
+
+```json
+    "MyMetersFormat": {
+      "schemaItemType": "Format",
+      "label": "real",
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ]
+    },
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M"
+          }
+        ]
+      }
+```
+
+This format does not specify any units so it may only be used in a [format override](./kindofquantity.md/#format-overrides).  Unitless formats and format overrides allow one base format to be used for any unit, see the [format override](./kindofquantity.md/#format-overrides) section for more details and examples.
+
+```json
+    "DefaultRealU": {
+      "schemaItemType": "Format",
+      "label": "realu",
+      "type": "Decimal",
+      "precision": 6,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ]
+    }
+```
+
+This format specifies units which have labels that are intentionally missing or set to an empty string.
+
+```json
+    "MyMetersFormat": {
+      "schemaItemType": "Format",
+      "label": "real",
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "composite": {
+        "units": [{ "name": "Units.KM" }, { "name": "Units.M", "label": "" }, { "name": "Units.CM", "label": "centimeter" }, { "name": "Units.MM", "label": "millimeter" }]
+      }
+    }
+```
