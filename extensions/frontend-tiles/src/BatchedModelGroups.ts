@@ -6,14 +6,28 @@ import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
 import { ModelDisplayTransformProvider, RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
 import { CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
-import { PlanProjectionSettings } from "@itwin/core-common";
+import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 
-export interface BatchedModelGroups {
-  readonly guid: string;
-  readonly groups: ReadonlyArray<Readonly<ModelGroup>>;
-  readonly update: () => boolean;
-  readonly attachToViewport: (vp: Viewport) => void;
-  readonly invalidateScheduleScript: () => void;
+export abstract class BatchedModelGroups {
+  protected _script?: RenderSchedule.Script;
+  protected _scriptValid = false;
+  
+  protected constructor(script: RenderSchedule.Script | undefined) {
+    this._script = script;
+  }
+
+  public abstract get guid(): string;
+  public abstract get groups(): ReadonlyArray<Readonly<ModelGroup>>;
+  public abstract update(): boolean;
+  public attachToViewport(_vp: Viewport): void { }
+  public setScript(script: RenderSchedule.Script | undefined): void {
+    this._script = script;
+    this._scriptValid = false;
+  }
+
+  public static create(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set | undefined): BatchedModelGroups {
+    return includedModelIds?.size ? new Groups(view, script, includedModelIds) : new Group(view, script);
+  }
 }
 
 /** Implementation of BatchedModelGroups for tilesets that do not disclose the set of included model Ids.
@@ -21,23 +35,17 @@ export interface BatchedModelGroups {
  * This exists to support tilesets that were published before the publisher was updated to include the set of included model Ids.
  * At some point, we will probably want to remove it.
  */
-class Group implements BatchedModelGroups {
+class Group extends BatchedModelGroups {
   private readonly _view: SpatialViewState;
-  private _scriptValid = false;
   public readonly guid = "";
   public readonly groups: ModelGroup[] = [];
 
-  public constructor(view: SpatialViewState) {
+  public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined) {
+    super(script);
     this._view = view;
     this.groups = [{ modelIds: new Set() }];
 
     this.update();
-  }
-
-  public attachToViewport(): void { }
-
-  public invalidateScheduleScript(): void {
-    this._scriptValid = false;
   }
 
   public update(): boolean {
@@ -55,17 +63,17 @@ class Group implements BatchedModelGroups {
 /** Implementation of BatchedModelGroups for tilesets that disclose the set of included model Ids.
  * Per-model settings like clip, transform, and plan projections are supported in addition to schedule animations.
  */
-class Groups implements BatchedModelGroups, ModelGroupingContext {
+class Groups extends BatchedModelGroups implements ModelGroupingContext {
   private readonly _view: SpatialViewState;
   private readonly _includedModelIds: Id64Set;
-  private _scriptValid = false;
   private _transformsValid = false;
   private _groupsValid = false;
   public guid = "";
   public groups: ModelGroup[] = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
 
-  public constructor(view: SpatialViewState, includedModelIds: Id64Set) {
+  public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set) {
+    super(script);
     this._view = view;
     this._includedModelIds = includedModelIds;
     this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(includedModelIds, view.modelDisplayTransformProvider);
@@ -98,11 +106,7 @@ class Groups implements BatchedModelGroups, ModelGroupingContext {
     return this._view.scheduleScript?.modelTimelines.find((x) => x.modelId === modelId)?.transformBatchIds;
   }
 
-  public invalidateScheduleScript(): void {
-    this._scriptValid = false;
-  }
-  
-  public attachToViewport(_vp: Viewport): void {
+  public override attachToViewport(_vp: Viewport): void {
     // ###TODO listen for scene invalidation to potentially invalidate display transforms.
   }
 
@@ -126,8 +130,4 @@ class Groups implements BatchedModelGroups, ModelGroupingContext {
 
     return updated;
   }
-}
-
-export function createBatchedModelGroups(view: SpatialViewState, includedModelIds: Id64Set | undefined): BatchedModelGroups {
-  return includedModelIds?.size ? new Groups(view, includedModelIds) : new Group(view);
 }
