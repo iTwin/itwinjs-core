@@ -25,11 +25,13 @@
 export class XYParitySearchContext {
   public xTest: number;
   public yTest: number;
-  // local coordinates of recent point with nonzero v. Usually "second last point" but points can be skipped if y1 is zero
+  /** local x-coordinate of the start of the previous (or earlier) edge */
   public u0: number;
+  /** local y-coordinate of the start of the previous (or earlier) edge */
   public v0: number;
-  // local coordinates of most recent point
+  /** local x-coordinate of the end of the previous edge (and start of current edge) */
   public u1: number;
+  /** local y-coordinate of the end of the previous edge (and start of current edge) */
   public v1: number;
   public numLeftCrossing: number;
   public numRightCrossing: number;
