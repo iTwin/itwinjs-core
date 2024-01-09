@@ -8,7 +8,7 @@ import { compareStrings, SortedArray } from "@itwin/core-bentley";
 
 export interface NamedVSPSProps {
   _name: string;
-  _viewState: string,
+  _viewStatePropsString: string,
   _selectedElements?: string;
   _overrideElements?: string;
   _displayTransforms?: string;
@@ -23,7 +23,7 @@ export class NamedViewStatePropsString {
 
   public constructor(props: NamedVSPSProps) {
     this._name = props._name;
-    this._viewStatePropsString = props._viewState;
+    this._viewStatePropsString = props._viewStatePropsString;
     this._selectedElements = props._selectedElements;
     this._overrideElements = props._overrideElements;
     this._displayTransforms = props._displayTransforms;
