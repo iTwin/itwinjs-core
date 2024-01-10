@@ -100,9 +100,15 @@
     "@bentley/imodeljs-native": "4.3.6",
     "@itwin/cloud-agnostic-core": "^2.1.0",
     "@itwin/core-telemetry": "workspace:*",
+<<<<<<< HEAD
     "@itwin/object-storage-azure": "^2.1.0",
     "@itwin/object-storage-core": "^2.1.0",
     "form-data": "^2.3.2",
+=======
+    "@itwin/object-storage-azure": "^2.2.2",
+    "@itwin/object-storage-core": "^2.2.2",
+    "form-data": "^2.5.1",
+>>>>>>> 6cc92d3090 (Bump @itwin/object-storage pkgs to address GHSA-jchw-25xp-jwwc (#6352))
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
