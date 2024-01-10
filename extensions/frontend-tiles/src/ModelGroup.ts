@@ -5,7 +5,7 @@
 
 import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
-import { AnimationNodeId, ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
+import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
 /** Display settings to be applied to a group of models.
@@ -15,6 +15,7 @@ export interface ModelGroupInfo {
   displayTransform?: ModelDisplayTransform;
   clip?: RenderClipVolume;
   planProjectionSettings?: PlanProjectionSettings;
+  timeline?: RenderSchedule.ModelTimeline;
 }
 
 /** Represents a group of models and the display settings to be applied to them.
@@ -23,8 +24,6 @@ export interface ModelGroupInfo {
 export interface ModelGroup extends ModelGroupInfo {
   /** The set of models belonging to this group. */
   modelIds: Id64Set;
-  /** The union of all [ModelTimeline.transformBatchIds]($common) for all models belonging to this group. */
-  animationTransformNodeIds?: Set<number>;
 }
 
 /** Context supplied to [[groupModels]].
@@ -34,17 +33,23 @@ export interface ModelGroupingContext {
   modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
-  getAnimationTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+  getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
-  const displayTransform = context.modelGroupDisplayTransforms.getDisplayTransform(modelId);
-  const clip = context.getModelClip(modelId);
-  const planProjectionSettings = context.getPlanProjectionSettings(modelId);
-  return { displayTransform, clip, planProjectionSettings };
+  return {
+    displayTransform: context.modelGroupDisplayTransforms.getDisplayTransform(modelId),
+    clip: context.getModelClip(modelId),
+    planProjectionSettings: context.getPlanProjectionSettings(modelId),
+    timeline: context.getModelTimeline(modelId),
+  };
 }
 
 function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
+  // If a model has a timeline it cannot be grouped
+  if (a.timeline !== b.timeline)
+    return false;
+  
   // Display transforms are obtained from ModelGroupDisplayTransforms - they are guaranteed to be the same object if they are equivalent.
   if (a.displayTransform !== b.displayTransform)
     return false;
@@ -77,21 +82,7 @@ export function groupModels(context: ModelGroupingContext, modelIds: Id64Set): M
 
     assert(!group.modelIds.has(modelId));
     group.modelIds.add(modelId);
-    const nodeIds = context.getAnimationTransformNodeIds(modelId);
-    if (nodeIds) {
-      if (!group.animationTransformNodeIds) {
-        group.animationTransformNodeIds = new Set(nodeIds);
-      } else {
-        for (const nodeId of nodeIds)
-          group.animationTransformNodeIds.add(nodeId);
-      }
-    }
   }
 
-  // Any group that has animation transforms applied to it must also include untransformed geometry.
-  for (const group of groups)
-    if (group.animationTransformNodeIds)
-      group.animationTransformNodeIds.add(AnimationNodeId.Untransformed);
-  
   return groups;
 }

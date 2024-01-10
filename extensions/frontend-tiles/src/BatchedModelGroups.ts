@@ -53,8 +53,9 @@ class Group extends BatchedModelGroups {
       return false;
 
     this._scriptValid = true;
-    const nodeIds = this._view.scheduleScript?.transformBatchIds;
-    this.groups[0].animationTransformNodeIds = nodeIds ? new Set(nodeIds) : undefined;
+    // ###TODO handle model timeline(s)
+    // const nodeIds = this._view.scheduleScript?.transformBatchIds;
+    // this.groups[0].animationTransformNodeIds = nodeIds ? new Set(nodeIds) : undefined;
 
     return true;
   }
@@ -102,8 +103,8 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
     return this._view.displayStyle.settings.getPlanProjectionSettings(modelId);
   }
 
-  public getAnimationTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined {
-    return this._view.scheduleScript?.modelTimelines.find((x) => x.modelId === modelId)?.transformBatchIds;
+  public getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined {
+    return this._view.scheduleScript?.modelTimelines.find((x) => x.modelId === modelId);
   }
 
   public override attachToViewport(_vp: Viewport): void {
