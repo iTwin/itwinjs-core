@@ -56,13 +56,13 @@
     "@types/node": "~18.16.20",
     "@types/superagent": "^4.1.14",
     "@types/ws": "^7.0.0",
-    "chai": "^4.3.10",
+    "chai": "4.4.0",
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
-    "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "eslint": "8.56.0",
+    "mocha": "10.2.0",
+    "rimraf": "3.0.2",
+    "typescript": "5.0.2"
   }
 }

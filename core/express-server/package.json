@@ -47,14 +47,14 @@
     "@types/sinon": "^10.0.15",
     "@types/supertest": "^2.0.4",
     "@types/express-ws": "^3.0.1",
-    "chai": "^4.3.10",
-    "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "chai": "4.4.0",
+    "eslint": "8.56.0",
+    "mocha": "10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "3.0.2",
     "sinon": "^15.0.4",
     "supertest": "^3.0.0",
-    "typescript": "~5.0.2"
+    "typescript": "5.0.2"
   },
   "peerDependencies": {
     "@itwin/core-backend": "workspace:*"

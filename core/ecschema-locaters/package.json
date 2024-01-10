@@ -59,18 +59,18 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "~18.16.20",
     "@types/sinon": "^10.0.15",
-    "chai": "^4.3.10",
+    "chai": "4.4.0",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^8.44.0",
-    "mocha": "^10.0.0",
+    "eslint": "8.56.0",
+    "mocha": "10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "3.0.2",
     "sinon": "^15.0.4",
-    "typescript": "~5.0.2"
+    "typescript": "5.0.2"
   },
   "dependencies": {
-    "glob": "^7.1.2",
+    "glob": "7.2.3",
     "fs-extra": "^8.1.0",
     "@xmldom/xmldom": "~0.8.5"
   },
