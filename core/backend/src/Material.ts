@@ -186,6 +186,7 @@ export class RenderMaterialElement extends DefinitionElement {
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 
+  /** @internal */
   protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
     super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
