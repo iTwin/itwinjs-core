@@ -318,17 +318,19 @@ describe("RenderMaterialElement", () => {
         ["Unknown" as any]: { TextureId: textureId },
         ["InvalidTexture" as any]: { TextureId: Id64.invalid },
         ["UnknownTexture" as any]: { TextureId: unknownTextureId },
+        ["NoTextureId" as any]: { OtherProp: 1 },
       };
 
       const material = test({});
       const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
-      assert(jsonProps?.materialAssets?.renderMaterial?.Map);
+      assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
       jsonProps.materialAssets.renderMaterial.Map = maps;
       material.update();
 
       const context = {
         findTargetElementId: (sourceId: Id64String) => {
-          expect(Id64.isId64(sourceId)).to.be.true;
+          expect(typeof sourceId, `bad id: ${sourceId}`).to.equal("string");
+          expect(Id64.isId64(sourceId), `bad id: ${sourceId}`).to.be.true;
           return "CLONED";
         },
       } as any as IModelElementCloneContext;
@@ -337,10 +339,9 @@ describe("RenderMaterialElement", () => {
       const targetProps = structuredClone(sourceProps);
 
       // eslint-disable-next-line @typescript-eslint/dot-notation
-      RenderMaterialElement["onCloned"](context, material.toJSON(), targetProps);
-      expect(targetProps)
+      RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
 
-      expect(jsonProps?.materialAssets?.renderMaterial.Map).to.deep.equal({
+      expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.deep.equal({
         Pattern: { TextureId: "CLONED" },
         Normal: { TextureId: "CLONED" },
         Bump: { TextureId: "CLONED" },
@@ -353,8 +354,9 @@ describe("RenderMaterialElement", () => {
         TransparentColor: { TextureId: "CLONED" },
         Displacement: { TextureId: "CLONED" },
         Unknown: { TextureId: "CLONED" },
-        InvalidTexture: { TextureId: "CLONED" },
+        InvalidTexture: { TextureId: Id64.invalid },
         UnknownTexture: { TextureId: "CLONED" },
+        NoTextureId: { OtherProp: 1 },
       });
     });
   });
