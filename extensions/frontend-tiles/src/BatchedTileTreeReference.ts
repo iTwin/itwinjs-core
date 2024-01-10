@@ -9,7 +9,7 @@ import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, RenderSchedule,
 } from "@itwin/core-common";
 import {
-  AnimationNodeId, formatAnimationBranchId, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
+  AnimationNodeId, formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
 import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
@@ -141,6 +141,10 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
 
   public override getAppearanceProvider(): FeatureAppearanceProvider {
     return this;
+  }
+
+  protected override getClipVolume(): RenderClipVolume | undefined {
+    return this._groupInfo.clip;
   }
 
   public getFeatureAppearance(
