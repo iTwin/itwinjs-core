@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
-import { ModelDisplayTransformProvider, RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
+import { RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
 import { CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 

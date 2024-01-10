@@ -153,6 +153,7 @@ export class BatchedTile extends Tile {
         system,
         isCanceled,
         isLeaf: this.isLeaf,
+        modelGroups: this.batchedTree.modelGroups,
       });
 
       if (this.transformToRoot) {

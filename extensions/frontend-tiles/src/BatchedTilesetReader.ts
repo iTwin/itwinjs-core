@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
@@ -92,11 +92,13 @@ function transformFromJSON(json: schema.Transform): Transform {
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _tileset: schema.Tileset;
+  private readonly _modelGroups: Id64Set[] | undefined;
   public readonly baseUrl: URL;
 
-  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection) {
+  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection, modelGroups: Id64Set[] | undefined) {
     this._iModel = iModel;
     this._tileset = spec.props;
+    this._modelGroups = modelGroups;
     this.baseUrl = spec.baseUrl;
   }
 
@@ -149,6 +151,7 @@ export class BatchedTilesetReader {
       rootTile: this.readTileParams(root),
       reader: this,
       includedModels,
+      modelGroups: this._modelGroups,
     };
   }
 }
