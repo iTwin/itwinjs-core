@@ -248,7 +248,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     
     const nvsp = new NamedViewStatePropsString({
       _name: newName,
-      _viewState: json,
+      _viewStatePropsString: json,
       _selectedElements: selectedElementsString,
       _overrideElements: overrideElementsString,
       _displayTransforms,

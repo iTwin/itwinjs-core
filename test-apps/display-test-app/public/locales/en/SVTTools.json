@@ -139,6 +139,9 @@
     "ApplyModelDisplayScale": {
       "keyin": "dta model scale"
     },
+    "ApplyModelClip": {
+      "keyin": "dta model clip"
+    },
     "EditingSession": {
       "keyin": "dta edit"
     },
