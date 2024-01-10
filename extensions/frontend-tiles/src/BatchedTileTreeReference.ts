@@ -173,9 +173,13 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
   }
 
-  public override getAnimationTransformNodeId() {
+  protected override getAnimationTransformNodeId() {
     // ###TODO
     return AnimationNodeId.Untransformed;
+  }
+
+  protected override getGroupNodeId() {
+    return this._args.groups.length > 1 ? this._groupIndex : undefined;
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {

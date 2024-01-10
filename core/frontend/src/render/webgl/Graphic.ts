@@ -356,7 +356,7 @@ export class Branch extends Graphic {
 
   private shouldAddCommands(commands: RenderCommands): boolean {
     const group = commands.target.currentBranch.groupNodeId;
-    if (group && this.branch.groupNodeId && this.branch.groupNodeId !== group)
+    if (undefined !== group && undefined !== this.branch.groupNodeId && this.branch.groupNodeId !== group)
       return false;
     
     const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
