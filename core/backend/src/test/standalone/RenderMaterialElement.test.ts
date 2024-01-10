@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
-import { RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
+import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
+import { IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
@@ -50,23 +50,43 @@ describe("RenderMaterialElement", () => {
 
   after(() => imodel.close());
 
-  describe("insert", () => {
-    function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected: RenderMaterialAssetProps): RenderMaterialElement {
-      const name = `material${++materialNumber}`;
-      const paletteName = "palette";
-      const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
-      expect(Id64.isValidId64(id)).to.be.true;
+  function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected?: RenderMaterialAssetProps): RenderMaterialElement {
+    const name = `material${++materialNumber}`;
+    const paletteName = "palette";
+    const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
+    expect(Id64.isValidId64(id)).to.be.true;
 
-      const mat = imodel.elements.getElement<RenderMaterialElement>(id);
-      const json = mat.toJSON();
-      expect(json.jsonProperties?.materialAssets?.renderMaterial).not.to.be.undefined;
-      const actual = removeUndefined(json.jsonProperties!.materialAssets!.renderMaterial!);
+    const mat = imodel.elements.getElement<RenderMaterialElement>(id);
+    const json = mat.toJSON();
+    expect(json.jsonProperties?.materialAssets?.renderMaterial).not.to.be.undefined;
+    const actual = removeUndefined(json.jsonProperties!.materialAssets!.renderMaterial!);
 
+    if (expected !== undefined) {
       expected = defaultBooleans(expected);
       expect(actual).to.deep.equal(expected);
-      return mat;
     }
 
+    return mat;
+  }
+
+  function insertTexture(): Id64String {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData = new Uint8Array([
+      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
+      74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
+      97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
+      84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
+      0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+    ]);
+
+    const name = `texture${++textureNumber}`;
+    const textureId = Texture.insertTexture(imodel, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData);
+    expect(Id64.isValidId64(textureId)).to.be.true;
+    return textureId;
+  }
+
+  describe("insert", () => {
     it("with default values", () => {
       test({}, {});
     });
@@ -95,23 +115,6 @@ describe("RenderMaterialElement", () => {
         HasReflectColor: true, reflect_color: params.reflectColor,
       });
     });
-
-    function insertTexture(): Id64String {
-      // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-      // bottom right pixel.  The rest of the square is red.
-      const pngData = new Uint8Array([
-        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
-        74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
-        97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
-        84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
-        0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
-      ]);
-
-      const name = `texture${++textureNumber}`;
-      const textureId = Texture.insertTexture(imodel, IModel.dictionaryId, name, ImageSourceFormat.Png, pngData);
-      expect(Id64.isValidId64(textureId)).to.be.true;
-      return textureId;
-    }
 
     it("pattern map with default values", () => {
       const textureId = insertTexture();
@@ -289,6 +292,70 @@ describe("RenderMaterialElement", () => {
         pattern_constantlod_maxdistanceclamp: 256,
       };
       test({ normalMap }, { Map: { Normal: normalMap } });
+    });
+  });
+
+  describe("clone", () => {
+    it("clone maps", () => {
+      const textureId = insertTexture();
+      const unknownTextureId = "0xffffff";
+
+      expect(Id64.isValidId64(unknownTextureId)).to.be.true;
+      expect(imodel.elements.tryGetElementProps(unknownTextureId)).to.be.undefined;
+
+      const maps: RenderMaterialAssetMapsProps = {
+        Pattern: { TextureId: textureId },
+        Normal: { TextureId: textureId },
+        Bump: { TextureId: textureId },
+        Diffuse: { TextureId: textureId },
+        Finish: { TextureId: textureId },
+        GlowColor: { TextureId: textureId },
+        Reflect: { TextureId: textureId },
+        Specular: { TextureId: textureId },
+        TranslucencyColor: { TextureId: textureId },
+        TransparentColor: { TextureId: textureId },
+        Displacement: { TextureId: textureId },
+        ["Unknown" as any]: { TextureId: textureId },
+        ["InvalidTexture" as any]: { TextureId: Id64.invalid },
+        ["UnknownTexture" as any]: { TextureId: unknownTextureId },
+      };
+
+      const material = test({});
+      const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
+      assert(jsonProps?.materialAssets?.renderMaterial?.Map);
+      jsonProps.materialAssets.renderMaterial.Map = maps;
+      material.update();
+
+      const context = {
+        findTargetElementId: (sourceId: Id64String) => {
+          expect(Id64.isId64(sourceId)).to.be.true;
+          return "CLONED";
+        },
+      } as any as IModelElementCloneContext;
+
+      const sourceProps = material.toJSON();
+      const targetProps = structuredClone(sourceProps);
+
+      // eslint-disable-next-line @typescript-eslint/dot-notation
+      RenderMaterialElement["onCloned"](context, material.toJSON(), targetProps);
+      expect(targetProps)
+
+      expect(jsonProps?.materialAssets?.renderMaterial.Map).to.deep.equal({
+        Pattern: { TextureId: "CLONED" },
+        Normal: { TextureId: "CLONED" },
+        Bump: { TextureId: "CLONED" },
+        Diffuse: { TextureId: "CLONED" },
+        Finish: { TextureId: "CLONED" },
+        GlowColor: { TextureId: "CLONED" },
+        Reflect: { TextureId: "CLONED" },
+        Specular: { TextureId: "CLONED" },
+        TranslucencyColor: { TextureId: "CLONED" },
+        TransparentColor: { TextureId: "CLONED" },
+        Displacement: { TextureId: "CLONED" },
+        Unknown: { TextureId: "CLONED" },
+        InvalidTexture: { TextureId: "CLONED" },
+        UnknownTexture: { TextureId: "CLONED" },
+      });
     });
   });
 });
