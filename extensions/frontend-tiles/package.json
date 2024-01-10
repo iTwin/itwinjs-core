@@ -58,12 +58,12 @@
     "chai": "^4.4.0",
     "chai-as-promised": "^7",
     "eslint": "^8.56.0",
-    "glob": "7.2.3",
-    "mocha": "10.2.0",
-    "rimraf": "3.0.2",
+    "glob": "^7.2.3",
+    "mocha": "^10.2.0",
+    "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
-    "source-map-loader": "4.0.2",
-    "typescript": "5.0.4",
-    "webpack": "5.89.0"
+    "source-map-loader": "^4.0.2",
+    "typescript": "~5.0.4",
+    "webpack": "^5.89.0"
   }
 }

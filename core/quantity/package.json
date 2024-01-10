@@ -44,11 +44,11 @@
     "chai": "^4.4.0",
     "chai-as-promised": "^7",
     "eslint": "^8.56.0",
-    "mocha": "10.2.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "3.0.2",
+    "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
-    "typescript": "5.0.4"
+    "typescript": "~5.0.4"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.3.0"

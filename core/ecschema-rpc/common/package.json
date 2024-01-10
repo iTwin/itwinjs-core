@@ -44,7 +44,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "eslint": "^8.56.0",
-    "rimraf": "3.0.2",
-    "typescript": "5.0.4"
+    "rimraf": "^3.0.2",
+    "typescript": "~5.0.4"
   }
 }

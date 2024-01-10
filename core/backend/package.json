@@ -85,16 +85,16 @@
     "eslint": "^8.56.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
-    "mocha": "10.2.0",
+    "mocha": "^10.2.0",
     "node-simctl": "~7.2.1",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
-    "rimraf": "3.0.2",
+    "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
-    "source-map-loader": "4.0.2",
+    "source-map-loader": "^4.0.2",
     "ts-node": "^10.8.2",
-    "typescript": "5.0.4",
-    "webpack": "5.89.0"
+    "typescript": "~5.0.4",
+    "webpack": "^5.89.0"
   },
   "dependencies": {
     "@bentley/imodeljs-native": "4.3.5",

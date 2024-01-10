@@ -40,8 +40,8 @@
     "@types/yargs": "17.0.19",
     "chai": "^4.4.0",
     "eslint": "^8.56.0",
-    "mocha": "10.2.0",
-    "rimraf": "3.0.2",
-    "typescript": "5.0.4"
+    "mocha": "^10.2.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~5.0.4"
   }
 }

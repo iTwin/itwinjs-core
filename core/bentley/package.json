@@ -43,10 +43,10 @@
     "chai": "^4.4.0",
     "chai-as-promised": "^7",
     "eslint": "^8.56.0",
-    "mocha": "10.2.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "3.0.2",
-    "typescript": "5.0.4"
+    "rimraf": "^3.0.2",
+    "typescript": "~5.0.4"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

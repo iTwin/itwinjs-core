@@ -55,12 +55,12 @@
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.4.0",
     "eslint": "^8.56.0",
-    "glob": "7.2.3",
-    "rimraf": "3.0.2",
-    "source-map-loader": "4.0.2",
-    "typescript": "5.0.4",
-    "webpack": "5.89.0",
-    "webpack-cli": "5.1.4"
+    "glob": "^7.2.3",
+    "rimraf": "^3.0.2",
+    "source-map-loader": "^4.0.2",
+    "typescript": "~5.0.4",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to core-i18n",

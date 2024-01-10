@@ -57,8 +57,8 @@
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",
-    "mocha": "10.2.0",
-    "rimraf": "3.0.2",
+    "mocha": "^10.2.0",
+    "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
     "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.6",
@@ -76,7 +76,7 @@
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "sanitize-filename": "^1.6.3",
-    "typescript": "5.0.4",
+    "typescript": "~5.0.4",
     "i18next-http-backend": "^1.4.4"
   },
   "mocha": {

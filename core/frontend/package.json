@@ -75,15 +75,15 @@
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "eslint": "^8.56.0",
-    "glob": "7.2.3",
-    "mocha": "10.2.0",
+    "glob": "^7.2.3",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "3.0.2",
+    "rimraf": "^3.0.2",
     "sinon": "^15.0.4",
-    "source-map-loader": "4.0.2",
-    "typescript": "5.0.4",
+    "source-map-loader": "^4.0.2",
+    "typescript": "~5.0.4",
     "typemoq": "^2.1.0",
-    "webpack": "5.89.0"
+    "webpack": "^5.89.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
