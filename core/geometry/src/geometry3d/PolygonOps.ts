@@ -1331,7 +1331,7 @@ export class PolygonOps {
    * @param polygonA first polygon
    * @param polygonB second polygon
    * @param dMax optional largest approach distance to consider
-   * @param _searchInterior If true, include (convex) polygon interiors in computations.
+   * @param _searchInterior If true, include (convex) polygon interiors in computations (currently unimplemented).
    * If false (default): return closest approach between polygon boundaries only, using [[PolylineOps.closestApproach]].
    * @return pair of details, one per polygon. The `a` field of each detail stores the closest approach distance.
    */
