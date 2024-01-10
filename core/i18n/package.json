@@ -58,7 +58,7 @@
     "glob": "7.2.3",
     "rimraf": "3.0.2",
     "source-map-loader": "4.0.2",
-    "typescript": "5.0.2",
+    "typescript": "5.0.4",
     "webpack": "5.89.0",
     "webpack-cli": "5.1.4"
   },

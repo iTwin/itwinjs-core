@@ -76,7 +76,7 @@
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
     "sanitize-filename": "^1.6.3",
-    "typescript": "5.0.2",
+    "typescript": "5.0.4",
     "i18next-http-backend": "^1.4.4"
   },
   "mocha": {

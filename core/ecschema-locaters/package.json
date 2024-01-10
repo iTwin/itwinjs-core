@@ -67,7 +67,7 @@
     "nyc": "^15.1.0",
     "rimraf": "3.0.2",
     "sinon": "^15.0.4",
-    "typescript": "5.0.2"
+    "typescript": "5.0.4"
   },
   "dependencies": {
     "glob": "7.2.3",
