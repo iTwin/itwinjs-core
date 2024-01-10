@@ -45,15 +45,15 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
-    "@types/chai": "4.3.1",
+    "@types/chai": "^4.3.1",
     "@types/detect-port": "~1.1.0",
     "@types/express": "^4.16.1",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "~18.16.20",
     "@types/yargs": "17.0.19",
-    "electron": "28.1.2",
-    "eslint": "8.56.0",
+    "electron": "^28.1.2",
+    "eslint": "^8.56.0",
     "nyc": "^15.1.0",
     "rimraf": "3.0.2",
     "typescript": "5.0.4"

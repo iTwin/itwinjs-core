@@ -40,10 +40,10 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@types/chai": "4.3.1",
+    "@types/chai": "^4.3.1",
     "@types/mocha": "^8.2.2",
-    "chai": "4.4.0",
-    "eslint": "8.56.0",
+    "chai": "^4.4.0",
+    "eslint": "^8.56.0",
     "mocha": "10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "3.0.2",

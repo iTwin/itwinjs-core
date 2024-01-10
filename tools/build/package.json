@@ -48,6 +48,6 @@
   "devDependencies": {
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/node": "~18.16.20",
-    "eslint": "8.56.0"
+    "eslint": "^8.56.0"
   }
 }

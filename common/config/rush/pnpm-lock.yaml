@@ -23,7 +23,7 @@ importers:
       '@itwin/object-storage-azure': ^2.1.0
       '@itwin/object-storage-core': ^2.1.0
       '@opentelemetry/api': 1.0.4
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -33,12 +33,12 @@ importers:
       '@types/sinon': ^10.0.15
       '@types/touch': ^3.1.2
       '@types/ws': ^7.0.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       form-data: ^2.3.2
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -116,13 +116,13 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@opentelemetry/api': 1.0.4
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -150,11 +150,11 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/object-storage-core': ^2.1.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       flatbuffers: ~1.12.0
       js-base64: ^3.6.1
       mocha: 10.2.0
@@ -191,17 +191,17 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/sinon': ^10.0.15
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -255,7 +255,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
@@ -263,10 +263,10 @@ importers:
       '@types/node': ~18.16.20
       '@types/sinon': ^10.0.15
       '@xmldom/xmldom': ~0.8.5
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       glob: 7.2.3
       mocha: 10.2.0
@@ -324,7 +324,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
@@ -332,10 +332,10 @@ importers:
       '@xmldom/xmldom': ~0.8.5
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -376,7 +376,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
     devDependencies:
@@ -400,7 +400,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
     devDependencies:
@@ -420,10 +420,10 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -451,12 +451,12 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@openid/appauth': 1.3.1
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
-      electron: 28.1.2
-      eslint: 8.56.0
+      chai: ^4.4.0
+      electron: ^28.1.2
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       open: 7.4.2
@@ -499,15 +499,15 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/body-parser': ^1.17.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/sinon': ^10.0.15
       '@types/supertest': ^2.0.4
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       express: ^4.16.3
       express-ws: ^5.0.2
       mocha: 10.2.0
@@ -547,7 +547,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
     dependencies:
@@ -578,16 +578,16 @@ importers:
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fuse.js: ^3.3.0
       glob: 7.2.3
       mocha: 10.2.0
@@ -649,7 +649,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/file-saver': ^2.0.1
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       file-saver: ^2.0.2
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -673,12 +673,12 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
+      chai: ^4.4.0
       debug: ^2.6.9
-      eslint: 8.56.0
+      eslint: ^8.56.0
       flatbuffers: ~1.12.0
       mocha: 10.2.0
       nyc: ^15.1.0
@@ -711,13 +711,13 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       nyc: ^15.1.0
@@ -757,14 +757,14 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^8.2.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       glob: 7.2.3
       i18next: ^21.9.1
       i18next-browser-languagedetector: ^6.1.2
@@ -809,13 +809,13 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@svgdotjs/svg.js': 3.0.13
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       nyc: ^15.1.0
@@ -856,18 +856,18 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/superagent': ^4.1.14
       '@types/ws': ^7.0.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       lodash: ^4.17.10
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -906,13 +906,13 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
       debug: ^2.6.9
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -938,14 +938,14 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -976,10 +976,10 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
       source-map-loader: 4.0.2
@@ -1008,12 +1008,12 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -1046,14 +1046,14 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/semver': 7.3.10
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -1087,13 +1087,13 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/linear-referencing-common': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -1123,11 +1123,11 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -1154,12 +1154,12 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       nyc: ^15.1.0
       rimraf: 3.0.2
@@ -1190,7 +1190,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
     dependencies:
@@ -1213,10 +1213,10 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -1246,7 +1246,7 @@ importers:
       '@itwin/editor-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
     dependencies:
@@ -1276,13 +1276,13 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/oidc-signin-tool': ~3.6.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      electron: 28.1.2
-      eslint: 8.56.0
+      electron: ^28.1.2
+      eslint: ^8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -1325,16 +1325,16 @@ importers:
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/service-authorization': ^0.6.3
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -1380,16 +1380,16 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/sinon': ^10.0.15
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -1430,12 +1430,12 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
@@ -1478,16 +1478,16 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/google-protobuf': ~3.15.6
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       google-protobuf: ~3.20.1
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
@@ -1539,7 +1539,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       buffer: ^6.0.3
       esbuild: ^0.13.8
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
       url: ^0.11.0
@@ -1587,18 +1587,18 @@ importers:
       '@itwin/itwins-client': ^1.2.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/perf-tools': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       azurite: ^3.24.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       mkdirp: ^1.0.4
@@ -1694,7 +1694,7 @@ importers:
       '@itwin/object-storage-core': ^2.1.0
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/reality-data-client': 1.1.0
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1706,13 +1706,13 @@ importers:
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       crypto-browserify: 3.12.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: 28.1.2
-      eslint: 8.56.0
+      electron: ^28.1.2
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       glob: 7.2.3
       https-browserify: ^1.0.0
@@ -1826,18 +1826,18 @@ importers:
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       internal-tools: workspace:*
       mocha: 10.2.0
@@ -1918,7 +1918,7 @@ importers:
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -1931,7 +1931,7 @@ importers:
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       cache-require-paths: ^0.3.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
@@ -1940,7 +1940,7 @@ importers:
       deep-equal: ^1
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
       i18next-http-backend: ^1.4.4
@@ -2023,7 +2023,7 @@ importers:
       '@itwin/core-mobile': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/express-server': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/express': ^4.16.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
@@ -2032,9 +2032,9 @@ importers:
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
-      chai: 4.4.0
-      electron: 28.1.2
-      eslint: 8.56.0
+      chai: ^4.4.0
+      electron: ^28.1.2
+      eslint: ^8.56.0
       express: ^4.16.3
       glob: 7.2.3
       null-loader: ^4.0.1
@@ -2104,19 +2104,19 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/service-authorization': ^0.6.3
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       internal-tools: workspace:*
       mocha: 10.2.0
@@ -2189,7 +2189,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/presentation-common': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2202,14 +2202,14 @@ importers:
       '@types/semver': 7.3.10
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       faker: ^4.1.0
       lolex: ^2.7.1
       mocha: 10.2.0
@@ -2272,7 +2272,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
@@ -2282,14 +2282,14 @@ importers:
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       '@types/source-map-support': ^0.4.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       faker: ^4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: 10.2.0
@@ -2349,7 +2349,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@itwin/presentation-common': workspace:*
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/deep-equal': ^1
@@ -2357,13 +2357,13 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       faker: ^4.1.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
@@ -2452,9 +2452,9 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: 28.1.2
+      electron: ^28.1.2
       esbuild-plugin-external-global: ^1.0.1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       express: ^4.16.3
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
@@ -2569,9 +2569,9 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: 28.1.2
+      electron: ^28.1.2
       esbuild-plugin-external-global: ^1.0.1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       express: ^4.16.3
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
@@ -2671,7 +2671,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
       yargs: ^17.4.0
@@ -2698,12 +2698,12 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      chai: 4.4.0
-      eslint: 8.56.0
+      chai: ^4.4.0
+      eslint: ^8.56.0
       mocha: 10.2.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -2739,7 +2739,7 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -2774,7 +2774,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.56.0
+      eslint: ^8.56.0
       rimraf: 3.0.2
       typescript: 5.0.4
       yargs: ^17.4.0
@@ -2807,7 +2807,7 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/node': ~18.16.20
       '@types/yargs': 17.0.19
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -2867,7 +2867,7 @@ importers:
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.1
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       glob: 7.2.3
       mocha: 10.2.0
@@ -2904,7 +2904,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/detect-port': ~1.1.0
       '@types/express': ^4.16.1
       '@types/lodash': ^4.14.0
@@ -2913,8 +2913,8 @@ importers:
       '@types/yargs': 17.0.19
       canonical-path: ^1.0.0
       detect-port: ~1.3.0
-      electron: 28.1.2
-      eslint: 8.56.0
+      electron: ^28.1.2
+      eslint: ^8.56.0
       express: ^4.16.3
       jsonc-parser: ~2.0.3
       lodash: ^4.17.10
@@ -2961,18 +2961,18 @@ importers:
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-string: ^1.5.0
       chalk: ^3.0.0
       commander: ^2.14.1
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       mocha: 10.2.0
       nyc: ^15.1.0
@@ -3026,7 +3026,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
       '@types/fs-extra': ^4.0.7
-      eslint: 8.56.0
+      eslint: ^8.56.0
       fs-extra: ^8.1.0
       rimraf: 3.0.2
       typescript: 5.0.4
@@ -3044,20 +3044,20 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/node': ~18.16.20
-      chai: 4.4.0
+      chai: ^4.4.0
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chalk: ^3.0.0
       copy-webpack-plugin: ^11.0.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       file-loader: ^6.2.0
       findup: 0.1.5
       fs-extra: ^8.1.0
@@ -3109,15 +3109,15 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/mocha': ^8.2.2
       '@types/sinon': ^10.0.15
       '@types/sinon-chai': ^3.2.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: 4.4.0
+      chai: ^4.4.0
       cpx2: ^3.0.0
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       ignore-styles: ^5.0.1
       mocha: 10.2.0
@@ -3160,11 +3160,11 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': 4.0.0-dev.44
-      '@types/chai': 4.3.1
+      '@types/chai': ^4.3.1
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
       '@types/yargs': 17.0.19
-      eslint: 8.56.0
+      eslint: ^8.56.0
       glob: 7.2.3
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -12558,7 +12558,7 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.4
-      vite: 4.5.1_@types+node@18.16.20
+      vite: 4.5.1
     transitivePeerDependencies:
       - rollup
       - supports-color
