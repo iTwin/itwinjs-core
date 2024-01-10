@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 14 Dec 2023 20:24:02 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+### Updates
+
+- Update ChangesetReader API and fix bug.
 
 ## 4.3.2
 Thu, 14 Dec 2023 20:23:02 GMT

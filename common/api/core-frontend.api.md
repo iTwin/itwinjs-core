@@ -1394,11 +1394,11 @@ export interface ArcGISServiceMetadata {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction, nbLods?: number);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
-    protected fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
+    fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
     // (undocumented)
     protected fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any>;
     // (undocumented)
@@ -1410,6 +1410,8 @@ export class ArcGISTileMap {
     getChildrenAvailability(childIds: QuadId[]): Promise<boolean[]>;
     // (undocumented)
     protected getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    get tileMapOffset(): number;
     // (undocumented)
     tileMapRequestSize: number;
 }
@@ -12537,6 +12539,8 @@ export class SelectionTool extends PrimitiveTool {
     onUnsuspend(): Promise<void>;
     // (undocumented)
     protected readonly _points: Point3d[];
+    // (undocumented)
+    processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled>;
     // (undocumented)
     protected processMiss(_ev: BeButtonEvent): boolean;
     // (undocumented)

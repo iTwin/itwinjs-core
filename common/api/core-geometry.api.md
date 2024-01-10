@@ -5593,6 +5593,8 @@ export class Sample {
     static createRegularPolygon(cx: number, cy: number, cz: number, angle0: Angle, r: number, numPoint: number, close: boolean): Point3d[];
     static createRigidAxes(): Matrix3d[];
     static createRigidTransforms(distanceScale?: number): Transform[];
+    static createRosePoint2d(theta: number, a: number): Point2d;
+    static createRosePoint3d(theta: number, a: number, z?: number): Point3d;
     static createRuledSweeps(includeParityRegion?: boolean, includeBagOfCurves?: boolean): RuledSweep[];
     static createScaleSkewMatrix3d(): Matrix3d[];
     static createSimpleIndexedPolyfaces(gridMultiplier: number): IndexedPolyface[];

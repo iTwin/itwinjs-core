@@ -2980,6 +2980,22 @@ export class Sample {
       }
     }
   }
+  /** Create a point on the polar parametric curve r = cos(a * theta), aka "rose".
+   * @param theta angle
+   * @param a period multiplier. If odd, this is the petal count; if even, twice the number of petals.
+   * @param z z-coordinate for output
+  */
+  public static createRosePoint3d(theta: number, a: number, z: number = 0): Point3d {
+    const r = Math.cos(a * theta);
+    return Point3d.create(r * Math.cos(theta), r * Math.sin(theta), z);
+  }
+  /** Create a point on the polar parametric curve r = cos(a * theta), aka "rose".
+   * @param theta angle
+   * @param a period multiplier. If odd, this is the petal count; if even, twice the number of petals.
+  */
+  public static createRosePoint2d(theta: number, a: number): Point2d {
+    return Point2d.createFrom(Sample.createRosePoint3d(theta, a));
+  }
   /**
    * Create a mesh surface from samples of a smooth real-valued function over [0,1]x[0,1] with multiple humps and dips.
    * * The facets are bilinear quads, so if planar facets are required, set `options.shouldTriangulate = true`.

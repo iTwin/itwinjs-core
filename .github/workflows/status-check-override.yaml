@@ -60,7 +60,7 @@ jobs:
       # Check for certain paths having been modified
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v29.0.2    # See https://github.com/marketplace/actions/changed-files
+        uses: tj-actions/changed-files@v41.0.0    # See https://github.com/marketplace/actions/changed-files
         with:
           files: |
             **/*.md

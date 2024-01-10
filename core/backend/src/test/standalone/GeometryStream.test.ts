@@ -8,7 +8,7 @@ import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentl
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
@@ -17,7 +17,7 @@ import {
   FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
   GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
-  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
@@ -1757,9 +1757,18 @@ describe("ElementGeometry", () => {
       rotation: testAngles,
     };
 
-    const entry = ElementGeometry.fromTextString(textProps);
+    const glyphData: TextStringGlyphData = {
+      glyphIds: [1, 2, 3],
+      glyphOrigins: [new Point2d(0.0, 0.0), new Point2d(1000.0, 0.0), new Point2d(2000.0, 0.0)],
+      range: new Range2d(0, 0, 10, 30),
+    };
+
+    const entry = ElementGeometry.fromTextString(textProps, undefined, glyphData);
     assert.exists(entry);
     newEntries.push(entry!);
+    // We can't validate glyph data later from the TextString in the DB because the native TextString will re-compute them if the font isn't embedded.
+    // So, just verify that we are passing the correct flatbuffer here.
+    assert.deepEqual(entry ? ElementGeometry.toTextStringGlyphData(entry) : undefined, glyphData);
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
     elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
@@ -2223,9 +2232,6 @@ describe("ElementGeometry", () => {
     }
 
     //    Insert - various failure cases
-    elemProps.elementGeometryBuilderParams = { entryArray: [] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
-
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
     expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
 
@@ -2294,6 +2300,28 @@ describe("ElementGeometry", () => {
     }
   });
 
+  it("create and update a GeometricElement3d to test clearing its geometry stream", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const newId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(90, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const newElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(newElemProps.geom);
+    assert.isTrue(newElemProps.placement !== undefined);
+
+    newElemProps.elementGeometryBuilderParams = { entryArray: [] };
+    imodel.elements.updateElement(newElemProps);
+    imodel.saveChanges();
+
+    const updateElemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isUndefined(updateElemProps.geom);
+    assert.isTrue(updateElemProps.placement !== undefined);
+    const updatedPlacement = Placement3d.fromJSON(updateElemProps.placement);
+    assert.isTrue(updatedPlacement.bbox.isNull);
+  });
 });
 
 describe("BRepGeometry", () => {
