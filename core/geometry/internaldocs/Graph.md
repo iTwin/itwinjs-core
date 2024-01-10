@@ -79,7 +79,9 @@ Suppose we have this half edge graph:
 Now we want to traverse the graph using stack and queue.
 
 **Stack**<br>
-We start from the middle face (node 63). We push nodes 63, 64, 66, and 43 to the stack and mark all of them as visited. Then we pop the top node (43) from the stack and using its edge mate (node 42 which is NOT already visited) move to the second face. Then nodes 42, 44, 15, and 41 are pushed to the stack and mark them as visited. Again we pop the top node (41) from the stack and using its edge mate (node 40 which is NOT already visited) move to the third face.
+A stack-based approach (implemented in `HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks`) can be used to traverse the graph.
+
+Suppose we start from the middle face (node 63). We push nodes 63, 64, 66, and 43 to the stack and mark all of them as visited. Then we pop the top node (43) from the stack and using its edge mate (node 42 which is NOT already visited) move to the second face. Then nodes 42, 44, 15, and 41 are pushed to the stack and mark them as visited. Again we pop the top node (41) from the stack and using its edge mate (node 40 which is NOT already visited) move to the third face.
 
 We continue this process to traverse all the faces. Note that if we pop a node from stack which is already visited, we just skip that node and pop the next node from stack.
 
@@ -87,7 +89,9 @@ Below is the graph image with faces numbered by red color (the only exterior fac
 ![>](./figs/Graph/graphStack.png)
 
 **Queue**<br>
-We start from the middle face (node 63). We add nodes 63, 64, 66, and 43 to the queue and mark all of them as visited. Then we retrieve node 63 from the front of queue and using its edge mate (node 62 which is NOT already visited) move to the second face. Then nodes 62, 39, 59, and 60 are added to the queue and mark them as visited. Again we retrieve node 64 from the front of queue and using its edge mate (node 65 which is NOT already visited) move to the third face.
+A queue-based approach (currently not implemented) can be used to traverse the graph.
+
+Suppose we start from the middle face (node 63). We add nodes 63, 64, 66, and 43 to the queue and mark all of them as visited. Then we retrieve node 63 from the front of queue and using its edge mate (node 62 which is NOT already visited) move to the second face. Then nodes 62, 39, 59, and 60 are added to the queue and mark them as visited. Again we retrieve node 64 from the front of queue and using its edge mate (node 65 which is NOT already visited) move to the third face.
 
 We continue this process to traverse all the faces. Note that if we retrieve a node from the front of queue which is already visited, we just skip that node and retrieve the next node from the front of queue.
 

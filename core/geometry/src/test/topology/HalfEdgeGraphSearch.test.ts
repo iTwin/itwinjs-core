@@ -59,12 +59,12 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(connectedComponents[1][1].id, 15);
     expect(ck.getNumErrors()).equals(0);
   });
-  it("pointInOrOnFaceXY.FaceIsAnEdgePointIn", () => {
+  it("pointInOrOnFaceXY.FaceIsAnEdgePointOn", () => {
     const ck = new Checker();
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(2, 2, 4, 2);
     const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 3, 2)!;
-    ck.testExactNumber(position, 1); // point is in
+    ck.testExactNumber(position, 0); // point is on
     expect(ck.getNumErrors()).equals(0);
   });
   it("pointInOrOnFaceXY.FaceIsAnEdgePointOut", () => {
@@ -118,8 +118,8 @@ describe("HalfEdgeGraphSearch", () => {
     const node7 = node6.faceSuccessor;
     /**
      * Intentionally commented out the following line to make boundary edges inconsistent
-     * (boundary edge should have exterior mask on its outer half edge). This will lead to
-     * call the last break in function HalfEdgeGraphSearch.collectExtendedBoundaryLoopFromSeed.
+     * (boundary edge should have exterior mask on its outer half edge). This will cover
+     * the last break in function HalfEdgeGraphSearch.collectExtendedBoundaryLoopFromSeed.
      * Without that break code would trap in an infinite loop.
     */
     // node7.setMask(HalfEdgeMask.EXTERIOR);
