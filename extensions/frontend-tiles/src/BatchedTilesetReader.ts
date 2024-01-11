@@ -16,10 +16,8 @@ import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 export interface BatchedTilesetProps extends schema.Tileset {
   extensions: {
     BENTLEY_BatchedTileSet: { // eslint-disable-line @typescript-eslint/naming-convention
-      includedModels: Array<{
-        id: Id64String;
-        range: Range3dProps;
-      }>;
+      includedModels: Id64String[];
+      includedModelExtents: Range3dProps[];
     };
   };
 }
@@ -34,11 +32,8 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
     return false;
 
   // The extension is required, and it must contain `id` and `range` fields.
-  const includedModels = props.extensions?.BENTLEY_BatchedTileSet?.includedModels;
-  if (!Array.isArray(includedModels))
-    return false;
-
-  if (includedModels.length > 0 && (!("id" in includedModels[0] || !("range" in includedModels[0]))))
+  const extension = props.extensions?.BENTLEY_BatchedTileSet;
+  if (!extension || !Array.isArray(extension.includedModels) || !Array.isArray(extension.includedModelExtents) || extension.includedModels.length !== extension.includedModelExtents.length)
     return false;
 
   // ###TODO spec requires geometricError to be present on tileset and all tiles; exporter is omitting from tileset.
@@ -62,8 +57,9 @@ export namespace BatchedTilesetSpec {
       throw new Error("Invalid tileset JSON");
 
     const includedModels = new Map<Id64String, Range3d>();
-    for (const entry of json.extensions.BENTLEY_BatchedTileSet.includedModels)
-      includedModels.set(entry.id, Range3d.fromJSON(entry.range));
+    const ext = json.extensions.BENTLEY_BatchedTileSet;
+    for (let i = 0; i < ext.includedModels.length; i++)
+      includedModels.set(ext.includedModels[i], Range3d.fromJSON(ext.includedModelExtents[i]));
 
     return { baseUrl, props: json, includedModels };
   }
