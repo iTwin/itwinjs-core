@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
@@ -19,7 +19,7 @@ export interface BatchedTilesetProps extends schema.Tileset {
       includedModels: Array<{
         id: Id64String;
         range: Range3dProps;
-      }>
+      }>;
     };
   };
 }
@@ -64,7 +64,7 @@ export namespace BatchedTilesetSpec {
     const includedModels = new Map<Id64String, Range3d>();
     for (const entry of json.extensions.BENTLEY_BatchedTileSet.includedModels)
       includedModels.set(entry.id, Range3d.fromJSON(entry.range));
-    
+
     return { baseUrl, props: json, includedModels };
   }
 }
