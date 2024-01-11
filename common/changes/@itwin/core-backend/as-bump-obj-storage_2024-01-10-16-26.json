@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Bump @itwin/object-storage-azure and @itwin/object-storage-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
