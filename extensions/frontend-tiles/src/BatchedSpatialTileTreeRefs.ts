@@ -30,6 +30,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private _onModelSelectorChanged?: () => void;
   /** Provides tile trees for models that are not included in the batched tile set. */
   private readonly _excludedRefs: SpatialTileTreeReferences;
+  private _removeSceneInvalidationListener?: () => void;
 
   public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
     this._view = view;
@@ -133,11 +134,17 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   public attachToViewport(args: AttachToViewportArgs): void {
     this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
     this._excludedRefs.attachToViewport(args);
+    this._removeSceneInvalidationListener = args.onSceneInvalidated.addListener(() => this._groups.invalidateTransforms());
   }
 
   public detachFromViewport(): void {
     this._onModelSelectorChanged = undefined;
     this._excludedRefs.detachFromViewport();
+
+    if (this._removeSceneInvalidationListener) {
+      this._removeSceneInvalidationListener();
+      this._removeSceneInvalidationListener = undefined;
+    }
   }
 
   public setDeactivated(): void {

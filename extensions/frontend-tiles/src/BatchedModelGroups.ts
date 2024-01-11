@@ -5,7 +5,7 @@
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
 import { RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
-import { CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 
 export abstract class BatchedModelGroups {
@@ -19,7 +19,7 @@ export abstract class BatchedModelGroups {
   public abstract get guid(): string;
   public abstract get groups(): ReadonlyArray<Readonly<ModelGroup>>;
   public abstract update(): boolean;
-  public attachToViewport(_vp: Viewport): void { }
+  public invalidateTransforms(): void { }
   public setScript(script: RenderSchedule.Script | undefined): void {
     this._script = script;
     this._scriptValid = false;
@@ -86,6 +86,8 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
     this.update();
   }
 
+  public override invalidateTransforms(): void { this._transformsValid = false; }
+
   private listenForDisplayStyleEvents(): void {
     const removeListener = this._view.displayStyle.settings.onPlanProjectionSettingsChanged.addListener(() => this._groupsValid = false);
     this._view.onDisplayStyleChanged.addListener(() => {
@@ -107,11 +109,6 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
     return this._view.scheduleScript?.modelTimelines.find((x) => x.modelId === modelId);
   }
 
-  public override attachToViewport(_vp: Viewport): void {
-    // ###TODO listen for scene invalidation to potentially invalidate display transforms.
-    // ###TODO shouldn't BatchedSpatialTileTreeRefs be responsible for that and invoking invalidateTransforms on us?
-  }
-
   public update(): boolean {
     if (!this._transformsValid && this.modelGroupDisplayTransforms.update(this._view.modelDisplayTransformProvider)) {
       this._groupsValid = false;
@@ -119,7 +116,24 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
 
     this._transformsValid = true;
     if (this._groupsValid && this._scriptValid) {
-      return true;
+      // Update the display transforms on the ModelGroups.
+      const getFirstModelId = (ids: Id64Set) => {
+        for (const id of ids)
+          return id;
+
+        return undefined;
+      };
+
+      for (const group of this.groups) {
+        if (group.displayTransform) {
+          const modelId = getFirstModelId(group.modelIds);
+          assert(undefined !== modelId);
+          group.displayTransform = this.modelGroupDisplayTransforms.getDisplayTransform(modelId);
+          assert(undefined !== group.displayTransform);
+        }
+      }
+      
+      return false; // the groupings haven't changed.
     }
 
     this.groups = groupModels(this, this._includedModelIds);

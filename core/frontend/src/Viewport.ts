@@ -320,7 +320,11 @@ export abstract class Viewport implements IDisposable, TileUser {
  * @beta
  */
   public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
-
+  /** Event invoked every time [[invalidateScene]] is called.
+   * @note This event will be raised **very** frequently. Avoid doing significant work inside of your event listener.
+   * @beta
+   */
+  public readonly onSceneInvalidated = new BeEvent<(vp: Viewport) => void>();
   /** @internal */
   protected _hasMissingTiles = false;
 
@@ -386,6 +390,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   public invalidateScene(): void {
     this._sceneValid = false;
     this._timePointValid = false;
+    this.onSceneInvalidated.raiseEvent(this);
     this.invalidateDecorations();
   }
 
