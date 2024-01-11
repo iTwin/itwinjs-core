@@ -116,18 +116,26 @@ export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
 
 export interface ModelGroupTileTreeReferenceArgs {
   readonly models: BatchedModels;
-  readonly groups: ReadonlyArray<ModelGroup>;
+  readonly groups: ReadonlyArray<ModelGroupInfo>;
   readonly treeOwner: TileTreeOwner;
+  readonly getCurrentTimePoint: () => number;
 }
 
 export class ModelGroupTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
   private readonly _args: ModelGroupTileTreeReferenceArgs;
   private readonly _groupIndex: number;
+  private readonly _animationNodeId?: number;
+  private readonly _branchId?: string;
 
-  public constructor(args: ModelGroupTileTreeReferenceArgs, groupIndex: number) {
+  public constructor(args: ModelGroupTileTreeReferenceArgs, groupIndex: number, animationNodeId: number | undefined) {
     super();
     this._args = args;
     this._groupIndex = groupIndex;
+    this._animationNodeId = animationNodeId;
+    if (undefined !== animationNodeId) {
+      assert(undefined !== this._groupInfo.timeline);
+      this._branchId = formatAnimationBranchId(this._groupInfo.timeline.modelId, animationNodeId);
+    }
   }
 
   private get _groupInfo(): ModelGroupInfo {

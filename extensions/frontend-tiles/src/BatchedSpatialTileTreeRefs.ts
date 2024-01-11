@@ -6,6 +6,7 @@
 import { assert, Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
+    AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
@@ -104,11 +105,16 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       models: this._models,
       groups,
       treeOwner: this._treeOwner,
+      getCurrentTimePoint: () => this._currentScript ? (this._view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
     };
 
     for (let i = 0; i < groups.length; i++) {
-      // ###TODO handle animation transform nodes
-      this._refs.push(new ModelGroupTileTreeReference(args, i));
+      const timeline = groups[i].timeline;
+      this._refs.push(new ModelGroupTileTreeReference(args, i, timeline ? AnimationNodeId.Untransformed : undefined));
+      if (timeline) {
+        for (const nodeId of timeline.transformBatchIds)
+          this._refs.push(new ModelGroupTileTreeReference(args, i, nodeId));
+      }
     }
   }
 
@@ -116,27 +122,6 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     this.ensureLoaded();
     return this._refs[Symbol.iterator]();
   }
-
-  /* ###TODO
-  private populateAnimatedReferences(treeOwner: TileTreeOwner): void {
-    this._animatedRefs.length = 0;
-    const script = this._currentScript;
-    if (!script)
-      return;
-
-    const getCurrentTimePoint = () => this._view.displayStyle.settings.timePoint ?? script.duration.low;
-    for (const timeline of script.modelTimelines) {
-      const nodeIds = timeline.transformBatchIds;
-      for (const nodeId of nodeIds) {
-        this._animatedRefs.push(new AnimatedBatchedTileTreeReference(treeOwner, {
-          timeline,
-          nodeId,
-          getCurrentTimePoint,
-        }));
-      }
-    }
-  }
-  */
 
   public update(): void {
     this._excludedRefs.update();
