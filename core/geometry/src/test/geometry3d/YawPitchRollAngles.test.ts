@@ -125,6 +125,74 @@ describe("YPR", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("createFromMatrix3dNearRigidMatrices", () => {
+    const ck = new bsiChecker.Checker();
+    const matrix1 = Matrix3d.createRowValues(
+      0.37146947416490494, 7.033246428758867e-16, -0.9284451763712457,
+      -0.9284452294022093, 2.813991026819455e-16, -0.3714694529472999,
+      1.9186788483451994e-23, 1.0000000571180345, 7.575294995656733e-16,
+    ); // from Dovydas
+    const matrix2 = Matrix3d.createRowValues(
+      0.707421, -0.415747, -0.571585,
+      0, 0.808703, -0.588217,
+      0.706792, 0.416117, 0.572094,
+    );
+    const matrices = [matrix1, matrix2]; // near-rigid matrices
+
+    for (const matrix of matrices) {
+      GeometryCoreTestIO.consoleLog("original matrix", matrix.toJSON());
+      GeometryCoreTestIO.consoleLog("determinant", matrix.determinant());
+      GeometryCoreTestIO.consoleLog(
+        "column scales", matrix.columnXMagnitude(), matrix.columnYMagnitude(), matrix.columnZMagnitude(),
+      );
+      GeometryCoreTestIO.consoleLog(
+        "row scales", matrix.rowXMagnitude(), matrix.rowYMagnitude(), matrix.rowZMagnitude(),
+      );
+      // length of matrix rows and columns are within tolerance
+      const micrometerTol = 1e-6;
+      const unitVectorLength = 1;
+      ck.testLE(matrix.rowXMagnitude() - unitVectorLength, micrometerTol);
+      ck.testLE(matrix.rowYMagnitude() - unitVectorLength, micrometerTol);
+      ck.testLE(matrix.rowZMagnitude() - unitVectorLength, micrometerTol);
+      ck.testLE(matrix.columnXMagnitude() - unitVectorLength, micrometerTol);
+      ck.testLE(matrix.columnYMagnitude() - unitVectorLength, micrometerTol);
+      ck.testLE(matrix.columnZMagnitude() - unitVectorLength, micrometerTol);
+      // diff between matrix inverse and transpose is larger than tolerance but is small enough (matrix is close to rigid)
+      const inverse = matrix.inverse()!;
+      const transpose = matrix.transpose();
+      ck.testLE(Geometry.smallAngleRadians, inverse.maxDiff(transpose));
+      ck.testLE(inverse.maxDiff(transpose), micrometerTol);
+      // matrix is not rigid but is near-rigid so createFromMatrix3d does not return undefined
+      ck.testFalse(matrix.isRigid());
+      const result: YawPitchRollAngles = new YawPitchRollAngles();
+      const yprA = YawPitchRollAngles.createFromMatrix3d(matrix, result);
+      ck.testPointer(yprA);
+      // make matrix rigid and verify again that the original matrix is close to rigid
+      const rigidMatrix = Matrix3d.createRigidFromMatrix3d(matrix)!;
+      ck.testTrue(matrix.isAlmostEqual(rigidMatrix));
+      ck.testLE(matrix.maxDiff(rigidMatrix), micrometerTol);
+      const yprB = YawPitchRollAngles.createFromMatrix3d(rigidMatrix)!;
+      ck.testPointer(yprB);
+      // verify that YPR angles from original matrix and rigid matrix are very close
+      ck.testTrue(result.yaw.isAlmostEqual(yprB.yaw, 1e-5));
+      ck.testTrue(result.pitch.isAlmostEqual(yprB.pitch, 1e-5));
+      ck.testTrue(result.roll.isAlmostEqual(yprB.roll, 1e-5));
+      // rigid matrix and near-rigid matrix YPR round trip vs original matrix
+      const maxDiff = matrix.maxDiff(rigidMatrix);
+      const matrixA = yprA!.toMatrix3d();
+      const matrixB = yprB.toMatrix3d();
+      const diffAB = matrix.maxDiff(matrixA);
+      const diffAC = matrix.maxDiff(matrixB);
+      ck.testLT(diffAB, micrometerTol);
+      ck.testLT(diffAC, micrometerTol);
+      GeometryCoreTestIO.consoleLog("original matrix ", matrix.toJSON());
+      GeometryCoreTestIO.consoleLog("maxDiff between matrix and rigid matrix", maxDiff);
+      GeometryCoreTestIO.consoleLog("ypr for rigid matrix", yprB);
+      GeometryCoreTestIO.consoleLog("maxDiff between ypr round trips", diffAB);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 describe("YawPitchRollAngles", () => {

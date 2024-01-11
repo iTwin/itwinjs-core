@@ -260,10 +260,11 @@ export class YawPitchRollAngles {
   }
   /**
    * Attempts to create a YawPitchRollAngles object from a Matrix3d
-   * * This conversion fails if the matrix is not rigid (unit rows and columns, and transpose is inverse)
+   * * This conversion fails if the matrix is not *sufficiently* rigid (unit rows and columns, and transpose is inverse)
    * * In the failure case the method's return value is `undefined`.
-   * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with
-   * a set of angles.
+   * * In the failure case, if the optional `result` was supplied, that result will nonetheless be filled with a set
+   * of angles. You can use it with CAUTION. If your input is close to being rigid, then these angles will likely be
+   * sufficient; otherwise you can call `Matrix3d.createRigidFromMatrix3d` or `Matrix3d.makeRigid` and try again.
    */
   public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
     /**
@@ -337,6 +338,6 @@ export class YawPitchRollAngles {
     }
     // sanity check
     const matrix1 = angles.toMatrix3d();
-    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
+    return matrix.isAlmostEqual(matrix1) ? angles : undefined;
   }
 }
