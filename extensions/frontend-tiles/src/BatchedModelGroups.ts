@@ -109,6 +109,7 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
 
   public override attachToViewport(_vp: Viewport): void {
     // ###TODO listen for scene invalidation to potentially invalidate display transforms.
+    // ###TODO shouldn't BatchedSpatialTileTreeRefs be responsible for that and invoking invalidateTransforms on us?
   }
 
   public update(): boolean {

@@ -176,9 +176,18 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
 
   protected override computeTransform(tree: TileTree): Transform {
     const baseTf = super.computeTransform(tree);
-    // ###TODO apply schedule script transform
-    // ###TODO apply display/elevation transforms
-    const displayTf = this._groupInfo.displayTransform;
+
+    const group = this._groupInfo;
+    if (group.timeline) {
+      assert(undefined !== this._animationNodeId);
+      const animTf = group.timeline.getTransform(this._animationNodeId, this._args.getCurrentTimePoint());
+      if (animTf)
+        animTf.multiplyTransformTransform(baseTf, baseTf);
+    }
+
+    // ###TODO apply plan projection elevation transform
+
+    const displayTf = group.displayTransform;
     if (!displayTf)
       return baseTf;
 
@@ -186,8 +195,7 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
   }
 
   protected override getAnimationTransformNodeId() {
-    // ###TODO
-    return AnimationNodeId.Untransformed;
+    return this._animationNodeId;
   }
 
   protected override getGroupNodeId() {
@@ -195,16 +203,19 @@ export class ModelGroupTileTreeReference extends TileTreeReference implements Fe
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    if (this._branchId) {
+      const branch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+      if (branch?.omit) {
+        // This branch is not supposed to be drawn
+        return undefined;
+      }
+    }
+    
+    const args = super.createDrawArgs(context);
+
+    // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
     // ###TODO apply plan projection overlay settings
-    // ###TODO all this
-    // const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
-    // if (animBranch && animBranch.omit)
-    //   return undefined;
 
-    // const args = super.createDrawArgs(context);
-    // // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
-    // return args;
-
-    return super.createDrawArgs(context);
+    return args;
   }
 }
