@@ -29,7 +29,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
     this._view = view;
-    this._models = new BatchedModels(view);
+    this._models = new BatchedModels(view, spec.includedModels);
 
     const script = view.displayStyle.scheduleScript;
     this._currentScript = script?.requiresBatching ? script : undefined;
