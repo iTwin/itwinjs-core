@@ -1067,10 +1067,10 @@ export class MapTileTreeReference extends TileTreeReference {
       this._planarClipMask.discloseTileTrees(trees);
   }
 
-  public imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[] {
+  public imageryTreeFromTreeModelId(layerTreeModelId: Id64String): ImageryMapLayerTreeReference[] {
     const imageryTrees: ImageryMapLayerTreeReference[] = [];
     const tree = this.treeOwner.tileTree as MapTileTree;
-    if (undefined === tree || tree.modelId !== mapTreeModelId)
+    if (undefined === tree)
       return imageryTrees;
 
     for (const imageryTree of this._layerTrees)
@@ -1080,8 +1080,8 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTrees;
   }
 
-  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
-    const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
+  public layerFromTreeModelId(layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
+    const imageryTree = this.imageryTreeFromTreeModelId(layerTreeModelId);
     return imageryTree.map((tree) => {
       const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
       return {
@@ -1111,7 +1111,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
     }
 
-    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
+    const imageryTreeRef = this.imageryTreeFromTreeModelId(hit.sourceId);
     if (imageryTreeRef.length > 0) {
       if (hit.tileId !== undefined) {
         const terrainQuadId = QuadId.createFromContentId(hit.tileId);
@@ -1183,7 +1183,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const info: MapLayerFeatureInfo[] = [];
-    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
+    const imageryTreeRef = this.imageryTreeFromTreeModelId(hit.sourceId);
     if (imageryTreeRef !== undefined) {
 
       const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {

@@ -126,10 +126,25 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
-    const bgMapLayers = this.backgroundMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
-    const ovlMapLayers = this.overlayMap.layerFromTreeModelIds(mapTreeId, layerTreeId);
-    return [...bgMapLayers, ...ovlMapLayers];
+  public mapLayerFromIds(mapTreeId: Id64String|undefined, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
+    let results: MapLayerInfoFromTileTree[] = [];
+    if (mapTreeId === undefined) {
+      const bgMapLayers = this.backgroundMap.layerFromTreeModelId(layerTreeId);
+      const ovlMapLayers = this.backgroundMap.layerFromTreeModelId(layerTreeId);
+      results = [...bgMapLayers, ...ovlMapLayers];
+    } else {
+      const bgMapTileTree = this.backgroundMap.treeOwner.tileTree;
+      const ovlMapTileTree = this.backgroundMap.treeOwner.tileTree;
+      if (bgMapTileTree?.modelId === mapTreeId) {
+        const bgMapLayers = this.backgroundMap.layerFromTreeModelId(layerTreeId);
+        results = [...bgMapLayers];
+      } else if (ovlMapTileTree?.modelId === mapTreeId) {
+        const ovlMapLayers = this.backgroundMap.layerFromTreeModelId(layerTreeId);
+        results = [...results, ...ovlMapLayers];
+      }
+    }
+
+    return results;
   }
 }
 

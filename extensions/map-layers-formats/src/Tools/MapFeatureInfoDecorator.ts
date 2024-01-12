@@ -3,13 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
-import { Base64EncodedString, ColorDef } from "@itwin/core-common";
+import { Base64EncodedString, ColorDef, ImageMapLayerSettings } from "@itwin/core-common";
 import {
+  BeButton,
   BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
-  GeometryTileTreeReference, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
+  EventHandled,
+  GeometryTileTreeReference, GraphicType, HitDetail, IModelApp, MapFeatureInfo, MapLayerInfoFromTileTree, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
+  SelectionSetEvent,
+  SelectionSetEventType,
   Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
 import { ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
+import { Id64String } from "@itwin/core-bentley";
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string.
 /* @internal
@@ -144,6 +149,10 @@ interface DrapePointState {
 
 /** @internal */
 export class MapFeatureInfoDecorator implements Decorator {
+
+  private _decorationId: Id64String|undefined;
+  private _layerSettingsCache = new Map<string, MapLayerInfoFromTileTree[]>();
+
   public hidden = false;
   public readonly useCachedDecorations = true;
   public readonly disableTerrainDraper = true;
@@ -200,10 +209,10 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   public clearState = () => {
-    this._state = undefined;
+    this.setState(undefined);
   };
 
-  public setState = (state: MapFeatureInfoToolData) => {
+  public setState = (state?: MapFeatureInfoToolData) => {
 
     this._drapedStrings = undefined;
     this._allGeomDraped = false;
@@ -215,9 +224,9 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._drapePoints.clear();
     this._drapePointsStates = [];
 
-    if (!this.disableTerrainDraper && this._state.mapInfo?.layerInfos && state.hit.viewport.displayStyle.displayTerrain) {
+    if (!this.disableTerrainDraper && this._state?.mapInfo?.layerInfos && this._state.hit.viewport.displayStyle.displayTerrain) {
 
-      if (state.hit?.modelId) {
+      if (state?.hit?.modelId) {
         const drapeTreeRef = this.getGeometryTreeRef(state.hit.viewport);
         if (drapeTreeRef) {
           this._draper = new TerrainDraper(state.hit.viewport, drapeTreeRef);
@@ -247,7 +256,8 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   protected renderGraphics(context: DecorateContext) {
-    this._markerSet.markers.clear();
+    // this._markerSet.markers.clear();
+    this._markerSet =  new PinMarkerSet(context.viewport);
 
     if (this._state?.mapInfo?.layerInfos === undefined || this.hidden) {
       return undefined;
@@ -363,11 +373,81 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   public decorate(context: DecorateContext): void {
-    const graphics = this.renderGraphics(context);
-    if (graphics)
-      context.addDecoration(this._graphicType, graphics);
 
-    this._markerSet.addDecoration(context);
-    return;
+    if (this._decorationId && context.viewport.iModel.selectionSet.has(this._decorationId)){
+      const graphics = this.renderGraphics(context);
+      if (graphics)
+        context.addDecoration(this._graphicType, graphics);
+
+      this._markerSet.addDecoration(context);
+    }
+  }
+
+  public overrideElementHit(_hit: HitDetail): boolean {
+    return true;
+  }
+
+  /**
+   * Get map layer information from a hit.
+   * @param hit The hit to get info from.
+   * @returns Returns a list of [[MapLayerInfoFromTileTree]]s.
+   * @internal
+   */
+  private getMapLayerInfoFromHit(hit: HitDetail) {
+    let mapLayerFromHit: MapLayerInfoFromTileTree[] = [];
+    const fromCache = this._layerSettingsCache.get(hit.sourceId);
+    if (fromCache) {
+      mapLayerFromHit = fromCache;
+    } else if (hit.viewport) {
+      mapLayerFromHit = hit.viewport.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
+    }
+
+    return mapLayerFromHit;
+  }
+
+  public testDecorationHit(_id: string) {return true;}
+
+  private onSelectionSetChanged = (selectionEv: SelectionSetEvent)=> {
+    if (selectionEv.type !== SelectionSetEventType.Add && !selectionEv.set.has(this._decorationId)) {
+      this.clearState();
+    }
+  };
+
+  public async onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+
+    // if (ev.button === BeButton.Reset) {
+    //   this.clearState();
+    //   return EventHandled.Yes;
+    // }
+    if (ev.button === BeButton.Reset)
+      return EventHandled.No;
+    let mapInfo: MapFeatureInfo | undefined;
+
+    const mapLayersHit = this.getMapLayerInfoFromHit(hit);
+    if (mapLayersHit.length > 0) {
+      // this._state.activeMapLayers = mapLayersHit;
+      IModelApp.toolAdmin.setCursor("wait");
+      try {
+        const aperture = (hit.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+        const pixelRadius = Math.floor(aperture + 0.5);
+        mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
+        if (mapInfo) {
+          // this._decorationId = hit.iModel.transientIds.getNext();
+          this._decorationId = hit.sourceId;
+          hit.iModel.selectionSet.add(this._decorationId);
+          this.setState({ hit, mapInfo });
+          if (!hit.iModel.selectionSet.onChanged.has(this.onSelectionSetChanged))
+            hit.iModel.selectionSet.onChanged.addListener(this.onSelectionSetChanged);
+        }
+      } finally {
+        IModelApp.toolAdmin.setCursor(undefined);
+      }
+      return EventHandled.Yes;
+    }
+
+    // this.onInfoReady.raiseEvent({ hit, mapInfo });
+
+    return EventHandled.No;
   }
 }

@@ -20,6 +20,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
+import { MapFeatureInfoDecorator } from "@itwin/map-layers-formats";
 
 const configuration: DtaConfiguration = {};
 
@@ -283,6 +284,8 @@ const dtaFrontendMain = async () => {
     Logger.setLevelDefault(LogLevel.Warning);
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
+    const decorator = new MapFeatureInfoDecorator();
+    IModelApp.viewManager.addDecorator(decorator);
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
