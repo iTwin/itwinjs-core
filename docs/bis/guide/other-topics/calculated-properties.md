@@ -1,19 +1,28 @@
 # Calculated Properties
 
-It is not uncommon for BIS schema designers to face the need to handle properties that can be derived from other data already captured by a BIS schema. In general, there are four approaches to consider while introducing calculated or derived properties, each being more appropropriate than the others depending upon workflow, application and performance requirements. These approaches are:
+It is not uncommon for BIS schema designers to face the need to handle properties that can be derived from other data already captured by a BIS schema. This article discusses Calculated properties in light of their scope of computation. That is, property-calculations are...
+
+1. Scoped by data in a single transaction
+1. Based on data potentially distributed among multiple transactions
+
+## Property-calculations scoped by data in a single transaction
+
+This category of calculated properties refers to those whose input and computation result always change together, and therefore, are commited to the BIS repository in a single transaction. Examples include `Length` properties that are calculated from other _parts_ of an Entity, such as a Pipe - computed based on the distance between its Ports - or an Alignment - calculated from its Horizontal Projection.
+
+In general, there are four approaches to consider while introducing calculated or derived properties scoped by data in a single transaction, each being more appropropriate than the others depending upon workflow, application and performance requirements. These approaches are:
 
 1. Derived properties calculated externally
 1. Handled via Presentation Rules
 1. Handled via Caches maintained by a Domain library or Application logic
 1. Calculated on the fly, shown via Custom User-Interface
 
-## Properties Calculated External to the BIS Repository
+### Properties Calculated External to the BIS Repository
 
 This approach is particularly applicable to Connectors, which can synchronize derived data already calculated in the external data source. In that case, a Connector needs to ensure to include the calculated properties in its target BIS schema, deferring all the calculation responsibility to the external application that created the data in the first place.
 
 With this approach, calculated property values are captured in the BIS repository, being available to both ECSQL querying as well as standard UX controls such as the Property Pane and Grid.
 
-## Calculated Properties handled via Presentation Rules
+### Calculated Properties handled via Presentation Rules
 
 iTwin.js contains a very powerful `Presentation` library, commonly referred to as `PresentationRules`. It provides means to declaratively get data from BIS Repositories in a format that is ready to be displayed to end users. Such library can be used to create calculated properties above the BIS schema layer. Please see [Calculated Properties Specification](https://www.itwinjs.org/presentation/content/calculatedpropertiesspecification/) for more information.
 
@@ -24,11 +33,11 @@ This approach is most appropriate for Calculated properties that meet the follow
 1. Calculated property is expected to be displayed in Standard iTwin.js UX controls such as Property Pane and Grids.
 1. No need to access the calculated property via ECSQL
 
-## Cache mantained by a Domain library or Application logic
+### Cache mantained by a Domain library or Application logic
 
-Another approach to consider while handling a calculated property involves creating it in a BIS schema and storing its calculated values in the BIS repository. As a result, computed values - effectively cached values - can be queried via ECSQL and will be available via standard UX controls.
+Another approach to consider while handling a calculated property scoped by data in a single transaction, involves creating it in a BIS schema and storing its calculated values in the BIS repository. As a result, computed values - effectively cached values - can be queried via ECSQL and will be available via standard UX controls.
 
-However, the process of the actual calculation of property values needs careful analysis in order to make sure that the cached values do not become out-of-date. Typically it involves capturing the calculation logic in a location that every data-writer that can target the schema uses to write to it. The calculation logic will typically be part of a domain library if the involved schema is at one of the Standardized layers in BIS, and thus, it is expected to be shared. Or it will be part of the Application's logic if the calculated property is part of an Application schema.
+However, the process of the actual calculation of property values needs careful analysis in order to make sure that the cached values do not become out-of-date. Typically it involves capturing the calculation logic in a location that every data-writer that can target the involved schema uses to write to it. The calculation logic will typically be part of a domain library if the involved schema is at one of the Standardized layers in BIS, and thus, it is expected to be shared. Or it will be part of the Application's logic if the calculated property is part of an Application schema.
 
 This approach is most appropriate for Calculated properties that meet the following criteria:
 
@@ -36,12 +45,20 @@ This approach is most appropriate for Calculated properties that meet the follow
 1. Calculated properties are expected to be displayed in Standard iTwin.js UX controls such as Property Pane and Grids
 1. Calculated values need to be queried via ECSQL
 
-## Calculated properties handled via a custom User-Interface
+### Calculated properties handled via a custom User-Interface
 
-In some cases, a calculated property is very specialized to a particular domain workflow that it needs of a custom User Interface to present it correctly to users. If the calculation itself is inexpensive and its result does not need to be queried via ECSQL, doing it on the fly when needed may be the best solution. It avoids the storage overhead and caching complexities that the previous approaches bring with them.
+In some cases, a calculated property is very specialized to a particular domain workflow that it needs a custom User Interface to present it correctly to users. If the calculation itself is inexpensive and its result does not need to be queried via ECSQL, doing it on the fly on demand may be the best solution. It avoids the storage overhead and caching complexities that the previous approaches bring with them.
 
 In summary, this approach is most appropriate for Calculated properties that meet the following criteria:
 
 1. Calculation is lightweight
 1. Calculated values are _not_ expected to be displayed in Standard iTwin.js UX controls such as Property Pane and Grids.
 1. No need to access the calculated property via ECSQL
+
+## Property-calculations based on data potentially distributed among multiple transactions
+
+This category of calculated properties refers to those whose inputs may be provided and change across multiple transactions, typically by different data-writers. Examples include calculated properties that capture the result of statistical calculations - averages, standard deviations, etc - or data aggregation in general - Volume of Material X needed by all disciplines in a project.
+
+It is highly recommended that this kind of calculation properties to be computed and stored later in the lifetime of a BIS Repository. This is typically done by a Transformation job instead of by an Application. Such job is in charge of moving data forward from a `Work in Progress` BIS repository into another one, usually refered to as `Shared`, that captures data already reviewed and approved that others can rely on.
+
+As a result, it becomes a good practice to define Calculated properties that will be computed and set by Transformation jobs in a separate BIS schema that no other Application will import or target.
