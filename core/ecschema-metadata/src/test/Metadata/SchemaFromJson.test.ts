@@ -16,6 +16,13 @@ describe("Schema from json creation with different containers tests", () => {
     alias: "dumRef",
   };
 
+  const dummyRefJsonTwo = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "DummyReferenceTwo",
+    version: "01.00.01",
+    alias: "dumRefTwo",
+  };
+
   const schemaAJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "SchemaA",
@@ -92,6 +99,50 @@ describe("Schema from json creation with different containers tests", () => {
       };
 
       await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA, DummyReference reference not defined");
+    });
+
+    it("should throw an error and not allow the creation of the schema with top level custom attribute and its reference not defined", async () => {
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefJson,
+        items: {
+          customAttributeOne: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const _dummyRefTwo = await Schema.fromJson({
+        ...dummyRefJsonTwo,
+        items: {
+          customAttributeOneRefTwo: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const schemaA = {
+        ...schemaAJson,
+        references: [
+          {
+            name: "DummyReference",
+            version: "01.00.01",
+          },
+        ],
+        customAttributes: [
+          {
+            className: "DummyReference.customAttributeOne",
+            showClasses: true,
+          },
+          {
+            className: "DummyReferenceTwo.customAttributeOneRefTwo",
+            showClasses: true,
+          },
+        ],
+      };
+
+      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReferenceTwo.customAttributeOneRefTwo from container SchemaA, DummyReferenceTwo reference not defined");
     });
 
     it("should throw an error and not allow the creation of the schema with item custom attribute and no reference defined", async () => {
