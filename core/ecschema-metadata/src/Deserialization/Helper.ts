@@ -1012,10 +1012,10 @@ export class SchemaReadHelper<T = unknown> {
       // First tuple entry is the CA class name.
       const caClass = await this.findSchemaItem(providerTuple[0]);
 
-      // If custom attribute exist within context and is referenced, validate the reference is defined in the container's schema
+      // If custom attribute exist within the context and is referenced, validate the reference is defined in the container's schema
       if (caClass && caClass.key.schemaName !== container.schema.name &&
         !container.schema.references.find((reference) => reference.name === caClass.key.schemaName)) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName}, schema ${caClass.key.schemaName} reference not defined in ${container.schema.name}`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`);
       }
 
       // Second tuple entry ia a function that provides the CA instance.

@@ -29,7 +29,7 @@ describe("Schema from json creation with different containers tests", () => {
     context = new SchemaContext();
   });
 
-  describe("Schema from json creation with different class containers tests", () => {
+  describe("Schema from json creation with class containers tests", () => {
     it("should create a schema with custom attributes and reference as normal", async () => {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefJson,
@@ -128,7 +128,7 @@ describe("Schema from json creation with different containers tests", () => {
       await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne, schema DummyReference reference not defined in SchemaA");
     });
 
-    it("should not allow the creation of a schema with relationship class and custom attribute", async () => {
+    it("should throw an error not allow the creation of a schema with relationship class and custom attribute and no reference defined", async () => {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefJson,
         items: {
@@ -214,6 +214,57 @@ describe("Schema from json creation with different containers tests", () => {
                 isReadOnly: true,
                 priority: 0,
                 typeName: "double",
+                customAttributes: [
+                  {
+                    className: "DummyReference.customAttributeOne",
+                    showClasses: true,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      };
+
+      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne, schema DummyReference reference not defined in SchemaA");
+    });
+
+    it("should throw an error and not allow the creation of the schema with custom attribute in an array property container", async () => {
+      const _dummyRefOne = await Schema.fromJson({
+        ...dummyRefJson,
+        items: {
+          customAttributeOne: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "AnyClass",
+          },
+        },
+      }, context);
+
+      const schemaA = {
+        ...schemaAJson,
+        items: {
+          allocation: {
+            schemaItemType: "StructClass",
+            description: "Allocation Class",
+          },
+          testClassOne: {
+            schemaItemType: "EntityClass",
+            description: "Test class one",
+            properties: [
+              {
+                name: "Offset",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 0,
+                typeName: "double",
+              },
+              {
+                name: "Allocation",
+                type: "StructArrayProperty",
+                isReadOnly: true,
+                typeName: "SchemaA.allocation",
+                minOccurs: 0,
+                maxOccurs: 2147483647,
                 customAttributes: [
                   {
                     className: "DummyReference.customAttributeOne",
