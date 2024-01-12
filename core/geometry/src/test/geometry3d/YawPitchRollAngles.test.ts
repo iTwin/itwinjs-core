@@ -153,7 +153,7 @@ describe("YPR", () => {
       0.707, -0.415, -0.571,
       0, 0.808, -0.588,
       0.706, 0.416, 0.572,
-    ); // drop least significant digit from matrix3 (less rigid)
+    ); // drop least significant digit from matrix4 (less rigid)
 
     const matrices = [
       {m: matrix1, nearRigid: true},
@@ -170,7 +170,7 @@ describe("YPR", () => {
       const ypr = YawPitchRollAngles.createFromMatrix3d(t.m, result);
       ck.testBoolean(t.nearRigid, ypr !== undefined, "createFromMatrix3d returns as expected");
 
-      // create two rigid matrices derived from matrix
+      // derive two rigid matrices
       const rigidMatrix1 = result.toMatrix3d();
       if (ck.testType(rigidMatrix1, Matrix3d))
         ck.testTrue(rigidMatrix1.isRigid(), "roundtrip yields rigid matrix #1");
