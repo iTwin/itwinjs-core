@@ -138,7 +138,7 @@ Example from a simple tool that locates elements and makes them the current sele
 
 ## Auxiliary Coordinate System
 
-An auxiliary coordinate system or ACS defines a working plane for a view that can differ from the global coordinate system. By default every view has an ACS that is aligned with the global system. Display of the ACS triad showing the location of ACS origin and direction of the X and Y axes is enabled by setting [ViewFlags.acs]($common). The drawing grid can also help visualize the working plane by using [GridOrientationType.AuxCoord]($common) and enabling [ViewFlags.grid]($common).
+An auxiliary coordinate system or ACS defines a working plane for a view that can differ from the global coordinate system. By default every view has an ACS that is aligned with the global system. Display of the ACS triad showing the location of ACS origin and direction of the X and Y axes is enabled by setting [ViewFlags.acsTriad]($common). The drawing grid can also help visualize the working plane by using [GridOrientationType.AuxCoord]($common) and enabling [ViewFlags.grid]($common).
 
 ![rotated acs](./rotated-acs.png "Example showing ACS triad and aligned grid")
 
