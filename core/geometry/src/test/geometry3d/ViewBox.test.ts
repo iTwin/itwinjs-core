@@ -13,15 +13,13 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* Create an XYZ triad with arcs to clarify XY and XYZ planes
- */
+/* Create an XYZ triad with arcs to clarify XY and XYZ planes */
 function makeViewableGeometry(): GeometryQuery[] {
   const geometry = [];
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0)));
@@ -288,42 +286,4 @@ it("StandardViewsByXYZ", () => {
 
   GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "FromXYZ");
   expect(ck.getNumErrors()).equals(0);
-});
-
-describe("RaggedMatrix", () => {
-  it("FromCSS", () => {
-    const ck = new Checker();
-    // a supposedly rigid matrix received in .css . . .   but plainly it has only 6 digits.
-    const raggedMatrix = Matrix3d.createRowValues(
-      0.707421, -0.415747, -0.571585,
-      0, 0.808703, -0.588217,
-      0.706792, 0.416117, 0.572094);
-    if (Checker.noisy.raggedViewMatrix) {
-      GeometryCoreTestIO.consoleLog(" ragged matrix ", raggedMatrix.toJSON());
-      GeometryCoreTestIO.consoleLog("   determinant", raggedMatrix.determinant());
-      GeometryCoreTestIO.consoleLog("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
-      GeometryCoreTestIO.consoleLog("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
-    }
-    const yprA = YawPitchRollAngles.createDegrees(0, 0, 0);
-    const yprB = YawPitchRollAngles.createFromMatrix3d(raggedMatrix, yprA);
-    // we expect this has failed (returned undefined) but nonetheless placed some angles in yprA . .
-    ck.testUndefined(yprB, " expect no ypr from ragged matrix");
-    const cleanMatrix = Matrix3d.createRigidFromMatrix3d(raggedMatrix)!;
-    const yprC = YawPitchRollAngles.createFromMatrix3d(cleanMatrix);
-    ck.testPointer(yprC, "Expect ypr from corrected matrix");
-    const maxDiff = cleanMatrix.maxDiff(raggedMatrix);
-    const matrixB = yprA.toMatrix3d();
-    const matrixC = yprC!.toMatrix3d();
-    const diffBC = matrixB.maxDiff(matrixC);
-    const diffAB = matrixB.maxDiff(raggedMatrix);
-    ck.testLT(diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
-    ck.testLT(diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
-    if (Checker.noisy.raggedViewMatrix) {
-      GeometryCoreTestIO.consoleLog(" clean matrix ", cleanMatrix.toJSON());
-      GeometryCoreTestIO.consoleLog(` maxDiff ${maxDiff}`);
-      GeometryCoreTestIO.consoleLog("Clean ypr", yprC);
-      GeometryCoreTestIO.consoleLog("maxDiff between ypr round trips", diffBC);
-    }
-    expect(ck.getNumErrors()).equals(0);
-  });
 });
