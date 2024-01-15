@@ -15,6 +15,7 @@
     "docs": "",
     "extract-api": "betools extract-api --entry=frontend-tiles",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2"
   },
