@@ -67,6 +67,11 @@ describe.only("Create Difference Report", () => {
     schemaDifference = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
   });
 
+  it("should have the expected source and target schema names in differences", () => {
+    expect(schemaDifference.sourceSchemaName).equals("SourceSchema.01.02.03", "unexpected difference source name");
+    expect(schemaDifference.targetSchemaName).equals("TargetSchema.01.00.00", "unexpected difference target name");
+  });
+
   it("should set schema label and description", () => {
     expect(schemaDifference.label).equals(sourceJson.label, "expected unset schema label property is set");
     expect(schemaDifference.description).equals(sourceJson.description, "expected schema description gets overriden");
@@ -122,7 +127,7 @@ describe.only("Create Difference Report", () => {
             $changeType: "add",
             customAttributes: [{
               $changeType: "add",
-              className:        "CustomAttributeSchema.MissingCA",
+              className:   "CustomAttributeSchema.MissingCA",
             }],
           },
         },
@@ -146,9 +151,8 @@ describe.only("Create Difference Report", () => {
   it("should return missing schema items", () => {
     expectPartiallyEquals(schemaDifference.items, {
       TestUnitSystem: {
-        $changeType:    "add",
-        schemaItemType: "UnitSystem",
-        label:          "Imperial",
+        $changeType:     "add",
+        label:           "Imperial",
       },
     });
   });
@@ -160,7 +164,6 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingEnumeration: {
         $changeType: "add",
-        schemaItemType: "Enumeration",
         type: "int",
         isStrict: true,
         enumerators: {
@@ -173,7 +176,6 @@ describe.only("Create Difference Report", () => {
         },
       },
       ChangedEnumeration: {
-        schemaItemType: "Enumeration",
         label: "Source ChangedEnumeration",
         enumerators: {
           EnumeratorTwo: {
@@ -196,7 +198,6 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingStruct: {
         $changeType: "add",
-        schemaItemType: "StructClass",
         properties: {
           BooleanProperty: {
             $changeType: "add",
@@ -231,18 +232,15 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       EmptyAbstractEntity: {
         $changeType: "add",
-        schemaItemType: "EntityClass",
         modifier: "Abstract",
       },
       MissingMixin: {
         $changeType: "add",
-        schemaItemType: "Mixin",
         label: "Missing Mixin",
         appliesTo: "SourceSchema.EmptyAbstractEntity",
       },
       ChangedEntity: {
         $changeType: "modify",
-        schemaItemType: "EntityClass",
         baseClass: {
           $changeType: "add",
           className: "SourceSchema.EmptyAbstractEntity",
@@ -259,13 +257,11 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       RelationshipSourceEntity: {
         $changeType: "add",
-        schemaItemType: "EntityClass",
         label: "Source constraint class",
         modifier: "Abstract",
       },
       RelationshipTargetEntity: {
         $changeType: "add",
-        schemaItemType: "EntityClass",
         label: "Target constraint class",
         baseClass: {
           $changeType: "add",
@@ -275,7 +271,6 @@ describe.only("Create Difference Report", () => {
       },
       RelationshipEntity: {
         $changeType: "add",
-        schemaItemType: "RelationshipClass",
         strength: "Embedding",
         strengthDirection: "Forward",
         source: {

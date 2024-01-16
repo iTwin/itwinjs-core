@@ -9,21 +9,12 @@
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
-import type {
-  AnyEnumerator, Constant, CustomAttribute, CustomAttributeClass, ECClass, EntityClass, Enumeration,
-  EnumerationProperty, Format, InvertedUnit, KindOfQuantity, Mixin, NavigationProperty, Phenomenon, PrimitiveProperty,
-  Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass,
-  StructProperty, Unit, UnitSystem,
-} from "@itwin/ecschema-metadata";
+import type { Schema } from "@itwin/ecschema-metadata";
 
 /**
  * @internal
  */
 export type DifferenceType = "add" | "modify";
-interface DifferenceObject<T> {
-  readonly $changeType: DifferenceType;
-  readonly sourceObject: T;
-}
 
 /**
  * @internal
@@ -40,17 +31,19 @@ export namespace SchemaDifference {
     const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
     await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
-    return fromSchemaChanges(changesList[0]);
+    return fromSchemaChanges(targetSchema, changesList[0]);
   }
 
   /**
    * Creates a [[SchemaDifference]] for a given [[SchemaChanges]] report.
+   * @param targetSchema
    * @param schemaChanges   A changes report of two schemas.
    * @returns               An [[SchemaDifference]] object.
    */
-  export async function fromSchemaChanges(schemaChanges: SchemaChanges): Promise<SchemaDifference> {
+  export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifference> {
     const schemaDifference: SchemaDifference = {
-      sourceSchema: schemaChanges.schema,
+      sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
+      targetSchemaName: targetSchema.schemaKey.toString(),
     };
 
     const visitor = new SchemaDiagnosticVisitor(schemaDifference);
@@ -67,7 +60,8 @@ export namespace SchemaDifference {
  */
 export interface SchemaDifference {
 
-  readonly sourceSchema: Schema;
+  readonly sourceSchemaName: string;
+  readonly targetSchemaName: string;
 
   label?: string;
   description?: string;
@@ -83,7 +77,8 @@ export interface SchemaDifference {
 /**
  * @internal
  */
-export interface CustomAttributeDifference extends DifferenceObject<CustomAttribute> {
+export interface CustomAttributeDifference {
+  readonly $changeType: DifferenceType;
   readonly className: string;
   [value: string]: unknown;
 }
@@ -91,7 +86,8 @@ export interface CustomAttributeDifference extends DifferenceObject<CustomAttrib
 /**
  * @internal
  */
-export interface SchemaReferenceDifference extends DifferenceObject<Schema> {
+export interface SchemaReferenceDifference {
+  readonly $changeType: DifferenceType;
   readonly name: string;
   readonly version: string;
 }
@@ -99,9 +95,8 @@ export interface SchemaReferenceDifference extends DifferenceObject<Schema> {
 /**
  * @internal
  */
-export interface SchemaItemDifference<T extends SchemaItem=SchemaItem> extends DifferenceObject<T> {
-  readonly schemaItemType: string;
-  readonly schemaItemName: string;
+export interface SchemaItemDifference {
+  readonly $changeType: DifferenceType;
   label?: string;
   description?: string;
   customAttributes?: CustomAttributeDifference[];
@@ -110,7 +105,7 @@ export interface SchemaItemDifference<T extends SchemaItem=SchemaItem> extends D
 /**
  * @internal
  */
-export interface EnumerationDifference extends SchemaItemDifference<Enumeration> {
+export interface EnumerationDifference extends SchemaItemDifference {
   type?: string;
   isStrict?: boolean;
   enumerators?: {
@@ -121,7 +116,8 @@ export interface EnumerationDifference extends SchemaItemDifference<Enumeration>
 /**
  * @internal
  */
-export interface EnumeratorDifference extends DifferenceObject<AnyEnumerator> {
+export interface EnumeratorDifference {
+  readonly $changeType: DifferenceType;
   readonly name: string;
   value?: string | number;
   label?: string;
@@ -131,7 +127,7 @@ export interface EnumeratorDifference extends DifferenceObject<AnyEnumerator> {
 /**
  * @internal
  */
-export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQuantity> {
+export interface KindOfQuantityDifference extends SchemaItemDifference {
   persistenceUnit?: string;
   presentationUnits?: string | string[];
   relativeError?: number;
@@ -140,14 +136,14 @@ export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQua
 /**
  * @internal
  */
-export interface PropertyCategoryDifference extends SchemaItemDifference<PropertyCategory> {
+export interface PropertyCategoryDifference extends SchemaItemDifference {
   priority?: number;
 }
 
 /**
  * @internal
  */
-export interface ConstantDifference extends SchemaItemDifference<Constant> {
+export interface ConstantDifference extends SchemaItemDifference {
   phenomenon?: string;
   definition?: string;
   numerator?: number;
@@ -157,7 +153,7 @@ export interface ConstantDifference extends SchemaItemDifference<Constant> {
 /**
  * @internal
  */
-export interface FormatDifference extends SchemaItemDifference<Format> {
+export interface FormatDifference extends SchemaItemDifference {
   type?: string;
   precision?: number;
   roundFactor?: number;
@@ -183,7 +179,7 @@ export interface FormatDifference extends SchemaItemDifference<Format> {
 /**
  * @internal
  */
-export interface InvertedUnitDifference extends SchemaItemDifference<InvertedUnit> {
+export interface InvertedUnitDifference extends SchemaItemDifference {
   invertsUnit?: string;
   unitSystem?: string;
 }
@@ -191,19 +187,19 @@ export interface InvertedUnitDifference extends SchemaItemDifference<InvertedUni
 /**
  * @internal
  */
-export interface PhenomenonDifference extends SchemaItemDifference<Phenomenon> {
+export interface PhenomenonDifference extends SchemaItemDifference {
   definition?: string;
 }
 
 /**
  * @internal
  */
-export type UnitSystemDifference = SchemaItemDifference<UnitSystem>;
+export type UnitSystemDifference = SchemaItemDifference;
 
 /**
  * @internal
  */
-export interface UnitDifference extends SchemaItemDifference<Unit> {
+export interface UnitDifference extends SchemaItemDifference {
   phenomenon?: string;
   unitSystem?: string;
   definition?: string;
@@ -215,7 +211,7 @@ export interface UnitDifference extends SchemaItemDifference<Unit> {
 /**
  * @internal
  */
-export interface ClassDifference<T extends ECClass = ECClass> extends SchemaItemDifference<T> {
+export interface ClassDifference extends SchemaItemDifference {
   modifier?: string;
   baseClass?: {
     readonly $changeType: DifferenceType;
@@ -229,33 +225,33 @@ export interface ClassDifference<T extends ECClass = ECClass> extends SchemaItem
 /**
  * @internal
  */
-export interface EntityClassDifference extends ClassDifference<EntityClass> {
+export interface EntityClassDifference extends ClassDifference {
   mixins?: string[];
 }
 
 /**
  * @internal
  */
-export interface MixinDifference extends ClassDifference<Mixin> {
+export interface MixinDifference extends ClassDifference {
   appliesTo?: string;
 }
 
 /**
  * @internal
  */
-export type StructClassDifference = ClassDifference<StructClass>;
+export type StructClassDifference = ClassDifference;
 
 /**
  * @internal
  */
-export interface CustomAttributeClassDifference extends ClassDifference<CustomAttributeClass> {
+export interface CustomAttributeClassDifference extends ClassDifference {
   appliesTo?: string;
 }
 
 /**
  * @internal
  */
-export interface RelationshipClassDifference extends ClassDifference<RelationshipClass> {
+export interface RelationshipClassDifference extends ClassDifference {
   strength?: string;
   strengthDirection?: string;
   source?: RelationshipConstraintDifference;
@@ -265,7 +261,8 @@ export interface RelationshipClassDifference extends ClassDifference<Relationshi
 /**
  * @internal
  */
-export interface RelationshipConstraintDifference extends DifferenceObject<RelationshipConstraint> {
+export interface RelationshipConstraintDifference {
+  readonly $changeType: DifferenceType;
   multiplicity?: string;
   roleLabel?: string;
   polymorphic?: boolean;
@@ -277,7 +274,8 @@ export interface RelationshipConstraintDifference extends DifferenceObject<Relat
 /**
  * @internal
  */
-export interface PropertyDifference<T extends Property=Property> extends DifferenceObject<T> {
+export interface PropertyDifference {
+  readonly $changeType: DifferenceType;
   readonly name: string;
   type?: string;
   description?: string;
@@ -293,7 +291,7 @@ export interface PropertyDifference<T extends Property=Property> extends Differe
 /**
  * @internal
  */
-export interface PrimitivePropertyDifference<T extends Property=PrimitiveProperty> extends PropertyDifference<T> {
+export interface PrimitivePropertyDifference extends PropertyDifference {
   typeName?: string;
   extendedTypeName?: string;
   minLength?: number;
@@ -305,12 +303,12 @@ export interface PrimitivePropertyDifference<T extends Property=PrimitivePropert
 /**
  * @internal
  */
-export type EnumerationPropertyDifference = PrimitivePropertyDifference<EnumerationProperty>;
+export type EnumerationPropertyDifference = PrimitivePropertyDifference;
 
 /**
  * @internal
  */
-export interface NavigationPropertyDifference extends PrimitivePropertyDifference<NavigationProperty> {
+export interface NavigationPropertyDifference extends PrimitivePropertyDifference {
   relationshipName?: string;
   direction?: string;
 }
@@ -318,14 +316,14 @@ export interface NavigationPropertyDifference extends PrimitivePropertyDifferenc
 /**
  * @internal
  */
-export interface StructPropertyDifference extends PropertyDifference<StructProperty> {
+export interface StructPropertyDifference extends PropertyDifference {
   typeName?: string;
 }
 
 /**
  * @internal
  */
-export interface ArrayPropertyDifference<T extends Property=Property> extends PrimitivePropertyDifference<T> {
+export interface ArrayPropertyDifference extends PrimitivePropertyDifference {
   typeName?: string;
   minOccurs?: number;
   maxOccurs?: number;
@@ -334,9 +332,9 @@ export interface ArrayPropertyDifference<T extends Property=Property> extends Pr
 /**
  * @internal
  */
-export type PrimitiveArrayPropertyDifference = ArrayPropertyDifference<PrimitiveProperty>;
+export type PrimitiveArrayPropertyDifference = ArrayPropertyDifference;
 
 /**
  * @internal
  */
-export type StructArrayPropertyDifference = ArrayPropertyDifference<StructProperty>;
+export type StructArrayPropertyDifference = ArrayPropertyDifference;

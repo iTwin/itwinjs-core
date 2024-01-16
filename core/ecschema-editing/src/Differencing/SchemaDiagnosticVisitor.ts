@@ -10,7 +10,7 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyECType, AnyEnumerator, CustomAttribute, ECClass, EntityClass, Mixin, Property, PropertyProps,
-  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, schemaItemTypeToString,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
 } from "@itwin/ecschema-metadata";
 import {
   ClassDifference, CustomAttributeDifference, DifferenceType, EntityClassDifference,
@@ -35,10 +35,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     return this._differenceReport.items[sourceObject.name] = {
-      $changeType:    changeType,
-      schemaItemName: sourceObject.name,
-      schemaItemType: schemaItemTypeToString(sourceObject.schemaItemType),
-      sourceObject,
+      $changeType:     changeType,
     };
   }
 
@@ -46,7 +43,6 @@ export class SchemaDiagnosticVisitor {
     const relationshipDifference = this.getItemDifference<RelationshipClassDifference>(relationshipConstraint.relationshipClass);
     const constraintDifference: RelationshipConstraintDifference = {
       $changeType:  changeType,
-      sourceObject: relationshipConstraint,
     };
 
     return relationshipConstraint.isSource
@@ -71,7 +67,6 @@ export class SchemaDiagnosticVisitor {
 
     return classDifference.properties[property.name] || (classDifference.properties[property.name] = {
       $changeType:  "modify",
-      sourceObject: property,
       name:         property.name,
     });
   }
@@ -186,7 +181,6 @@ export class SchemaDiagnosticVisitor {
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
     enumeration.enumerators[enumerator.name] = {
       $changeType:  "add",
-      sourceObject: enumerator,
       name:         enumerator.name,
     };
   }
@@ -200,7 +194,6 @@ export class SchemaDiagnosticVisitor {
     const [enumerator, propertyName, propertyValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any];
     const enumeratorDifference = enumeration.enumerators[enumerator.name] || (enumeration.enumerators[enumerator.name] = {
       $changeType:  "modify",
-      sourceObject: enumerator,
       name:         enumerator.name,
     });
 
@@ -218,7 +211,6 @@ export class SchemaDiagnosticVisitor {
 
     classDifference.properties[property.name] = {
       $changeType:  "add",
-      sourceObject: property,
       name:         property.name,
     };
   }
@@ -275,7 +267,6 @@ export class SchemaDiagnosticVisitor {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
     this._differenceReport.references.push({
       $changeType:  changeType,
-      sourceObject: referencedSchema,
       name:         referencedSchema.name,
       version:      referencedSchema.schemaKey.version.toString(),
     });
