@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
-import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
+import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
 import { groupModels, ModelGroupingContext } from "../ModelGroup";
 import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
@@ -16,6 +16,7 @@ interface ModelSettings {
   projection?: PlanProjectionSettings;
   nodeIds?: ReadonlyArray<number>;
   elevation?: number;
+  viewFlags?: ViewFlagOverrides;
 }
 
 interface GroupingContextArgs {
@@ -28,6 +29,7 @@ class GroupingContext implements ModelGroupingContext {
   getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
   getDefaultElevation: (modelId: Id64String) => number;
   getModelTimeline: (modelId: Id64String) => RenderSchedule.ModelTimeline | undefined;
+  getViewFlagOverrides: (modelId: Id64String) => ViewFlagOverrides | undefined;
 
   public getModelClip(modelId: Id64String) {
     return this._clips.find((x) => x.modelId === modelId);
@@ -40,6 +42,7 @@ class GroupingContext implements ModelGroupingContext {
 
     this.getPlanProjectionSettings = (modelId: Id64String) => args[modelId]?.projection;
     this.getDefaultElevation = (modelId: Id64String) => args[modelId]?.elevation ?? 123;
+    this.getViewFlagOverrides = (modelId: Id64String) => args[modelId]?.viewFlags;
 
     const timelines = new Map<Id64String, RenderSchedule.ModelTimeline>();
     this.getModelTimeline = (modelId: Id64String) => timelines.get(modelId);

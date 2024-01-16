@@ -6,7 +6,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
   formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
@@ -79,6 +79,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       return false;
 
     return super.castsShadows;
+  }
+
+  public override getViewFlagOverrides(): ViewFlagOverrides {
+    return this._groupInfo.viewFlags;
   }
 
   public override draw(args: TileDrawArgs): void {

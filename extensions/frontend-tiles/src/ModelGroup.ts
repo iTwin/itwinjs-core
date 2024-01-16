@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Set, Id64String } from "@itwin/core-bentley";
-import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
+import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
@@ -28,6 +28,7 @@ export interface ModelGroupInfo {
   clip?: RenderClipVolume;
   planProjection?: PlanProjectionInfo;
   timeline?: RenderSchedule.ModelTimeline;
+  viewFlags: ViewFlagOverrides;
 }
 
 /** Represents a group of models and the display settings to be applied to them.
@@ -47,6 +48,7 @@ export interface ModelGroupingContext {
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
   getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined;
   getDefaultElevation(modelId: Id64String): number;
+  getViewFlagOverrides(modelId: Id64String): ViewFlagOverrides | undefined;
 }
 
 function createPlanProjectionInfo(modelId: Id64String, context: ModelGroupingContext): PlanProjectionInfo | undefined {
@@ -66,12 +68,36 @@ function equalPlanProjections(a: PlanProjectionInfo, b: PlanProjectionInfo): boo
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
+  const planProjection = createPlanProjectionInfo(modelId, context);
+  let viewFlags = { ...context.getViewFlagOverrides(modelId) };
+  if (planProjection) {
+    // Always enable improved z-fighting mitigation for plan projections (they're planar models).
+    viewFlags.forceSurfaceDiscard = true;
+  }
+
   return {
     displayTransform: context.modelGroupDisplayTransforms.getDisplayTransform(modelId),
     clip: context.getModelClip(modelId),
-    planProjection: createPlanProjectionInfo(modelId, context),
+    planProjection,
+    viewFlags,
     timeline: context.getModelTimeline(modelId),
   };
+}
+
+function equalViewFlags(a: ViewFlagOverrides, b: ViewFlagOverrides): boolean {
+  const lhs = Object.keys(a);
+  const rhs = Object.keys(b);
+  if (lhs.length !== rhs.length) {
+    return false;
+  }
+
+  for (const propName of lhs) {
+    const key = propName as keyof ViewFlagOverrides;
+    if (a[key] !== b[key])
+      return false;
+  }
+
+  return true;
 }
 
 function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
@@ -91,10 +117,15 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
       return false;
   }
 
-  if (a.planProjection || b.planProjection)
-    if (!a.planProjection || !b.planProjection || !equalPlanProjections(a.planProjection, b.planProjection))
+  if (a.planProjection || b.planProjection) {
+    if (!a.planProjection || !b.planProjection || !equalPlanProjections(a.planProjection, b.planProjection)) {
       return false;
+    }
+  }
 
+  if (!equalViewFlags(a.viewFlags, b.viewFlags))
+    return false;
+  
   return true;
 }
 

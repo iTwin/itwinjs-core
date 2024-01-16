@@ -6,7 +6,7 @@ import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
 import { RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
-import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
+import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 
 export class BatchedModelGroups implements ModelGroupingContext {
@@ -61,6 +61,11 @@ export class BatchedModelGroups implements ModelGroupingContext {
 
   public getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined {
     return this._script?.modelTimelines.find((x) => x.modelId === modelId);
+  }
+
+  public getViewFlagOverrides(modelId: Id64String): ViewFlagOverrides | undefined {
+    const model = this._view.iModel.models.getLoaded(modelId);
+    return model?.jsonProperties?.viewFlagOverrides;
   }
 
   public getDefaultElevation(modelId: Id64String): number {
