@@ -8,73 +8,19 @@ import { RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-fronte
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 
-export abstract class BatchedModelGroups {
-  protected _script?: RenderSchedule.Script;
-  protected _scriptValid = false;
-  
-  protected constructor(script: RenderSchedule.Script | undefined) {
-    this._script = script;
-  }
-
-  public abstract get guid(): string;
-  public abstract get groups(): ReadonlyArray<Readonly<ModelGroup>>;
-  public abstract update(): boolean;
-  public invalidateTransforms(): void { }
-  public setScript(script: RenderSchedule.Script | undefined): void {
-    this._script = script;
-    this._scriptValid = false;
-  }
-
-  public static create(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set | undefined): BatchedModelGroups {
-    return includedModelIds?.size ? new Groups(view, script, includedModelIds) : new Group(view, script);
-  }
-}
-
-/** Implementation of BatchedModelGroups for tilesets that do not disclose the set of included model Ids.
- * Only schedule animations are supported - no other per-model settings.
- * This exists to support tilesets that were published before the publisher was updated to include the set of included model Ids.
- * At some point, we will probably want to remove it.
- */
-class Group extends BatchedModelGroups {
-  private readonly _view: SpatialViewState;
-  public readonly guid = "";
-  public readonly groups: ModelGroup[] = [];
-
-  public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined) {
-    super(script);
-    this._view = view;
-    this.groups = [{ modelIds: new Set() }];
-
-    this.update();
-  }
-
-  public update(): boolean {
-    if (this._scriptValid)
-      return false;
-
-    this._scriptValid = true;
-    // ###TODO handle model timeline(s)
-    // const nodeIds = this._view.scheduleScript?.transformBatchIds;
-    // this.groups[0].animationTransformNodeIds = nodeIds ? new Set(nodeIds) : undefined;
-
-    return true;
-  }
-}
-
-/** Implementation of BatchedModelGroups for tilesets that disclose the set of included model Ids.
- * Per-model settings like clip, transform, and plan projections are supported in addition to schedule animations.
- */
-class Groups extends BatchedModelGroups implements ModelGroupingContext {
+export class BatchedModelGroups implements ModelGroupingContext {
   private readonly _view: SpatialViewState;
   private readonly _includedModelIds: Id64Set;
+  private _script?: RenderSchedule.Script;
   private _transformsValid = false;
   private _groupsValid = false;
+  private _scriptValid = false;
   public guid = "";
   public groups: ModelGroup[] = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
 
   public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set) {
-    super(script);
+    this._script = script;
     this._view = view;
     this._includedModelIds = includedModelIds;
     this.modelGroupDisplayTransforms = new ModelGroupDisplayTransforms(includedModelIds, view.modelDisplayTransformProvider);
@@ -86,7 +32,12 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
     this.update();
   }
 
-  public override invalidateTransforms(): void { this._transformsValid = false; }
+  public setScript(script: RenderSchedule.Script | undefined): void {
+    this._script = script;
+    this._scriptValid = false;
+  }
+
+  public invalidateTransforms(): void { this._transformsValid = false; }
 
   private listenForDisplayStyleEvents(): void {
     const removeListener = this._view.displayStyle.settings.onPlanProjectionSettingsChanged.addListener(() => this._groupsValid = false);
@@ -106,7 +57,7 @@ class Groups extends BatchedModelGroups implements ModelGroupingContext {
   }
 
   public getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined {
-    return this._view.scheduleScript?.modelTimelines.find((x) => x.modelId === modelId);
+    return this._script?.modelTimelines.find((x) => x.modelId === modelId);
   }
 
   public update(): boolean {

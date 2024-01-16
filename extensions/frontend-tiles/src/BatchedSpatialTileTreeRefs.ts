@@ -43,7 +43,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     const includedModels = new Set(spec.includedModels.keys());
     this._excludedRefs = createSpatialTileTreeReferences(view, includedModels);
 
-    this._groups = BatchedModelGroups.create(view, this._currentScript, includedModels);
+    this._groups = new BatchedModelGroups(view, this._currentScript, includedModels);
     this._treeOwner = this.getTreeOwner();
     this.loadRefs();
     
