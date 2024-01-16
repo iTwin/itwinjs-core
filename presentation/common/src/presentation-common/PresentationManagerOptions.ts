@@ -8,13 +8,15 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { SelectionInfo } from "./content/Descriptor";
+import { Descriptor, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { InstanceKey } from "./EC";
 import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 import { SelectionScopeProps } from "./selection/SelectionScope";
+import { Item } from "./content/Item";
+import { ElementProperties } from "./ElementProperties";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -139,6 +141,11 @@ export interface ContentDescriptorRequestOptions<TIModel, TKeySet, TRulesetVaria
    * @see [[DefaultContentDisplayTypes]]
    */
   displayType: string;
+  /**
+   * Content flags used for content customization.
+   * @see [[ContentFlags]]
+   */
+  contentFlags?: number;
   /** Input keys for getting the content */
   keys: TKeySet;
   /** Information about the selection event that was the cause of this content request */
@@ -178,8 +185,9 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 /**
  * Request type for element properties requests
  * @public
+ * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
-export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
+export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>;
 
 /**
  * Request type for single element properties requests.
@@ -194,13 +202,20 @@ export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestO
  * Request type for multiple elements properties requests.
  * @public
  */
-export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /**
    * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
    * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
    * "<schema name or alias>:<class_name>".
    */
   elementClasses?: string[];
+
+  /**
+   * Content parser that creates a result item based on given content descriptor and content item. Defaults
+   * to a parser that creates [[ElementProperties]] objects.
+   * @beta
+   */
+  contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 }
 
 /**
@@ -304,7 +319,7 @@ export type Prioritized<TOptions extends {}> = TOptions & {
  * Checks if supplied request options are for single or multiple element properties.
  * @internal
  */
-export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
+export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent = any>(options: SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>): options is SingleElementPropertiesRequestOptions<TIModel> {
   return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
 }
 

@@ -5,7 +5,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import {
-  Matrix3d, Point3d, Range3d, Transform, Vector3d,
+  Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema } from "@itwin/core-common";
 import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
@@ -14,9 +14,10 @@ import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
 /** @internal */
 export interface BatchedTilesetProps extends schema.Tileset {
-  extensions?: {
-    BENTLEY_BatchedTileSet?: { // eslint-disable-line @typescript-eslint/naming-convention
+  extensions: {
+    BENTLEY_BatchedTileSet: { // eslint-disable-line @typescript-eslint/naming-convention
       includedModels: Id64String[];
+      includedModelExtents: Range3dProps[];
     };
   };
 }
@@ -30,6 +31,11 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
   if (!props.root || !props.asset)
     return false;
 
+  // The extension is required, and it must contain `id` and `range` fields.
+  const extension = props.extensions?.BENTLEY_BatchedTileSet;
+  if (!extension || !Array.isArray(extension.includedModels) || !Array.isArray(extension.includedModelExtents) || extension.includedModels.length !== extension.includedModelExtents.length)
+    return false;
+
   // ###TODO spec requires geometricError to be present on tileset and all tiles; exporter is omitting from tileset.
   if (undefined === props.geometricError)
     props.geometricError = props.root.geometricError;
@@ -41,15 +47,21 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
 export interface BatchedTilesetSpec {
   baseUrl: URL;
   props: BatchedTilesetProps;
+  includedModels: Map<Id64String, Range3d>;
 }
 
 /** @internal */
 export namespace BatchedTilesetSpec {
-  export function create(baseUrl: URL, json: unknown) {
+  export function create(baseUrl: URL, json: unknown): BatchedTilesetSpec {
     if (!isBatchedTileset(json))
       throw new Error("Invalid tileset JSON");
 
-    return { baseUrl, props: json };
+    const includedModels = new Map<Id64String, Range3d>();
+    const ext = json.extensions.BENTLEY_BatchedTileSet;
+    for (let i = 0; i < ext.includedModels.length; i++)
+      includedModels.set(ext.includedModels[i], Range3d.fromJSON(ext.includedModelExtents[i]));
+
+    return { baseUrl, props: json, includedModels };
   }
 }
 
@@ -90,15 +102,15 @@ function transformFromJSON(json: schema.Transform): Transform {
 
 /** @internal */
 export class BatchedTilesetReader {
+  private readonly _spec: BatchedTilesetSpec;
   private readonly _iModel: IModelConnection;
-  private readonly _tileset: schema.Tileset;
-  public readonly baseUrl: URL;
 
   public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection) {
     this._iModel = iModel;
-    this._tileset = spec.props;
-    this.baseUrl = spec.baseUrl;
+    this._spec = spec;
   }
+
+  public get baseUrl(): URL { return this._spec.baseUrl; }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;
@@ -135,10 +147,8 @@ export class BatchedTilesetReader {
   }
 
   public async readTileTreeParams(): Promise<BatchedTileTreeParams> {
-    const root = this._tileset.root;
+    const root = this._spec.props.root;
     const location = root.transform ? transformFromJSON(root.transform) : Transform.createIdentity();
-    const extension = this._tileset.extensions?.BENTLEY_BatchedTileSet;
-    const includedModels = extension ? new Set<Id64String>(extension.includedModels) : undefined;
 
     return {
       id: "spatial-models",
@@ -148,7 +158,7 @@ export class BatchedTilesetReader {
       priority: TileLoadPriority.Primary,
       rootTile: this.readTileParams(root),
       reader: this,
-      includedModels,
+      includedModels: this._spec.includedModels,
     };
   }
 }

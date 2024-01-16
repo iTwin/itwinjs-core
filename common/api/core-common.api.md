@@ -1778,8 +1778,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2097152,
-    Major = 32,
+    Combined = 2162688,
+    Major = 33,
     Minor = 0
 }
 
@@ -7327,8 +7327,17 @@ export namespace RenderMaterial {
 
 // @public
 export interface RenderMaterialAssetMapsProps {
+    Bump?: TextureMapProps;
+    Diffuse?: TextureMapProps;
+    Displacement?: TextureMapProps;
+    Finish?: TextureMapProps;
+    GlowColor?: TextureMapProps;
     Normal?: NormalMapProps;
     Pattern?: TextureMapProps;
+    Reflect?: TextureMapProps;
+    Specular?: TextureMapProps;
+    TranslucencyColor?: TextureMapProps;
+    TransparentColor?: TextureMapProps;
 }
 
 // @public
@@ -9245,7 +9254,7 @@ export class TextString {
     widthFactor?: number;
 }
 
-// @public
+// @beta
 export interface TextStringGlyphData {
     // (undocumented)
     glyphIds: number[];

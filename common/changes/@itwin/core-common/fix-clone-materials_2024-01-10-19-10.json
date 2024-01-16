@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add additional map types to RenderMaterialAssetMapsProps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

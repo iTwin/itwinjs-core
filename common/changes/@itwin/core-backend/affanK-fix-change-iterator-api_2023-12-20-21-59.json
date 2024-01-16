@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update ChangesetReader API and fix bug.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
