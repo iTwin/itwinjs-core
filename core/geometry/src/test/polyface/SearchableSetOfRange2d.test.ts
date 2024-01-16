@@ -21,8 +21,8 @@ import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/Gr
 import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
-import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined, range: Range2d | Range3d, xOrigin: number, yOrigin: number, zOrigin: number = 0) {
@@ -51,9 +51,8 @@ function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined
   } else
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), xOrigin, yOrigin, zOrigin);
 }
-// cspell::word lisajoue
-describe("LinearSearchRange2dArray", () => {
 
+describe("LinearSearchRange2dArray", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -66,8 +65,8 @@ describe("LinearSearchRange2dArray", () => {
     // collect a pile of ranges ...
     for (let i = 0; i < numRange; i++) {
       const theta = (i + 2) * dTheta;
-      const point0 = lisajouePoint3d(theta, a);
-      const point1 = lisajouePoint3d(2.14 * theta, a);
+      const point0 = Sample.createRosePoint3d(theta, a);
+      const point1 = Sample.createRosePoint3d(2.14 * theta, a);
       const range = Range2d.createXYXY(point0.x, point0.y, point1.x, point1.y);
       ranges.addRange(range, i);
       saveRange(allGeometry, undefined, range, x0, y0);
@@ -175,7 +174,7 @@ describe("GriddedRaggedRange2dSet", () => {
         const theta = totalTurns * Math.PI * 2 * i;
         const uvC = Point3d.create(
           Geometry.interpolate(-0.01, fraction, 0.99), 0.5 + amplitude * Math.sin(theta));
-        const deltaUV = lisajouePoint3d(2.14 * theta * theta, a);
+        const deltaUV = Sample.createRosePoint3d(2.14 * theta * theta, a);
         deltaUV.x = Geometry.maxXY(0.01, deltaUV.x);
         deltaUV.y = Geometry.maxXY(0.01, deltaUV.y);
         const uv0 = uvC.plusScaled(deltaUV, -rangeSize);
@@ -303,6 +302,8 @@ describe("GriddedRaggedRange2dSet", () => {
     expect(ck.getNumErrors()).equals(0);
   });
   it("FacetGrid", () => {
+    if (!GeometryCoreTestIO.enableLongTests)
+      return;
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;

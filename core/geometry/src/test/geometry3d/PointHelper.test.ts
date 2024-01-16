@@ -23,6 +23,7 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { XAndY, XYZProps } from "../../geometry3d/XYZProps";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { MomentData } from "../../geometry4d/MomentData";
 import { Point4d } from "../../geometry4d/Point4d";
@@ -32,9 +33,7 @@ import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { XYZProps } from "../../geometry3d/XYZProps";
 
-/* eslint-disable deprecation/deprecation */
 /**
  * Return the radius of a circle with area matching centroidData.a
  * @param centroidData result of centroid calculation, with "a" property.
@@ -425,6 +424,24 @@ describe("PolygonOps", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("VertexHit", () => {
+    const ck = new Checker();
+    const testPoint = Point3d.createZero();
+    let points = [Point3d.create(1,1), Point3d.create(-1,1), testPoint];
+    const rotate = <T,>(arr: Array<T>, n = 1) => [...arr.slice(n, arr.length), ...arr.slice(0, n)];
+    const testVertexHit = (testPt: XAndY, pts: Point3d[]) => {
+      const result = PolygonOps.classifyPointInPolygon(testPt.x, testPt.y, pts);
+      if (ck.testDefined(result, "classification successful") && result !== undefined)
+        ck.testExactNumber(0, result, "vertex hit");
+    };
+    testVertexHit(testPoint, points);
+    points = rotate(points, 1);
+    testVertexHit(testPoint, points);
+    points = rotate(points, 1);
+    testVertexHit(testPoint, points);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("XYTurningDirections", () => {
     const ck = new Checker();
     for (const close of [false, true]) {
@@ -598,7 +615,6 @@ describe("Point3dArray", () => {
       Point2d.create(a, 6),
       Point2d.create(0, 6)];
     for (const p of polygon) {
-
       ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(p.x, p.y, polygon)!);
     }
 
@@ -1067,7 +1083,7 @@ describe("PolygonAreas", () => {
     for (const numPoints of [9, 42, 273]) {
       const points: Point3d[] = [];
       for (let theta = 0.01 * (numPoints - 8); points.length < numPoints; theta += dTheta) {
-        points.push(lisajouePoint3d(theta * theta, a, 0));
+        points.push(Sample.createRosePoint3d(theta * theta, a, 0));
       }
       const range = Range3d.createFromVariantData(points);
       const dx = Math.ceil(range.xLength() + 4);
@@ -1159,21 +1175,15 @@ describe("PolygonAreas", () => {
 
 });
 
-// cspell:word lisajoue
-export function lisajouePoint3d(theta: number, a: number, z: number = 0): Point3d {
-  const r = Math.cos(a * theta);
-  return Point3d.create(r * Math.cos(theta), r * Math.sin(theta), z);
-}
-
 // coverage missing from other tests
 describe("PointHelperCoverage", () => {
   it("Point3dArray", () => {
     const ck = new Checker();
-    const data = [2,3,5, 7,11,13, 17,19,0, 29,0,0, 0,0,0];
+    const data = [2, 3, 5, 7, 11, 13, 17, 19, 0, 29, 0, 0, 0, 0, 0];
     const dataArray = [];
     dataArray.push([Point3d.create(data[0], data[1], data[2]), Point3d.create(data[3], data[4], data[5])]);
     dataArray.push([[data[0], data[1], data[2]], [data[3], data[4], data[5]], [data[6], data[7]], [data[9]], []]);
-    dataArray.push([{x:data[0], y:data[1], z:data[2]}, {x:data[3], y:data[4], z:data[5]}, {x:data[6], y:data[7]}, {x:data[9]}, {}]);
+    dataArray.push([{ x: data[0], y: data[1], z: data[2] }, { x: data[3], y: data[4], z: data[5] }, { x: data[6], y: data[7] }, { x: data[9] }, {}]);
 
     const testXYZPropsArray = (a: XYZProps[]) => {
       const aNumberArray = Point3dArray.cloneXYZPropsAsNumberArray(a);
@@ -1192,7 +1202,7 @@ describe("PointHelperCoverage", () => {
       testXYZPropsArray(data1);
 
     let dist = 0;
-    const xyz = [Point3d.create(0,0,0), Point3d.create(-5,5,0), Point3d.create(5,5,0), Point3d.create(15,5,0), Point3d.create(10,0,0)];
+    const xyz = [Point3d.create(0, 0, 0), Point3d.create(-5, 5, 0), Point3d.create(5, 5, 0), Point3d.create(15, 5, 0), Point3d.create(10, 0, 0)];
     const indexA = 0;
     const indexC = xyz.length - 1;
     const distToUnboundedAC = 5;
@@ -1211,7 +1221,7 @@ describe("PointHelperCoverage", () => {
 
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
-    xyz.push(Point3d.create(1,1,1));  // add a (second) point inside the hull
+    xyz.push(Point3d.create(1, 1, 1));  // add a (second) point inside the hull
     Point3dArray.computeConvexHullXY(xyz, hull, interior, true);
     if (ck.testExactNumber(2, interior.length, "computeConvexHullXY returned expected number of interior points")) {
       ck.testTrue(interior.find((p) => p.isExactEqual(xyz[2])) !== undefined, "computeConvexHullXY returned expected interior point");
@@ -1224,7 +1234,7 @@ describe("PointHelperCoverage", () => {
 
   it("Point4dArray", () => {
     const ck = new Checker();
-    const data = [0,1,2,3,4,5];
+    const data = [0, 1, 2, 3, 4, 5];
     const points = [];  // arrays of 2 points
     points.push([Point3d.create(data[0], data[1], data[2]), Point3d.create(data[3], data[4], data[5])]);
     points.push(new Float64Array(data));
@@ -1237,16 +1247,16 @@ describe("PointHelperCoverage", () => {
       weights.push(w);
       weights.push(new Float64Array(w));
     }
-    const data1 = [0,1,2,1,3,4,5,1];  // with "weights"
+    const data1 = [0, 1, 2, 1, 3, 4, 5, 1];  // with "weights"
     const result = new Float64Array(data1.length);
     const shortResult = new Float64Array(data1.length - 1);
     let packed: Float64Array | undefined;
     for (const pointArray of points) {
-      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], result);
+      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1, 1], result);
       ck.testTrue(packed === result, "packPointsAndWeightsToFloat64Array returns sufficiently allocated result argument");
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 
-      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1,1], shortResult);
+      packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1, 1], shortResult);
       ck.testTrue(packed !== undefined && packed !== shortResult, "packPointsAndWeightsToFloat64Array with insufficiently allocated result argument returns new array");
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 

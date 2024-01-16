@@ -24,7 +24,7 @@ import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 export class SchemaCompareResultDelegate {
   private _schemaChangeReporters: ISchemaCompareReporter[];
   private _schemaAChanges: SchemaChanges;
-  private _schemaBChanges?: SchemaChanges;
+  private _schemaBChanges: SchemaChanges;
 
   /**
    * Initializes a new SchemaCompareResultDelegate instance.
@@ -32,10 +32,8 @@ export class SchemaCompareResultDelegate {
    */
   constructor(schemaA: Schema, schemaB: Schema, ...reporters: ISchemaCompareReporter[]) {
     this._schemaChangeReporters = reporters;
-    const keyMismatch = !schemaA.schemaKey.matches(schemaB.schemaKey);
     this._schemaAChanges = new SchemaChanges(schemaA);
-    if (keyMismatch)
-      this._schemaBChanges = new SchemaChanges(schemaB);
+    this._schemaBChanges = new SchemaChanges(schemaB);
   }
 
   public get schemaChangeReporters(): ISchemaCompareReporter[] {
@@ -48,7 +46,7 @@ export class SchemaCompareResultDelegate {
   public compareComplete() {
     this.schemaChangeReporters.forEach((r) => r.report(this._schemaAChanges));
     if (this._schemaBChanges)
-      this.schemaChangeReporters.forEach((r) => r.report(this._schemaBChanges!));
+      this.schemaChangeReporters.forEach((r) => r.report(this._schemaBChanges));
   }
 
   /**
@@ -378,7 +376,7 @@ export class SchemaCompareResultDelegate {
   }
 
   private async reportDiagnostic(diagnostic: AnyDiagnostic): Promise<void> {
-    if (!this._schemaBChanges || this._schemaAChanges.schema === diagnostic.schema) {
+    if (this._schemaAChanges.schema === diagnostic.schema) {
       this._schemaAChanges.addDiagnostic(diagnostic);
       return;
     }

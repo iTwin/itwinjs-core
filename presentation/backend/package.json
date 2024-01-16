@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "4.4.0-dev.10",
+  "version": "4.4.0-dev.20",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -38,12 +38,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.4.0-dev.10",
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.10",
-    "@itwin/core-common": "workspace:^4.4.0-dev.10",
-    "@itwin/core-quantity": "workspace:^4.4.0-dev.10",
-    "@itwin/ecschema-metadata": "workspace:^4.4.0-dev.10",
-    "@itwin/presentation-common": "workspace:^4.4.0-dev.10"
+    "@itwin/core-backend": "workspace:^4.4.0-dev.20",
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.20",
+    "@itwin/core-common": "workspace:^4.4.0-dev.20",
+    "@itwin/core-quantity": "workspace:^4.4.0-dev.20",
+    "@itwin/ecschema-metadata": "workspace:^4.4.0-dev.20",
+    "@itwin/presentation-common": "workspace:^4.4.0-dev.20"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -88,6 +88,8 @@
   },
   "dependencies": {
     "object-hash": "^1.3.1",
+    "rxjs": "^7.8.1",
+    "rxjs-for-await": "^1.0.0",
     "semver": "^7.3.5"
   },
   "nyc": {

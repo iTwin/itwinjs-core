@@ -6,12 +6,13 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
+import { IModelElementCloneContext } from "./IModelElementCloneContext";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -183,6 +184,19 @@ export class RenderMaterialElement extends DefinitionElement {
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
+  }
+
+  /** @internal */
+  protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
+    super.onCloned(context, sourceProps, targetProps);
+    for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
+      if (typeof mapName !== "string")
+        continue;
+      const sourceMap = sourceProps.jsonProperties.materialAssets.renderMaterial.Map[mapName];
+      if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
+        continue;
+      targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
+    }
   }
 }
 

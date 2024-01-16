@@ -167,3 +167,101 @@ Object {
   },
 }
 `;
+
+exports[`Item listFromJSON parses items from JSON 1`] = `
+Array [
+  Object {
+    "classInfo": undefined,
+    "displayValues": Object {
+      "a": "B",
+    },
+    "extendedData": undefined,
+    "imageId": "",
+    "labelDefinition": Object {
+      "displayValue": "",
+      "rawValue": "",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
+      },
+    ],
+    "values": Object {
+      "a": "b",
+    },
+  },
+  Object {
+    "classInfo": undefined,
+    "displayValues": Object {
+      "c": "D",
+    },
+    "extendedData": undefined,
+    "imageId": "",
+    "labelDefinition": Object {
+      "displayValue": "",
+      "rawValue": "",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
+      },
+    ],
+    "values": Object {
+      "c": "d",
+    },
+  },
+]
+`;
+
+exports[`Item listFromJSON parses items from serialized JSON string 1`] = `
+Array [
+  Object {
+    "displayValues": Object {
+      "a": "B",
+    },
+    "imageId": "",
+    "labelDefinition": Object {
+      "displayValue": "",
+      "rawValue": "",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
+      },
+    ],
+    "values": Object {
+      "a": "b",
+    },
+  },
+  Object {
+    "displayValues": Object {
+      "c": "D",
+    },
+    "imageId": "",
+    "labelDefinition": Object {
+      "displayValue": "",
+      "rawValue": "",
+      "typeName": "string",
+    },
+    "mergedFieldNames": Array [],
+    "primaryKeys": Array [
+      Object {
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
+      },
+    ],
+    "values": Object {
+      "c": "d",
+    },
+  },
+]
+`;

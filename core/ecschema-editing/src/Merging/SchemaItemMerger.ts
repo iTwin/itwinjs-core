@@ -12,7 +12,7 @@ import { SchemaMergeContext } from "./SchemaMerger";
  * @internal
  */
 export type PropertyValueResolver<T extends SchemaItem, TProps=MutableSchemaItemProps<T>> = {
-  [P in keyof TProps]?: (value: any, item: SchemaItemKey) => any;
+  [P in keyof TProps]?: (newValue: any, item: SchemaItemKey, oldValue?: any) => any;
 };
 
 /**
@@ -63,6 +63,14 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
     // Can be overriden for complex merging
   }
 
+  protected async lookup<T extends SchemaItem>(schemaItem: T): Promise<T | undefined>{
+    const itemKey = new SchemaItemKey(schemaItem.name, this.context.sourceSchema.schemaKey.matches(schemaItem.schema.schemaKey)
+      ? this.context.targetSchema.schemaKey
+      : schemaItem.schema.schemaKey,
+    );
+    return this.context.targetSchema.lookupItem<T>(itemKey);
+  }
+
   /**
    * Merges the given schema item changes in the current context.
    * @param context             The merging context
@@ -104,15 +112,16 @@ export class SchemaItemMerger<TItem extends SchemaItem> {
       return;
     }
 
-    const jsonProps = {} as MutableSchemaItemProps<TItem>;
+    const targetItem = (await this.context.targetSchema.lookupItem<SchemaItem>(targetItemKey));
+    const jsonProps = (targetItem?.toJSON() ?? {}) as MutableSchemaItemProps<TItem>;
     const propertyResolver = await this.createPropertyValueResolver();
 
     for(const change of changes) {
-      const [propertyName, propertyValue] = change.diagnostic.messageArgs! as [keyof typeof jsonProps, any];
+      const [propertyName, propertyNewValue, propertyOldValue] = change.diagnostic.messageArgs! as [keyof typeof jsonProps, any, any];
       const resolver = propertyResolver[propertyName];
       jsonProps[propertyName] = resolver !== undefined
-        ? resolver(propertyValue, targetItemKey)
-        : propertyValue;
+        ? resolver(propertyNewValue, targetItemKey, propertyOldValue)
+        : propertyNewValue;
     }
 
     await this.context.editor.schemaItems.applyProps(targetItemKey, jsonProps);
