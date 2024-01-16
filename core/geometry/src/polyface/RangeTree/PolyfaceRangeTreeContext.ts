@@ -55,7 +55,7 @@ export class PolyfaceRangeTreeContext {
    * * Facets with any recognizable "left to right" or "top to bottom" sequencing will have very effective search structures.
    * @param visitor access to facets, captured if PolyfaceVisitor
    * @param maxChildPerNode maximum children per range tree node (default 4)
-   * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
+   * @param maxAppDataPerLeaf maximum facet indices per leaf node (default 4)
    * @param convexFacets whether all facets are known to be convex (cf. [[PolyfaceQuery.areFacetsConvex]]) (default false)
    */
   public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4, convexFacets: boolean = false): PolyfaceRangeTreeContext | undefined {

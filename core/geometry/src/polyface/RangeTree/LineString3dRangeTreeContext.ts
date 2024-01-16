@@ -52,7 +52,7 @@ export class LineString3dRangeTreeContext {
    * * appData are segment indices
    * @param linestring captured if LineString3d, otherwise copied
    * @param maxChildPerNode maximum children per range tree node (default 4)
-   * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
+   * @param maxAppDataPerLeaf maximum segment indices per leaf node (default 4)
    */
   public static createCapture(points: Point3d[] | LineString3d, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): LineString3dRangeTreeContext | undefined {
     const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
