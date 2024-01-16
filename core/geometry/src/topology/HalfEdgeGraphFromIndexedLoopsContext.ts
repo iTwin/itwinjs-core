@@ -30,7 +30,7 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
   // for multiple uses by insert loop.
   private _halfEdgesAroundCurrentLoop: HalfEdge[];
   private indexPairToString(index0: number, index1: number): string{
-    return `${index0.toString()  },${  index1.toString ()}`;
+    return `${index0.toString()},${index1.toString()}`;
   }
   /** Create a loop with specified indices at its vertices.
    * * For an edge with index pair [indexA, indexB]:
@@ -40,7 +40,7 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
    *      * When announceMatedHalfEdges(halfEdge) is called:
    *         * halfEdge and its mate are "new"
    *         * all coordinates are zeros.
-   *         * each contains (as its halfEdge.id property) one index of the [indexA,indexB] pair.
+   *         * each contains (as its `i` property) one index of the [indexA,indexB] pair.
    *         * those coordinates and indices will never be referenced again by this construction sequence -- the caller is free to mutate them as needed.
    *   * if [indexB, indexA] appeared previously (and its outer HalfEdge was left "unmatched"),
    *              the "unmatched" HalfEdge is used in the loop being constructed.
