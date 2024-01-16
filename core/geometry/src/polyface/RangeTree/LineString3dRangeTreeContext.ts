@@ -8,13 +8,14 @@
  */
 
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { MinimumValueTester } from "./MinimumValueTester";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
+import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
+import {
+  SingleTreeSearchHandlerForClosestPointOnLineString3d, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach,
+} from "./RangeTreeSearchHandlers";
 
 /**
  * Handler class for searching a range tree containing the segments of a linestring.
@@ -95,140 +96,5 @@ export class LineString3dRangeTreeContext {
     const handler = new TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach(contextA, contextB, maxDist);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
-  }
-}
-
-/**
- * Helper class for searching for the closest point in a linestring.
- * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
- * @internal
- */
-class SingleTreeSearchHandlerForClosestPointOnLineString3d extends SingleTreeSearchHandler<number> {
-  /** The calling context */
-  public context: LineString3dRangeTreeContext;
-  /** Evolving search state */
-  public searchState: MinimumValueTester<CurveLocationDetail>;
-  /** Space point for the search */
-  public spacePoint: Point3d;
-
-  /**
-   * Constructor
-   * @param spacePoint cloned
-   * @param context captured
-   * @param maxDist collect points at no more than this distance from spacePoint
-   */
-  public constructor(spacePoint: Point3d, context: LineString3dRangeTreeContext, maxDist?: number) {
-    super();
-    this.context = context;
-    if (maxDist !== undefined && maxDist < 0)
-      maxDist = undefined;
-    this.searchState = MinimumValueTester.create<CurveLocationDetail>(maxDist);
-    this.spacePoint = spacePoint.clone();
-  }
-  /** Return the current closest point */
-  public getResult(): CurveLocationDetail | undefined {
-    if (this.searchState.minValue !== undefined && this.searchState.itemAtMinValue !== undefined) {
-      return this.searchState.itemAtMinValue;
-    }
-    return undefined;
-  }
-  /** Return the collected closest points (if collecting) */
-  public getSavedItems(): CurveLocationDetail[] | undefined {
-    if (this.searchState.savedItems.length > 0) {
-      return this.searchState.savedItems;
-    }
-    return undefined;
-  }
-  /**
-   * Return true if appData within the range should be offered to `processAppData`.
-   * @param range range containing items to be tested.
-   * @returns true if the spacePoint is within the range or close enough that a point in the range could be the closest.
-   */
-  public override isRangeActive(range: Range3d): boolean {
-    const dMin = range.distanceToPoint(this.spacePoint);
-    if (this.searchState.isNewMinValue(dMin)) {
-      this.context.numRangeTestTrue++;
-      return true;
-    }
-    this.context.numRangeTestFalse++;
-    return false;
-  }
-  private _workSegment?: LineSegment3d;
-  /** Test a segment indexed in the range tree as candidate for "closest" */
-  public override processAppData(candidateIndex: number): void {
-    const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment)!;
-    if (segment) {
-      const cld = segment.closestPoint(this.spacePoint, false);
-      LineString3d.convertLocalToGlobalDetail(cld, candidateIndex, this.context.lineString.numEdges(), this.context.lineString);
-      this.context.numPointTest++;
-      this.searchState.testAndSave(cld, cld.a);
-    }
-  }
-}
-
-/**
- * Helper class for searching for the closest approach between linestrings.
- * * Future optimization: avoid sqrt by using squared distance throughout (would require refactoring CurveLocationDetail).
- * @internal
- */
-export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-  /** Context for first polyline */
-  public contextA: LineString3dRangeTreeContext;
-  /** Context for second polyline */
-  public contextB: LineString3dRangeTreeContext;
-  /** Search state with current min distance point pair */
-  public searchState: MinimumValueTester<CurveLocationDetailPair>;
-
-  /**
-   * Constructor
-   * @param contextA captured
-   * @param contextB captured
-   * @param maxDist collect points at no more than this separation distance
-   */
-  public constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number) {
-    super();
-    this.contextA = contextA;
-    this.contextB = contextB;
-    if (maxDist !== undefined && maxDist < 0)
-      maxDist = undefined;
-    this.searchState = MinimumValueTester.create<CurveLocationDetailPair>(maxDist);
-  }
-  /**
-   * Return the current closest approach.
-   * * Details contain linestring *and* segment data, cf. [[LineString3d.convertLocalToGlobalDetail]]
-   */
-  public getResult(): CurveLocationDetailPair | undefined {
-    if (this.searchState.minValue !== undefined) {
-      return this.searchState.itemAtMinValue;
-    }
-    return undefined;
-  }
-  /** Return the collected close approaches (if collecting) */
-  public getSavedItems(): CurveLocationDetailPair[] | undefined {
-    if (this.searchState.savedItems.length > 0) {
-      return this.searchState.savedItems;
-    }
-    return undefined;
-  }
-  /** Get current min distance */
-  public override getCurrentDistance(): number {
-    const d = this.searchState.minValue;
-    return d === undefined ? Number.MAX_VALUE : d;
-  }
-  private static _workSegmentA?: LineSegment3d;
-  private static _workSegmentB?: LineSegment3d;
-  /** Compute and test the closest approach between two segments, given their indices. */
-  public override processAppDataPair(indexA: number, indexB: number): void {
-    this.contextA.numPointTest++;
-    const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
-      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
-    const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
-      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
-    const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
-    if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
-      LineString3d.convertLocalToGlobalDetail(cldPair.detailB, indexB, this.contextB.lineString.numEdges(), this.contextB.lineString);
-      this.searchState.testAndSave(cldPair, cldPair.detailA.a);
-    }
   }
 }

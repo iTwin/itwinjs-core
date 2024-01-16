@@ -251,8 +251,6 @@ export * from "./polyface/RangeTree/Point3dArrayRangeTreeContext";
 export * from "./polyface/RangeTree/LineString3dRangeTreeContext";
 export * from "./polyface/RangeTree/PolyfaceRangeTreeContext";
 export * from "./polyface/TaggedNumericData";
-export * from "./topology/Graph";
-export * from "./topology/Triangulation";
 export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";

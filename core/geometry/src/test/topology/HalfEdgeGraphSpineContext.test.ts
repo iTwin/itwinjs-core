@@ -5,25 +5,25 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { Checker } from "../Checker";
-import { HalfEdgeGraphSpineContext } from "../../topology/HalfEdgeGraphSpineContext";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { MultiLineStringDataVariant } from "../../topology/Triangulation";
-import { RegularizationContext } from "../../topology/RegularizeFace";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { MultiLineStringDataVariant } from "../../geometry3d/IndexedXYZCollection";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { HalfEdgeGraphSpineContext } from "../../topology/HalfEdgeGraphSpineContext";
+import { RegularizationContext } from "../../topology/RegularizeFace";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function loadSpineGraph(context: HalfEdgeGraphSpineContext, data: any) {
   if (Array.isArray(data) && data[0] instanceof Point3d) {

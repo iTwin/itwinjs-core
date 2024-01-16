@@ -9,8 +9,7 @@
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";

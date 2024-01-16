@@ -7,10 +7,8 @@
  * @module CartesianGeometry
  */
 
-import { LineStringDataVariant, MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
+import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Point3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 

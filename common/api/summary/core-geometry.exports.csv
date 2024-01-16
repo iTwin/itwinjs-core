@@ -132,19 +132,12 @@ public;class GeometryHandler
 public;class GeometryQuery
 public;GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf"
 internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
-internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
 public;GriddedRaggedRange2dSet
 public;GriddedRaggedRange2dSetWithOverflow
 public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
 public;GrowableXYZArray 
-internal;HalfEdge 
-internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
-internal;HalfEdgeGraph
-internal;HalfEdgeMask
-internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
-internal;HalfEdgeUserData
 public;HasZ = Readonly
 public;HoleFillOptions
 public;ICloneable
@@ -189,8 +182,6 @@ public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
-internal;NodeFunction = (node: HalfEdge) => any
-internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NonConvexFacetLocationDetail 
 public;NullGeometryHandler 
 public;NumberArray
@@ -293,13 +284,9 @@ public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
 public;TriangleLocationDetail
 public;TriangularFacetLocationDetail 
-internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues
-internal;TwoTreeSearchHandlerForFacetFacetCloseApproach 
-internal;TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach 
-internal;TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach 
 public;UnionOfConvexClipPlaneSets 
 public;UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[]
 public;UnionRegion 

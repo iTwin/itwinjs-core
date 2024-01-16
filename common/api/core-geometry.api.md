@@ -2287,9 +2287,6 @@ export type GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollec
 // @internal
 export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 
-// @internal
-export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
-
 // @public
 export class GriddedRaggedRange2dSet<T> implements Range2dSearchInterface<T> {
     addRange(range: LowAndHighXY, tag: T): void;
@@ -2516,181 +2513,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     tryTransformInverseInPlace(transform: Transform): boolean;
     vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined;
     vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined;
-}
-
-// @internal
-export class HalfEdge implements HalfEdgeUserData {
-    constructor(x?: number, y?: number, z?: number, i?: number);
-    belowYX(other: HalfEdge): boolean;
-    clearMask(mask: HalfEdgeMask): void;
-    clearMaskAroundEdge(mask: HalfEdgeMask): void;
-    clearMaskAroundFace(mask: HalfEdgeMask): void;
-    clearMaskAroundVertex(mask: HalfEdgeMask): void;
-    collectAroundFace(f?: NodeFunction): any[];
-    collectAroundVertex(f?: NodeFunction): any[];
-    collectMaskedEdgesAroundVertex(mask: HalfEdgeMask, value?: boolean, result?: HalfEdge[]): HalfEdge[];
-    copyDataFrom(source: HalfEdge, copyXYZ: boolean, copyVertexData: boolean, copyEdgeData: boolean, copyFaceData: boolean): void;
-    countEdgesAroundFace(): number;
-    countEdgesAroundVertex(): number;
-    countMaskAroundFace(mask: HalfEdgeMask, value?: boolean): number;
-    countMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): number;
-    static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge;
-    static createHalfEdgePair(heArray: HalfEdge[] | undefined): HalfEdge;
-    static createHalfEdgePairWithCoordinates(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, xB: number | undefined, yB: number | undefined, zB: number | undefined, iB: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
-    static crossProductXYAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number;
-    static crossProductXYToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number;
-    decommission(): void;
-    distanceXY(other: HalfEdge): number;
-    distanceXYZ(other: HalfEdge): number;
-    static dotProductNodeToNodeVectorsXY(baseA: HalfEdge, targetA: HalfEdge, baseB: HalfEdge, targetB: HalfEdge): number;
-    get edgeMate(): HalfEdge;
-    edgeTag?: any;
-    get facePredecessor(): HalfEdge;
-    faceStepY(numStep: number): number;
-    get faceSuccessor(): HalfEdge;
-    faceTag?: any;
-    static filterIsMaskOff(node: HalfEdge, mask: HalfEdgeMask): boolean;
-    static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
-    findAroundFace(other: HalfEdge): boolean;
-    findAroundVertex(other: HalfEdge): boolean;
-    findMaskAroundEdge(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
-    findMaskAroundFace(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
-    findMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
-    fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d;
-    fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
-    fractionToPoint3d(fraction: number, result?: Point3d): Point3d;
-    fractionToX(fraction: number): number;
-    fractionToY(fraction: number): number;
-    fractionToZ(fraction: number): number;
-    getMask(mask: HalfEdgeMask): number;
-    getPoint2d(result?: Point2d): Point2d;
-    getPoint3d(result?: Point3d): Point3d;
-    getVector2dAlongEdge(result?: Vector2d): Vector2d;
-    getVector3dAlongEdge(result?: Vector3d): Vector3d;
-    static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
-    static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
-    i: number;
-    get id(): number;
-    isEqualXY(other: XAndY | HalfEdge): boolean;
-    isFaceConvex(tolerance?: number): boolean;
-    get isIsolatedEdge(): boolean;
-    isMaskedAroundFace(mask: HalfEdgeMask, value?: boolean): boolean;
-    isMaskSet(mask: HalfEdgeMask): boolean;
-    static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean;
-    isolateEdge(): void;
-    static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, signedAreaTol?: number): boolean;
-    isSectorConvex(signedAreaTol?: number): boolean;
-    maskBits: number;
-    static nodeToId(node: HalfEdge): number;
-    static nodeToIdMaskXY(node: HalfEdge): {
-        id: number;
-        mask: string;
-        xy: number[];
-    };
-    static nodeToIdString(node: HalfEdge): string;
-    static nodeToIdXYString(node: HalfEdge): string;
-    static nodeToIdXYZString(node: HalfEdge): string;
-    static nodeToMaskString(node: HalfEdge): string;
-    static nodeToSelf(node: HalfEdge): any;
-    static nodeToXY(node: HalfEdge): number[];
-    static pinch(nodeA: HalfEdge, nodeB: HalfEdge): void;
-    static sectorSweepRadiansXYZ(node: HalfEdge, normal: Vector3d): number;
-    setMask(mask: HalfEdgeMask): void;
-    setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate?: boolean): void;
-    setMaskAroundEdge(mask: HalfEdgeMask): void;
-    setMaskAroundFace(mask: HalfEdgeMask): void;
-    setMaskAroundVertex(mask: HalfEdgeMask): void;
-    setXYZ(xyz: XYAndZ): void;
-    setXYZAroundVertex(x: number, y: number, z: number): void;
-    setXYZFrom(node: HalfEdge): void;
-    signedFaceArea(): number;
-    sortAngle?: number;
-    sortData?: number;
-    static splitEdge(baseA: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
-    static splitEdgeCreateSliverFace(baseA: HalfEdge, heArray: HalfEdge[] | undefined): HalfEdge;
-    sumAroundFace(f: NodeToNumberFunction): number;
-    sumAroundVertex(f: NodeToNumberFunction): number;
-    testAndSetMask(mask: HalfEdgeMask): number;
-    static testFacePositiveAreaXY(node: HalfEdge): boolean;
-    static testMateMaskExterior(node: HalfEdge): boolean;
-    static testNodeMaskNotExterior(node: HalfEdge): boolean;
-    static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void;
-    static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined;
-    vectorToFacePredecessor(result?: Vector3d): Vector3d;
-    vectorToFaceSuccessor(result?: Vector3d): Vector3d;
-    vectorToFaceSuccessorXY(result?: Vector2d): Vector2d;
-    get vertexPredecessor(): HalfEdge;
-    get vertexSuccessor(): HalfEdge;
-    x: number;
-    y: number;
-    yankFromVertexLoop(): HalfEdge | undefined;
-    z: number;
-}
-
-// @internal
-export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
-
-// @internal
-export class HalfEdgeGraph {
-    constructor();
-    addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge;
-    allHalfEdges: HalfEdge[];
-    announceEdges(announceEdge: GraphNodeFunction): void;
-    announceFaceLoops(announceFace: GraphNodeFunction): void;
-    announceNodes(announceNode: GraphNodeFunction): void;
-    announceVertexLoops(announceVertex: GraphNodeFunction): void;
-    clearMask(mask: HalfEdgeMask): void;
-    collectFaceLoops(): HalfEdge[];
-    collectSegments(): LineSegment3d[];
-    collectVertexLoops(): HalfEdge[];
-    countFaceLoops(): number;
-    countFaceLoopsWithMaskFilter(filter: HalfEdgeAndMaskToBooleanFunction, mask: HalfEdgeMask): number;
-    countMask(mask: HalfEdgeMask): number;
-    countNodes(): number;
-    countVertexLoops(): number;
-    createEdgeHalfEdgeHalfEdge(nodeA: HalfEdge, idA: number, nodeB: HalfEdge, idB?: number): HalfEdge;
-    createEdgeIdId(iA?: number, iB?: number): HalfEdge;
-    createEdgeXYAndZ(xyz0: XYAndZ, id0: number, xyz1: XYAndZ, id1: number): HalfEdge;
-    createEdgeXYZHalfEdge(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, node: HalfEdge, iB?: number): HalfEdge;
-    createEdgeXYZXYZ(xA?: number, yA?: number, zA?: number, iA?: number, xB?: number, yB?: number, zB?: number, iB?: number): HalfEdge;
-    decommission(): void;
-    deleteIsolatedEdges(): number;
-    dropMask(mask: HalfEdgeMask): void;
-    grabMask(clearInAllHalfEdges?: boolean): HalfEdgeMask;
-    reverseMask(mask: HalfEdgeMask): void;
-    setMask(mask: HalfEdgeMask): void;
-    splitEdge(base: undefined | HalfEdge, xA?: number, yA?: number, zA?: number, iA?: number): HalfEdge;
-    splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge;
-    splitEdgeCreateSliverFace(base: HalfEdge): HalfEdge;
-    transformInPlace(transform: Transform): void;
-    yankAndDeleteEdges(deleteThisNode: NodeFunction): number;
-}
-
-// @internal
-export enum HalfEdgeMask {
-    ALL_GRAB_DROP_MASKS = 4293918720,
-    ALL_MASK = 4294967295,
-    BOUNDARY_EDGE = 2,
-    EXTERIOR = 1,
-    NULL_FACE = 512,
-    NULL_MASK = 0,
-    PRIMARY_EDGE = 4,
-    TRIANGULATED_FACE = 256,
-    VISITED = 16
-}
-
-// @internal
-export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
-
-// @internal
-export interface HalfEdgeUserData {
-    edgeTag?: any;
-    faceTag?: any;
-    sortAngle?: number;
-    sortData?: number;
-    x: number;
-    y: number;
-    z: number;
 }
 
 // @public
@@ -3871,12 +3693,6 @@ export class MomentData {
 
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
-
-// @internal
-export type NodeFunction = (node: HalfEdge) => any;
-
-// @internal
-export type NodeToNumberFunction = (node: HalfEdge) => number;
 
 // @public
 export class NonConvexFacetLocationDetail implements FacetLocationDetail {
@@ -6170,25 +5986,6 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
 }
 
 // @internal
-export class Triangulator {
-    static claimDebugGraph(): HalfEdgeGraph | undefined;
-    static clearAndEnableDebugGraphCapture(value: boolean): void;
-    static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean;
-    static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
-    static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, maskForBothSides: HalfEdgeMask, maskForOtherSide: HalfEdgeMask): HalfEdge | undefined;
-    static createTriangulatedGraphFromLoops(loops: LineStringDataVariant[]): HalfEdgeGraph | undefined;
-    static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined;
-    static createTriangulatedGraphFromSingleLoop(data: LineStringDataVariant): HalfEdgeGraph | undefined;
-    static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id?: number): HalfEdge[];
-    static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined;
-    static flipTriangles(graph: HalfEdgeGraph): number;
-    static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number;
-    static setDebugGraph(graph: HalfEdgeGraph | undefined): void;
-    static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean;
-    static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean;
-}
-
-// @internal
 export class TriDiagonalSystem {
     constructor(n: number);
     addToB(row: number, bb: number): void;
@@ -6234,43 +6031,6 @@ export interface TrigValues {
     c: number;
     radians: number;
     s: number;
-}
-
-// @internal
-export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior?: boolean);
-    contextA: PolyfaceRangeTreeContext;
-    contextB: PolyfaceRangeTreeContext;
-    getCurrentDistance(): number;
-    getResult(): FacetLocationDetailPair | undefined;
-    getSavedItems(): FacetLocationDetailPair[] | undefined;
-    processAppDataPair(indexA: number, indexB: number): void;
-    searchFacetInterior: boolean;
-    searchState: MinimumValueTester<FacetLocationDetailPair>;
-}
-
-// @internal
-export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number);
-    contextA: LineString3dRangeTreeContext;
-    contextB: LineString3dRangeTreeContext;
-    getCurrentDistance(): number;
-    getResult(): CurveLocationDetailPair | undefined;
-    getSavedItems(): CurveLocationDetailPair[] | undefined;
-    processAppDataPair(indexA: number, indexB: number): void;
-    searchState: MinimumValueTester<CurveLocationDetailPair>;
-}
-
-// @internal
-export class TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach extends TwoTreeDistanceMinimizationSearchHandler<number> {
-    constructor(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number);
-    contextA: Point3dArrayRangeTreeContext;
-    contextB: Point3dArrayRangeTreeContext;
-    getCurrentDistance(): number;
-    getResult(): CurveLocationDetailPair | undefined;
-    getSavedItems(): CurveLocationDetailPair[] | undefined;
-    processAppDataPair(indexA: number, indexB: number): void;
-    searchState: MinimumValueTester<CurveLocationDetailPair>;
 }
 
 // @public

@@ -12,6 +12,7 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -21,7 +22,6 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY, XYZProps } from "../geometry3d/XYZProps";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
@@ -32,7 +32,6 @@ import { OffsetOptions } from "./OffsetOptions";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { StrokeOptions } from "./StrokeOptions";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
  * Starting with baseIndex and moving index by stepDirection:
  * If the vector from baseIndex to baseIndex +1 crossed with vectorA can be normalized, accumulate it (scaled) to normal.

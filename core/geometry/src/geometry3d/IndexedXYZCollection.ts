@@ -10,8 +10,7 @@
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-import { XYAndZ } from "./XYZProps";
+import { XAndY, XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
   private readonly _collection: IndexedXYZCollection;
@@ -355,3 +354,15 @@ export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection
   /** reverse the points in place. */
   public abstract reverseInPlace(): void;
 }
+
+/**
+ * Type for use as signature for xyz data of a single linestring appearing in a parameter list.
+ * @public
+ */
+export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
+
+/**
+ * Type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
+ * @public
+ */
+export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
