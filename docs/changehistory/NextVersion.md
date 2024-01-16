@@ -12,7 +12,7 @@ Table of contents:
 
 ### Range tree search
 
-
+New class [PolyfaceRangeTreeContext]($core-geometry) provides methods for efficiently searching a [Polyface]($core-geometry) for the closest facet point to a given space point, and for efficiently searching two Polyfaces for their closest approach segment. Similar new classes [Point3dArrayRangeTreeContext]($core-geometry) and [LineString3dRangeTreeContext]($core-geometry) provide the same functionality for an array of [Point3d]($core-geometry) and a [LineString3d]($core-geometry), respectively.
 
 <!-- The new method [ClipUtilities.clipAnyCurve]($core-geometry) clips the input curve or region. One just needs to pass an [AnyCurve]($core-geometry) and a [Clipper]($core-geometry), and the method returns the clipped curves or regions that lie inside the clipper.
 
