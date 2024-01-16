@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "fix texture remapping in RenderMaterialElement.onCloned",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -29,25 +29,12 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
   public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
     this._view = view;
-    this._models = new BatchedModels(view);
+    this._models = new BatchedModels(view, spec.includedModels);
 
     const script = view.displayStyle.scheduleScript;
     this._currentScript = script?.requiresBatching ? script : undefined;
 
-    const includedModels = spec.props.extensions?.BENTLEY_BatchedTileSet?.includedModels;
-    this._excludedRefs = includedModels ? createSpatialTileTreeReferences(view, new Set(includedModels)) : {
-      update: () => { },
-      setDeactivated: () => { },
-      attachToViewport: () => { },
-      detachFromViewport: () => { },
-      [Symbol.iterator]: () => {
-        return {
-          next: () => {
-            return { done: true, value: undefined };
-          },
-        };
-      },
-    };
+    this._excludedRefs = createSpatialTileTreeReferences(view, new Set(spec.includedModels.keys()));
 
     this.load(spec, view.iModel);
 

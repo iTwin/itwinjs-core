@@ -4567,6 +4567,8 @@ export class RenderMaterialElement extends DefinitionElement {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     description?: string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
+    // @internal (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
     paletteName: string;
     // (undocumented)
     toJSON(): RenderMaterialProps;
