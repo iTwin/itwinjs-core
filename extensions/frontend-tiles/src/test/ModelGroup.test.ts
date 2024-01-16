@@ -118,6 +118,19 @@ describe("groupModels", () => {
     );
   });
 
+  it("groups plan projection models that resolve to the same elevation", () => {
+    expectGrouping(
+      [["0x1"], ["0x2", "0x3"], ["0x4", "0x5"]], {
+        "0x1": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 1 })},
+        "0x2": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 2 })},
+        "0x3": { projection: PlanProjectionSettings.fromJSON({ overlay: true }), elevation: 2 },
+        "0x4": { projection: PlanProjectionSettings.fromJSON({ overlay: true }), elevation: 4 },
+        "0x5": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 4 }), elevation: 1 },
+      },
+      ["0x1", "0x2", "0x3", "0x4", "0x5"],
+    );
+  });
+
   it("produces one group per unique display transform", () => {
     expectGrouping(
       [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
