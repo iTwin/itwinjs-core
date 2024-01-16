@@ -8,13 +8,25 @@ import { PlanProjectionSettings, RenderSchedule } from "@itwin/core-common";
 import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
+/** Plan projection settings relevant to a [[ModelGroupInfo]].
+ * @internal
+ */
+export interface PlanProjectionInfo {
+  /** Z elevation, from [PlanProjectionSettings.elevation]($common) if specified, else the default elevation of the model (computed from model extents). */
+  elevation: number;
+  /** Transparency in [0..1] with 0 being fully opaque. */
+  transparency: number;
+  /** If true, the graphics are drawn as overlays with no depth test. */
+  overlay: boolean;
+}
+
 /** Display settings to be applied to a group of models.
  * @internal
  */
 export interface ModelGroupInfo {
   displayTransform?: ModelDisplayTransform;
   clip?: RenderClipVolume;
-  planProjectionSettings?: PlanProjectionSettings;
+  planProjection?: PlanProjectionInfo;
   timeline?: RenderSchedule.ModelTimeline;
 }
 
@@ -34,13 +46,30 @@ export interface ModelGroupingContext {
   getModelClip(modelId: Id64String): RenderClipVolume | undefined;
   getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
   getModelTimeline(modelId: Id64String): RenderSchedule.ModelTimeline | undefined;
+  getDefaultElevation(modelId: Id64String): number;
+}
+
+function createPlanProjectionInfo(modelId: Id64String, context: ModelGroupingContext): PlanProjectionInfo | undefined {
+  const settings = context.getPlanProjectionSettings(modelId);
+  if (!settings)
+    return undefined;
+
+  return {
+    elevation: settings.elevation ?? context.getDefaultElevation(modelId),
+    transparency: settings.transparency ?? 0,
+    overlay: settings.overlay,
+  };
+}
+
+function equalPlanProjections(a: PlanProjectionInfo, b: PlanProjectionInfo): boolean {
+  return a.elevation === b.elevation && a.overlay === b.overlay && a.transparency === b.transparency;
 }
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
   return {
     displayTransform: context.modelGroupDisplayTransforms.getDisplayTransform(modelId),
     clip: context.getModelClip(modelId),
-    planProjectionSettings: context.getPlanProjectionSettings(modelId),
+    planProjection: createPlanProjectionInfo(modelId, context),
     timeline: context.getModelTimeline(modelId),
   };
 }
@@ -62,8 +91,8 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
       return false;
   }
 
-  if (a.planProjectionSettings || b.planProjectionSettings)
-    if (!a.planProjectionSettings || !b.planProjectionSettings || !a.planProjectionSettings.equals(b.planProjectionSettings))
+  if (a.planProjection || b.planProjection)
+    if (!a.planProjection || !b.planProjection || !equalPlanProjections(a.planProjection, b.planProjection))
       return false;
 
   return true;

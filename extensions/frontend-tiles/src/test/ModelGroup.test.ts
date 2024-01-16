@@ -15,6 +15,7 @@ interface ModelSettings {
   clip?: ClipVector;
   projection?: PlanProjectionSettings;
   nodeIds?: ReadonlyArray<number>;
+  elevation?: number;
 }
 
 interface GroupingContextArgs {
@@ -25,6 +26,7 @@ class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
   getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
+  getDefaultElevation: (modelId: Id64String) => number;
   getModelTimeline: (modelId: Id64String) => RenderSchedule.ModelTimeline | undefined;
 
   public getModelClip(modelId: Id64String) {
@@ -37,6 +39,7 @@ class GroupingContext implements ModelGroupingContext {
     });
 
     this.getPlanProjectionSettings = (modelId: Id64String) => args[modelId]?.projection;
+    this.getDefaultElevation = (modelId: Id64String) => args[modelId]?.elevation ?? 123;
 
     const timelines = new Map<Id64String, RenderSchedule.ModelTimeline>();
     this.getModelTimeline = (modelId: Id64String) => timelines.get(modelId);
