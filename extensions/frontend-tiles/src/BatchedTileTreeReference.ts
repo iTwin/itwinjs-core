@@ -9,7 +9,7 @@ import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass,
 } from "@itwin/core-common";
 import {
-  formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
+  formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
 import { ModelGroupInfo } from "./ModelGroup";
@@ -74,10 +74,29 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     this._args.models.unionRange(range);
   }
 
-  protected override computeTransform(tree: TileTree): Transform {
-    const baseTf = super.computeTransform(tree);
+  public override get castsShadows(): boolean {
+    if (this._groupInfo.planProjection)
+      return false;
 
+    return super.castsShadows;
+  }
+
+  public override draw(args: TileDrawArgs): void {
+    if (this._groupInfo.planProjection?.overlay)
+      args.context.withGraphicType(TileGraphicType.Overlay, () => args.tree.draw(args));
+    else
+      super.draw(args);
+  }
+
+  protected override computeTransform(tree: TileTree): Transform {
     const group = this._groupInfo;
+    let baseTf = super.computeTransform(tree);
+
+    if (group.planProjection) {
+      baseTf = baseTf.clone();
+      baseTf.origin.z = group.planProjection.elevation;
+    }
+
     if (group.timeline) {
       assert(undefined !== this._animationNodeId);
       const animTf = group.timeline.getTransform(this._animationNodeId, this._args.getCurrentTimePoint());
@@ -114,7 +133,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     const args = super.createDrawArgs(context);
 
     // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
-    // ###TODO apply plan projection overlay settings
+    // ###TODO if PlanProjectionSettings.enforceDisplayPriority, createGraphicLayerContainer.
 
     return args;
   }
