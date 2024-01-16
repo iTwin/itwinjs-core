@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
     AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { AnimatedBatchedTileTreeReference, ModelGroupTileTreeReference, ModelGroupTileTreeReferenceArgs, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
+import {  ModelGroupTileTreeReference, ModelGroupTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
 import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
