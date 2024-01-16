@@ -409,14 +409,52 @@ export class PartialECChangeUnifier {
   private _cache = new Map<string, ChangedECInstance>();
   private _readonly = false;
   /**
+   * Get root class id for a given class
+   * @param classId given class id
+   * @param db use to find root class
+   * @returns return root class id
+   */
+  private static getRootClassId(classId: Id64String, db: AnyDb): Id64String | undefined {
+    const sql = `
+      WITH
+      [base_class]([classId], [baseClassId], [Level]) AS(
+        SELECT [ch].[ClassId], [ch].[BaseClassId], 0
+        FROM   [ec_ClassHasBaseClasses] [ch] WHERE  [ch].[ClassId] = ?
+        UNION ALL
+        SELECT [ch].[ClassId], [ch].[BaseClassId], [Level] + 1
+        FROM   [ec_ClassHasBaseClasses] [ch], [base_class] [bc] WHERE  [bc].[BaseClassId] = [ch].[ClassId]
+
+      )
+      SELECT FORMAT('0x%x', [bc].[BaseClassId]) rootClass
+      FROM   [base_class] [bc]
+      WHERE  [bc].[ClassId] <> [bc].[BaseClassId]
+              AND [bc].[BaseClassId] NOT IN (SELECT [ca].[ContainerId]
+            FROM   [ec_CustomAttribute] [ca]
+            WHERE  [ca].[ContainerType] = 30
+                      AND [ca].[ClassId] IN (SELECT [cc].[Id]
+                    FROM   [ec_Class] [cc]
+                          JOIN [ec_Schema] [ss] ON [ss].[Id] = [cc].[SchemaId]
+                    WHERE  [cc].[Name] = 'IsMixIn'
+                            AND [ss].[Name] = 'CoreCustomAttributes'))
+      ORDER BY [Level] DESC`;
+
+    return db.withSqliteStatement(sql, (stmt) => {
+      stmt.bindId(1, classId);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW && !stmt.isValueNull(0)) {
+        return stmt.getValueString(0);
+      }
+      return classId;
+    });
+  }
+  /**
    * Combine partial instance with instance with same key if already exists.
    * @param rhs partial instance
    */
-  private combine(rhs: ChangedECInstance): void {
+  private combine(rhs: ChangedECInstance, db?: AnyDb): void {
     if (!rhs.$meta) {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
-    const key = PartialECChangeUnifier.buildKey(rhs);
+    const key = PartialECChangeUnifier.buildKey(rhs, db);
     const lhs = this._cache.get(key);
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
@@ -424,6 +462,22 @@ export class PartialECChangeUnifier {
       if (lhs.$meta && rhs.$meta) {
         lhs.$meta.tables = [...rhs.$meta?.tables, ...lhs.$meta?.tables];
         lhs.$meta.changeIndexes = [...rhs.$meta?.changeIndexes, ...lhs.$meta?.changeIndexes];
+
+        // we preserve child class name & id when merging instance.
+        if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && db && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
+          const lhsClassId = lhs.$meta.fallbackClassId;
+          const rhsClassId = rhs.$meta.fallbackClassId;
+          const isRhsIsSubClassOfLhs = db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
+            stmt.bindId(1, rhsClassId);
+            stmt.bindId(2, lhsClassId);
+            stmt.step();
+            return stmt.getValue(0).getInteger() === 1;
+          });
+          if (isRhsIsSubClassOfLhs) {
+            lhs.$meta.fallbackClassId = rhs.$meta.fallbackClassId;
+            lhs.$meta.classFullName = rhs.$meta.classFullName;
+          }
+        }
       }
     } else {
       this._cache.set(key, rhs);
@@ -434,8 +488,17 @@ export class PartialECChangeUnifier {
    * @param change EC change
    * @returns key created from EC change.
    */
-  private static buildKey(change: ChangedECInstance): string {
-    return `${change.ECClassId}-${change.ECInstanceId}-${change.$meta?.stage}`.toLowerCase();
+  private static buildKey(change: ChangedECInstance, db?: AnyDb): string {
+    let classId = change.ECClassId;
+    if (typeof classId === "undefined") {
+      if (db && change.$meta?.fallbackClassId) {
+        classId = this.getRootClassId(change.$meta.fallbackClassId, db);
+      }
+      if (typeof classId === "undefined") {
+        throw new Error(`unable to resolve ECClassId to root class id.`);
+      }
+    }
+    return `${change.ECInstanceId}-${classId}-${change.$meta?.stage}`.toLowerCase();
   }
   /**
    * Append partial changes which will be combine using there instance key.
@@ -451,13 +514,14 @@ export class PartialECChangeUnifier {
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }
+
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
-      this.combine(adaptor.inserted);
-      this.combine(adaptor.deleted);
+      this.combine(adaptor.inserted, adaptor.reader.db);
+      this.combine(adaptor.deleted, adaptor.reader.db);
     } else if (adaptor.op === "Inserted" && adaptor.inserted) {
-      this.combine(adaptor.inserted);
+      this.combine(adaptor.inserted, adaptor.reader.db);
     } else if (adaptor.op === "Deleted" && adaptor.deleted) {
-      this.combine(adaptor.deleted);
+      this.combine(adaptor.deleted, adaptor.reader.db);
     }
   }
   /**
@@ -694,7 +758,7 @@ export class ChangesetECAdaptor implements IDisposable {
         }
 
         let ecClassId: Id64String | undefined = this.reader.op === "Inserted" ? change.inserted?.ECClassId : change.deleted?.ECClassId;
-        const classIdPresentInChange = !ecClassId;
+        const classIdPresentInChange = typeof ecClassId !== "undefined";
         let classMap: IClassMap | undefined;
         let fallbackClassId: Id64String | undefined;
         if (table.isClassIdVirtual) {
@@ -720,7 +784,7 @@ export class ChangesetECAdaptor implements IDisposable {
         if (!classMap)
           throw new Error(`unable to load class map`);
 
-        if (!classIdPresentInChange && !ecClassId)
+        if (!classIdPresentInChange && !ecClassId && !fallbackClassId)
           ecClassId = classMap.id;
 
         if (this._allowedClasses.size !== 0) {

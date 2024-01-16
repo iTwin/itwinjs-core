@@ -2,6 +2,12 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "4.3.3",
+      "tag": "@itwin/ecschema-metadata_v4.3.3",
+      "date": "Wed, 03 Jan 2024 19:28:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.3.2",
       "tag": "@itwin/ecschema-metadata_v4.3.2",
       "date": "Thu, 14 Dec 2023 20:23:02 GMT",

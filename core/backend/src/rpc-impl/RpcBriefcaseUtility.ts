@@ -93,16 +93,19 @@ export class RpcBriefcaseUtility {
     return BriefcaseDb.open(props);
   }
 
-  private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
+  private static _briefcasePromises: Map<string, Promise<BriefcaseDb>> = new Map();
   private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
-    if (this._briefcasePromise)
-      return this._briefcasePromise;
+    const key = `${args.tokenProps.iModelId}:${args.tokenProps.changeset?.id}:${args.tokenProps.changeset?.index}:${args.syncMode}`;
+    const cachedPromise = this._briefcasePromises.get(key);
+    if (cachedPromise)
+      return cachedPromise;
 
     try {
-      this._briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
-      return await this._briefcasePromise;
+      const briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
+      this._briefcasePromises.set(key, briefcasePromise);
+      return await briefcasePromise;
     } finally {
-      this._briefcasePromise = undefined;  // the download and open is now done
+      this._briefcasePromises.delete(key);  // the download and open is now done
     }
   }
 
@@ -119,6 +122,12 @@ export class RpcBriefcaseUtility {
     return iModelDb;
   }
 
+  public static async open(args: DownloadAndOpenArgs & {syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
+  /**
+   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
+  public static async open(args: DownloadAndOpenArgs & {syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
@@ -184,9 +193,16 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
+  /**
+   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
     if (tokenProps.iModelId)
       await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
+    // eslint-disable-next-line deprecation/deprecation
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 

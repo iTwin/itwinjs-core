@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
@@ -22,7 +23,7 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
-  includedModels?: Set<Id64String>;
+  includedModels?: Map<Id64String, Range3d>;
   modelGroups: Id64Set[] | undefined;
 }
 
