@@ -62,13 +62,21 @@ export class SchemaDiagnosticVisitor {
   private getPropertyDifference(property: Property): PropertyDifference {
     const classDifference = this.getItemDifference<ClassDifference>(property.class);
     if(classDifference.properties === undefined) {
-      classDifference.properties = {};
+      classDifference.properties = [];
     }
 
-    return classDifference.properties[property.name] || (classDifference.properties[property.name] = {
+    const existingProperty = classDifference.properties.find((entry) => entry.name === property.name);
+    if(existingProperty) {
+      return existingProperty;
+    }
+
+    const newPropertyEntry: PropertyDifference = {
       $changeType:  "modify",
       name:         property.name,
-    });
+    };
+
+    classDifference.properties.push(newPropertyEntry);
+    return newPropertyEntry;
   }
 
   private getCustomAttributeContainer(ecSchemaObject: AnyECType): { customAttributes?: CustomAttributeDifference[] } {
@@ -175,28 +183,32 @@ export class SchemaDiagnosticVisitor {
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = this.getItemDifference<EnumerationDifference>(diagnostic.ecDefinition as SchemaItem);
     if(enumeration.enumerators === undefined) {
-      enumeration.enumerators = {};
+      enumeration.enumerators = [];
     }
 
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
-    enumeration.enumerators[enumerator.name] = {
+    enumeration.enumerators.push({
       $changeType:  "add",
       name:         enumerator.name,
-    };
+    });
   }
 
   private visitChangedEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = this.getItemDifference<EnumerationDifference>(diagnostic.ecDefinition as SchemaItem);
     if(enumeration.enumerators === undefined) {
-      enumeration.enumerators = {};
+      enumeration.enumerators = [];
     }
 
     const [enumerator, propertyName, propertyValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any];
-    const enumeratorDifference = enumeration.enumerators[enumerator.name] || (enumeration.enumerators[enumerator.name] = {
-      $changeType:  "modify",
-      name:         enumerator.name,
-    });
+    let index = enumeration.enumerators.findIndex((entry) => entry.name === enumerator.name);
+    if(index === -1) {
+      index = enumeration.enumerators.push({
+        $changeType:  "modify",
+        name:         enumerator.name,
+      }) -1;
+    }
 
+    const enumeratorDifference = enumeration.enumerators[index];
     if(propertyName !== "name" && propertyValue !== undefined) {
       enumeratorDifference[propertyName] = propertyValue;
     }
@@ -206,13 +218,13 @@ export class SchemaDiagnosticVisitor {
     const property = diagnostic.ecDefinition as Property;
     const classDifference = this.getItemDifference<ClassDifference>(property.class);
     if(classDifference.properties === undefined) {
-      classDifference.properties = {};
+      classDifference.properties = [];
     }
 
-    classDifference.properties[property.name] = {
+    classDifference.properties.push({
       $changeType:  "add",
       name:         property.name,
-    };
+    });
   }
 
   private visitChangedProperty(diagnostic: AnyDiagnostic) {
@@ -281,7 +293,6 @@ export class SchemaDiagnosticVisitor {
     const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
     customAttributeContainer.customAttributes.push({
       $changeType:  "add",
-      sourceObject: customAttribute,
       ...customAttribute,
     });
   }

@@ -108,9 +108,7 @@ export interface SchemaItemDifference {
 export interface EnumerationDifference extends SchemaItemDifference {
   type?: string;
   isStrict?: boolean;
-  enumerators?: {
-    [name: string]: EnumeratorDifference;
-  };
+  enumerators?: EnumeratorDifference[];
 }
 
 /**
@@ -217,9 +215,7 @@ export interface ClassDifference extends SchemaItemDifference {
     readonly $changeType: DifferenceType;
     readonly className: string;
   };
-  properties?: {
-    [name: string]: PropertyDifference;
-  };
+  properties?: PropertyDifference[];
 }
 
 /**

@@ -22,7 +22,7 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
   }
 }
 
-describe.only("Create Difference Report", () => {
+describe("Create Difference Report", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -122,15 +122,14 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingStruct: {
         $changeType: "add",
-        properties: {
-          BooleanProperty: {
+        properties: [{
+          $changeType: "add",
+          name: "BooleanProperty",
+          customAttributes: [{
             $changeType: "add",
-            customAttributes: [{
-              $changeType: "add",
-              className:   "CustomAttributeSchema.MissingCA",
-            }],
-          },
-        },
+            className:   "CustomAttributeSchema.MissingCA",
+          }],
+        }],
       },
     });
   });
@@ -166,30 +165,25 @@ describe.only("Create Difference Report", () => {
         $changeType: "add",
         type: "int",
         isStrict: true,
-        enumerators: {
-          EnumeratorOne: {
-            $changeType: "add",
-            name: "EnumeratorOne",
-            label: "Enumerator One",
-            value: 200,
-          },
-        },
+        enumerators: [{
+          $changeType: "add",
+          name: "EnumeratorOne",
+          label: "Enumerator One",
+          value: 200,
+        }],
       },
       ChangedEnumeration: {
         label: "Source ChangedEnumeration",
-        enumerators: {
-          EnumeratorTwo: {
-            $changeType: "modify",
-            name: "EnumeratorTwo",
-            label: "Enumerator Two",
-          },
-          EnumeratorThree: {
-            $changeType: "add",
-            name: "EnumeratorThree",
-            label: "Enumerator Three",
-            value: "3",
-          },
-        },
+        enumerators: [{
+          $changeType: "modify",
+          name: "EnumeratorTwo",
+          label: "Enumerator Two",
+        },{
+          $changeType: "add",
+          name: "EnumeratorThree",
+          label: "Enumerator Three",
+          value: "3",
+        }],
       },
     });
   });
@@ -198,20 +192,17 @@ describe.only("Create Difference Report", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingStruct: {
         $changeType: "add",
-        properties: {
-          BooleanProperty: {
-            $changeType: "add",
-            name: "BooleanProperty",
-            type: "PrimitiveProperty",
-            primitiveType: "boolean",
-          },
-          IntegerProperty: {
-            $changeType: "add",
-            name: "IntegerProperty",
-            type: "PrimitiveArrayProperty",
-            primitiveType: "int",
-          },
-        },
+        properties: [{
+          $changeType: "add",
+          name: "BooleanProperty",
+          type: "PrimitiveProperty",
+          primitiveType: "boolean",
+        }, {
+          $changeType: "add",
+          name: "IntegerProperty",
+          type: "PrimitiveArrayProperty",
+          primitiveType: "int",
+        }],
       },
     });
   });
