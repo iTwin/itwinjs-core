@@ -10,8 +10,8 @@ import {
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import {  ModelGroupTileTreeReference, ModelGroupTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
-import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
+import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
+import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
@@ -25,7 +25,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _groups: BatchedModelGroups;
   private readonly _spec: BatchedTilesetSpec;
   private _treeOwner: TileTreeOwner;
-  private _refs: ModelGroupTileTreeReference[] = [];
+  private _refs: BatchedTileTreeReference[] = [];
   private _currentScript?: RenderSchedule.Script;
   private _onModelSelectorChanged?: () => void;
   /** Provides tile trees for models that are not included in the batched tile set. */
@@ -90,7 +90,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private loadRefs(): void {
     this._refs.length = 0;
     const groups = this._groups.groups;
-    const args: ModelGroupTileTreeReferenceArgs = {
+    const args: BatchedTileTreeReferenceArgs = {
       models: this._models,
       groups,
       treeOwner: this._treeOwner,
@@ -99,10 +99,10 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     for (let i = 0; i < groups.length; i++) {
       const timeline = groups[i].timeline;
-      this._refs.push(new ModelGroupTileTreeReference(args, i, timeline ? AnimationNodeId.Untransformed : undefined));
+      this._refs.push(new BatchedTileTreeReference(args, i, timeline ? AnimationNodeId.Untransformed : undefined));
       if (timeline) {
         for (const nodeId of timeline.transformBatchIds)
-          this._refs.push(new ModelGroupTileTreeReference(args, i, nodeId));
+          this._refs.push(new BatchedTileTreeReference(args, i, nodeId));
       }
     }
   }

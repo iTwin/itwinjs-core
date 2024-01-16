@@ -14,20 +14,20 @@ import {
 import { BatchedModels } from "./BatchedModels";
 import { ModelGroupInfo } from "./ModelGroup";
 
-export interface ModelGroupTileTreeReferenceArgs {
+export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;
   readonly groups: ReadonlyArray<ModelGroupInfo>;
   readonly treeOwner: TileTreeOwner;
   readonly getCurrentTimePoint: () => number;
 }
 
-export class ModelGroupTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
-  private readonly _args: ModelGroupTileTreeReferenceArgs;
+export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
+  private readonly _args: BatchedTileTreeReferenceArgs;
   private readonly _groupIndex: number;
   private readonly _animationNodeId?: number;
   private readonly _branchId?: string;
 
-  public constructor(args: ModelGroupTileTreeReferenceArgs, groupIndex: number, animationNodeId: number | undefined) {
+  public constructor(args: BatchedTileTreeReferenceArgs, groupIndex: number, animationNodeId: number | undefined) {
     super();
     this._args = args;
     this._groupIndex = groupIndex;
