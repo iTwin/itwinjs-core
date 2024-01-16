@@ -82,12 +82,12 @@ Tools that override [InteractiveTool.onDataButtonDown]($frontend) or [Interactiv
 
 Information about the current snap is presented using several on screen indicators detailed below.
 
+![snapping indicators](./accusnap-indicators.png "Example of tentative vs. hot AccuSnap")
+
   1. Tentative snap preview
   2. The snap mode used to compute the point
   3. Hot snap location
   4. The snap normal
-
-![snapping indicators](./accusnap-indicators.png "Example of tentative vs. hot AccuSnap")
 
 A tentative snap preview (shown with a dotted black and white plus symbol) is used as an alternative to forcing a hot snap and having the current point jump around wildly (to potentially off screen locations). [SnapMode.NearestKeypoint]($frontend) will show a tentative snap preview when the closest keypoint is too far from the cursor to be considered "hot". The user can accept the tentative snap location either by using a [TentativePoint]($frontend) or by moving the cursor closer to the previewed location. The hot distance is based on the settings for [AccuSnap.Settings.hotDistanceFactor]($frontend) and [ElementLocateManager.apertureInches]($frontend).
 
@@ -99,10 +99,10 @@ The snap normal (shown with a filled in-plane disc) indicates the surface normal
 
 You can combine a [TentativePoint]($frontend) snap with [AccuSnap]($frontend) when using [SnapMode.Intersection]($frontend) to identify extended intersections.
 
+![snap to extended intersection](./tentative-intersection.png "Example of snap to extended intersection")
+
 1. First use a [TentativePoint]($frontend) to snap to a curve or edge
 2. AccuSnap finds the intersection with the geometry identified by the tentative with any curve/edge under the cursor
-
-![snap to extended intersection](./tentative-intersection.png "Example of snap to extended intersection")
 
 > A tool with an understanding of connection points and how things fit together *should not* enable AccuSnap. For example, a tool to place a valve on a pipe knows to only choose pipe end points of a given diameter, it should not require the user to choose an appropriate snap point at the end of a correct pipe or try to influence AccuSnap to only generative *key points* it deems appropriate. This is case where [locate](#locate) should be enabled instead.
 
@@ -195,12 +195,12 @@ Tools should use [AccuDrawHintBuilder.getCurrentRotation]($frontend) to get the 
 
 You can combine AccuDraw's distance and axis locks with [SnapMode.Nearest]($frontend) to adjust the current point to the intersection with the snapped geometry.
 
+![accudraw nearest axis lock](./accudraw-nearest-axis.png "Example showing keypoint vs. nearest snap with axis lock")
+
 1. Keypoint snap projects the closest keypoint on the snapped geometry to the locked axis
 2. Nearest snap finds the intersection of the locked axis and the snapped geometry
 
-![accudraw nearest axis lock](./accudraw-nearest-axis.png "Example showing keypoint vs. nearest snap with axis lock")
+![accudraw nearest distance lock](./accudraw-nearest-distance.png "Example showing keypoint vs. nearest snap with distance lock")
 
 1. Keypoint snap sets the current point at the locked distance along the vector from the compass origin to closest keypoint.
 2. Nearest snap finds the intersection between the circle defined by the locked distance and the snapped geometry.
-
-![accudraw nearest distance lock](./accudraw-nearest-distance.png "Example showing keypoint vs. nearest snap with distance lock")
