@@ -104,16 +104,12 @@ function transformFromJSON(json: schema.Transform): Transform {
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _spec: BatchedTilesetSpec;
-  private readonly _tileset: schema.Tileset;
   private readonly _modelGroups: Id64Set[] | undefined;
-  public readonly baseUrl: URL;
 
   public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection, modelGroups: Id64Set[] | undefined) {
     this._iModel = iModel;
     this._spec = spec;
-    this._tileset = spec.props;
     this._modelGroups = modelGroups;
-    this.baseUrl = spec.baseUrl;
   }
 
   public get baseUrl(): URL { return this._spec.baseUrl; }
