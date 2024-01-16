@@ -94,7 +94,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
 
     if (group.planProjection) {
       baseTf = baseTf.clone();
-      baseTf.origin.z = group.planProjection.elevation;
+      baseTf.origin.z += group.planProjection.elevation;
     }
 
     if (group.timeline) {
