@@ -19,9 +19,9 @@ import type {
 /**
  * @internal
  */
-export type DifferenceType = "missing" | "changed";
+export type DifferenceType = "add" | "modify";
 interface DifferenceObject<T> {
-  readonly schemaChangeType: DifferenceType;
+  readonly $changeType: DifferenceType;
   readonly sourceObject: T;
 }
 
@@ -218,7 +218,7 @@ export interface UnitDifference extends SchemaItemDifference<Unit> {
 export interface ClassDifference<T extends ECClass = ECClass> extends SchemaItemDifference<T> {
   modifier?: string;
   baseClass?: {
-    readonly schemaChangeType: DifferenceType;
+    readonly $changeType: DifferenceType;
     readonly className: string;
   };
   properties?: {

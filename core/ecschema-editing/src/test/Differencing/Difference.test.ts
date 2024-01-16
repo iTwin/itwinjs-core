@@ -15,14 +15,14 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
   if(typeof actual === "object") {
     for(const key of Object.keys(expected)) {
       expect(actual).to.haveOwnProperty(key);
-      expectPartiallyEquals(actual[key], expected[key], `expected 'changed' to equal 'missing' on property ${key}`);
+      expectPartiallyEquals(actual[key], expected[key], `expected '${expected[key]}' to equal '${actual[key]}' on property ${key}`);
     }
   } else {
     expect(actual).equals(expected, message);
   }
 }
 
-describe("Create Difference Report", () => {
+describe.only("Create Difference Report", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -84,30 +84,30 @@ describe("Create Difference Report", () => {
     // CustomAttributesSchema so this should not appear in the list, EmptySchema has a more recent
     // version in source and MissingSchema is not referenced by the target schema.
     expectPartiallyEquals(schemaDifference.references, [{
-      schemaChangeType: "changed",
-      name:             "EmptySchema",
-      version:          "01.00.01",
+      $changeType: "modify",
+      name:        "EmptySchema",
+      version:     "01.00.01",
     }, {
-      schemaChangeType: "missing",
-      name:             "MissingSchema",
-      version:          "04.00.00",
+      $changeType: "add",
+      name:        "MissingSchema",
+      version:     "04.00.00",
     }]);
   });
 
   it("should return a missing custom attribute on the schema", () => {
     expectPartiallyEquals(schemaDifference.customAttributes, [{
-      schemaChangeType: "missing",
-      className:        "CustomAttributeSchema.MissingCA",
+      $changeType: "add",
+      className:   "CustomAttributeSchema.MissingCA",
     }]);
   });
 
   it("should return a missing custom attribute on entity", () => {
     expectPartiallyEquals(schemaDifference.items, {
       ChangedEntity: {
-        schemaChangeType: "changed",
+        $changeType: "modify",
         customAttributes: [{
-          schemaChangeType: "missing",
-          className:        "CustomAttributeSchema.MissingCA",
+          $changeType: "add",
+          className:   "CustomAttributeSchema.MissingCA",
         }],
       },
     });
@@ -116,12 +116,12 @@ describe("Create Difference Report", () => {
   it("should return a missing custom attribute on property", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingStruct: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         properties: {
           BooleanProperty: {
-            schemaChangeType: "missing",
+            $changeType: "add",
             customAttributes: [{
-              schemaChangeType: "missing",
+              $changeType: "add",
               className:        "CustomAttributeSchema.MissingCA",
             }],
           },
@@ -135,8 +135,8 @@ describe("Create Difference Report", () => {
       RelationshipEntity: {
         target: {
           customAttributes: [{
-            schemaChangeType: "missing",
-            className: "CustomAttributeSchema.MissingCA",
+            $changeType: "add",
+            className:   "CustomAttributeSchema.MissingCA",
           }],
         },
       },
@@ -146,9 +146,9 @@ describe("Create Difference Report", () => {
   it("should return missing schema items", () => {
     expectPartiallyEquals(schemaDifference.items, {
       TestUnitSystem: {
-        schemaChangeType: "missing",
-        schemaItemType:   "UnitSystem",
-        label:            "Imperial",
+        $changeType:    "add",
+        schemaItemType: "UnitSystem",
+        label:          "Imperial",
       },
     });
   });
@@ -159,13 +159,13 @@ describe("Create Difference Report", () => {
     // target schema.
     expectPartiallyEquals(schemaDifference.items, {
       MissingEnumeration: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "Enumeration",
         type: "int",
         isStrict: true,
         enumerators: {
           EnumeratorOne: {
-            schemaChangeType: "missing",
+            $changeType: "add",
             name: "EnumeratorOne",
             label: "Enumerator One",
             value: 200,
@@ -177,12 +177,12 @@ describe("Create Difference Report", () => {
         label: "Source ChangedEnumeration",
         enumerators: {
           EnumeratorTwo: {
-            schemaChangeType: "changed",
+            $changeType: "modify",
             name: "EnumeratorTwo",
             label: "Enumerator Two",
           },
           EnumeratorThree: {
-            schemaChangeType: "missing",
+            $changeType: "add",
             name: "EnumeratorThree",
             label: "Enumerator Three",
             value: "3",
@@ -195,17 +195,17 @@ describe("Create Difference Report", () => {
   it("should return missing struct", () => {
     expectPartiallyEquals(schemaDifference.items, {
       MissingStruct: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "StructClass",
         properties: {
           BooleanProperty: {
-            schemaChangeType: "missing",
+            $changeType: "add",
             name: "BooleanProperty",
             type: "PrimitiveProperty",
             primitiveType: "boolean",
           },
           IntegerProperty: {
-            schemaChangeType: "missing",
+            $changeType: "add",
             name: "IntegerProperty",
             type: "PrimitiveArrayProperty",
             primitiveType: "int",
@@ -218,9 +218,9 @@ describe("Create Difference Report", () => {
   it("should return changed entity with baseclass change", () => {
     expectPartiallyEquals(schemaDifference.items, {
       ChangedBaseClassEntity: {
-        schemaChangeType: "changed",
+        $changeType: "modify",
         baseClass: {
-          schemaChangeType: "changed",
+          $changeType: "modify",
           className: "SourceSchema.EmptyAbstractEntity",
         },
       },
@@ -230,21 +230,21 @@ describe("Create Difference Report", () => {
   it("should return changed entity with baseclass and mixin added", () => {
     expectPartiallyEquals(schemaDifference.items, {
       EmptyAbstractEntity: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "EntityClass",
         modifier: "Abstract",
       },
       MissingMixin: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "Mixin",
         label: "Missing Mixin",
         appliesTo: "SourceSchema.EmptyAbstractEntity",
       },
       ChangedEntity: {
-        schemaChangeType: "changed",
+        $changeType: "modify",
         schemaItemType: "EntityClass",
         baseClass: {
-          schemaChangeType: "missing",
+          $changeType: "add",
           className: "SourceSchema.EmptyAbstractEntity",
         },
         description: "The entity got a new base type a fancy description and a mixin",
@@ -258,28 +258,28 @@ describe("Create Difference Report", () => {
   it("should return missing RelationshipEntity", () => {
     expectPartiallyEquals(schemaDifference.items, {
       RelationshipSourceEntity: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "EntityClass",
         label: "Source constraint class",
         modifier: "Abstract",
       },
       RelationshipTargetEntity: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "EntityClass",
         label: "Target constraint class",
         baseClass: {
-          schemaChangeType: "missing",
+          $changeType: "add",
           className: "SourceSchema.EmptyAbstractEntity",
         },
         modifier: "Abstract",
       },
       RelationshipEntity: {
-        schemaChangeType: "missing",
+        $changeType: "add",
         schemaItemType: "RelationshipClass",
         strength: "Embedding",
         strengthDirection: "Forward",
         source: {
-          schemaChangeType: "missing",
+          $changeType: "add",
           polymorphic: true,
           multiplicity: "(0..*)",
           roleLabel: "Source RoleLabel",
@@ -288,7 +288,7 @@ describe("Create Difference Report", () => {
         target: {
           // This falsely is set to 'changed' at the moment because the missing custom attribute is
           // reported before the RelationshipConstraint is missing. Investigated in issue #6320
-          // schemaChangeType: "missing",
+          // $changeType: "add",
           polymorphic: true,
           multiplicity: "(0..*)",
           roleLabel: "Target RoleLabel",

@@ -35,9 +35,9 @@ export class SchemaDiagnosticVisitor {
     }
 
     return this._differenceReport.items[sourceObject.name] = {
-      schemaItemName:   sourceObject.name,
-      schemaItemType:   schemaItemTypeToString(sourceObject.schemaItemType),
-      schemaChangeType: changeType,
+      $changeType:    changeType,
+      schemaItemName: sourceObject.name,
+      schemaItemType: schemaItemTypeToString(sourceObject.schemaItemType),
       sourceObject,
     };
   }
@@ -45,7 +45,7 @@ export class SchemaDiagnosticVisitor {
   private getOrAddRelationshipConstraint(relationshipConstraint: RelationshipConstraint, changeType: DifferenceType) {
     const relationshipDifference = this.getItemDifference<RelationshipClassDifference>(relationshipConstraint.relationshipClass);
     const constraintDifference: RelationshipConstraintDifference = {
-      schemaChangeType: changeType,
+      $changeType:  changeType,
       sourceObject: relationshipConstraint,
     };
 
@@ -60,7 +60,7 @@ export class SchemaDiagnosticVisitor {
     }
 
     const difference = this._differenceReport.items[schemaItem.name];
-    return (difference || this.addSchemaItem(schemaItem, "changed")) as T;
+    return (difference || this.addSchemaItem(schemaItem, "modify")) as T;
   }
 
   private getPropertyDifference(property: Property): PropertyDifference {
@@ -70,9 +70,9 @@ export class SchemaDiagnosticVisitor {
     }
 
     return classDifference.properties[property.name] || (classDifference.properties[property.name] = {
-      schemaChangeType: "changed",
-      sourceObject:     property,
-      name:             property.name,
+      $changeType:  "modify",
+      sourceObject: property,
+      name:         property.name,
     });
   }
 
@@ -87,7 +87,7 @@ export class SchemaDiagnosticVisitor {
       return this.getPropertyDifference(ecSchemaObject);
     }
     if(ecSchemaObject instanceof RelationshipConstraint) {
-      return this.getOrAddRelationshipConstraint(ecSchemaObject, "changed");
+      return this.getOrAddRelationshipConstraint(ecSchemaObject, "modify");
     }
     throw new Error("The given type is not a supported custom attribute container.");
   }
@@ -102,9 +102,9 @@ export class SchemaDiagnosticVisitor {
         return this.visitChangedSchemaProperties(diagnostic);
 
       case SchemaCompareCodes.SchemaReferenceMissing:
-        return this.visitSchemaReference(diagnostic, "missing");
+        return this.visitSchemaReference(diagnostic, "add");
       case SchemaCompareCodes.SchemaReferenceDelta:
-        return this.visitSchemaReference(diagnostic, "changed");
+        return this.visitSchemaReference(diagnostic, "modify");
 
       case SchemaCompareCodes.SchemaItemMissing:
         return this.visitMissingSchemaItem(diagnostic);
@@ -166,7 +166,7 @@ export class SchemaDiagnosticVisitor {
   }
 
   private visitMissingSchemaItem(diagnostic: AnyDiagnostic) {
-    this.addSchemaItem(diagnostic.ecDefinition as SchemaItem, "missing");
+    this.addSchemaItem(diagnostic.ecDefinition as SchemaItem, "add");
   }
 
   private visitChangedSchemaItem(diagnostic: AnyDiagnostic) {
@@ -185,9 +185,9 @@ export class SchemaDiagnosticVisitor {
 
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
     enumeration.enumerators[enumerator.name] = {
-      schemaChangeType: "missing",
-      sourceObject:     enumerator,
-      name:             enumerator.name,
+      $changeType:  "add",
+      sourceObject: enumerator,
+      name:         enumerator.name,
     };
   }
 
@@ -199,9 +199,9 @@ export class SchemaDiagnosticVisitor {
 
     const [enumerator, propertyName, propertyValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any];
     const enumeratorDifference = enumeration.enumerators[enumerator.name] || (enumeration.enumerators[enumerator.name] = {
-      schemaChangeType: "changed",
-      sourceObject:     enumerator,
-      name:             enumerator.name,
+      $changeType:  "modify",
+      sourceObject: enumerator,
+      name:         enumerator.name,
     });
 
     if(propertyName !== "name" && propertyValue !== undefined) {
@@ -217,9 +217,9 @@ export class SchemaDiagnosticVisitor {
     }
 
     classDifference.properties[property.name] = {
-      schemaChangeType: "missing",
-      sourceObject:     property,
-      name:             property.name,
+      $changeType:  "add",
+      sourceObject: property,
+      name:         property.name,
     };
   }
 
@@ -237,8 +237,8 @@ export class SchemaDiagnosticVisitor {
     const classDifference = this.getItemDifference<ClassDifference>(diagnostic.ecDefinition as SchemaItem);
     const [baseClass, previous] = diagnostic.messageArgs as [EntityClass, EntityClass|undefined];
     classDifference.baseClass = {
-      schemaChangeType: previous === undefined ? "missing" : "changed",
-      className: baseClass.fullName,
+      $changeType: previous === undefined ? "add" : "modify",
+      className:   baseClass.fullName,
     };
   }
 
@@ -254,12 +254,12 @@ export class SchemaDiagnosticVisitor {
 
   private visitMissingRelationshipConstraint(diagnostic: AnyDiagnostic) {
     const relationConstraint = diagnostic.ecDefinition as RelationshipConstraint;
-    this.getOrAddRelationshipConstraint(relationConstraint, "missing");
+    this.getOrAddRelationshipConstraint(relationConstraint, "add");
   }
 
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
     const relationConstraint = diagnostic.ecDefinition as RelationshipConstraint;
-    const difference = this.getOrAddRelationshipConstraint(relationConstraint, "changed");
+    const difference = this.getOrAddRelationshipConstraint(relationConstraint, "modify");
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
     if(propertyValue !== undefined) {
@@ -274,7 +274,7 @@ export class SchemaDiagnosticVisitor {
 
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
     this._differenceReport.references.push({
-      schemaChangeType: changeType,
+      $changeType:  changeType,
       sourceObject: referencedSchema,
       name:         referencedSchema.name,
       version:      referencedSchema.schemaKey.version.toString(),
@@ -289,8 +289,8 @@ export class SchemaDiagnosticVisitor {
 
     const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
     customAttributeContainer.customAttributes.push({
-      schemaChangeType: "missing",
-      sourceObject:     customAttribute,
+      $changeType:  "add",
+      sourceObject: customAttribute,
       ...customAttribute,
     });
   }
