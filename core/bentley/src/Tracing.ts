@@ -23,8 +23,6 @@ export enum SpanKind {
   CONSUMER = 4
 }
 
-/* eslint-disable deprecation/deprecation */
-
 function isValidPrimitive(val: unknown): val is SpanAttributeValue {
   return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
 }
@@ -81,6 +79,8 @@ function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttribu
 function flattenObject(obj: object): SpanAttributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
+
+/* eslint-disable deprecation/deprecation -- lots of self-references here... */
 
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
@@ -188,3 +188,5 @@ export class Tracing {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
   }
 }
+
+/* eslint-enable deprecation/deprecation */
