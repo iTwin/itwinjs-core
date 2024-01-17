@@ -108,8 +108,6 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
         animTf.multiplyTransformTransform(baseTf, baseTf);
     }
 
-    // ###TODO apply plan projection elevation transform
-
     const displayTf = group.displayTransform;
     if (!displayTf)
       return baseTf;

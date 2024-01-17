@@ -110,7 +110,7 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
     return false;
   
   if (a.clip || b.clip) {
-    // ###TODO? ClipVector lacks an `isAlmostEqual` method.
+    // Note: ClipVector lacks an `isAlmostEqual` method.
     // For two models belonging to the same clip group, we should have the same exact object.
     // But we won't currently detect two different objects that represent effectively identical clips.
     if (!a.clip || !b.clip || a.clip.clipVector !== b.clip.clipVector)

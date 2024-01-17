@@ -287,8 +287,11 @@ export function collectTransferables(document: ImdlModel.Document): Transferable
   };
 
   for (const node of document.nodes) {
-    if (undefined === node.groupId) {
-      // ###TODO handle group nodes.
+    if (undefined !== node.groupId) {
+      for (const primNode of node.nodes)
+        for (const primitive of primNode.primitives)
+          addPrimitive(primitive);
+    } else {
       for (const primitive of node.primitives)
         addPrimitive(primitive);
     }
