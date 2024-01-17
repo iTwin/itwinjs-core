@@ -107,9 +107,13 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  public [Symbol.iterator](): Iterator<TileTreeReference> {
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {
     this.ensureLoaded();
-    return this._refs[Symbol.iterator]();
+    for (const ref of this._refs)
+      yield ref;
+
+    for (const ref of this._excludedRefs)
+      yield ref;
   }
 
   public update(): void {
