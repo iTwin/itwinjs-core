@@ -8,135 +8,142 @@
  */
 
 /**
- * * XYParitySearchContext is an internal class for callers that can feed points (without extracting to array structures)
+ * `XYParitySearchContext` is an internal class for callers that can feed points (without extracting to array structures)
  * * Most will be via static methods which handle a specific data source.
- *   * PolygonOps.classifyPointInPolygon (x,y,points: XAndY[])
- *   * HalfEdgeGraphSearch.pointInOrOnFaceXY (halfEdgeOnFace, x, y)
+ *   * PolygonOps.classifyPointInPolygon(x,y,points: XAndY[])
+ *   * HalfEdgeGraphSearch.pointInOrOnFaceXY(halfEdgeOnFace, x, y)
  * Use pattern:
- * * Caller must be able walk around polygon producing x,y coordinates (possibly transformed from actual polygon)
+ * * Caller must be able to walk around polygon producing x,y coordinates (possibly transformed from actual polygon).
  * * Caller announce edges to tryStartEdge until finding one acceptable to the search.
  * * Caller then passes additional points up to and including both x0,y0 and x1, y1 of the accepted start edge.
  * Call sequence is:
- *    `context = new XYParitySearchContext`
- *    `repeat {  acquire edge (x0,y0) (x1,y1)} until context.tryStartEdge (x0,y0,x1,y1);`
- *    `for each (x,y) beginning AFTER x1,y1 and ending with (x1,y1) context.advance (x,y)`
- *  `return context.classifyCounts ();`
+ *   * `context = new XYParitySearchContext`
+ *   * `repeat { acquire edge (x0,y0) (x1,y1) } until context.tryStartEdge(x0,y0,x1,y1);`
+ *   * `for each (x,y) beginning AFTER x1,y1 and ending with (x1,y1) context.advance (x,y)`
+ *   * `return context.classifyCounts();`
  */
 export class XYParitySearchContext {
   public xTest: number;
   public yTest: number;
-  public u0: number; // local coordinates of recent point with nonzero v.  Usually "second last point" but points can be skipped if y1 is zero
+  /** local x-coordinate of the start of the previous (or earlier) edge */
+  public u0: number;
+  /** local y-coordinate of the start of the previous (or earlier) edge */
   public v0: number;
-  public u1: number; // local coordinates of most recent point
+  /** local x-coordinate of the end of the previous edge (and start of current edge) */
+  public u1: number;
+  /** local y-coordinate of the end of the previous edge (and start of current edge) */
   public v1: number;
   public numLeftCrossing: number;
   public numRightCrossing: number;
   public numHit: number;
   /**
    * Create a new searcher for specified test point.
-   * @param xTest x coordinate of test point
-   * @param yTest y coordinate of test point
+   * @param xTest x coordinate of test point.
+   * @param yTest y coordinate of test point.
    */
   public constructor(xTest: number, yTest: number) {
     this.xTest = xTest;
     this.yTest = yTest;
-    this.u0 = this.v0 = this.u1 = this.v1 = 0; // Not valid for search -- caller must satisfy tryStartEdge !!!
+    this.u0 = this.v0 = this.u1 = this.v1 = 0; // not valid for search; caller must satisfy tryStartEdge
     this.numLeftCrossing = this.numRightCrossing = 0;
     this.numHit = 0;
   }
-  /**
-   * test if x,y is a safe first coordinate to start the search.
-   * * safe start must have non-zero y so that final point test (return to x0,y0) does not need look back for exact crossing logic.
-   * @param x
-   * @param y
-   */
+  /** Test if parity processing can begin with this edge. */
   public tryStartEdge(x0: number, y0: number, x1: number, y1: number): boolean {
     if (y0 !== this.yTest) {
       this.u0 = x0 - this.xTest;
       this.v0 = y0 - this.yTest;
       this.u1 = x1 - this.xTest;
       this.v1 = y1 - this.yTest;
-      return true;
+      return true;  // we won't need wraparound logic to process the final edge ending at (x0,y0)
     }
     return false;
   }
-  /** Return true if parity accumulation proceeded normally.
-   * Return false if interrupted for exact hit.
+  /** Update local coordinates: the current edge becomes the previous edge. */
+  private updateUV01(u2: number, v2: number) {
+    this.u0 = this.u1;
+    this.v0 = this.v1;
+    this.u1 = u2;
+    this.v1 = v2;
+    return true;
+  }
+  /**
+   * Process the current edge ending at (x2,y2).
+   * * Accumulate left/right parity of the test point wrt to the polygon. These counts track the number of polygon crossings
+   *   of the left and right horizontal rays emanating from the test point. After all edges are processed, if either count is
+   *   odd/even, the test point is inside/outside the polygon (see [[classifyCounts]]).
+   * * Check whether the test point lies on the edge.
+   * @returns whether caller should continue processing with the next edge. In particular, `false` if we have an exact hit.
    */
-  public advance(x: number, y: number): boolean {
-    const u = x - this.xTest;
-    const v = y - this.yTest;
-    const p = v * this.v1;
+  public advance(x2: number, y2: number): boolean {
+    // In this method we use local u,v coordinates obtained by translating the test point to the origin.
+    // This simplifies our computations:
+    // * left (right) parity is incremented if the current edge crosses the u-axis at u<0 (u>0)
+    // * we have an exact hit if the current edge crosses the u-axis at u=0
+    const u2 = x2 - this.xTest;
+    const v2 = y2 - this.yTest;
+    const p = v2 * this.v1;
     if (p > 0) {
-      // The common case -- skittering along above or below the x axis . . .
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      // Current edge does not cross u-axis.
+      return this.updateUV01(u2, v2);
     }
     if (p < 0) {
-      // crossing within (u1,v1) to (u,v)
-      // both v values are nonzero and of opposite sign, so this division is safe . . .
-      const fraction = -this.v1 / (v - this.v1);
-      const uCross = this.u1 + fraction * (u - this.u1);
+      // Current edge crosses the u-axis at edge parameter 0 < lambda < 1 by the Intermediate Value Theorem.
+      // Solve for lambda in 0 = v1 + lambda (v2 - v1), then use it to compute the u-value of the crossing.
+      const lambda = -this.v1 / (v2 - this.v1);
+      const uCross = this.u1 + lambda * (u2 - this.u1);
       if (uCross === 0.0) {
-        this.numHit++;
+        this.numHit++;  // Current edge crosses at the origin.
         return false;
       }
       if (uCross > 0)
         this.numRightCrossing++;
       else
         this.numLeftCrossing++;
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      return this.updateUV01(u2, v2);
     }
-    // hard stuff -- one or more exact hits . . .
-    if (v === 0.0) {
+    // At this point, at least one endpoint of the current edge lies on the u-axis.
+    if (v2 === 0.0) {
       if (this.v1 === 0.0) {
-        // uh oh -- moving along x axis.  Does it pass through xTest:
-        if (u * this.u1 <= 0.0) {
-          this.numHit++;
+        if (u2 * this.u1 <= 0.0) {
+          this.numHit++;  // Current edge lies on u-axis and contains the origin.
           return false;
         }
-        // quietly moving along the scan line, both xy and x1y1 to same side of test point ...
-        // u0 and u1 remain unchanged !!!
-        this.u1 = u;
-        this.v1 = v;
+        // Current edge lies on the u-axis to one side of the origin.
+        // This edge doesn't contribute to parity computations, so advance past it.
+        this.u1 = u2;
+        this.v1 = v2;
         return true;
       }
-      // just moved onto the scan line ...
-      this.u0 = this.u1;
-      this.v0 = this.v1;
-      this.u1 = u;
-      this.v1 = v;
-      return true;
+      if (u2 === 0.0) {
+        this.numHit++;  // Current edge ends at the origin.
+        return false;
+      }
+      // Current edge ends on the u-axis away from the origin.
+      return this.updateUV01(u2, v2);
     }
-    // fall out with v1 = 0
-    // both v0 and v are nonzero.
-    // any along-0 v values that have passed through are on the same side of xTest, so u1 determines crossing
-    const q = this.v0 * v;
-    if (this.u1 > 0) {
-      if (q < 0)
+    // At this point, the current edge starts at the u-axis.
+    if (this.u1 === 0.0) {
+      this.numHit++;  // Current edge starts at the origin.
+      return false;
+    }
+    // At this point, the current edge starts on the u-axis away from the origin.
+    const q = this.v0 * v2;
+    if (q < 0) {
+      // The current edge and the previous edge lie on opposite sides of the u-axis, so we have a parity change.
+      if (this.u1 > 0)
         this.numRightCrossing++;
-    } else {
-      if (q < 0)
+      else
         this.numLeftCrossing++;
     }
-    this.u0 = this.u1;
-    this.v0 = this.v1;
-    this.u1 = u;
-    this.v1 = v;
-    return true;
+    // The current edge and the previous edge lie on the same sides of the u-axis, so no parity change.
+    return this.updateUV01(u2, v2);
   }
   /**
    * Return classification as ON, IN, or OUT according to hit and crossing counts.
-   * * Any nonzero hit count is ON
+   * * Any nonzero hit count is ON.
    * * Otherwise IN if left crossing count is odd.
-   * @return 0 if ON, 1 if IN, -1 if OUT
+   * @return 0 if ON, 1 if IN, -1 if OUT.
    */
   public classifyCounts(): number | undefined {
     if (this.numHit > 0)

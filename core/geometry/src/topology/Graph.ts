@@ -47,15 +47,15 @@ export enum HalfEdgeMask {
    * * A boundary edge with interior to one side, exterior to the other, will have EXTERIOR only on the outside.
    * * An edge inserted "within a purely exterior face" can have EXTERIOR on both sides.
    * * An interior edge (such as added during triangulation) will have no EXTERIOR bits.
-   * * Visualization can be found at geometry/internaldocs/Graph.md
-   */
+  */
+  // Visualization can be found at geometry/internaldocs/Graph.md
   EXTERIOR = 0x00000001,
   /**
    * Mask commonly set (on both sides) of original geometry edges that are transition from outside to inside.
    * * At the moment of creating an edge from primary user boundary loop coordinates, the fact that an edge is BOUNDARY
    * is often clear even though there is uncertainty about which side should be EXTERIOR.
-   * * Visualization can be found at geometry/internaldocs/Graph.md
    */
+  // Visualization can be found at geometry/internaldocs/Graph.md
   BOUNDARY_EDGE = 0x00000002,
   /**
    * Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a
