@@ -19,7 +19,8 @@ import { DrawingCategory } from "../../Category";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
 import {
-  BriefcaseDb, BriefcaseManager,
+  BriefcaseDb,
+  BriefcaseManager,
   DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -38,6 +39,18 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
   return { modelId, spatialCategoryId };
+}
+
+async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
+  try {
+    await test();
+  } catch (e) {
+    if (e instanceof Error && msg) {
+      assert.equal(e.message, msg);
+    }
+    return;
+  }
+  throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
 describe("IModelWriteTest", () => {
@@ -93,6 +106,80 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     sinon.restore();
+  });
+
+  it("prevent corrupt changeset from been pushed to hub", async () => {
+    /**
+     * To simulate a incorrect changeset we disable lock and make some changes where we add
+     * aspect for a deleted element and try to pull/push/merge it. Which will fail with following error.
+     * "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."
+     */
+    const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
+    const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
+
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "TestIModel";
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    assert.isNotEmpty(rwIModelId);
+
+    // to reproduce the issue we will disable locks altogether.
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+
+    await b1.locks.acquireLocks({ shared: IModel.repositoryModelId });
+    await b2.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
+    // create and insert a new model with code1
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      b1,
+      IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
+      true);
+
+    const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+
+    await b1.locks.acquireLocks({ shared: dictionary.id });
+    const spatialCategoryId = SpatialCategory.insert(
+      dictionary.iModel,
+      dictionary.id,
+      newCategoryCode.value,
+      new SubCategoryAppearance({ color: 0xff0000 }),
+    );
+    const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
+    b1.saveChanges();
+    await b1.pushChanges({ accessToken: accessToken1, description: `inserted element ${el1}` });
+
+    await b2.pullChanges();
+    b2.elements.insertAspect({
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: {
+        relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+        id: el1,
+      },
+      kind: "",
+      identifier: "test identifier",
+    } as ElementAspectProps);
+
+    await b1.locks.acquireLocks({ exclusive: el1 });
+    b1.elements.deleteElement(el1);
+    b1.saveChanges();
+
+    await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
+    b2.saveChanges();
+
+    await assertThrowsAsync(
+      async () => b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` }),
+      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+
+    await b3.pullChanges();
+
+    b1.close();
+    b2.close();
+    b3.close();
   });
 
   it("aspect insert, update & delete requires exclusive lock", async () => {
