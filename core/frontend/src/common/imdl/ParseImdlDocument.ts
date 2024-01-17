@@ -536,6 +536,7 @@ class Parser {
             assert(p.surface.textureMapping === undefined || p.surface.textureMapping.texture instanceof Texture);
             getPrimitivesNode(nodeId).primitives.push({
               type: "mesh",
+              modifier: primitive.modifier,
               params: {
                 vertices: fromVertexTable(p.vertices),
                 surface: {
@@ -567,6 +568,7 @@ class Parser {
           for (const [nodeId, p] of split) {
             getPrimitivesNode(nodeId).primitives.push({
               type: "point",
+              modifier: primitive.modifier,
               params: {
                 vertices: fromVertexTable(p.vertices),
                 indices: p.indices.data,
@@ -592,6 +594,7 @@ class Parser {
           for (const [nodeId, p] of split) {
             getPrimitivesNode(nodeId).primitives.push({
               type: "polyline",
+              modifier: primitive.modifier,
               params: {
                 ...p,
                 vertices: fromVertexTable(p.vertices),
