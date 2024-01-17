@@ -10,6 +10,14 @@ import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwi
 import { Range3d } from "@itwin/core-geometry";
 import { ModelMetadata } from "./BatchedTilesetReader";
 
+/** Groups the set of spatial models included in a [[BatchedSpatialTileTreeReferences]] based on their display settings.
+ * This ensures that models are displayed correctly, while using batching to reduce the number of draw calls to a minimum.
+ * The groupings are re-evaluated only when there's a possibility that they may have changed (e.g., if the view's plan projection settings or model clip groups were modified).
+ * Unfortunately, there is currently no way to know when the transforms supplied by a [ModelDisplayTransformProvider]($frontend) may have changed, so
+ * display transforms are re-evaluated every time the Viewport's scene is invalidated. This may (but usually won't) affect the groupings.
+ * The BatchedSpatialTileTreeReferences object allocates new [[BatchedTileTreeReferences]] whenever the groupings change.
+ * @internal
+ */
 export class BatchedModelGroups implements ModelGroupingContext {
   private readonly _view: SpatialViewState;
   private readonly _includedModelIds: Id64Set;
@@ -18,6 +26,11 @@ export class BatchedModelGroups implements ModelGroupingContext {
   private _transformsValid = false;
   private _groupsValid = false;
   private _scriptValid = false;
+  /** A stringified representation of the current groupings, of the format:
+   * group1_group2_group3_..._groupN
+   * where each group is a [CompressedId64Set]($bentley).
+   * @see [[BatchedTileTreeId.modelGroups]].
+   */
   public guid = "";
   public groups: ModelGroup[] = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
@@ -80,6 +93,9 @@ export class BatchedModelGroups implements ModelGroupingContext {
     return 0;
   }
 
+  /** Re-evaluate transforms and groupings if they may be out of date.
+   * @returns true if the groupings changed as a result.
+   */
   public update(): boolean {
     if (!this._transformsValid && this.modelGroupDisplayTransforms.update(this._view.modelDisplayTransformProvider)) {
       this._groupsValid = false;

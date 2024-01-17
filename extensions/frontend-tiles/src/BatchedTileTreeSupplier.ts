@@ -16,6 +16,10 @@ import { BatchedTileTree } from "./BatchedTileTree";
 export interface BatchedTileTreeId {
   spec: BatchedTilesetSpec;
   script?: RenderSchedule.Script;
+  /** A stringified representation of the [[ModelGroup]]s by which to structure the contents of the tiles.
+   * Every unique combination of model groups has a corresponding unique string representation.
+   * @see [[BatchedModelGroups.guid]].
+   */
   modelGroups: string;
 }
 

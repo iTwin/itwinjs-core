@@ -14,13 +14,17 @@ import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
 /** @internal */
 export interface ModelMetadataProps {
+  /** The spatial volume occupied by this model's geometry. */
   extents: Range3dProps;
+  /** Overrides to be applied to the view's [ViewFlags]($common) when rendering this model, if any. */
   viewFlags?: ViewFlagOverrides;
 }
 
 /** @internal */
 export interface ModelMetadata {
+  /** The spatial volume occupied by this model's geometry. */
   extents: Range3d;
+  /** Overrides to be applied to the view's [ViewFlags]($common) when rendering this model, if any. */
   viewFlags?: ViewFlagOverrides;
 }
 
@@ -28,7 +32,7 @@ export interface ModelMetadata {
 export interface BatchedTilesetProps extends schema.Tileset {
   extensions: {
     BENTLEY_BatchedTileSet: { // eslint-disable-line @typescript-eslint/naming-convention
-      includedModels: Id64String[];
+      /** Contains an entry for every model that was processed during publishing of the tileset. */
       models: {
         [modelId: Id64String]: ModelMetadataProps | undefined;
       };
