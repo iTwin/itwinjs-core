@@ -10,7 +10,7 @@ import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
-import { BatchedTilesetReader } from "./BatchedTilesetReader";
+import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
 import { frontendTilesOptions } from "./FrontendTiles";
 
 const defaultViewFlags: ViewFlagOverrides = {
@@ -23,7 +23,7 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   rootTile: BatchedTileParams;
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
-  includedModels?: Map<Id64String, Range3d>;
+  models: Map<Id64String, ModelMetadata>;
   modelGroups: Id64Set[] | undefined;
 }
 
