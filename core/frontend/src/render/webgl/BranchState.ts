@@ -44,6 +44,7 @@ export interface BranchStateOptions {
   readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
+  groupNodeId?: number;
 }
 
 /**
@@ -69,6 +70,7 @@ export class BranchState {
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
+  public get groupNodeId() { return this._opts.groupNodeId; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -102,6 +104,7 @@ export class BranchState {
       appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
+      groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
     });
   }
 

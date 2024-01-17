@@ -3,53 +3,56 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, RenderSchedule,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  AnimationNodeId, formatAnimationBranchId, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
+  formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
+import { ModelGroupInfo } from "./ModelGroup";
 
-/** @internal */
-export abstract class BatchedTileTreeReference extends TileTreeReference {
-  protected readonly _treeOwner: TileTreeOwner;
+export interface BatchedTileTreeReferenceArgs {
+  readonly models: BatchedModels;
+  readonly groups: ReadonlyArray<ModelGroupInfo>;
+  readonly treeOwner: TileTreeOwner;
+  readonly getCurrentTimePoint: () => number;
+}
 
-  protected constructor(treeOwner: TileTreeOwner) {
+export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
+  private readonly _args: BatchedTileTreeReferenceArgs;
+  private readonly _groupIndex: number;
+  private readonly _animationNodeId?: number;
+  private readonly _branchId?: string;
+
+  public constructor(args: BatchedTileTreeReferenceArgs, groupIndex: number, animationNodeId: number | undefined) {
     super();
-    this._treeOwner = treeOwner;
+    this._args = args;
+    this._groupIndex = groupIndex;
+    this._animationNodeId = animationNodeId;
+    if (undefined !== animationNodeId) {
+      assert(undefined !== this._groupInfo.timeline);
+      this._branchId = formatAnimationBranchId(this._groupInfo.timeline.modelId, animationNodeId);
+    }
+  }
+
+  private get _groupInfo(): ModelGroupInfo {
+    assert(this._groupIndex < this._args.groups.length);
+    return this._args.groups[this._groupIndex];
   }
 
   public override get treeOwner(): TileTreeOwner {
-    return this._treeOwner;
+    return this._args.treeOwner;
   }
 
-  protected computeBaseTransform(tree: TileTree): Transform {
-    return super.computeTransform(tree);
-  }
-
-  protected override computeTransform(tree: TileTree): Transform {
-    const baseTf = this.computeBaseTransform(tree);
-    // ###TODO this.view.modelDisplayTransformProvider?.getModelDisplayTransform(modelId...)
-    return baseTf;
-  }
-}
-
-export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference implements FeatureAppearanceProvider {
-  private readonly _models: BatchedModels;
-
-  public constructor(treeOwner: TileTreeOwner, models: BatchedModels) {
-    super(treeOwner);
-    this._models = models;
-  }
-
-  public override unionFitRange(range: Range3d): void {
-    this._models.unionRange(range);
-  }
-
-  public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
+  public override getAppearanceProvider(): FeatureAppearanceProvider {
     return this;
+  }
+
+  protected override getClipVolume(): RenderClipVolume | undefined {
+    return this._groupInfo.clip;
   }
 
   public getFeatureAppearance(
@@ -61,53 +64,79 @@ export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference im
     type: BatchType,
     animationNodeId: number,
   ): FeatureAppearance | undefined {
-    if (!this._models.isViewed(modelLo, modelHi))
+    if (!this._args.models.isViewed(modelLo, modelHi))
       return undefined;
 
     return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 
-  public override getAnimationTransformNodeId() {
-    return AnimationNodeId.Untransformed;
-  }
-}
-
-export interface AnimationNode {
-  readonly timeline: RenderSchedule.ModelTimeline;
-  readonly nodeId: number;
-  getCurrentTimePoint(): number;
-}
-
-export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
-  private readonly _node: AnimationNode;
-  private readonly _branchId: string;
-
-  public constructor(treeOwner: TileTreeOwner, node: AnimationNode) {
-    super(treeOwner);
-    this._node = node;
-    this._branchId = formatAnimationBranchId(node.timeline.modelId, node.nodeId);
+  public override unionFitRange(range: Range3d): void {
+    this._args.models.unionRange(range);
   }
 
-  public override getAnimationTransformNodeId(): number {
-    return this._node.nodeId;
+  public override get castsShadows(): boolean {
+    if (this._groupInfo.planProjection)
+      return false;
+
+    return super.castsShadows;
   }
 
-  public override computeBaseTransform(tree: TileTree): Transform {
-    const tf = super.computeBaseTransform(tree);
-    const animTf = this._node.timeline.getTransform(this._node.nodeId, this._node.getCurrentTimePoint());
-    if (animTf)
-      animTf.multiplyTransformTransform(tf, tf);
+  public override getViewFlagOverrides(): ViewFlagOverrides {
+    return this._groupInfo.viewFlags;
+  }
 
-    return tf;
+  public override draw(args: TileDrawArgs): void {
+    if (this._groupInfo.planProjection?.overlay)
+      args.context.withGraphicType(TileGraphicType.Overlay, () => args.tree.draw(args));
+    else
+      super.draw(args);
+  }
+
+  protected override computeTransform(tree: TileTree): Transform {
+    const group = this._groupInfo;
+    let baseTf = super.computeTransform(tree);
+
+    if (group.planProjection) {
+      baseTf = baseTf.clone();
+      baseTf.origin.z += group.planProjection.elevation;
+    }
+
+    if (group.timeline) {
+      assert(undefined !== this._animationNodeId);
+      const animTf = group.timeline.getTransform(this._animationNodeId, this._args.getCurrentTimePoint());
+      if (animTf)
+        animTf.multiplyTransformTransform(baseTf, baseTf);
+    }
+
+    const displayTf = group.displayTransform;
+    if (!displayTf)
+      return baseTf;
+
+    return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
+  }
+
+  protected override getAnimationTransformNodeId() {
+    return this._animationNodeId;
+  }
+
+  protected override getGroupNodeId() {
+    return this._args.groups.length > 1 ? this._groupIndex : undefined;
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
-    const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
-    if (animBranch && animBranch.omit)
-      return undefined;
+    if (this._branchId) {
+      const branch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+      if (branch?.omit) {
+        // This branch is not supposed to be drawn
+        return undefined;
+      }
+    }
 
     const args = super.createDrawArgs(context);
+
     // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
+    // ###TODO if PlanProjectionSettings.enforceDisplayPriority, createGraphicLayerContainer.
+
     return args;
   }
 }

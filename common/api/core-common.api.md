@@ -5784,6 +5784,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
+    getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
@@ -6227,6 +6229,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
+    getModelIdPair(_featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
@@ -6423,6 +6427,7 @@ export class PlanProjectionSettings {
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
     readonly enforceDisplayPriority?: boolean;
+    equals(other: PlanProjectionSettings): boolean;
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
     readonly overlay: boolean;
@@ -7275,6 +7280,7 @@ export interface RenderFeatureTable {
     getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
