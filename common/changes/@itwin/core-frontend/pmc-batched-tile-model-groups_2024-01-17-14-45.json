@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added Viewport.onSceneInvalidated event raised when Viewport.invalidateScene is called.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

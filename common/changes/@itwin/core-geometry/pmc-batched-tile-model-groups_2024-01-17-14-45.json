@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Slight optimization for Transform.isAlmostEqual.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
