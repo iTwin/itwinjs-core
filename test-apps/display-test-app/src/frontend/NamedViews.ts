@@ -6,13 +6,17 @@ import { compareStrings, SortedArray } from "@itwin/core-bentley";
 
 // cspell:ignore vsps nvsp
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 export interface NamedVSPSProps {
   _name: string;
-  _viewStatePropsString: string,
+  _viewStatePropsString: string;
   _selectedElements?: string;
   _overrideElements?: string;
   _displayTransforms?: string;
 }
+
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export class NamedViewStatePropsString {
   private _name: string;

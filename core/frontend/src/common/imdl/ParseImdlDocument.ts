@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, ModelFeature, MultiModelPackedFeatureTable,
+  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
   TileHeader, TileReadStatus,
 } from "@itwin/core-common";
@@ -439,7 +439,7 @@ class Parser {
     const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive => x !== undefined);
     if (primitives.length === 0)
       return;
-    
+
     const nodesById = new Map<number, Imdl.AnimationNode>();
     const getNode = (nodeId: number | undefined): Imdl.AnimationNode => {
       nodeId = nodeId ?? AnimationNodeId.Untransformed;
@@ -632,7 +632,7 @@ class Parser {
         groupNodes[groupId] = groupNode = { groupId, nodes: [] };
 
       return groupNode;
-    }
+    };
 
     const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
     const modelIdPair = { lower: 0, upper: 0 };
@@ -642,10 +642,10 @@ class Parser {
       for (let i = 0; i < modelGroups.length; i++) {
         if (modelGroups[i].has(modelId))
           return i;
-        }
+      }
 
       return modelGroups.length;
-    }
+    };
 
     for (const inputNode of inputNodes) {
       // Indexed by model group index.
@@ -658,7 +658,7 @@ class Parser {
         }
 
         return splitNodes[groupIndex];
-      }
+      };
 
       this.splitPrimitives(inputNode.primitives, featureTable, computeNodeId, getSplitNode);
     }

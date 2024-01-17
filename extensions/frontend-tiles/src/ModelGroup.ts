@@ -69,7 +69,7 @@ function equalPlanProjections(a: PlanProjectionInfo, b: PlanProjectionInfo): boo
 
 function createModelGroupInfo(context: ModelGroupingContext, modelId: Id64String): ModelGroupInfo {
   const planProjection = createPlanProjectionInfo(modelId, context);
-  let viewFlags = { ...context.getViewFlagOverrides(modelId) };
+  const viewFlags = { ...context.getViewFlagOverrides(modelId) };
   if (planProjection) {
     // Always enable improved z-fighting mitigation for plan projections (they're planar models).
     viewFlags.forceSurfaceDiscard = true;
@@ -104,11 +104,11 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
   // If a model has a timeline it cannot be grouped
   if (a.timeline !== b.timeline)
     return false;
-  
+
   // Display transforms are obtained from ModelGroupDisplayTransforms - they are guaranteed to be the same object if they are equivalent.
   if (a.displayTransform !== b.displayTransform)
     return false;
-  
+
   if (a.clip || b.clip) {
     // Note: ClipVector lacks an `isAlmostEqual` method.
     // For two models belonging to the same clip group, we should have the same exact object.
@@ -125,7 +125,7 @@ function equalModelGroupInfo(a: ModelGroupInfo, b: ModelGroupInfo): boolean {
 
   if (!equalViewFlags(a.viewFlags, b.viewFlags))
     return false;
-  
+
   return true;
 }
 

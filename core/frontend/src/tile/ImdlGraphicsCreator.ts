@@ -347,7 +347,7 @@ function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsO
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
   if (undefined === node.groupId)
     return createPrimitivesNodeGraphics(node, options);
-  
+
   const graphics: RenderGraphic[] = [];
   for (const child of node.nodes) {
     graphics.push(...createPrimitivesNodeGraphics(child, options));

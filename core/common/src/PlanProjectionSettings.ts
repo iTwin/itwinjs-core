@@ -102,7 +102,7 @@ export class PlanProjectionSettings {
   public equals(other: PlanProjectionSettings): boolean {
     if (this === other)
       return true;
-    
+
     return this.elevation === other.elevation && this.transparency === other.transparency && this.overlay === other.overlay && this.enforceDisplayPriority === other.enforceDisplayPriority;
   }
 }

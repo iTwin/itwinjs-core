@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,

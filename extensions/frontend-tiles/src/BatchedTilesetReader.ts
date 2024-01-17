@@ -7,7 +7,7 @@ import { Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { ViewFlagOverrides, Tileset3dSchema as schema } from "@itwin/core-common";
+import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
@@ -133,7 +133,6 @@ export class BatchedTilesetReader {
   }
 
   public get baseUrl(): URL { return this._spec.baseUrl; }
-
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;

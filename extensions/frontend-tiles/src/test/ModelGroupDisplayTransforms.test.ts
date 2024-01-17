@@ -22,14 +22,14 @@ describe("ModelGroupDisplayTransforms", () => {
     const viewedModels = new Set(["0x1", "0x2", "0x3", "0x4", "0x5", "0x6"]);
     const tfs = new ModelGroupDisplayTransforms(viewedModels);
 
-    function update(provider: ModelDisplayTransformProvider | undefined): boolean {
+    function update(prov: ModelDisplayTransformProvider | undefined): boolean {
       const prevGuid = tfs.guid;
-      const updated = tfs.update(provider);
+      const updated = tfs.update(prov);
       const newGuid = tfs.guid;
       expect(prevGuid !== newGuid).to.equal(updated);
       return updated;
     }
-    
+
     expect(update(undefined)).to.be.false;
     expect(update(createProvider([]))).to.be.false;
 
@@ -37,7 +37,7 @@ describe("ModelGroupDisplayTransforms", () => {
     expect(update(provider)).to.be.true;
     expect(update(provider)).to.be.false;
     expect(update(undefined)).to.be.true;
-    
+
     // Non-existent model not grouped.
     expect(update(createProvider([createTransform("0xabcdef", 1)]))).to.be.false;
 
@@ -54,7 +54,7 @@ describe("ModelGroupDisplayTransforms", () => {
     expect(update(provider)).to.be.false; // premultiply values differ, so grouping remains unchanged.
     list[0].premultiply = list[1].premultiply;
     expect(update(provider)).to.be.true; // both transforms are now equivalent, so the two models get grouped.
-    
+
     provider = createProvider(list);
     expect(update(provider)).to.be.false; // different provider, same grouping.
 

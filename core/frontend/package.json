@@ -19,6 +19,7 @@
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
     "cover": "npm -s test",

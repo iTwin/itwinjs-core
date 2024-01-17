@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
-import { RenderClipVolume, SpatialViewState, Viewport } from "@itwin/core-frontend";
+import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
 import { ModelMetadata } from "./BatchedTilesetReader";
 
 /** Groups the set of spatial models included in a [[BatchedSpatialTileTreeReferences]] based on their display settings.
@@ -119,7 +118,7 @@ export class BatchedModelGroups implements ModelGroupingContext {
           assert(undefined !== group.displayTransform);
         }
       }
-      
+
       return false; // the groupings haven't changed.
     }
 

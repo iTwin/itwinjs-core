@@ -26,10 +26,10 @@ interface GroupingContextArgs {
 class GroupingContext implements ModelGroupingContext {
   private _clips: Array<RenderClipVolume & { modelId: Id64String }> = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
-  getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
-  getDefaultElevation: (modelId: Id64String) => number;
-  getModelTimeline: (modelId: Id64String) => RenderSchedule.ModelTimeline | undefined;
-  getViewFlagOverrides: (modelId: Id64String) => ViewFlagOverrides | undefined;
+  public getPlanProjectionSettings: (modelId: Id64String) => PlanProjectionSettings | undefined;
+  public getDefaultElevation: (modelId: Id64String) => number;
+  public getModelTimeline: (modelId: Id64String) => RenderSchedule.ModelTimeline | undefined;
+  public getViewFlagOverrides: (modelId: Id64String) => ViewFlagOverrides | undefined;
 
   public getModelClip(modelId: Id64String) {
     return this._clips.find((x) => x.modelId === modelId);

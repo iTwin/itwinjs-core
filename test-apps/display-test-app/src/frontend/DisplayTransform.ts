@@ -44,10 +44,10 @@ export class DisplayTransformProvider implements ModelDisplayTransformProvider {
   }
 
   private _set(modelId: Id64String, transform: ModelDisplayTransform | undefined): void {
-      if (transform)
-        this._transforms.set(modelId, transform);
-      else
-        this._transforms.delete(modelId);
+    if (transform)
+      this._transforms.set(modelId, transform);
+    else
+      this._transforms.delete(modelId);
   }
 
   public static disable(vp: Viewport): void {
@@ -66,7 +66,7 @@ export class DisplayTransformProvider implements ModelDisplayTransformProvider {
       });
     }
 
-  return props;
+    return props;
   }
 
   public static fromJSON(props: DisplayTransformProviderProps): DisplayTransformProvider {

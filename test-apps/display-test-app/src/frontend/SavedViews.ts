@@ -245,7 +245,8 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     const displayTransforms = DisplayTransformProvider.get(this._vp)?.toJSON();
     const _displayTransforms = displayTransforms ? JSON.stringify(displayTransforms) : undefined;
-    
+
+    /* eslint-disable @typescript-eslint/naming-convention */
     const nvsp = new NamedViewStatePropsString({
       _name: newName,
       _viewStatePropsString: json,
@@ -253,7 +254,8 @@ export class SavedViewPicker extends ToolBarDropDown {
       _overrideElements: overrideElementsString,
       _displayTransforms,
     });
-    
+    /* eslint-enable @typescript-eslint/naming-convention */
+
     this._views.insert(nvsp);
     this.populateFromViewList();
 

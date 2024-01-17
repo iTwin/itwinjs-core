@@ -6,7 +6,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
-    AnimationNodeId,
+  AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
@@ -46,7 +46,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._groups = new BatchedModelGroups(view, this._currentScript, includedModels, spec.models);
     this._treeOwner = this.getTreeOwner();
     this.loadRefs();
-    
+
     this.listenForScriptChange();
   }
 
@@ -84,7 +84,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       rmListener();
       onScriptChanged(newStyle.scheduleScript);
       rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
-    })
+    });
   }
 
   private loadRefs(): void {

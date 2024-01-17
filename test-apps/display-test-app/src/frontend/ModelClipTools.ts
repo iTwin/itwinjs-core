@@ -13,7 +13,7 @@ export class ApplyModelClipTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp || !vp.view.isSpatialView())
       return false;
-    
+
     const viewedModels = vp.view.modelSelector.models;
     if (viewedModels.size === 0)
       return true;

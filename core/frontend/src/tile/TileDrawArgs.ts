@@ -374,7 +374,7 @@ export class TileDrawArgs {
       branch.groupNodeId = this.groupNodeId;
       graphic = this.context.createGraphicBranch(branch, Transform.identity);
     }
-    
+
     return graphic;
   }
 

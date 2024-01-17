@@ -131,7 +131,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
         return undefined;
       }
     }
-    
+
     const args = super.createDrawArgs(context);
 
     // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
