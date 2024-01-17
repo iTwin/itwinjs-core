@@ -7,7 +7,8 @@ import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
-import { RenderSystem, TileAdmin } from "@itwin/core-frontend";
+import { ModelDisplayTransformProvider, RenderSystem, TileAdmin } from "@itwin/core-frontend";
+import { TransformProps } from "@itwin/core-geometry";
 
 /** Dimensions of the Viewport for a TestConfig. */
 export interface ViewSize {
@@ -49,7 +50,16 @@ export interface ViewStateSpecProps {
   _viewStatePropsString: string; // eslint-disable-line @typescript-eslint/naming-convention
   _overrideElements?: string; // eslint-disable-line @typescript-eslint/naming-convention
   _selectedElements?: string; // eslint-disable-line @typescript-eslint/naming-convention
+  _displayTransforms?: string; // eslint-disable-line @typescript-eslint/naming-convention
 }
+
+export interface DisplayTransformProps {
+  modelId: Id64String;
+  transform: TransformProps;
+  premultiply?: boolean;
+}
+
+export type DisplayTransformProviderProps = DisplayTransformProps[];
 
 /** Parsed in-memory representation of a ViewStateSpecProps. */
 export interface ViewStateSpec {
@@ -57,6 +67,7 @@ export interface ViewStateSpec {
   viewProps: ViewStateProps;
   elementOverrides?: ElementOverrideProps[];
   selectedElements?: Id64String | Id64Array;
+  displayTransformProvider?: ModelDisplayTransformProvider;
 }
 
 /** Overrides aspects of the Hilite.Settings used for emphasis or hilite in a TestConfig. */
