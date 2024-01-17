@@ -275,7 +275,7 @@ export interface RenderFeatureTable {
   /** @alpha */
   getAnimationNodeId(featureIndex: number): number;
 
-  /** Get the Id of the model associated with the feature at the speciifed index.
+  /** Get the Id of the model associated with the feature at the specified index.
    * The caller is responsible for validating that `featureIndex` is less than [[numFeatures]].
    * This is more efficient than [[getFeature]] for callers who are only interested in the model Id.
    */
