@@ -130,8 +130,17 @@
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },
+    "ClearModelTransforms": {
+      "keyin": "dta model transform clear"
+    },
+    "DisableModelTransforms": {
+      "keyin": "dta model transform disable"
+    },
     "ApplyModelDisplayScale": {
       "keyin": "dta model scale"
+    },
+    "ApplyModelClip": {
+      "keyin": "dta model clip"
     },
     "EditingSession": {
       "keyin": "dta edit"

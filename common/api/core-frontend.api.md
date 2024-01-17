@@ -5369,6 +5369,8 @@ export class GraphicBranch implements IDisposable {
     dispose(): void;
     readonly entries: RenderGraphic[];
     getViewFlags(flags: ViewFlags): ViewFlags;
+    // @internal
+    groupNodeId?: number;
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
     // @beta
@@ -6042,13 +6044,12 @@ export interface ImdlDecodeArgs {
     isCanceled?: () => boolean;
     // (undocumented)
     isLeaf?: boolean;
+    modelGroups?: Id64Set[];
     // (undocumented)
     options?: BatchOptions | false;
     // (undocumented)
     sizeMultiplier?: number;
-    // (undocumented)
     stream: ByteStream;
-    // (undocumented)
     system: RenderSystem;
 }
 
@@ -6206,6 +6207,8 @@ export namespace ImdlModel {
         // (undocumented)
         animationNodeId: number;
         // (undocumented)
+        groupId?: never;
+        // (undocumented)
         layerId?: never;
         // (undocumented)
         primitives: NodePrimitive[];
@@ -6220,6 +6223,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId?: never;
         // (undocumented)
@@ -6257,6 +6262,20 @@ export namespace ImdlModel {
     }
     // (undocumented)
     export type FeatureTable = SingleModelFeatureTable | MultiModelFeatureTable;
+    export interface GroupNode {
+        // (undocumented)
+        animationId?: never;
+        // (undocumented)
+        animationNodeId?: never;
+        // (undocumented)
+        groupId: number;
+        // (undocumented)
+        layerId?: never;
+        // (undocumented)
+        nodes: PrimitivesNode[];
+        // (undocumented)
+        primitives?: never;
+    }
     // (undocumented)
     export interface IndexedEdgeParams {
         // (undocumented)
@@ -6287,6 +6306,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId: string;
         // (undocumented)
@@ -6319,7 +6340,7 @@ export namespace ImdlModel {
         numSubCategories: number;
     }
     // (undocumented)
-    export type Node = BasicNode | AnimationNode | Layer;
+    export type Node = PrimitivesNode | GroupNode;
     // (undocumented)
     export type NodePrimitive = Primitive | {
         params: AreaPatternParams;
@@ -6366,6 +6387,7 @@ export namespace ImdlModel {
     };
     // (undocumented)
     export type PrimitiveModifier = Instances | ViewIndependentOrigin;
+    export type PrimitivesNode = BasicNode | AnimationNode | Layer;
     // (undocumented)
     export interface SegmentEdgeParams {
         // (undocumented)
@@ -6509,8 +6531,9 @@ export interface ImdlParserOptions {
     data: Uint8Array;
     // (undocumented)
     is3d: boolean;
-    // (undocumented)
     maxVertexTableSize: number;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     omitEdges?: boolean;
 }
@@ -6567,6 +6590,8 @@ export interface ImdlReaderCreateArgs {
     isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     modelId: Id64String;
     // (undocumented)
@@ -14204,6 +14229,8 @@ export interface TileDrawArgParams {
     boundingRange?: Range3d;
     clipVolume?: RenderClipVolume;
     context: SceneContext;
+    // @internal
+    groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     intersectionClip?: ClipVector;
     location: Transform;
@@ -14245,6 +14272,8 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    // @internal (undocumented)
+    readonly groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
     intersectionClip?: ClipVector;
@@ -14630,6 +14659,8 @@ export abstract class TileTreeReference {
     protected getAnimationTransformNodeId(_tree: TileTree): number | undefined;
     protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    protected getGroupNodeId(_tree: TileTree): number | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     // @alpha
@@ -16637,6 +16668,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal
     onRequestStateChanged(): void;
     readonly onResized: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "4.4.0-dev.15",
+  "version": "4.4.0-dev.21",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",
@@ -15,6 +15,7 @@
     "docs": "",
     "extract-api": "betools extract-api --entry=frontend-tiles",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2"
   },
@@ -26,9 +27,7 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel",
-    "UI",
-    "Widget"
+    "iModel"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",

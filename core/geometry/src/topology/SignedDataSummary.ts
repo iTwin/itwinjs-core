@@ -9,32 +9,32 @@
 /**
  * Class to accumulate statistics about a stream of signed numbers with tag items.
  * * All sums, counts, extrema, and item values are initialized to zero in the constructor.
- * * Each call to `announceItem (item, value)` updates the various sums, counts, and extrema.
+ * * Each call to `announceItem(item, value)` updates the various sums, counts, and extrema.
  */
 export class SignedDataSummary<T> {
-  /** sum of all positive area items */
+  /** Sum of all positive area items. */
   public positiveSum: number;
-  /** number of positive area items */
+  /** Number of positive area items. */
   public numPositive: number;
-  /** sum of negative area items */
+  /** Sum of negative area items. */
   public negativeSum: number;
-  /** number of negative area items */
+  /** Number of negative area items. */
   public numNegative: number;
-  /** number of zero area items */
+  /** Number of zero area items. */
   public numZero: number;
-  /** the tag item item with the largest positive data */
+  /** The tag item item with the largest positive data. */
   public largestPositiveItem?: T;
-  /** the tag item item with the most negative data */
+  /** The tag item item with the most negative data. */
   public largestNegativeItem?: T;
   public largestPositiveValue: number;
   public largestNegativeValue: number;
-  /** array of all negative area items */
+  /** Array of all negative area items. */
   public negativeItemArray?: T[];
-  /** array of zero area items */
+  /** Array of zero area items. */
   public zeroItemArray?: T[];
-  /** array of positive area items */
+  /** Array of positive area items. */
   public positiveItemArray?: T[];
-  /** setup with zero sums and optional arrays */
+  /** Setup with zero sums and optional arrays. */
   public constructor(createArrays: boolean) {
     this.positiveSum = this.negativeSum = 0.0;
     this.numPositive = this.numNegative = this.numZero = 0.0;
@@ -45,7 +45,7 @@ export class SignedDataSummary<T> {
       this.zeroItemArray = [];
     }
   }
-  /** update with an item and its data value. */
+  /** Update with an item and its data value. */
   public announceItem(item: T, data: number) {
     if (data < 0) {
       this.numNegative++;

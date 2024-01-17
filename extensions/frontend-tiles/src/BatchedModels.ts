@@ -5,23 +5,17 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { ModelExtentsProps } from "@itwin/core-common";
-import { IModelConnection, SpatialViewState } from "@itwin/core-frontend";
-
-interface ModelMetadata {
-  extents?: Range3d;
-}
+import { SpatialViewState } from "@itwin/core-frontend";
+import { ModelMetadata } from "./BatchedTilesetReader";
 
 export class BatchedModels {
-  private readonly _iModel: IModelConnection;
   private _viewedModels!: Set<Id64String>;
   private readonly _viewedExtents = new Range3d();
   private readonly _viewedModelIdPairs = new Id64.Uint32Set();
-  private readonly _metadata = new Map<Id64String, ModelMetadata>();
-  private _modelRangePromise?: Promise<void>;
+  private readonly _metadata: Map<Id64String, ModelMetadata>;
 
-  public constructor(view: SpatialViewState) {
-    this._iModel = view.iModel;
+  public constructor(view: SpatialViewState, metadata: Map<Id64String, ModelMetadata>) {
+    this._metadata = metadata;
     this.setViewedModels(view.modelSelector.models);
   }
 
@@ -31,36 +25,11 @@ export class BatchedModels {
     this._viewedModelIdPairs.addIds(models);
     this._viewedExtents.setNull();
 
-    this._modelRangePromise = undefined;
-    const rangeQueryModels: Id64String[] = [];
-
     for (const modelId of models) {
-      let metadata = this._metadata.get(modelId);
-      if (!metadata)
-        this._metadata.set(modelId, metadata = { });
-
-      if (undefined === metadata.extents)
-        rangeQueryModels.push(modelId);
-      else
-        this._viewedExtents.extendRange(metadata.extents);
+      const range = this._metadata.get(modelId)?.extents;
+      if (range)
+        this._viewedExtents.extendRange(range);
     }
-
-    if (rangeQueryModels.length === 0)
-      return;
-
-    const modelRangePromise = this._modelRangePromise = this._iModel.models.queryExtents(rangeQueryModels).then((extents: ModelExtentsProps[]) => {
-      if (modelRangePromise !== this._modelRangePromise)
-        return;
-
-      this._modelRangePromise = undefined;
-      for (const extent of extents) {
-        const metadata = this._metadata.get(extent.id);
-        if (metadata) {
-          metadata.extents = Range3d.fromJSON(extent.extents);
-          this._viewedExtents.extendRange(metadata.extents);
-        }
-      }
-    }).catch(() => { });
   }
 
   public views(modelId: Id64String): boolean {
