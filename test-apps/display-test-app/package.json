@@ -22,6 +22,7 @@
     "clean": "rimraf build lib .static-assets .rush/temp/package-deps*.json ios/imodeljs-test-app/build android/imodeljs-test-app/app/build android/imodeljs-test-app/app/src/main/assets",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js --inspect --remote-debugging-port=9223",
     "start:electron-webpack": "electron ./lib/build/DtaElectronMain.js --trace-warnings --enable-logging --inspect --remote-debugging-port=9223",

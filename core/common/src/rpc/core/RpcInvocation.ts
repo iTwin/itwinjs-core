@@ -174,7 +174,7 @@ export class RpcInvocation {
           // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
           if (!(error instanceof RpcPendingResponse)) {
             Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
-            Tracing.setAttributes({ error: true });
+            Tracing.recordException(error);
           }
           throw error;
         }));

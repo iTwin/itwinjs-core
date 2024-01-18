@@ -147,12 +147,16 @@ export class BatchedTile extends Tile {
       return { };
 
     try {
+      const modelGroups = this.batchedTree.modelGroups;
+
       const content = await this.batchedTree.decoder.decode({
         stream: ByteStream.fromUint8Array(data),
         options: { tileId: this.contentId },
         system,
         isCanceled,
         isLeaf: this.isLeaf,
+        // Don't waste time attempting to split based on model groupings if all models are in the same group.
+        modelGroups: modelGroups && modelGroups.length > 1 ? modelGroups : undefined,
       });
 
       if (this.transformToRoot) {
