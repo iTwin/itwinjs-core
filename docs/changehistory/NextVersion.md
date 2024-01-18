@@ -11,7 +11,7 @@ Table of contents:
 
 When multiple [Briefcase]($backend)s contribute changesets to an iModel, conflicts can arise. For example:
 
-1. Briefcases A and B both modify element X locally.
+1. Briefcases A and B both modify the same element locally.
 2. Briefcase A pushes its changes to iModelHub.
 3. Briefcase B pulls Briefcase A's changes and attempts to merge them and push its own changes to iModelHub.
 
