@@ -3,21 +3,39 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { Tileset3dSchema as schema } from "@itwin/core-common";
+import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
 /** @internal */
+export interface ModelMetadataProps {
+  /** The spatial volume occupied by this model's geometry. */
+  extents: Range3dProps;
+  /** Overrides to be applied to the view's [ViewFlags]($common) when rendering this model, if any. */
+  viewFlags?: ViewFlagOverrides;
+}
+
+/** @internal */
+export interface ModelMetadata {
+  /** The spatial volume occupied by this model's geometry. */
+  extents: Range3d;
+  /** Overrides to be applied to the view's [ViewFlags]($common) when rendering this model, if any. */
+  viewFlags?: ViewFlagOverrides;
+}
+
+/** @internal */
 export interface BatchedTilesetProps extends schema.Tileset {
   extensions: {
     BENTLEY_BatchedTileSet: { // eslint-disable-line @typescript-eslint/naming-convention
-      includedModels: Id64String[];
-      includedModelExtents: Range3dProps[];
+      /** Contains an entry for every model that was processed during publishing of the tileset. */
+      models: {
+        [modelId: Id64String]: ModelMetadataProps | undefined;
+      };
     };
   };
 }
@@ -31,9 +49,9 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
   if (!props.root || !props.asset)
     return false;
 
-  // The extension is required, and it must contain `id` and `range` fields.
-  const extension = props.extensions?.BENTLEY_BatchedTileSet;
-  if (!extension || !Array.isArray(extension.includedModels) || !Array.isArray(extension.includedModelExtents) || extension.includedModels.length !== extension.includedModelExtents.length)
+  // The extension is required.
+  const models = props.extensions?.BENTLEY_BatchedTileSet?.models;
+  if (!models || typeof models !== "object")
     return false;
 
   // ###TODO spec requires geometricError to be present on tileset and all tiles; exporter is omitting from tileset.
@@ -47,7 +65,7 @@ function isBatchedTileset(json: unknown): json is BatchedTilesetProps {
 export interface BatchedTilesetSpec {
   baseUrl: URL;
   props: BatchedTilesetProps;
-  includedModels: Map<Id64String, Range3d>;
+  models: Map<Id64String, ModelMetadata>;
 }
 
 /** @internal */
@@ -56,12 +74,14 @@ export namespace BatchedTilesetSpec {
     if (!isBatchedTileset(json))
       throw new Error("Invalid tileset JSON");
 
-    const includedModels = new Map<Id64String, Range3d>();
-    const ext = json.extensions.BENTLEY_BatchedTileSet;
-    for (let i = 0; i < ext.includedModels.length; i++)
-      includedModels.set(ext.includedModels[i], Range3d.fromJSON(ext.includedModelExtents[i]));
+    const models = new Map<Id64String, ModelMetadata>();
+    for (const [modelId, value] of Object.entries(json.extensions.BENTLEY_BatchedTileSet.models)) {
+      if (Id64.isValidId64(modelId) && value) {
+        models.set(modelId, { extents: Range3d.fromJSON(value.extents), viewFlags: value.viewFlags ? { ...value.viewFlags } : undefined });
+      }
+    }
 
-    return { baseUrl, props: json, includedModels };
+    return { baseUrl, props: json, models };
   }
 }
 
@@ -102,12 +122,14 @@ function transformFromJSON(json: schema.Transform): Transform {
 
 /** @internal */
 export class BatchedTilesetReader {
-  private readonly _spec: BatchedTilesetSpec;
   private readonly _iModel: IModelConnection;
+  private readonly _spec: BatchedTilesetSpec;
+  private readonly _modelGroups: Id64Set[] | undefined;
 
-  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection) {
+  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection, modelGroups: Id64Set[] | undefined) {
     this._iModel = iModel;
     this._spec = spec;
+    this._modelGroups = modelGroups;
   }
 
   public get baseUrl(): URL { return this._spec.baseUrl; }
@@ -158,7 +180,8 @@ export class BatchedTilesetReader {
       priority: TileLoadPriority.Primary,
       rootTile: this.readTileParams(root),
       reader: this,
-      includedModels: this._spec.includedModels,
+      models: this._spec.models,
+      modelGroups: this._modelGroups,
     };
   }
 }

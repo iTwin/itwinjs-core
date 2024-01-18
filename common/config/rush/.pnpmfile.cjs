@@ -28,6 +28,9 @@ function readPackage(pkg) {
     ].includes(pkg.name)
   ) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
+    if (pkg.name === "@itwin/browser-authorization" || pkg.name === "@itwin/electron-authorization") {
+      pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    }
   }
 
   // https://github.com/iTwin/reality-data-client

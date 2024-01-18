@@ -345,11 +345,43 @@ function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsO
 }
 
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
-  const graphics = [];
+  if (undefined === node.groupId)
+    return createPrimitivesNodeGraphics(node, options);
+
+  const graphics: RenderGraphic[] = [];
+  for (const child of node.nodes) {
+    graphics.push(...createPrimitivesNodeGraphics(child, options));
+  }
+
+  if (graphics.length === 0)
+    return graphics;
+
+  const branch = new GraphicBranch(true);
+  branch.groupNodeId = node.groupId;
+  branch.entries.push(...graphics);
+  return [options.system.createBranch(branch, Transform.createIdentity())];
+}
+
+function createPrimitivesNodeGraphics(node: Imdl.PrimitivesNode, options: GraphicsOptions): RenderGraphic[] {
+  let graphics = [];
   for (const primitive of node.primitives) {
     const graphic = primitive.type === "pattern" ? createPatternGraphic(primitive.params, options) : createPrimitiveGraphic(primitive, options);
     if (graphic)
       graphics.push(graphic);
+  }
+
+  if (!graphics.length)
+    return graphics;
+
+  if (undefined !== node.layerId) {
+    const layerGraphic = 1 === graphics.length ? graphics[0] : options.system.createGraphicList(graphics);
+    graphics = [options.system.createGraphicLayer(layerGraphic, node.layerId)];
+  } else if (undefined !== node.animationNodeId) {
+    const branch = new GraphicBranch(true);
+    branch.animationId = node.animationId;
+    branch.animationNodeId = node.animationNodeId;
+    branch.entries.push(...graphics);
+    graphics = [options.system.createBranch(branch, Transform.createIdentity())];
   }
 
   return graphics;
@@ -370,22 +402,7 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
   const system = options.system;
   const graphics: RenderGraphic[] = [];
   for (const node of options.document.nodes) {
-    const nodeGraphics = createNodeGraphics(node, graphicsOptions);
-    if (nodeGraphics.length === 0)
-      continue;
-
-    if (undefined !== node.layerId) {
-      const layerGraphic = 1 === nodeGraphics.length ? nodeGraphics[0] : system.createGraphicList(nodeGraphics);
-      graphics.push(system.createGraphicLayer(layerGraphic, node.layerId));
-    } else if (undefined !== node.animationNodeId) {
-      const branch = new GraphicBranch(true);
-      branch.animationId = node.animationId;
-      branch.animationNodeId = node.animationNodeId;
-      branch.entries.push(...nodeGraphics);
-      graphics.push(system.createBranch(branch, Transform.createIdentity()));
-    } else {
-      graphics.push(...nodeGraphics);
-    }
+    graphics.push(...createNodeGraphics(node, graphicsOptions));
   }
 
   switch (graphics.length) {

@@ -59,6 +59,10 @@ export interface TileDrawArgParams {
    * @internal
    */
   animationTransformNodeId?: number;
+  /** See [[GraphicBranch.groupNodeId]].
+   * @internal
+   */
+  groupNodeId?: number;
   /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
   boundingRange?: Range3d;
   /** @alpha */
@@ -121,6 +125,8 @@ export class TileDrawArgs {
   public readonly pixelSizeScaleFactor;
   /** @internal */
   public readonly animationTransformNodeId?: number;
+  /** @internal */
+  public readonly groupNodeId?: number;
   /** @alpha */
   public maximumScreenSpaceError;
 
@@ -264,6 +270,7 @@ export class TileDrawArgs {
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
+    this.groupNodeId = params.groupNodeId;
     this.boundingRange = params.boundingRange;
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
 
@@ -360,6 +367,13 @@ export class TileDrawArgs {
     let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
     if (undefined !== this.animationTransformNodeId)
       graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
+
+    if (undefined !== this.groupNodeId) {
+      const branch = new GraphicBranch();
+      branch.add(graphic);
+      branch.groupNodeId = this.groupNodeId;
+      graphic = this.context.createGraphicBranch(branch, Transform.identity);
+    }
 
     return graphic;
   }

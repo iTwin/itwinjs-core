@@ -1731,7 +1731,7 @@ importers:
       webpack-cli: ^5.0.1
     dependencies:
       '@azure/storage-blob': 12.7.0
-      '@itwin/browser-authorization': 1.0.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/browser-authorization': 1.0.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1746,7 +1746,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.14.1_n35ochjadrfvmsysax3symqq4m
+      '@itwin/electron-authorization': 0.14.1_uagso5jgyxmkqv2rrwzfnyka74
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
@@ -2475,7 +2475,7 @@ importers:
       webpack: ^5.76.0
     dependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/browser-authorization': 1.0.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/browser-authorization': 1.0.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2484,7 +2484,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.14.1_n35ochjadrfvmsysax3symqq4m
+      '@itwin/electron-authorization': 0.14.1_uagso5jgyxmkqv2rrwzfnyka74
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 3.0.0_wj555zckjupkhkzyssqqpl4sei
@@ -2599,7 +2599,7 @@ importers:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/browser-authorization': 1.0.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/browser-authorization': 1.0.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2613,7 +2613,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.14.1_n35ochjadrfvmsysax3symqq4m
+      '@itwin/electron-authorization': 0.14.1_uagso5jgyxmkqv2rrwzfnyka74
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -4103,16 +4103,14 @@ packages:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
 
-  /@itwin/browser-authorization/1.0.1_67wltvhdskk2oee2c3z2o4tfly:
+  /@itwin/browser-authorization/1.0.1_mdtbcqczpmeuv6yjzfaigjndwi:
     resolution: {integrity: sha512-UqPhiFuNrjhlDdPvUZXd3zULbmdGQ2GyMGOsLLdR+/DctRkEy6asxcaf10v/qBdEBhH7IF8TjA4vS0GWvbSVfg==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': 4.2.4_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/core-common': link:../../core/common
       oidc-client-ts: 2.4.0
-    transitivePeerDependencies:
-      - '@itwin/core-geometry'
     dev: false
 
   /@itwin/certa/3.7.17:
@@ -4207,32 +4205,19 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/core-common/4.2.4_67wltvhdskk2oee2c3z2o4tfly:
-    resolution: {integrity: sha512-TH6H/Ke2290+JjEtQM8dEE3fZVcaZTrphZkCEBdi1Tyqts71DLyO0qA8uRvA8cS+aO/4MFVZU5TXcrKcnVMUPw==}
-    peerDependencies:
-      '@itwin/core-bentley': ^4.2.4
-      '@itwin/core-geometry': ^4.2.4
-    dependencies:
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-geometry': link:../../core/geometry
-      flatbuffers: 1.12.0
-      js-base64: 3.6.1
-    dev: false
-
-  /@itwin/electron-authorization/0.14.1_n35ochjadrfvmsysax3symqq4m:
+  /@itwin/electron-authorization/0.14.1_uagso5jgyxmkqv2rrwzfnyka74:
     resolution: {integrity: sha512-NslwCLw129obJHBRMcV/MdykqbD7d93SKTYOOBdaEab2T2niGCmCTJAOkjcWiZZMU0SwmjyxmY9iqdZjvvIqCA==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
       electron: '>=23.0.0 <25.0.0'
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': 4.2.4_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/core-common': link:../../core/common
       '@openid/appauth': 1.3.1
       electron: 28.0.0
       keytar: 7.9.0
       username: 5.1.0
     transitivePeerDependencies:
-      - '@itwin/core-geometry'
       - debug
     dev: false
 
@@ -12809,7 +12794,7 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.4.9_@types+node@18.16.20
+      vite: 4.4.9
     transitivePeerDependencies:
       - rollup
       - supports-color
