@@ -44,7 +44,3 @@ The renderer supports an arbitrary number of [Viewport]($frontend)s, all sharing
 The renderer will attempt to use WebGL 2, which provides more features and better performance than WebGL 1; but will fall back to WebGL 1 on devices that lack support for WebGL 2. At the time of writing, the Safari browser has finally received official support for WebGL 2 (in macOS Monterey and iOS 15), making WebGL 2 support nearly universal. Still, some advanced features of the renderer may be unsupported on some devices; consult the [compatibility checker](https://connect-imodeljscompatibility.bentley.com/) to determine which features may be unavailable on your device.
 
 Major modern browsers are supported, including Firefox, Safari, and chromium-based browsers (Chrome, Electron, Brave, "new" Edge, etc). Optimal graphics performance is observed in chromium-based browsers. Internet Explorer and "old" Edge are not supported.
-
-## Alternatives
-
-WebGL exposes only a fraction of the capabilities of modern graphics hardware. More photorealistic visualizations of iModels can be produced by leveraging Bentley Systems' [iTwin for Unreal](https://developer.bentley.com/unreal) or [sample Unity exporter](https://github.com/iTwin/imodel-unity-example) to export meshes for consumption by [Unreal Engine](https://www.unrealengine.com/en-US/) and [Unity](https://unity.com), respectively. Or, you can write an exporter to the format of your choice using [IModelDb.exportGraphics]($backend).

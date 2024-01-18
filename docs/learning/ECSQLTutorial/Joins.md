@@ -4,26 +4,26 @@
 
 As ECRelationshipClasses are ECClasses as well, they can be used in ECSQL like ECClasses. Their additional relationship semantics are expressed by these system properties.
 
-Property | Description
---- | ---
-`SourceECInstanceId` | ECInstanceId of the instance on the *source* end of the relationship
-`SourceECClassId` | ECClassId of the instance on the *source* end of the relationship
-`TargetECInstanceId` | ECInstanceId of the instance on the *target* end of the relationship
-`TargetECClassId` | ECClassId of the instance on the *target* end of the relationship
+| Property             | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| `SourceECInstanceId` | ECInstanceId of the instance on the _source_ end of the relationship |
+| `SourceECClassId`    | ECClassId of the instance on the _source_ end of the relationship    |
+| `TargetECInstanceId` | ECInstanceId of the instance on the _target_ end of the relationship |
+| `TargetECClassId`    | ECClassId of the instance on the _target_ end of the relationship    |
 
 > **Try it yourself**
 >
-> *Goal:* Return the child [Element](../../bis/domains/BisCore.ecschema.md#element)s (id and class id) of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) 0x30000000048
+> _Goal:_ Return the child [Element](../../bis/domains/BisCore.ecschema.md#element)s (id and class id) of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) 0x30000000048
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x200000000c7
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x200000000c7"></iframe>
 
-Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as *many to many*) require a separate link table which persists the pairs of related instances. For 1:N relationhips (also known as *one to many*) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x200000000c7"></iframe>
+
+Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as _many to many_) require a separate link table which persists the pairs of related instances. For 1:N relationhips (also known as _one to many_) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
 
 We will cover relationships more in the next chapter on joins.
 
@@ -39,8 +39,8 @@ The tutorial expects that you are familiar with SQL joins. Because their underst
 
 A join is made up of two pieces:
 
-- *What to join*: specifies the class to join to.
-- *How to join*: specifies the join condition. Those pairs of rows from the two classes that match the condition end up in the join.
+- _What to join_: specifies the class to join to.
+- _How to join_: specifies the join condition. Those pairs of rows from the two classes that match the condition end up in the join.
 
 While you can use any condition, the typical join condition matches a property common to both of the joined classes. This is where ECRelationshipClasses and Navigation properties come into play. The next sections explain why.
 
@@ -61,7 +61,7 @@ General idea: **join from a class to the relationship class and then join from t
 
 ### Ad-hoc Joins
 
-As noted above, you can have a join using any arbitrary join condition (*ad-hoc joins*). Usually you will find relationship classes or even navigation properties defined for the typical cases you need to join. Ad-hoc joins are therefore mainly needed if that is **not** the case.
+As noted above, you can have a join using any arbitrary join condition (_ad-hoc joins_). Usually you will find relationship classes or even navigation properties defined for the typical cases you need to join. Ad-hoc joins are therefore mainly needed if that is **not** the case.
 
 ### Examples
 
@@ -69,15 +69,15 @@ As explained above using navigation properties instead of joins is preferred. So
 
 > **Try it yourself**
 >
-> *Goal:* Return the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Sheets'.
+> _Goal:_ Return the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Sheets'.
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT CodeValue, Model FROM bis.Element WHERE CodeValue = 'Sheets'
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT CodeValue, Model FROM bis.Element WHERE CodeValue = 'Sheets'"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT CodeValue, Model FROM bis.Element WHERE CodeValue = 'Sheets'"></iframe>
 
 Note that the above ECSQL implies to navigate from the [Element](../../bis/domains/BisCore.ecschema.md#element) to the [Model](../../bis/domains/BisCore.ecschema.md#model) ECClass using the ECRelationshipClass [ModelContainsElements](../../bis/domains/BisCore.ecschema.md#modelcontainselements). But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
 
@@ -85,43 +85,43 @@ The following ECSQL is the same as above but uses joins instead of the navigatio
 
 > **Try it yourself**
 >
-> *Goal:* Return the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code containing 'Sheets'.
+> _Goal:_ Return the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code containing 'Sheets'.
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElements rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='Sheets'
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElements rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='Sheets'"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT rel.SourceECInstanceId ModelId FROM bis.ModelContainsElements rel JOIN bis.Element ON rel.TargetECInstanceId=Element.ECInstanceId WHERE Element.CodeValue='Sheets'"></iframe>
 
 If you want to return something else than just the id of the related instance, you can still use the navigation property but you need a join to bring in the related instance's class.
 
 > **Try it yourself**
 >
-> *Goal:* Return the id, the modeled element and the parent model of the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Cut'.
+> _Goal:_ Return the id, the modeled element and the parent model of the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Cut'.
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='Cut'
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='Cut'"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Model JOIN bis.Element ON Element.Model.Id=Model.ECInstanceId WHERE Element.CodeValue='Cut'"></iframe>
 
 Again for the purpose of learning, the same ECSQL expressed with relationship classes instead of navigation properties looks like this.
 
 > **Try it yourself**
 >
-> *Goal:* Return the id, the modeled element and the parent model of the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Cut'.
+> _Goal:_ Return the id, the modeled element and the parent model of the [Model](../../bis/domains/BisCore.ecschema.md#model) that contains the [Element](../../bis/domains/BisCore.ecschema.md#element) with code 'Cut'.
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElements rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='Cut'
 > ```
->
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElements rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='Cut'"></iframe>
+
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElements rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='Cut'"></iframe>
 
 ---
 

@@ -1,4 +1,3 @@
-
 # ECSQL Instance properties
 
 ECSQL supports querying instance properties, which are any property in a class selected in ECSql or its derived classes.
@@ -126,7 +125,7 @@ SELECT ECInstanceId, Name
   FROM meta.ECClassDef
     WHERE Name in (
       SELECT $->Name
-      FROM meta.ECClassDef 
+      FROM meta.ECClassDef
         WHERE $->ECInstanceId = 1);
 
 SELECT *
