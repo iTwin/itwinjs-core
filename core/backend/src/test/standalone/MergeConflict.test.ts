@@ -17,7 +17,7 @@ import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
   DictionaryModel,
-  SpatialCategory
+  SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
