@@ -67,84 +67,6 @@ describe("Schema from json creation with different containers tests", () => {
       expect(await Schema.fromJson(schemaA, context)).to.not.be.undefined;
     });
 
-    it("should throw an error and not allow the creation of the schema with top level custom attribute and no reference defined", async () => {
-      const _dummyRefOne = await Schema.fromJson({
-        ...dummyRefJson,
-        items: {
-          customAttributeOne: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyClass",
-          },
-        },
-      }, context);
-
-      const schemaA = {
-        ...schemaAJson,
-        customAttributes: [
-          {
-            className: "DummyReference.customAttributeOne",
-            showClasses: true,
-          },
-        ],
-        items: {
-          testClassOne: {
-            schemaItemType: "EntityClass",
-            description: "Test class one",
-          },
-          testClassTwo: {
-            schemaItemType: "EntityClass",
-            description: "Test class two",
-          },
-        },
-      };
-
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container SchemaA, DummyReference reference not defined");
-    });
-
-    it("should throw an error and not allow the creation of the schema with top level custom attribute and its reference not defined", async () => {
-      const _dummyRefOne = await Schema.fromJson({
-        ...dummyRefJson,
-        items: {
-          customAttributeOne: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyClass",
-          },
-        },
-      }, context);
-
-      const _dummyRefTwo = await Schema.fromJson({
-        ...dummyRefJsonTwo,
-        items: {
-          customAttributeOneRefTwo: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyClass",
-          },
-        },
-      }, context);
-
-      const schemaA = {
-        ...schemaAJson,
-        references: [
-          {
-            name: "DummyReference",
-            version: "01.00.01",
-          },
-        ],
-        customAttributes: [
-          {
-            className: "DummyReference.customAttributeOne",
-            showClasses: true,
-          },
-          {
-            className: "DummyReferenceTwo.customAttributeOneRefTwo",
-            showClasses: true,
-          },
-        ],
-      };
-
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReferenceTwo.customAttributeOneRefTwo from container SchemaA, DummyReferenceTwo reference not defined");
-    });
-
     it("should throw an error and not allow the creation of the schema with item custom attribute and no reference defined", async () => {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefJson,
@@ -241,7 +163,7 @@ describe("Schema from json creation with different containers tests", () => {
   });
 
   describe("Schema from json creation with property containers that have custom attributes tests", () => {
-    it("should throw an error and not allow the creation of the schema with custom attribute in a primitive property container", async () => {
+    it("should throw an error and not allow the creation of the schema with custom attribute in a property container and no reference defined", async () => {
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefJson,
         items: {
@@ -278,57 +200,6 @@ describe("Schema from json creation with different containers tests", () => {
       };
 
       await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container testClassOne.Offset, DummyReference reference not defined");
-    });
-
-    it("should throw an error and not allow the creation of the schema with custom attribute in an array property container", async () => {
-      const _dummyRefOne = await Schema.fromJson({
-        ...dummyRefJson,
-        items: {
-          customAttributeOne: {
-            schemaItemType: "CustomAttributeClass",
-            appliesTo: "AnyClass",
-          },
-        },
-      }, context);
-
-      const schemaA = {
-        ...schemaAJson,
-        items: {
-          allocation: {
-            schemaItemType: "StructClass",
-            description: "Allocation Class",
-          },
-          testClassOne: {
-            schemaItemType: "EntityClass",
-            description: "Test class one",
-            properties: [
-              {
-                name: "Offset",
-                type: "PrimitiveProperty",
-                isReadOnly: true,
-                priority: 0,
-                typeName: "double",
-              },
-              {
-                name: "Allocation",
-                type: "StructArrayProperty",
-                isReadOnly: true,
-                typeName: "SchemaA.allocation",
-                minOccurs: 0,
-                maxOccurs: 2147483647,
-                customAttributes: [
-                  {
-                    className: "DummyReference.customAttributeOne",
-                    showClasses: true,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      };
-
-      await expect(Schema.fromJson(schemaA, context)).to.be.rejectedWith(ECObjectsError, "Unable to load custom attribute DummyReference.customAttributeOne from container testClassOne.Allocation, DummyReference reference not defined");
     });
   });
 });

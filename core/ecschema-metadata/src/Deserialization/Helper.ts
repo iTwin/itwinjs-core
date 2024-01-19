@@ -1014,7 +1014,7 @@ export class SchemaReadHelper<T = unknown> {
 
       // If custom attribute exist within the context and is referenced, validate the reference is defined in the container's schema
       if (caClass && caClass.key.schemaName !== container.schema.name &&
-        !container.schema.references.find((reference) => reference.name === caClass.key.schemaName)) {
+        !container.schema.getReferenceSync(caClass.key.schemaName)) {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`);
       }
 
