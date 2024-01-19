@@ -56,7 +56,7 @@ describe("HalfEdgeGraphSearch", () => {
     node11.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
 
     const connectedComponents = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
-      graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE),
+      graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR,
     );
     ck.testExactNumber(connectedComponents.length, 2);
     ck.testExactNumber(connectedComponents[0].length, 3);
