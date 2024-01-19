@@ -243,6 +243,23 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   meshes?: never;
   /** Morph targets - currently ignored. */
   weights?: number[];
+  extensions?: GltfExtensions & {
+    /** The [EXT_mesh_gpu_instancing](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md) extension permits multiple
+     * instances of the same mesh to be rendered with different translation, rotation, and/or scale.
+     * All of the attribute accessors must have the same count (which indicates the number of instances to be drawn).
+     * All attributes are optional (though omitting all of them would be silly).
+     */
+    EXT_mesh_gpu_instancing?: {
+      attributes?: {
+        /** VEC3; FLOAT */
+        TRANSLATION?: GltfId;
+        /** VEC4 (quaternion); FLOAT, normalized BYTE, or normalized SHORT */
+        ROTATION?: GltfId;
+        /** VEC3; FLOAT */
+        SCALE?: GltfId;
+      };
+    };
+  };
 }
 
 /** Describes a node in a [[GltfScene]]. Each node may be associated with zero, one (glTF 2.0), or any number of (glTF 1.0) [[GltfMesh]]es.
