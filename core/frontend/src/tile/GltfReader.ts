@@ -581,7 +581,8 @@ export abstract class GltfReader {
       return undefined;
     }
 
-    const translations = this.getBufferView(ext.attributes, "TRANSLATION")?.toBufferData(GltfDataType.Float);
+    const translationsView = this.getBufferView(ext.attributes, "TRANSLATION");
+    const translations = translationsView?.toBufferData(GltfDataType.Float);
     const rotations = this.getBufferView(ext.attributes, "ROTATION")?.toBufferData(GltfDataType.Float);
     const scales = this.getBufferView(ext.attributes, "SCALE")?.toBufferData(GltfDataType.Float);
 
@@ -591,16 +592,29 @@ export abstract class GltfReader {
       return undefined;
     }
 
+    const transformCenter = new Point3d();
+    const trMin = translationsView?.accessor.min;
+    const trMax = translationsView?.accessor.max;
+    if (trMin && trMax) {
+      const half = (idx: number): number => trMin[idx] + (trMax[idx] - trMin[idx]) / 2;
+      transformCenter.set(half(0), half(1), half(2));
+    }
+
+    const scratchTranslation = new Point3d();
     const getTranslation = (index: number): Point3d => {
       if (!translations) {
-        return new Point3d();
+        return transformCenter;
       }
 
       index *= 3;
-      return new Point3d(translations.buffer[index], translations.buffer[index + 1], translations.buffer[index + 2]);
+      return Point3d.create(
+        translations.buffer[index + 0] - transformCenter.x,
+        translations.buffer[index + 1] - transformCenter.y,
+        translations.buffer[index + 2] - transformCenter.z,
+        scratchTranslation
+      );
     };
 
-    const transformCenter = new Point3d();
     const transforms = new Float32Array(3 * 4 * count);
 
     for (let i = 0; i < count; i++) {
