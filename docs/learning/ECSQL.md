@@ -2,6 +2,8 @@
 
 > Make sure to check out the [ECSQL Tutorial](./ECSQLTutorial/index.md) as well!
 >
+> See [ECSql Syntax & Features](./ECSQLTutorial/index.md) for an over view of ECSql syntax
+>
 > See [ECSQL Code Examples](./ECSQLCodeExamples.md) for examples of how to query ECSQL in with the iTwin API.
 
 ## What is ECSQL
