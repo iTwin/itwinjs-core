@@ -16,13 +16,6 @@ describe("Schema from json creation with different containers tests", () => {
     alias: "dumRef",
   };
 
-  const dummyRefJsonTwo = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "DummyReferenceTwo",
-    version: "01.00.01",
-    alias: "dumRefTwo",
-  };
-
   const schemaAJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "SchemaA",
