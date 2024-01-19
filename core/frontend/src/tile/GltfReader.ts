@@ -604,25 +604,31 @@ export abstract class GltfReader {
       transformCenter.set(half(0), half(1), half(2));
     }
 
-    const scratchTranslation = new Point3d();
-    const getTranslation = (index: number): Point3d => {
+    const getTranslation = (index: number): [number, number, number] | undefined => {
       if (!translations) {
-        return transformCenter;
+        return undefined;
       }
 
       index *= 3;
-      return Point3d.create(
+      return [
         translations.buffer[index + 0] - transformCenter.x,
         translations.buffer[index + 1] - transformCenter.y,
         translations.buffer[index + 2] - transformCenter.z,
-        scratchTranslation
-      );
+      ];
+    };
+
+    const getRotation = (_index: number): [number, number, number, number] | undefined => {
+      return undefined; // ###TODO
+    };
+
+    const getScale = (_index: number): [number, number, number] | undefined => {
+      return undefined; // ###TODO
     };
 
     const transforms = new Float32Array(3 * 4 * count);
 
     for (let i = 0; i < count; i++) {
-      const tf = Transform.createTranslation(getTranslation(i));
+      const tf = trsMatrix(getTranslation(i), getRotation(i), getScale(i));
       const idx = i * 3 * 4;
       transforms[idx + 0] = tf.matrix.coffs[0];
       transforms[idx + 1] = tf.matrix.coffs[1];
@@ -639,15 +645,6 @@ export abstract class GltfReader {
     }
 
     return { count, transforms, transformCenter };
-
-    // // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
-    // // first the scale is applied to the vertices, then the rotation, and then the translation.
-    // const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
-    // const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
-    // rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
-    // const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
-    // nodeTransform = scale.multiplyTransformTransform(rot);
-    // trans.multiplyTransformTransform(nodeTransform, nodeTransform);
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
