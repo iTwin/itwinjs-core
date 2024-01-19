@@ -617,8 +617,9 @@ export abstract class GltfReader {
       ];
     };
 
-    const getRotation = (_index: number): [number, number, number, number] | undefined => {
-      return undefined; // ###TODO
+    const getRotation = (index: number): [number, number, number, number] | undefined => {
+      index *= 4;
+      return rotations ? [rotations.buffer[index], rotations.buffer[index + 1], rotations.buffer[index + 2], rotations.buffer[index + 3]] : undefined;
     };
 
     const getScale = (index: number): [number, number, number] | undefined => {
