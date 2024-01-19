@@ -296,14 +296,14 @@ function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): Colo
   return color;
 }
 
-function trsMatrix(translation: [number, number, number] | undefined, rotation: [number, number, number, number] | undefined, scale: [number, number, number] | undefined): Transform {
+function trsMatrix(translation: [number, number, number] | undefined, rotation: [number, number, number, number] | undefined, scale: [number, number, number] | undefined, result?: Transform): Transform {
   // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
   // first the scale is applied to the vertices, then the rotation, and then the translation.
   const scaleTf = Transform.createRefs(undefined, scale ? Matrix3d.createScale(scale[0], scale[1], scale[2]) : Matrix3d.identity);
   const rotTf = Transform.createRefs(undefined, rotation ? Matrix3d.createFromQuaternion(Point4d.create(rotation[0], rotation[1], rotation[2], rotation[3])) : Matrix3d.identity);
   rotTf.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
   const transTf = Transform.createTranslation(translation ? new Point3d(translation[0], translation[1], translation[2]) : Point3d.createZero());
-  const tf = scaleTf.multiplyTransformTransform(rotTf);
+  const tf = scaleTf.multiplyTransformTransform(rotTf, result);
   transTf.multiplyTransformTransform(tf, tf);
   return tf;
 }
@@ -626,9 +626,9 @@ export abstract class GltfReader {
     };
 
     const transforms = new Float32Array(3 * 4 * count);
-
+    const transform = Transform.createIdentity();
     for (let i = 0; i < count; i++) {
-      const tf = trsMatrix(getTranslation(i), getRotation(i), getScale(i));
+      const tf = trsMatrix(getTranslation(i), getRotation(i), getScale(i), transform);
       const idx = i * 3 * 4;
       transforms[idx + 0] = tf.matrix.coffs[0];
       transforms[idx + 1] = tf.matrix.coffs[1];
