@@ -296,6 +296,18 @@ function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): Colo
   return color;
 }
 
+function trsMatrix(translation: [number, number, number] | undefined, rotation: [number, number, number, number] | undefined, scale: [number, number, number] | undefined): Transform {
+  // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
+  // first the scale is applied to the vertices, then the rotation, and then the translation.
+  const scaleTf = Transform.createRefs(undefined, scale ? Matrix3d.createScale(scale[0], scale[1], scale[2]) : Matrix3d.identity);
+  const rotTf = Transform.createRefs(undefined, rotation ? Matrix3d.createFromQuaternion(Point4d.create(rotation[0], rotation[1], rotation[2], rotation[3])) : Matrix3d.identity);
+  rotTf.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
+  const transTf = Transform.createTranslation(translation ? new Point3d(translation[0], translation[1], translation[2]) : Point3d.createZero());
+  const tf = scaleTf.multiplyTransformTransform(rotTf);
+  transTf.multiplyTransformTransform(tf, tf);
+  return tf;
+}
+
 class TransformStack {
   private readonly _stack: Array<Transform | undefined> = [];
 
@@ -324,15 +336,7 @@ class TransformStack {
 
       nodeTransform = Transform.createOriginAndMatrix(origin, matrix);
     } else if (node.rotation || node.scale || node.translation) {
-      // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
-      // first the scale is applied to the vertices, then the rotation, and then the translation.
-      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
-      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
-      rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
-      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
-
-      nodeTransform = scale.multiplyTransformTransform(rot);
-      trans.multiplyTransformTransform(nodeTransform, nodeTransform);
+      nodeTransform = trsMatrix(node.translation, node.rotation, node.scale);
     }
 
     const top = this.transform;

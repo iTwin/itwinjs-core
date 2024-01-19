@@ -211,11 +211,11 @@ export interface GltfNodeBaseProps {
   /** A 4x4 column-major transformation matrix. Mutually exclusive with [[rotation]], [[scale]], and [[translation]]. */
   matrix?: number[];
   /** Unit quaternion as [x, y, z, w], where w is the scalar. */
-  rotation?: number[];
+  rotation?: [number, number, number, number];
   /** Non-uniform scale as [x, y, z]. */
-  scale?: number[];
+  scale?: [number, number, number];
   /** Translation as [x, y, z]. */
-  translation?: number[];
+  translation?: [number, number, number];
 }
 
 /** glTF 1.0 representation of a [[GltfNode]]. Unlike a [[Gltf2Node]], a Gltf1Node may refer to any number of [[GltfMesh]]es.
