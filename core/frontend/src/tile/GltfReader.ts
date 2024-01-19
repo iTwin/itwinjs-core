@@ -621,8 +621,9 @@ export abstract class GltfReader {
       return undefined; // ###TODO
     };
 
-    const getScale = (_index: number): [number, number, number] | undefined => {
-      return undefined; // ###TODO
+    const getScale = (index: number): [number, number, number] | undefined => {
+      index *= 3;
+      return scales ? [scales.buffer[index], scales.buffer[index + 1], scales.buffer[index + 2]] : undefined;
     };
 
     const transforms = new Float32Array(3 * 4 * count);
