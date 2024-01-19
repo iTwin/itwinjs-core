@@ -117,7 +117,7 @@ describe("HalfEdgeGraphSearch", () => {
   function getSampleMesh(): IndexedPolyface {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.1;
-    const sampleMesh = Sample.createMeshFromSmoothSurface(100, strokeOptions)!;
+    const sampleMesh = Sample.createMeshFromFrankeSurface(100, strokeOptions)!;
     sampleMesh.tryTransformInPlace(Transform.createScaleAboutPoint(Point3d.create(0, 0, 0), 50));
     return sampleMesh;
   }
