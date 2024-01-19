@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry, PolygonLocation } from "../../Geometry";
@@ -42,7 +44,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
-import { JointOptions } from "../../curve/OffsetOptions";
+import { LinearSweep } from "../../core-geometry";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -276,19 +278,20 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-// implement a do-nothing visitor NOT backed by a Polyface
+// implement a minimal visitor NOT backed by a Polyface
 class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   private _index: number;
   private _numIndices: number;
-  public constructor(numIndices: number) {
+  public constructor(numIndicesAndVertices: number) {
     super();
-    this._numIndices = numIndices;
+    this._numIndices = numIndicesAndVertices;
     this._index = -1;
   }
   public moveToReadIndex(index: number): boolean {
     if (index < 0 || index >= this._numIndices)
       return false;
     this._index = index;
+    this.pointIndex = [index];  // each "face loop" is a singleton array holding a unique index
     return true;
   }
   public currentReadIndex(): number {
@@ -299,24 +302,25 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   }
   public reset(): void {
     this._index = -1;
+    this.pointIndex = [];
   }
   public clientPolyface(): Polyface | undefined {
     return undefined; // highly unusual
   }
   public clientPointIndex(_i: number): number {
-    return 0;
+    return this.pointIndex[0];
   }
   public clientParamIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientNormalIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientColorIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientAuxIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public setNumWrap(_numWrap: number): void {
   }
@@ -331,14 +335,16 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
 it("CountVisitableFacets", () => {
   const ck = new Checker();
   const mesh = ImportedSample.createPolyhedron62();
-  if (ck.testDefined(mesh) && undefined !== mesh) {
+  if (ck.testType(mesh, IndexedPolyface)) {
+    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(mesh));
+    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(mesh));
     const visitor = mesh.createVisitor(0);
     ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
     ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
   }
   // test a visitor without polyface backing
   const visitor0 = new VisitorSansMesh(5);
-  ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
+  ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
   ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
   expect(ck.getNumErrors()).equals(0);
 });
@@ -606,7 +612,7 @@ describe("MarkVisibility", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-describe("ReOrientFacets", () => {
+describe("ReorientFacets", () => {
   it("TwoFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -666,8 +672,35 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("MoebiusStrip", () => {
+  it("MeshClosure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const testCases = ["./src/test/testInputs/polyface/closedMesh.imjs", "./src/test/testInputs/polyface/almostClosedMesh.imjs"];
+    for (const testCase of testCases) {
+      const mesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as IndexedPolyface;
+      if (ck.testType(mesh, IndexedPolyface, "input successfully parsed")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+        const range = mesh.range();
+        let isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        if (!isTopologicallyClosed) {
+          // almostClosedMesh has two degenerate triangles with only 2 edges, and a degenerate hexagon with only 3 edges,
+          // which can be seen in the allGeometry if the following compress is skipped.
+          mesh.data.compress();
+          const typicalBoundary = PolyfaceQuery.collectBoundaryEdges(mesh, true, false, false);
+          ck.testUndefined(typicalBoundary, "compressed mesh anomalous boundary removed successfully");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, typicalBoundary, x0);
+          isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        }
+        ck.testBoolean(isTopologicallyClosed, 2 === mesh.expectedClosure, "expected closure agrees with topo closure");
+        x0 += range.xLength();
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MeshClosure");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
+  it("MoebiusStrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -996,7 +1029,7 @@ describe("ReOrientFacets", () => {
       x0 += 20;
     }
     // test an open surface
-    const surfMesh = Sample.createMeshFromSmoothSurface(50, defaultOptions);
+    const surfMesh = Sample.createMeshFromFrankeSurface(50, defaultOptions);
     if (ck.testType(surfMesh, IndexedPolyface, "faceted a smooth surface")) {
       for (const viewVector of [Vector3d.create(0, 0, 1), Vector3d.create(1, -1, 1), Vector3d.create(-1, -1, 1)]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfMesh, x0, 0, 0);
@@ -1336,6 +1369,43 @@ describe("Intersections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("FacetShape", () => {
+  it("Convexity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const options = StrokeOptions.createForFacets();
+    const polyface = Sample.createMeshFromFrankeSurface(30, options)!;
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface), "Franke surface (quads) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface, true), "Franke surface (quads) is manifold");
+
+    options.shouldTriangulate = true;
+    const polyface1 = Sample.createMeshFromFrankeSurface(30, options)!;
+    const visitor1 = polyface1.createVisitor();
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(visitor1), "Franke surface (triangulated) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface1, true), "Franke surface (triangulated) is manifold");
+
+    options.shouldTriangulate = false;
+    const dartPoints = [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)];
+    const sweptDart = LinearSweep.createZSweep(dartPoints, 0, 3, true);
+    if (ck.testType(sweptDart, LinearSweep, "created swept dart solid")) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addLinearSweep(sweptDart);
+      const polyface2 = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface2);
+      ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface2), "Swept dart (triangulated) has convex facets");
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2), "Swept dart (triangulated) is closed");
+      const polyface3 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface2);
+      if (ck.testType(polyface3, IndexedPolyface, "clone with max planar facets successful")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface3, 5);
+        ck.testFalse(PolyfaceQuery.areFacetsConvex(polyface3), "Swept dart (max planar facets) has at least one non-convex facet");
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface3), "Swept dart (max planar facets) is closed");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FacetShape", "Convexity");
     expect(ck.getNumErrors()).equals(0);
   });
 });
