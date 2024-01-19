@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-
-import { Cloneable, Geometry } from "../Geometry";
+import { Geometry, ICloneable } from "../Geometry";
 
 describe("Geometry.isAlmostEqualOptional", () => {
   it("Geometry.isAlmostEqualOptional", () => {
@@ -107,7 +106,7 @@ describe("Geometry.areEqualAllowUndefined", () => {
   });
 });
 
-class Widget implements Cloneable<Widget> {
+class Widget implements ICloneable<Widget> {
   private _value: number = 0;
   constructor(value: number) {
     this._value = value;
@@ -115,17 +114,21 @@ class Widget implements Cloneable<Widget> {
   public get value(): number {
     return this._value;
   }
-  public clone(): Widget | undefined {
-    return new Widget(this._value);
+  public clone(result?: Widget): Widget {
+    if (result)
+      result._value = this._value;
+    else
+      result = new Widget(this._value);
+    return result;
   }
 }
 
 describe("Geometry.cloneMembers", () => {
   it("Geometry.cloneMembers", () => {
-    let clonedWidgets = Geometry.cloneMembers<Widget>(undefined);
+    let clonedWidgets = Geometry.cloneArray<Widget>(undefined);
     assert.equal(clonedWidgets, undefined);
     const widgets: Widget[] = [new Widget(5), new Widget(6), new Widget(7)];
-    clonedWidgets = Geometry.cloneMembers<Widget>(widgets)!;
+    clonedWidgets = Geometry.cloneArray<Widget>(widgets)!;
     assert.equal(clonedWidgets[0].value, 5);
     assert.equal(clonedWidgets[1].value, 6);
     assert.equal(clonedWidgets[2].value, 7);

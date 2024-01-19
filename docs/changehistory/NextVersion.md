@@ -10,6 +10,8 @@ Table of contents:
 - [Batched tileset enhancements](#batched-tileset-enhancements)
   - [Per-model display settings](#per-model-display-settings)
   - [Support for excluded models](#support-for-excluded-models)
+- [Geometry](#geometry)
+  - [Range tree search](#range-tree-search)
 
 ## Tracing API deprecation
 
@@ -45,3 +47,9 @@ The [mesh export service](https://developer.bentley.com/apis/mesh-export/overvie
 - "Template" models containing geometry that serves as a template for placing 3d components.
 
 Previously, geometry from these models would fail to display. That has been [rectified](https://github.com/iTwin/itwinjs-core/pull/6270).
+
+## Geometry
+
+### Range tree search
+
+New efficient range tree methods [PolyfaceRangeTreeContext.searchForClosestPoint]($core-geometry) and [PolyfaceRangeTreeContext.searchForClosestApproach]($core-geometry) support searches of a [Polyface]($core-geometry) for the closest facet point to a given space point, and searches of two Polyfaces for the segment spanning their closest approach. New classes [Point3dArrayRangeTreeContext]($core-geometry) and [LineString3dRangeTreeContext]($core-geometry) provide similar functionality for searching [Point3d]($core-geometry) arrays and [LineString3d]($core-geometry) objects, respectively.
