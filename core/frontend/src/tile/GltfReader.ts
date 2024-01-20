@@ -20,7 +20,7 @@ import {
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { PickableGraphicOptions } from "../render/GraphicBuilder";
+import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -502,17 +502,29 @@ export abstract class GltfReader {
     if (0 === renderGraphicList.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
 
-    let renderGraphic: RenderGraphic | undefined;
-    if (1 === renderGraphicList.length)
-      renderGraphic = renderGraphicList[0];
-    else
-      renderGraphic = this._system.createGraphicList(renderGraphicList);
-
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     let range = contentRange;
     const invTransform = transform?.inverse();
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);
+
+    const includeDebugRangeGraphic = true;
+    if (includeDebugRangeGraphic) {
+      const builder = this._system.createGraphic({
+        computeChordTolerance: () => 0.0,
+        type: GraphicType.Scene,
+      });
+
+      builder.setSymbology(ColorDef.green, ColorDef.green, 2);
+      builder.addRangeBox(range);
+      renderGraphicList.push(builder.finish());
+    }
+
+    let renderGraphic: RenderGraphic | undefined;
+    if (1 === renderGraphicList.length)
+      renderGraphic = renderGraphicList[0];
+    else
+      renderGraphic = this._system.createGraphicList(renderGraphicList);
 
     if (featureTable)
       renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
