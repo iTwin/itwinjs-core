@@ -249,13 +249,17 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
      * All of the attribute accessors must have the same count (which indicates the number of instances to be drawn).
      * All attributes are optional (though omitting all of them would be silly).
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_gpu_instancing?: {
       attributes?: {
         /** VEC3; FLOAT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         TRANSLATION?: GltfId;
         /** VEC4 (quaternion); FLOAT, normalized BYTE, or normalized SHORT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ROTATION?: GltfId;
         /** VEC3; FLOAT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         SCALE?: GltfId;
       };
     };

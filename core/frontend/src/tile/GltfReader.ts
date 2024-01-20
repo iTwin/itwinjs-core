@@ -502,12 +502,6 @@ export abstract class GltfReader {
     if (0 === renderGraphicList.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
 
-    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
-    let range = contentRange;
-    const invTransform = transform?.inverse();
-    if (invTransform)
-      range = invTransform.multiplyRange(contentRange);
-
     const includeDebugRangeGraphic = true;
     if (includeDebugRangeGraphic) {
       const builder = this._system.createGraphic({
@@ -516,7 +510,7 @@ export abstract class GltfReader {
       });
 
       builder.setSymbology(ColorDef.green, ColorDef.green, 2);
-      builder.addRangeBox(range);
+      builder.addRangeBox(contentRange);
       renderGraphicList.push(builder.finish());
     }
 
@@ -527,8 +521,9 @@ export abstract class GltfReader {
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
     if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
 
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     if (transform) {
       const branch = new GraphicBranch(true);
       branch.add(renderGraphic);
@@ -539,7 +534,7 @@ export abstract class GltfReader {
       readStatus,
       isLeaf,
       contentRange,
-      range,
+      range: contentRange,
       graphic: renderGraphic,
       containsPointCloud: this._containsPointCloud,
     };
@@ -999,33 +994,32 @@ export abstract class GltfReader {
           if (mesh) {
             meshes.push(mesh);
             if (this._computedContentRange && mesh.pointRange) {
-              const invTransform = thisTransform?.inverse();
-              const meshRange = invTransform ? invTransform.multiplyRange(mesh.pointRange) : mesh.pointRange;
+              const meshRange = thisTransform ? thisTransform .multiplyRange(mesh.pointRange) : mesh.pointRange;
               if (!instances) {
                 this._computedContentRange.extendRange(meshRange);
               } else {
                 const tfs = instances.transforms;
                 const nodeRange = new Range3d();
-                const extendTransformedRange = (tfs: Float32Array, i: number, x: number, y: number, z: number) => {
+                const extendTransformedRange = (i: number, x: number, y: number, z: number) => {
                   nodeRange.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
                     tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
                     tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
                 };
 
                 for (let i = 0; i < tfs.length; i += 3 * 4) {
-                  extendTransformedRange(tfs, i, meshRange.low.x, meshRange.low.y, meshRange.low.z);
-                  extendTransformedRange(tfs, i, meshRange.low.x, meshRange.low.y, meshRange.high.z);
-                  extendTransformedRange(tfs, i, meshRange.low.x, meshRange.high.y, meshRange.low.z);
-                  extendTransformedRange(tfs, i, meshRange.low.x, meshRange.high.y, meshRange.high.z);
-                  extendTransformedRange(tfs, i, meshRange.high.x, meshRange.low.y, meshRange.low.z);
-                  extendTransformedRange(tfs, i, meshRange.high.x, meshRange.low.y, meshRange.high.z);
-                  extendTransformedRange(tfs, i, meshRange.high.x, meshRange.high.y, meshRange.low.z);
-                  extendTransformedRange(tfs, i, meshRange.high.x, meshRange.high.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.low.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.low.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.high.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.low.x, meshRange.high.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.low.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.low.y, meshRange.high.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.high.y, meshRange.low.z);
+                  extendTransformedRange(i, meshRange.high.x, meshRange.high.y, meshRange.high.z);
                 }
 
                 nodeRange.low.addInPlace(instances.transformCenter);
                 nodeRange.high.addInPlace(instances.transformCenter);
-                  
+
                 this._computedContentRange.extendRange(nodeRange);
               }
             }
