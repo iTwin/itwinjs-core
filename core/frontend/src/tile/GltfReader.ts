@@ -579,7 +579,7 @@ export abstract class GltfReader {
     return mesh.getGraphics(this._system, instances);
   }
 
-  private readInstanceAttributes(node: Gltf2Node): InstancedGraphicParams | undefined {
+  private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
     const ext = node.extensions?.EXT_mesh_gpu_instancing;
     if (!ext || !ext.attributes) {
       return undefined;
@@ -646,7 +646,10 @@ export abstract class GltfReader {
       transforms[idx + 11] = tf.origin.z;
     }
 
-    return { count, transforms, transformCenter };
+    // ###TODO? The extension currently provides no way of specifying per-instance feature Ids.
+    // For now, assume that if the feature table contains exactly one feature, all the instances belong to that feature.
+    const featureIds = featureTable && featureTable.isUniform ? new Uint8Array(3 * count) : undefined;
+    return { count, transforms, transformCenter, featureIds };
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
@@ -658,7 +661,7 @@ export abstract class GltfReader {
     const thisTransform = transformStack.transform;
 
     if (!instances && undefined !== node.mesh) {
-      instances = this.readInstanceAttributes(node);
+      instances = this.readInstanceAttributes(node, featureTable);
     }
 
     /**
