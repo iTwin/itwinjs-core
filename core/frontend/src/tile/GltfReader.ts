@@ -20,7 +20,7 @@ import {
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
+import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -506,18 +506,6 @@ export abstract class GltfReader {
     if (0 === renderGraphicList.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
 
-    const includeDebugRangeGraphic = true;
-    if (includeDebugRangeGraphic) {
-      const builder = this._system.createGraphic({
-        computeChordTolerance: () => 0.0,
-        type: GraphicType.Scene,
-      });
-
-      builder.setSymbology(ColorDef.green, ColorDef.green, 2);
-      builder.addRangeBox(contentRange);
-      renderGraphicList.push(builder.finish());
-    }
-
     let renderGraphic: RenderGraphic | undefined;
     if (1 === renderGraphicList.length)
       renderGraphic = renderGraphicList[0];
@@ -533,7 +521,7 @@ export abstract class GltfReader {
       const branch = new GraphicBranch(true);
       if (viewFlagOverrides)
         branch.setViewFlagOverrides(viewFlagOverrides);
-      
+
       branch.add(renderGraphic);
       renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
