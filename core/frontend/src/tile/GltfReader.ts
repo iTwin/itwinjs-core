@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
+  QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -454,6 +454,10 @@ export abstract class GltfReader {
     return this.traverseNodes(this._sceneNodes);
   }
 
+  protected get viewFlagOverrides(): ViewFlagOverrides | undefined {
+    return undefined;
+  }
+
   private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d): Transform | undefined {
     let transform;
 
@@ -524,10 +528,14 @@ export abstract class GltfReader {
       renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
 
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
-    if (transform) {
+    const viewFlagOverrides = this.viewFlagOverrides;
+    if (transform || viewFlagOverrides) {
       const branch = new GraphicBranch(true);
+      if (viewFlagOverrides)
+        branch.setViewFlagOverrides(viewFlagOverrides);
+      
       branch.add(renderGraphic);
-      renderGraphic = this._system.createBranch(branch, transform);
+      renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
 
     return {
@@ -981,7 +989,8 @@ export abstract class GltfReader {
       textureMapping = undefined;
 
     }
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
@@ -1940,6 +1949,13 @@ export class GltfGraphicsReader extends GltfReader {
       this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
       this._featureTable.insert(new Feature(pickableId));
     }
+  }
+
+  protected override get viewFlagOverrides(): ViewFlagOverrides {
+    return {
+      whiteOnWhiteReversal: false,
+      renderMode: RenderMode.SmoothShade,
+    };
   }
 
   public async read(): Promise<GltfReaderResult> {
