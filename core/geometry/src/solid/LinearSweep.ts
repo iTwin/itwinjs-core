@@ -43,7 +43,7 @@ export class LinearSweep extends SolidPrimitive {
   }
   /**
    * Create a sweep of a starting contour.
-   * @param contour contour to be swept
+   * @param contour contour to be swept, CAPTURED
    * @param direction sweep vector.  The contour is swept the full length of the vector.
    * @param capped true to include end caps
    */

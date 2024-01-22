@@ -74,6 +74,7 @@ public;ClipUtilities
 public;ClipVector 
 public;ClipVectorProps = ClipPrimitiveProps[]
 public;Cloneable
+deprecated;Cloneable
 internal;ClusterableArray 
 internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
@@ -120,6 +121,7 @@ public;FacetFaceData
 public;FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean
 public;FacetIntersectOptions
 public;FacetLocationDetail
+public;FacetLocationDetailPair
 public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
@@ -130,21 +132,15 @@ public;class GeometryHandler
 public;class GeometryQuery
 public;GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf"
 internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
-internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
 public;GriddedRaggedRange2dSet
 public;GriddedRaggedRange2dSetWithOverflow
 public;GrowableBlockedArray
 public;GrowableFloat64Array
 public;GrowableXYArray 
 public;GrowableXYZArray 
-internal;HalfEdge 
-internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
-internal;HalfEdgeGraph
-internal;HalfEdgeMask
-internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
-internal;HalfEdgeUserData
 public;HasZ = Readonly
 public;HoleFillOptions
+public;ICloneable
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval
@@ -170,6 +166,7 @@ public;LinearCurvePrimitive = LineSegment3d | LineString3d
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
+public;LineString3dRangeTreeContext
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
 public;LongitudeLatitudeNumber 
 public;Loop 
@@ -185,8 +182,6 @@ public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
-internal;NodeFunction = (node: HalfEdge) => any
-internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NonConvexFacetLocationDetail 
 public;NullGeometryHandler 
 public;NumberArray
@@ -219,6 +214,7 @@ public;Point3d
 public;Point3dArray
 public;Point3dArrayCarrier 
 public;Point3dArrayPolygonOps
+public;Point3dArrayRangeTreeContext
 public;Point4d 
 public;Point4dArray
 public;Point4dProps = number[]
@@ -229,10 +225,12 @@ public;PolyfaceBuilder
 public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
+public;PolyfaceRangeTreeContext
 public;PolyfaceVisitor 
 public;PolygonClipper
 public;PolygonLocation
 public;PolygonLocationDetail
+public;PolygonLocationDetailPair
 public;PolygonOps
 public;PolylineOps
 internal;PowerPolynomial
@@ -286,7 +284,6 @@ public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
 public;TriangleLocationDetail
 public;TriangularFacetLocationDetail 
-internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial
 public;TrigValues

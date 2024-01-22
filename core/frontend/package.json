@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.4.0-dev.22",
+  "version": "4.4.0-dev.24",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -45,12 +45,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.4.0-dev.22",
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.22",
-    "@itwin/core-common": "workspace:^4.4.0-dev.22",
-    "@itwin/core-geometry": "workspace:^4.4.0-dev.22",
-    "@itwin/core-orbitgt": "workspace:^4.4.0-dev.22",
-    "@itwin/core-quantity": "workspace:^4.4.0-dev.22"
+    "@itwin/appui-abstract": "workspace:^4.4.0-dev.24",
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.24",
+    "@itwin/core-common": "workspace:^4.4.0-dev.24",
+    "@itwin/core-geometry": "workspace:^4.4.0-dev.24",
+    "@itwin/core-orbitgt": "workspace:^4.4.0-dev.24",
+    "@itwin/core-quantity": "workspace:^4.4.0-dev.24"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

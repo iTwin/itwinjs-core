@@ -116,10 +116,10 @@ export class PlanarSubdivision {
    *   * no action if start and end points are identical.
    * @param graph containing graph.
    * @param p the curve
-   * @param fraction0 starting fraction
    * @param point0 start point
-   * @param fraction1 end fraction
+   * @param fraction0 starting fraction
    * @param point1 end point
+   * @param fraction1 end fraction
    * @returns end point and fraction, or start point and fraction if no action
    */
   private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number, mergeTolerance: number = Geometry.smallMetricDistance): {point: Point3d, fraction: number} {

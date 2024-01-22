@@ -680,7 +680,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const distanceB = distanceA + signedDistance;
     const fragmentB = this.chainDistanceToFragment(distanceB, true)!;
     const childDetail = fragmentB.childCurve.moveSignedDistanceFromFraction(
-      fragmentB.childFraction0, distanceB - fragmentB.chainDistance0, allowExtension, result,
+      fragmentB.childFraction0, distanceB - fragmentB.chainDistance0, allowExtension, result?.childDetail,
     ); // local detail related to the child curve
     const endFraction = startFraction + (signedDistance / this._totalLength);
     const chainDetail = CurveLocationDetail.createConditionalMoveSignedDistance(
@@ -799,8 +799,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /**
    * Compute the global chain detail corresponding to a local child detail.
-   * @param childDetail the local detail, with respect to a child of this chain.
-   * @returns the global detail, with respect to this chain.
+   * @param childDetail the local (fragment) detail, captured.
+   * @returns newly allocated global (chain) detail with `childDetail` field pointing to the input, and `a` field copied from the input
    */
   public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)

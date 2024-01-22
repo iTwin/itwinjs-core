@@ -30,27 +30,27 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
   // for multiple uses by insert loop.
   private _halfEdgesAroundCurrentLoop: HalfEdge[];
   private indexPairToString(index0: number, index1: number): string{
-    return `${index0.toString()  },${  index1.toString ()}`;
+    return `${index0.toString()},${index1.toString()}`;
   }
   /** Create a loop with specified indices at its vertices.
    * * For an edge with index pair [indexA, indexB]:
    *   * if [indexB, indexA] has never appeared, a HalfEdge mated pair is created.
    *      * One of that mated pair becomes a HalfEdge in this loop.
-   *      * The other is "unmatched"
+   *      * The other is "unmatched" and gets the EXTERIOR mask.
    *      * When announceMatedHalfEdges(halfEdge) is called:
    *         * halfEdge and its mate are "new"
    *         * all coordinates are zeros.
-   *         * each contains (as its halfEdge.id property) one index of the [indexA,indexB] pair.
+   *         * each contains (as its `i` property) one index of the [indexA,indexB] pair.
    *         * those coordinates and indices will never be referenced again by this construction sequence -- the caller is free to mutate them as needed.
    *   * if [indexB, indexA] appeared previously (and its outer HalfEdge was left "unmatched"),
-   *              the "unmatched" HalfEdge is used in the loop being constructed.
-   * @param indices Array of indices around the edge.  This is accessed cyclically.
+   *     the "unmatched" HalfEdge is used in the loop being constructed, and its EXTERIOR mask is cleared.
+   * @param indices Array of indices around the edge.  This is accessed cyclically, so first and last indices should be different.
    * @param announceMatedHalfEdges optional function to be called as mated pairs are created. At the call,
    *     the given HalfEdge and its mate will have a pair of successive indices from the array.
    */
   public insertLoop(indices: number[], announceMatedHalfEdges?: (halfEdge: HalfEdge) => void): HalfEdge | undefined{
     const n = indices.length;
-    if (n > 1){
+    if (n > 2) {
       let index0 = indices[indices.length - 1];
       this._halfEdgesAroundCurrentLoop.length = 0;
       for (const index1 of indices){

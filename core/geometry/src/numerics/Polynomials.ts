@@ -1587,8 +1587,20 @@ export class SmallSystem {
       result);
   }
   /**
-   * Return true if lines (a0,a1) to (b0, b1) have closest approach (go by each other) in 3d
+   * Return true if the given rays have closest approach (go by each other) in 3d
    * Return the fractional (not xy) coordinates as x and y parts of a Point2d.
+   * @param ax x-coordinate of the origin of the first ray
+   * @param ay y-coordinate of the origin of the first ray
+   * @param az z-coordinate of the origin of the first ray
+   * @param au x-coordinate of the direction vector of the first ray
+   * @param av y-coordinate of the direction vector of the first ray
+   * @param aw z-coordinate of the direction vector of the first ray
+   * @param bx x-coordinate of the origin of the second ray
+   * @param by y-coordinate of the origin of the second ray
+   * @param bz z-coordinate of the origin of the second ray
+   * @param bu x-coordinate of the direction vector of the second ray
+   * @param bv y-coordinate of the direction vector of the second ray
+   * @param bw z-coordinate of the direction vector of the second ray
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
   public static ray3dXYZUVWClosestApproachUnbounded(
