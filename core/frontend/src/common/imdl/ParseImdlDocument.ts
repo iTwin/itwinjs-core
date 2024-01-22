@@ -473,6 +473,45 @@ class Parser {
     this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
   }
 
+  private parseLayers(output: Imdl.Node[], docMesh: ImdlMesh, imdlFeatureTable: Imdl.FeatureTable): void {
+    const docPrimitives = docMesh.primitives;
+    if (!docPrimitives)
+      return;
+
+    const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive => x !== undefined);
+    if (primitives.length === 0)
+      return;
+
+    const layers: Imdl.Layer[] = [];
+    const getLayerIndex = (subCategoryId: Id64String): number => {
+      let index = layers.findIndex((x) => x.layerId === subCategoryId);
+      if (-1 === index) {
+        index = layers.length;
+        const layer: Imdl.Layer = { primitives: [], layerId: subCategoryId };
+        layers.push(layer);
+        output.push(layer);
+      }
+
+      return index;
+    };
+
+    const idPair: Id64.Uint32Pair = { lower: 0, upper: 0 };
+    const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
+      featureTable.getSubCategoryIdPair(featureIndex, idPair);
+      const subCatId = Id64.fromUint32PairObject(idPair);
+      return getLayerIndex(subCatId);
+    };
+
+    const getNode = (nodeId: number | undefined): Imdl.Layer => {
+      nodeId = nodeId ?? getLayerIndex(Id64.invalid); // ###TODO only happens if we've got an area pattern, need to clean that up.
+      assert(nodeId < layers.length);
+      return layers[nodeId];
+    }
+
+    const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
+    this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
+  }
+
   private splitPrimitives(primitives: Imdl.NodePrimitive[], featureTable: RenderFeatureTable, computeNodeId: ComputeAnimationNodeId, getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode): void {
     const splitArgs = {
       maxDimension: this._options.maxVertexTableSize,

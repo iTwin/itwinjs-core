@@ -279,7 +279,13 @@ export interface RenderFeatureTable {
    * The caller is responsible for validating that `featureIndex` is less than [[numFeatures]].
    * This is more efficient than [[getFeature]] for callers who are only interested in the model Id.
    */
-  getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+  getModelIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
+
+  /** Get the Id of the subcategory assocaited with the feature at the specified index.
+   * The caller is responsible for validating that `featureIndex` is less than [[numFeatures]].
+   * This is more efficient than [[getFeature]] for callers who are only interested in the model Id.
+   */
+  getSubCategoryIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
 }
 
 const scratchPackedFeature = PackedFeature.create();
@@ -411,12 +417,15 @@ export class PackedFeatureTable implements RenderFeatureTable {
   }
 
   /** @internal */
-  public getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair {
+  public getSubCategoryIdPair(featureIndex: number, output?: Id64.Uint32Pair): Id64.Uint32Pair {
+    output = output ?? { lower: 0, upper: 0 };
     const index = 3 * featureIndex;
     let subCatIndex = this._data[index + 2];
     subCatIndex = (subCatIndex & 0x00ffffff) >>> 0;
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    return { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+    output.lower = this._data[subCatIndex];
+    output.upper = this._data[subCatIndex + 1];
+    return output;
   }
 
   /** @internal */
@@ -447,7 +456,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     return result;
   }
 
-  public getModelIdPair(_featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
+  public getModelIdPair(_featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair {
+    out = out ?? { lower: 0, upper: 0 };
     out.lower = this.batchModelIdPair.lower;
     out.upper = this.batchModelIdPair.upper;
     return out;
@@ -648,9 +658,12 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     return this._features.getElementIdPair(featureIndex, out);
   }
 
-  public getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
-    this._models.getModelIdPair(featureIndex, out);
-    return out;
+  public getModelIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair {
+    return this._models.getModelIdPair(featureIndex, out);
+  }
+
+  public getSubCategoryIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair {
+    return this._features.getSubCategoryIdPair(featureIndex, out);
   }
 
   public findElementId(featureIndex: number): Id64String | undefined {
