@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
-import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
+import { ImdlModelGroup, RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { ModelMetadata } from "./BatchedTilesetReader";
@@ -123,7 +123,7 @@ export class BatchedModelGroups implements ModelGroupingContext {
     }
 
     this.groups = groupModels(this, this._includedModelIds);
-    const newGuid = this.groups.map((x) => CompressedId64Set.compressSet(x.modelIds)).join("_");
+    const newGuid = encodeModelGroups(this.groups);
 
     const updated = newGuid !== this.guid || !this._scriptValid;
 
@@ -132,4 +132,33 @@ export class BatchedModelGroups implements ModelGroupingContext {
 
     return updated;
   }
+}
+
+function encodeModelGroups(groups: ModelGroup[]): string {
+  const start = groups.map((x) => CompressedId64Set.compressSet(x.modelIds)).join("_");
+  if (!groups.some((x) => x.planProjection?.enforceDisplayPriority))
+    return start;
+  
+  const end = groups.map((x) => x.planProjection?.enforceDisplayPriority ? "1" : "0");
+  return `${start}#${end}`;
+}
+
+/** @internal */
+export function decodeImdlModelGroups(guid: string): ImdlModelGroup[] {
+  const parts = guid.split("#");
+  const groups: ImdlModelGroup[] = parts[0].split("_").map((x) => {
+    return {
+      models: CompressedId64Set.decompressSet(x),
+      produceLayers: false,
+    };
+  });
+
+  if (undefined === parts[1])
+    return groups;
+
+  assert(parts[1].length === groups.length);
+  for (let i = 0; i < groups.length; i++)
+    groups[i].produceLayers = parts[i] === "1";
+
+  return groups;
 }

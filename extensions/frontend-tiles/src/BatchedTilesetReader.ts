@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
-import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
+import { IModelConnection, ImdlModelGroup, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import { BatchedTileTreeParams } from "./BatchedTileTree";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 
@@ -124,9 +124,9 @@ function transformFromJSON(json: schema.Transform): Transform {
 export class BatchedTilesetReader {
   private readonly _iModel: IModelConnection;
   private readonly _spec: BatchedTilesetSpec;
-  private readonly _modelGroups: Id64Set[] | undefined;
+  private readonly _modelGroups: ImdlModelGroup[] | undefined;
 
-  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection, modelGroups: Id64Set[] | undefined) {
+  public constructor(spec: BatchedTilesetSpec, iModel: IModelConnection, modelGroups: ImdlModelGroup[] | undefined) {
     this._iModel = iModel;
     this._spec = spec;
     this._modelGroups = modelGroups;

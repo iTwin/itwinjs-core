@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
+import { BeTimePoint, Id64String } from "@itwin/core-bentley";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
+  acquireImdlDecoder, ImdlDecoder, ImdlModelGroup, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
@@ -23,7 +23,7 @@ export interface BatchedTileTreeParams extends TileTreeParams {
   reader: BatchedTilesetReader;
   script?: RenderSchedule.Script;
   models: Map<Id64String, ModelMetadata>;
-  modelGroups: Id64Set[] | undefined;
+  modelGroups: ImdlModelGroup[] | undefined;
 }
 
 /** @internal */
@@ -32,7 +32,7 @@ export class BatchedTileTree extends TileTree {
   public readonly reader: BatchedTilesetReader;
   public readonly scheduleScript?: RenderSchedule.Script;
   public readonly decoder: ImdlDecoder;
-  public readonly modelGroups: Id64Set[] | undefined;
+  public readonly modelGroups: ImdlModelGroup[] | undefined;
 
   public constructor(params: BatchedTileTreeParams) {
     super(params);
