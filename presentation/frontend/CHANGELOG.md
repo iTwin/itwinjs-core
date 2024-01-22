@@ -1,6 +1,29 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Thu, 30 Nov 2023 17:07:27 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+_Version update only_
+
+## 4.3.2
+Thu, 14 Dec 2023 20:23:02 GMT
+
+_Version update only_
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:55 GMT
+
+_Version update only_
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added 'getHiliteSetIterator' method to `HiliteSetProvider`. It allows to handle hilite set in batches instead of waiting for whole set to be loaded. 
+- Add support for default formats when formatting values on the frontend (when `Presentation` is initialized with `schemaContextProvider`).
 
 ## 4.2.4
 Mon, 20 Nov 2023 16:14:45 GMT
@@ -127,6 +150,11 @@ Mon, 22 May 2023 15:34:14 GMT
 - Removed UI state tracking on the backend
 - Deprecate `PresentationManager.activeUnitSystem` in favor of active unit system in `QuantityFormatter`
 - Added content values formatting to `PresentationManager`
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
 
 ## 3.7.17
 Mon, 20 Nov 2023 18:24:23 GMT

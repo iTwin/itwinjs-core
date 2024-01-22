@@ -8,9 +8,9 @@
  */
 
 import { Geometry } from "../Geometry";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYCollection } from "./IndexedXYCollection";
+import { MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d } from "./Point3dVector3d";
@@ -184,7 +184,7 @@ export class GrowableXYArray extends IndexedXYCollection {
       for (const p of points) this.pushXY(p.x, p.y);
     }
   }
-  /** Push points from variant sources.
+  /** Push copies of points from variant sources.
    * Valid inputs are:
    * * Point2d
    * * Point3d

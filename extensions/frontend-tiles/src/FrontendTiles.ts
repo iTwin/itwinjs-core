@@ -200,9 +200,6 @@ export interface FrontendTilesOptions {
   enableEdges?: boolean;
 }
 
-/** @internal */
-export const createFallbackSpatialTileTreeReferences = SpatialTileTreeReferences.create;
-
 /** Global configuration initialized by [[initializeFrontendTiles]].
  * @internal
  */

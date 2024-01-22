@@ -9,6 +9,13 @@ variables:
   - group: Travis Cobbs - GitHub PAT
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
+  - name: win_pool
+    value: 'iModelTechCI'
+  - name: linux_pool
+    value: 'iModeljs Linux'
+  - name: mac_pool
+    value: 'iModelTechMacArm'
+
 
 pr:
   autoCancel: true

@@ -118,6 +118,7 @@ export {
 	OutputMessagePriority,
 	OutputMessageType,
 	ParseAndRunResult,
+	ParticleCollectionBuilder,
 	PerModelCategoryVisibility,
 	PhysicalModelState,
 	Pixel,

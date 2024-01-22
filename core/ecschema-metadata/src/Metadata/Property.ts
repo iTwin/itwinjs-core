@@ -219,6 +219,41 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   /**
+   * @internal Used in schema editing.
+   */
+  protected setDescription(description: string) {
+    this._description = description;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setLabel(label: string) {
+    this._label = label;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setIsReadOnly(isReadOnly: boolean) {
+    this._isReadOnly = isReadOnly;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setPriority(priority: number) {
+    this._priority = priority;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setCategory(category: LazyLoadedPropertyCategory) {
+    this._category = category;
+  }
+
+  /**
    * Retrieve all custom attributes in the current property and its base
    * This is the async version of getCustomAttributesSync()
    */
@@ -331,6 +366,40 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     if (undefined !== propertyBaseProps.extendedTypeName) {
       this._extendedTypeName = propertyBaseProps.extendedTypeName;
     }
+  }
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setExtendedTypeName(extendedTypeName: string) {
+    this._extendedTypeName = extendedTypeName;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMinLength(minLength: number) {
+    this._minLength = minLength;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMaxLength(maxLength: number) {
+    this._maxLength = maxLength;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMinValue(minValue: number) {
+    this._minValue = minValue;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMaxValue(maxValue: number) {
+    this._maxValue = maxValue;
   }
 
   public override async fromJSON(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
@@ -527,6 +596,20 @@ export abstract class ArrayProperty extends Property {
 
   public get minOccurs() { return this._minOccurs; }
   public get maxOccurs() { return this._maxOccurs; }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMinOccurs(minOccurs: number) {
+    this._minOccurs = minOccurs;
+  }
+
+  /**
+   * @internal Used in schema editing.
+   */
+  protected setMaxOccurs(maxOccurs: number) {
+    this._maxOccurs = maxOccurs;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -579,6 +662,19 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       return itemElement;
     }
 
+    /**
+     * @internal Used in schema editing.
+     */
+    protected setMinOccurs(minOccurs: number) {
+      this._minOccurs = minOccurs;
+    }
+
+    /**
+     * @internal Used in schema editing.
+    */
+    protected setMaxOccurs(maxOccurs: number) {
+      this._maxOccurs = maxOccurs;
+    }
   } as Constructor<Property> as typeof Base & Constructor<ArrayProperty>;
 };
 

@@ -1394,11 +1394,11 @@ export interface ArcGISServiceMetadata {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction, nbLods?: number);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, fetchFunc: FetchFunction);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
-    protected fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
+    fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
     // (undocumented)
     protected fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any>;
     // (undocumented)
@@ -1410,6 +1410,8 @@ export class ArcGISTileMap {
     getChildrenAvailability(childIds: QuadId[]): Promise<boolean[]>;
     // (undocumented)
     protected getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    get tileMapOffset(): number;
     // (undocumented)
     tileMapRequestSize: number;
 }
@@ -2487,6 +2489,9 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
+
+// @internal
+export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
 
 // @internal (undocumented)
 export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined;
@@ -4581,6 +4586,16 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
 
 // @internal
 export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_mesh_gpu_instancing?: {
+            attributes?: {
+                TRANSLATION?: GltfId;
+                ROTATION?: GltfId;
+                SCALE?: GltfId;
+            };
+        };
+    };
     mesh?: GltfId;
     // (undocumented)
     meshes?: never;
@@ -4795,6 +4810,8 @@ export class GltfGraphicsReader extends GltfReader {
     get scenes(): GltfDictionary<GltfScene>;
     // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides;
 }
 
 // @internal
@@ -4925,10 +4942,10 @@ export interface GltfNodeBaseProps {
     camera?: GltfId;
     children?: GltfId[];
     matrix?: number[];
-    rotation?: number[];
-    scale?: number[];
+    rotation?: [number, number, number, number];
+    scale?: [number, number, number];
     skin?: GltfId;
-    translation?: number[];
+    translation?: [number, number, number];
 }
 
 // @internal
@@ -5059,6 +5076,8 @@ export abstract class GltfReader {
     protected readonly _version: number;
     // (undocumented)
     protected readonly _vertexTableRequired: boolean;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides | undefined;
     // (undocumented)
     protected readonly _yAxisUp: boolean;
 }
@@ -5364,6 +5383,8 @@ export class GraphicBranch implements IDisposable {
     dispose(): void;
     readonly entries: RenderGraphic[];
     getViewFlags(flags: ViewFlags): ViewFlags;
+    // @internal
+    groupNodeId?: number;
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
     // @beta
@@ -6037,13 +6058,12 @@ export interface ImdlDecodeArgs {
     isCanceled?: () => boolean;
     // (undocumented)
     isLeaf?: boolean;
+    modelGroups?: Id64Set[];
     // (undocumented)
     options?: BatchOptions | false;
     // (undocumented)
     sizeMultiplier?: number;
-    // (undocumented)
     stream: ByteStream;
-    // (undocumented)
     system: RenderSystem;
 }
 
@@ -6201,6 +6221,8 @@ export namespace ImdlModel {
         // (undocumented)
         animationNodeId: number;
         // (undocumented)
+        groupId?: never;
+        // (undocumented)
         layerId?: never;
         // (undocumented)
         primitives: NodePrimitive[];
@@ -6215,6 +6237,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId?: never;
         // (undocumented)
@@ -6252,6 +6276,20 @@ export namespace ImdlModel {
     }
     // (undocumented)
     export type FeatureTable = SingleModelFeatureTable | MultiModelFeatureTable;
+    export interface GroupNode {
+        // (undocumented)
+        animationId?: never;
+        // (undocumented)
+        animationNodeId?: never;
+        // (undocumented)
+        groupId: number;
+        // (undocumented)
+        layerId?: never;
+        // (undocumented)
+        nodes: PrimitivesNode[];
+        // (undocumented)
+        primitives?: never;
+    }
     // (undocumented)
     export interface IndexedEdgeParams {
         // (undocumented)
@@ -6282,6 +6320,8 @@ export namespace ImdlModel {
         animationId?: never;
         // (undocumented)
         animationNodeId?: never;
+        // (undocumented)
+        groupId?: never;
         // (undocumented)
         layerId: string;
         // (undocumented)
@@ -6314,7 +6354,7 @@ export namespace ImdlModel {
         numSubCategories: number;
     }
     // (undocumented)
-    export type Node = BasicNode | AnimationNode | Layer;
+    export type Node = PrimitivesNode | GroupNode;
     // (undocumented)
     export type NodePrimitive = Primitive | {
         params: AreaPatternParams;
@@ -6361,6 +6401,7 @@ export namespace ImdlModel {
     };
     // (undocumented)
     export type PrimitiveModifier = Instances | ViewIndependentOrigin;
+    export type PrimitivesNode = BasicNode | AnimationNode | Layer;
     // (undocumented)
     export interface SegmentEdgeParams {
         // (undocumented)
@@ -6504,8 +6545,9 @@ export interface ImdlParserOptions {
     data: Uint8Array;
     // (undocumented)
     is3d: boolean;
-    // (undocumented)
     maxVertexTableSize: number;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     omitEdges?: boolean;
 }
@@ -6562,6 +6604,8 @@ export interface ImdlReaderCreateArgs {
     isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
+    // (undocumented)
+    modelGroups?: Id64Set[];
     // (undocumented)
     modelId: Id64String;
     // (undocumented)
@@ -12535,6 +12579,8 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
+    processHit(ev: BeButtonEvent, hit: HitDetail): Promise<EventHandled>;
+    // (undocumented)
     protected processMiss(_ev: BeButtonEvent): boolean;
     // (undocumented)
     processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean>;
@@ -14197,6 +14243,8 @@ export interface TileDrawArgParams {
     boundingRange?: Range3d;
     clipVolume?: RenderClipVolume;
     context: SceneContext;
+    // @internal
+    groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     intersectionClip?: ClipVector;
     location: Transform;
@@ -14238,6 +14286,8 @@ export class TileDrawArgs {
     // @internal (undocumented)
     getTileRadius(tile: Tile): number;
     readonly graphics: GraphicBranch;
+    // @internal (undocumented)
+    readonly groupNodeId?: number;
     hiddenLineSettings?: HiddenLine.Settings;
     insertMissing(tile: Tile): void;
     intersectionClip?: ClipVector;
@@ -14623,6 +14673,8 @@ export abstract class TileTreeReference {
     protected getAnimationTransformNodeId(_tree: TileTree): number | undefined;
     protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined;
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    protected getGroupNodeId(_tree: TileTree): number | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
     // @alpha
@@ -16630,6 +16682,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal
     onRequestStateChanged(): void;
     readonly onResized: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;

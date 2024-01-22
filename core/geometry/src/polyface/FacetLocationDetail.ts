@@ -88,6 +88,27 @@ export interface FacetLocationDetail {
 }
 
 /**
+ * A pair of FacetLocationDetail.
+ * @public
+ */
+export class FacetLocationDetailPair {
+  /** The first of the two details. */
+  public detailA: FacetLocationDetail;
+  /** The second of the two details. */
+  public detailB: FacetLocationDetail;
+
+  /** Constructor, captures inputs */
+  private constructor(detailA: FacetLocationDetail, detailB: FacetLocationDetail) {
+    this.detailA = detailA;
+    this.detailB = detailB;
+  }
+  /** Create a facet detail pair, capturing inputs. */
+  public static create(detailA: FacetLocationDetail, detailB: FacetLocationDetail): FacetLocationDetailPair {
+    return new FacetLocationDetailPair(detailA, detailB);
+  }
+}
+
+/**
  * Implementation of `FacetLocationDetail` for a triangular facet.
  * @public
  */
@@ -113,16 +134,22 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
     this._color = undefined;
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static create(facetIndex: number, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail {
-    if (undefined === result)
-      return new TriangularFacetLocationDetail(facetIndex, detail);
-    result.invalidate(false); // detail might be owned by result!
+  public static create(facetIndex: number = -1, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail {
+    if (!result)
+      result = new TriangularFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
-    if (undefined !== detail)
+    if (undefined !== detail && result._detail !== detail)
       result._detail.copyContentsFrom(detail);
     return result;
+  }
+  /** Create a detail, capturing inputs. */
+  public static createCapture(facetIndex: number, detail: TriangleLocationDetail): TriangularFacetLocationDetail {
+    return new TriangularFacetLocationDetail(facetIndex, detail);
   }
   /** Get the facet index. */
   public get facetIndex(): number {
@@ -224,7 +251,7 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
   }
 }
 /**
- * Implementation of `FacetLocationDetail` for a non-convex facet.
+ * Implementation of `FacetLocationDetail` for a general facet, which may or may not be convex.
  * * Facet vertex data interpolation is not available.
  * @public
  */
@@ -247,17 +274,23 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
       this._detail.invalidate();
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail {
-    if (undefined === result)
-      return new NonConvexFacetLocationDetail(facetIndex, edgeCount, detail);
-    result.invalidate(false); // detail might be owned by result!
+  public static create(facetIndex: number = -1, edgeCount: number = 0, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail {
+    if (!result)
+      result = new NonConvexFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
     result._edgeCount = edgeCount;
     if (undefined !== detail && result._detail !== detail)
       result._detail.copyContentsFrom(detail);
     return result;
+  }
+  /** Create a detail, capturing inputs. */
+  public static createCapture(facetIndex: number, edgeCount: number, detail: PolygonLocationDetail): NonConvexFacetLocationDetail {
+    return new NonConvexFacetLocationDetail(facetIndex, edgeCount, detail);
   }
   /** Get the facet index. */
   public get facetIndex(): number {
@@ -287,7 +320,7 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
   public get isValid(): boolean {
     return this._isValid && this._detail.isValid;
   }
-  /** Whether the facet is convex. */
+  /** Whether the facet is convex. Always returns false, as convexity is unknown to this detail. */
   public get isConvex(): boolean {
     return false;
   }
@@ -362,12 +395,19 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
     this._barycentricCoordinates = undefined;
   }
   /** Create a detail.
+   * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static override create(facetIndex: number, edgeCount: number, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail {
-    if (undefined === result)
-      return new ConvexFacetLocationDetail(facetIndex, edgeCount, detail);
+  public static override create(facetIndex: number = -1, edgeCount: number = 0, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail {
+    if (!result)
+      result = new ConvexFacetLocationDetail();
+    else
+      result.invalidate(false);   // shallow: detail might be owned by result!
     return super.create(facetIndex, edgeCount, detail, result);
+  }
+  /** Create a detail, capturing inputs. */
+  public static override createCapture(facetIndex: number, edgeCount: number, detail: PolygonLocationDetail): ConvexFacetLocationDetail {
+    return new ConvexFacetLocationDetail(facetIndex, edgeCount, detail);
   }
   /** Whether the facet is convex. */
   public override get isConvex(): boolean {

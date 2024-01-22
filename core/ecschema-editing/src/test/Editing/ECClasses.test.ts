@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationProperty, NavigationProperty,
+  ECClassModifier, ECObjectsError, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
@@ -126,6 +126,47 @@ describe("ECClass tests", () => {
       expect(delResult.propertyName).to.eql("TestProperty");
 
       property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+      expect(property).to.be.undefined;
+    });
+
+    it("should successfully create EnumerationArrayProperty from JSON prop", async () => {
+      const enumJson = {
+        name: "TestEnumeration",
+        type: "string",
+        isStrict: false,
+        enumerators: [
+          { name: "One", value: "first" },
+          { name: "Two", value: "second" },
+        ],
+      };
+      const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveArrayProperty",
+        typeName: "TestSchema.TestEnumeration",
+        minOccurs: 10,
+        maxOccurs: 101,
+      };
+      const enumResults = await testEditor.enumerations.createFromProps(testKey, enumJson);
+      const enumeration = await testEditor.schemaContext.getSchemaItem(enumResults.itemKey!) as Enumeration;
+      const propResults = await testEditor.entities.createEnumerationArrayPropertyFromProps(entityKey, "TestProperty", enumeration, propertyJson);
+      const property = await entity?.getProperty(propResults.propertyName!) as EnumerationArrayProperty;
+      expect(await property.enumeration).to.eql(enumeration);
+      expect(property.minOccurs).to.eql(10);
+      expect(property.maxOccurs).to.eql(101);
+    });
+
+    it("should successfully delete EnumerationArrayProperty from class", async () => {
+      const schema = await testEditor.getSchema(testKey);
+      const enumeration = new Enumeration(schema, "TestEnumeration");
+      const createResults = await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
+      let property = await entity?.getProperty(createResults.propertyName!) as EnumerationArrayProperty;
+      expect(await property.enumeration).to.eql(enumeration);
+
+      const delResults = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+      expect(delResults.itemKey).to.eql(entityKey);
+      expect(delResults.propertyName).to.eql("TestProperty");
+
+      property = await entity?.getProperty(createResults.propertyName!) as EnumerationArrayProperty;
       expect(property).to.be.undefined;
     });
 

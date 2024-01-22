@@ -819,7 +819,7 @@ describe("TileAdmin", () => {
         }) as ImdlModel.Document;
 
         expect(typeof document).to.equal("object");
-        return document.nodes.some((node) => node.primitives.some((primitive) => primitive.type === "mesh" && undefined !== primitive.params.edges));
+        return document.nodes.some((node) => node.primitives && node.primitives.some((primitive) => primitive.type === "mesh" && undefined !== primitive.params.edges));
       }
 
       public static async test(imodel: IModelConnection) {

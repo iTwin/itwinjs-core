@@ -274,6 +274,12 @@ export interface RenderFeatureTable {
 
   /** @alpha */
   getAnimationNodeId(featureIndex: number): number;
+
+  /** Get the Id of the model associated with the feature at the specified index.
+   * The caller is responsible for validating that `featureIndex` is less than [[numFeatures]].
+   * This is more efficient than [[getFeature]] for callers who are only interested in the model Id.
+   */
+  getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
 }
 
 const scratchPackedFeature = PackedFeature.create();
@@ -439,6 +445,12 @@ export class PackedFeatureTable implements RenderFeatureTable {
     result.modelId.upper = this.batchModelIdPair.upper;
 
     return result;
+  }
+
+  public getModelIdPair(_featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
+    out.lower = this.batchModelIdPair.lower;
+    out.upper = this.batchModelIdPair.upper;
+    return out;
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -634,6 +646,11 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
 
   public getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
     return this._features.getElementIdPair(featureIndex, out);
+  }
+
+  public getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair {
+    this._models.getModelIdPair(featureIndex, out);
+    return out;
   }
 
   public findElementId(featureIndex: number): Id64String | undefined {

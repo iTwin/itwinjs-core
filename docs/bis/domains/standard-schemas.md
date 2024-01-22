@@ -6,6 +6,8 @@
 
 ### [ECDbMap](./ECDbMap.ecschema.md)
 
+### [ECDbMeta](./ECDbMeta.ecschema.md)
+
 ### [Formats](./Formats.ecschema.md)
 
 ### [Units](./Units.ecschema.md)

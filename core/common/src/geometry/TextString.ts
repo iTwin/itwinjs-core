@@ -6,8 +6,18 @@
  * @module Geometry
  */
 
-import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { FontId } from "../Fonts";
+
+/**
+ * Optional cached text layout information used to support legacy proxy graphics.
+ * @beta
+ */
+export interface TextStringGlyphData {
+  glyphIds: number[];
+  glyphOrigins: Point2d[];
+  range: Range2d;
+}
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
@@ -84,7 +94,6 @@ export class TextString {
     val.underline = this.underline;
     if (!this.origin.isAlmostZero)
       val.origin = this.origin;
-
     if (!this.rotation.isIdentity())
       val.rotation = this.rotation;
 

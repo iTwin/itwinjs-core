@@ -499,7 +499,6 @@ export class Angle implements BeJSONFunctions {
    * * The returned angle is (-PI < radians <= PI) or (0 <= radians < 2 * PI)
    * * The angle is in the plane of the U and V vectors.
    * * The upVector determines a positive side of the plane but need not be strictly perpendicular to the plane.
-   *
    * @param ux x component of vector u
    * @param uy y component of vector u
    * @param uz z component of vector u
@@ -512,9 +511,12 @@ export class Angle implements BeJSONFunctions {
    * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI). If false, return
    * signed (-PI < radians <= PI)
    */
-  public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+  public static orientedRadiansBetweenVectorsXYZ(
+    ux: number, uy: number, uz: number,
+    vx: number, vy: number, vz: number,
     upVectorX: number, upVectorY: number, upVectorZ: number,
-    adjustToPositive: boolean = false): number {
+    adjustToPositive: boolean = false,
+  ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     const wx = uy * vz - uz * vy;
     const wy = uz * vx - ux * vz;
