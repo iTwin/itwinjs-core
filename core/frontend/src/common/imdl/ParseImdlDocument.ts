@@ -36,6 +36,15 @@ import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
  */
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
+/** Describes one group of models within an iMdl tileset.
+ * @see [[ImdlParserOptions.modelGroups]].
+ * @internal
+ */
+export interface ImdlModelGroup {
+  models: Id64Set;
+  produceLayers: boolean;
+}
+ 
 /** Options provided to [[ImdlParser.parse]].
  * @internal
  */
@@ -48,7 +57,7 @@ export interface ImdlParserOptions {
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   /* see [[ImdlDecodeArgs.modelGroups]]. */
-  modelGroups?: Id64Set[];
+  modelGroups?: ImdlModelGroup[];
 }
 
 /** Arguments provided to [[parseImdlDocument]].
@@ -682,7 +691,7 @@ class Parser {
       featureTable.getModelIdPair(featureIndex, modelIdPair);
       const modelId = Id64.fromUint32PairObject(modelIdPair);
       for (let i = 0; i < modelGroups.length; i++) {
-        if (modelGroups[i].has(modelId))
+        if (modelGroups[i].models.has(modelId))
           return i;
       }
 
