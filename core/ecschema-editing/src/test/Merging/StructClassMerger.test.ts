@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {  Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import {  Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../ecschema-editing";
 import { expect } from "chai";
 
-describe.only("Schema properties merger tests", () => {
+describe("Struct class merger tests", () => {
   let context: SchemaContext;
 
   const sourceJson = {
@@ -27,64 +27,8 @@ describe.only("Schema properties merger tests", () => {
     context = new SchemaContext();
   });
 
-  describe("Different property types missing", () => {
-    it.only("it should merge missing properties with one typeName reference in an entity class",async () => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        items: {
-          sps: {
-            schemaItemType: "EntityClass",
-            description: "Linear draft Sps Class",
-            properties: [
-              {
-                name: "Status",
-                type: "PrimitiveProperty",
-                isReadOnly: true,
-                priority: 0,
-                typeName: "string",
-              },
-              {
-                name: "Allocation",
-                type: "StructArrayProperty",
-                isReadOnly: true,
-                priority: 0,
-                typeName: "SourceSchema.allocation",
-                minOccurs: 0,
-                maxOccurs: 2147483647,
-              },
-            ],
-          },
-          middle: {
-            schemaItemType: "StructClass",
-            description: "Linear draft middle class",
-          },
-          allocation: {
-            schemaItemType: "StructClass",
-            description: "Linear draft Allocation Class",
-            properties: [
-              {
-                name: "Quantity",
-                type: "PrimitiveProperty",
-                isReadOnly: true,
-                priority: 0,
-                typeName: "int",
-              },
-            ],
-          },
-        },
-      }, context);
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-      }, context);
-
-      const merger = new SchemaMerger();
-      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-
-      expect(mergedSchema).not.be.undefined;
-    });
-
-    it("it should merge missing properties with two typeName references",async () => {
+  describe("Struct class merging order tests", () => {
+    it("it should merge missing struct properties no matter the order", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -154,11 +98,33 @@ describe.only("Schema properties merger tests", () => {
 
       const merger = new SchemaMerger();
       const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const middleTarget = await mergedSchema.getItem("middle") as StructClass;
 
-      expect(mergedSchema).not.be.undefined;
+      expect(middleTarget.toJSON()).to.deep.equal({
+        schemaItemType: "StructClass",
+        description: "Linear draft middle class",
+        properties: [
+          {
+            name: "Support",
+            type: "PrimitiveProperty",
+            isReadOnly: true,
+            priority: 0,
+            typeName: "int",
+          },
+          {
+            name: "Allocation",
+            type: "StructArrayProperty",
+            isReadOnly: true,
+            priority: 0,
+            typeName: "TargetSchema.allocation",
+            minOccurs: 0,
+            maxOccurs: 2147483647,
+          },
+        ],
+      });
     });
 
-    it("it should merge missing properties with three typeName references",async () => {
+    it("it should merge missing properties with typeName references",async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -240,12 +206,85 @@ describe.only("Schema properties merger tests", () => {
 
       const targetSchema = await Schema.fromJson({
         ...targetJson,
+        items: {
+          sps: {
+            schemaItemType: "EntityClass",
+            description: "Linear draft Sps Class",
+          },
+          middle: {
+            schemaItemType: "StructClass",
+            description: "Linear draft middle class",
+            properties: [
+              {
+                name: "Support",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 0,
+                typeName: "int",
+              },
+            ],
+
+          },
+          bracketSlot: {
+            schemaItemType: "StructClass",
+            description: "Linear draft bracketSlot Class",
+            properties: [
+              {
+                name: "Status",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 0,
+                typeName: "int",
+              },
+            ],
+          },
+        },
       }, context);
 
       const merger = new SchemaMerger();
       const mergedSchema = await merger.merge(targetSchema, sourceSchema);
 
-      expect(mergedSchema).not.be.undefined;
+      const middleTarget = await mergedSchema.getItem("middle") as StructClass;
+      const allocationTarget = await mergedSchema.getItem("allocation") as StructClass;
+
+      expect(middleTarget.toJSON()).to.deep.equal({
+        schemaItemType: "StructClass",
+        description: "Linear draft middle class",
+        properties: [
+          {
+            name: "Support",
+            type: "PrimitiveProperty",
+            isReadOnly: true,
+            priority: 0,
+            typeName: "int",
+          },
+          {
+            name: "Allocation",
+            type: "StructArrayProperty",
+            isReadOnly: true,
+            priority: 0,
+            typeName: "TargetSchema.allocation",
+            minOccurs: 0,
+            maxOccurs: 2147483647,
+          },
+        ],
+      });
+
+      expect(allocationTarget.toJSON()).to.deep.equal({
+        schemaItemType: "StructClass",
+        description: "Linear draft Allocation Class",
+        properties: [
+          {
+            name: "BracketSlot",
+            type: "StructArrayProperty",
+            label: "Bracket Slot",
+            isReadOnly: true,
+            typeName: "TargetSchema.bracketSlot",
+            minOccurs: 0,
+            maxOccurs: 2147483647,
+          },
+        ],
+      });
     });
   });
 });
