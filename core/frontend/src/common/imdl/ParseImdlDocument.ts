@@ -297,6 +297,7 @@ class Parser {
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
   private readonly _stream: ByteStream;
   private readonly _timeline?: ImdlTimeline;
+  private readonly _planProjectionModels = new Id64.Uint32Set();
 
   public constructor(doc: Document, binaryData: Uint8Array, options: ParseImdlDocumentArgs, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
     this._document = doc;
@@ -305,6 +306,12 @@ class Parser {
     this._featureTableInfo = featureTableInfo;
     this._stream = stream;
     this._timeline = options.timeline;
+
+    if (options.modelGroups)
+      for (const modelGroup of options.modelGroups)
+        if (modelGroup.produceLayers)
+          for (const model of modelGroup.models)
+            this._planProjectionModels.addId(model);
   }
 
   public parse(): Imdl.Document | ImdlParseError {
@@ -420,6 +427,8 @@ class Parser {
             animationNodeId: AnimationNodeId.Untransformed,
             primitives: this.parseNodePrimitives(docPrimitives),
           });
+        } else if (this._planProjectionModels.size > 0) {
+          this.parseLayers(nodes, docMesh, featureTable);
         } else {
           nodes.push({ primitives: this.parseNodePrimitives(docPrimitives) });
         }
@@ -483,6 +492,7 @@ class Parser {
   }
 
   private parseLayers(output: Imdl.Node[], docMesh: ImdlMesh, imdlFeatureTable: Imdl.FeatureTable): void {
+    assert(this._planProjectionModels.size > 0);
     const docPrimitives = docMesh.primitives;
     if (!docPrimitives)
       return;
@@ -491,34 +501,47 @@ class Parser {
     if (primitives.length === 0)
       return;
 
-    const layers: Imdl.Layer[] = [];
+    // The first entry in the array is for primitives that don't belong to any layer (i.e., to a model that's not a plan projection with display priority enabled).
+    const nodes: Imdl.PrimitivesNode[] = [{
+      primitives: [],
+    }];
+    
     const getLayerIndex = (subCategoryId: Id64String): number => {
-      let index = layers.findIndex((x) => x.layerId === subCategoryId);
+      let index = nodes.findIndex((x) => x.layerId === subCategoryId);
       if (-1 === index) {
-        index = layers.length;
+        index = nodes.length;
         const layer: Imdl.Layer = { primitives: [], layerId: subCategoryId };
-        layers.push(layer);
+        nodes.push(layer);
         output.push(layer);
       }
 
+      assert(index > 0);
       return index;
     };
 
-    const idPair: Id64.Uint32Pair = { lower: 0, upper: 0 };
+    const modelIdPair: Id64.Uint32Pair = { lower: 0, upper: 0 };
+    const subcatIdPair: Id64.Uint32Pair = { lower: 0, upper: 0 };
     const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
-      featureTable.getSubCategoryIdPair(featureIndex, idPair);
-      const subCatId = Id64.fromUint32PairObject(idPair);
+      featureTable.getModelIdPair(featureIndex, modelIdPair);
+      if (!this._planProjectionModels.has(modelIdPair.lower, modelIdPair.upper))
+        return 0;
+      
+      featureTable.getSubCategoryIdPair(featureIndex, subcatIdPair);
+      const subCatId = Id64.fromUint32PairObject(subcatIdPair);
       return getLayerIndex(subCatId);
     };
 
-    const getNode = (nodeId: number | undefined): Imdl.Layer => {
-      nodeId = nodeId ?? getLayerIndex(Id64.invalid); // ###TODO only happens if we've got an area pattern, need to clean that up.
-      assert(nodeId < layers.length);
-      return layers[nodeId];
+    const getNode = (nodeId: number | undefined): Imdl.PrimitivesNode => {
+      nodeId = nodeId ?? 0;
+      assert(nodeId < nodes.length);
+      return nodes[nodeId];
     }
 
     const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
     this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
+
+    if (nodes[0].primitives.length > 0)
+      output.push(nodes[0]);
   }
 
   private splitPrimitives(primitives: Imdl.NodePrimitive[], featureTable: RenderFeatureTable, computeNodeId: ComputeAnimationNodeId, getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode): void {
