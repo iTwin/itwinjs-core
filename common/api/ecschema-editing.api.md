@@ -31,6 +31,7 @@ import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
 import { Localization } from '@itwin/core-common';
 import { Mixin } from '@itwin/ecschema-metadata';
 import { MixinProps } from '@itwin/ecschema-metadata';
+import { NavigationPropertyProps } from '@itwin/ecschema-metadata';
 import { OverrideFormat } from '@itwin/ecschema-metadata';
 import { Phenomenon } from '@itwin/ecschema-metadata';
 import { PhenomenonProps } from '@itwin/ecschema-metadata';
@@ -42,6 +43,8 @@ import { PropertyCategoryProps } from '@itwin/ecschema-metadata';
 import { RelationshipClass } from '@itwin/ecschema-metadata';
 import { RelationshipClassProps } from '@itwin/ecschema-metadata';
 import { RelationshipConstraint } from '@itwin/ecschema-metadata';
+import { RelationshipEnd } from '@itwin/ecschema-metadata';
+import { RelationshipMultiplicity } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItem } from '@itwin/ecschema-metadata';
@@ -52,6 +55,7 @@ import { SchemaItemType } from '@itwin/ecschema-metadata';
 import { SchemaItemUnitProps } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { StrengthDirection } from '@itwin/ecschema-metadata';
+import { StrengthType } from '@itwin/ecschema-metadata';
 import { StructArrayPropertyProps } from '@itwin/ecschema-metadata';
 import { StructClass } from '@itwin/ecschema-metadata';
 import { StructClassProps } from '@itwin/ecschema-metadata';
@@ -268,7 +272,7 @@ export const DiagnosticCodes: {
     IncompatibleUnitPropertyOverride: string;
     AbstractConstraintMustNarrowBaseConstraints: string;
     DerivedConstraintsMustNarrowBaseConstraints: string;
-    ConstraintClassesDeriveFromAbstractContraint: string;
+    ConstraintClassesDeriveFromAbstractConstraint: string;
     AtLeastOneConstraintClassDefined: string;
     AbstractConstraintMustExistWithMultipleConstraints: string;
 };
@@ -515,7 +519,7 @@ export const Diagnostics: {
         };
         diagnosticType: DiagnosticType;
     };
-    ConstraintClassesDeriveFromAbstractContraint: {
+    ConstraintClassesDeriveFromAbstractConstraint: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
@@ -1355,7 +1359,7 @@ export class SchemaContextEditor {
     finish(): Promise<SchemaContext>;
     // (undocumented)
     readonly formats: Formats;
-    getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
+    getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined>;
     incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults>;
     // (undocumented)
     readonly invertedUnits: InvertedUnits;

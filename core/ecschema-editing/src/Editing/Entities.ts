@@ -70,15 +70,19 @@ export class Entities extends ECClasses {
 
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
     const newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
     if (newClass === undefined)
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
 
     // Add a deserializing method.
     if (baseClassKey !== undefined) {
-      let baseClassSchema = schema;
-      if (!baseClassKey.schemaKey.matches(schema.schemaKey))
-        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+      const baseClassSchema = !baseClassKey.schemaKey.matches(schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : schema;
+      if (baseClassSchema === undefined) {
+        return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+      }
 
       const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
@@ -164,9 +168,10 @@ export class Entities extends ECClasses {
       return { itemKey: entityKey };
     }
 
-    let baseClassSchema = entity.schema;
-    if (!baseClassKey.schemaKey.matches(entityKey.schemaKey))
-      baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+    const baseClassSchema = !baseClassKey.schemaKey.matches(entityKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : entity.schema;
+    if (baseClassSchema === undefined) {
+      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+    }
 
     const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
     if (baseClassItem === undefined)
