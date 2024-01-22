@@ -157,7 +157,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const enumeration = new Enumeration(schema, "TestEnumeration");
+      const enumeration = new Enumeration(schema!, "TestEnumeration");
       const createResults = await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty(createResults.propertyName!) as EnumerationArrayProperty;
       expect(await property.enumeration).to.eql(enumeration);
