@@ -139,7 +139,7 @@ function encodeModelGroups(groups: ModelGroup[]): string {
   if (!groups.some((x) => x.planProjection?.enforceDisplayPriority))
     return start;
   
-  const end = groups.map((x) => x.planProjection?.enforceDisplayPriority ? "1" : "0");
+  const end = groups.map((x) => x.planProjection?.enforceDisplayPriority ? "1" : "0").join("");;
   return `${start}#${end}`;
 }
 
@@ -156,9 +156,10 @@ export function decodeImdlModelGroups(guid: string): ImdlModelGroup[] {
   if (undefined === parts[1])
     return groups;
 
-  assert(parts[1].length === groups.length);
+  const flags = parts[1];
+  assert(flags.length === groups.length);
   for (let i = 0; i < groups.length; i++)
-    groups[i].produceLayers = parts[i] === "1";
+    groups[i].produceLayers = flags[i] === "1";
 
   return groups;
 }
