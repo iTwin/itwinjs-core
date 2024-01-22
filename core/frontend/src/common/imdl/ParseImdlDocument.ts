@@ -49,6 +49,11 @@ export interface ImdlParserOptions {
   createUntransformedRootNode?: boolean;
   /* see [[ImdlDecodeArgs.modelGroups]]. */
   modelGroups?: Id64Set[];
+  /** If true, split up the contents of the tiles into [[Imdl.Layer]]s based on subcategory Id.
+   * V1 tiles already have this splitting applied on the backend.
+   * @see [PlanProjectionSettings.enforceDisplayPriority]($common).
+   */
+  produceLayers?: boolean;
 }
 
 /** Arguments provided to [[parseImdlDocument]].
@@ -411,6 +416,8 @@ class Parser {
             animationNodeId: AnimationNodeId.Untransformed,
             primitives: this.parseNodePrimitives(docPrimitives),
           });
+        } else if (this._options.produceLayers) {
+          this.parseLayers(nodes, docMesh, featureTable);
         } else {
           nodes.push({ primitives: this.parseNodePrimitives(docPrimitives) });
         }
