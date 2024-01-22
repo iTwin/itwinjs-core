@@ -135,7 +135,16 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     const args = super.createDrawArgs(context);
 
     // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
-    // ###TODO if PlanProjectionSettings.enforceDisplayPriority, createGraphicLayerContainer.
+
+    const proj = this._groupInfo.planProjection;
+    if (args && proj?.enforceDisplayPriority) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      args.drawGraphics = () => {
+        const graphics = args.produceGraphics();
+        if (undefined !== graphics)
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, proj.overlay, proj.transparency, proj.elevation));
+      };
+    }
 
     return args;
   }
