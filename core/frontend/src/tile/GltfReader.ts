@@ -526,11 +526,14 @@ export abstract class GltfReader {
       renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
 
+    const invTransform = transform?.inverse();
+    const range = invTransform ? invTransform.multiplyRange(contentRange) : contentRange;
+
     return {
       readStatus,
       isLeaf,
       contentRange,
-      range: contentRange,
+      range,
       graphic: renderGraphic,
       containsPointCloud: this._containsPointCloud,
     };
