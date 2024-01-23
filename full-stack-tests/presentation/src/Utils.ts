@@ -76,11 +76,11 @@ export function prepareOutputFilePath(fileName: string): string {
 }
 
 /**
- * Calls the given `check` callback until it doesn't throw or the timeout expires. The 
+ * Calls the given `check` callback until it doesn't throw or the timeout expires. The
  * timeout defaults to 5 seconds. If the callback doesn't succeed before the timeout, the
  * last error thrown by the callback is re-thrown.
  */
-export async function waitFor(check: () => Promise<void> | void, timeout?: number) {
+export async function waitFor<T>(check: () => Promise<T> | T, timeout?: number): Promise<T> {
   if (timeout === undefined) {
     timeout = 5000;
   }
@@ -89,16 +89,11 @@ export async function waitFor(check: () => Promise<void> | void, timeout?: numbe
   do {
     try {
       const res = check();
-      if (res instanceof Promise) {
-        await res;
-      }
-      lastError = undefined;
+      return (res instanceof Promise) ? await res : res;
     } catch (e) {
       lastError = e;
       await BeDuration.wait(0);
     }
-  } while (lastError && timer.current.milliseconds < timeout);
-  if (lastError) {
-    throw lastError;
-  }
+  } while (timer.current.milliseconds < timeout);
+  throw lastError;
 }
