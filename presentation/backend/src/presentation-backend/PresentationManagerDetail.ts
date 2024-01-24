@@ -5,7 +5,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, IDisposable } from "@itwin/core-bentley";
+import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
@@ -13,7 +13,8 @@ import {
   DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   FormatsMap,
   HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Item, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged,
-  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
+  PagedResponse, PresentationError, PresentationIpcEvents, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions,
+  UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementProperties } from "./ElementPropertiesHelper";
@@ -23,14 +24,13 @@ import {
 } from "./NativePlatform";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
-  private _updatesTracker: UpdatesTracker | undefined;
   private _onManagerUsed: (() => void) | undefined;
   private _diagnosticsOptions: BackendDiagnosticsOptions | undefined;
 
@@ -40,25 +40,14 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
-      changeTrackingEnabled,
+      IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
       params.caching,
       params.defaultFormats,
       params.useMmap,
     );
-
-    const getNativePlatform = () => this.getNativePlatform();
-    if (IpcHost.isValid && changeTrackingEnabled) {
-      this._updatesTracker = UpdatesTracker.create({
-        nativePlatformGetter: getNativePlatform,
-        pollInterval: params.updatesPollInterval!,
-      });
-    } else {
-      this._updatesTracker = undefined;
-    }
 
     setupRulesets(
       this._nativePlatform,
@@ -68,7 +57,7 @@ export class PresentationManagerDetail implements IDisposable {
     this.activeUnitSystem = params.defaultUnitSystem;
 
     this._onManagerUsed = undefined;
-    this.rulesets = new RulesetManagerImpl(getNativePlatform);
+    this.rulesets = new RulesetManagerImpl(() => this.getNativePlatform());
     this._diagnosticsOptions = params.diagnostics;
   }
 
@@ -79,9 +68,6 @@ export class PresentationManagerDetail implements IDisposable {
 
     this.getNativePlatform().dispose();
     this._nativePlatform = undefined;
-
-    this._updatesTracker?.dispose();
-    this._updatesTracker = undefined;
 
     this._disposed = true;
   }
@@ -475,7 +461,7 @@ function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: Instan
 function createNativePlatform(
   id: string,
   workerThreadsCount: number,
-  changeTrackingEnabled: boolean,
+  updateCallback: (updateInfo: UpdateInfo | undefined) => void,
   caching: PresentationManagerProps["caching"],
   defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
@@ -483,7 +469,7 @@ function createNativePlatform(
   return new (createDefaultNativePlatform({
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
-    isChangeTrackingEnabled: changeTrackingEnabled,
+    updateCallback,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
     workerConnectionCacheSize: caching?.workerConnectionCacheSize,
@@ -551,3 +537,36 @@ const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | De
     return descriptorOrOverrides.createDescriptorOverrides();
   return descriptorOrOverrides;
 };
+
+function parseUpdateInfo(info: UpdateInfo | undefined) {
+  if (info === undefined)
+    return undefined;
+
+  const parsedInfo: UpdateInfo = {};
+  for (const fileName in info) {
+    // istanbul ignore if
+    if (!info.hasOwnProperty(fileName))
+      continue;
+
+    const imodelDb = IModelDb.findByFilename(fileName);
+    if (!imodelDb) {
+      Logger.logError(PresentationBackendLoggerCategory.PresentationManager, `Update records IModelDb not found with path ${fileName}`);
+      continue;
+    }
+
+    parsedInfo[imodelDb.getRpcProps().key] = info[fileName];
+  }
+  return Object.keys(parsedInfo).length > 0 ? parsedInfo : undefined;
+}
+
+/** @internal */
+export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
+  const parsed = parseUpdateInfo(info);
+  if (parsed)
+    IpcHost.send(PresentationIpcEvents.Update, parsed);
+}
+
+/** @internal */
+// istanbul ignore next
+export function noopUpdatesHandler(_info: UpdateInfo | undefined) {
+}
