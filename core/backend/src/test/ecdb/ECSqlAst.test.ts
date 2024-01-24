@@ -714,6 +714,22 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
+  it("parse NAVIGATION_VALUE", async () => {
+    const tests = [
+      {
+        orignalECSql: "SELECT NAVIGATION_VALUE(Bis.Element.Model, 1)",
+        expectedECSql: "SELECT NAVIGATION_VALUE([BisCore].[Element].[Model], 1)",
+      },
+      {
+        orignalECSql: "SELECT NAVIGATION_VALUE(Bis.Element.Model, 1, 2)",
+        expectedECSql: "SELECT NAVIGATION_VALUE([BisCore].[Element].[Model], 1, 2)",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+    }
+  });
   it("parse complex query", async () => {
     const ecsql = `
     WITH RECURSIVE
@@ -967,22 +983,22 @@ describe("ECSql Abstract Syntax Tree", () => {
 
     });
     it("test ClassNameExpr.fromECSql()", async () => {
-      assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+all Bis:Element").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+only Bis.Element").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("+only Bis:Element").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + all  Bis.Element ").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + all  Bis:Element ").toECSql(), "+ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element ").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element ").toECSql(), "+ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" all  Bis.Element ").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" all  Bis:Element ").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" only  Bis.Element ").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" only  Bis:Element ").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("all Bis.Element").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("all Bis:Element").toECSql(), "ALL [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("only Bis.Element").toECSql(), "ONLY [Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql("only Bis:Element").toECSql(), "ONLY [Bis].[Element]");
+      assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element] [+all ]");
+      assert.equal(ClassNameExpr.fromECSql("+all Bis:Element").toECSql(), "+ALL [Bis].[Element] [+all ]");
+      assert.equal(ClassNameExpr.fromECSql("+only Bis.Element").toECSql(), "+ONLY [Bis].[Element] [+only ]");
+      assert.equal(ClassNameExpr.fromECSql("+only Bis:Element").toECSql(), "+ONLY [Bis].[Element] [+only ]");
+      assert.equal(ClassNameExpr.fromECSql(" + all  Bis.Element ").toECSql(), "+ALL [Bis].[Element] [+ all  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + all  Bis:Element ").toECSql(), "+ALL [Bis].[Element] [+ all  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element ").toECSql(), "+ONLY [Bis].[Element] [+ only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element ").toECSql(), "+ONLY [Bis].[Element] [+ only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" all  Bis.Element ").toECSql(), "ALL [Bis].[Element] [all  ]");
+      assert.equal(ClassNameExpr.fromECSql(" all  Bis:Element ").toECSql(), "ALL [Bis].[Element] [all  ]");
+      assert.equal(ClassNameExpr.fromECSql(" only  Bis.Element ").toECSql(), "ONLY [Bis].[Element] [only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" only  Bis:Element ").toECSql(), "ONLY [Bis].[Element] [only  ]");
+      assert.equal(ClassNameExpr.fromECSql("all Bis.Element").toECSql(), "ALL [Bis].[Element] [all ]");
+      assert.equal(ClassNameExpr.fromECSql("all Bis:Element").toECSql(), "ALL [Bis].[Element] [all ]");
+      assert.equal(ClassNameExpr.fromECSql("only Bis.Element").toECSql(), "ONLY [Bis].[Element] [only ]");
+      assert.equal(ClassNameExpr.fromECSql("only Bis:Element").toECSql(), "ONLY [Bis].[Element] [only ]");
       assert.equal(ClassNameExpr.fromECSql("Bis:Element").toECSql(), "[Bis].[Element]");
       assert.equal(ClassNameExpr.fromECSql("Bis.Element").toECSql(), "[Bis].[Element]");
       assert.equal(ClassNameExpr.fromECSql("[Bis]:[Element]").toECSql(), "[Bis].[Element]");
@@ -991,10 +1007,10 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(ClassNameExpr.fromECSql("tbl.Bis.Element").toECSql(), "[tbl].[Bis].[Element]");
       assert.equal(ClassNameExpr.fromECSql("[tbl].[Bis]:[Element]").toECSql(), "[tbl].[Bis].[Element]");
       assert.equal(ClassNameExpr.fromECSql("[tbl]:[Bis].[Element]").toECSql(), "[tbl].[Bis].[Element]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element as el").toECSql(), "+ONLY [Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element  el ").toECSql(), "+ONLY [Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis.Element as el").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
-      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis:Element  el ").toECSql(), "+ONLY [tbl].[Bis].[Element] [el]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis.Element as el").toECSql(), "+ONLY [Bis].[Element] [+ only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  Bis:Element  el ").toECSql(), "+ONLY [Bis].[Element] [+ only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis.Element as el").toECSql(), "+ONLY [tbl].[Bis].[Element] [+ only  ]");
+      assert.equal(ClassNameExpr.fromECSql(" + only  tbl:Bis:Element  el ").toECSql(), "+ONLY [tbl].[Bis].[Element] [+ only  ]");
     });
   });
 });
