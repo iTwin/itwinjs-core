@@ -582,7 +582,10 @@ describe("Viewport", () => {
           subLayers: [{ id: 0, name: "test", visible: true }],
         });
 
+        // Set the base map to solid color so no Bing maps requests are made, and potentially hang the test.
+        vp.displayStyle.backgroundMapBase = ColorDef.black;
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
+
         expect(vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } })).not.to.throw;
         await vp.waitForSceneCompletion();
       });

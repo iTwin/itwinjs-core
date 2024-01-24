@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
@@ -43,9 +43,12 @@ export interface ImdlParserOptions {
   data: Uint8Array;
   batchModelId: Id64String;
   is3d: boolean;
+  /** The limit on the width and height of a [[VertexTable]]. */
   maxVertexTableSize: number;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
+  /* see [[ImdlDecodeArgs.modelGroups]]. */
+  modelGroups?: Id64Set[];
 }
 
 /** Arguments provided to [[parseImdlDocument]].
@@ -306,7 +309,9 @@ class Parser {
       z: this._document.rtcCenter[2] ?? 0,
     } : undefined;
 
-    const nodes = this.parseNodes(featureTable);
+    const primitiveNodes = this.parseNodes(featureTable);
+    const nodes = this.groupPrimitiveNodes(primitiveNodes, featureTable);
+
     return {
       featureTable,
       nodes,
@@ -376,8 +381,8 @@ class Parser {
     return featureTable;
   }
 
-  private parseNodes(featureTable: Imdl.FeatureTable): Imdl.Node[] {
-    const nodes: Imdl.Node[] = [];
+  private parseNodes(featureTable: Imdl.FeatureTable): Imdl.PrimitivesNode[] {
+    const nodes: Imdl.PrimitivesNode[] = [];
     const docNodes = this._document.nodes;
     const docMeshes = this._document.meshes;
     if (undefined === docNodes.Node_Root) {
@@ -431,8 +436,13 @@ class Parser {
     if (!docPrimitives)
       return;
 
+    const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive => x !== undefined);
+    if (primitives.length === 0)
+      return;
+
     const nodesById = new Map<number, Imdl.AnimationNode>();
-    const getNode = (nodeId: number): Imdl.AnimationNode => {
+    const getNode = (nodeId: number | undefined): Imdl.AnimationNode => {
+      nodeId = nodeId ?? AnimationNodeId.Untransformed;
       let node = nodesById.get(nodeId);
       if (!node) {
         node =  {
@@ -460,6 +470,10 @@ class Parser {
       return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
     };
 
+    this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
+  }
+
+  private splitPrimitives(primitives: Imdl.NodePrimitive[], featureTable: RenderFeatureTable, computeNodeId: ComputeAnimationNodeId, getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode): void {
     const splitArgs = {
       maxDimension: this._options.maxVertexTableSize,
       computeNodeId,
@@ -476,16 +490,13 @@ class Parser {
       return material ? { isAtlas: false, material } : undefined;
     };
 
-    for (const docPrimitive of docPrimitives) {
-      const primitive = this.parseNodePrimitive(docPrimitive);
-      if (!primitive)
-        continue;
-
+    for (const primitive of primitives) {
       switch (primitive.type) {
-        case "pattern":
-          // ###TODO animated area patterns
-          getNode(AnimationNodeId.Untransformed).primitives.push(primitive);
+        case "pattern": {
+          // ###TODO splitting area patterns
+          getPrimitivesNode(undefined).primitives.push(primitive);
           break;
+        }
         case "mesh": {
           const mesh = primitive.params;
           const texMap = mesh.surface.textureMapping;
@@ -523,8 +534,9 @@ class Parser {
             }
 
             assert(p.surface.textureMapping === undefined || p.surface.textureMapping.texture instanceof Texture);
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "mesh",
+              modifier: primitive.modifier,
               params: {
                 vertices: fromVertexTable(p.vertices),
                 surface: {
@@ -554,8 +566,9 @@ class Parser {
 
           const split = splitPointStringParams({ ...splitArgs, params });
           for (const [nodeId, p] of split) {
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "point",
+              modifier: primitive.modifier,
               params: {
                 vertices: fromVertexTable(p.vertices),
                 indices: p.indices.data,
@@ -579,8 +592,9 @@ class Parser {
 
           const split = splitPolylineParams({ ...splitArgs, params });
           for (const [nodeId, p] of split) {
-            getNode(nodeId).primitives.push({
+            getPrimitivesNode(nodeId).primitives.push({
               type: "polyline",
+              modifier: primitive.modifier,
               params: {
                 ...p,
                 vertices: fromVertexTable(p.vertices),
@@ -597,6 +611,62 @@ class Parser {
         }
       }
     }
+  }
+
+  private groupPrimitiveNodes(inputNodes: Imdl.PrimitivesNode[], imdlFeatureTable: Imdl.FeatureTable): Imdl.Node[] {
+    const modelGroups = this._options.modelGroups;
+    if (!modelGroups?.length)
+      return inputNodes;
+
+    const groupNodes: Imdl.GroupNode[] = [];
+    let orphanNode: Imdl.GroupNode | undefined;
+    const getGroupNode = (groupId: number): Imdl.GroupNode => {
+      assert(groupId <= modelGroups.length);
+      if (groupId === modelGroups.length) {
+        // This would happen if:
+        //  - The tile contains geometry from a model not present in modelGroups (should never occur); or
+        //  - The tile contains an area pattern (we haven't yet implemented splitting for them).
+        // In either case, orphaned geometry will end up getting discarded.
+        return orphanNode ?? (orphanNode = { groupId, nodes: [] });
+      }
+
+      let groupNode = groupNodes[groupId];
+      if (!groupNode)
+        groupNodes[groupId] = groupNode = { groupId, nodes: [] };
+
+      return groupNode;
+    };
+
+    const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
+    const modelIdPair = { lower: 0, upper: 0 };
+    const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
+      featureTable.getModelIdPair(featureIndex, modelIdPair);
+      const modelId = Id64.fromUint32PairObject(modelIdPair);
+      for (let i = 0; i < modelGroups.length; i++) {
+        if (modelGroups[i].has(modelId))
+          return i;
+      }
+
+      return modelGroups.length;
+    };
+
+    for (const inputNode of inputNodes) {
+      // Indexed by model group index.
+      const splitNodes: Imdl.PrimitivesNode[] = [];
+      const getSplitNode = (groupIndex: number | undefined) => {
+        groupIndex = groupIndex ?? modelGroups.length;
+        if (!splitNodes[groupIndex]) {
+          const splitNode = splitNodes[groupIndex] = { ...inputNode, primitives: [] };
+          getGroupNode(groupIndex).nodes.push(splitNode);
+        }
+
+        return splitNodes[groupIndex];
+      };
+
+      this.splitPrimitives(inputNode.primitives, featureTable, computeNodeId, getSplitNode);
+    }
+
+    return groupNodes.filter<Imdl.GroupNode>((x): x is Imdl.GroupNode => undefined !== x);
   }
 
   private parseTesselatedPolyline(json: ImdlPolyline): Imdl.TesselatedPolyline | undefined {

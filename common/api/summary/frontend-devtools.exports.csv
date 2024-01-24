@@ -38,6 +38,7 @@ beta;ClearIsolatedElementsTool
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
 beta;ClipColorTool 
+beta;ClipIntersectionTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps

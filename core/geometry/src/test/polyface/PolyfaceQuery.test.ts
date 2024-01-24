@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
+import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry, PolygonLocation } from "../../Geometry";
@@ -18,6 +21,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -40,6 +44,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../testInputs/ImportedSamples";
+import { LinearSweep } from "../../core-geometry";
 
 it("ChainMergeVariants", () => {
   const ck = new Checker();
@@ -273,19 +278,20 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-// implement a do-nothing visitor NOT backed by a Polyface
+// implement a minimal visitor NOT backed by a Polyface
 class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   private _index: number;
   private _numIndices: number;
-  public constructor(numIndices: number) {
+  public constructor(numIndicesAndVertices: number) {
     super();
-    this._numIndices = numIndices;
+    this._numIndices = numIndicesAndVertices;
     this._index = -1;
   }
   public moveToReadIndex(index: number): boolean {
     if (index < 0 || index >= this._numIndices)
       return false;
     this._index = index;
+    this.pointIndex = [index];  // each "face loop" is a singleton array holding a unique index
     return true;
   }
   public currentReadIndex(): number {
@@ -296,24 +302,25 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   }
   public reset(): void {
     this._index = -1;
+    this.pointIndex = [];
   }
   public clientPolyface(): Polyface | undefined {
     return undefined; // highly unusual
   }
   public clientPointIndex(_i: number): number {
-    return 0;
+    return this.pointIndex[0];
   }
   public clientParamIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientNormalIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientColorIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public clientAuxIndex(_i: number): number {
-    return 0;
+    return -1;
   }
   public setNumWrap(_numWrap: number): void {
   }
@@ -328,14 +335,16 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
 it("CountVisitableFacets", () => {
   const ck = new Checker();
   const mesh = ImportedSample.createPolyhedron62();
-  if (ck.testDefined(mesh) && undefined !== mesh) {
+  if (ck.testType(mesh, IndexedPolyface)) {
+    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(mesh));
+    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(mesh));
     const visitor = mesh.createVisitor(0);
     ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
     ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
   }
   // test a visitor without polyface backing
   const visitor0 = new VisitorSansMesh(5);
-  ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
+  ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
   ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
   expect(ck.getNumErrors()).equals(0);
 });
@@ -603,7 +612,7 @@ describe("MarkVisibility", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-describe("ReOrientFacets", () => {
+describe("ReorientFacets", () => {
   it("TwoFacets", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -663,8 +672,35 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("MoebiusStrip", () => {
+  it("MeshClosure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const testCases = ["./src/test/testInputs/polyface/closedMesh.imjs", "./src/test/testInputs/polyface/almostClosedMesh.imjs"];
+    for (const testCase of testCases) {
+      const mesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase, "utf8"))) as IndexedPolyface;
+      if (ck.testType(mesh, IndexedPolyface, "input successfully parsed")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0);
+        const range = mesh.range();
+        let isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        if (!isTopologicallyClosed) {
+          // almostClosedMesh has two degenerate triangles with only 2 edges, and a degenerate hexagon with only 3 edges,
+          // which can be seen in the allGeometry if the following compress is skipped.
+          mesh.data.compress();
+          const typicalBoundary = PolyfaceQuery.collectBoundaryEdges(mesh, true, false, false);
+          ck.testUndefined(typicalBoundary, "compressed mesh anomalous boundary removed successfully");
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, typicalBoundary, x0);
+          isTopologicallyClosed = PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh);
+        }
+        ck.testBoolean(isTopologicallyClosed, 2 === mesh.expectedClosure, "expected closure agrees with topo closure");
+        x0 += range.xLength();
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MeshClosure");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
+  it("MoebiusStrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -956,13 +992,13 @@ describe("ReOrientFacets", () => {
   });
 
   it("ComputeSilhouettes", () => {
-
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const solids = Sample.createClosedSolidSampler(true);
-    const defaultOptions = StrokeOptions.createForFacets();
-    // REMARK: (EDL Oct 2020) Mutter and grumble.  The builder does not observe shouldTriangulate !!!
+    const defaultOptions = new StrokeOptions();
+    defaultOptions.shouldTriangulate = true;
+    defaultOptions.angleTol = Angle.createDegrees(10);
     // REMARK: (EDL Oct 2020) What can be asserted about the silhouette output?
     //       We'll at least assert its not null  for the forward view cases ...
     for (const solid of solids) {
@@ -975,14 +1011,16 @@ describe("ReOrientFacets", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
           for (const selector of [0, 1, 2]) {
             const edges = PolyfaceQuery.boundaryOfVisibleSubset(mesh, selector as (0 | 1 | 2), viewVector);
-            if (selector < 2)
-              ck.testDefined(edges);
+            y0 += 40.0;
             if (edges) {
-              y0 += 40.0;
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, edges, x0, y0, 0);
-              y0 += 20.0;
               const chains = RegionOps.collectChains([edges]);
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, x0, y0, 0);
+            }
+            if (selector < 2) {
+              ck.testDefined(edges);
+            } else {  // alternate silhouette method, often better results
+              const silhouetteEdges = PolyfaceQuery.collectSilhouetteEdges(mesh, viewVector);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, silhouetteEdges, x0, y0, 20);
             }
           }
         }
@@ -990,8 +1028,62 @@ describe("ReOrientFacets", () => {
       }
       x0 += 20;
     }
+    // test an open surface
+    const surfMesh = Sample.createMeshFromFrankeSurface(50, defaultOptions);
+    if (ck.testType(surfMesh, IndexedPolyface, "faceted a smooth surface")) {
+      for (const viewVector of [Vector3d.create(0, 0, 1), Vector3d.create(1, -1, 1), Vector3d.create(-1, -1, 1)]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfMesh, x0, 0, 0);
+        const boundary = PolyfaceQuery.collectBoundaryEdges(surfMesh);
+        const silhouette = PolyfaceQuery.collectSilhouetteEdges(surfMesh, viewVector);
+        const allEdges: AnyCurve[] = [];
+        if (ck.testDefined(boundary, "boundary found") && boundary) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary, x0, 20, 0);
+          allEdges.push(boundary);
+        }
+        ck.testTrue(viewVector.isExactEqual(Vector3d.unitZ()) || undefined !== silhouette, "silhouette edges found in skew views");
+        if (silhouette) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, silhouette, x0, 20, 0);
+          allEdges.push(silhouette);
+        }
+        // find the xy-boundary in the view plane
+        const localToWorld = Matrix3d.createRigidViewAxesZTowardsEye(viewVector.x, viewVector.y, viewVector.z);
+        const toWorld = Transform.createOriginAndMatrix(undefined, localToWorld);
+        const worldToLocal = localToWorld.transpose();
+        const toPlane = Transform.createOriginAndMatrix(undefined, worldToLocal);
+        allEdges.forEach((curve: AnyCurve) => { curve.tryTransformInPlace(toPlane); });
+        const signedLoops = RegionOps.constructAllXYRegionLoops(allEdges);
+        let largestRangeDiagonal = 0;
+        let exteriorLoop: Loop | undefined;
+        for (const component of signedLoops) {
+          for (const negAreaLoop of component.negativeAreaLoops) {
+            const rangeDiagonal = negAreaLoop.range().diagonal().magnitude();
+            if (rangeDiagonal > largestRangeDiagonal) {
+              largestRangeDiagonal = rangeDiagonal;
+              exteriorLoop = negAreaLoop; // clockwise in the view plane
+            }
+          }
+        }
+        // verify that mesh points are in the xy-boundary in the view plane
+        if (exteriorLoop) {
+          const jointOptions = new JointOptions(Geometry.smallMetricDistance); // enlarge to catch boundary points
+          const offsetChain = RegionOps.constructPolygonWireXYOffset(exteriorLoop.getPackedStrokes()!.getArray(), true, jointOptions);
+          if (ck.testDefined(offsetChain, "offset computed") && offsetChain) {
+            const offsetPolygon = offsetChain.getPackedStrokes()!;
+            offsetPolygon.forceClosure();
+            for (let i = 0; i < surfMesh.pointCount; ++i) {
+              const pt = surfMesh.data.getPoint(i)!;
+              const localPt = toPlane.multiplyPoint3d(pt);
+              if (!ck.testTrue(-1 < PolygonOps.classifyPointInPolygonXY(localPt.x, localPt.y, offsetPolygon)!, `point (${pt.x},${pt.y}) is in/on the exterior loop`))
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pt, pt), x0, 30, 0);
+            }
+          }
+          exteriorLoop.tryTransformInPlace(toWorld);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, exteriorLoop, x0, 30, 0);
+        }
+        x0 += 20;
+      }
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeSilhouettes");
-
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -1277,6 +1369,43 @@ describe("Intersections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("FacetShape", () => {
+  it("Convexity", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const options = StrokeOptions.createForFacets();
+    const polyface = Sample.createMeshFromFrankeSurface(30, options)!;
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface), "Franke surface (quads) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface, true), "Franke surface (quads) is manifold");
+
+    options.shouldTriangulate = true;
+    const polyface1 = Sample.createMeshFromFrankeSurface(30, options)!;
+    const visitor1 = polyface1.createVisitor();
+    ck.testTrue(PolyfaceQuery.areFacetsConvex(visitor1), "Franke surface (triangulated) has convex facets");
+    ck.testTrue(PolyfaceQuery.isPolyfaceManifold(polyface1, true), "Franke surface (triangulated) is manifold");
+
+    options.shouldTriangulate = false;
+    const dartPoints = [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)];
+    const sweptDart = LinearSweep.createZSweep(dartPoints, 0, 3, true);
+    if (ck.testType(sweptDart, LinearSweep, "created swept dart solid")) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addLinearSweep(sweptDart);
+      const polyface2 = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface2);
+      ck.testTrue(PolyfaceQuery.areFacetsConvex(polyface2), "Swept dart (triangulated) has convex facets");
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2), "Swept dart (triangulated) is closed");
+      const polyface3 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface2);
+      if (ck.testType(polyface3, IndexedPolyface, "clone with max planar facets successful")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface3, 5);
+        ck.testFalse(PolyfaceQuery.areFacetsConvex(polyface3), "Swept dart (max planar facets) has at least one non-convex facet");
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface3), "Swept dart (max planar facets) is closed");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "FacetShape", "Convexity");
     expect(ck.getNumErrors()).equals(0);
   });
 });

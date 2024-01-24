@@ -355,6 +355,10 @@ export class Branch extends Graphic {
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {
+    const group = commands.target.currentBranch.groupNodeId;
+    if (undefined !== group && undefined !== this.branch.groupNodeId && this.branch.groupNodeId !== group)
+      return false;
+
     const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
     return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
   }
@@ -418,6 +422,8 @@ export class WorldDecorations extends Branch {
 
     // World decorations ignore all the symbology overrides for the "scene" geometry...
     this.branch.symbologyOverrides = new FeatureSymbology.Overrides();
+    // Make all subcategories visible.
+    this.branch.symbologyOverrides.ignoreSubCategory = true;
   }
 
   public init(decs: GraphicList): void {

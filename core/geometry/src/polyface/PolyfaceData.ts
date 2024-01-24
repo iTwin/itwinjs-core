@@ -119,7 +119,7 @@ export class PolyfaceData {
     this._twoSided = twoSided;
     this._expectedClosure = 0;
   }
-  /** Return a depp clone. */
+  /** Return a deep clone. */
   public clone(): PolyfaceData {
     const result = new PolyfaceData();
     result.point = this.point.clone();

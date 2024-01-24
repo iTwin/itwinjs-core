@@ -111,10 +111,10 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { vie
     if (entry.primitive.type === "geometryQuery") {
       expect(entry.primitive.geometry.geometryCategory).to.equal("curveCollection");
       if (entry.primitive.geometry.geometryCategory === "curveCollection") {
-        expect(entry.primitive.geometry.children!.length).to.equal(1);
-        expect(entry.primitive.geometry.children![0]).instanceOf(LineString3d);
+        expect(entry.primitive.geometry.children.length).to.equal(1);
+        expect(entry.primitive.geometry.children[0]).instanceOf(LineString3d);
 
-        const pts = (entry.primitive.geometry.children![0] as LineString3d).points;
+        const pts = (entry.primitive.geometry.children[0] as LineString3d).points;
         expect(pts.length).to.equal(5);
         expect(pts[1].x).to.equal(pts[0].x + 1);
 

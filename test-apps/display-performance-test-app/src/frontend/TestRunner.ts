@@ -13,6 +13,8 @@ import {
 import {
   CheckpointConnection,
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  ModelDisplayTransform,
+  ModelDisplayTransformProvider,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -21,9 +23,10 @@ import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
+import { Transform } from "@itwin/core-geometry";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -34,6 +37,7 @@ export interface TestSetProps extends TestConfigProps {
 export interface TestSetsProps extends TestConfigProps {
   signIn?: boolean;
   minimize?: boolean;
+  renderCmdStats?: boolean;
   testSet: TestSetProps[];
 }
 
@@ -137,10 +141,29 @@ class OverrideProvider {
   }
 }
 
+class DisplayTransformProvider implements ModelDisplayTransformProvider {
+  private readonly _transforms = new Map<string, ModelDisplayTransform>();
+  private constructor() { }
+
+  public static fromJSON(props: DisplayTransformProviderProps): DisplayTransformProvider {
+    const provider = new DisplayTransformProvider();
+    for (const prop of props) {
+      provider._transforms.set(prop.modelId, { transform: Transform.fromJSON(prop.transform), premultiply: prop.premultiply });
+    }
+
+    return provider;
+  }
+
+  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined {
+    return this._transforms.get(modelId);
+  }
+}
+
 /** Given the JSON representation of a set of tests, executes them and records output (CSV timing info, images, logs, etc). */
 export class TestRunner {
   private readonly _config: TestConfigStack;
   private readonly _minimizeOutput: boolean;
+  private readonly _outputRenderCmdStats: boolean;
   private readonly _testSets: TestSetProps[];
   private readonly _logFileName: string;
   private readonly _testNamesImages = new Map<string, number>();
@@ -171,6 +194,7 @@ export class TestRunner {
     this._lastRestartConfig = this.curConfig;
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
+    this._outputRenderCmdStats = true === props.renderCmdStats;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
     this._savedViewsFetcher = savedViewsFetcher;
 
@@ -197,8 +221,8 @@ export class TestRunner {
       const realityDataClientOptions: RealityDataClientOptions = {
         /** API Version. v1 by default */
         // version?: ApiVersion;
-        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-        baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
       };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
@@ -229,7 +253,7 @@ export class TestRunner {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
@@ -582,6 +606,8 @@ export class TestRunner {
     }
 
     await view.load();
+
+    view.modelDisplayTransformProvider = spec.displayTransformProvider;
     return {
       view,
       elementOverrides: spec.elementOverrides,
@@ -676,6 +702,7 @@ export class TestRunner {
             viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
             elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
             selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
+            displayTransformProvider: x._displayTransforms ? DisplayTransformProvider.fromJSON(JSON.parse(x._displayTransforms)) : undefined,
           };
         });
       }
@@ -861,6 +888,26 @@ export class TestRunner {
       rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
       rowData.set("Tile Tree GPU MB", test.viewedTileTreeGpuBytes / (1024 * 1024));
       rowData.set("Total GPU MB", test.totalGpuBytes / (1024 * 1024));
+    }
+
+    if (this._outputRenderCmdStats) {
+      if (this._minimizeOutput) {
+        rowData.set("Num Selected Tiles", test.numSelectedTiles);
+        rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
+      }
+      const dbgCtl = test.viewport.target.debugControl;
+      if (undefined !== dbgCtl) {
+        const cmdCounts = dbgCtl.getRenderCommands();
+        let numPrimitives = 0;
+        if (undefined !== cmdCounts) {
+          for (const cc of cmdCounts) {
+            rowData.set(cc.name, cc.count);
+            if ("Primitives" === cc.name)
+              numPrimitives = cc.count;
+          }
+          rowData.set("Primitives Per Tile", 0 === numPrimitives ? -1 : numPrimitives / test.numSelectedTiles);
+        }
+      }
     }
 
     const setGpuData = (name: string) => {
@@ -1058,8 +1105,8 @@ export class TestRunner {
 
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
-    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-    if ("terminate" === this.curConfig.onException)
+    const terminateErr = await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if (terminateErr || "terminate" === this.curConfig.onException)
       await DisplayPerfRpcInterface.getClient().terminate();
   }
 }

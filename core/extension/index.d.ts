@@ -118,6 +118,7 @@ export {
 	OutputMessagePriority,
 	OutputMessageType,
 	ParseAndRunResult,
+	ParticleCollectionBuilder,
 	PerModelCategoryVisibility,
 	PhysicalModelState,
 	Pixel,
@@ -327,6 +328,7 @@ export {
 	ChangeOpCode,
 	ChangedValueState,
 	ChangesetType,
+	ClipIntersectionStyle,
 	ColorByName,
 	ColorDef,
 	CommonLoggerCategory,
@@ -377,6 +379,7 @@ export {
 	ThematicDisplayMode,
 	ThematicGradientColorScheme,
 	ThematicGradientMode,
+	ThematicGradientTransparencyMode,
 	TxnAction,
 	TypeOfChange
 } from "@itwin/core-common";
@@ -416,6 +419,8 @@ export type {
 	ChangesetIndexOrId,
 	ChangesetRange,
 	ChannelRootAspectProps,
+	ClipIntersectionStyleProps,
+	ClipStyleCreateArgs,
 	ClipStyleProps,
 	CodeProps,
 	CodeScopeProps,

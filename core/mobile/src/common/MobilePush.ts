@@ -54,7 +54,7 @@ export class MobilePushConnection<T> extends RpcPushConnection<T> {
 
   public async send(messageData: any) {
     MobileEventLoop.addTask();
-    const result = await RpcMarshaling.serialize(this._protocol, messageData);
+    const result = RpcMarshaling.serialize(this._protocol, messageData);
     MobileEventLoop.removeTask();
 
     const fulfillment: RpcRequestFulfillment = { result, rawResult: messageData, interfaceName: PUSH, id: this.channel.id, status: ++this._next };

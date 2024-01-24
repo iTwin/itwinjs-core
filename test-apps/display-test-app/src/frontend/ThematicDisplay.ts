@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@itwin/frontend-devtools";
+import {
+  CheckBox, ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider,
+} from "@itwin/frontend-devtools";
 import { Point3d, Range1d } from "@itwin/core-geometry";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
-  ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientTransparencyMode, ViewFlags,
 } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
@@ -107,6 +109,7 @@ export class ThematicDisplayEditor {
   private readonly _thematicRangeLow: LabeledNumericInput;
   private readonly _thematicRangeHigh: LabeledNumericInput;
   private readonly _thematicColorMix: Slider;
+  private readonly _alphaCheckbox: CheckBox;
   private readonly _thematicAxisX: LabeledNumericInput;
   private readonly _thematicAxisY: LabeledNumericInput;
   private readonly _thematicAxisZ: LabeledNumericInput;
@@ -260,7 +263,7 @@ export class ThematicDisplayEditor {
       id: "thematic_stepCount",
       parent: spanStepAndColor,
       value: 1,
-      handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+      handler: (value) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         props.gradientSettings!.stepCount = value;
         return props;
@@ -272,13 +275,24 @@ export class ThematicDisplayEditor {
     });
     this._thematicStepCount.div.style.marginRight = "1.5em";
 
+    const customColorSchemes: Array<Array<[number, number, number, number, number]>> = [
+      // All opaque
+      [[0.0, 255, 255, 0, 0], [0.5, 255, 0, 255, 0], [1.0, 0, 255, 255, 0]],
+      // All variously transparent
+      [[0.0, 255, 0, 0, 0xff], [0.25, 0, 255, 0, 0xbf], [0.5, 0, 0, 255, 0x7f], [0.75, 255, 0, 255, 0x3f]],
+      // Variously transparent and one opaque
+      [[0.0, 255, 0, 0, 0xff], [0.2, 0, 255, 0, 0xbf], [0.4, 0, 0, 255, 0x7f], [0.6, 255, 0, 255, 0x3f], [0.8, 0, 255, 255, 0]],
+    ];
+
     const colorSchemeEntries = [
       { name: "BlueRed", value: ThematicGradientColorScheme.BlueRed },
       { name: "RedBlue", value: ThematicGradientColorScheme.RedBlue },
       { name: "Monochrome", value: ThematicGradientColorScheme.Monochrome },
       { name: "Topographic", value: ThematicGradientColorScheme.Topographic },
       { name: "SeaMountain", value: ThematicGradientColorScheme.SeaMountain },
-      { name: "Custom", value: ThematicGradientColorScheme.Custom },
+      { name: "Custom (opaque)", value: ThematicGradientColorScheme.Custom + 0 },
+      { name: "Custom (transparent)", value: ThematicGradientColorScheme.Custom + 1 },
+      { name: "Custom (mixed)", value: ThematicGradientColorScheme.Custom + 2 },
     ];
 
     this._thematicColorScheme = createComboBox({
@@ -289,17 +303,31 @@ export class ThematicDisplayEditor {
       value: 0,
       handler: (thing) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
-        props.gradientSettings!.colorScheme = Number.parseInt(thing.value, 10);
-
-        // For now, we just hard code a custom color scheme in here. ###TODO - allow user to specify their own custom values.
-        if (props.gradientSettings!.colorScheme === ThematicGradientColorScheme.Custom) {
-          const customKeyValues = [[0.0, 255, 255, 0], [0.5, 255, 0, 255], [1.0, 0, 255, 255]];
-          props.gradientSettings!.customKeys = [];
-          customKeyValues.forEach((key) => props.gradientSettings!.customKeys!.push({ value: key[0], color: ColorDef.computeTbgrFromComponents(key[1], key[2], key[3]) }));
+        const mode = Number.parseInt(thing.value, 10);
+        if (mode < ThematicGradientColorScheme.Custom) {
+          props.gradientSettings!.colorScheme = mode;
+        } else {
+          props.gradientSettings!.colorScheme = ThematicGradientColorScheme.Custom;
+          const customKeyValues = customColorSchemes[mode - ThematicGradientColorScheme.Custom];
+          props.gradientSettings!.customKeys = customKeyValues.map((key) => {
+            return { value: key[0], color: ColorDef.computeTbgrFromComponents(key[1], key[2], key[3], key[4]) };
+          });
         }
         return props;
       }),
     });
+
+    this._alphaCheckbox = createCheckBox({
+      parent: thematicControlsDiv,
+      name: "Multiply gradient alpha",
+      id: "thematic_alpha",
+      handler: (cb) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.gradientSettings!.transparencyMode = ThematicGradientTransparencyMode[cb.checked ? "MultiplySurfaceAndGradient" : "SurfaceOnly"];
+        return props;
+      }),
+    });
+    this._alphaCheckbox.div.style.textAlign = "left";
 
     const spanRange = document.createElement("span");
     spanRange.style.display = "flex";

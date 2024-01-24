@@ -1,6 +1,71 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Fri, 29 Sep 2023 18:24:48 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+_Version update only_
+
+## 4.3.2
+Thu, 14 Dec 2023 20:23:02 GMT
+
+_Version update only_
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:55 GMT
+
+_Version update only_
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Added ability to track changes for property minLength, maxLength, minValue, maxValue, extendedTypeName attributes
+- Use Schema Editor instead od Mutable Schema Items directly
+- Added full name comparison support for areItemsSameByName in SchemaComparer
+- Removed schemaComparerOptions flag from schemaCompare and added comparison support to compare schemas with different names.
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Added the ability to update the base class of an EC Class via the ecschema-editing API.
+- Added first version of SchemaMerger class.
+- Added schema merging support for phenomenon, constant, unit system and enumerators.
+- Added the ability to rename an ECProperty via the setName method.
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT
@@ -90,6 +155,26 @@ Mon, 22 May 2023 15:34:14 GMT
 - Updated to work with async schema loading changes made to ecschema-metadata
 - Update to eslint@8
 - Removed obsolete EC rule 102 - Abstract class must have abstract base class.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:08 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT

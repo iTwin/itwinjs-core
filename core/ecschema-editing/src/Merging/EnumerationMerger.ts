@@ -2,100 +2,65 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyEnumerator, Enumeration, parsePrimitiveType, primitiveTypeToString } from "@itwin/ecschema-metadata";
-import { ChangeType, EnumerationChanges, EnumeratorDelta } from "../Validation/SchemaChanges";
-import { mergeSchemaItemProperties } from "./SchemaItemMerger";
-import { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
+import { AnyEnumerator, Enumeration, SchemaItemKey} from "@itwin/ecschema-metadata";
+import { ChangeType, EnumerationChanges } from "../Validation/SchemaChanges";
+import { SchemaItemMerger } from "./SchemaItemMerger";
+
+type EnumeratorDeltaArgs = [AnyEnumerator, keyof AnyEnumerator, string | undefined];
 
 /**
  * @internal
- * @param item Type Enumerator, the Enumerator the differences get merged into.
- * @param attributeName Name of the Enumerator attribute that changed.
- * @param deltaChange Provides information about the changes in Enumerator attributes.
- * @param attributeValue The value that gets merged into the Enumerator attribute.
  */
-type EnumeratorAttributeChanged<TEnumerator extends AnyEnumerator> = (item: TEnumerator, attributeName: string, deltaChange: string, attributeValue: any) => void | boolean;
+export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {
 
-/**
- * Simple interface to extend access Enumerator attributes
- * and allow editing.
- */
-interface MutableEnumerator extends AnyEnumerator {
-  label?: string;
-  description?: string;
-}
+  /** Shorthand property to the enumerations editor. */
+  private get _editor() {
+    return this.context.editor.enumerations;
+  }
 
-/**
- * @param target The Enumeration the differences get merged into
- * @param source The Enumeration to compare
- * @param changes Gets the @see EnumerationChanges between the two Enumerations.
- * For example, if source Enumeration has an attribute that is undefined in
- * target one, it would be listed in propertyValueChanges.
- * @internal
- */
-export default async function mergeEnumeration(target: Enumeration, source: Enumeration, changes: EnumerationChanges) {
-  const mutableEnumeration = target as MutableEnumeration;
+  protected override async merge(itemKey: SchemaItemKey, source: Enumeration, changes: EnumerationChanges) {
+    for (const enumeratorChange of changes.enumeratorChanges.values()) {
+      // In case the enumerator entry does not exist in the target enumeration the
+      // enumeratorMissing property is set and
+      if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
 
-  await mergeSchemaItemProperties(mutableEnumeration, changes.propertyValueChanges, (item, propertyName, propertyValue) => {
-    switch (propertyName) {
-      case "isStrict": return item.setIsStrict(propertyValue);
-      case "type": {
-        const primitiveType = parsePrimitiveType(propertyValue);
-        if (primitiveType && item.type !== primitiveType) {
-          throw Error(`Merged enumeration ${item.name} types not equal: ${primitiveTypeToString(item.type!)} -> ${propertyValue}`);
+        const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
+        if (enumerator === undefined) {
+          throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in class ${source.fullName}`);
         }
-      }
-    }
-  });
 
-  for (const enumeratorChange of changes.enumeratorChanges.values()) {
-    if (enumeratorChange.enumeratorMissing?.changeType === ChangeType.Missing) {
-      const enumerator = source.getEnumeratorByName(enumeratorChange.ecTypeName);
-      if (enumerator === undefined) {
-        throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in Enumeration ${source.fullName}`);
+        // Enumerators are plain javascript objects with out any references to other
+        // instances or a schema. That allows to simply copy them over.
+        await this._editor.addEnumerator(itemKey, enumerator);
+
+        // Since every missing enumerator has delta changes for ech property, the loop
+        // must call continue here to avoid having all properties checked and set again.
+        continue;
       }
-      const result = mutableEnumeration.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description);
-      mutableEnumeration.addEnumerator(result);
-    } else {
-      const targetEnumerator = target.getEnumeratorByName(enumeratorChange.ecTypeName);
-      if (targetEnumerator === undefined) {
-        throw Error(`Enumerator '${enumeratorChange.ecTypeName}' not found in Enumeration ${target.fullName}`);
+
+      // For changes where the enumerators differ, the enumeratorDeltas property is
+      // filled. This allows to change individual enumerator entries. This is only
+      // allowed for labels and descriptions, all other deltas would throw an error.
+      for(const enumeratorDelta of enumeratorChange.enumeratorDeltas) {
+        await this.mergeEnumeratorChanges(itemKey, enumeratorDelta.diagnostic.messageArgs! as EnumeratorDeltaArgs);
       }
-      const mutableEnumerator = targetEnumerator as MutableEnumerator;
-      await mergeEnumeratorAttributes(mutableEnumerator, enumeratorChange.enumeratorDeltas, (enumerator, attributeName, deltaChange, attributeValue) => {
-        switch (attributeName) {
-          case "label": {
-            enumerator.label = attributeValue;
-            return;
-          }
-          case "description": {
-            enumerator.description = attributeValue;
-            return;
-          }
-          case "value": {
-            throw Error(`Failed to merge enumerator attribute, ${deltaChange} in ${enumerator.name}`);
-          }
-        }
-      });
     }
   }
-}
 
-/**
- * Similar logic to mergeSchemaItemProperties but for EnumeratorDelta, which has the differences starting at index 1,
- * hence the .slice(1), this is the main difference between mergeSchemaItemProperties.
- * @param targetEnumerator The enumerator the differences get merged into.
- * @param changes Gets the @see EnumeratorDelta, the Enumerator delta array holds information about changes between two Enumerators.
- * @param handler Defines the information needed to merge the attributes.
- * @internal
- */
-async function mergeEnumeratorAttributes<T extends AnyEnumerator>(targetEnumerator: T, changes: EnumeratorDelta[], handler: EnumeratorAttributeChanged<T>) {
-  for (let index = 0, stepUp = true; index < changes.length; stepUp && index++, stepUp = true) {
-    const deltaChange = changes[index].toString(); // this will be useful for error message.
-    const [attributeName, attributeValue] = changes[index].diagnostic.messageArgs!.slice(1); // messageArgs[0] seems to be an object, need to get to the next one, slice to start at index 1
-    if (handler(targetEnumerator, attributeName, deltaChange, attributeValue) === true) {
-      changes.splice(index, 1);
-      stepUp = false;
+  private async mergeEnumeratorChanges(itemKey: SchemaItemKey, [enumerator, propertyName, value]: EnumeratorDeltaArgs) {
+    // In case an enumerator has the same name but different value, the enumerator
+    // cannot be merged to keep integrity for the existing schema users.
+    if(propertyName === "value") {
+      throw new Error(`Failed to merge enumerator attribute, Enumerator "${enumerator.name}" has different values.`);
+    }
+
+    // For the other two properties they shall only be merged if the source value is
+    // set. In case they'd be undefined, the current enumerators value shall be kept.
+    if(propertyName === "label" && value !== undefined) {
+      await this._editor.setEnumeratorLabel(itemKey, enumerator.name, value);
+    }
+    if(propertyName === "description" && value !== undefined) {
+      await this._editor.setEnumeratorDescription(itemKey, enumerator.name, value);
     }
   }
 }

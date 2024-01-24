@@ -26,6 +26,7 @@ export enum NativePlatformRequestTypes {
   GetContentSources = "GetContentSources",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
+  GetContentSet = "GetContentSet",
   GetContent = "GetContent",
   GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
@@ -45,10 +46,10 @@ export enum NativePresentationUnitSystem {
 
 /** @internal */
 export interface NativePresentationDefaultUnitFormats {
-  [phenomenon: string]: {
+  [phenomenon: string]: Array<{
     unitSystems: NativePresentationUnitSystem[];
     format: FormatProps;
-  };
+  }>;
 }
 
 /** @internal */
@@ -72,6 +73,7 @@ export interface NativePlatformDefinition extends IDisposable {
 
   forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>>;
 
+  registerSupplementalRuleset(serializedRulesetJson: string): NativePlatformResponse<string>;
   getRulesets(rulesetId: string): NativePlatformResponse<string>;
   addRuleset(serializedRulesetJson: string): NativePlatformResponse<string>;
   removeRuleset(rulesetId: string, hash: string): NativePlatformResponse<boolean>;
@@ -130,14 +132,13 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
-        [phenomenon: string]: {
+        [phenomenon: string]: Array<{
           unitSystems: string[];
           serializedFormat: string;
-        };
+        }>;
       } = {};
-      Object.keys(defaultMap).forEach((key) => {
-        const value = defaultMap[key];
-        res[key] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
+      Object.entries(defaultMap).forEach(([phenomenon, formats]) => {
+        res[phenomenon] = formats.map((value) => ({ unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) }));
       });
       return res;
     }
@@ -179,6 +180,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       if (!imodel.isOpen)
         throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
+    }
+    public registerSupplementalRuleset(serializedRulesetJson: string) {
+      return this.handleResult<string>(this._nativeAddon.registerSupplementalRuleset(serializedRulesetJson));
     }
     public getRulesets(rulesetId: string) {
       return this.handleResult<string>(this._nativeAddon.getRulesets(rulesetId));

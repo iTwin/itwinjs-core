@@ -174,7 +174,7 @@ export class RpcInvocation {
           // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
           if (!(error instanceof RpcPendingResponse)) {
             Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
-            Tracing.setAttributes({ error: true });
+            Tracing.recordException(error);
           }
           throw error;
         }));
@@ -220,7 +220,7 @@ export class RpcInvocation {
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = await RpcMarshaling.serialize(this.protocol, value);
+    const result = RpcMarshaling.serialize(this.protocol, value);
     return this.fulfill(result, value);
   }
 
@@ -229,7 +229,7 @@ export class RpcInvocation {
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = await RpcMarshaling.serialize(this.protocol, reason);
+    const result = RpcMarshaling.serialize(this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;

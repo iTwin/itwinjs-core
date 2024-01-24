@@ -48,7 +48,8 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   public abstract get treeOwner(): TileTreeOwner;
 
   /** Force a new tree owner / tile tree to be created for the current tile tree reference
-  /* @internal */
+   * @internal
+   */
   public resetTreeOwner() {}
 
   /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
@@ -147,11 +148,16 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
       animationTransformNodeId: this.getAnimationTransformNodeId(tree),
+      groupNodeId: this.getGroupNodeId(tree),
     });
   }
 
   /** @internal */
   protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
+    return undefined;
+  }
+  /** @internal */
+  protected getGroupNodeId(_tree: TileTree): number | undefined {
     return undefined;
   }
 

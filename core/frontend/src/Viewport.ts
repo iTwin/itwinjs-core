@@ -135,7 +135,7 @@ export interface DepthRangeNpc {
   maximum: number;
 }
 
-/** Options to allow changing the view rotation with zoomTo methods.
+/** Options to allow changing the view rotation with zoomTo methods and ensure minimum bounding box dimensions for zoomToElements.
  * @public
  */
 export interface ZoomToOptions {
@@ -145,6 +145,8 @@ export interface ZoomToOptions {
   placementRelativeId?: StandardViewId;
   /** Set view rotation from Matrix3d. */
   viewRotation?: Matrix3d;
+  /** Ensure minimum element-aligned bounding box dimensions in meters (3d only). */
+  minimumDimension?: number;
 }
 
 /** Options for changing the viewed Model of a 2d view via [[Viewport.changeViewedModel2d]]
@@ -318,7 +320,11 @@ export abstract class Viewport implements IDisposable, TileUser {
  * @beta
  */
   public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
-
+  /** Event invoked every time [[invalidateScene]] is called.
+   * @note This event will be raised **very** frequently. Avoid doing significant work inside of your event listener.
+   * @beta
+   */
+  public readonly onSceneInvalidated = new BeEvent<(vp: Viewport) => void>();
   /** @internal */
   protected _hasMissingTiles = false;
 
@@ -384,6 +390,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   public invalidateScene(): void {
     this._sceneValid = false;
     this._timePointValid = false;
+    this.onSceneInvalidated.raiseEvent(this);
     this.invalidateDecorations();
   }
 
@@ -2143,6 +2150,12 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & MarginOptions & ZoomToOptions): Promise<void> {
     const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
+    if (undefined !== options?.minimumDimension) {
+      for (const placement of placements) {
+        if (placement.isValid && placement instanceof Placement3d)
+          placement.bbox.ensureMinLengths(options.minimumDimension);
+      }
+    }
     this.zoomToPlacements(placements, options);
   }
 

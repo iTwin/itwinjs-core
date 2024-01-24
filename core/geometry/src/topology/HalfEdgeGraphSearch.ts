@@ -6,24 +6,29 @@
 /** @packageDocumentation
  * @module Topology
  */
-
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
+import { Range1d } from "../geometry3d/Range";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
+// cspell:word internaldocs
+
 /**
  * Interface for an object that executes boolean tests on edges.
+ * @internal
  */
 export interface HalfEdgeTestObject {
   testEdge(h: HalfEdge): boolean;
 }
 /**
+ * Class to test match of half edge mask.
+ * @internal
  */
 export class HalfEdgeMaskTester {
   private _targetMask: HalfEdgeMask;
   private _targetValue: boolean;
   /**
-   *
+   * Constructor
    * @param mask mask to test in `testEdge` function
    * @param targetValue value to match for true return
    */
@@ -31,79 +36,72 @@ export class HalfEdgeMaskTester {
     this._targetMask = mask;
     this._targetValue = targetValue;
   }
-  /** Return true if the value of the targetMask matches the targetValue */
+  /** Return true if the value of the targetMask matches the targetValue. */
   public testEdge(edge: HalfEdge): boolean {
     return edge.isMaskSet(this._targetMask) === this._targetValue;
   }
-
 }
-// Search services for HalfEdgeGraph
+/**
+ * Class for different types of searches for HalfEdgeGraph.
+ *  @internal
+ */
 export class HalfEdgeGraphSearch {
-
   /**
-   * * for each node of face, set the mask push to allNodesStack
-   * * push the faceSeed on onePerFaceStack[]
-   */
-  private static pushAndMaskAllNodesInFace(faceSeed: HalfEdge, mask: number, allNodeStack: HalfEdge[], onePerFaceStack: HalfEdge[]) {
-    onePerFaceStack.push(faceSeed);
-    faceSeed.collectAroundFace((node: HalfEdge) => {
-      node.setMask(mask);
-      allNodeStack.push(node);
-    });
-  }
-
-  /**
-   * Search an array of faceSeed nodes for the face with the most negative area.
-   * @param oneCandidateNodePerFace array containing one node from each face to be considered.
-   * @returns node on the minimum area face, or undefined if no such face (e.g., all faces have zero area).
-   */
-  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: NodeToNumberFunction): HalfEdge | undefined {
-    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
-    return summary.largestNegativeItem;
-  }
-
-  /**
-   * static method for face area computation -- useful as function parameter in collect FaceAreaSummary.
-   * * This simply calls `node.signedFaceArea ()`
+   * Static method for face area computation -- useful as function parameter in `collectFaceAreaSummary`.
+   * * This simply calls `node.signedFaceArea()`
    * @param node instance for signedFaceArea call.
    */
-  public static signedFaceArea(node: HalfEdge): number { return node.signedFaceArea(); }
+  public static signedFaceArea(node: HalfEdge): number {
+    return node.signedFaceArea();
+  }
   /**
-   *
-   * Return a summary structure data about face (or other numeric quantity if the caller's areaFunction returns other value)
-   * * The default areaFunction computes area of polygonal face.
+   * Return a summary of face data (e.g., area) as computed by the callback on the faces of the graph.
    * * Callers with curved edge graphs must supply their own area function.
-   * @param source graph or array of nodes to examine
-   * @param collectAllNodes flag to pass to the SignedDataSummary constructor to control collection of nodes.
-   * @param areaFunction function to all to obtain area (or other numeric value)
+   * @param source graph or array of nodes to examine.
+   * @param collectAllNodes flag to pass to the `SignedDataSummary` constructor to control collection of nodes.
+   * @param areaFunction function to obtain area (or other numeric value). Default computes polygonal face area.
    */
-  public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false,
-    areaFunction: NodeToNumberFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node)): SignedDataSummary<HalfEdge> {
+  public static collectFaceAreaSummary(
+    source: HalfEdgeGraph | HalfEdge[],
+    collectAllNodes: boolean = false,
+    areaFunction: NodeToNumberFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node),
+  ): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];
-
     if (source instanceof HalfEdgeGraph)
       allFaces = source.collectFaceLoops();
     else
       allFaces = source;
-
     for (const node of allFaces) {
       const area = areaFunction(node);
       result.announceItem(node, area);
     }
     return result;
   }
-
   /**
-   * * Test if the graph is triangulated.
-   * * Return false if:
-   *   * Positive area face with more than 3 edges
-   *   * more than 1 negative area face with `allowMultipleNegativeAreaFaces` false
+   * Search the graph for the face with the most negative area.
+   * @param oneCandidateNodePerFace graph or an array containing one node from each face to be considered.
+   * @returns node on the negative area face with largest absolute area, or `undefined` if no negative area face.
+   */
+  public static findMinimumAreaFace(
+    oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: NodeToNumberFunction,
+  ): HalfEdge | undefined {
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
+    return summary.largestNegativeItem;
+  }
+  /**
+   * Test if the graph is triangulated.
+   * * Return `false` if:
+   *   * number of positive area faces with more than 3 edges is larger than `numPositiveExceptionsAllowed`.
+   *   * graph has more than 1 negative area face when `allowMultipleNegativeAreaFaces` is `false`.
    * * 2-edge faces are ignored.
    */
-  public static isTriangulatedCCW(source: HalfEdgeGraph | HalfEdge[], allowMultipleNegativeAreaFaces: boolean = true, numPositiveExceptionsAllowed = 0): boolean {
+  public static isTriangulatedCCW(
+    source: HalfEdgeGraph | HalfEdge[],
+    allowMultipleNegativeAreaFaces: boolean = true,
+    numPositiveExceptionsAllowed: number = 0,
+  ): boolean {
     let allFaces: HalfEdge[];
-
     if (source instanceof HalfEdgeGraph)
       allFaces = source.collectFaceLoops();
     else
@@ -131,26 +129,49 @@ export class HalfEdgeGraphSearch {
     }
     return true;
   }
-
   /**
-   * Search to all accessible faces from given seed.
-   * * The returned array contains one representative node in each face of the connected component.
-   * * If (nonnull) parity mask is given, on return:
-   *    * It is entirely set or entirely clear around each face
-   *    * It is entirely set on all faces that are an even number of face-to-face steps away from the seed.
-   *    * It is entirely clear on all faces that are an odd number of face-to-face steps away from the seed.
-   * @param seedEdge first edge to search.
-   * @param visitMask mask applied to all faces as visited.
-   * @param parityMask mask to apply (a) to first face, (b) to faces with alternating parity during the search.
+   * Process a face during graph traversal.
+   * @param faceSeed a node in the face.
+   * @param mask mask to set on each node of the face.
+   * @param allNodeStack array appended with each node of the face.
+   * @param onePerFaceStack array appended with `faceSeed`.
    */
-  private static parityFloodFromSeed(seedEdge: HalfEdge, visitMask: HalfEdgeMask, parityEdgeTester: HalfEdgeTestObject | undefined, parityMask: HalfEdgeMask): HalfEdge[] {
+  private static pushAndMaskAllNodesInFace(
+    faceSeed: HalfEdge, mask: number, allNodeStack: HalfEdge[], onePerFaceStack: HalfEdge[],
+  ): void {
+    onePerFaceStack.push(faceSeed);
+    faceSeed.collectAroundFace((node: HalfEdge) => {
+      node.setMask(mask);
+      allNodeStack.push(node);
+    });
+  }
+  /**
+   * Traverse (via Depth First Search) to all accessible faces from the given seed.
+   * @param faceSeed first node to start the traverse.
+   * @param visitMask mask applied to all faces as visited.
+   * @param parityEdgeTester function to test if an edge is adjacent to two faces of opposite parity, e.g., a boundary
+   * edge that separates an "interior" face and an "exterior" face. If `parityEdgeTester` is not supplied and `parityMask`
+   * is supplied, the default parity rule is to alternate parity state in a "bullseye" pattern starting at the seed face,
+   * with each successive concentric ring of faces at constant topological distance from the seed face receiving the
+   * opposite parity state of the previous ring.
+   * @param parityMask mask to apply to the first face and faces that share the same parity as the first face, as
+   * determined by the parity rule. If this is `NULL_MASK`, there is no record of parity. If (non-null) parity mask
+   * is given, on return it is entirely set or entirely clear around each face.
+   * @returns an array that contains one representative node in each face of the connected component.
+   */
+  private static parityFloodFromSeed(
+    faceSeed: HalfEdge,
+    visitMask: HalfEdgeMask,
+    parityEdgeTester: HalfEdgeTestObject | undefined,
+    parityMask: HalfEdgeMask,
+  ): HalfEdge[] {
     const faces: HalfEdge[] = [];
-    if (seedEdge.isMaskSet(visitMask)) return faces; // empty
-
+    if (faceSeed.isMaskSet(visitMask))
+      return faces; // empty array
     const allMasks = parityMask | visitMask;
     const stack: HalfEdge[] = [];
-    // arbitrarily call the seed face exterior ... others will alternate as visited.
-    HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(seedEdge, allMasks, stack, faces);  // Start with exterior as mask
+    // the seed face is arbitrarily assigned the parity mask
+    HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(faceSeed, allMasks, stack, faces);
     while (stack.length > 0) {
       const p = stack.pop()!;
       const mate = p.edgeMate;
@@ -166,112 +187,232 @@ export class HalfEdgeGraphSearch {
     return faces;
   }
   /**
-   * * Search the given faces for the one with the minimum area.
-   * * If the mask in that face is OFF, toggle it on (all half edges of) all the faces.
+   * * Correct the parity mask in the faces of a component.
+   * * It is assumed that the parity mask is applied _consistently_ throughout the supplied faces, but maybe
+   * not _correctly_.
+   * * A consistently applied parity mask is "correct" if it is set on the negative area ("exterior") face of
+   * a connected component.
+   * * This method finds a face with negative area and toggles the mask throughout the input faces if this face
+   * lacks the parity mask.
    * * In a properly merged planar subdivision there should be only one true negative area face per component.
-   * @param graph parent graph
-   * @param parityMask mask which was previously set with alternating parity, but with an arbitrary start face.
-   * @param faces array of faces to search.
    */
-  private static correctParityInSingleComponent(_graph: HalfEdgeGraph, mask: HalfEdgeMask, faces: HalfEdge[]) {
+  private static correctParityInSingleComponent(parityMask: HalfEdgeMask, faces: HalfEdge[]): void {
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(faces);
     if (!exteriorHalfEdge) {
-    } else if (exteriorHalfEdge.isMaskSet(mask)) {
-      // all should be well .. nothing to do.
+      // graph has all degenerate faces; do nothing
+    } else if (exteriorHalfEdge.isMaskSet(parityMask)) {
+      // all should be well; nothing to do
     } else {
-      // TOGGLE around the face (assuming all are consistent with the seed)
       for (const faceSeed of faces) {
-        if (faceSeed.isMaskSet(mask)) {
-          faceSeed.clearMaskAroundFace(mask);
+        if (faceSeed.isMaskSet(parityMask)) {
+          faceSeed.clearMaskAroundFace(parityMask);
         } else {
-          faceSeed.setMaskAroundFace(mask);
+          faceSeed.setMaskAroundFace(parityMask);
         }
       }
     }
   }
-  /** Apply correctParityInSingleComponent to each array in components. (Quick exit if mask in NULL_MASK) */
-  private static correctParityInComponentArrays(graph: HalfEdgeGraph, mask: HalfEdgeMask, components: HalfEdge[][]) {
-    if (mask === HalfEdgeMask.NULL_MASK)
+  /** Apply `correctParityInSingleComponent` to each array in components (quick exit if `parityMask` is `NULL_MASK`). */
+  private static correctParityInComponentArrays(parityMask: HalfEdgeMask, components: HalfEdge[][]): void {
+    if (parityMask === HalfEdgeMask.NULL_MASK)
       return;
     for (const facesInComponent of components)
-      HalfEdgeGraphSearch.correctParityInSingleComponent(graph, mask, facesInComponent);
+      HalfEdgeGraphSearch.correctParityInSingleComponent(parityMask, facesInComponent);
   }
   /**
-   * Collect arrays gathering faces by connected component.
-   * @param graph graph to inspect
-   * @param parityEdgeTester (optional) function to test if an edge is a parity change (e.g., a boundary edge).
-   * @param parityMask (optional, along with parityEdgeTester) mask to apply indicating parity.  If this is Mask.NULL_MASK, there is no record of parity.
+   * Collect connected components of the graph (via Depth First Search).
+   * @param graph graph to inspect.
+   * @param parityEdgeTester (optional) function to test if an edge is adjacent to two faces of opposite parity,
+   * e.g., a boundary edge that separates an "interior" face and an "exterior" face. If `parityEdgeTester` is not
+   * supplied and `parityMask` is supplied, the default parity rule is to alternate parity state in a "bullseye"
+   * pattern starting at the seed face, with each successive concentric ring of faces at constant topological
+   * distance from the seed face receiving the opposite parity state of the previous ring.
+   * @param parityMask (optional) mask to apply to the first face and faces that share the same parity as the
+   * first face, as determined by the parity rule. If this is `NULL_MASK`, there is no record of parity. If
+   * (non-null) parity mask is given, on return it is entirely set or entirely clear around each face.
+   * @returns the components of the graph, each component represented by an array of nodes, one node per face
+   * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
    */
-  public static collectConnectedComponentsWithExteriorParityMasks(graph: HalfEdgeGraph, parityEdgeTester: HalfEdgeTestObject | undefined, parityMask: HalfEdgeMask = HalfEdgeMask.NULL_MASK): HalfEdge[][] {
+  public static collectConnectedComponentsWithExteriorParityMasks(
+    graph: HalfEdgeGraph,
+    parityEdgeTester: HalfEdgeTestObject | undefined,
+    parityMask: HalfEdgeMask = HalfEdgeMask.NULL_MASK,
+  ): HalfEdge[][] {
+    // Illustration of the algorithm can be found at geometry/internaldocs/Graph.md
     const components = [];
     const visitMask = HalfEdgeMask.VISITED;
     const allMasks = parityMask | visitMask;
     graph.clearMask(allMasks);
     for (const faceSeed of graph.allHalfEdges) {
-      if (!faceSeed.isMaskSet(HalfEdgeMask.VISITED)) {
+      if (!faceSeed.isMaskSet(visitMask)) {
         const newFaces = HalfEdgeGraphSearch.parityFloodFromSeed(faceSeed, visitMask, parityEdgeTester, parityMask);
+        // parityFloodFromSeed does not return an empty array because it is called on an unvisited faceSeed
         components.push(newFaces);
       }
     }
-    HalfEdgeGraphSearch.correctParityInComponentArrays(graph, parityMask, components);
+    HalfEdgeGraphSearch.correctParityInComponentArrays(parityMask, components);
     return components;
   }
   /**
-   * Test if (x,y) is inside (1), on an edge (0) or outside (-1) a face.
-   * @param seedNode any node on the face loop
-   * @param x x coordinate of test point.
-   * @param y y coordinate of test point.
+   * Breadth First Search through connected component of a graph.
+   * @param component vector of nodes, one per face.
+   * @param seed seed node in component.
+   * @param visitMask mask to apply to visited nodes. Assumed cleared throughout component.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to
+   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
+   * @param maxFaceCount (optional) maximum number of faces in the component. Should be positive; otherwise
+   * `Infinity` is used.
+   * @returns node at which to start next component if maximum face count exceeded, or undefined.
    */
-  public static pointInOrOnFaceXY(seedNode: HalfEdge, x: number, y: number): number | undefined {
-    const context = new XYParitySearchContext(x, y);
-    // walk around looking for an accepted node to start the search (seedNode is usually ok!)
+  private static exploreComponent(
+    component: HalfEdge[],
+    seed: HalfEdge,
+    visitMask: HalfEdgeMask,
+    ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
+    maxFaceCount: number = Infinity,
+  ): HalfEdge | undefined {
+    if (maxFaceCount <= 0)
+      maxFaceCount = Infinity;
+    const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
+    let numFaces = 0;
+    const candidates: HalfEdge[] = []; // the queue
+    candidates.push(seed);
+    while (candidates.length !== 0 && numFaces < maxFaceCount) {
+      // shift is O(n) and may be inefficient for large queues; if needed, we can replace
+      // queue by circular array or implement the queue using 2 stacks; both are O(1)
+      const node = candidates.shift()!;
+      if (node.isMaskSet(boundaryMask))
+        continue;
+      component.push(node);
+      ++numFaces;
+      const enqueueNeighboringFaces: NodeFunction = (heNode: HalfEdge) => {
+        heNode.setMask(visitMask);
+        const neighbor = heNode.vertexSuccessor;
+        if (!neighbor.isMaskSet(boundaryMask))
+          candidates.push(neighbor);
+      };
+      node.collectAroundFace(enqueueNeighboringFaces);
+    }
+    if (candidates.length === 0)
+      return undefined;
+    else {
+      const front = candidates[0];
+      while (candidates.length !== 0) {
+        // try to find a node at the boundary of both the geometry and previous component
+        const node = candidates.shift()!; // shift may be inefficient for large queues
+        if (node.vertexSuccessor.isMaskSet(ignoreMask))
+          return node;
+        if (node.edgeMate.isMaskSet(ignoreMask))
+          return node;
+      }
+      return front;
+    }
+  }
+  /**
+   * Collect connected components of the graph (via Breadth First Search).
+   * @param graph graph to inspect.
+   * @param maxFaceCount (optional) maximum number of faces in each component. Should be positive; otherwise
+   * `Infinity` is used.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to ignore
+   * exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
+   * @returns the components of the graph, each component represented by an array of nodes, one node per face
+   * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
+   */
+  public static collectConnectedComponents(
+    graph: HalfEdgeGraph,
+    maxFaceCount: number = Infinity,
+    ignoreMask: HalfEdgeMask = HalfEdgeMask.EXTERIOR,
+  ): HalfEdge[][] {
+    const components: HalfEdge[][] = [];
+    if (graph.countMask(ignoreMask) === 0)
+      ignoreMask = HalfEdgeMask.NULL_MASK;
+    const visitMask = HalfEdgeMask.VISITED;
+    const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
+    // Starting with the input node, look ahead for a boundary face. Failing that, return the input node.
+    // Starting all floods at the boundary reduces the chance of ending up with a ring-shaped component at the boundary.
+    const findNextFloodSeed = (index: number) => {
+      for (let i = index; i < graph.countNodes(); ++i) {
+        if (!graph.allHalfEdges[i].isMaskSet(boundaryMask)
+          && graph.allHalfEdges[i].edgeMate.isMaskSet(boundaryMask)) {
+          index = i;
+          break;
+        }
+      }
+      return index;
+    };
+    for (let i = 0; i < graph.countNodes(); ++i) {
+      if (graph.allHalfEdges[i].isMaskSet(boundaryMask))
+        continue;
+      const i0 = findNextFloodSeed(i);
+      let seed: HalfEdge | undefined = graph.allHalfEdges[i0];
+      do { // flood this component
+        const component: HalfEdge[] = [];
+        seed = HalfEdgeGraphSearch.exploreComponent(component, seed, visitMask, ignoreMask, maxFaceCount);
+        if (component.length !== 0)
+          components.push(component);
+      } while (seed !== undefined);
+      if (!graph.allHalfEdges[i].isMaskSet(visitMask))
+        --i; // reprocess this node
+    }
+    return components;
+  }
+  /**
+   * Test if test point (xTest,yTest) is inside/outside a face or on an edge.
+   * @param seedNode any node on the face loop.
+   * @param xTest x coordinate of the test point.
+   * @param yTest y coordinate of the test point.
+   * @returns 0 if ON, 1 if IN, -1 if OUT.
+   */
+  public static pointInOrOnFaceXY(seedNode: HalfEdge, xTest: number, yTest: number): number | undefined {
+    const context = new XYParitySearchContext(xTest, yTest);
+    // walk around looking for an accepted node to start the search (seedNode is usually ok)
     let nodeA = seedNode;
     let nodeB = seedNode.faceSuccessor;
     for (; ; nodeA = nodeB) {
       if (context.tryStartEdge(nodeA.x, nodeA.y, nodeB.x, nodeB.y))
         break;
       if (nodeB === seedNode) {
-        // umm.. the face is all on the x axis?
-        return context.classifyCounts();
+        // the test point and the face are all on line "y = yTest"
+        const range = Range1d.createXX(nodeB.x, nodeB.faceSuccessor.x);
+        return range.containsX(xTest) ? 0 : -1;
       }
       nodeB = nodeA.faceSuccessor;
     }
-
-    // nodeB is the real start node for search ... emit ends of each edge around the face,
-    //   stopping after emitting nodeB as an edge end.
-    let node = nodeB.faceSuccessor;
+    // nodeB is the real start node for search, so stop when we revisit it. For each edge, accumulate parity and hits
+    let nodeC = nodeB.faceSuccessor;
     for (; ;) {
-      if (!context.advance(node.x, node.y)) {
+      if (!context.advance(nodeC.x, nodeC.y)) {
         return context.classifyCounts();
       }
-      if (node === nodeB)
+      if (nodeC === nodeB)
         break;
-      node = node.faceSuccessor;
+      nodeC = nodeC.faceSuccessor;
     }
     return context.classifyCounts();
   }
   /**
-   * Announce nodes that are "extended face boundary" by conditions (usually mask of node and mate) in test functions.
-   * * After each node, the next candidate in reached by looking "around the head vertex loop" for the next boundary.
-   *   * "Around the vertex" from nodeA means
-   *      * First look at nodeA.faceSuccessor;
-   *      * Then look at vertexPredecessor around that vertex loop.
-   * * Each accepted node is passed to announceNode, and marked with the visit mask.
-   * * The counter of the announceEdge function is zero for the first edge, then increases with each edge.
+   * Collect boundary edges starting from `seed`.
+   * * If `seed` is not a boundary node or is already visited, the function exists early.
    * @param seed start node.
-   * @param isBoundaryEdge
-   * @param announceEdge
+   * @param visitMask mask to set on processed nodes.
+   * @param isBoundaryEdge function to test if an edge in a boundary edge.
+   * @param announceEdgeInBoundary callback invoked on each edge in the boundary loop in order. The counter is zero
+   * for the first edge, and incremented with each successive edge.
    */
-  public static collectExtendedBoundaryLoopFromSeed(seed: HalfEdge, visitMask: HalfEdgeMask, isBoundaryEdge: HalfEdgeToBooleanFunction,
-    announceEdge: (edge: HalfEdge, counter: number) => void) {
+  public static collectExtendedBoundaryLoopFromSeed(
+    seed: HalfEdge,
+    visitMask: HalfEdgeMask,
+    isBoundaryEdge: HalfEdgeToBooleanFunction,
+    announceEdgeInBoundary: (edge: HalfEdge, counter: number) => void,
+  ): void {
     let counter = 0;
     while (!seed.getMask(visitMask) && isBoundaryEdge(seed)) {
-      announceEdge(seed, counter++);
+      announceEdgeInBoundary(seed, counter++);
       seed.setMask(visitMask);
       const vertexBase = seed.faceSuccessor;
       let candidateAroundVertex = vertexBase;
       for (; ;) {
-        if (candidateAroundVertex.getMask(visitMask))
+        if (candidateAroundVertex.getMask(visitMask)) // end of boundary loop
           return;
         if (isBoundaryEdge(candidateAroundVertex)) {
           seed = candidateAroundVertex;
@@ -279,23 +420,22 @@ export class HalfEdgeGraphSearch {
         }
         candidateAroundVertex = candidateAroundVertex.vertexPredecessor;
         if (candidateAroundVertex === vertexBase)
-          break;
+          break; // prevent infinite loop in case exteriorMask is not set on the edge mate of the boundary edge
       }
     }
   }
   /**
-   * Collect arrays of nodes "around the boundary" of a graph with extraneous (non-boundary) edges.
-   * * The "boundary" is nodes that do NOT have the exterior mask, but whose mates DO have the exterior mask.
-   * * After each node, the next candidate in reached by looking "around the head vertex loop" for the next boundary.
-   *   * "Around the vertex" from nodeA means
-   *      * First look at nodeA.faceSuccessor;
-   *      * Then look at vertexPredecessor around that vertex loop.
-   * * Each accepted node is passed to announceNode, and marked with the visit mask.
-   * @param seed start node.
-   * @param isBoundaryNode
-   * @param announceNode
+   * Collect boundary edges in the graph.
+   * * A boundary edge is defined by `exteriorMask` being set on only its "exterior" edge mate.
+   * * Each boundary edge is identified in the output by its edge mate that lacks `exteriorMask`.
+   * * Each inner array is ordered in the output so that its boundary edges form a connected path. If `exteriorMask`
+   * is preset consistently around each "exterior" face, these paths are loops.
+   * @param graph the graph to query
+   * @param exteriorMask mask preset on exactly one side of boundary edges
+   * @returns array of boundary loops, each loop an array of the unmasked mates of boundary edges
    */
   public static collectExtendedBoundaryLoopsInGraph(graph: HalfEdgeGraph, exteriorMask: HalfEdgeMask): HalfEdge[][] {
+    // Illustration of the algorithm can be found at geometry/internaldocs/Graph.md
     const loops: HalfEdge[][] = [];
     const visitMask = graph.grabMask(true);
     const isBoundaryEdge = (edge: HalfEdge): boolean => {

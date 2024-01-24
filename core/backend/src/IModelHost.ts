@@ -491,7 +491,7 @@ export class IModelHost {
     this.configuration = options;
     this.setupTileCache();
 
-    process.once("beforeExit", async () => IModelHost.shutdown());
+    process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
   }
 
@@ -504,7 +504,7 @@ export class IModelHost {
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
-  public static async shutdown(): Promise<void> {
+  public static async shutdown(this: void): Promise<void> {
     // Note: This method is set as a node listener where `this` is unbound. Call private method to
     // ensure `this` is correct. Don't combine these methods.
     return IModelHost.doShutdown();
@@ -522,7 +522,7 @@ export class IModelHost {
     this._appWorkspace = undefined;
 
     CloudSqlite.CloudCaches.destroy();
-    process.removeListener("beforeExit", async () => IModelHost.shutdown());
+    process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
   /**

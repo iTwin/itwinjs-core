@@ -178,7 +178,9 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       return "";
 
     const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
-    return `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=${crsString}&STYLES=&BBOX=${bboxString}`;
+
+    const tmpUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=${crsString}&STYLES=&BBOX=${bboxString}`;
+    return this.appendCustomParams(tmpUrl);
   }
 
   public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
@@ -200,7 +202,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const y = Math.floor(.5 + (1.0 - fraction.y) * this.tileSize);
     const coordinateString =  this._capabilities?.isVersion13 ? `&i=${x}&j=${y}` : `&x=${x}&y=${y}`;
     const crsParamName = this._capabilities?.isVersion13 ? "CRS" : "SRS";
-    const getFeatureUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetFeatureInfo&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=EPSG%3A3857&BBOX=${bboxString}&QUERY_LAYERS=${layerString}${coordinateString}&info_format=${formatString}`;
+    let getFeatureUrl = `${this._baseUrl}?SERVICE=WMS&VERSION=${this._capabilities?.version}&REQUEST=GetFeatureInfo&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&${crsParamName}=EPSG%3A3857&BBOX=${bboxString}&QUERY_LAYERS=${layerString}${coordinateString}&info_format=${formatString}`;
+    getFeatureUrl = this.appendCustomParams(getFeatureUrl);
     return this.toolTipFromUrl(strings, getFeatureUrl);
   }
 }

@@ -344,6 +344,17 @@ export abstract class IModelDb extends IModel {
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this.nativeDb = args.nativeDb;
+
+    // PR https://github.com/iTwin/imodel-native/pull/558 ill-advisedly renamed closeIModel to closeFile.
+    // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
+    // Make closeIModel available so their code doesn't break.
+    (this.nativeDb as any).closeIModel = () => {
+      if (!this.isReadonly)
+        this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+
+      this.nativeDb.closeFile();
+    };
+
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
@@ -364,7 +375,7 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Close this IModel, if it is currently open. */
+  /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
   public close(): void {
     if (!this.isOpen)
       return; // don't continue if already closed
@@ -376,7 +387,9 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
-    this.nativeDb.closeIModel();
+    if (!this.isReadonly)
+      this.saveChanges();
+    this.nativeDb.closeFile();
   }
 
   /** @internal */
@@ -973,7 +986,7 @@ export abstract class IModelDb extends IModel {
         domain: DomainOptions.CheckRecommendedUpgrades,
       };
       const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
-      nativeDb.closeIModel();
+      nativeDb.closeFile();
     } catch (err: any) {
       result = err.errorNumber;
     }
@@ -2082,7 +2095,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
 
       // Check if class is abstract
-      const fullClassName = aspectClassFullName.split(":");
+      const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
         const metaData = new EntityMetaData(JSON.parse(val.result));
@@ -2571,7 +2584,7 @@ export class BriefcaseDb extends IModelDb {
   private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
     const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
     const wasChanges = nativeDb.hasPendingTxns();
-    nativeDb.closeIModel();
+    nativeDb.closeFile();
 
     if (wasChanges)
       await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
@@ -2672,7 +2685,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
 
     // The following resets the native db's pointer to this JavaScript object.
-    this.nativeDb.closeIModel();
+    this.nativeDb.closeFile();
     this.nativeDb.openIModel(fileName, openMode);
 
     // Restore the native db's pointer to this JavaScript object.
@@ -3001,9 +3014,11 @@ export class StandaloneDb extends BriefcaseDb {
    */
   public static upgradeStandaloneSchemas(filePath: LocalFileName) {
     let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade, schemaLockHeld: true });
-    nativeDb.closeIModel();
+    nativeDb.saveChanges();
+    nativeDb.closeFile();
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
-    nativeDb.closeIModel();
+    nativeDb.saveChanges();
+    nativeDb.closeFile();
   }
 
   /** Creates or updates views in the iModel to permit visualizing the EC content as ECClasses and ECProperties rather than raw database tables and columns.
@@ -3037,7 +3052,7 @@ export class StandaloneDb extends BriefcaseDb {
       assert(undefined !== file.key);
       return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
-      nativeDb.closeIModel();
+      nativeDb.closeFile();
       throw error;
     }
 

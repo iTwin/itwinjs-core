@@ -112,6 +112,24 @@ export interface RenderMaterialAssetMapsProps {
    * present in the surface's geometry.
    */
   Normal?: NormalMapProps;
+  /** Maps an image describing detailed minor height variation of the surface geometry. */
+  Bump?: TextureMapProps;
+  /** Maps an image describing the diffuse color of the surface, replacing or mixing with the surface's own color. */
+  Diffuse?: TextureMapProps;
+  /** Maps an image describing the glossiness of the surface's finish */
+  Finish?: TextureMapProps;
+  /** Maps an image describing glowing parts of the surface */
+  GlowColor?: TextureMapProps;
+  /** Maps an image describing the reflectiveness of the surface */
+  Reflect?: TextureMapProps;
+  /** Maps an image describing the specular component of the surface */
+  Specular?: TextureMapProps;
+  /** Maps an image describing the translucency of the surface, how much light comes out the back of the surface */
+  TranslucencyColor?: TextureMapProps;
+  /** Maps an image describing the transparency of the surface, how visible objects behind this object are */
+  TransparentColor?: TextureMapProps;
+  /** Maps an image describing the displacement of the surface geometry */
+  Displacement?: TextureMapProps;
 }
 
 /** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].

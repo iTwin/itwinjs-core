@@ -110,7 +110,7 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Readonly<Transform>): boolean {
-    return this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix);
+    return this === other || this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix);
   }
   /**
    * Test for near equality with `other` Transform. Comparison uses the `isAlmostEqual` methods on the `origin` part
@@ -432,8 +432,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinates(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated result (if
-   * result is given).
+   * Transform the homogeneous point. Return as new `Float64Array` with size 4, or in the pre-allocated `result` of sufficient size.
    * * If `p = (x,y,z)` then this method computes `Tp = M*p + o*w` and returns the `Float64Array` formed by `Tp`
    * in the first 3 numbers of the array and `w` as the fourth.
    * * Logically, this is multiplication by the 4x4 matrix formed from the 3x4 instance augmented with fourth row 0001.
@@ -442,7 +441,7 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, w, result);
   }
   /**
-   * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated result (if result is given).
+   * * Transform the point. Return as new `Float64Array` with size 3, or in the pre-allocated `result` of sufficient size.
    * * If `p = (x,y,z)` then this method computes `Tp = M*p + o` and returns it as the first 3 elements of the array.
    */
   public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
@@ -689,7 +688,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Multiply `this` Transform times `other` Transform.
-   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as [A*B   Ab+a] because:
+   * * **Note:** If `this = [A   a]` and `other = [B   b]` then `this * other` is defined as `[A*B   Ab+a]` because:
    * ```
    * equation
    * \begin{matrix}
@@ -698,7 +697,7 @@ export class Transform implements BeJSONFunctions {
    * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
    * \end{matrix}
    * ```
-   * @param other the 'other` Transform to be multiplied to `this` Transform.
+   * @param other the `other` Transform to be multiplied to `this` Transform.
    * @param result optional preallocated `result` to reuse.
    */
   public multiplyTransformTransform(other: Transform, result?: Transform) {

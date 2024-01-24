@@ -29,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1FC349BF2AC5D86400A885C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D398E01427D82FB800575F47 /* core-test-runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "core-test-runner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D398E01727D82FB800575F47 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		D398E01927D82FB800575F47 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -85,6 +86,7 @@
 		D398E01627D82FB800575F47 /* core-test-runner */ = {
 			isa = PBXGroup;
 			children = (
+				1FC349BF2AC5D86400A885C7 /* Info.plist */,
 				D398E07327D836D300575F47 /* ViewController.swift */,
 				D398E01727D82FB800575F47 /* App.swift */,
 				D398E01927D82FB800575F47 /* ContentView.swift */,
@@ -417,6 +419,7 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "core-test-runner/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -450,6 +453,7 @@
 				ENABLE_BITCODE = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "core-test-runner/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -548,7 +552,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 4.2.5;
+				version = 4.4.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

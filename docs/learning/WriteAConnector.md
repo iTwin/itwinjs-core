@@ -488,7 +488,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
 <figure>
-  <iframe style="height:40vh;width:60vw;" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element">
+  <iframe style="height:40vh;width:60vw;" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element">
   </iframe>
 </figure>
 

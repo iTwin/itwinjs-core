@@ -1,6 +1,93 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 29 Sep 2023 18:24:48 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+### Updates
+
+- Update ChangesetReader API and fix bug.
+
+## 4.3.2
+Thu, 14 Dec 2023 20:23:02 GMT
+
+_Version update only_
+
+## 4.3.1
+Wed, 13 Dec 2023 17:25:54 GMT
+
+### Updates
+
+- Fix a breaking internal API change affecting @itwin/imodels-access-backend"
+
+## 4.3.0
+Thu, 07 Dec 2023 17:43:09 GMT
+
+### Updates
+
+- Inserting, updating and deleting of an element aspect requires exclusive lock on the element that owns it
+- Add changeset reader api
+- Save changes before closing IModels opened in ReadWrite mode
+- vDirection is deprecated
+- Add `ECDb.getSchemaProps`
+- Add support for Node 20.
+- Change reserved SQLite keywords from tests.
+- modified getAspects to handle dot separator in full class name
+- lint fix
+
+## 4.2.4
+Mon, 20 Nov 2023 16:14:45 GMT
+
+_Version update only_
+
+## 4.2.3
+Mon, 06 Nov 2023 14:01:52 GMT
+
+_Version update only_
+
+## 4.2.2
+Thu, 02 Nov 2023 15:36:20 GMT
+
+_Version update only_
+
+## 4.2.1
+Tue, 24 Oct 2023 15:09:13 GMT
+
+_Version update only_
+
+## 4.2.0
+Tue, 17 Oct 2023 15:14:32 GMT
+
+### Updates
+
+- Add ECSqlExpr api
+- Add support for schema synchronization
+- Fixed a null reference error when upgrading schemas to EC3
+- Adds logging for checkpoint application and V2 checkpoint downloads
+- add exportGraphics test to verify uv-parameter output
+- ECDb.createQueryReader and IModelDb.createQueryReader are now public
+- restart default txn after 10 minutes inactivity on v2 checkpoints
+- Add TxnManager events raised when applying external txns.
+- Fix RenderMaterialElement using the wrong CodeSpec.
+- Fix two potential bugs when closing and reopening an iModel while pulling changes."
+- Make watching for briefcase changes more reliable.
+- As instance access no longer an experimental feature, removed experimental features option from relevant ecsql.
+- Use instance query to get aspects for abstract classes
+- ViewStore.ViewDb.getViewGroups select statement was referring to ParentId when parent was meant
+- Remove `storageType` from `BlobContainer.RequestTokenProps`.
+- Add 'provider' to 'BlobContainer.CreatedContainerProps' 
+- add TileStorage.getCachedTilesGenerator
+
+## 4.1.9
+Tue, 10 Oct 2023 18:48:12 GMT
+
+_Version update only_
+
+## 4.1.8
+Fri, 06 Oct 2023 04:00:18 GMT
+
+_Version update only_
 
 ## 4.1.7
 Thu, 28 Sep 2023 21:41:33 GMT
@@ -131,6 +218,26 @@ Mon, 22 May 2023 15:34:14 GMT
 - Fix for timing issue in core tests
 - allow passing a custom schema read context to IModelDb.importSchemas
 - Added test to verify Id serialization to hex for system properties.
+
+## 3.8.0
+Fri, 08 Dec 2023 15:23:59 GMT
+
+_Version update only_
+
+## 3.7.17
+Mon, 20 Nov 2023 18:24:23 GMT
+
+_Version update only_
+
+## 3.7.16
+Mon, 16 Oct 2023 12:49:07 GMT
+
+_Version update only_
+
+## 3.7.15
+Tue, 10 Oct 2023 19:58:35 GMT
+
+_Version update only_
 
 ## 3.7.14
 Fri, 29 Sep 2023 16:57:16 GMT

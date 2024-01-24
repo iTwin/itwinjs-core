@@ -39,7 +39,7 @@ export abstract class Polyface extends GeometryQuery {
     this.data = data;
   }
   /** create and return a visitor for this concrete polyface. */
-  public abstract createVisitor(_numWrap: number): PolyfaceVisitor;
+  public abstract createVisitor(numWrap: number): PolyfaceVisitor;
   /** Flag indicating if the mesh display must assume both sides are visible. */
   public get twoSided() { return this.data.twoSided; }
   public set twoSided(value: boolean) { this.data.twoSided = value; }

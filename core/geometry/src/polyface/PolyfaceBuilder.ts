@@ -59,7 +59,6 @@ import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
  * A FacetSector
  * * initially holds coordinate data for a place where xyz and sectionDerivative are known
@@ -239,6 +238,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Add facets for a transformed range box.
+   * * For best results, the transformed range corners should define a nonzero volume or area.
    * @param transform applied to the range points before adding to the polyface
    * @param range sides become 6 quad polyface facets
    * @param faceSelector for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
@@ -1037,11 +1037,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addTorusPipe(surface: TorusPipe, phiStrokeCount?: number, thetaStrokeCount?: number) {
     const thetaFraction = surface.getThetaFraction();
-    const numU = Geometry.clamp(Geometry.resolveNumber(phiStrokeCount, 8), 4, 64);
-    const numV = Geometry.clamp(
+    let numU = Geometry.clamp(Geometry.resolveNumber(phiStrokeCount, 8), 4, 64);
+    let numV = Geometry.clamp(
       Geometry.resolveNumber(thetaStrokeCount, Math.ceil(16 * thetaFraction)),
       2, 64);
-
+    if (this._options) {
+      numU = this._options.applyTolerancesToArc(surface.getMinorRadius());
+      numV = this._options.applyTolerancesToArc(surface.getMajorRadius(), surface.getSweepAngle().radians);
+    }
     this.toggleReversedFacetFlag();
     const sizes = surface.maxIsoParametricDistance();
     this.addUVGridBody(surface, numU, numV, Segment1d.create(0, sizes.x), Segment1d.create(0, sizes.y));
@@ -1257,15 +1260,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.createIndicesInLineString(strokeB, vB);
       this.addBetweenLineStringsWithStoredIndices(strokeA, strokeB);
     } else if (stroke0 instanceof ParityRegion) {
-      for (let i = 0; i < stroke0.children.length; i++) {  // eslint-disable-line @typescript-eslint/prefer-for-of
-        this.addBetweenRotatedStrokeSets(stroke0.children[i], transformA, vA, transformB, vB);
+      for (const child of stroke0.children) {
+        this.addBetweenRotatedStrokeSets(child, transformA, vA, transformB, vB);
       }
     } else if (stroke0 instanceof CurveChain) {
-      const chainA = stroke0.children;
-      for (let i = 0; i < chainA.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
-        const cpA = chainA[i];
-        if (cpA instanceof LineString3d) {
-          this.addBetweenRotatedStrokeSets(cpA, transformA, vA, transformB, vB);
+      for (const child of stroke0.children) {
+        if (child instanceof LineString3d) {
+          this.addBetweenRotatedStrokeSets(child, transformA, vA, transformB, vB);
         }
       }
     }
@@ -1303,8 +1304,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke0: AnyCurve | undefined;
     let stroke1: AnyCurve;
     const sectionMaps = [];
-    for (let i = 0; i < contours.length; i++) { // eslint-disable-line @typescript-eslint/prefer-for-of
-      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contours[i].curves, this._options));
+    for (const contour of contours) {
+      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contour.curves, this._options));
     }
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {
       StrokeCountSection.enforceCompatibleDistanceSums(sectionMaps);
@@ -1542,6 +1543,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addFacetFromVisitor(visitor: PolyfaceVisitor) {
     this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color, visitor.edgeVisible);
+  }
+
+  /** Add all visitor facets to the evolving polyface (in reverse order if indicated by the builder state) */
+  public addFacetsFromVisitor(visitor: PolyfaceVisitor) {
+    visitor.reset();
+    for (; visitor.moveToNextFacet();)
+      this.addFacetFromVisitor(visitor);
   }
 
   /**

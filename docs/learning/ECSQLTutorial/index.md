@@ -13,7 +13,7 @@ In the course of the tutorial you will notice how similar ECSQL and SQL are. To 
 
 ### iModelConsole
 
-The tutorial makes reference to the **iModelConsole** application.  Use the app to follow along with the tutorial by executing the ECSQL examples yourself.  You can also experiment with your own ECSQL statements.
+The tutorial makes reference to the **iModelConsole** application. Use the app to follow along with the tutorial by executing the ECSQL examples yourself. You can also experiment with your own ECSQL statements.
 
 [Open the iModelConsole](https://imodelconsole.bentley.com/)
 
@@ -49,19 +49,19 @@ For this ECSQL tutorial, the embedded console will attach to the sample iModel w
 
 ### Step 3 - Run an ECSQL in the iModelConsole
 
-Once you have opened your iModel, just type in the ECSQL and hit *Enter* to execute it.
+Once you have opened your iModel, just type in the ECSQL and hit _Enter_ to execute it.
 
 Or simply use the provided sample below:
 
 > **Try it yourself**
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT * FROM bis.Element
 > ```
 
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element"></iframe>
+<iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 
@@ -76,6 +76,7 @@ Or simply use the provided sample below:
 - [Lesson 9: Class Filter](./ClassFilter.md)
 - [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
 - [Lesson 11: Built-In functions](./BuiltInFunctions.md)
+- [Lesson 12: Instance Props](./InstanceProps.md)
 
 ---
 

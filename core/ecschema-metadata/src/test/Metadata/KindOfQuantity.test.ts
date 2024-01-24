@@ -397,6 +397,72 @@ describe("KindOfQuantity", () => {
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
 
     });
+    const nullOrEmptyUnitLabelOverride = {
+      ...baseJson,
+      relativeError: 4,
+      persistenceUnit: "Formats.IN",
+      presentationUnits: ["Formats.QuadUnitFormat[Formats.MILE][Formats.YRD|][Formats.FT|'][Formats.IN|in]"],
+    };
+
+    const expectedOutputJson = {
+      schemaItemType:"Format",
+      name:"Formats.QuadUnitFormat[Formats.MILE][Formats.YRD|][Formats.FT|'][Formats.IN|in]",
+      parent:"Formats.QuadUnitFormat",
+      type:"Decimal",
+      precision:6,
+      composite: {
+        spacer: "-",
+        includeZero: false,
+        units: [{ name: "Formats.MILE"},{ name: "Formats.YRD", label: "" },{ name: "Formats.FT", label: "'" },{ name: "Formats.IN", label: "in" }],
+      },
+    };
+    it("async - null or empty unit label override", async () => {
+      schema = await Schema.fromJson(createSchemaJson(nullOrEmptyUnitLabelOverride), context);
+      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+
+      assert.isDefined(testKoq);
+      expect(testKoq!.presentationFormats.length).to.eq(1);
+      const defaultFormat = testKoq!.defaultPresentationFormat;
+      assert.isDefined(defaultFormat);
+
+      assert.isDefined(defaultFormat!.units);
+      expect(defaultFormat!.units!.length).to.eq(4);
+
+      const expectedOverrides = [undefined, "", "'", "in"];
+      let index = 0;
+      while (index < 4) {
+        const unitOverride = defaultFormat!.units![index];
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
+        assert.strictEqual(unitOverride[0], unitFromSchema);
+        expect(unitOverride[1]).to.be.eq(expectedOverrides[index]);
+        ++index;
+      }
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedOutputJson);
+    });
+
+    it("sync - null or empty unit label override", async () => {
+      schema = Schema.fromJsonSync(createSchemaJson(nullOrEmptyUnitLabelOverride), context);
+      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+
+      assert.isDefined(testKoq);
+      expect(testKoq!.presentationFormats.length).to.eq(1);
+      const defaultFormat = testKoq!.defaultPresentationFormat;
+      assert.isDefined(defaultFormat);
+
+      assert.isDefined(defaultFormat!.units);
+      expect(defaultFormat!.units!.length).to.eq(4);
+
+      const expectedOverrides = [undefined, "", "'", "in"];
+      let index = 0;
+      while (index < 4) {
+        const unitOverride = defaultFormat!.units![index];
+        const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
+        assert.strictEqual(unitOverride[0], unitFromSchema);
+        expect(unitOverride[1]).to.be.eq(expectedOverrides[index]);
+        ++index;
+      }
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedOutputJson);
+    });
 
     // failure cases
     function testInvalidFormatStrings(testName: string, formatString: string, expectedErrorMessage: string) {

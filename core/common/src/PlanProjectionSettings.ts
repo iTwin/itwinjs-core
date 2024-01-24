@@ -97,4 +97,12 @@ export class PlanProjectionSettings {
 
     return new PlanProjectionSettings(props);
   }
+
+  /** Return true if these settings are equivalent to the specified settings. */
+  public equals(other: PlanProjectionSettings): boolean {
+    if (this === other)
+      return true;
+
+    return this.elevation === other.elevation && this.transparency === other.transparency && this.overlay === other.overlay && this.enforceDisplayPriority === other.enforceDisplayPriority;
+  }
 }

@@ -219,10 +219,6 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "@itwin/ecql-common",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
@@ -343,10 +339,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/projects-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
@@ -379,8 +371,16 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@sinonjs/fake-timers",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -643,10 +643,6 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
-      "name": "lolex",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },
@@ -672,11 +668,7 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "node-touch",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "nodemon",
@@ -751,6 +743,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rxjs",
+      "allowedCategories": [ "backend", "frontend", "internal" ]
+    },
+    {
+      "name": "rxjs-for-await",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
     },
@@ -804,7 +804,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "typedoc",

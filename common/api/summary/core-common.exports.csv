@@ -109,7 +109,10 @@ public;ChangesetType
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
+public;ClipIntersectionStyle
+public;ClipIntersectionStyleProps
 public;ClipStyle
+public;ClipStyleCreateArgs
 public;ClipStyleProps
 beta;CloudContainerUri
 public;Code 
@@ -594,6 +597,7 @@ public;QueryBinder
 public;QueryLimit
 public;QueryOptions 
 public;QueryOptionsBuilder
+internal;QueryParamType
 public;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
@@ -771,6 +775,7 @@ deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
 public;TextString
+beta;TextStringGlyphData
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData
@@ -793,6 +798,7 @@ public;ThematicGradientColorScheme
 public;ThematicGradientMode
 public;ThematicGradientSettings
 public;ThematicGradientSettingsProps
+public;ThematicGradientTransparencyMode
 public;ThumbnailFormatProps
 public;ThumbnailProps 
 internal;TileContentDescription 

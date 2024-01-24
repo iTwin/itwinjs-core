@@ -8,7 +8,6 @@
 import { assert } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
 import {
-  ImageryMapTile,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   QuadId,
@@ -138,14 +137,14 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     return  this._preferredLayerTileMatrixSet.get(this.displayedLayerName);
   }
 
-  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    const childIds = this.getPotentialChildIds(tile);
+  protected override _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(quadId);
     const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
     if (!matrixSetAndLimits) {
       assert(false);    // Must always hava a matrix set.
       return;
     }
-    const limits = matrixSetAndLimits.limits?.[tile.quadId.level + 1]?.limits;
+    const limits = matrixSetAndLimits.limits?.[quadId.level + 1]?.limits;
     if (!limits) {
       resolveChildren(childIds);
       return;
@@ -174,10 +173,11 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       tileMatrix = matrixSetAndLimits.tileMatrixSet.tileMatrix[zoomLevel].identifier;
 
     const styleParam = (style?.identifier === undefined ? "" : `&style=${style.identifier}`);
-    if (tileMatrix !== undefined && matrixSetAndLimits !== undefined)
-      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${this.displayedLayerName}${styleParam}&TileMatrixSet=${matrixSetAndLimits.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
-    else
-      return "";
+    if (tileMatrix !== undefined && matrixSetAndLimits !== undefined) {
+      const tmpUrl = `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${this.displayedLayerName}${styleParam}&TileMatrixSet=${matrixSetAndLimits.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row}`;
+      return this.appendCustomParams(tmpUrl);
+    }
+    return "";
 
   }
 }

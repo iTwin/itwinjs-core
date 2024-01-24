@@ -10,9 +10,9 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
@@ -20,12 +20,12 @@ import { Path } from "../curve/Path";
 import { RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
 
 /**
  * Sweepable planar contour with Transform for local to world interaction.
@@ -216,9 +216,11 @@ export class SweepContour {
   }
   /**
    * Create a UnionOfConvexClipPlaneSets that clips to the swept faceted contour region.
-   * @param sweepVector the sweep direction (does not have to be perpendicular to the contour). If undefined, the sweep direction is perpendicular to the plane of the contour, and no caps are constructed.
+   * @param sweepVector the sweep direction and distance:
+   * * If undefined, the sweep direction is along the contour normal and no caps are constructed (the sweep is infinite in both directions).
+   * * If defined, the returned clipper is inverted if and only if sweepVector is in the opposite half-space as the computed contour normal.
    * @param cap0 construct a clip plane equal to the contour plane. Note that `sweepVector` must be defined.
-   * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`. That is, sweepVector indicates both direction and distance.
+   * @param cap1 construct a clip plane parallel to the contour plane at the end of `sweepVector`.
    * @param options how to stroke the contour
    * @returns clipper defined by faceting then sweeping the contour region
    */

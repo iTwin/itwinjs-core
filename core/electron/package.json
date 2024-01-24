@@ -1,10 +1,10 @@
 {
   "name": "@itwin/core-electron",
-  "version": "4.2.0-dev.32",
+  "version": "4.4.0-dev.25",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^18.0.0 || ^20.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s webpack:test",
@@ -35,11 +35,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.2.0-dev.32",
-    "@itwin/core-bentley": "workspace:^4.2.0-dev.32",
-    "@itwin/core-common": "workspace:^4.2.0-dev.32",
-    "@itwin/core-frontend": "workspace:^4.2.0-dev.32",
-    "electron": ">=23.0.0 <27.0.0"
+    "@itwin/core-backend": "workspace:^4.4.0-dev.25",
+    "@itwin/core-bentley": "workspace:^4.4.0-dev.25",
+    "@itwin/core-common": "workspace:^4.4.0-dev.25",
+    "@itwin/core-frontend": "workspace:^4.4.0-dev.25",
+    "electron": ">=23.0.0 <29.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -50,13 +50,13 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "4.0.0-dev.44",
     "@types/chai": "4.3.1",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "18.16.1",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "~18.16.20",
     "chai": "^4.3.10",
-    "electron": "^26.2.1",
+    "electron": "^28.0.0",
     "eslint": "^8.44.0",
     "glob": "^7.1.2",
-    "mocha": "^10.0.0",
+    "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.0.2",

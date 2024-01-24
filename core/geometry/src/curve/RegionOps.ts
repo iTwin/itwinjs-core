@@ -9,7 +9,9 @@
 
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import {
+  IndexedReadWriteXYZCollection, IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant,
+} from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
@@ -24,12 +26,12 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../topology/Merging";
-import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
-import { AnyCurve, AnyRegion } from "./CurveTypes";
+import { Triangulator } from "../topology/Triangulation";
 import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveOps } from "./CurveOps";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
@@ -47,13 +49,6 @@ import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
-
-/**
- * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and
- * [[collectChains]].
- * @public
- */
-export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
 /**
  * * `properties` is a string with special characters indicating
@@ -115,7 +110,8 @@ export class RegionOps {
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
   /**
-   * Return an xy area for a loop, parity region, or union region.
+   * Return a (signed) xy area for a region.
+   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
    * @param root any Loop, ParityRegion, or UnionRegion.
    */
   public static computeXYArea(root: AnyRegion): number | undefined {
@@ -491,7 +487,7 @@ export class RegionOps {
    * [[cloneCurvesWithXYSplits]].
    * * Return simplest form -- single primitive, single path, or bag of curves.
    */
-  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): ChainTypes {
+  public static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined {
     if (source === undefined)
       return undefined;
     if (source instanceof CurvePrimitive)
@@ -515,7 +511,7 @@ export class RegionOps {
    */
   public static collectInsideAndOutsideOffsets(
     fragments: AnyCurve[], offsetDistance: number, gapTolerance: number,
-  ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains: ChainTypes } {
+  ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
     return CurveOps.collectInsideAndOutsideXYOffsets(fragments, offsetDistance, gapTolerance);
   }
   /**
@@ -524,7 +520,7 @@ export class RegionOps {
    * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail
    * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): ChainTypes {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance): AnyChain | undefined {
     return CurveOps.collectChains(fragments, gapTolerance);
   }
   /**

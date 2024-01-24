@@ -244,16 +244,23 @@ const dtaFrontendMain = async () => {
 
     let iModel: IModelConnection | undefined;
     const iModelName = configuration.iModelName;
+    const origStandalone = configuration.standalone;
     if (undefined !== iModelName) {
-      const writable = configuration.openReadWrite ?? false;
-      iModel = await openFile({ fileName: iModelName, writable });
-      if (ProcessDetector.isMobileAppFrontend) {
-        // attempt to send message to mobile that the model was opened
-        MobileMessenger.postMessage("modelOpened", iModelName);
+      try {
+        const writable = configuration.openReadWrite ?? false;
+        iModel = await openFile({ fileName: iModelName, writable });
+        if (ProcessDetector.isMobileAppFrontend) {
+          // attempt to send message to mobile that the model was opened
+          MobileMessenger.postMessage("modelOpened", iModelName);
+        }
+        setTitle(iModel);
+      } catch (error) {
+        configuration.standalone = origStandalone;
+        // eslint-disable-next-line no-console
+        console.error(`Error opening snapshot iModel: ${error}`);
+        alert(`Error opening snapshot iModel: ${error}`);
       }
-      setTitle(iModel);
     } else {
-      const origStandalone = configuration.standalone;
       try {
         const iModelId = configuration.iModelId;
         const iTwinId = configuration.iTwinId;
@@ -264,6 +271,8 @@ const dtaFrontendMain = async () => {
         }
       } catch (error) {
         configuration.standalone = origStandalone;
+        // eslint-disable-next-line no-console
+        console.error(`Error getting hub iModel: ${error}`);
         alert(`Error getting hub iModel: ${error}`);
       }
     }

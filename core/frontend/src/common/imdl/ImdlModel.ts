@@ -167,6 +167,7 @@ export namespace ImdlModel {
     animationNodeId?: never;
     animationId?: never;
     layerId?: never;
+    groupId?: never;
   }
 
   export interface AnimationNode {
@@ -174,16 +175,31 @@ export namespace ImdlModel {
     animationNodeId: number;
     animationId?: string;
     layerId?: never;
+    groupId?: never;
   }
 
   export interface Layer {
     primitives: NodePrimitive[];
     layerId: string;
+    groupId?: never;
     animationNodeId?: never;
     animationId?: never;
   }
 
-  export type Node = BasicNode | AnimationNode | Layer;
+  /** Nodes that contain primitives. */
+  export type PrimitivesNode = BasicNode | AnimationNode | Layer;
+
+  /** A grouping node that contains other nodes. These don't nest. */
+  export interface GroupNode {
+    groupId: number;
+    nodes: PrimitivesNode[];
+    primitives?: never;
+    animationNodeId?: never;
+    animationId?: never;
+    layerId?: never;
+  }
+
+  export type Node = PrimitivesNode | GroupNode;
 
   export interface SingleModelFeatureTable {
     multiModel: false;
@@ -270,9 +286,16 @@ export function collectTransferables(document: ImdlModel.Document): Transferable
     }
   };
 
-  for (const node of document.nodes)
-    for (const primitive of node.primitives)
-      addPrimitive(primitive);
+  for (const node of document.nodes) {
+    if (undefined !== node.groupId) {
+      for (const primNode of node.nodes)
+        for (const primitive of primNode.primitives)
+          addPrimitive(primitive);
+    } else {
+      for (const primitive of node.primitives)
+        addPrimitive(primitive);
+    }
+  }
 
   for (const primitives of document.patterns.values())
     for (const primitive of primitives)
