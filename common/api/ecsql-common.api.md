@@ -305,6 +305,10 @@ export class ECSqlWriter {
     // (undocumented)
     appendLineOrSpace(): this;
     // (undocumented)
+    appendParenLeft(): this;
+    // (undocumented)
+    appendParenRight(): this;
+    // (undocumented)
     appendQuoted(val: string): this;
     // (undocumented)
     appendSpace(): this;
@@ -420,6 +424,8 @@ export enum ExprType {
     Literal = "Literal",
     // (undocumented)
     MemberFuncCall = "MemberFuncCall",
+    // (undocumented)
+    NavValueCreationFunc = "NavValueCreationFunc",
     // (undocumented)
     Not = "Not",
     // (undocumented)
@@ -832,6 +838,29 @@ export interface NativeECSqlParseNodeProvider {
 }
 
 // @alpha
+export class NavValueCreationFuncExpr extends ValueExpr {
+    constructor(columnRefExp: DerivedPropertyExpr, idArgExp: ValueExpr, classNameExp: ClassNameExpr, relECClassIdExp?: ValueExpr | undefined);
+    // (undocumented)
+    get children(): Expr[];
+    // (undocumented)
+    readonly classNameExp: ClassNameExpr;
+    // (undocumented)
+    readonly columnRefExp: DerivedPropertyExpr;
+    // (undocumented)
+    static deserialize(node: NativeECSqlParseNode): NavValueCreationFuncExpr;
+    // (undocumented)
+    readonly idArgExp: ValueExpr;
+    // (undocumented)
+    static readonly navValueCreationFuncExprName = "NAVIGATION_VALUE";
+    // (undocumented)
+    readonly relECClassIdExp?: ValueExpr | undefined;
+    // (undocumented)
+    static readonly type = ExprType.NavValueCreationFunc;
+    // (undocumented)
+    writeTo(writer: ECSqlWriter): void;
+}
+
+// @alpha
 export interface NextSelect {
     // (undocumented)
     op: CompoundSelectOp;
@@ -1197,7 +1226,7 @@ export abstract class ValueExpr extends ComputedExpr {
     // (undocumented)
     static readonly deserializableIds: NativeExpIds[];
     // (undocumented)
-    static deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr;
+    static deserialize(node: NativeECSqlParseNode): SubqueryExpr | ValueExpr | UnaryValueExpr | FuncCallExpr | CastExpr | BinaryValueExpr | SearchCaseExpr | IIFExpr | LiteralExpr | PropertyNameExpr | NavValueCreationFuncExpr;
 }
 
 // @alpha
