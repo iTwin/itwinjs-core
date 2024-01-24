@@ -4586,6 +4586,16 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
 
 // @internal
 export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        EXT_mesh_gpu_instancing?: {
+            attributes?: {
+                TRANSLATION?: GltfId;
+                ROTATION?: GltfId;
+                SCALE?: GltfId;
+            };
+        };
+    };
     mesh?: GltfId;
     // (undocumented)
     meshes?: never;
@@ -4800,6 +4810,8 @@ export class GltfGraphicsReader extends GltfReader {
     get scenes(): GltfDictionary<GltfScene>;
     // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides;
 }
 
 // @internal
@@ -4930,10 +4942,10 @@ export interface GltfNodeBaseProps {
     camera?: GltfId;
     children?: GltfId[];
     matrix?: number[];
-    rotation?: number[];
-    scale?: number[];
+    rotation?: [number, number, number, number];
+    scale?: [number, number, number];
     skin?: GltfId;
-    translation?: number[];
+    translation?: [number, number, number];
 }
 
 // @internal
@@ -5064,6 +5076,8 @@ export abstract class GltfReader {
     protected readonly _version: number;
     // (undocumented)
     protected readonly _vertexTableRequired: boolean;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides | undefined;
     // (undocumented)
     protected readonly _yAxisUp: boolean;
 }

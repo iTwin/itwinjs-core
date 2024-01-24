@@ -86,6 +86,7 @@
     "@types/express": "^4.17.20",
     "@types/express-ws": "^3.0.3",
     "@types/fs-extra": "^4.0.7",
+    "@typescript-eslint/parser": "~5.55.0",
     "browserslist-to-esbuild": "^1.2.0",
     "child_process": "^1.0.2",
     "cpx2": "^3.0.0",
@@ -110,7 +111,7 @@
     "rollup-plugin-webpack-stats": "^0.2.0",
     "ts-node": "^10.8.2",
     "typescript": "~5.0.2",
-    "vite": "^4.4.9",
+    "vite": "^4.5.2",
     "vite-plugin-env-compatible": "^1.1.1",
     "vite-plugin-inspect": "^0.7.28",
     "webpack": "^5.76.0"
