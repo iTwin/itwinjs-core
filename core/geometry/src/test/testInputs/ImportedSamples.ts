@@ -17,7 +17,7 @@ export class ImportedSample {
   public static createPolyhedron62(): IndexedPolyface | undefined {
     return ImportedSample.createIndexedPolyface("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs");
   }
-  /** Create IndexedPolyface from imjs file. */
+  /** Create IndexedPolyface from imjs file. Returns the first mesh found. */
   public static createIndexedPolyface(imjsPath: string): IndexedPolyface | undefined {
     const json = fs.readFileSync(imjsPath, "utf8");
     const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];

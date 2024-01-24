@@ -133,7 +133,7 @@ describe("HalfEdgeGraphSearch", () => {
     for (const mesh of meshes) {
       if (mesh === undefined)
         ck.testTrue(false, "cannot load the imjs file");
-      mesh.data.compress();
+      mesh.data.compress(); // remove degenerate facets that increase collected component fragmentation
       const range = mesh.range();
       yShift = 2 * range.yLength();
       mesh.tryTransformInPlace(Transform.createTranslationXYZ(-range.low.x, -range.low.y, -range.low.z));

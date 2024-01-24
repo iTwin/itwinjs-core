@@ -85,7 +85,7 @@ Suppose we start from the middle face (node 63). We push nodes 63, 64, 66, and 4
 
 We continue this process to traverse all the faces. Note that if we pop a node from stack which is already visited, we just skip that node and pop the next node from stack.
 
-Below is the graph image with faces numbered by red color (the exterior face is 26). We also colored each alternate face with white and gray colors which forms the bullseye pattern:
+Below is the graph image with faces numbered by red color in the order in which they are visited (the exterior face is 26). Faces of alternate parity have different shading to illustrate the method's default parity masking rule, which results in a "bullseye" parity pattern:
 ![>](./figs/Graph/graphStackNoLimit.png)
 
 **No Limit (Queue)**<br>
@@ -95,7 +95,7 @@ Suppose we start from the middle face (node 63). We add nodes 63, 64, 66, and 43
 
 We continue this process to traverse all the faces. Note that if we retrieve a node from the front of queue which is already visited, we just skip that node and retrieve the next node from the front of queue.
 
-Below is the graph image with faces numbered by red color (the exterior face is 16). Clearly this graph does not generate the  bullseye pattern:
+Below is the graph image with faces numbered by red color in the order in which they are visited (the exterior face is 16). Note the different traversal compared to stack:
 ![>](./figs/Graph/graphQueueNoLimit.png)
 
 **With Limit (Queue)**<br>
@@ -105,30 +105,26 @@ Suppose we start from the top left face (node 0). We push node 0 to the queue. T
 
 We continue this process to traverse all the faces. Note that if we remove a node from queue which is already visited, we just skip that node and remove the next node from queue.
 
-Below is the graph image with the first 10 faces numbered by red color. As you can see, the traverse covers all adjacent faces and moves forward. Therefore, creates localized components:
+Below is the graph image with the first 10 faces numbered by red color. As you can see, the traverse covers all adjacent faces and moves forward. Therefore, if we stop traversal at any point, the faces we have visited are localized:
 ![>](./figs/Graph/graphQueueWithLimit.png)
 
 **With Limit (Stack)**<br>
-We could have used stack for implementation of `HalfEdgeGraphSearch.collectConnectedComponents`. However, you will see stack will generate snake shape components. That is why we picked queue.
+We could have used stack for implementation of `HalfEdgeGraphSearch.collectConnectedComponents`. However, you will see stack will generate snake shape components, which are often less desirable. That is why we picked queue.
 
 Suppose we start from the top left face (node 0). We push node 0 to the stack. Then we pop from stack (node 0) and mark all of the nodes in that face (0, 2, 4, 6) as visited. We also push all of the vertex successors in that face to the stack (unless they are already visited or are in an exterior face). Therefore, we push nodes 3 and 5 to the stack and ignore node 7 and 1 (exterior). Now we pop from stack (node 5) to move to the second face and mark all of the nodes in that face (5, 8, 10, 12) as visited. We also push nodes 9 and 11 to the queue and ignore node 13 (exterior) and 4 (already visited).
 
-We continue this process to traverse all the faces. Note that if we pop a nide from stack which is already visited, we just skip that node and pop the next node from stack.
+We continue this process to traverse all the faces. Note that if we pop a node from stack which is already visited, we just skip that node and pop the next node from stack.
 
-Below is the graph image with the first 10 faces numbered by red color. As you can see, the traverse covers faces along the boundary and moves forward. Therefore, creates snake shape components:
+Below is the graph image with the first 10 faces numbered by red color. As you can see, the traversal snakes along the boundary of the exterior face. In general, this will happen whenever stack-based traversal hits an exterior face or a previously visited component. Therefore, if we stop traversal at any point, the faces we have visited may not be localized:
 ![>](./figs/Graph/graphStackWithLimit.png)
 
 **Realistic Meshes**<br>
-We ran `HalfEdgeGraphSearch.collectConnectedComponents` on 2 realistic meshes with max face limit = 1000. As you can see queue created localized components and stack created snake shape components.
+We ran `HalfEdgeGraphSearch.collectConnectedComponents` on several meshes with max face limit = 1000. The results of one run are shown below. As you can see queue created localized components and stack created snake shape components.
 
-Example 1 with **queue**
-![>](./figs/Graph/graphQueueWithLimitReal1.png)<br>
-<br>Example 1 with **stack**
-![>](./figs/Graph/graphStackWithLimitReal1.png)<br>
-<br>Example 2 with **queue**
-![>](./figs/Graph/graphQueueWithLimitReal2.png)<br>
-<br>Example 2 with **stack**
-![>](./figs/Graph/graphStackWithLimitReal2.png)
+Example with **queue**
+![>](./figs/Graph/graphQueueWithLimitRealistic.png)<br>
+<br>Example with **stack**
+![>](./figs/Graph/graphStackWithLimitRealistic.png)<br>
 
 # `Collect Boundary Loops`
 

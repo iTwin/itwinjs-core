@@ -258,7 +258,8 @@ export class HalfEdgeGraphSearch {
    * @param component vector of nodes, one per face.
    * @param seed seed node in component.
    * @param visitMask mask to apply to visited nodes. Assumed cleared throughout component.
-   * @param ignoreMask (optional) mask on faces to ignore, e.g., MTG_EXTERIOR_MASK.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to
+   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
    * @param maxFaceCount (optional) maximum number of faces in the component. Should be positive; otherwise
    * `Infinity` is used.
    * @returns node at which to start next component if maximum face count exceeded, or undefined.
@@ -311,8 +312,9 @@ export class HalfEdgeGraphSearch {
    * Collect connected components of the graph (via Breadth First Search).
    * @param graph graph to inspect.
    * @param maxFaceCount (optional) maximum number of faces in each component. Should be positive; otherwise
-   * @param ignoreMask (optional) mask to be ignored by the traverse.
    * `Infinity` is used.
+   * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to ignore
+   * exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
    * @returns the components of the graph, each component represented by an array of nodes, one node per face
    * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
    */
