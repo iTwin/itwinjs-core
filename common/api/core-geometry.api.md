@@ -2797,6 +2797,7 @@ export class IndexedPolyface extends Polyface {
     addPoint(point: Point3d, priorIndex?: number): number;
     addPointIndex(index: number, visible?: boolean): void;
     addPointXYZ(x: number, y: number, z: number): number;
+    // @deprecated
     cleanupOpenFacet(): void;
     clone(): IndexedPolyface;
     cloneTransformed(transform: Transform): IndexedPolyface;
@@ -2825,7 +2826,7 @@ export class IndexedPolyface extends Polyface {
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
     setNewFaceData(endFacetIndex?: number): boolean;
-    terminateFacet(validateAllIndices?: boolean): any;
+    terminateFacet(validateAllIndices?: boolean): String[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
     tryTransformInPlace(transform: Transform): boolean;
     get zeroTerminatedIndexCount(): number;
