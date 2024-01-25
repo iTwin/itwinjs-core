@@ -2447,6 +2447,7 @@ importers:
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.17.20
       '@types/node': ~18.16.20
+      '@typescript-eslint/parser': ~5.55.0
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
@@ -2501,6 +2502,7 @@ importers:
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
       '@types/node': 18.16.20
+      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       chrome-launcher: 0.15.2
@@ -2565,6 +2567,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/fs-extra': ^4.0.7
+      '@typescript-eslint/parser': ~5.55.0
       body-parser: ^1.20.2
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
@@ -2635,6 +2638,7 @@ importers:
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
+      '@typescript-eslint/parser': 5.55.0_6ndl6d37z3ezupnqjymvncqbpi
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       cpx2: 3.0.0
@@ -4853,7 +4857,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.1
+      '@types/node': 18.16.20
     dev: false
 
   /@types/debug/4.1.12:
@@ -5037,10 +5041,6 @@ packages:
   /@types/node/16.18.74:
     resolution: {integrity: sha512-eEn8RkzZFcT0gb8qyi0CcfSOQnLE+NbGLIIaxGGmjn/N35v/C3M8ohxcpSlNlCv+H8vPpMGmrGDdCkzr8xu2tQ==}
     dev: true
-
-  /@types/node/18.16.1:
-    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
-    dev: false
 
   /@types/node/18.16.20:
     resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
@@ -10144,7 +10144,7 @@ packages:
     resolution: {integrity: sha512-p7eGEiQil0YUV3ItH4/tBb781L5impVmmx2E9FRKF7d18XXzp4PGT2tdYMFY6wQqgxD0IwNZOiSJ0/K0fSi/OA==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.3.5
+      semver: 7.5.4
     dev: false
 
   /node-abort-controller/3.1.1:

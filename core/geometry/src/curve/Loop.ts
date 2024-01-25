@@ -79,7 +79,7 @@ export class Loop extends CurveChain {
   public dgnBoundaryType(): number {
     /**
      * All "Loop" become "outer". TypeScript Loop object is equivalent to a native CurveVector with
-     * boundaryType = BOUNDARY_TYPE_Outer. In other words, TypeScript has no flavor of Loop that
+     * boundaryType = BOUNDARY_TYPE_Outer. In other words, TypeScript has no flavor of Loop that
      * carries "hole" semantics.
      */
     return 2;
