@@ -89,7 +89,7 @@ export class SchemaMerger {
     await EntityClassMerger.mergeChanges(mergeContext, itemChanges.entityClasses);
     await MixinMerger.mergeChanges(mergeContext, itemChanges.mixins);
 
-    // 2nd pass to complete merge changes such as properties, baseClasses and mixins. 
+    // 2nd pass to complete merge changes such as properties, baseClasses and mixins.
     await CAClassMerger.mergeAllChanges(mergeContext, itemChanges.customAttributeClasses);
     await StructClassMerger.mergeAllChanges(mergeContext, itemChanges.structClasses);
     await EntityClassMerger.mergeAllChanges(mergeContext, itemChanges.entityClasses);

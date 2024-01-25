@@ -181,16 +181,14 @@ export class ClassMerger<TClass extends ECClass> {
         throw new Error(mergeResults.errorMessage);
       }
 
-       // merge custom attributes
-       mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
+      // merge custom attributes
+      mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
         return merger.context.editor.entities.addCustomAttribute(targetItemKey, ca);
       });
 
       if (mergeResults.errorMessage !== undefined) {
         throw new Error(mergeResults.errorMessage);
       }
-
     }
-
   }
 }

@@ -60,7 +60,7 @@ describe("Struct class merger tests", () => {
       const classMixins = mergedItem?.mixins;
       if(classMixins){
         expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
-        expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");  
+        expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
       }
       expect(classMixins?.length).be.greaterThan(0);
     });
