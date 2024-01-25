@@ -1,5 +1,5 @@
 # iTwin.js Core CI Build
-
+# TEMP
 trigger:
   - master
   - release/*
