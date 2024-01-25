@@ -107,6 +107,55 @@ describe("Parsing tests:", () => {
     }
   });
 
+  it("Generate Parse Tokens given different decimal and thousand separators", async () => {
+    const testStrings = ["", "0/1", "1/0", "1/2", "-1/2", "+1/2", "2 /", "1,616252eggs", "1,616252E-35eggs", "-1,616252E-35eggs", "756345,345", "12.345,345", "3,6252e3 Miles", "-1 1/2 FT", "+1 1/2 FT", "-135°11'30,5\"", "-2FT 6IN", "135°11'30,5\"", "2FT 6IN", "1 1/2 FT"];
+
+    const expectedTokens = [
+      [],
+      [{ value: 0 }],
+      [{ value: 1 }],
+      [{ value: 0.5 }],
+      [{ value: -0.5 }],
+      [{ value: 0.5 }],
+      [{ value: 2 }],
+      [{ value: 1.616252 }, { value: "eggs" }],
+      [{ value: 1.616252e-35 }, { value: "eggs" }],
+      [{ value: -1.616252e-35 }, { value: "eggs" }],
+      [{ value: 756345.345 }],
+      [{ value: 12345.345 }],
+      [{ value: 3625.2 }, { value: "Miles" }],
+      [{ value: -1.5 }, { value: "FT" }],
+      [{ value: 1.5 }, { value: "FT" }],
+      [{ value: -135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
+      [{ value: -2 }, { value: "FT" }, { value: 6 }, { value: "IN" }],
+      [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
+      [{ value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }],
+      [{ value: 1.5 }, { value: "FT" }],
+    ];
+
+    const formatData = {
+      decimalSeparator: ",",
+      thousandSeparator: ".",
+      type: "Decimal",
+    };
+    const format = new Format("test");
+    const unitsProvider = new TestUnitsProvider();
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    let i = 0;
+    for (const strVal of testStrings) {
+      const tokens = Parser.parseQuantitySpecification(strVal, format);
+      assert.isTrue(tokens.length === expectedTokens[i].length);
+
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let j = 0; j < tokens.length; j++) {
+        assert.isTrue(tokens[j].value === expectedTokens[i][j].value);
+      }
+
+      i = i + 1;
+    }
+  });
+
   it("Look up units", async () => {
     const expectedLookupResults = [
       { label: "FT", name: "Units.FT", unitContext: "" },
