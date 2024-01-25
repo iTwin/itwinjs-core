@@ -209,10 +209,22 @@ export type AngleSweepProps =
 /**
 * Interface for method with a clone operation.
 * @public
+* @deprecated in 4.x. Use ICloneable.
 */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
   clone(): T | undefined;
+}
+/**
+ * Interface for an object with a clone method.
+ * @public
+ */
+export interface ICloneable<T> {
+  /**
+   * Return a deep clone of the instance.
+   * @param result optional object to populate and return
+   */
+  clone(result?: T): T;
 }
 /** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
  * @public
@@ -1237,13 +1249,27 @@ export class Geometry {
   /**
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
+   * @deprecated in 4.x. Use cloneArray.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined)
       return undefined;
     const clonedArray: T[] = [];
     for (const element of array) {
       clonedArray.push(element.clone()!);
+    }
+    return clonedArray;
+  }
+  /**
+   * Clone an array whose members have the cloneable type `T`.
+   */
+  public static cloneArray<T extends ICloneable<T>>(array: T[] | undefined): T[] | undefined {
+    if (array === undefined)
+      return undefined;
+    const clonedArray: T[] = [];
+    for (const element of array) {
+      clonedArray.push(element.clone());
     }
     return clonedArray;
   }

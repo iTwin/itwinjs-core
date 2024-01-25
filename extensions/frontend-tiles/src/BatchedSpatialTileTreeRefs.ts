@@ -3,63 +3,70 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
+  AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
+import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { loggerCategory } from "./LoggerCategory";
+import { BatchedModelGroups } from "./BatchedModelGroups";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private readonly _models: BatchedModels;
+  private readonly _groups: BatchedModelGroups;
+  private readonly _spec: BatchedTilesetSpec;
+  private _treeOwner: TileTreeOwner;
+  private _refs: BatchedTileTreeReference[] = [];
   private _currentScript?: RenderSchedule.Script;
-  private _primaryRef!: PrimaryBatchedTileTreeReference;
-  private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
   private _onModelSelectorChanged?: () => void;
   /** Provides tile trees for models that are not included in the batched tile set. */
   private readonly _excludedRefs: SpatialTileTreeReferences;
+  private _removeSceneInvalidationListener?: () => void;
 
   public constructor(spec: BatchedTilesetSpec, view: SpatialViewState) {
     this._view = view;
-    this._models = new BatchedModels(view);
+    this._models = new BatchedModels(view, spec.models);
+    this._spec = spec;
 
     const script = view.displayStyle.scheduleScript;
     this._currentScript = script?.requiresBatching ? script : undefined;
 
-    const includedModels = spec.props.extensions?.BENTLEY_BatchedTileSet?.includedModels;
-    this._excludedRefs = includedModels ? createSpatialTileTreeReferences(view, new Set(includedModels)) : {
-      update: () => { },
-      setDeactivated: () => { },
-      attachToViewport: () => { },
-      detachFromViewport: () => { },
-      [Symbol.iterator]: () => {
-        return {
-          next: () => {
-            return { done: true, value: undefined };
-          },
-        };
-      },
-    };
+    const includedModels = new Set(spec.models.keys());
+    this._excludedRefs = createSpatialTileTreeReferences(view, includedModels);
 
-    this.load(spec, view.iModel);
+    this._groups = new BatchedModelGroups(view, this._currentScript, includedModels, spec.models);
+    this._treeOwner = this.getTreeOwner();
+    this.loadRefs();
 
-    assert(undefined !== this._primaryRef);
+    this.listenForScriptChange();
   }
 
-  private load(spec: BatchedTilesetSpec, iModel: IModelConnection): void {
-    const treeOwner = getBatchedTileTreeOwner(iModel, { spec, script: this._currentScript });
-    this._primaryRef = new PrimaryBatchedTileTreeReference(treeOwner, this._models);
+  private ensureLoaded(): void {
+    if (!this._groups.update())
+      return;
 
-    this.populateAnimatedReferences(treeOwner);
+    this._treeOwner = this.getTreeOwner();
+    this.loadRefs();
+  }
 
+  private getTreeOwner(): TileTreeOwner {
+    return getBatchedTileTreeOwner(this._view.iModel, {
+      spec: this._spec,
+      script: this._currentScript,
+      modelGroups: this._groups.guid,
+    });
+  }
+
+  private listenForScriptChange(): void {
     const onScriptChanged = (newScript: RenderSchedule.Script | undefined) => {
       if (!newScript?.requiresBatching)
         newScript = undefined;
@@ -69,44 +76,44 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
       if (newScript !== currentScript)
         if (!newScript || !currentScript || !newScript.equals(currentScript))
-          this.load(spec, iModel);
+          this._groups.setScript(newScript);
     };
 
-    let removeScriptChangedListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+    let rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
     this._view.onDisplayStyleChanged.addListener((newStyle) => {
-      removeScriptChangedListener();
+      rmListener();
       onScriptChanged(newStyle.scheduleScript);
-      removeScriptChangedListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
+      rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
     });
   }
 
-  public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    yield this._primaryRef;
+  private loadRefs(): void {
+    this._refs.length = 0;
+    const groups = this._groups.groups;
+    const args: BatchedTileTreeReferenceArgs = {
+      models: this._models,
+      groups,
+      treeOwner: this._treeOwner,
+      getCurrentTimePoint: () => this._currentScript ? (this._view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
+    };
 
-    for (const animatedRef of this._animatedRefs)
-      yield animatedRef;
-
-    for (const excludedRef of this._excludedRefs)
-      yield excludedRef;
-  }
-
-  private populateAnimatedReferences(treeOwner: TileTreeOwner): void {
-    this._animatedRefs.length = 0;
-    const script = this._currentScript;
-    if (!script)
-      return;
-
-    const getCurrentTimePoint = () => this._view.displayStyle.settings.timePoint ?? script.duration.low;
-    for (const timeline of script.modelTimelines) {
-      const nodeIds = timeline.transformBatchIds;
-      for (const nodeId of nodeIds) {
-        this._animatedRefs.push(new AnimatedBatchedTileTreeReference(treeOwner, {
-          timeline,
-          nodeId,
-          getCurrentTimePoint,
-        }));
+    for (let i = 0; i < groups.length; i++) {
+      const timeline = groups[i].timeline;
+      this._refs.push(new BatchedTileTreeReference(args, i, timeline ? AnimationNodeId.Untransformed : undefined));
+      if (timeline) {
+        for (const nodeId of timeline.transformBatchIds)
+          this._refs.push(new BatchedTileTreeReference(args, i, nodeId));
       }
     }
+  }
+
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {
+    this.ensureLoaded();
+    for (const ref of this._refs)
+      yield ref;
+
+    for (const ref of this._excludedRefs)
+      yield ref;
   }
 
   public update(): void {
@@ -119,11 +126,17 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   public attachToViewport(args: AttachToViewportArgs): void {
     this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
     this._excludedRefs.attachToViewport(args);
+    this._removeSceneInvalidationListener = args.onSceneInvalidated.addListener(() => this._groups.invalidateTransforms());
   }
 
   public detachFromViewport(): void {
     this._onModelSelectorChanged = undefined;
     this._excludedRefs.detachFromViewport();
+
+    if (this._removeSceneInvalidationListener) {
+      this._removeSceneInvalidationListener();
+      this._removeSceneInvalidationListener = undefined;
+    }
   }
 
   public setDeactivated(): void {

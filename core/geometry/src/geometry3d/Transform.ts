@@ -110,7 +110,7 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Readonly<Transform>): boolean {
-    return this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix);
+    return this === other || this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix);
   }
   /**
    * Test for near equality with `other` Transform. Comparison uses the `isAlmostEqual` methods on the `origin` part

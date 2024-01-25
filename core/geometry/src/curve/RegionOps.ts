@@ -9,7 +9,9 @@
 
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import {
+  IndexedReadWriteXYZCollection, IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant,
+} from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
@@ -24,7 +26,7 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../topology/Merging";
-import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
+import { Triangulator } from "../topology/Triangulation";
 import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveOps } from "./CurveOps";

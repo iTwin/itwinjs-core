@@ -11,11 +11,15 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
  * `ImportedSample` has static methods to create a variety of geometry samples useful in testing.
  * @alpha
  */
- export class ImportedSample {
+export class ImportedSample {
   // cspell:word rhombicosidodecahedron
   /** Create a 62-sided regular polyhedron mesh with 3-, 4-, and 5-sided faces and vertex color data. */
   public static createPolyhedron62(): IndexedPolyface | undefined {
-    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
+    return ImportedSample.createIndexedPolyface("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs");
+  }
+  /** Create IndexedPolyface from imjs file. Returns the first mesh found. */
+  public static createIndexedPolyface(imjsPath: string): IndexedPolyface | undefined {
+    const json = fs.readFileSync(imjsPath, "utf8");
     const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
     for (const mesh of inputs) {
       if (undefined !== mesh && mesh instanceof IndexedPolyface)
