@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Enable Kerberos authentication for map-layers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
