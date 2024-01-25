@@ -128,7 +128,6 @@ export class ClassMerger<TClass extends ECClass> {
   public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
     const changes = Array.from(classChanges);
-    let mergeResults : SchemaItemEditResults;
     let targetItemKey: SchemaItemKey;
 
     for (const change of changes) {
@@ -148,6 +147,19 @@ export class ClassMerger<TClass extends ECClass> {
         }
         targetItemKey = results.itemKey!;
       }
+    }
+  }
+
+  public static async mergeAllChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
+    const merger = new this(context);
+    const changes = Array.from(classChanges);
+    let mergeResults: SchemaItemEditResults;
+    let targetItemKey: SchemaItemKey;
+
+    // 2nd run to merger properties
+    for(const change of changes){
+      targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
+      const changeType = change.schemaItemMissing?.changeType;
 
       if (change.baseClassDelta !== undefined) {
         const results = await merger.setBaseClass(targetItemKey, change.baseClassDelta, changeType);
@@ -163,24 +175,22 @@ export class ClassMerger<TClass extends ECClass> {
         }
       }
 
-      // merge custom attributes
-      mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
+      await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
+      mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
+      if (mergeResults.errorMessage !== undefined) {
+        throw new Error(mergeResults.errorMessage);
+      }
+
+       // merge custom attributes
+       mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
         return merger.context.editor.entities.addCustomAttribute(targetItemKey, ca);
       });
 
       if (mergeResults.errorMessage !== undefined) {
         throw new Error(mergeResults.errorMessage);
       }
+
     }
 
-     // 2nd run to merger properties
-     for(const change of changes){
-      targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
-      await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
-      mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
-      if (mergeResults.errorMessage !== undefined) {
-        throw new Error(mergeResults.errorMessage);
-      }
-    }
   }
 }

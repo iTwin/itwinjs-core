@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {  Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import {  EntityClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../ecschema-editing";
 import { expect } from "chai";
 
@@ -26,6 +26,83 @@ describe("Struct class merger tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
   });
+  describe("Mixing class merging order tests", () => {
+    it("should merge missing mixins regardless of items order", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            description: "Test class",
+            mixins: ["SourceSchema.mixinA", "SourceSchema.mixinB"],
+          },
+          mixinA: {
+            schemaItemType: "Mixin",
+            description: "Mixin A",
+            appliesTo: "SourceSchema.testClass",
+          },
+          mixinB: {
+            schemaItemType: "Mixin",
+            description: "Mixin B",
+            appliesTo: "SourceSchema.testClass",
+          },
+        },
+      }, context);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, context);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
+
+      const classMixins = mergedItem?.mixins;
+      if(classMixins){
+        expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
+        expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");  
+      }
+      expect(classMixins?.length).be.greaterThan(0);
+    });
+  });
+
+  describe("Entity class merging order tests", () => {
+    it("should merge the missing entity class with base class regardless of order", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          bracket:{
+            schemaItemType: "EntityClass",
+            description: "Bracket test class",
+            baseClass: "SourceSchema.sps",
+          },
+          sps: {
+            schemaItemType: "EntityClass",
+            description: "Sps test Class",
+            properties: [
+              {
+                name: "Status",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 0,
+                typeName: "string",
+              },
+            ],
+          },
+        },
+      }, context);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, context);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
+
+      expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
+    });
+  });
 
   describe("Struct class merging order tests", () => {
     it("it should merge missing struct properties no matter the order", async () => {
@@ -34,7 +111,7 @@ describe("Struct class merger tests", () => {
         items: {
           sps: {
             schemaItemType: "EntityClass",
-            description: "Linear draft Sps Class",
+            description: "Sps test Class",
             properties: [
               {
                 name: "Status",
@@ -56,7 +133,7 @@ describe("Struct class merger tests", () => {
           },
           middle: {
             schemaItemType: "StructClass",
-            description: "Linear draft middle class",
+            description: "Middle test class",
             properties: [
               {
                 name: "Support",
@@ -78,7 +155,7 @@ describe("Struct class merger tests", () => {
           },
           allocation: {
             schemaItemType: "StructClass",
-            description: "Linear draft Allocation Class",
+            description: "Allocation test Class",
             properties: [
               {
                 name: "Quantity",
@@ -102,7 +179,7 @@ describe("Struct class merger tests", () => {
 
       expect(middleTarget.toJSON()).to.deep.equal({
         schemaItemType: "StructClass",
-        description: "Linear draft middle class",
+        description: "Middle test class",
         properties: [
           {
             name: "Support",
@@ -130,7 +207,7 @@ describe("Struct class merger tests", () => {
         items: {
           sps: {
             schemaItemType: "EntityClass",
-            description: "Linear draft Sps Class",
+            description: "Sps test Class",
             properties: [
               {
                 name: "Status",
@@ -152,7 +229,7 @@ describe("Struct class merger tests", () => {
           },
           middle: {
             schemaItemType: "StructClass",
-            description: "Linear draft middle class",
+            description: "Middle test class",
             properties: [
               {
                 name: "Support",
@@ -175,7 +252,7 @@ describe("Struct class merger tests", () => {
           },
           allocation: {
             schemaItemType: "StructClass",
-            description: "Linear draft Allocation Class",
+            description: "Allocation test Class",
             properties: [
               {
                 name: "BracketSlot",
@@ -190,7 +267,7 @@ describe("Struct class merger tests", () => {
           },
           bracketSlot: {
             schemaItemType: "StructClass",
-            description: "Linear draft bracketSlot Class",
+            description: "BracketSlot Class",
             properties: [
               {
                 name: "Status",
@@ -209,11 +286,11 @@ describe("Struct class merger tests", () => {
         items: {
           sps: {
             schemaItemType: "EntityClass",
-            description: "Linear draft Sps Class",
+            description: "Sps test Class",
           },
           middle: {
             schemaItemType: "StructClass",
-            description: "Linear draft middle class",
+            description: "Middle test class",
             properties: [
               {
                 name: "Support",
@@ -227,7 +304,7 @@ describe("Struct class merger tests", () => {
           },
           bracketSlot: {
             schemaItemType: "StructClass",
-            description: "Linear draft bracketSlot Class",
+            description: "BracketSlot Class",
             properties: [
               {
                 name: "Status",
@@ -249,7 +326,7 @@ describe("Struct class merger tests", () => {
 
       expect(middleTarget.toJSON()).to.deep.equal({
         schemaItemType: "StructClass",
-        description: "Linear draft middle class",
+        description: "Middle test class",
         properties: [
           {
             name: "Support",
@@ -272,7 +349,7 @@ describe("Struct class merger tests", () => {
 
       expect(allocationTarget.toJSON()).to.deep.equal({
         schemaItemType: "StructClass",
-        description: "Linear draft Allocation Class",
+        description: "Allocation test Class",
         properties: [
           {
             name: "BracketSlot",
