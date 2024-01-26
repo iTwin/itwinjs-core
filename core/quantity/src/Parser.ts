@@ -217,7 +217,9 @@ export class Parser {
           }
           processingNumber = true;
         }
-        wipToken = wipToken.concat(str[i]);
+        // Decimal separators must be replaced with '.' before converting to a number - parseFloat() only supports '.' as the decimal separator.
+        const charToAdd = charCode === format.decimalSeparator.charCodeAt(0) ? "." : str[i];
+        wipToken = wipToken.concat(charToAdd);
       } else {
         if (processingNumber) {
           if (charCode === QuantityConstants.CHAR_SLASH || charCode === QuantityConstants.CHAR_FRACTION_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH) {
