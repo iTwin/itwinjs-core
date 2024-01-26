@@ -125,6 +125,7 @@ export class ClassMerger<TClass extends ECClass> {
     }
   }
 
+  // First pass to create missing changes
   public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
     const changes = Array.from(classChanges);
@@ -145,18 +146,17 @@ export class ClassMerger<TClass extends ECClass> {
         if (results.errorMessage !== undefined) {
           throw new Error(results.errorMessage);
         }
-        targetItemKey = results.itemKey!;
       }
     }
   }
 
+  // 2nd pass to merge baseClass, properties, mixins and CA.
   public static async mergeAllChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
     const merger = new this(context);
     const changes = Array.from(classChanges);
     let mergeResults: SchemaItemEditResults;
     let targetItemKey: SchemaItemKey;
 
-    // 2nd run to merger properties
     for(const change of changes){
       targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;

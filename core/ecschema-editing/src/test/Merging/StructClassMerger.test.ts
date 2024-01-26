@@ -62,7 +62,7 @@ describe("Struct class merger tests", () => {
         expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
         expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
       }
-      expect(classMixins?.length).be.greaterThan(0);
+      expect(classMixins?.length).be.equal(2);
     });
   });
 
@@ -105,7 +105,7 @@ describe("Struct class merger tests", () => {
   });
 
   describe("Struct class merging order tests", () => {
-    it("it should merge missing struct properties no matter the order", async () => {
+    it("it should merge missing struct properties regardless of order", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
