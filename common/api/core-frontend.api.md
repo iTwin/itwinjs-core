@@ -2295,6 +2295,8 @@ export enum ContextMode {
 export class ContextRealityModelState extends ContextRealityModel {
     // @internal
     constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
+    // @beta
+    getFeatureProperties(featureId: Id64String): any;
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
