@@ -562,11 +562,11 @@ export class PolyfaceQuery {
    * @param includeMismatch true to include edges with more than 2 incident facets
    * @param includeNull true to include edges with identical start and end vertex indices.
    */
-    public static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): AnyChain | undefined {
-      const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
-      PolyfaceQuery.announceBoundaryEdges(source, (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)), includeTypical, includeMismatch, includeNull);
-      return collector.grabResult(true);
-    }
+  public static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): AnyChain | undefined {
+    const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
+    PolyfaceQuery.announceBoundaryEdges(source, (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)), includeTypical, includeMismatch, includeNull);
+    return collector.grabResult(true);
+  }
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
    * If not, extract the boundary edges as lines.
@@ -647,7 +647,7 @@ export class PolyfaceQuery {
     const normal = Vector3d.create();
     const analyzeFace = (iFacet: number): { isSideFace: boolean, perpAngle: number } => {
       if (!PolyfaceQuery.computeFacetUnitNormal(source, iFacet, normal))
-        return {isSideFace: false, perpAngle: 0.0 };
+        return { isSideFace: false, perpAngle: 0.0 };
       const perpAngle = normal.radiansFromPerpendicular(vectorToEye);
       const isSideFace = Math.abs(perpAngle) <= sideAngleTol;
       return { isSideFace, perpAngle };
@@ -1063,7 +1063,7 @@ export class PolyfaceQuery {
     source.reset();
     while (source.moveToNextFacet()) {
       const localIndices = [...Array(source.pointIndex.length).keys()]; // 0, 1, ... n-1;
-      while (removeFirstOddPalindrome(localIndices, source.pointIndex)) {}
+      while (removeFirstOddPalindrome(localIndices, source.pointIndex)) { }
       builder.addFacetFromIndexedVisitor(source, localIndices);
     }
     return builder.claimPolyface(true);

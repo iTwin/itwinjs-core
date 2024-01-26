@@ -1279,7 +1279,7 @@ describe("RegionOps2", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x = 0;
-    const testCases: {filename: string, numTriangles: number, numFacets: number}[] = [
+    const testCases: { filename: string, numTriangles: number, numFacets: number }[] = [
       { filename: "./src/test/testInputs/curve/convexPentagon.imjs", numTriangles: 3, numFacets: 1 },
       { filename: "./src/test/testInputs/curve/nonConvexPentagon.imjs", numTriangles: 3, numFacets: 2 },
       { filename: "./src/test/testInputs/curve/adjacentQuads.imjs", numTriangles: 6, numFacets: 3 },

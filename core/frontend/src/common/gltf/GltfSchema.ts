@@ -211,11 +211,11 @@ export interface GltfNodeBaseProps {
   /** A 4x4 column-major transformation matrix. Mutually exclusive with [[rotation]], [[scale]], and [[translation]]. */
   matrix?: number[];
   /** Unit quaternion as [x, y, z, w], where w is the scalar. */
-  rotation?: number[];
+  rotation?: [number, number, number, number];
   /** Non-uniform scale as [x, y, z]. */
-  scale?: number[];
+  scale?: [number, number, number];
   /** Translation as [x, y, z]. */
-  translation?: number[];
+  translation?: [number, number, number];
 }
 
 /** glTF 1.0 representation of a [[GltfNode]]. Unlike a [[Gltf2Node]], a Gltf1Node may refer to any number of [[GltfMesh]]es.
@@ -243,6 +243,27 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   meshes?: never;
   /** Morph targets - currently ignored. */
   weights?: number[];
+  extensions?: GltfExtensions & {
+    /** The [EXT_mesh_gpu_instancing](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md) extension permits multiple
+     * instances of the same mesh to be rendered with different translation, rotation, and/or scale.
+     * All of the attribute accessors must have the same count (which indicates the number of instances to be drawn).
+     * All attributes are optional (though omitting all of them would be silly).
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_mesh_gpu_instancing?: {
+      attributes?: {
+        /** VEC3; FLOAT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        TRANSLATION?: GltfId;
+        /** VEC4 (quaternion); FLOAT, normalized BYTE, or normalized SHORT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        ROTATION?: GltfId;
+        /** VEC3; FLOAT */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        SCALE?: GltfId;
+      };
+    };
+  };
 }
 
 /** Describes a node in a [[GltfScene]]. Each node may be associated with zero, one (glTF 2.0), or any number of (glTF 1.0) [[GltfMesh]]es.
