@@ -1719,8 +1719,6 @@ export class BatchedTileIdMap {
     getBatchProperties(id: Id64String): any;
     // (undocumented)
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
-    // (undocumented)
-    hasFeature(id: Id64String): boolean;
 }
 
 // @public
@@ -1734,9 +1732,8 @@ export interface BatchOptions {
 }
 
 // @beta
-export interface BatchTablePropertyMap {
+export interface BatchTableProperties {
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
-    hasFeature(id: Id64String): boolean;
 }
 
 // @public (undocumented)
@@ -3032,6 +3029,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
     // @internal (undocumented)
     protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+    get realityModels(): Iterable<ContextRealityModelState>;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
@@ -11411,7 +11409,7 @@ export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
     // @beta
-    get batchTableProperties(): BatchTablePropertyMap | undefined;
+    get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
     cartesianRange: Range3d;
     // @internal (undocumented)

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { RealityTileTree, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { RealityTileTree, Viewport } from "@itwin/core-frontend";
 
 // __PUBLISH_EXTRACT_START__ GetBatchTableFeatureProperties
 
@@ -13,23 +13,16 @@ import { RealityTileTree, TileTreeReference, Viewport } from "@itwin/core-fronte
  * @beta
  */
 export function getBatchTableFeatureProperties(featureId: Id64String, viewport: Viewport): Record<string, any> | undefined {
-  let featureProperties: Record<string, any> | undefined;
-
-  // Iterate the TileTreeReferences of the ContextRealityModels associated with the viewport to find the properties of the specified feature.
-  viewport.displayStyle.forEachRealityTileTreeRef((ref: TileTreeReference) => {
-    if (featureProperties) {
-      // We've already found the properties
-      return;
-    }
-
-    const tree = ref.treeOwner.tileTree;
-
+  for (const model of viewport.displayStyle.realityModels) {
     // Only RealityTileTrees have batch tables.
+    const tree = model.treeRef.treeOwner.tileTree;
     const batchTableProperties = tree instanceof RealityTileTree ? tree.batchTableProperties : undefined;
-    featureProperties = batchTableProperties?.getFeatureProperties(featureId);
-  });
+    const featureProperties = batchTableProperties?.getFeatureProperties(featureId);
+    if (featureProperties)
+      return featureProperties;
+  }
 
-  return featureProperties;
+  return undefined;
 }
 
 // __PUBLISH_EXTRACT_END__
