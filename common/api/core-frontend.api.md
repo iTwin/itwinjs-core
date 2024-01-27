@@ -1717,6 +1717,10 @@ export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
     getBatchId(properties: any): Id64String;
     getBatchProperties(id: Id64String): any;
+    // (undocumented)
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
+    // (undocumented)
+    hasFeature(id: Id64String): boolean;
 }
 
 // @public
@@ -1727,6 +1731,12 @@ export interface BatchOptions {
     noHilite?: boolean;
     // @beta
     tileId?: string;
+}
+
+// @beta
+export interface BatchTablePropertyMap {
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
+    hasFeature(id: Id64String): boolean;
 }
 
 // @public (undocumented)
@@ -11400,6 +11410,8 @@ export class RealityTileRegion {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @beta
+    get batchTableProperties(): BatchTablePropertyMap | undefined;
     // @internal (undocumented)
     cartesianRange: Range3d;
     // @internal (undocumented)
