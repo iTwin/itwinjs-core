@@ -48,10 +48,6 @@ export class BatchedTileIdMap {
     return undefined !== this._idMap ? this._idMap.get(id) : undefined;
   }
 
-  public hasFeature(id: Id64String): boolean {
-    return this._idMap !== undefined && this._idMap.has(id);
-  }
-
   public getFeatureProperties(id: Id64String): Record<string, any> | undefined {
     const props = this._idMap?.get(id);
     return typeof props === "object" ? props : undefined;
