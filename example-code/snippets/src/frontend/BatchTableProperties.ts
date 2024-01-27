@@ -13,15 +13,18 @@ import { RealityTileTree, Viewport } from "@itwin/core-frontend";
  * @beta
  */
 export function getBatchTableFeatureProperties(featureId: Id64String, viewport: Viewport): Record<string, any> | undefined {
+  // Iterate the viewport's context reality models to find the one to which the specified feature belongs.
   for (const model of viewport.displayStyle.realityModels) {
-    // Only RealityTileTrees have batch tables.
     const tree = model.treeRef.treeOwner.tileTree;
+
+    // Only RealityTileTrees have batch tables, hence the `instanceof` check.
     const batchTableProperties = tree instanceof RealityTileTree ? tree.batchTableProperties : undefined;
     const featureProperties = batchTableProperties?.getFeatureProperties(featureId);
     if (featureProperties)
       return featureProperties;
   }
 
+  // The specified feature was not found in any context reality model's batch table.
   return undefined;
 }
 
