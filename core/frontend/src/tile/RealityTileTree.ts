@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, ProcessDetector } from "@itwin/core-bentley";
+import { assert, BeTimePoint, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
@@ -127,6 +127,27 @@ interface ChildReprojection {
   dbPoints: Point3d[];    // Center, xEnd, yEnd, zEnd
 }
 
+/** Provides access to per-feature properties within a [[RealityTileTree]].
+ * A [[RealityTileTree]] may refer to a tileset in one of the [3D Tiles 1.0](https://docs.ogc.org/cs/18-053r2/18-053r2.html).
+ * Tiles within such tilesets may include a [batch table](https://github.com/CesiumGS/3d-tiles/tree/main/specification/TileFormats/BatchTable) describing subcomponents ("features") within the tile.
+ * For example, a tileset representing a building may encode each door, window, and wall as separate features.
+ * The batch table may additionally contain metadata in JSON format describing each feature.
+ * During tile decoding, iTwin.js assigns unique, transient [Id64String]($bentley)s to each unique feature within the tileset.
+ * When interacting with tileset features (e.g., via a [[SelectionSet]] or [[HitDetail]]), the features are identified by these transient Ids.
+ * @see [[RealityTileTree.batchTableProperties]] to obtain the property map for a TileTree.
+ * @beta
+ */
+export interface BatchTablePropertyMap {
+  /** Returns true if the specified transient Id is mapped to a feature within this property map's [[TileTree]]. */
+  hasFeature(id: Id64String): boolean;
+  /** Obtain the JSON properties associated with the specified transient Id in this property map.
+   * @param id The transient Id mapped to the feature of interest.
+   * @returns A corresponding JSON object representing the feature's properties, or `undefined` if no such properties exist.
+   * @note Treat the JSON properties as read-only - do not modify them.
+   */
+  getFeatureProperties(id: Id64String): Record<string, any> | undefined;
+}
+
 /** @internal */
 export interface RealityTileTreeParams extends TileTreeParams {
   readonly loader: RealityTileLoader;
@@ -177,6 +198,13 @@ export class RealityTileTree extends TileTree {
         this._ecefToDb = dbToEcef.inverse();
       }
     }
+  }
+
+  /** The mapping of per-feature JSON properties from this tile tree's batch table, if one is defined.
+   * @beta
+   */
+  public get batchTableProperties(): BatchTablePropertyMap | undefined {
+    return this.loader.getBatchIdMap();
   }
 
   /** @internal */
