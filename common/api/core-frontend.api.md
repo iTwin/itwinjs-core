@@ -1716,7 +1716,6 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
     getBatchId(properties: any): Id64String;
-    getBatchProperties(id: Id64String): any;
     // (undocumented)
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
