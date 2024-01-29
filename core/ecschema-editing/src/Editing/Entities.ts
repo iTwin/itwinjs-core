@@ -79,9 +79,10 @@ export class Entities extends ECClasses {
 
     // Add a deserializing method.
     if (baseClassKey !== undefined) {
-      let baseClassSchema = schema;
-      if (!baseClassKey.schemaKey.matches(schema.schemaKey))
-        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+      const baseClassSchema = !baseClassKey.schemaKey.matches(schema.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : schema;
+      if (baseClassSchema === undefined) {
+        return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+      }
 
       const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
@@ -167,9 +168,10 @@ export class Entities extends ECClasses {
       return { itemKey: entityKey };
     }
 
-    let baseClassSchema = entity.schema;
-    if (!baseClassKey.schemaKey.matches(entityKey.schemaKey))
-      baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+    const baseClassSchema = !baseClassKey.schemaKey.matches(entityKey.schemaKey) ? await this._schemaEditor.getSchema(baseClassKey.schemaKey) : entity.schema;
+    if (baseClassSchema === undefined) {
+      return { errorMessage: `Schema Key ${baseClassKey.schemaKey.toString(true)} not found in context` };
+    }
 
     const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
     if (baseClassItem === undefined)
