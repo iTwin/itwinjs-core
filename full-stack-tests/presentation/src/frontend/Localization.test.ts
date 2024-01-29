@@ -242,11 +242,11 @@ describe("Localization", async () => {
       keys: new KeySet(),
     }))!;
 
-    expect(content!.descriptor.categories[0].label).to.eq("_test_ string");
-    expect(content!.descriptor.categories[0].description).to.eq("_test_ nested string");
+    expect(content.descriptor.categories[0].label).to.eq("_test_ string");
+    expect(content.descriptor.categories[0].description).to.eq("_test_ nested string");
 
-    const field = getFieldByLabel(content!.descriptor.fields, "_test_ string");
-    expect(content!.contentSet[0].displayValues[field.name]).to.eq("_test_ nested string");
+    const field = getFieldByLabel(content.descriptor.fields, "_test_ string");
+    expect(content.contentSet[0].displayValues[field.name]).to.eq("_test_ nested string");
   });
 
   it("localizes distinct values", async () => {
