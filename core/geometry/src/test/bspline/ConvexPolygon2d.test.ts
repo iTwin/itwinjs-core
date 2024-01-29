@@ -12,10 +12,11 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { Ray2d } from "../../geometry3d/Ray2d";
 import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Ray2d } from "../../geometry3d/Ray2d";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.
@@ -61,11 +62,6 @@ function checkHullChords(hull: ConvexPolygon2d, step: number, ck: Checker) {
       }
     }
   }
-}
-// cspell:word lisajoue
-function lisajoue(theta: number, a: number): Point2d {
-  const r = Math.cos(a * theta);
-  return Point2d.create(r * Math.cos(theta), r * Math.sin(theta));
 }
 
 function countPointsInHull(hull: ConvexPolygon2d, points: Point2d[]): number {
@@ -204,7 +200,7 @@ describe("ConvexPolygon2d", () => {
     const dTheta = 0.34;
     const numPoints = 1000;
     for (let theta = 0.01; points.length < numPoints; theta += dTheta) {
-      points.push(lisajoue(theta * theta, a));
+      points.push(Sample.createRosePoint2d(theta * theta, a));
     }
 
     const hull = ConvexPolygon2d.createHull(points)!;

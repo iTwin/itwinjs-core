@@ -9,8 +9,7 @@
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 
-/** module Curve */
-/** enumeration of condition for extending a curve beyond start or end point.
+/** Enumeration of condition for extending a curve beyond start or end point.
  * * Not all CurvePrimitives support these modes.
  * @public
  */
@@ -26,10 +25,12 @@ export enum CurveExtendMode {
  * @public
  */
 export class CurveExtendOptions {
-  /** Given an ExtendParameter, isolate the particular CurveExtendOptions in effect at an end.
-   * * Return undefined if `param === false`
-   * * return the (strongly typed) pointer to the param if it is a single CurveExtendOptions.
-   * * Return dereferenced array entry 0 or 1 if the param is an array of CurveExtendOptions.
+  /**
+   * Given an VariantCurveExtendParameter, isolate the particular CurveExtendMode in effect at an end.
+   * * Return `CurveExtendMode.None` if `param === false`.
+   * * Return `CurveExtendMode.OnCurve` if `param === true`.
+   * * Return the param if it is a single CurveExtendMode.
+   * * Return dereferenced array at entry `endIndex` if the param is an array of CurveExtendMode.
    */
   public static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode {
     if (param === false)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Bump @itwin/object-storage-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

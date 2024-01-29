@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, CustomAttributeClass, EntityClass, Enumeration, Phenomenon, PrimitiveType, PropertyCategory, SchemaItem, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { Constant, CustomAttributeClass, EntityClass, Enumeration, KindOfQuantity, Phenomenon, PrimitiveType, PropertyCategory, SchemaItem, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "../Editing/Editor";
 import { SchemaMergeContext } from "./SchemaMerger";
 
@@ -55,6 +55,16 @@ export namespace SchemaItemFactory {
         : phenomenon.key;
 
       return editor.constants.create(targetSchemaKey, template.name, itemKey, template.definition);
+    }
+    if (is(template, KindOfQuantity)) {
+      if(template.persistenceUnit === undefined) {
+        throw new Error(`Invalid KindOfQuantity ${template.name} has no persistenceUnit defined`);
+      }
+      const persistenceUnit = await template.persistenceUnit;
+      const itemKey = persistenceUnit.key.schemaKey.matches(template.key.schemaKey)
+        ? new SchemaItemKey(persistenceUnit.name, targetSchemaKey)
+        : persistenceUnit.key;
+      return editor.kindOfQuantities.create(targetSchemaKey, template.name, itemKey);
     }
     if (is(template, UnitSystem))
       return editor.unitSystems.create(targetSchemaKey, template.name);

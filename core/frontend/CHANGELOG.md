@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 14 Dec 2023 20:24:02 GMT and should not be manually modified.
+This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+
+## 4.3.3
+Wed, 03 Jan 2024 19:28:38 GMT
+
+### Updates
+
+- Fixed an issue preventing tiles published by some specific ArcGIS MapServer to be correctly displayed in the view.
 
 ## 4.3.2
 Thu, 14 Dec 2023 20:23:02 GMT

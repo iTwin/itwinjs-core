@@ -1778,8 +1778,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2097152,
-    Major = 32,
+    Combined = 2162688,
+    Major = 33,
     Minor = 0
 }
 
@@ -2639,7 +2639,7 @@ export namespace ElementGeometry {
     export function fromGeometryQuery(geom: GeometryQuery, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromImageGraphic(image: ImageGraphicProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromSubGraphicRange(bbox: ElementAlignedBox3d): ElementGeometryDataEntry | undefined;
-    export function fromTextString(text: TextStringProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
+    export function fromTextString(text: TextStringProps, worldToLocal?: Transform, glyphs?: TextStringGlyphData): ElementGeometryDataEntry | undefined;
     export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined;
     export function isAppearanceEntry(entry: ElementGeometryDataEntry): boolean;
     export function isCurve(entry: ElementGeometryDataEntry): boolean;
@@ -2692,6 +2692,7 @@ export namespace ElementGeometry {
     export function toImageGraphic(entry: ElementGeometryDataEntry, localToWorld?: Transform): ImageGraphicProps | undefined;
     export function toSubGraphicRange(entry: ElementGeometryDataEntry): ElementAlignedBox3d | undefined;
     export function toTextString(entry: ElementGeometryDataEntry, localToWorld?: Transform): TextStringProps | undefined;
+    export function toTextStringGlyphData(entry: ElementGeometryDataEntry): TextStringGlyphData | undefined;
     export function toTransform(sourceToWorld: Float64Array): Transform | undefined;
     export function transformBRep(entry: ElementGeometryDataEntry, inputTransform: Transform): boolean;
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
@@ -5783,6 +5784,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
+    getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
@@ -6226,6 +6229,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     // (undocumented)
+    getModelIdPair(_featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
+    // (undocumented)
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
@@ -6422,6 +6427,7 @@ export class PlanProjectionSettings {
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
     readonly enforceDisplayPriority?: boolean;
+    equals(other: PlanProjectionSettings): boolean;
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
     readonly overlay: boolean;
@@ -7274,6 +7280,7 @@ export interface RenderFeatureTable {
     getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
+    getModelIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
@@ -7326,8 +7333,17 @@ export namespace RenderMaterial {
 
 // @public
 export interface RenderMaterialAssetMapsProps {
+    Bump?: TextureMapProps;
+    Diffuse?: TextureMapProps;
+    Displacement?: TextureMapProps;
+    Finish?: TextureMapProps;
+    GlowColor?: TextureMapProps;
     Normal?: NormalMapProps;
     Pattern?: TextureMapProps;
+    Reflect?: TextureMapProps;
+    Specular?: TextureMapProps;
+    TranslucencyColor?: TextureMapProps;
+    TransparentColor?: TextureMapProps;
 }
 
 // @public
@@ -9242,6 +9258,16 @@ export class TextString {
     get width(): number;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @beta
+export interface TextStringGlyphData {
+    // (undocumented)
+    glyphIds: number[];
+    // (undocumented)
+    glyphOrigins: Point2d[];
+    // (undocumented)
+    range: Range2d;
 }
 
 // @public

@@ -81,7 +81,7 @@ export const DiagnosticCodes = {
   // Relationship Rule Codes (1500-1599)
   AbstractConstraintMustNarrowBaseConstraints: getCode(1500),
   DerivedConstraintsMustNarrowBaseConstraints: getCode(1501),
-  ConstraintClassesDeriveFromAbstractContraint: getCode(1502),
+  ConstraintClassesDeriveFromAbstractConstraint: getCode(1502),
 
   // Relationship Constraint Rule Codes (1600-1699)
   AtLeastOneConstraintClassDefined: getCode(1600),
@@ -174,7 +174,7 @@ export const Diagnostics = {
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'."),
 
   /** EC-1502: Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name */
-  ConstraintClassesDeriveFromAbstractContraint: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint,
+  ConstraintClassesDeriveFromAbstractConstraint: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.ConstraintClassesDeriveFromAbstractConstraint,
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not derived from the abstract constraint class '{3}'."),
 
   /** EC-1600: Required message parameters: relationship end (source/target), relationship name */
@@ -208,7 +208,7 @@ export const ECRuleSet: IRuleSet = {
   ],
   relationshipRules: [
     abstractConstraintMustNarrowBaseConstraints,
-    constraintClassesDeriveFromAbstractContraint,
+    constraintClassesDeriveFromAbstractConstraint,
     derivedConstraintsMustNarrowBaseConstraints,
   ],
   relationshipConstraintRules: [
@@ -483,6 +483,16 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
 }
 
 /**
+ * Validates a Relationship class and yields EC-1500, EC-1501, and EC-1502 rule violations.
+ * @internal
+ */
+export async function* validateRelationship(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
+  yield* abstractConstraintMustNarrowBaseConstraints(ecClass);
+  yield* derivedConstraintsMustNarrowBaseConstraints(ecClass);
+  yield* constraintClassesDeriveFromAbstractConstraint(ecClass);
+}
+
+/**
  * EC Rule: When overriding a RelationshipClass, the derived abstract constraint must narrow the base constraint classes.
  * @internal
  */
@@ -522,13 +532,22 @@ export async function* derivedConstraintsMustNarrowBaseConstraints(ecClass: Rela
  * EC Rule: All constraint classes must have a common base class specified in the abstract constraint.
  * @internal
  */
-export async function* constraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
-  const sourceResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.source);
+export async function* constraintClassesDeriveFromAbstractConstraint(ecClass: RelationshipClass): AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> {
+  const sourceResult = await applyConstraintClassesDeriveFromAbstractConstraint(ecClass, ecClass.source);
   if (sourceResult)
     yield sourceResult;
-  const targetResult = await applyConstraintClassesDeriveFromAbstractContraint(ecClass, ecClass.target);
+  const targetResult = await applyConstraintClassesDeriveFromAbstractConstraint(ecClass, ecClass.target);
   if (targetResult)
     yield targetResult;
+}
+
+/**
+ * Validates a RelationshipConstraint and yields EC-1600 and EC-1601 rule violations.
+ * @internal
+ */
+export async function* validateRelationshipConstraint(constraint: RelationshipConstraint): AsyncIterable<RelationshipConstraintDiagnostic<any[]>> {
+  yield* atLeastOneConstraintClassDefined(constraint);
+  yield* abstractConstraintMustExistWithMultipleConstraints(constraint);
 }
 
 /**
@@ -675,7 +694,7 @@ async function applyDerivedConstraintsMustNarrowBaseConstraints(ecClass: Relatio
   return;
 }
 
-async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: RelationshipClass, constraint: RelationshipConstraint): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
+async function applyConstraintClassesDeriveFromAbstractConstraint(ecClass: RelationshipClass, constraint: RelationshipConstraint): Promise<SchemaItemDiagnostic<RelationshipClass, any[]> | undefined> {
   const abstractConstraint = await getAbstractConstraint(constraint);
   if (!abstractConstraint)
     return;
@@ -689,14 +708,14 @@ async function applyConstraintClassesDeriveFromAbstractContraint(ecClass: Relati
     if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
       if (!await (constraintClass).applicableTo(abstractConstraint as EntityClass)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
-        return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
+        return new Diagnostics.ConstraintClassesDeriveFromAbstractConstraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }
       continue;
     }
 
     if (!await constraintClass.is(abstractConstraint)) {
       const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
-      return new Diagnostics.ConstraintClassesDeriveFromAbstractContraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
+      return new Diagnostics.ConstraintClassesDeriveFromAbstractConstraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
     }
   }
 

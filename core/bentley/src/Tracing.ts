@@ -13,6 +13,7 @@ import { LogFunction, Logger, LogLevel } from "./Logger";
 /**
  * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js/enums/_opentelemetry_api.SpanKind.html)
  * @public
+ * @deprecated in 4.4 - OpenTelemetry Tracing helpers will become internal in a future release. Apps should use `@opentelemetry/api` directly.
  */
 export enum SpanKind {
   INTERNAL = 0,
@@ -79,9 +80,12 @@ function flattenObject(obj: object): SpanAttributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
 
+/* eslint-disable deprecation/deprecation -- lots of self-references here... */
+
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
  * @public
+ * @deprecated in 4.4 - OpenTelemetry Tracing helpers will become internal in a future release. Apps should use `@opentelemetry/api` directly.
  */
 export class Tracing {
   private static _tracer?: Tracer;
@@ -121,6 +125,15 @@ export class Tracing {
         }
       },
     );
+  }
+
+  /**
+   * Adds a span event describing a runtime exception, as advised in OpenTelemetry documentation
+   * @param e error (exception) object
+   * @internal
+   */
+  public static recordException(e: Error) {
+    Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.recordException(e);
   }
 
   /**
@@ -175,3 +188,5 @@ export class Tracing {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.setAttributes(attributes);
   }
 }
+
+/* eslint-enable deprecation/deprecation */

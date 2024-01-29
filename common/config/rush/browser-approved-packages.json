@@ -379,6 +379,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
@@ -740,11 +744,11 @@
     },
     {
       "name": "rxjs",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "rxjs-for-await",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "sanitize-filename",

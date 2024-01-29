@@ -107,6 +107,43 @@ describe("Parsing tests:", () => {
     }
   });
 
+  it("Generate Parse Tokens given different decimal and thousand separators", async () => {
+    const testStrings = ["1,616252eggs", "1,616252E-35eggs", "-1,616252E-35eggs", "756345,345", "12.345,345", "3,6252e3 Miles", "-135°11'30,5\"", "135°11'30,5\""];
+
+    const expectedTokens = [
+      [{ value: 1.616252 }, { value: "eggs" }],
+      [{ value: 1.616252e-35 }, { value: "eggs" }],
+      [{ value: -1.616252e-35 }, { value: "eggs" }],
+      [{ value: 756345.345 }],
+      [{ value: 12345.345 }],
+      [{ value: 3625.2 }, { value: "Miles" }],
+      [{ value: -135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
+      [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
+    ];
+
+    const formatData = {
+      decimalSeparator: ",",
+      thousandSeparator: ".",
+      type: "Decimal",
+    };
+    const format = new Format("test");
+    const unitsProvider = new TestUnitsProvider();
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    let i = 0;
+    for (const strVal of testStrings) {
+      const tokens = Parser.parseQuantitySpecification(strVal, format);
+      assert.isTrue(tokens.length === expectedTokens[i].length);
+
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let j = 0; j < tokens.length; j++) {
+        assert.isTrue(tokens[j].value === expectedTokens[i][j].value);
+      }
+
+      i = i + 1;
+    }
+  });
+
   it("Look up units", async () => {
     const expectedLookupResults = [
       { label: "FT", name: "Units.FT", unitContext: "" },

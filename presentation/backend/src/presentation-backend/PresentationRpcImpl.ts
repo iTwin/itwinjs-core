@@ -261,7 +261,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   // eslint-disable-next-line deprecation/deprecation
   public override async getNodePaths(token: IModelRpcProps, requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getNodePaths(options);
+      const result = await this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
       // eslint-disable-next-line deprecation/deprecation
       return result.map(NodePathElement.toJSON);
     });
@@ -270,7 +270,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   // eslint-disable-next-line deprecation/deprecation
   public override async getFilteredNodePaths(token: IModelRpcProps, requestOptions: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(options);
+      const result = await this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
       // eslint-disable-next-line deprecation/deprecation
       return result.map(NodePathElement.toJSON);
     });
@@ -356,7 +356,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         keys: KeySet.fromJSON(options.keys),
       });
-      const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(options);
+      const response = await this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
       return {
         ...response,
         // eslint-disable-next-line deprecation/deprecation

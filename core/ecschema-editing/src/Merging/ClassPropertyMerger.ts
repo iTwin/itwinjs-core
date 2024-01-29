@@ -10,6 +10,7 @@ import { StructPropertyMerger } from "./StructPropertyMerger";
 import { EnumerationArrayPropertyMerger, PrimitiveArraPropertyMerger, StructArrayPropertyMerger } from "./ArrayPropertyMerger";
 import { AnyPropertyMerger } from "./AnyPropertyMerger";
 import { EnumerationPropertyMerger, PrimitivePropertyMerger } from "./PrimitiveOrEnumPropertyMerger";
+import { mergeCustomAttributes } from "./CustomAttributeMerger";
 
 /**
  * @internal
@@ -86,7 +87,15 @@ export class ClassPropertyMerger {
         const targetProperty = (await targetItem.getProperty(change.ecTypeName))!;
         await merger.mergeAttributeValueChanges(targetProperty, change.propertyValueChanges);
       }
+
+      const mergeResults = await mergeCustomAttributes(merger.context, change.customAttributeChanges.values(), async (ca) => {
+        return merger.context.editor.entities.addCustomAttributeToProperty(classKey, change.ecTypeName, ca);
+      });
+
+      if (mergeResults.errorMessage !== undefined) {
+        return { errorMessage: mergeResults.errorMessage};
+      }
     }
-    return {};
+    return { itemKey: classKey };
   }
 }

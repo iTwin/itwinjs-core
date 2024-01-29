@@ -1,19 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
 
-import { Node } from "./hierarchy/Node";
-import { Content } from "./content/Content";
-import { Item } from "./content/Item";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
-import { DisplayValue, Value } from "./content/Value";
-import { Field } from "./content/Fields";
 import { CategoryDescription } from "./content/Category";
+import { Content } from "./content/Content";
+import { Descriptor } from "./content/Descriptor";
+import { Field } from "./content/Fields";
+import { Item } from "./content/Item";
+import { DisplayValue, DisplayValueGroup, Value } from "./content/Value";
 import { ElementProperties } from "./ElementProperties";
+import { Node } from "./hierarchy/Node";
+import { NodePathElement } from "./hierarchy/NodePathElement";
+import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
@@ -35,103 +37,131 @@ export class LocalizationHelper {
   }
 
   public getLocalizedNodes(nodes: Node[]): Node[] {
-    for (const node of nodes)
-      this.translateNode(node);
-    return nodes;
+    return nodes.map((n) => this.getLocalizedNode(n));
+  }
+
+  public getLocalizedNodePathElement(npe: NodePathElement): NodePathElement {
+    return {
+      ...npe,
+      node: this.getLocalizedNode(npe.node),
+      children: npe.children.map((c) => this.getLocalizedNodePathElement(c)),
+    };
+  }
+
+  public getLocalizedDisplayValueGroup(group: DisplayValueGroup): DisplayValueGroup {
+    return {
+      ...group,
+      displayValue: this.getLocalizedDisplayValue(group.displayValue),
+    };
   }
 
   public getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition {
-    this.translateLabelDefinition(labelDefinition);
+    const getLocalizedComposite = (compositeValue: LabelCompositeValue) => ({
+      ...compositeValue,
+      values: compositeValue.values.map((value) => this.getLocalizedLabelDefinition(value)),
+    });
+
+    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME) {
+      return {
+        ...labelDefinition,
+        rawValue: getLocalizedComposite(labelDefinition.rawValue as LabelCompositeValue),
+      };
+    }
+    if (labelDefinition.typeName === "string") {
+      return {
+        ...labelDefinition,
+        rawValue: this.getLocalizedString(labelDefinition.rawValue as string),
+        displayValue: this.getLocalizedString(labelDefinition.displayValue),
+      };
+    }
     return labelDefinition;
   }
 
   public getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]) {
-    labelDefinitions.forEach((labelDefinition) => this.translateLabelDefinition(labelDefinition));
-    return labelDefinitions;
+    return labelDefinitions.map((labelDefinition) => this.getLocalizedLabelDefinition(labelDefinition));
   }
 
-  public getLocalizedContent(content: Content) {
-    content.contentSet.forEach((item) => this.translateContentItem(item));
-    content.descriptor.fields.forEach((field) => this.translateContentDescriptorField(field));
-    content.descriptor.categories.forEach((category) => this.translateContentDescriptorCategory(category));
-    return content;
+  public getLocalizedContentDescriptor(descriptor: Descriptor) {
+    const clone = new Descriptor(descriptor);
+    clone.fields.forEach((field) => this.getLocalizedContentField(field));
+    clone.categories.forEach((category) => this.getLocalizedCategoryDescription(category));
+    return clone;
   }
 
-  public getLocalizedElementProperties(elem: ElementProperties) {
-    elem.label = this.getLocalizedString(elem.label);
-    return elem;
+  public getLocalizedContentItems(items: Item[]): Item[] {
+    return items.map((item) => this.getLocalizedContentItem(item));
   }
 
-  private translateContentItem(item: Item) {
-    for (const key in item.displayValues) {
-      // istanbul ignore else
-      if (key)
-        item.displayValues[key] = this.translateContentItemDisplayValue(item.displayValues[key]);
-    }
-    for (const key in item.values) {
-      // istanbul ignore else
-      if (key)
-        item.values[key] = this.translateContentItemValue(item.values[key]);
-    }
-    this.translateLabelDefinition(item.label);
+  public getLocalizedContent(content: Content): Content {
+    return new Content(this.getLocalizedContentDescriptor(content.descriptor), this.getLocalizedContentItems(content.contentSet));
   }
 
-  private translateContentItemDisplayValue(value: DisplayValue): DisplayValue {
-    // istanbul ignore else
+  public getLocalizedElementProperties(elem: ElementProperties): ElementProperties {
+    return {
+      ...elem,
+      label: this.getLocalizedString(elem.label),
+    };
+  }
+
+  // warning: this function mutates the item
+  private getLocalizedContentItem(item: Item): Item {
+    item.label = this.getLocalizedLabelDefinition(item.label);
+    item.values = Object.entries(item.values).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedRawValue(v) }), {});
+    item.displayValues = Object.entries(item.displayValues).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {});
+    return item;
+  }
+
+  private getLocalizedRawValue(value: Value): Value {
     if (typeof value === "string") {
-      value = this.getLocalizedString(value);
+      return this.getLocalizedString(value);
+    }
+    if (Value.isNavigationValue(value)) {
+      return {
+        ...value,
+        label: this.getLocalizedLabelDefinition(value.label),
+      };
+    }
+    if (Value.isNestedContent(value)) {
+      return value.map((item) => ({
+        ...item,
+        values: Object.entries(item.values).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedRawValue(v) }), {}),
+        displayValues: Object.entries(item.displayValues).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {}),
+      }));
     }
     return value;
   }
 
-  private translateContentItemValue(value: Value): Value {
-    if (typeof value === "string") {
-      value = this.getLocalizedString(value);
-    } else if (Value.isNavigationValue(value)) {
-      this.translateLabelDefinition(value.label);
-    } else if (Value.isNestedContent(value)) {
-      for (const nestedValue of value) {
-        for (const key in nestedValue.values) {
-          // istanbul ignore else
-          if (key)
-            nestedValue.values[key] = this.translateContentItemValue(nestedValue.values[key]);
-        }
-        for (const key in nestedValue.displayValues) {
-          // istanbul ignore else
-          if (key)
-            nestedValue.displayValues[key] = this.translateContentItemDisplayValue(nestedValue.displayValues[key]);
-        }
-      }
-    }
-    return value;
-  }
-
-  private translateContentDescriptorField(field: Field) {
+  // warning: this function mutates the field
+  private getLocalizedContentField(field: Field) {
     field.label = this.getLocalizedString(field.label);
+    return field;
   }
 
-  private translateContentDescriptorCategory(category: CategoryDescription) {
+  // warning: this function mutates the category
+  private getLocalizedCategoryDescription(category: CategoryDescription) {
     category.label = this.getLocalizedString(category.label);
     category.description = this.getLocalizedString(category.description);
+    return category;
   }
 
-  private translateNode(node: Node) {
-    this.translateLabelDefinition(node.label);
-    // istanbul ignore else
-    if (node.description)
-      node.description = this.getLocalizedString(node.description);
-  }
-
-  private translateLabelDefinition(labelDefinition: LabelDefinition) {
-    const translateComposite = (compositeValue: LabelCompositeValue) => {
-      compositeValue.values.map((value) => this.translateLabelDefinition(value));
+  private getLocalizedNode(node: Node) {
+    return {
+      ...node,
+      label: this.getLocalizedLabelDefinition(node.label),
+      ...(node.description ? { description: this.getLocalizedString(node.description) } : undefined),
     };
+  }
 
-    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME)
-      translateComposite(labelDefinition.rawValue as LabelCompositeValue);
-    else if (labelDefinition.typeName === "string") {
-      labelDefinition.rawValue = this.getLocalizedString(labelDefinition.rawValue as string);
-      labelDefinition.displayValue = this.getLocalizedString(labelDefinition.displayValue);
+  private getLocalizedDisplayValue(value: DisplayValue): DisplayValue {
+    if (typeof value === "undefined") {
+      return undefined;
     }
+    if (typeof value === "string") {
+      return this.getLocalizedString(value);
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => this.getLocalizedDisplayValue(v));
+    }
+    return Object.entries(value).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {});
   }
 }

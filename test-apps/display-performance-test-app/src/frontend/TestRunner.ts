@@ -13,6 +13,8 @@ import {
 import {
   CheckpointConnection,
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  ModelDisplayTransform,
+  ModelDisplayTransformProvider,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -21,9 +23,10 @@ import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
+import { Transform } from "@itwin/core-geometry";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -135,6 +138,24 @@ class OverrideProvider {
 
     for (const [elementId, appearance] of this._elementOvrs)
       ovrs.override({ elementId, appearance });
+  }
+}
+
+class DisplayTransformProvider implements ModelDisplayTransformProvider {
+  private readonly _transforms = new Map<string, ModelDisplayTransform>();
+  private constructor() { }
+
+  public static fromJSON(props: DisplayTransformProviderProps): DisplayTransformProvider {
+    const provider = new DisplayTransformProvider();
+    for (const prop of props) {
+      provider._transforms.set(prop.modelId, { transform: Transform.fromJSON(prop.transform), premultiply: prop.premultiply });
+    }
+
+    return provider;
+  }
+
+  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined {
+    return this._transforms.get(modelId);
   }
 }
 
@@ -585,6 +606,8 @@ export class TestRunner {
     }
 
     await view.load();
+
+    view.modelDisplayTransformProvider = spec.displayTransformProvider;
     return {
       view,
       elementOverrides: spec.elementOverrides,
@@ -679,6 +702,7 @@ export class TestRunner {
             viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
             elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
             selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
+            displayTransformProvider: x._displayTransforms ? DisplayTransformProvider.fromJSON(JSON.parse(x._displayTransforms)) : undefined,
           };
         });
       }
