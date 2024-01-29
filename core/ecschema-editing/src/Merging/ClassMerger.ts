@@ -129,11 +129,10 @@ export class ClassMerger<TClass extends ECClass> {
   public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
     const changes = Array.from(classChanges);
-    let targetItemKey: SchemaItemKey;
-
+    
     for (const change of changes) {
       const sourceItem = (await change.schema.getItem<ECClass>(change.ecTypeName))!;
-      targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
+      const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
 
       if (changeType === ChangeType.Missing) {
@@ -155,10 +154,9 @@ export class ClassMerger<TClass extends ECClass> {
     const merger = new this(context);
     const changes = Array.from(classChanges);
     let mergeResults: SchemaItemEditResults;
-    let targetItemKey: SchemaItemKey;
-
+    
     for(const change of changes){
-      targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
+      const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
 
       if (change.baseClassDelta !== undefined) {
