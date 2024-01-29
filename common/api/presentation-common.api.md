@@ -1679,11 +1679,15 @@ export class LocalizationHelper {
     // (undocumented)
     getLocalizedContentItems(items: Item[]): Item[];
     // (undocumented)
+    getLocalizedDisplayValueGroup(group: DisplayValueGroup): DisplayValueGroup;
+    // (undocumented)
     getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
     // (undocumented)
     getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
     // (undocumented)
     getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodePathElement(npe: NodePathElement): NodePathElement;
     // (undocumented)
     getLocalizedNodes(nodes: Node_2[]): Node_2[];
     // (undocumented)
