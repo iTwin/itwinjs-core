@@ -589,6 +589,22 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
+    it("handles undefined descriptor", async () => {
+      const parentNodeKey = createRandomECInstancesNodeKey();
+      const options: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        parentKey: parentNodeKey,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getNodesDescriptor(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
+        .returns(async () => undefined)
+        .verifiable();
+      const actualResult = await manager.getNodesDescriptor(options);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult).to.be.undefined;
+    });
+
   });
 
   describe("getFilteredNodePaths", () => {
@@ -788,7 +804,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.descriptor).to.deep.eq(descriptor);
       expect(actualResult!.contentSet).to.deep.eq(result.items);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -870,7 +886,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.descriptor).to.deep.eq(descriptor);
       expect(actualResult!.contentSet).to.have.lengthOf(1);
       expect(actualResult!.contentSet[0].displayValues[fieldName]).to.be.undefined;
       expect(actualResult!.contentSet[0].values[fieldName]).to.be.eq(1.234);
@@ -911,7 +927,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.descriptor).to.deep.eq(descriptor);
       expect(actualResult!.contentSet).to.have.lengthOf(1);
       expect(actualResult!.contentSet[0].displayValues[fieldName]).to.be.eq("1.23");
       expect(actualResult!.contentSet[0].values[fieldName]).to.be.eq(1.234);
