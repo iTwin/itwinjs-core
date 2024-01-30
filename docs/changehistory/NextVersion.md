@@ -10,6 +10,7 @@ Table of contents:
 - [Batched tileset enhancements](#batched-tileset-enhancements)
   - [Per-model display settings](#per-model-display-settings)
   - [Support for excluded models](#support-for-excluded-models)
+  - [Batch table property access](#batch-table-property-access)
 - [Geometry](#geometry)
   - [Range tree search](#range-tree-search)
 
@@ -47,6 +48,19 @@ The [mesh export service](https://developer.bentley.com/apis/mesh-export/overvie
 - "Template" models containing geometry that serves as a template for placing 3d components.
 
 Previously, geometry from these models would fail to display. That has been [rectified](https://github.com/iTwin/itwinjs-core/pull/6270).
+
+### Batch table property access
+
+A [[RealityTileTree]] may refer to a tileset in one of the [3D Tiles 1.0](https://docs.ogc.org/cs/18-053r2/18-053r2.html). Tiles within such tilesets may include a [batch table](https://github.com/CesiumGS/3d-tiles/tree/main/specification/TileFormats/BatchTable) describing subcomponents ("features") within the tile. For example, a tileset representing a building may encode each door, window, and wall as separate features. The batch table may additionally contain metadata in JSON format describing each feature.
+
+During tile decoding, iTwin.js assigns a unique, transient [Id64String]($bentley) to each unique feature within the tileset. When interacting with tileset features (e.g., via a [[SelectionSet]] or [[HitDetail]]), the features are identified by these transient Ids. The tile tree's [BatchTableProperties]($frontend) maintains the mapping between the transient Ids and the per-feature properties.
+
+To make use of the per-feature JSON properties, an application needs a way to look up the properties given the corresponding feature Id. The following example illustrates one way to obtain the properties of a specific feature within a reality model's batch table:
+```ts
+[[include:GetBatchTableFeatureProperties]]
+```
+
+See [[RealityTileTree.batchTableProperties]] to obtain the batch table properties for a TileTree.
 
 ## Geometry
 

@@ -78,6 +78,7 @@ internal;BackgroundMapGeometry
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BatchOptions
+beta;BatchTableProperties
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps

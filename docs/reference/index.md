@@ -38,7 +38,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($core-react)
 - ($components-react)
 - ($imodel-components-react)
-- ($appui-layout-react)
 - ($appui-react)
 
 ## iTwin.js Presentation Packages
