@@ -50,7 +50,7 @@ export abstract class MapLayerImageryProvider {
   protected _includeUserCredentials = false;
 
   /** @internal */
-  public readonly onFirstRequestCompleted = new BeEvent<() => void>();
+  protected readonly onFirstRequestCompleted = new BeEvent<() => void>();
 
   /** @internal */
   protected _firstRequestPromise: Promise<void>|undefined;

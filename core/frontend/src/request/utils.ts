@@ -9,23 +9,23 @@ import { RequestBasicCredentials } from "./Request";
 /**
  * Check whether or not one of the requested authentication method is listed in the HTTP 'WWW-Authenticate' response header
  * @param headers Headers object
- * @param query List of authentication method to lookup
+ * @param query List of authentication method to lookup (case-insensitive)
  * @note For CORS requests, the 'Access-Control-Expose-Headers' header from the server must make the 'WWW-Authenticate' available to the browser, otherwise this won't work.
  * @internal
  */
 export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean {
-  const headersArray = Array.from(headers);
-  const foundAuth = headersArray.filter((pair)=> pair[0].toLowerCase() === "www-authenticate");
-  if (foundAuth.length > 0) {
-    const authMethods = foundAuth.map((pair)=>pair[1].toLowerCase().split(",").map(((value)=>value.trim()))).flat();
-    for (const queryValue of query) {
+  const wwwAuthenticate = headers.get("WWW-authenticate");
+  const lowerCaseQuery = query.map(((value)=>value.toLowerCase()));     // not case-sensitive
+  if (wwwAuthenticate !== null) {
+    const authMethods = wwwAuthenticate.split(",").map(((value)=>value.toLowerCase().trim()));
+    for (const queryValue of lowerCaseQuery) {
       if (authMethods.includes(queryValue))
         return true;
     }
   }
-
   return false;
 }
+
 /**
  * Set the value of the 'Authorization' header with Basic authentication value
  * scheme: 'Authorization: Basic <credentials>'
