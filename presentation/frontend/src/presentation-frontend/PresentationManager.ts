@@ -350,7 +350,8 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
-    return Descriptor.fromJSON(result);
+    const descriptor = Descriptor.fromJSON(result);
+    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
   }
 
   /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
@@ -360,7 +361,7 @@ export class PresentationManager implements IDisposable {
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
     // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON);
+    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
@@ -369,7 +370,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON);
+    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -393,7 +394,8 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(options.keys).toJSON(),
     });
     const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
-    return Descriptor.fromJSON(result);
+    const descriptor = Descriptor.fromJSON(result);
+    return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
   }
 
   /** Retrieves overall content set size. */
@@ -468,7 +470,7 @@ export class PresentationManager implements IDisposable {
     return {
       ...result,
       // eslint-disable-next-line deprecation/deprecation
-      items: result.items.map(DisplayValueGroup.fromJSON),
+      items: result.items.map(DisplayValueGroup.fromJSON).map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
     };
   }
 

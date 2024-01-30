@@ -1398,9 +1398,13 @@ export class RelationshipClass extends ECClass {
     // (undocumented)
     readonly schemaItemType: SchemaItemType.RelationshipClass;
     // @alpha
+    protected setSourceConstraint(source: RelationshipConstraint): void;
+    // @alpha
     protected setStrength(strength: StrengthType): void;
     // @alpha
     protected setStrengthDirection(direction: StrengthDirection): void;
+    // @alpha
+    protected setTargetConstraint(target: RelationshipConstraint): void;
     // (undocumented)
     get source(): RelationshipConstraint;
     // (undocumented)
@@ -1461,11 +1465,13 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     static isRelationshipConstraint(object: any): object is RelationshipConstraint;
     get isSource(): boolean;
     // (undocumented)
-    get multiplicity(): RelationshipMultiplicity | undefined;
+    get multiplicity(): RelationshipMultiplicity;
+    protected set multiplicity(multiplicity: RelationshipMultiplicity);
     // (undocumented)
     protected _multiplicity?: RelationshipMultiplicity;
     // (undocumented)
-    get polymorphic(): boolean | undefined;
+    get polymorphic(): boolean;
+    protected set polymorphic(polymorphic: boolean);
     // (undocumented)
     protected _polymorphic?: boolean;
     // (undocumented)
@@ -1474,10 +1480,13 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     protected _relationshipClass: RelationshipClass;
     // (undocumented)
     get relationshipEnd(): RelationshipEnd;
+    protected set relationshipEnd(relationshipEnd: RelationshipEnd);
     // (undocumented)
     protected _relationshipEnd: RelationshipEnd;
+    protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void;
     // (undocumented)
     get roleLabel(): string | undefined;
+    protected set roleLabel(roleLabel: string | undefined);
     // (undocumented)
     protected _roleLabel?: string;
     get schema(): Schema;
