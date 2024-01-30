@@ -109,7 +109,7 @@
     "rollup-plugin-webpack-stats": "^0.2.0",
     "ts-node": "^10.8.2",
     "typescript": "~5.0.2",
-    "vite": "^4.4.9",
+    "vite": "^4.5.2",
     "vite-plugin-env-compatible": "^1.1.1",
     "vite-plugin-inspect": "^0.7.28",
     "webpack": "^5.76.0"
