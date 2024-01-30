@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {  EntityClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import {  EntityClass, Mixin, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../ecschema-editing";
 import { expect } from "chai";
 
-describe("Struct class merger tests", () => {
+describe("Class items merging order tests", () => {
   let context: SchemaContext;
 
   const sourceJson = {
@@ -26,7 +26,44 @@ describe("Struct class merger tests", () => {
   beforeEach(async () => {
     context = new SchemaContext();
   });
-  describe("Mixing class merging order tests", () => {
+
+  describe("Entity and Mixing class merging order tests", () => {
+    it("should merge the missing entity class with base class regardless of order", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          bracket:{
+            schemaItemType: "EntityClass",
+            description: "Bracket test class",
+            baseClass: "SourceSchema.sps",
+          },
+          sps: {
+            schemaItemType: "EntityClass",
+            description: "Sps test Class",
+            properties: [
+              {
+                name: "Status",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 0,
+                typeName: "string",
+              },
+            ],
+          },
+        },
+      }, context);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+      }, context);
+
+      const merger = new SchemaMerger();
+      const mergedSchema = await merger.merge(targetSchema, sourceSchema);
+      const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
+
+      expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
+    });
+
     it("should merge missing mixins regardless of items order", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
@@ -64,31 +101,25 @@ describe("Struct class merger tests", () => {
       }
       expect(classMixins?.length).be.equal(2);
     });
-  });
 
-  describe("Entity class merging order tests", () => {
-    it("should merge the missing entity class with base class regardless of order", async () => {
+    it("should merge missing mixins regardless of items order", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
-          bracket:{
-            schemaItemType: "EntityClass",
-            description: "Bracket test class",
-            baseClass: "SourceSchema.sps",
+          mixinA: {
+            schemaItemType: "Mixin",
+            description: "Mixin A",
+            baseClass: "SourceSchema.testBaseClass",
+            appliesTo: "SourceSchema.testClass",
           },
-          sps: {
+          testClass: {
             schemaItemType: "EntityClass",
-            description: "Sps test Class",
-            properties: [
-              {
-                name: "Status",
-                type: "PrimitiveProperty",
-                isReadOnly: true,
-                priority: 0,
-                typeName: "string",
-              },
-            ],
+            description: "Test class",
           },
+          testBaseClass: {
+            schemaItemType: "EntityClass",
+            description: "Test base class"
+          }
         },
       }, context);
 
@@ -98,9 +129,10 @@ describe("Struct class merger tests", () => {
 
       const merger = new SchemaMerger();
       const mergedSchema = await merger.merge(targetSchema, sourceSchema);
-      const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
+      const mergedItem = await mergedSchema.getItem<Mixin>("mixinA");
 
-      expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
+      expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
+      expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseClass");
     });
   });
 

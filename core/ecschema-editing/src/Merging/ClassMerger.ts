@@ -126,9 +126,9 @@ export class ClassMerger<TClass extends ECClass> {
   }
 
   // First pass to create missing changes
-  public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
+  public static async mergeItemStubChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
-    const changes = Array.from(classChanges);
+    const changes = classChanges;
 
     for (const change of changes) {
       const sourceItem = (await change.schema.getItem<ECClass>(change.ecTypeName))!;
@@ -150,9 +150,9 @@ export class ClassMerger<TClass extends ECClass> {
   }
 
   // 2nd pass to merge baseClass, properties, mixins and CA.
-  public static async mergeAllChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
+  public static async mergeItemContentChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
     const merger = new this(context);
-    const changes = Array.from(classChanges);
+    const changes = classChanges;
     let mergeResults: SchemaItemEditResults;
 
     for(const change of changes){
