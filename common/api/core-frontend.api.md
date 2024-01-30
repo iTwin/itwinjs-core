@@ -7950,7 +7950,7 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
     // @internal (undocumented)
-    readonly onFirstRequestCompleted: BeEvent<() => void>;
+    protected readonly onFirstRequestCompleted: BeEvent<() => void>;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // @internal
