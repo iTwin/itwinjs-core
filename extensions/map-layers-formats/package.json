@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "4.4.0-dev.27",
+  "version": "4.4.0-dev.28",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
