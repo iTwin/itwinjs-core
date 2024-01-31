@@ -1716,7 +1716,8 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
     getBatchId(properties: any): Id64String;
-    getBatchProperties(id: Id64String): any;
+    // (undocumented)
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
 // @public
@@ -1727,6 +1728,11 @@ export interface BatchOptions {
     noHilite?: boolean;
     // @beta
     tileId?: string;
+}
+
+// @beta
+export interface BatchTableProperties {
+    getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
 
 // @public (undocumented)
@@ -3022,6 +3028,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
     // @internal (undocumented)
     protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+    get realityModels(): Iterable<ContextRealityModelState>;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
@@ -7884,6 +7891,8 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
+    protected _firstRequestPromise: Promise<void> | undefined;
+    // @internal (undocumented)
     generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     protected _generateChildIds(quadId: QuadId, resolveChildren: (childIds: QuadId[]) => void): void;
     // @internal
@@ -7922,6 +7931,8 @@ export abstract class MapLayerImageryProvider {
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
+    // @internal (undocumented)
+    protected _includeUserCredentials: boolean;
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -7938,6 +7949,8 @@ export abstract class MapLayerImageryProvider {
     protected _missingTileData?: Uint8Array;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
+    // @internal (undocumented)
+    protected readonly onFirstRequestCompleted: BeEvent<() => void>;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // @internal
@@ -11400,6 +11413,8 @@ export class RealityTileRegion {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @beta
+    get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
     cartesianRange: Range3d;
     // @internal (undocumented)
@@ -17553,6 +17568,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
 // @internal (undocumented)
 export class WmsUtilities {
+    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

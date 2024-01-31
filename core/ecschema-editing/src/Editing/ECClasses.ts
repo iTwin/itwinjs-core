@@ -368,6 +368,10 @@ export class ECClasses {
     let mutableClass: MutableClass;
 
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined) {
+      return { errorMessage: `Schema Key ${classKey.schemaKey.toString(true)} not found in context` };
+    }
+
     const ecClass = await schema.getItem<MutableClass>(name);
     if (ecClass !== undefined)
       return { errorMessage: `An EC Class with the name ${name} already exists within the schema ${schema.name}` };
@@ -384,6 +388,9 @@ export class ECClasses {
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${classKey.schemaKey.toString(true)} not found in context`);
+
     const ecClass = await schema.getItem<MutableClass>(classKey.name);
     if (ecClass === undefined)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Class ${classKey.name} was not found in schema ${classKey.schemaKey.toString(true)}`);
