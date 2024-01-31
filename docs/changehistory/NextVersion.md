@@ -13,6 +13,7 @@ Table of contents:
   - [Batch table property access](#batch-table-property-access)
 - [Geometry](#geometry)
   - [Range tree search](#range-tree-search)
+  - [Polyface adjacent facet queries](#polyface-adjacent-facet-queries)
 
 ## Tracing API deprecation
 
@@ -67,3 +68,15 @@ See [[RealityTileTree.batchTableProperties]] to obtain the batch table propertie
 ### Range tree search
 
 New efficient range tree methods [PolyfaceRangeTreeContext.searchForClosestPoint]($core-geometry) and [PolyfaceRangeTreeContext.searchForClosestApproach]($core-geometry) support searches of a [Polyface]($core-geometry) for the closest facet point to a given space point, and searches of two Polyfaces for the segment spanning their closest approach. New classes [Point3dArrayRangeTreeContext]($core-geometry) and [LineString3dRangeTreeContext]($core-geometry) provide similar functionality for searching [Point3d]($core-geometry) arrays and [LineString3d]($core-geometry) objects, respectively.
+
+### Polyface adjacent facet queries
+
+- Conventional polyface data defines each facet by a sequence of indices of point coordinates "around the facet"
+- These indices do not indicate what facet is adjacent "across each edge of the facet"
+- new method [IndexedPolyface.buildEdgeMateIndices] constructs indices for the cross-edge relationship.
+- Following that construction, the following queries support navigation around each facet, around each vertex, and across each edge:
+  - polyface.readIndexToEdgeMate = (possibly undefined) readIndex of the edge mate.
+  - polyface.readIndexToSuccessorAroundFacet = readIndex of the next vertex around the facet.
+  - polyface.readIndexToPredecessorAroundFacet = readIndex of the previous vertex around the facet
+  - polyface.readIndexToSuccessorAroundVertex = (possibly undefined) readIndex of the next vertex around the facet.
+  - polyface.readIndexToPredecessorAroundVertex = (possibly undefined) readIndex of the previous vertex around the facet

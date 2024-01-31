@@ -19,6 +19,7 @@ import { NumberArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
+import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { PolyfaceData } from "./PolyfaceData";
 
@@ -147,6 +148,65 @@ export class IndexedPolyface extends Polyface {
    */
   protected _facetStart: number[];
 
+  /** Given a edgeIndex (index into pointIndex array of PolyfaceData):
+   * * return the first edgeIndex for block of indices for that facet.
+   * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
+   */
+  public edgeIndexToFirstEdgeIndexInFacet(k: number): number | undefined {
+    const q = this.edgeIndexToFacetIndex(k);
+    if (q !== undefined)
+      return this._facetStart[q];
+    return undefined;
+  }
+  /** Given a edgeIndex (index into pointIndex array of PolyfaceData):
+   * * return the first edgeIndex for AFTER the block of indices for this facet.
+   * * i.e. search the _facetStart array for the closest facet start index not exceeding k, and the index just beyond its block.
+   * * Use to step edgeIndex through this facet.
+   *    ```
+   *     upperK = polyface.edgeIndexToLastEdgeInFacet(k);
+   *     for (let movingK = polyface.edgeIndexToUpperEdgeIndexInFacet (k);
+   *               k < upperK; k++){
+   *          ... process edgeIndex movingK
+   *          }
+   *    ```
+   */
+  public edgeIndexToUpperEdgeIndexInFacet(k: number): number | undefined {
+    const q = this.edgeIndexToFacetIndex(k);
+    if (q !== undefined)
+      return this._facetStart[q + 1];
+    return undefined;
+  }
+  /** Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * linear search from there for final value.
+   * * For regular spaced numbers (e.g. _facetStart indices for a triangulated mesh) the proportional estimate will be immediately correct.
+   */
+  public static searchMonotoneNumbers(data: number[], value: number): number | undefined {
+    // _facetStart is monotone increasing.
+    // It is commonly entirely steps of 3, 4, or 3 and 4.
+    // Hence jump to a start by simple proportion, and move incrementally
+    const lastQ = data.length - 1;
+
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
+
+  }
+
+  /** Given a edgeIndex (index into pointIndex array of PolyfaceData):
+ * * return the edgeIndex of the 0'th vertex of the block of indices for that facet.
+ * * i.e. search the _facetStart array for the closest facet start index not exceeding k.
+ */
+  public edgeIndexToFacetIndex(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
+    return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
+  }
   /**
    * * For facet i, _facetToFaceData[i] is the index of the faceData entry for the facet.
    * * _facetToFaceData has one entry per facet.
@@ -478,12 +538,12 @@ export class IndexedPolyface extends Polyface {
       return this._facetStart[facetIndex + 1] - this._facetStart[facetIndex];
     return 0;
   }
-  /** test if `index` is a valid facet index. */
-  public isValidFacetIndex(index: number): boolean { return index >= 0 && index + 1 < this._facetStart.length; }
-  /** ASSUME valid facet index . .. return its start index in index arrays. */
-  public facetIndex0(index: number): number { return this._facetStart[index]; }
+  /** test if `facetIndex` is a valid facet index. */
+  public isValidFacetIndex(facetIndex: number): boolean { return facetIndex >= 0 && facetIndex + 1 < this._facetStart.length; }
+  /** ASSUME valid facetIndex . .. return its start index in index arrays. */
+  public facetIndex0(facetIndex: number): number { return this._facetStart[facetIndex]; }
   /** ASSUME valid facet index . .. return its end index in index arrays. */
-  public facetIndex1(index: number): number { return this._facetStart[index + 1]; }
+  public facetIndex1(facetIndex: number): number { return this._facetStart[facetIndex + 1]; }
   /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
   /** Return the range of (optionally transformed) points in this mesh. */
@@ -544,8 +604,9 @@ export class IndexedPolyface extends Polyface {
  * A PolyfaceVisitor manages data while walking through facets.
  *
  * * The polyface visitor holds data for one facet at a time.
- * * The caller can request the position in the addressed facets as a "readIndex."
- * * The readIndex value (as a number) is not promised to be sequential. (I.e. it might be a simple facet count or might be
+ * * The caller can request the position in the addressed polyfaceData as a "readIndex."
+ * * The readIndex values (as numbers) are not promised to be sequential. (I.e. it might be a simple facet count or might have "gaps" at the whim of the
+ *     particular PolyfaceVisitor implementation)
  * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {

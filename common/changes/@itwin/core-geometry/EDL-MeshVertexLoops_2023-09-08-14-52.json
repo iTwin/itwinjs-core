@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Add adjacency information to polyface indices",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
