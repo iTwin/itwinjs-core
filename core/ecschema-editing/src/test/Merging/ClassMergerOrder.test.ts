@@ -28,7 +28,7 @@ describe("Class items merging order tests", () => {
   });
 
   describe("Entity and Mixing class merging order tests", () => {
-    it("should merge the missing entity class with base class regardless of order", async () => {
+    it("should merge the missing entity class with derived base class before the base class", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -60,11 +60,10 @@ describe("Class items merging order tests", () => {
       const merger = new SchemaMerger();
       const mergedSchema = await merger.merge(targetSchema, sourceSchema);
       const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
-
       expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
     });
 
-    it("should merge missing mixins regardless of items order", async () => {
+    it("should merge entity class with derived mixins before base mixin", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -102,7 +101,7 @@ describe("Class items merging order tests", () => {
       expect(classMixins?.length).be.equal(2);
     });
 
-    it("should merge missing mixins regardless of items order", async () => {
+    it("should merge missing mixin with derived baseClass and appliesTo before the base class and base appliesTo", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -118,8 +117,8 @@ describe("Class items merging order tests", () => {
           },
           testBaseClass: {
             schemaItemType: "EntityClass",
-            description: "Test base class"
-          }
+            description: "Test base class",
+          },
         },
       }, context);
 
@@ -137,7 +136,7 @@ describe("Class items merging order tests", () => {
   });
 
   describe("Struct class merging order tests", () => {
-    it("it should merge missing struct properties regardless of order", async () => {
+    it("it should merge missing entity class with derived struct properties before the struct class items", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -233,7 +232,7 @@ describe("Class items merging order tests", () => {
       });
     });
 
-    it("it should merge missing properties with typeName references",async () => {
+    it("it should merge missing derived struct properties before the struct class item",async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
