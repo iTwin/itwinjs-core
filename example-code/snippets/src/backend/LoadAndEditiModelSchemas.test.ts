@@ -60,6 +60,9 @@ describe("SchemaLoadAndEdit", () => {
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.importToIModel
     const pipingSchema = await editor.getSchema(createSchemaResult.schemaKey!);
+    if (pipingSchema === undefined) {
+      throw new Error(`Schema Key ${createSchemaResult.schemaKey!.toString(true)} not found in context`);
+    }
     const schemaXml = await SchemaXml.writeString(pipingSchema);
     await iModelDb.importSchemaStrings([schemaXml]);
     // __PUBLISH_EXTRACT_END__

@@ -6,6 +6,7 @@ import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../internal";
 import { IModelApp } from "../../IModelApp";
+import { headersIncludeAuthMethod } from "../../request/utils";
 
 /** @packageDocumentation
  * @module Tiles
@@ -287,6 +288,10 @@ export class ArcGisUtilities {
         }
       }
       let response = await fetch(tmpUrl.toString(), { method: "GET" });
+      if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+        response = await fetch(url, {method: "GET", credentials: "include" });
+      }
 
       // Append security token when corresponding error code is returned by ArcGIS service
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);

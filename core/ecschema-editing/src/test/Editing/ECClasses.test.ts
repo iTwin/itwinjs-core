@@ -116,7 +116,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete an EnumerationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const testEnum = new Enumeration(schema, "TestEnumeration");
+      const testEnum = new Enumeration(schema!, "TestEnumeration");
       const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       let property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
       expect(await property.enumeration).to.eql(testEnum);
@@ -157,7 +157,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const enumeration = new Enumeration(schema, "TestEnumeration");
+      const enumeration = new Enumeration(schema!, "TestEnumeration");
       const createResults = await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty(createResults.propertyName!) as EnumerationArrayProperty;
       expect(await property.enumeration).to.eql(enumeration);
@@ -235,7 +235,7 @@ describe("ECClass tests", () => {
 
     it("should successfully delete a NavigationProperty from class", async () => {
       const schema = await testEditor.getSchema(testKey);
-      const relationship = new RelationshipClass(schema, "TestRelationship");
+      const relationship = new RelationshipClass(schema!, "TestRelationship");
       const createResult = await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
       let property = await entity?.getProperty(createResult.propertyName!) as NavigationProperty;
       expect(await property.relationshipClass).to.eql(relationship);
@@ -460,8 +460,8 @@ describe("ECClass tests", () => {
       await testEditor.entities.createPrimitiveProperty(childResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
       await testEditor.entities.createPrimitiveProperty(grandChildResult.itemKey!, "TestPropertyName", PrimitiveType.Double);
 
-      const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
-      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
+      const childEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityChild");
+      const grandChildEntity = await (await testEditor.getSchema(testKey))!.getItem<EntityClass>("testEntityGrandChild");
 
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
