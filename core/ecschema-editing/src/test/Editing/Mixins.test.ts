@@ -58,10 +58,20 @@ describe("Mixins tests", () => {
     const anotherEntityResult = await testEditor.entities.create(testKey, "anotherTestEntity", ECClassModifier.None);
 
     const mixinBaseClass  = await testEditor.mixins.create(testKey, "testMixinBaseClass", anotherEntityResult.itemKey!);
-    await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, mixinBaseClass.itemKey);
+    const setResult = await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, mixinBaseClass.itemKey);
 
     const mixin = testEditor.schemaContext.getSchemaItemSync(mixinResult.itemKey!) as Mixin;
 
+    expect(setResult.errorMessage).to.be.undefined;
     expect(mixin.baseClass?.fullName).to.deep.equal("testSchema.testMixinBaseClass");
   });
+
+  it("should return error message because it tries to set base class that is not of mixin type", async () => {
+    const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
+    const setResult = await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, entityKey);
+    
+    expect(setResult).to.not.be.undefined;
+    expect(setResult.errorMessage).to.not.be.undefined;
+    expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin Class.`);
+  })
 });
