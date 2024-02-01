@@ -69,9 +69,9 @@ describe("Mixins tests", () => {
   it("should return error message because it tries to set base class that is not of mixin type", async () => {
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
     const setResult = await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, entityKey);
-    
+
     expect(setResult).to.not.be.undefined;
     expect(setResult.errorMessage).to.not.be.undefined;
     expect(setResult.errorMessage).to.equal(`${entityKey.fullName} is not of type Mixin Class.`);
-  })
+  });
 });
