@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ECClassModifier, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClassModifier, Mixin, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Mixins tests", () => {
@@ -50,5 +50,18 @@ describe("Mixins tests", () => {
 
     const delRes = await testEditor.mixins.delete(classKey);
     expect(delRes).to.eql({});
+  });
+
+  it("should add a mixin baseClass to a mixin item", async () => {
+    const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey);
+
+    const anotherEntityResult = await testEditor.entities.create(testKey, "anotherTestEntity", ECClassModifier.None);
+
+    const mixinBaseClass  = await testEditor.mixins.create(testKey, "testMixinBaseClass", anotherEntityResult.itemKey!);
+    await testEditor.mixins.setMixinBaseClass(mixinResult.itemKey!, mixinBaseClass.itemKey);
+
+    const mixin = testEditor.schemaContext.getSchemaItemSync(mixinResult.itemKey!) as Mixin;
+
+    expect(mixin.baseClass?.fullName).to.deep.equal("testSchema.testMixinBaseClass");
   });
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
@@ -72,7 +72,11 @@ export class ClassMerger<TClass extends ECClass> {
         : sourceBaseClass.schema.schemaKey);
 
       if (changeType === ChangeType.Missing && targetBaseClass === undefined) {
-        return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+        if (sourceBaseClass.schemaItemType === SchemaItemType.EntityClass) {
+          return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+        } else if (sourceBaseClass.schemaItemType === SchemaItemType.Mixin) {
+          return this.context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
+        }
       }
 
       if (targetBaseClass !== undefined) {
@@ -81,7 +85,11 @@ export class ClassMerger<TClass extends ECClass> {
           return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.`};
         }
         if (await baseClass.is(targetBaseClass)) {
-          return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+          if (baseClass.schemaItemType === SchemaItemType.EntityClass) {
+            return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+          } else if (baseClass.schemaItemType === SchemaItemType.Mixin) {
+            return this.context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
+          }
         }
       }
     }
@@ -128,9 +136,8 @@ export class ClassMerger<TClass extends ECClass> {
   // First pass to create missing changes
   public static async mergeItemStubChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
-    const changes = classChanges;
 
-    for (const change of changes) {
+    for (const change of classChanges) {
       const sourceItem = (await change.schema.getItem<ECClass>(change.ecTypeName))!;
       const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
@@ -152,10 +159,9 @@ export class ClassMerger<TClass extends ECClass> {
   // 2nd pass to merge baseClass, properties, mixins and CA.
   public static async mergeItemContentChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
     const merger = new this(context);
-    const changes = classChanges;
     let mergeResults: SchemaItemEditResults;
 
-    for(const change of changes){
+    for (const change of classChanges) {
       const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
 

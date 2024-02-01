@@ -27,8 +27,8 @@ describe("Class items merging order tests", () => {
     context = new SchemaContext();
   });
 
-  describe("Entity and Mixing class merging order tests", () => {
-    it("should merge the missing entity class with derived base class before the base class", async () => {
+  describe("Entity, Struct and Mixing class merging order tests", () => {
+    it("should merge the missing entity class with base class before the base class item", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -101,23 +101,24 @@ describe("Class items merging order tests", () => {
       expect(classMixins?.length).be.equal(2);
     });
 
-    it("should merge missing mixin with derived baseClass and appliesTo before the base class and base appliesTo", async () => {
+    it("should merge missing mixin with baseClass and appliesTo before the base class item and class that it appliesTo", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
           mixinA: {
             schemaItemType: "Mixin",
             description: "Mixin A",
-            baseClass: "SourceSchema.testBaseClass",
+            baseClass: "SourceSchema.testBaseMixinClass",
+            appliesTo: "SourceSchema.testClass",
+          },
+          testBaseMixinClass: {
+            schemaItemType: "Mixin",
+            description: "Test mixin class",
             appliesTo: "SourceSchema.testClass",
           },
           testClass: {
             schemaItemType: "EntityClass",
             description: "Test class",
-          },
-          testBaseClass: {
-            schemaItemType: "EntityClass",
-            description: "Test base class",
           },
         },
       }, context);
@@ -131,12 +132,10 @@ describe("Class items merging order tests", () => {
       const mergedItem = await mergedSchema.getItem<Mixin>("mixinA");
 
       expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
-      expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseClass");
+      expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseMixinClass");
     });
-  });
 
-  describe("Struct class merging order tests", () => {
-    it("it should merge missing entity class with derived struct properties before the struct class items", async () => {
+    it("it should merge missing entity class with struct properties before the struct class items", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -232,7 +231,7 @@ describe("Class items merging order tests", () => {
       });
     });
 
-    it("it should merge missing derived struct properties before the struct class item",async () => {
+    it("it should merge missing struct properties of existing entity class before the struct class item",async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
