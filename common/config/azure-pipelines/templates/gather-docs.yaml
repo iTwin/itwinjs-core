@@ -30,7 +30,7 @@ steps:
     displayName: Copy Reference files to Staging
     workingDirectory: ${{ parameters.workingDir }}
 
-  # Download AppUI Docs artifact
+  # AppUI
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -40,7 +40,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
-  # Download BIS Docs artifact
+  # BIS
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -55,7 +55,7 @@ steps:
             SourceFolder: $(Pipeline.Workspace)/Bis Docs
             TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
-  # Download Presentation Docs artifact
+  # Presentation
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -65,7 +65,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
-  # Download Transformer Docs artifact
+  # Transformer
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -75,7 +75,7 @@ steps:
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
-  # Download Auth Clients artifact
+  # Auth Clients
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
@@ -89,6 +89,23 @@ steps:
           displayName: Copy Auth Clients Docs to staging
           inputs:
             SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
+            TargetFolder: ${{ parameters.stagingDir }}/reference/
+
+  # Connector Framework
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 5669 # iTwin.js/iTwin Connector Frameworks/iTwin.connector-framework
+      artifactName: Connector-Framework Docs
+      # buildTag: hasDocs
+      specificBuild: 2653673 #temporary until tag is setup.
+      useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Auth Clients Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
             TargetFolder: ${{ parameters.stagingDir }}/reference/
 
   # The .updated.json is cached to track when the docs were last updated

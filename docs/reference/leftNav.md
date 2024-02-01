@@ -70,6 +70,11 @@ packageClassification:
       "packages": ["imodel-transformer"],
     },
     {
+      "order": "6",
+      "header": "Connector Framework",
+      "packages": ["connector-framework"],
+    },
+    {
       "order": "7",
       "header": "Authorization",
       "packages":
