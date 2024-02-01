@@ -1,6 +1,6 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "4.4.0-dev.29",
+  "version": "4.5.0-dev.0",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
