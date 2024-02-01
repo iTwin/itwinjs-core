@@ -106,7 +106,7 @@ steps:
           displayName: Copy Auth Clients Docs to staging
           inputs:
             SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
-            TargetFolder: ${{ parameters.stagingDir }}/reference/
+            TargetFolder: ${{ parameters.stagingDir }}/reference/connector-framework/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2
