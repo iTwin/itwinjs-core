@@ -72,7 +72,7 @@ New efficient range tree methods [PolyfaceRangeTreeContext.searchForClosestPoint
 
 ## Data conflict rejection
 
-When multiple [Briefcase]($backend)s contribute changesets to an iModel, conflicts can arise. For example:
+When more than one [Briefcase]($docs/learning/imodelhub/briefcases) contributes changesets to an iModel, conflicts can arise. For example:
 
 1. Briefcases A and B both modify the same element locally.
 2. Briefcase A pushes its changes to iModelHub.
