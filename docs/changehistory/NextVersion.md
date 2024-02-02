@@ -6,15 +6,14 @@ publish: false
 
 Table of contents:
 
-- [NextVersion](#nextversion)
-  - [Tracing API deprecation](#tracing-api-deprecation)
-  - [Batched tileset enhancements](#batched-tileset-enhancements)
-    - [Per-model display settings](#per-model-display-settings)
-    - [Support for excluded models](#support-for-excluded-models)
-    - [Batch table property access](#batch-table-property-access)
-  - [Geometry](#geometry)
-    - [Range tree search](#range-tree-search)
-  - [Data conflict rejection](#data-conflict-rejection)
+- [Tracing API deprecation](#tracing-api-deprecation)
+- [Batched tileset enhancements](#batched-tileset-enhancements)
+  - [Per-model display settings](#per-model-display-settings)
+  - [Support for excluded models](#support-for-excluded-models)
+  - [Batch table property access](#batch-table-property-access)
+- [Geometry](#geometry)
+  - [Range tree search](#range-tree-search)
+- [Data conflict rejection](#data-conflict-rejection)
 
 ## Tracing API deprecation
 
