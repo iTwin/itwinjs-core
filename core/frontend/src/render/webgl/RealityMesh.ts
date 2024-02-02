@@ -381,6 +381,12 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._isTerrain ? stats.addTerrain(this._realityMeshParams.bytesUsed) : stats.addRealityMesh(this._realityMeshParams.bytesUsed);
+    if (this.textureParams?.params) {
+      for (const param of this.textureParams.params) {
+        if (param.texture?.bytesUsed)
+          stats.addTexture(param.texture.bytesUsed);
+      }
+    }
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
