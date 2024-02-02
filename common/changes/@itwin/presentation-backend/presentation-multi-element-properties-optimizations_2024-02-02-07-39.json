@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Only add \"descriptor only\" flag when requests come through RPC or if input content flags are `undefined`. This effectively removes the flag for `getElementProperties` request (multi-elements case), which improves performance when requesting content set.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}
