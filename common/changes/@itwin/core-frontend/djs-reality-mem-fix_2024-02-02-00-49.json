@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add textures to reality mesh stats",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

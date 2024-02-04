@@ -148,11 +148,16 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
       animationTransformNodeId: this.getAnimationTransformNodeId(tree),
+      groupNodeId: this.getGroupNodeId(tree),
     });
   }
 
   /** @internal */
   protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
+    return undefined;
+  }
+  /** @internal */
+  protected getGroupNodeId(_tree: TileTree): number | undefined {
     return undefined;
   }
 

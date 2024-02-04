@@ -142,12 +142,12 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
-    const { rulesetOrId, ...strippedOptions } = requestOptions;
+    const { rulesetOrId, contentFlags, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      contentFlags: ContentFlags.DescriptorOnly,
+      contentFlags: contentFlags ?? ContentFlags.DescriptorOnly, // only set "descriptor only" flag if there are no flags provided
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     return this.request(params);

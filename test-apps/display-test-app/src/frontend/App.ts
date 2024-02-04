@@ -25,7 +25,8 @@ import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
-import { ApplyModelTransformTool } from "./DisplayTransform";
+import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransformsTool } from "./DisplayTransform";
+import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
@@ -275,14 +276,14 @@ export class DisplayTestApp {
       // ###TODO fix that in the client and remove this
       if (!configuration.noElectronAuth)
         opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization({
-          clientId: getConfigurationString("oidcClientId") ?? "imodeljs-spa-test",
+          clientId: getConfigurationString("oidcClientId") ?? "native-testId",
         });
 
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
     } else {
-      const redirectUri = "http://localhost:3000/signin-callback";
+      const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
       if (urlObj.pathname === window.location.pathname) {
         const client = new BrowserAuthorizationClient({
@@ -305,14 +306,17 @@ export class DisplayTestApp {
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
     [
+      ApplyModelClipTool,
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
       AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
+      ClearModelTransformsTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
+      DisableModelTransformsTool,
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,

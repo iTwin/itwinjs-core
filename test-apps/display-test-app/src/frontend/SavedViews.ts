@@ -10,6 +10,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedViews";
 import { ToolBarDropDown } from "./ToolBar";
+import { DisplayTransformProvider } from "./DisplayTransform";
 
 export interface ApplySavedView {
   applySavedView(view: ViewState): Promise<void>;
@@ -201,6 +202,9 @@ export class SavedViewPicker extends ToolBarDropDown {
       this._imodel.selectionSet.add(selectedElements);
       this._vp.renderFrame();
     }
+
+    if (this._selectedView.displayTransforms)
+      this._vp.setModelDisplayTransformProvider(DisplayTransformProvider.fromJSON(JSON.parse(this._selectedView.displayTransforms)));
   }
 
   private async deleteView(): Promise<void> {
@@ -231,13 +235,27 @@ export class SavedViewPicker extends ToolBarDropDown {
       this._imodel.selectionSet.elements.forEach((id) => seList.push(id));
       selectedElementsString = JSON.stringify(seList);
     }
+
     let overrideElementsString;
     const provider = Provider.getOrCreate(this._vp);
     if (undefined !== provider) {
       const overrideElements = provider.toJSON();
       overrideElementsString = JSON.stringify(overrideElements);
     }
-    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString, overrideElementsString);
+
+    const displayTransforms = DisplayTransformProvider.get(this._vp)?.toJSON();
+    const _displayTransforms = displayTransforms ? JSON.stringify(displayTransforms) : undefined;
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    const nvsp = new NamedViewStatePropsString({
+      _name: newName,
+      _viewStatePropsString: json,
+      _selectedElements: selectedElementsString,
+      _overrideElements: overrideElementsString,
+      _displayTransforms,
+    });
+    /* eslint-enable @typescript-eslint/naming-convention */
+
     this._views.insert(nvsp);
     this.populateFromViewList();
 

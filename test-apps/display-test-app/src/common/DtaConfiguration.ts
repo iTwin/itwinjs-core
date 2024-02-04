@@ -232,9 +232,16 @@ export const getConfig = (): DtaConfiguration => {
 
   configuration.iModelId = process.env.IMJS_IMODEL_ID;
   configuration.urlPrefix = process.env.IMJS_URL_PREFIX;
-  configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
-  configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
-  configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;
+  if (ProcessDetector.isElectronAppFrontend) {
+    configuration.oidcClientId = process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID;
+    configuration.oidcScope = process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES;
+    configuration.oidcRedirectUri = process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI;
+  } else {
+    configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
+    configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
+    configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;
+  }
+
   configuration.ignoreCache = undefined !== process.env.IMJS_IGNORE_CACHE;
 
   return configuration;

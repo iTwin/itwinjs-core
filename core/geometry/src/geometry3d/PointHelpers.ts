@@ -10,8 +10,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";

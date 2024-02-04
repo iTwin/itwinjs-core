@@ -2,6 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable no-console */
+
 import { expect } from "chai";
 import * as os from "os";
 import { join } from "path";
@@ -27,7 +29,7 @@ describe("#performance Element properties loading", () => {
   });
 
   beforeEach(() => {
-    const testIModelName: string = "assets/datasets/15gb.bim";
+    const testIModelName: string = "";
     imodel = SnapshotDb.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -35,14 +37,14 @@ describe("#performance Element properties loading", () => {
   it("load properties using 'getElementProperties'", async function () {
     const timer = new StopWatch(undefined, true);
     let itemsCount = 0;
-    const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel, elementClasses: ["BisCore.GeometricElement"] });
-    process.stdout.write(`Loading properties for ${total} elements.`);
+    const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel, elementClasses: ["BisCore.GeometricElement"], batchSize: 1000 });
+    console.log(`Loading properties for ${total} elements...`);
     for await (const items of iterator()) {
       itemsCount += items.length;
-      process.stdout.write(".");
+      console.log(`Got ${itemsCount} items. Elapsed: ${timer.currentSeconds} s., Speed: ${(itemsCount / timer.currentSeconds).toFixed(2)} el./s.`);
     }
     expect(itemsCount).to.eq(total);
-    process.stdout.write(`\nLoaded ${itemsCount} elements properties in ${timer.currentSeconds.toFixed(2)} s`);
+    console.log(`Loaded ${itemsCount} elements properties in ${timer.currentSeconds.toFixed(2)} s`);
   });
 
   it("load properties using ECSQL", async function () {

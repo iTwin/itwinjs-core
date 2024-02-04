@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "4.4.0-dev.18",
+  "version": "4.5.0-dev.3",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",

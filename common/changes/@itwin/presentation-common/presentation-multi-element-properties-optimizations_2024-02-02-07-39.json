@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Provide an option to control batch size for `PresentationManager.getElementProperties` multi-elements case.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

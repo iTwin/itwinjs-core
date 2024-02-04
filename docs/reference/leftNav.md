@@ -39,7 +39,6 @@ packageClassification:
           "core-react",
           "components-react",
           "imodel-components-react",
-          "appui-layout-react",
           "appui-react",
         ],
     },

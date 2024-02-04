@@ -876,11 +876,10 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
-    if (undefined === tree || hit.iModel !== tree.iModel)
+    if (!(tree instanceof RealityTileTree) || hit.iModel !== tree.iModel)
       return undefined;
 
-    const map = (tree as RealityTileTree).loader.getBatchIdMap();
-    const batch = undefined !== map ? map.getBatchProperties(hit.sourceId) : undefined;
+    const batch = tree.batchTableProperties?.getFeatureProperties(hit.sourceId);
     if (undefined === batch && tree.modelId !== hit.sourceId)
       return undefined;
 
