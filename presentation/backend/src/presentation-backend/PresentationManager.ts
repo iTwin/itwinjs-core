@@ -319,6 +319,7 @@ export interface PresentationManagerProps {
    * data changes are not tracked at all.
    *
    * @beta
+   * @deprecated in 4.4. The manager now always tracks for iModel data changes without polling.
    */
   updatesPollInterval?: number;
 
