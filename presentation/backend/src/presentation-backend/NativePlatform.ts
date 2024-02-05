@@ -84,15 +84,13 @@ export interface NativePlatformDefinition extends IDisposable {
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValue>;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValue): NativePlatformResponse<void>;
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
-
-  getUpdateInfo(): NativePlatformResponse<UpdateInfo | undefined>;
 }
 
 /** @internal */
 export interface DefaultNativePlatformProps {
   id: string;
   taskAllocationsMap: { [priority: number]: number };
-  isChangeTrackingEnabled: boolean;
+  updateCallback: (info: UpdateInfo | undefined) => void;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
   workerConnectionCacheSize?: number;
@@ -210,9 +208,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public unsetRulesetVariableValue(rulesetId: string, variableId: string) {
       return this.handleVoidResult(this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId));
-    }
-    public getUpdateInfo() {
-      return this.handleResult<UpdateInfo | undefined>(this._nativeAddon.getUpdateInfo());
     }
   };
 };
