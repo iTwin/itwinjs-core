@@ -6,14 +6,15 @@ publish: false
 
 Table of contents:
 
-- [Tracing API deprecation](#tracing-api-deprecation)
-- [Batched tileset enhancements](#batched-tileset-enhancements)
-  - [Per-model display settings](#per-model-display-settings)
-  - [Support for excluded models](#support-for-excluded-models)
-  - [Batch table property access](#batch-table-property-access)
-- [Geometry](#geometry)
-  - [Range tree search](#range-tree-search)
-- [Data conflict rejection](#data-conflict-rejection)
+- [NextVersion](#nextversion)
+  - [Tracing API deprecation](#tracing-api-deprecation)
+  - [Batched tileset enhancements](#batched-tileset-enhancements)
+    - [Per-model display settings](#per-model-display-settings)
+    - [Support for excluded models](#support-for-excluded-models)
+    - [Batch table property access](#batch-table-property-access)
+  - [Geometry](#geometry)
+    - [Range tree search](#range-tree-search)
+  - [Data conflict rejection](#data-conflict-rejection)
 
 ## Tracing API deprecation
 
@@ -72,12 +73,12 @@ New efficient range tree methods [PolyfaceRangeTreeContext.searchForClosestPoint
 
 ## Data conflict rejection
 
-When more than one [Briefcase]($docs/learning/imodelhub/briefcases) contributes changesets to an iModel, conflicts can arise. For example:
+When more than one [Briefcase](../learning/iModelHub/Briefcases.md) contributes changesets to an iModel, conflicts can arise. For example:
 
 1. Briefcases A and B both modify the same element locally.
 2. Briefcase A pushes its changes to iModelHub.
 3. Briefcase B pulls Briefcase A's changes and attempts to merge them and push its own changes to iModelHub.
 
-The conflict occurs in step 3. These kinds of conflicts are typically prevented through the use of [client-side locking](https://www.itwinjs.org/learning/backend/concurrencycontrol/). But in the absence of locking, the merge would appear to succeed, and Briefcase B would be permitted to push its changes to iModelHub. When any briefcase subsequently tried to download and merge those changes, the merge would fail, rendering the iModel unusable from that point onward.
+The conflict occurs in step 3. These kinds of conflicts are typically prevented through the use of [client-side locking](../learning/backend/concurrencycontrol/). But in the absence of locking, the merge would appear to succeed, and Briefcase B would be permitted to push its changes to iModelHub. When any briefcase subsequently tried to download and merge those changes, the merge would fail, rendering the iModel unusable from that point onward.
 
 Now, the conflict will be detected before Briefcase B can push its changes, producing the error "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered". Briefcase B will have no recourse in this case but to abandon its local changes. In the future, we plan to introduce a mechanism for resolving such conflicts without abandoning changes. In the meanwhile, use of locking is strongly encouraged.
