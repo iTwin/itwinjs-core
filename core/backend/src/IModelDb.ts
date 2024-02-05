@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, Mutable, OpenMode, UnexpectedErrors,
+  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -962,7 +962,7 @@ export abstract class IModelDb extends IModel {
       const nativeDb = new IModelHost.platform.DgnDb();
       const container = props?.container;
       if (container)
-        (props as Mutable<SnapshotOpenOptions>).tempFileBase = join(IModelHost.cacheDir, container.containerId, file.path); // temp files for container-based Dbs should go in the cacheDir
+        props = { ...props, tempFileBase: join(IModelHost.cacheDir, container.containerId, file.path) }; // temp files for container-based Dbs should go in the cacheDir
       nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
@@ -2925,8 +2925,8 @@ export class SnapshotDb extends IModelDb {
 
   // Open a Checkpoint directly from a cloud container.
   public static async openCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    (checkpoint as Mutable<CheckpointProps>).accessToken = undefined; // must be undefined for sasToken refresh
-    return this.attachAndOpenCheckpoint(checkpoint);
+    // accessToken must be undefined for sasToken refresh
+    return this.attachAndOpenCheckpoint({ ...checkpoint, accessToken: undefined });
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.
