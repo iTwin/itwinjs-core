@@ -1010,11 +1010,18 @@ export class SchemaReadHelper<T = unknown> {
   private async loadCustomAttributes(container: AnyCAContainer, caProviders: Iterable<CAProviderTuple>): Promise<void> {
     for (const providerTuple of caProviders) {
       // First tuple entry is the CA class name.
-      const caClass = await this.findSchemaItem(providerTuple[0]) as CustomAttributeClass;
+      const caClass = await this.findSchemaItem(providerTuple[0]);
+
+      // If custom attribute exist within the context and is referenced, validate the reference is defined in the container's schema
+      if (caClass && caClass.key.schemaName !== container.schema.name &&
+        !container.schema.getReferenceSync(caClass.key.schemaName)) {
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`);
+      }
 
       // Second tuple entry ia a function that provides the CA instance.
       const provider = providerTuple[1];
-      const customAttribute = provider(caClass);
+      const customAttribute = provider(caClass as CustomAttributeClass);
+
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
   }

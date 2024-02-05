@@ -9,7 +9,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
-import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
+import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
@@ -34,7 +34,7 @@ describe("default NativePlatform", () => {
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
       taskAllocationsMap: {},
-      isChangeTrackingEnabled: false,
+      updateCallback: () => {},
     });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original
@@ -228,16 +228,6 @@ describe("default NativePlatform", () => {
     const result = nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
     addonMock.verifyAll();
     expect(result).to.deep.equal({ result: value });
-  });
-
-  it("calls addon's getUpdateInfo", async () => {
-    const updates = new Array<UpdateInfo>();
-    addonMock.setup((x) => x.getUpdateInfo())
-      .returns(() => ({ result: updates }))
-      .verifiable();
-    const result = nativePlatform.getUpdateInfo();
-    addonMock.verifyAll();
-    expect(result).to.deep.equal({ result: updates });
   });
 
   it("returns imodel addon from IModelDb", () => {

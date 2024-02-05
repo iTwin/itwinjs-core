@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Added error handle when trying to create a schema fromJson that has referenced custom attributes and no references defined in the schema.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

@@ -2,9 +2,10 @@
 
 Writing an iTwin.js application requires the following software:
 
-- [Node.js](https://nodejs.org) (latest 18.x LTS version)
+- [Node.js](https://nodejs.org) (latest 20.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
+- See [Supported Platforms](../SupportedPlatforms.md) for information on Node, OS and browser support.
 
 ## Suggested tools
 

@@ -319,6 +319,7 @@ export interface PresentationManagerProps {
    * data changes are not tracked at all.
    *
    * @beta
+   * @deprecated in 4.4. The manager now always tracks for iModel data changes without polling.
    */
   updatesPollInterval?: number;
 
@@ -616,7 +617,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
     type TParser = Required<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>["contentParser"];
-    const { elementClasses, contentParser, ...contentOptions } = requestOptions;
+    const { elementClasses, contentParser, batchSize, ...contentOptions } = requestOptions;
     const parser: TParser = contentParser ?? buildElementProperties as TParser;
     const workerThreadsCount = (this._props.workerThreadsCount ?? 2);
 
@@ -677,7 +678,7 @@ export class PresentationManager {
             classFullName: of(classFullName),
             ruleset: of(ruleset),
             descriptor: from(getContentDescriptor(ruleset)),
-            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, 1000)),
+            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, batchSize ?? /* istanbul ignore next */ 1000)),
           }).pipe(
             // split incoming stream into individual batch requests
             mergeMap(({ descriptor, batches }) => from(batches.map((batch) => ({ classFullName, descriptor, batch })))),
