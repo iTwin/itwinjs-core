@@ -512,10 +512,15 @@ export abstract class GltfReader {
     else
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-    if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
-
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+    let range = contentRange;
+    const invTransform = transform?.inverse();
+    if (invTransform)
+      range = invTransform.multiplyRange(contentRange);
+
+    if (featureTable)
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+
     const viewFlagOverrides = this.viewFlagOverrides;
     if (transform || viewFlagOverrides) {
       const branch = new GraphicBranch(true);
@@ -525,9 +530,6 @@ export abstract class GltfReader {
       branch.add(renderGraphic);
       renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
-
-    const invTransform = transform?.inverse();
-    const range = invTransform ? invTransform.multiplyRange(contentRange) : contentRange;
 
     return {
       readStatus,
