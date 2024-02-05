@@ -118,16 +118,16 @@ export class RpcBriefcaseUtility {
     const iModelDb = IModelDb.findByKey(iModel.key);
 
     // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
-    await iModelDb.refreshContainer(accessToken);
+    await iModelDb.refreshContainerForRpc(accessToken);
     return iModelDb;
   }
 
-  public static async open(args: DownloadAndOpenArgs & {syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
+  public static async open(args: DownloadAndOpenArgs & { syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
   /**
    * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
-  public static async open(args: DownloadAndOpenArgs & {syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
+  public static async open(args: DownloadAndOpenArgs & { syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
    * a RpcPendingResponse exception is thrown
@@ -170,7 +170,7 @@ export class RpcBriefcaseUtility {
 
     try {
       // now try V2 checkpoint
-      db = await SnapshotDb.openCheckpointV2(checkpoint);
+      db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
       Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));

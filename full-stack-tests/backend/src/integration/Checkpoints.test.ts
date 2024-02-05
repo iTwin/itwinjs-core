@@ -24,7 +24,7 @@ async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   return -1;
 }
 
-describe("Checkpoints", () => {
+describe.only("Checkpoints", () => {
   let daemon: ChildProcess;
   let cacheProps: CloudSqlite.CacheProps;
   let daemonProps: NativeCloudSqlite.DaemonProps;
@@ -117,7 +117,7 @@ describe("Checkpoints", () => {
 
   it("should use fallback directory when checkpoint_cache_dir has no daemon in it", async () => {
     const v2Manager = sinon.spy(V2CheckpointManager, "getFolder");
-    const iModel = await SnapshotDb.openCheckpointV2({
+    const iModel = await SnapshotDb.openCheckpointFromRpc({
       accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -133,7 +133,7 @@ describe("Checkpoints", () => {
     fs.writeFileSync(portfile, "INVALID");
 
     try {
-      await expect(SnapshotDb.openCheckpointV2({
+      await expect(SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -144,7 +144,7 @@ describe("Checkpoints", () => {
     }
   });
 
-  it("should only start one prefetch when same v2 checkpoint is opened twice", async () => {
+  it("should only start one prefetch when same checkpoint is opened twice", async () => {
     IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
       "Checkpoints/prefetch": true,
       "Checkpoints/prefetch/maxBlocks": 5000,
@@ -153,7 +153,7 @@ describe("Checkpoints", () => {
     });
     const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
     const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
-    const iModel = await SnapshotDb.openCheckpointV2({
+    const iModel = await SnapshotDb.openCheckpointFromRpc({
       accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -167,7 +167,7 @@ describe("Checkpoints", () => {
     });
     sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => { });
 
-    await SnapshotDb.openCheckpointV2({
+    await SnapshotDb.openCheckpointFromRpc({
       accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -180,9 +180,8 @@ describe("Checkpoints", () => {
     IModelHost.appWorkspace.settings.dropDictionary("prefetch");
   });
 
-  it("should be able to open and read V2 checkpoints without the daemon ", async () => {
-    let iModel = await SnapshotDb.openCheckpointV2({
-      accessToken,
+  it("should be able to open and read checkpoints from Ipc ", async () => {
+    let iModel = await SnapshotDb.openCheckpoint({
       iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSet,
@@ -194,14 +193,11 @@ describe("Checkpoints", () => {
     let numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
-    await iModel.refreshContainer(accessToken);
     numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
-
     iModel.close();
 
-    iModel = await SnapshotDb.openCheckpointV2({
-      accessToken,
+    iModel = await SnapshotDb.openCheckpoint({
       iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSet,
@@ -214,8 +210,7 @@ describe("Checkpoints", () => {
     assert.equal(numModels, 32);
 
     // Open multiple imodels from same container
-    const iModel2 = await SnapshotDb.openCheckpointV2({
-      accessToken,
+    const iModel2 = await SnapshotDb.openCheckpoint({
       iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSetFirstVersion,
@@ -228,8 +223,7 @@ describe("Checkpoints", () => {
     assert.equal(numModels, 3);
 
     // Open imodels across multiple containers
-    const iModel3 = await SnapshotDb.openCheckpointV2({
-      accessToken,
+    const iModel3 = await SnapshotDb.openCheckpoint({
       iTwinId: testITwinId2,
       iModelId: testIModelId2,
       changeset: testChangeSet2,
@@ -256,7 +250,7 @@ describe("Checkpoints", () => {
       await shutdownDaemon();
     });
 
-    it("should only start one prefetch when same v2 checkpoint is opened twice", async () => {
+    it("should only start one prefetch when same checkpoint is opened twice", async () => {
       IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
         "Checkpoints/prefetch": true,
         "Checkpoints/prefetch/maxBlocks": 5000,
@@ -265,7 +259,7 @@ describe("Checkpoints", () => {
       });
       const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
       const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
-      const iModel = await SnapshotDb.openCheckpointV2({
+      const iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -279,7 +273,7 @@ describe("Checkpoints", () => {
       });
       sinon.stub(CheckpointManager, "validateCheckpointGuids").callsFake(() => { });
 
-      await SnapshotDb.openCheckpointV2({
+      await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -295,7 +289,7 @@ describe("Checkpoints", () => {
     it("should query bcv stat table", async () => {
       const containerSpy = sinon.spy(V2CheckpointManager, "attach");
 
-      const iModel = await SnapshotDb.openCheckpointV2({
+      const iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -303,7 +297,7 @@ describe("Checkpoints", () => {
       });
 
       const container = (await containerSpy.returnValues[0]).container;
-      let stats = container.queryBcvStats({addClientInformation: true});
+      let stats = container.queryBcvStats({ addClientInformation: true });
       const populatedCacheslots = stats.populatedCacheslots;
       // Opening the database causes some blocks to be downloaded.
       expect(stats.populatedCacheslots).to.be.greaterThan(0);
@@ -315,45 +309,45 @@ describe("Checkpoints", () => {
       expect(stats.attachedContainers).to.equal(1);
       expect(stats.totalClients).to.equal(1);
       iModel.restartDefaultTxn();
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.populatedCacheslots).to.equal(populatedCacheslots);
       expect(stats.lockedCacheslots).to.equal(0);
       expect(stats.activeClients).to.equal(0);
       expect(stats.totalClients).to.equal(1);
       const prefetch = CloudSqlite.startCloudPrefetch(container, `${testChangeSet.id}.bim`);
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.ongoingPrefetches).to.equal(1);
       prefetch.cancel();
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.ongoingPrefetches).to.equal(0);
 
       // Open multiple imodels from same container
-      const iModel2 = await SnapshotDb.openCheckpointV2({
+      const iModel2 = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
         changeset: testChangeSetFirstVersion,
       });
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.totalClients).to.equal(2);
       expect(stats.activeClients).to.equal(1);
       expect(stats.attachedContainers).to.equal(1);
       iModel2.restartDefaultTxn();
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.activeClients).to.equal(0);
       expect(stats.totalClients).to.equal(2);
 
       iModel.close();
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.totalClients).to.equal(1);
 
       iModel2.close();
-      stats = container.queryBcvStats({addClientInformation: true});
+      stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.totalClients).to.equal(0);
     });
 
-    it("should be able to open and read V2 checkpoint with daemon running", async () => {
-      let iModel = await SnapshotDb.openCheckpointV2({
+    it("should be able to open and read checkpoint for Rpc with daemon running", async () => {
+      let iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -366,13 +360,13 @@ describe("Checkpoints", () => {
       let numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
-      await iModel.refreshContainer(accessToken);
+      await iModel.refreshContainerForRpc(accessToken);
       numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       iModel.close();
 
-      iModel = await SnapshotDb.openCheckpointV2({
+      iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -386,7 +380,7 @@ describe("Checkpoints", () => {
       assert.equal(numModels, 32);
 
       // Open multiple imodels from same container
-      const iModel2 = await SnapshotDb.openCheckpointV2({
+      const iModel2 = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId,
         iModelId: testIModelId,
@@ -400,7 +394,7 @@ describe("Checkpoints", () => {
       assert.equal(numModels, 3);
 
       // Open imodels across multiple containers
-      const iModel3 = await SnapshotDb.openCheckpointV2({
+      const iModel3 = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
         iTwinId: testITwinId2,
         iModelId: testIModelId2,

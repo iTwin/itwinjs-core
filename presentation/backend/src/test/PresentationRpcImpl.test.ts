@@ -313,7 +313,7 @@ describe("PresentationRpcImpl", () => {
 
       it("should reuse request promise when request is repeated multiple times and iModel takes long to find", async () => {
         const refreshIModelContainerPromise = new ResolvablePromise<void>();
-        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainer(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
+        (testData.imodelMock as moq.IMock<IModelDb>).setup(async (x) => x.refreshContainerForRpc(moq.It.isAny())).returns(async () => refreshIModelContainerPromise);
 
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
