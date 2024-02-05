@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
@@ -9,7 +9,7 @@ import { GuidString, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, IModel, LocalFileName, PhysicalElementProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 
-function createValidIModelFileName(imodelName: string) {
+export function createValidIModelFileName(imodelName: string) {
   return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
 }
 

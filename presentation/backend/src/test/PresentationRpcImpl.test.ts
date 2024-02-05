@@ -797,6 +797,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -825,6 +826,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             transport: "unparsed-json",
             cancelEvent: new BeEvent<() => void>(),
@@ -856,6 +858,7 @@ describe("PresentationRpcImpl", () => {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };
@@ -873,12 +876,14 @@ describe("PresentationRpcImpl", () => {
             ...defaultRpcParams,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels,
             keys: keys.toJSON(),
           };
           const managerOptions: WithCancelEvent<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
             imodel: testData.imodelMock.object,
             rulesetOrId: testData.rulesetOrId,
             displayType: testData.displayType,
+            contentFlags: ContentFlags.ShowLabels | ContentFlags.DescriptorOnly,
             keys,
             cancelEvent: new BeEvent<() => void>(),
           };

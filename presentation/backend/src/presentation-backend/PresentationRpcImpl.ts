@@ -289,6 +289,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return this.makeRequest(token, "getContentDescriptor", requestOptions, async (options) => {
       options = {
         ...options,
+        contentFlags: (options.contentFlags ?? 0) | ContentFlags.DescriptorOnly, // always append the "descriptor only" flag when handling request from the frontend
         keys: KeySet.fromJSON(options.keys),
       };
       if (options.transport === "unparsed-json") {
