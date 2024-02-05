@@ -13,6 +13,7 @@ Table of contents:
   - [Batch table property access](#batch-table-property-access)
 - [Geometry](#geometry)
   - [Range tree search](#range-tree-search)
+- [Data conflict rejection](#data-conflict-rejection)
 
 ## Tracing API deprecation
 
@@ -56,6 +57,7 @@ A [[RealityTileTree]] may refer to a tileset in one of the [3D Tiles 1.0](https:
 During tile decoding, iTwin.js assigns a unique, transient [Id64String]($bentley) to each unique feature within the tileset. When interacting with tileset features (e.g., via a [[SelectionSet]] or [[HitDetail]]), the features are identified by these transient Ids. The tile tree's [BatchTableProperties]($frontend) maintains the mapping between the transient Ids and the per-feature properties.
 
 To make use of the per-feature JSON properties, an application needs a way to look up the properties given the corresponding feature Id. The following example illustrates one way to obtain the properties of a specific feature within a reality model's batch table:
+
 ```ts
 [[include:GetBatchTableFeatureProperties]]
 ```
@@ -67,3 +69,15 @@ See [[RealityTileTree.batchTableProperties]] to obtain the batch table propertie
 ### Range tree search
 
 New efficient range tree methods [PolyfaceRangeTreeContext.searchForClosestPoint]($core-geometry) and [PolyfaceRangeTreeContext.searchForClosestApproach]($core-geometry) support searches of a [Polyface]($core-geometry) for the closest facet point to a given space point, and searches of two Polyfaces for the segment spanning their closest approach. New classes [Point3dArrayRangeTreeContext]($core-geometry) and [LineString3dRangeTreeContext]($core-geometry) provide similar functionality for searching [Point3d]($core-geometry) arrays and [LineString3d]($core-geometry) objects, respectively.
+
+## Data conflict rejection
+
+When more than one [Briefcase](../learning/iModelHub/Briefcases.md) contributes changesets to an iModel, conflicts can arise. For example:
+
+1. Briefcases A and B both modify the same element locally.
+2. Briefcase A pushes its changes to iModelHub.
+3. Briefcase B pulls Briefcase A's changes and attempts to merge them and push its own changes to iModelHub.
+
+The conflict occurs in step 3. These kinds of conflicts are typically prevented through the use of [client-side locking](../learning/backend/concurrencycontrol/). But in the absence of locking, the merge would appear to succeed, and Briefcase B would be permitted to push its changes to iModelHub. When any briefcase subsequently tried to download and merge those changes, the merge would fail, rendering the iModel unusable from that point onward.
+
+Now, the conflict will be detected before Briefcase B can push its changes, producing the error "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered". Briefcase B will have no recourse in this case but to abandon its local changes. In the future, we plan to introduce a mechanism for resolving such conflicts without abandoning changes. In the meanwhile, use of locking is strongly encouraged.
