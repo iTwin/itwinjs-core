@@ -106,14 +106,15 @@ export abstract class Polyface extends GeometryQuery {
  */
 export class IndexedPolyface extends Polyface { // more info can be found at geometry/internaldocs/Polyface.md
   /**
-   * Index to `this.data.pointIndex` array entry for a specific facet.
+   * Index to the `this.data.pointIndex` array entry for a specific facet.
    * * The facet count is `facetStart.length - 1`.
-   * * Facet `i` indices run from `_facetStart[i]` to upper limit `_facetStart[i+1]`.
-   * * Note the array is initialized with one entry.
+   * * The face loop for the i_th facet consists of the entries in `this.data.pointIndex` at indices `_facetStart[i]`
+   * up to (but not including) `_facetStart[i + 1]`.
+   * * Note the array is initialized with one entry (value 0).
    */
   protected _facetStart: number[];
   /**
-   * Index to `this.data.face` array entry for a specific facet.
+   * Index to the `this.data.face` array entry for a specific facet.
    * * `_facetToFaceData` has one entry per facet.
    */
   protected _facetToFaceData: number[];
@@ -154,7 +155,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return this.data.pointCount === 0 || this.data.pointIndex.length === 0;
   }
   /**
-   * Apply the transform to points and apply the (inverse transpose of) the matrix part to normals.
+   * Transform the mesh.
+   * * Apply the transform to points.
+   * * Apply the (inverse transpose of the) matrix part to normals.
    * * If determinant of the transform matrix is negative, also
    *   * negate normals
    *   * reverse index order around each facet.
@@ -332,7 +335,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * @param needNormals true if normals will be constructed.
    * @param needParams true if uv parameters will be constructed.
    * @param needColors true if colors will be constructed.
-   * @param twoSided true if the facets are viewable from the back.
+   * @param twoSided true if the facets are to be considered viewable from the back.
    */
   public static create(
     needNormals: boolean = false,
@@ -369,7 +372,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return this.data.point.length - 1;
   }
   /**
-   * Add a uv parameter to the parameter array.
+   * Add (a clone of) a uv parameter to the parameter array.
    * @param param the parameter.
    * @returns zero-based index of the added param.
    */
@@ -473,18 +476,19 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Clean up the open facet.
-   * @deprecated in 4.x. Its single caller does not need to call this API.
+   * @deprecated in 4.x to remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
+   * instead.
    */
   public cleanupOpenFacet(): void {
     this.data.trimAllIndexArrays(this.data.pointIndex.length);
   }
   /**
    * Announce the end of construction of a facet.
-   * * This includes checks for:
+   * * Optionally check for:
    *   * Same number of indices among all active index arrays -- point, normal, param, color
    *   * All indices are within bounds of the respective data arrays.
    * * In error cases, all index arrays are trimmed back to the size when previous facet was terminated.
-   * * `undefined` return is normal. Otherwise, a string array of error messages is returned.
+   * * A return value of `undefined` is normal. Otherwise, a string array of error messages is returned.
    */
   public terminateFacet(validateAllIndices: boolean = true): String[] | undefined {
     const numFacets = this._facetStart.length - 1;
@@ -505,23 +509,11 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       if (this.data.edgeVisible.length !== lengthB)
         messages.push("visibleIndex count must equal pointIndex count");
       if (!Polyface.areIndicesValid(
-        this.data.pointIndex, lengthA, lengthB, this.data.point, this.data.point ? this.data.point.length : 0,
-      ))
-        messages.push("invalid point indices in the last facet");
-      if (!Polyface.areIndicesValid(
         this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0,
       ))
         messages.push("invalid normal indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.paramIndex, lengthA, lengthB, this.data.param, this.data.param ? this.data.param.length : 0,
-      ))
-        messages.push("invalid param indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.colorIndex, lengthA, lengthB, this.data.color, this.data.color ? this.data.color.length : 0,
-      ))
-        messages.push("invalid color indices in the last facet");
       if (messages.length > 0) {
-        this.data.trimAllIndexArrays(lengthA);
+        this.data.trimAllIndexArrays(lengthB);
         return messages;
       }
     }

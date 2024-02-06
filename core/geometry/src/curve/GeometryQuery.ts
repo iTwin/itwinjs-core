@@ -92,7 +92,7 @@ export abstract class GeometryQuery {
    * Test for exact structure and nearly identical geometry.
    * *  Leaf classes must implement.
    * *  Base class implementation recurses through children.
-   * *  Base implementation is complete for classes with children and no properties (attributes).
+   * *  Base implementation is complete for classes with children and no properties.
    * *  Classes with both children and properties must implement for properties, call super for children.
    */
   public isAlmostEqual(other: GeometryQuery): boolean {

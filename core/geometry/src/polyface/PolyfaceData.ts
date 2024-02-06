@@ -69,7 +69,7 @@ export class PolyfaceData {
   /** Tagged geometry data */
   public taggedNumericData: TaggedNumericData | undefined;
   private _twoSided: boolean;
-  /** boolean tag indicating if the facets are viewable from the back */
+  /** boolean tag indicating if the facets are to be considered viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 

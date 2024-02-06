@@ -48,8 +48,8 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     return c;
   }
   /**
-   * Turn any array (possibly nested) into a "flat" array of objects that are not arrays. This allows process
-   * of the objects without recursion into nested arrays.
+   * Turn any array (possibly nested) into a "flat" array of objects that are not arrays. This allows processing
+   * the objects without recursion into nested arrays.
    */
   private static flattenArray(arr: any): any {
     return arr.reduce(
@@ -117,7 +117,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /**
    * Convert an PointString3d to a JSON object.
-   * @return {*} [[x_0,y_0,z_0],...[x_n,y_n,z_n]]
+   * @return {*} e.g., `[[1,2,3], [4,5,6]]`.
    */
   public toJSON(): XYZProps[] {
     const value = [];
