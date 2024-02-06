@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
 import { ClipUtilities } from "../../clipping/ClipUtils";
+import { FacetFaceData } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -42,7 +43,6 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { FacetFaceData } from "../../core-geometry";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -208,7 +208,7 @@ describe("Polyface.HelloWorld", () => {
     const polyface1 = polyface0.clone();
     const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(), Matrix3d.createScale(-1, 1, 1));
     const polyface2 = polyface0.cloneTransformed(mirrorX);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface2);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "HelloWorld");
     const expectedArea = (numX - 1) * (numY - 1);
     const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad
@@ -529,14 +529,24 @@ describe("Polyface.Box", () => {
   });
 });
 
-function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, checkClosure: boolean, options?: StrokeOptions, dx0: number = 0, dy0: number = 0) {
+function writeMeshes(
+  ck: Checker,
+  geometry: GeometryQuery[],
+  fileName: string,
+  checkClosure: boolean,
+  options?: StrokeOptions,
+  dx0: number = 0,
+  dy0: number = 0,
+) {
   let fileName1 = `${fileName.slice()}.X`;
   if (options) {
-    if (options.hasMaxEdgeLength) fileName1 = `${fileName1}E`;
-    if (options.needNormals) fileName1 = `${fileName1}N`;
-    if (options.needParams) fileName1 = `${fileName1}P`;
+    if (options.hasMaxEdgeLength)
+      fileName1 = `${fileName1}E`;
+    if (options.needNormals)
+      fileName1 = `${fileName1}N`;
+    if (options.needParams)
+      fileName1 = `${fileName1}P`;
   }
-
   const allMesh = [];
   let dx = dx0;
   let gCount = -1;
@@ -546,7 +556,6 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
       options = new StrokeOptions();
     }
     const builder = PolyfaceBuilder.create(options);
-
     const gRange = g.range();
     const dyLocal = Math.max(20.0, 2.0 * gRange.yLength());
     const dxLocal = Math.max(10.0, 1.25 * gRange.xLength());
@@ -554,31 +563,26 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
     const dyVSection = 2.0 * dyLocal;
     const transformForPolyface = Transform.createTranslationXYZ(dx, dy0, 0);
     const transformForPolyfaceRangeSticks = Transform.createTranslationXYZ(dx, dy0 + dyVSection, 0);
-
     if (!gRange.isNull) {
       const corners = gRange.corners();
       const ls = LineString3d.create(
-        corners[0], corners[1],
-        corners[5], corners[1], // z stroke !!!
-        corners[3],
-        corners[7], corners[3], // z stroke !!!
-        corners[2],
-        corners[6], corners[2], // z stroke !!!
-        corners[2],
-        corners[0],
-        corners[4], corners[5], corners[7], corners[6], corners[4]);
+        corners[0], corners[1], corners[5], corners[1],
+        corners[3], corners[7], corners[3], corners[2],
+        corners[6], corners[2], corners[2], corners[0],
+        corners[4], corners[5], corners[7], corners[6], corners[4],
+      );
       ls.tryTransformInPlace(transformForPolyfaceRangeSticks);
       allMesh.push(ls);
     }
     builder.addGeometryQuery(g);
     const polyface = builder.claimPolyface();
-
     if (polyface) {
-      const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.25, 0.25, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10)));
+      const rotationTransform = Transform.createFixedPointAndMatrix(
+        Point3d.create(0.25, 0.25, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10)),
+      );
       const polyfaceA = polyface.cloneTransformed(rotationTransform)!;
       polyfaceA.tryTranslateInPlace(0, 1.5 * (gRange.high.y - gRange.low.y));
       polyfaceA.tryTransformInPlace(transformForPolyface);
-
       polyface.tryTransformInPlace(transformForPolyface);
       allMesh.push(polyface);
       allMesh.push(polyfaceA);
@@ -592,15 +596,25 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
       }
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
-        GeometryCoreTestIO.consoleLog(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
+        GeometryCoreTestIO.consoleLog(fileName1, `${gCount} of ${geometry.length} is empty polyface`);
       } else if (isClosedMesh !== isClosedSolid) {
-        GeometryCoreTestIO.consoleLog(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
+        GeometryCoreTestIO.consoleLog(
+          fileName1,
+          `${gCount} of ${geometry.length}`,
+          { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh },
+        );
         PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface);
         const isClosedMesh1 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
-        // GeometryCoreTestIO.consoleLog("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+        // GeometryCoreTestIO.consoleLog(
+        //   "After Reorient " + fileName1,
+        //   {
+        //     isClosedBySolid: isClosedSolid,
+        //     isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1,
+        //   },
+        // );
         if (isClosedSolid !== isClosedMesh1) {
           if (options.hasMaxEdgeLength) {
-            // hm . we think there is a bug in edge length splits.  Let's see if we can fix it up with TVertex logic ...
+            // we think there is a bug in edge length splits. Let's see if we can fix it up with TVertex logic ...
             const polyface2 = PolyfaceQuery.cloneWithTVertexFixup(polyface);
             PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface2);
             const isClosedMesh2 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface2);
@@ -608,13 +622,24 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
             allMesh.push(polyface2);
             if (checkClosure)
               ck.testBoolean(isClosedSolid, isClosedMesh2, "Closure after TVertex Fixup");
-            GeometryCoreTestIO.consoleLog(`After Reorient AND T VERTEX ${fileName1}`,
-              { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing2: isClosedMesh2 });
-
+            GeometryCoreTestIO.consoleLog(
+              `After Reorient AND T VERTEX ${fileName1}`,
+              {
+                isClosedBySolid: isClosedSolid,
+                isClosedByEdgePairing: isClosedMesh,
+                isClosedByEdgePairing2: isClosedMesh2,
+              },
+            );
           } else if (checkClosure) {
-            if (!ck.testBoolean(isClosedSolid, isClosedMesh1, " post-fixup solid closure"))
-              GeometryCoreTestIO.consoleLog(`After Reorient ${fileName1}`,
-                { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+            if (!ck.testBoolean(isClosedSolid, isClosedMesh1, "post-fixup solid closure"))
+              GeometryCoreTestIO.consoleLog(
+                `After Reorient ${fileName1}`,
+                {
+                  isClosedBySolid: isClosedSolid,
+                  isClosedByEdgePairing: isClosedMesh,
+                  isClosedByEdgePairing1: isClosedMesh1,
+                },
+              );
           }
         }
       }
@@ -640,13 +665,14 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
   }
 }
 // call writeMeshes with multiple options and placements
-function writeAllMeshes(geometry: GeometryQuery[], name: string, checkClosure: boolean, options: StrokeOptions[], y0: number, dy: number) {
+function writeAllMeshes(
+  geometry: GeometryQuery[], name: string, checkClosure: boolean, options: StrokeOptions[], y0: number, dy: number,
+) {
   const ck = new Checker();
   for (let i = 0; i < options.length; i++) {
     writeMeshes(ck, geometry, name, checkClosure, options[i], 0, y0 + i * dy);
   }
   expect(ck.getNumErrors()).equals(0);
-
 }
 type GeometryData = GeometryQuery | GeometryQuery[];
 function flattenGeometry(...data: GeometryData[]): GeometryQuery[] {
@@ -662,22 +688,22 @@ function flattenGeometry(...data: GeometryData[]): GeometryQuery[] {
 }
 describe("Polyface.Facets", () => {
   const options0 = new StrokeOptions();
-  const options0E = new StrokeOptions();
-  options0E.maxEdgeLength = 0.5;
+  const optionsE = new StrokeOptions();
   const optionsN = new StrokeOptions();
   const optionsP = new StrokeOptions();
   const optionsPN = new StrokeOptions();
   const optionsPNE = new StrokeOptions();
-  optionsP.needParams = true;
+
+  optionsE.maxEdgeLength = 0.5;
   optionsN.needNormals = true;
+  optionsP.needParams = true;
   optionsPN.needNormals = true;
   optionsPN.needParams = true;
-
+  optionsPNE.maxEdgeLength = 0.5;
   optionsPNE.needNormals = true;
   optionsPNE.needParams = true;
-  optionsPNE.maxEdgeLength = 0.5;
 
-  const bigYStep = 800.0;       // step between starts for different solid types
+  const bigYStep = 800.0;        // step between starts for different solid types
   const optionYStep = 100.0;    // steps between starts for option variants of same solid type
   const y0OpenSweeps = 0.0;
   const y0ClosedSampler = y0OpenSweeps + bigYStep;
@@ -688,8 +714,7 @@ describe("Polyface.Facets", () => {
   const y0LinearSweep = y0TorusPipe + bigYStep;
   const y0RotationalSweep = y0LinearSweep + bigYStep;
   const y0RuledSweep = y0RotationalSweep + bigYStep;
-  const allOptions = [options0, optionsN, optionsP, options0E, optionsPNE];
-  // const allEOptions = [options0E, optionsPNE];
+  const allOptions = [options0, optionsN, optionsP, optionsE, optionsPNE];
   it("Cones", () => {
     const all = Sample.createCones();
     // writeAllMeshes(all, "ConeE", [optionsP], -y0Cone, optionYStep);
@@ -787,17 +812,16 @@ describe("Polyface.Facets", () => {
 
   it("RotationalSweeps", () => {
     writeAllMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", true, allOptions, y0RotationalSweep, optionYStep);
-    //     writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsP, 0, y0LinearSweep + 2 * optionYStep);
-    //    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", options0E, 0, y0RotationalSweep);
-    //    writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsN, 0, y0RotationalSweep + optionYStep);
+    // writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsP, 0, y0LinearSweep + 2 * optionYStep);
+    // writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsE, 0, y0RotationalSweep);
+    // writeMeshes(Sample.createSimpleRotationalSweeps(), "RotationalSweep", optionsN, 0, y0RotationalSweep + optionYStep);
   });
   it("RuledSweeps", () => {
     const sweepP = Sample.createRuledSweeps(true);
     writeAllMeshes(sweepP, "RuledSweep", true, allOptions, y0RuledSweep, optionYStep);
-
-    //    writeMeshes(sweepP, "RuledSweep", optionsP, 0, y0RuledSweep + 2 * optionYStep);
-    //    const sweepB = Sample.createRuledSweeps(true);
-    //    writeMeshes(sweepB, "RuledSweep", options0E, 0, y0RuledSweep);
+    // writeMeshes(sweepP, "RuledSweep", optionsP, 0, y0RuledSweep + 2 * optionYStep);
+    // const sweepB = Sample.createRuledSweeps(true);
+    // writeMeshes(sweepB, "RuledSweep", optionsE, 0, y0RuledSweep);
     // const sweepA = Sample.createRuledSweeps(true);
     // writeMeshes(sweepA, "RuledSweep", optionsN, 0, y0RuledSweep + optionYStep);
   });

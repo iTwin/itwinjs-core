@@ -4566,10 +4566,10 @@ export class PolyfaceData {
     getEdgeVisible(i: number): boolean;
     getNormal(i: number): Vector3d | undefined;
     getParam(i: number): Point2d | undefined;
-    getPoint(i: number, out?: Point3d): Point3d | undefined;
+    getPoint(i: number, result?: Point3d): Point3d | undefined;
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
-    isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean;
+    isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean;
     static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean;
     normal: GrowableXYZArray | undefined;
     get normalCount(): number;
@@ -4583,7 +4583,11 @@ export class PolyfaceData {
     get pointCount(): number;
     pointIndex: number[];
     range(result?: Range3d, transform?: Transform): Range3d;
+    get requireColors(): boolean;
     get requireNormals(): boolean;
+    get requireParams(): boolean;
+    resizeAllArrays(length: number): void;
+    // @deprecated
     resizeAllDataArrays(length: number): void;
     reverseIndices(facetStartIndex?: number[]): void;
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
