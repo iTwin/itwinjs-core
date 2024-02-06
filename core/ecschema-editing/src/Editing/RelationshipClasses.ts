@@ -7,7 +7,7 @@
  */
 
 import {
-  DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
+  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
@@ -213,6 +213,24 @@ export class RelationshipClasses extends ECClasses {
     const result = await this.validate(constraint);
     if (result.errorMessage) {
       mutableConstraint.addClass(ecClass);
+      return result;
+    }
+
+    return { itemKey: constraint.relationshipClass.key };
+  }
+
+  public async addCustomAttributeToConstraint(constraint: RelationshipConstraint, customAttribute: CustomAttribute): Promise<SchemaItemEditResults> {
+    const mutableConstraint = constraint as MutableRelationshipConstraint;
+    mutableConstraint.addCustomAttribute(customAttribute);
+
+    const diagnostics = Rules.validateCustomAttributeInstance(constraint, customAttribute);
+    const result: SchemaItemEditResults = { errorMessage: "" };
+    for await (const diagnostic of diagnostics) {
+      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    }
+
+    if (result.errorMessage) {
+      this.removeCustomAttribute(constraint, customAttribute);
       return result;
     }
 

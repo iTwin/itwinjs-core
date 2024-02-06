@@ -409,7 +409,7 @@ export class ECClasses {
     return ecClass;
   }
 
-  private removeCustomAttribute(container: CustomAttributeContainerProps, customAttribute: CustomAttribute) {
+  protected removeCustomAttribute(container: CustomAttributeContainerProps, customAttribute: CustomAttribute) {
     assert(container.customAttributes !== undefined);
     const map = container.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);

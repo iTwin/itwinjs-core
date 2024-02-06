@@ -125,18 +125,25 @@ export class Entities extends ECClasses {
     return { itemKey: newClass.key };
   }
 
-  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
+  public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<SchemaItemEditResults> {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    if (entity === undefined) {
+      return { errorMessage: `Entity Class ${entityKey.fullName} not found in schema context.` };
+    }
+    if (entity.schemaItemType !== SchemaItemType.EntityClass) {
+      return { errorMessage: `Expected ${entityKey.fullName} to be of type Entity Class.` };
+    }
+
     const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
-
-    // TODO: have a helpful returns
-    if (!entity || entity.schemaItemType !== SchemaItemType.EntityClass)
-      return;
-
-    if (!mixin || mixin.schemaItemType !== SchemaItemType.Mixin)
-      return;
+    if (mixin === undefined) {
+      return { errorMessage: `Mixin Class ${mixinKey.fullName} not found in schema context.` };
+    }
+    if (mixin.schemaItemType !== SchemaItemType.Mixin) {
+      return { errorMessage: `Expected ${mixinKey.fullName} to be of type Mixin.`};
+    }
 
     entity.addMixin(mixin);
+    return { itemKey: entityKey };
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
