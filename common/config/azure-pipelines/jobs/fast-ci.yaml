@@ -127,14 +127,16 @@ jobs:
 
     steps:
     - bash: |
+        branch=$(System.PullRequest.SourceBranch)
+        sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
         echo "Posting 'success' status to current PR"
         gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
-          /repos/$(Build.Repository.Name)/statuses/$(CURRENT_SHA) \
+          /repos/$(Build.Repository.Name)/statuses/$sha \
           -f state='success' \
           -f target_url='$(BUILD_URL)' \
-          -f context='imodel-native PR validation' \
+          -f context='itwinjs-core PR validation' \
           -f description='The internal linked PR build succeeded'
       env:
         GITHUB_TOKEN: $(GH_TOKEN)
