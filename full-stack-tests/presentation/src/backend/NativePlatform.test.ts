@@ -29,7 +29,7 @@ describe("NativePlatform", () => {
     const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
       taskAllocationsMap: {},
-      isChangeTrackingEnabled: false,
+      updateCallback: () => {},
       cacheConfig: { mode: HierarchyCacheMode.Memory },
     });
     nativePlatform = new TNativePlatform();

@@ -55,9 +55,6 @@ describe("Schema rules tests", () => {
           name: "SchemaB",
           version: "1.0.0",
           alias: "b",
-          customAttributes: [
-            { className: "CoreCustomAttributes.SupplementalSchema" },
-          ],
         };
 
         const coreCustomAttributesJson = {
@@ -81,6 +78,7 @@ describe("Schema rules tests", () => {
         const schemaA = await Schema.fromJson(schemaAJson, context);
         const schemaB = await Schema.fromJson(schemaBJson, context);
         await (schemaB as MutableSchema).addReference(coreCA);
+        (schemaB as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.SupplementalSchema" });
         await (schemaA as MutableSchema).addReference(schemaB);
 
         const result = Rules.validateSchemaReferences(schemaA);

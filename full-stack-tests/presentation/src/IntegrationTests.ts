@@ -17,6 +17,8 @@ import {
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
@@ -24,8 +26,6 @@ import {
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { getOutputRoot } from "./Utils";
-import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
-import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -80,6 +80,14 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
+/** Prepares an empty, process-unique output directory */
+export function setupTestsOutputDirectory() {
+  const outputRoot = getOutputRoot();
+  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
+  fs.mkdirSync(outputRoot, { recursive: true });
+  return outputRoot;
+}
+
 const initializeCommon = async (props: {
   backendTimeout?: number;
   frontendTimeout?: number;
@@ -94,11 +102,7 @@ const initializeCommon = async (props: {
   Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  // prepare an empty, process-unique output directory
-  const outputRoot = getOutputRoot();
-  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
-  fs.mkdirSync(outputRoot, { recursive: true });
-
+  const outputRoot = setupTestsOutputDirectory();
   const tempCachesDir = path.join(outputRoot, "caches");
   if (!fs.existsSync(tempCachesDir))
     fs.mkdirSync(tempCachesDir);
