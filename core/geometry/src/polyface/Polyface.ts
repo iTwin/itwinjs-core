@@ -201,8 +201,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * * This is the REFERENCE to the FacetFaceData not a copy.
    */
   public tryGetFaceData(i: number): FacetFaceData | undefined {
+    if (i < 0 || i >= this._facetToFaceData.length)
+      return undefined;
     const faceIndex = this._facetToFaceData[i];
-    if (faceIndex >= this.data.face.length)
+    if (faceIndex < 0 || faceIndex >= this.data.face.length)
       return undefined;
     return this.data.face[faceIndex];
   }
@@ -580,7 +582,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public extendRange(range: Range3d, transform?: Transform): void {
     this.data.range(range, transform);
   }
-  /** Given the index of a facet, return the data pertaining to the face it is a part of. */
+  /**
+   * Given the index of a facet, return the data pertaining to the face it is a part of.
+   * @deprecated in 4.x. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
+   */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
     return this.data.face[this._facetToFaceData[facetIndex]];
   }

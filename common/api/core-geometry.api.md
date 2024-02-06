@@ -2812,6 +2812,7 @@ export class IndexedPolyface extends Polyface {
     facetIndex1(index: number): number;
     protected _facetStart: number[];
     protected _facetToFaceData: number[];
+    // @deprecated
     getFaceDataByFacetIndex(facetIndex: number): FacetFaceData;
     isAlmostEqual(other: any): boolean;
     get isEmpty(): boolean;

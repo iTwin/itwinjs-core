@@ -42,6 +42,7 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { FacetFaceData } from "../../core-geometry";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -160,10 +161,11 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
     ck.testExactNumber(normalIndex.length, pointIndex.length, "point, normal index counts match");
 
   for (let i = 0; i < polyface.facetCount; i++) {
-    const faceData = polyface.getFaceDataByFacetIndex(i);  // Ensures we do not get out of bounds exception
-    ck.testTrue(faceData !== undefined);
-    if (shouldCheckParamDistance)
-      ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
+    const faceData = polyface.tryGetFaceData(i);
+    if (ck.testType(faceData, FacetFaceData)) {
+      if (shouldCheckParamDistance)
+        ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
+    }
   }
 }
 
