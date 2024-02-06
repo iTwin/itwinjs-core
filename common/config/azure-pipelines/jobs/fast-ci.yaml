@@ -67,19 +67,18 @@ jobs:
 
           # No native PRs are linked
           if [[ -z "$NativeUrl" ]]; then
-            skipBuild=false
+            echo '##vso[task.setvariable variable=RUN_BUILD;isoutput=true]true'
           else
-            skipBuild=true
+            echo '##vso[task.setvariable variable=RUN_BUILD;isoutput=true]false'
           fi
 
-          echo '##vso[task.setvariable variable=SkipBuild;isoutput=true]$skipBuild'
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
         name: checkForPr
 
   - job: Build
     dependsOn: CheckLinkedPR
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.SkipBuild'], 'false'))
+    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'))
     strategy:
       matrix:
         "Windows_Node_20":
@@ -120,7 +119,7 @@ jobs:
     dependsOn:
     - CheckLinkedPR
     - Build
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.SkipBuild'], 'false'))
+    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.RUN_BUILD'], 'true'))
     displayName: Post Success
     pool:
       vmImage: ubuntu-latest
