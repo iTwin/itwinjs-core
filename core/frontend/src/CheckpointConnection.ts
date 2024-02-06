@@ -8,13 +8,14 @@
 
 import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, OpenCheckpointArgs, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
@@ -26,6 +27,8 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
+  private readonly _fromIpc: boolean;
+
   /** The Guid that identifies the iTwin that owns this iModel. */
   public override get iTwinId(): GuidString { return super.iTwinId!; }
   /** The Guid that identifies this iModel. */
@@ -34,6 +37,11 @@ export class CheckpointConnection extends IModelConnection {
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
   protected _isClosed?: boolean;
+
+  protected constructor(props: IModelConnectionProps, fromIpc: boolean) {
+    super(props);
+    this._fromIpc = fromIpc;
+  }
 
   /** Type guard for instanceof [[CheckpointConnection]] */
   public override isCheckpointConnection(): this is CheckpointConnection { return true; }
@@ -53,7 +61,7 @@ export class CheckpointConnection extends IModelConnection {
     const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
     const openResponse = await this.callOpen(iModelRpcProps, routingContext);
 
-    const connection = new this(openResponse);
+    const connection = new this(openResponse, false);
     RpcManager.setIModel(connection);
     connection.routingContext = routingContext;
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
@@ -135,13 +143,24 @@ export class CheckpointConnection extends IModelConnection {
     resubmit();
   };
 
+  public static async openForIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection> {
+    const openResponse = await IpcApp.appFunctionIpc.openCheckpoint(args);
+    const connection = new this(openResponse, true);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
   /** Close this CheckpointConnection */
   public async close(): Promise<void> {
     if (this.isClosed)
       return;
 
     this.beforeClose();
-    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+    if (this._fromIpc)
+      await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
+    else
+      RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+
     this._isClosed = true;
   }
 }

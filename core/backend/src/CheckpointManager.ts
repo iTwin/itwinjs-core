@@ -12,7 +12,7 @@ import * as path from "path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName, OpenCheckpointArgs,
 } from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -455,5 +455,16 @@ export class CheckpointManager {
       }
     }
     return undefined;
+  }
+
+  public static async toCheckPointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
+    return {
+      iModelId: args.iModelId,
+      iTwinId: args.iTwinId,
+      changeset: {
+        index: args.changeset.index,
+        id: args.changeset.id ?? (await IModelHost.hubAccess.queryChangeset({ ...args, accessToken: await IModelHost.getAccessToken() })).id,
+      },
+    };
   }
 }

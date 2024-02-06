@@ -8,11 +8,11 @@
 
 import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -134,46 +134,44 @@ export class RpcBriefcaseUtility {
    */
   public static async open(args: DownloadAndOpenArgs): Promise<IModelDb> {
     const { activity, tokenProps, syncMode } = args;
-    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps }));
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", tokenProps);
 
     const timeout = args.timeout ?? 1000;
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
       const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(args));
 
       if (briefcaseDb === undefined) {
-        Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
+        Logger.logTrace(loggerCategory, "Open briefcase - pending", tokenProps);
         throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
       // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
     }
+    if (!tokenProps.iModelId || !tokenProps.iTwinId || !tokenProps.changeset)
+      throw new IModelError(IModelStatus.BadArg, "invalid arguments");
 
-    assert(undefined !== tokenProps.iModelId);
-    assert(undefined !== tokenProps.iTwinId);
-    assert(undefined !== tokenProps.changeset);
-
-    const checkpoint: CheckpointProps = {
+    const checkpoint = {
       iModelId: tokenProps.iModelId,
       iTwinId: tokenProps.iTwinId,
       changeset: tokenProps.changeset,
       accessToken: activity.accessToken,
     };
 
-    // opening a checkpoint, readonly.
+    // opening a checkpoint.
     let db: SnapshotDb | void;
     // first check if it's already open
     db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint));
     if (db) {
-      Logger.logTrace(loggerCategory, "Checkpoint was already open", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "Checkpoint was already open", tokenProps);
       return db;
     }
 
     try {
       // now try V2 checkpoint
       db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
-      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "using V2 checkpoint", tokenProps);
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", { error: BentleyError.getErrorProps(e), ...tokenProps });
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
@@ -184,10 +182,10 @@ export class RpcBriefcaseUtility {
       db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
 
       if (db === undefined) {
-        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
+        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", tokenProps);
         throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
-      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", tokenProps);
     }
 
     return db;
