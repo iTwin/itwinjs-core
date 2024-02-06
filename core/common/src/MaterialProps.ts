@@ -62,6 +62,10 @@ export interface TextureMapProps {
   pattern_mapping?: TextureMapping.Mode;
   /** Weight at which to combine diffuse image and color; if undefined, defaults to 1.0 */
   pattern_weight?: number;
+  /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false.
+   * @deprecated in 4.4. It never functioned properly - use [[pattern_useconstantlod]] instead.
+   */
+  pattern_useConstantLod?: boolean;
   /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false. */
   pattern_useconstantlod?: boolean;
   /** The number of times the texture is repeated if pattern_useconstantlod is true.  Increasing this will make the texture pattern appear smaller, decreasing it will make it larger. Defaults to 1.*/
