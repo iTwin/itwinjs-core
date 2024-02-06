@@ -13,7 +13,7 @@ import {
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
-import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager";
+import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
