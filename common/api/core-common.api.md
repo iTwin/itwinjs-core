@@ -9399,7 +9399,9 @@ export interface TextureMapProps {
     pattern_scale?: Point2dProps;
     pattern_scalemode?: TextureMapUnits;
     pattern_u_flip?: boolean;
+    // @deprecated
     pattern_useConstantLod?: boolean;
+    pattern_useconstantlod?: boolean;
     pattern_weight?: number;
     TextureId: Id64String;
 }
