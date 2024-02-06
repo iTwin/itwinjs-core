@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClass, ECClassModifier, Mixin, parseClassModifier, SchemaItemKey, SchemaItemType, schemaItemTypeToString, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaItemEditResults } from "../Editing/Editor";
 import { MutableClass } from "../Editing/Mutable/MutableClass";
 import { SchemaMergeContext } from "./SchemaMerger";
@@ -72,7 +72,11 @@ export class ClassMerger<TClass extends ECClass> {
         : sourceBaseClass.schema.schemaKey);
 
       if (changeType === ChangeType.Missing && targetBaseClass === undefined) {
-        return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+        if (sourceBaseClass.schemaItemType === SchemaItemType.EntityClass) {
+          return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+        } else if (sourceBaseClass.schemaItemType === SchemaItemType.Mixin) {
+          return this.context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
+        }
       }
 
       if (targetBaseClass !== undefined) {
@@ -81,7 +85,11 @@ export class ClassMerger<TClass extends ECClass> {
           return { errorMessage: `'${baseClassKey.name}' class could not be located in the merged schema.`};
         }
         if (await baseClass.is(targetBaseClass)) {
-          return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+          if (baseClass.schemaItemType === SchemaItemType.EntityClass) {
+            return this.context.editor.entities.setBaseClass(itemKey, baseClassKey);
+          } else if (baseClass.schemaItemType === SchemaItemType.Mixin) {
+            return this.context.editor.mixins.setMixinBaseClass(itemKey, baseClassKey);
+          }
         }
       }
     }
@@ -125,12 +133,13 @@ export class ClassMerger<TClass extends ECClass> {
     }
   }
 
-  public static async mergeChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
+  // First pass to create missing changes
+  public static async mergeItemStubChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>) {
     const merger = new this(context);
 
     for (const change of classChanges) {
       const sourceItem = (await change.schema.getItem<ECClass>(change.ecTypeName))!;
-      let targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
+      const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
       const changeType = change.schemaItemMissing?.changeType;
 
       if (changeType === ChangeType.Missing) {
@@ -143,8 +152,18 @@ export class ClassMerger<TClass extends ECClass> {
         if (results.errorMessage !== undefined) {
           throw new Error(results.errorMessage);
         }
-        targetItemKey = results.itemKey!;
       }
+    }
+  }
+
+  // 2nd pass to merge baseClass, properties, mixins and CA.
+  public static async mergeItemContentChanges(context: SchemaMergeContext, classChanges: Iterable<ClassChanges>){
+    const merger = new this(context);
+    let mergeResults: SchemaItemEditResults;
+
+    for (const change of classChanges) {
+      const targetItemKey = new SchemaItemKey(change.ecTypeName, context.targetSchema.schemaKey);
+      const changeType = change.schemaItemMissing?.changeType;
 
       if (change.baseClassDelta !== undefined) {
         const results = await merger.setBaseClass(targetItemKey, change.baseClassDelta, changeType);
@@ -161,7 +180,7 @@ export class ClassMerger<TClass extends ECClass> {
       }
 
       await merger.mergeAttributeValueChanges(targetItemKey, change.propertyValueChanges);
-      let mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
+      mergeResults  = await ClassPropertyMerger.mergeChanges(context, targetItemKey, change.propertyChanges.values());
       if (mergeResults.errorMessage !== undefined) {
         throw new Error(mergeResults.errorMessage);
       }
