@@ -961,8 +961,12 @@ export abstract class IModelDb extends IModel {
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
       const container = props?.container;
-      if (container)
-        props = { ...props, tempFileBase: join(IModelHost.cacheDir, container.containerId, file.path) }; // temp files for container-based Dbs should go in the cacheDir
+      if (container) {
+        // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
+        const baseDir = join(IModelHost.profileDir, "CloudDbTemp", container.containerId);
+        IModelJsFs.recursiveMkDirSync(baseDir);
+        props = { ...props, tempFileBase: join(baseDir, file.path) };
+      }
       nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {

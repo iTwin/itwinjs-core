@@ -125,7 +125,7 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  public static readonly cloudCacheName = "v2Checkpoints";
+  public static readonly cloudCacheName = "Checkpoints";
   private static _cloudCache?: CloudSqlite.CloudCache;
   private static containers = new Map<string, CloudSqlite.CloudContainer>();
 

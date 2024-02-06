@@ -253,7 +253,7 @@ describe("Checkpoints", () => {
       await shutdownDaemon();
     });
 
-    it("should only start prefetch", async () => {
+    it("should start prefetch", async () => {
       IModelHost.appWorkspace.settings.addDictionary("prefetch", SettingsPriority.application, {
         "Checkpoints/prefetch": true,
         "Checkpoints/prefetch/maxBlocks": 5000,
