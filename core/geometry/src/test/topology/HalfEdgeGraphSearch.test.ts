@@ -243,4 +243,50 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(boundaryLoops[0][3].id, 8);
     expect(ck.getNumErrors()).equals(0);
   });
+  it("HalfEdgeGraphSearch.graphToPolyface", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const graph = new HalfEdgeGraph();
+    const node0 = graph.addEdgeXY(1, 1, 0, 0);
+    const node1 = node0.faceSuccessor;
+    const node2 = graph.addEdgeXY(0, 0, 2, 0);
+    const node3 = node2.faceSuccessor;
+    const node4 = graph.addEdgeXY(2, 0, 1, 1);
+    const node5 = node4.faceSuccessor;
+    HalfEdge.pinch(node1, node2);
+    HalfEdge.pinch(node3, node4);
+    HalfEdge.pinch(node5, node0);
+    const node6 = graph.addEdgeXY(2, 0, 4, 0);
+    const node7 = node6.faceSuccessor;
+    const node8 = graph.addEdgeXY(4, 0, 3, 1);
+    const node9 = node8.faceSuccessor;
+    const node10 = graph.addEdgeXY(3, 1, 1, 1);
+    const node11 = node10.faceSuccessor;
+    HalfEdge.pinch(node3, node6);
+    HalfEdge.pinch(node7, node8);
+    HalfEdge.pinch(node9, node10);
+    HalfEdge.pinch(node5, node11);
+    graph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    node4.clearMaskAroundEdge(HalfEdgeMask.BOUNDARY_EDGE);
+    node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+
+    const options = StrokeOptions.createForCurves();
+    options.needParams = true;
+    options.needColors = false;
+    options.needNormals = true;
+    const mesh = PolyfaceBuilder.graphToPolyface(graph, options);
+    const numGraphPoints = 5;
+    ck.testExactNumber(mesh.pointCount, numGraphPoints);
+    let numEdgeInFacets = 0;
+    for (let i = 0; i < mesh.facetCount; i++)
+      numEdgeInFacets += mesh.numEdgeInFacet(i);
+    ck.testExactNumber(numEdgeInFacets, mesh.data.normalIndex!.length);
+    ck.testExactNumber(numEdgeInFacets, mesh.data.paramIndex!.length);
+    ck.testExactNumber(numEdgeInFacets, mesh.data.pointIndex.length);
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "graphToPolyface");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
