@@ -70,7 +70,7 @@ packageClassification:
       "packages": ["imodel-transformer"],
     },
     {
-      "order": "6",
+      "order": "7",
       "header": "Connector Framework",
       "packages": ["connector-framework"],
     },

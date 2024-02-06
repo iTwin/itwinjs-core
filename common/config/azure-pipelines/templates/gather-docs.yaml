@@ -103,7 +103,7 @@ steps:
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
       stagingSteps:
         - task: CopyFiles@2
-          displayName: Copy Auth Clients Docs to staging
+          displayName: Copy Connector Framework Docs to staging
           inputs:
             SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
             TargetFolder: ${{ parameters.stagingDir }}/reference/connector-framework/

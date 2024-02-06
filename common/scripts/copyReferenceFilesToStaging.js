@@ -31,7 +31,14 @@ async function copyFilesToStaging() {
 
   const referencePath = path.resolve(dest, "reference");
   const extractPath = path.resolve(dest, "extract");
-  const folderList = ["core", "domains", "editor", "presentation", "ui"];
+  const folderList = [
+    "core",
+    "domains",
+    "editor",
+    "presentation",
+    "ui",
+    "connector-framework",
+  ];
 
   await fs.cp(path.resolve(basePath, "docs"), dest, { recursive: true });
   await fs.cp(
