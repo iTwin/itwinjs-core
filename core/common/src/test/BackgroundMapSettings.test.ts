@@ -90,7 +90,9 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ globeMode: 42 as GlobeMode }, {});
 
     roundTrip({ terrainSettings: { providerName: "CesiumWorldTerrain" } }, {});
+    roundTrip({ terrainSettings: { providerName: "CesiumWorldTerrain", dataSource: "1239543" } }, { terrainSettings: { dataSource: "1239543" } });
     roundTrip({ terrainSettings: { providerName: "CustomProvider" } }, "input");
+    roundTrip({ terrainSettings: { providerName: "CustomProvider", dataSource: "blah" } }, "input");
 
     roundTrip({ terrainSettings: { exaggeration: 1 } }, {});
     roundTrip({ terrainSettings: { exaggeration: 99 } }, "input");

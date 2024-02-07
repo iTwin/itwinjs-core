@@ -37,7 +37,8 @@
   },
   "BackgroundMap": {
     "MapBoxCopyright": "© Mapbox, © OpenStreetMap contributors",
-    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia",
+    "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia.",
+    "CesiumBathymetryAttribution": "GEBCO_2023 Grid: GEBCO Compilation Group (2023) GEBCO 2023 Grid (doi:10.5285/f98b053b-0cbc-6c23-e053-6c86abc0af7b).\nHigh-resolution depth model for the Great Barrier Reef - 30 m: Portions CC BY 4.0 from Beaman, R.J. 2017.\nHigh-resolution depth model for the Great Barrier Reef - 30 m. Geoscience Australia, Canberra.\nswissBATHY3D: ©swisstopo.",
     "OpenStreetMapContributors": "contributors",
     "CannotObtainTerrain": "Terrain is unavailable",
     "MissingCesiumToken": "The application must be configured with a valid Cesium ION access key to obtain 3d terrain data."

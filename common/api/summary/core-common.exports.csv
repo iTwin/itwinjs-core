@@ -91,6 +91,7 @@ public;CartographicProps
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
+public;CesiumTerrainAssetId
 internal;ChangeData
 public;ChangedElements
 public;ChangedEntities
