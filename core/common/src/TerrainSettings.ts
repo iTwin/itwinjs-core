@@ -16,8 +16,16 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
  */
 export type TerrainProviderName = string;
 
+/** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
+ * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".
+ * You may alternatively use the Id of any ION asset to which you have access.
+ * @see [[TerrainSettings.fromCesiumIonAsset]] to create TerrainSettings that obtain terrain from a specified ION asset.
+ * @public
+ */
 export enum CesiumTerrainAssetId {
+  /** Default global 3d terrain. */
   Default = "1",
+  /** Global 3d terrain that includes [bathymetry](https://cesium.com/platform/cesium-ion/content/cesium-world-bathymetry/) (seafloor) terrain. */
   Bathymetry = "2426648",
 }
 
@@ -141,7 +149,7 @@ export class TerrainSettings {
    * one of those defined by [[CesiumTerrainAssetId]].
    * @note You must ensure your Cesium ION account has access to the specified asset.
    */
-  public static fromCesium(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
+  public static fromCesiumIonAsset(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
     return TerrainSettings.fromJSON({
       ...options,
       dataSource: assetId,
