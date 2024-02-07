@@ -1026,6 +1026,12 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
+// @public
+export enum CesiumTerrainAssetId {
+    Bathymetry = "2426648",
+    Default = "1"
+}
+
 // @internal (undocumented)
 export interface ChangeData {
     // (undocumented)
@@ -9201,6 +9207,7 @@ export enum TerrainHeightOriginMode {
 // @public
 export interface TerrainProps {
     applyLighting?: boolean;
+    dataSource?: string;
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
@@ -9214,13 +9221,17 @@ export type TerrainProviderName = string;
 
 // @public
 export class TerrainSettings {
+    // @deprecated
     constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    constructor(props?: TerrainProps);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
+    readonly dataSource: string;
     // (undocumented)
     equals(other: TerrainSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
     readonly exaggeration: number;
+    static fromCesiumIonAsset(assetId?: string, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings;
     // (undocumented)
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
