@@ -137,6 +137,10 @@ export class TerrainSettings {
     return new TerrainSettings(json);
   }
 
+  /** Create settings that obtain terrain from a [Cesium ION asset](https://cesium.com/platform/cesium-ion/content/) such as
+   * one of those defined by [[CesiumTerrainAssetId]].
+   * @note You must ensure your Cesium ION account has access to the specified asset.
+   */
   public static fromCesium(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
     return TerrainSettings.fromJSON({
       ...options,
