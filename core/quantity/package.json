@@ -35,7 +35,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",

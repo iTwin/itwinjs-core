@@ -45,7 +45,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
+    "@itwin/eslint-plugin": "4.0.0-dev.50",
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^10.0.6",
