@@ -24,7 +24,7 @@ To enable seafloor terrain, create a [TerrainSettings]($common) specifying [Cesi
       }
     });
   }
-````
+```
 
 You can alternatively specify the Id of any global Cesium ION asset to which you have access. Either way, make sure you add the asset to your ION account first.
 
