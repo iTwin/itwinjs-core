@@ -137,7 +137,7 @@ export class TerrainSettings {
     return new TerrainSettings(json);
   }
 
-  public static fromCesium(assetId: CesiumTerrainAssetId = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
+  public static fromCesium(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
     return TerrainSettings.fromJSON({
       ...options,
       dataSource: assetId,
