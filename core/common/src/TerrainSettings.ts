@@ -106,7 +106,7 @@ export class TerrainSettings {
   }
 
   /** @deprecated in 4.x. Use the overload that takes [[TerrainProps]]. */
-  constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode)
+  constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
 
   constructor(props?: TerrainProps);
 
@@ -129,7 +129,7 @@ export class TerrainSettings {
 
     if (true === nonLocatable)
       this._nonLocatable = true;
-    
+
     switch (heightOriginMode) {
       case TerrainHeightOriginMode.Ground:
       case TerrainHeightOriginMode.Geoid:
@@ -153,7 +153,7 @@ export class TerrainSettings {
     return TerrainSettings.fromJSON({
       ...options,
       dataSource: assetId,
-    })
+    });
   }
 
   public toJSON(): TerrainProps {

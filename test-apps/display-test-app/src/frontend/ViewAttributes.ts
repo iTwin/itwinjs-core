@@ -687,7 +687,7 @@ export class ViewAttributes {
       (enabled: boolean) => updateTerrainSettings({ dataSource: enabled ? CesiumTerrainAssetId.Bathymetry : CesiumTerrainAssetId.Default }),
       settingsDiv,
     ).checkbox;
-    
+
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;

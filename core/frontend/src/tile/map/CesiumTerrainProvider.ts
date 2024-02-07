@@ -201,7 +201,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
     if (this._assetId === CesiumTerrainAssetId.Bathymetry)
       notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
-    
+
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
