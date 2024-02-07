@@ -105,7 +105,7 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  /** @deprecated in 4.x. Use the overload that takes [[TerrainProps]]. */
+  /** @deprecated in 4.5.x. Use the overload that takes [[TerrainProps]]. */
   constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
 
   constructor(props?: TerrainProps);
