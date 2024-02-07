@@ -23,7 +23,7 @@ export type TerrainProviderName = string;
  * @public
  */
 export enum CesiumTerrainAssetId {
-  /** Default global 3d terrain. */
+  /** Default [global 3d terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). */
   Default = "1",
   /** Global 3d terrain that includes [bathymetry](https://cesium.com/platform/cesium-ion/content/cesium-world-bathymetry/) (seafloor) terrain. */
   Bathymetry = "2426648",
