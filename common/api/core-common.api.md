@@ -3493,11 +3493,8 @@ export namespace GenericInstanceFilterRuleValue {
         // (undocumented)
         id: string;
     }
-    // (undocumented)
     export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey;
-    // (undocumented)
     export function isPoint2d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point2d;
-    // (undocumented)
     export function isPoint3d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point3d;
     // (undocumented)
     export interface Point2d {

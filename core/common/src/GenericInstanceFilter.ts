@@ -72,12 +72,15 @@ export namespace GenericInstanceFilterRuleValue {
     id: string;
     className: string;
   }
+  /** Checks if supplied value is `Point2d` like. Returns `true` for `Point2d` and `Point3d`. */
   export function isPoint2d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point2d {
     return (value as GenericInstanceFilterRuleValue.Point2d).x !== undefined && (value as GenericInstanceFilterRuleValue.Point2d).y !== undefined;
   }
+  /** Checks if supplied value is `Point3d` like. */
   export function isPoint3d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point3d {
     return isPoint2d(value) && (value as GenericInstanceFilterRuleValue.Point3d).z !== undefined;
   }
+  /** Checks if supplied value is `InstanceKey` like. */
   export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey {
     return (value as GenericInstanceFilterRuleValue.InstanceKey) !== undefined && (value as GenericInstanceFilterRuleValue.InstanceKey).className !== undefined;
   }
