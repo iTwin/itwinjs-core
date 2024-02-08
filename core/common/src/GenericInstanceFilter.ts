@@ -110,7 +110,7 @@ export interface GenericInstanceFilterRule {
    */
   operator: GenericInstanceFilterRuleOperator;
   /**
-   * Value to which property values is compared to. For unary operators value is 'undefined'.
+   * Value to which property values is compared to. For unary operators value is `undefined`.
    */
   value?: GenericInstanceFilterRuleValue;
   /**
@@ -161,16 +161,16 @@ export interface GenericInstanceFilterRelatedInstanceDescription {
  * @beta
  */
 export interface GenericInstanceFilterRelationshipStep {
-  /** Class name of the source class. */
+  /** Full class name of the source class, e.g. `BisCore.Element`. */
   sourceClassName: string;
   /** Class name of the target class. */
   targetClassName: string;
   /** Class name of the relationship class that should be used to move from source to target. */
   relationshipClassName: string;
   /**
-   * Flag that describes if this step follows relationship class in `Forward` or `Backward` direction.
-   * If step follows relationship class in `Forward` direction than `sourceClassName` matches relationship source class and `targetClassName` matches relationship target class.
-   * Otherwise `sourceClassName` matches relationship target class and `targetClassName` matches relationship source class.
+   * A flag that describes if this step follows relationship class in forward or backward direction.
+   * If the step follows relationship in forward direction then `sourceClassName` matches relationship's source class and `targetClassName` matches relationship's target class.
+   * Otherwise, `sourceClassName` matches relationship's target class and `targetClassName` matches relationship's source class.
    */
   isForwardRelationship: boolean;
 }
