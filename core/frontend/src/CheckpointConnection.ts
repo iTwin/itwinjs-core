@@ -47,24 +47,26 @@ export class CheckpointConnection extends IModelConnection {
   public override isCheckpointConnection(): this is CheckpointConnection { return true; }
 
   /**
-   * Open a readonly IModelConnection to an iModel over RPC.
+   * Open a readonly IModelConnection to a Checkpoint of an iModel.
    */
   public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
-    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    const accessToken = await IModelApp.getAccessToken();
-
     if (undefined === IModelApp.hubAccess)
-      throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remote iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");
+      throw new Error("Missing an implementation of IModelApp.hubAccess");
 
+    const accessToken = await IModelApp.getAccessToken();
     const changeset = await IModelApp.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version });
 
-    const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
-    const openResponse = await this.callOpen(iModelRpcProps, routingContext);
-
-    const connection = new this(openResponse, false);
-    RpcManager.setIModel(connection);
-    connection.routingContext = routingContext;
-    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+    let connection: CheckpointConnection;
+    const iModelProps = { iTwinId, iModelId, changeset };
+    if (IpcApp.isValid) {
+      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(iModelProps), true);
+    } else {
+      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+      connection = new this(await this.callOpen(iModelProps, routingContext), false);
+      RpcManager.setIModel(connection);
+      connection.routingContext = routingContext;
+      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+    }
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -142,13 +144,6 @@ export class CheckpointConnection extends IModelConnection {
     request.parameters[0] = this.getRpcProps(); // Modify the token of the original request before resubmitting it.
     resubmit();
   };
-
-  public static async openForIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection> {
-    const openResponse = await IpcApp.appFunctionIpc.openCheckpoint(args);
-    const connection = new this(openResponse, true);
-    IModelConnection.onOpen.raiseEvent(connection);
-    return connection;
-  }
 
   /** Close this CheckpointConnection */
   public async close(): Promise<void> {

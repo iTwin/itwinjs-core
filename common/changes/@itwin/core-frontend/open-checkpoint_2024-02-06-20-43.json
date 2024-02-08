@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "add CheckpointConnection.openForIpc",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
