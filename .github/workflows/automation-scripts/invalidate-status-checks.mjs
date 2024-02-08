@@ -1,6 +1,7 @@
-import { Octokit, App } from "octokit"
+import Octokit from "octokit"
+import dotenv from 'dotenv'
 
-require('dotenv').config();
+dotenv.config();
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN
