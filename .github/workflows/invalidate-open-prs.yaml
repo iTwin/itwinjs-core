@@ -2,16 +2,16 @@
 
 name: Invalidate Open PRs when imodeljs-native is updated
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-    - 'master'
-    paths:
-    - '**/core/backend/package.json'
+on: [push]
+  # workflow_dispatch:
+  # push:
+  #   branches:
+  #   - 'master'
+  #   paths:
+  #   - '**/core/backend/package.json'
 
 jobs:
-  finalize:
+  invalidate:
     name: Invalidate imodeljs-native status check
     runs-on: ubuntu-latest
     steps:
