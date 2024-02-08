@@ -347,9 +347,10 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
             }
           }
         } else {
-          const isValidUrl = await this.validateEndpointUrl(restUrlFromTokenService.toString());
+          const oauthEndpointUrl = `${restUrlFromTokenService.toString()}oauth2/${endpointStr}`;
+          const isValidUrl = await this.validateEndpointUrl(oauthEndpointUrl);
           if (isValidUrl === undefined || isValidUrl ) {
-            const endpoint = await this.createEndpoint(mapLayerUrl, `${restUrlFromTokenService.toString()}oauth2/${endpointStr}`, endpointType);
+            const endpoint = await this.createEndpoint(mapLayerUrl, oauthEndpointUrl, endpointType);
             if (endpoint)
               return endpoint;
           }
