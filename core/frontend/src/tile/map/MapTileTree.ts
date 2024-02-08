@@ -974,13 +974,18 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public initializeLayers(context: SceneContext): boolean {
+    let hasLoadedTileTree = false;
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree)
-      return false;     // Not loaded yet.
+    if (undefined === tree) {
+      console.log(`initializeLayers skipped not tree`);
+      return hasLoadedTileTree;     // Not loaded yet.
+    }
 
     tree.layerImageryTrees.length = 0;
-    if (0 === this._layerTrees.length)
+    if (0 === this._layerTrees.length) {
+      console.log(`initializeLayers skipped no imagery tree`);
       return !this.isOverlay;
+    }
 
     let treeIndex = this._layerTrees.length - 1;
     // Start displaying at the highest completely opaque layer...
@@ -997,9 +1002,14 @@ export class MapTileTreeReference extends TileTreeReference {
       if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
         && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
-        if (undefined === layerTree)
-          return false; // Not loaded yet.
+        if (layerTree !== undefined) {
+          hasLoadedTileTree = true;
+        } else {
+          // Let's continue, there might loaded tileTree in the list
+          continue;
+        }
 
+        // Add loaded TileTree
         const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
@@ -1008,7 +1018,7 @@ export class MapTileTreeReference extends TileTreeReference {
       }
     }
 
-    return true;
+    return hasLoadedTileTree;
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
