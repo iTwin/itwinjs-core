@@ -1,8 +1,10 @@
 import { Octokit, App } from "octokit"
 
-// require('dotenv').config();
+require('dotenv').config();
 
-const octokit = new Octokit;
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
+})
 
 let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
   owner: 'iTwin',

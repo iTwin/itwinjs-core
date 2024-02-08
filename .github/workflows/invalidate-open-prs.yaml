@@ -27,7 +27,7 @@ jobs:
       - name: Run invalidate-status-checks.mjs
         run: |
           npm install octokit
-          # npm install dotenv
+          npm install dotenv
           node ./.github/workflows/automation-scripts/invalidate-status-checks.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
