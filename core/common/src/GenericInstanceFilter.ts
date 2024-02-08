@@ -16,7 +16,7 @@ export interface GenericInstanceFilter {
   /**
    * Information about related instances that has access to the properties used in filter.
    * These can be used to create `JOIN` clause when building `ECSQL` query. Each related property
-   * used in rule will have `sourceAlias` that matches `GenericInstanceFilterRelatedInstanceDescription.alias`.
+   * used in rule will have [[GenericInstanceFilterRule.sourceAlias]] that matches [[GenericInstanceFilterRelatedInstanceDescription.alias]].
    * If more than one property of the same related instance is used, they will share the same alias.
    */
   relatedInstances: GenericInstanceFilterRelatedInstanceDescription[];
@@ -32,7 +32,7 @@ export interface GenericInstanceFilter {
 }
 
 /**
- * Type definition that describes operators supported by `GenericInstanceFilterRule`.
+ * Type definition that describes operators supported by [[GenericInstanceFilterRule]].
  * @beta
  */
 export type GenericInstanceFilterRuleOperator =
@@ -49,7 +49,7 @@ export type GenericInstanceFilterRuleOperator =
   | "like";
 
 /**
- * Type definition that describes value of `GenericInstanceFilterRule`.
+ * Type definition that describes value of [[GenericInstanceFilterRule]].
  * @beta
  */
 export interface GenericInstanceFilterRuleValue {
@@ -72,15 +72,15 @@ export namespace GenericInstanceFilterRuleValue {
     id: string;
     className: string;
   }
-  /** Checks if supplied value is `Point2d` like. Returns `true` for `Point2d` and `Point3d`. */
+  /** Checks if supplied value is [[GenericInstanceFilterRuleValue.Point2d]] like. Returns `true` for `Point2d` and [[GenericInstanceFilterRuleValue.Point3d]]. */
   export function isPoint2d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point2d {
     return (value as GenericInstanceFilterRuleValue.Point2d).x !== undefined && (value as GenericInstanceFilterRuleValue.Point2d).y !== undefined;
   }
-  /** Checks if supplied value is `Point3d` like. */
+  /** Checks if supplied value is [[GenericInstanceFilterRuleValue.Point3d]] like. */
   export function isPoint3d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point3d {
     return isPoint2d(value) && (value as GenericInstanceFilterRuleValue.Point3d).z !== undefined;
   }
-  /** Checks if supplied value is `InstanceKey` like. */
+  /** Checks if supplied value is [[GenericInstanceFilterRuleValue.InstanceKey]] like. */
   export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey {
     return (value as GenericInstanceFilterRuleValue.InstanceKey) !== undefined && (value as GenericInstanceFilterRuleValue.InstanceKey).className !== undefined;
   }
@@ -101,7 +101,7 @@ export namespace GenericInstanceFilterRuleValue {
 export interface GenericInstanceFilterRule {
   /**
    * Alias of the source to access this property. For related properties `sourceAlias` should match
-   * `GenericInstanceFilterRelatedInstanceDescription.alias` of one `GenericInstanceFilter.relatedInstances`.
+   * [[GenericInstanceFilterRelatedInstanceDescription.alias]] of one [[GenericInstanceFilter.relatedInstances]].
    */
   sourceAlias: string;
   /**
@@ -123,7 +123,7 @@ export interface GenericInstanceFilterRule {
 }
 
 /**
- * Type definition that describes operators supported by `GenericInstanceFilterRuleGroup`.
+ * Type definition that describes operators supported by [[GenericInstanceFilterRuleGroup]].
  * @beta
  */
 export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
@@ -153,7 +153,7 @@ export interface GenericInstanceFilterRelatedInstanceDescription {
    */
   path: GenericInstanceFilterRelationshipStep[];
   /**
-   * Related instance alias. This alias match `sourceAlias` in all filter rules where
+   * Related instance alias. This alias match [[GenericInstanceFilterRule.sourceAlias]] in all filter rules where
    * properties of this related instance is used.
    */
   alias: string;
