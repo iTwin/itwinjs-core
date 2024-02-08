@@ -10,6 +10,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { Viewport, ViewportDecorator } from "./Viewport";
 import { HitDetail } from "./HitDetail";
 import { SceneContext } from "./ViewContext";
+import { AmbientOcclusion, Environment, SolarShadowSettings } from "@itwin/core-common";
 
 // Describes the common interface for all SceneObjects.
 // For documentation and type-checking purposes only - SceneObject is a union type.
@@ -25,17 +26,8 @@ export interface ISceneObject extends ViewportDecorator {
   // collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
-// Necessary to have a special type, vs just a custom scene object (that maybe wraps a ViewportDecorator / Decorator)?
-export interface SceneDecorator extends ISceneObject, ViewportDecorator {
-  type: "decorator";
-}
-
-export interface SceneDecorators extends Iterable<SceneDecorator> {
-  
-}
-
 export interface SceneRealityModel extends ISceneObject {
-  type: "realityModel";
+  readonly type: "realityModel";
 }
 
 export interface SceneRealityModels extends Iterable<SceneRealityModel> {
@@ -43,23 +35,47 @@ export interface SceneRealityModels extends Iterable<SceneRealityModel> {
 }
 
 export interface SceneMap extends ISceneObject {
-  type: "map";
+  readonly type: "map";
+}
+
+export interface ScenePresentation extends ISceneObject {
+  readonly type: "environment";
+  environment: Environment;
+  toggleSkyBox(display?: boolean): void;
+  toggleAtmosphere(display?: boolean): void;
+  // Would anyone use this, and what would it do?
+  // toggleGroundPlane(display?: boolean): void;
+
+  ambientOcclusion: AmbientOcclusion.Settings;
+  solarShadows: SolarShadowSettings;
+}
+
+export interface CustomSceneObject extends ISceneObject {
+  readonly type: "custom";
+  readonly customType: string;
+}
+
+export interface CustomSceneObjects extends Iterable<CustomSceneObject> {
+
 }
 
 // This union type is open for future expansion - the `type` field should be treated as non-exhaustive.
-export type SceneObject = SceneDecorator | SceneRealityModel | SceneMap;
+export type SceneObject = SceneRealityModel | SceneMap | ScenePresentation | CustomSceneObject;
 
 // Exists for documentation + type-checking only.
 export interface IViewportScene {
   viewport: Viewport;
 }
 
-export interface SpatialViewportScene extends IViewportScene, Iterable<SceneObject> {
+export interface SpatialViewportScene extends IViewportScene, Iterable<SceneObject>, ViewportDecorator {
   readonly type: "spatial";
-  readonly decorators: SceneDecorators;
   readonly realityModels: SceneRealityModels;
   // Will we need/want individual SceneObjects for each map layer, and the globe, and whatever?
   readonly maps: SceneMap;
+  readonly presentation: ScenePresentation;
+  readonly customObjects: CustomSceneObjects;
+
+  // Something for computing/providing a coordinate reference frame for nav cube and standard orientations.
 }
 
 export type ViewportScene = SpatialViewportScene;
