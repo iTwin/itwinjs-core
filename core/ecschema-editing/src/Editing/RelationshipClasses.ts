@@ -14,7 +14,7 @@ import {
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
-import * as Rules from "../Validation/ECRules";
+import * as rules from "../Validation/ECRules";
 import { RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
 
 /**
@@ -223,9 +223,9 @@ export class RelationshipClasses extends ECClasses {
     let diagnostics: AsyncIterable<SchemaItemDiagnostic<RelationshipClass, any[]>> | AsyncIterable<RelationshipConstraintDiagnostic<any[]>>;
 
     if (relationshipOrConstraint instanceof RelationshipClass) {
-      diagnostics = Rules.validateRelationship(relationshipOrConstraint);
+      diagnostics = rules.validateRelationship(relationshipOrConstraint);
     } else {
-      diagnostics = Rules.validateRelationshipConstraint(relationshipOrConstraint);
+      diagnostics = rules.validateRelationshipConstraint(relationshipOrConstraint);
     }
 
     const errorMessages = [];

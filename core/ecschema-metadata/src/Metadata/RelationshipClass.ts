@@ -240,7 +240,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._constraintClasses.forEach( (item, index) => {
       const constraintName = item.fullName;
       if(constraintName === constraint.fullName)
-        this._constraintClasses?.splice(index,1);
+        void this._constraintClasses?.splice(index,1);
     });
   }
 

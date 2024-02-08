@@ -30,6 +30,6 @@ export enum QuantityStatus {
 export class QuantityError extends BentleyError {
   public constructor(public override readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
-    assert(errorNumber !== QuantityStatus.Success, message);
+    assert(errorNumber !== QuantityStatus.Success.valueOf(), message);
   }
 }

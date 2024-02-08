@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import * as Rules from "../Validation/ECRules";
+import * as rules from "../Validation/ECRules";
 import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
@@ -130,7 +130,7 @@ export class SchemaContextEditor {
       return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     await schema.addReference(refSchema);
-    const diagnostics = Rules.validateSchemaReferences(schema);
+    const diagnostics = rules.validateSchemaReferences(schema);
 
     const result: SchemaEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
@@ -161,7 +161,7 @@ export class SchemaContextEditor {
 
     schema.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
+    const diagnostics = rules.validateCustomAttributeInstance(schema, customAttribute);
 
     const result: SchemaEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {

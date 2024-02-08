@@ -9,7 +9,7 @@
 
 // Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
 import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
-import type * as ElectronModule from "electron";
+import type * as electronModule from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -93,7 +93,7 @@ export class ElectronHost {
 
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof ElectronModule;
+  private static _electron: typeof electronModule;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;

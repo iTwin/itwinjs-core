@@ -8,7 +8,7 @@
 
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
-import Backend, { BackendOptions } from "i18next-http-backend";
+import backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
 
@@ -64,7 +64,7 @@ export class ITwinLocalization implements Localization {
 
     this.i18next
       .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
-      .use(options?.backendPlugin ?? Backend)
+      .use(options?.backendPlugin ?? backend)
       .use(TranslationLogger);
   }
 

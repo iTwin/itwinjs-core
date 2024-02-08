@@ -54,19 +54,19 @@ export enum PropertyType {
 /** @beta */
 export namespace PropertyTypeUtils {
   export function isArray(t: PropertyType) {
-    return (t === (PropertyFlags.Array | t));
+    return (t.valueOf() === (PropertyFlags.Array | t));
   }
   export function isPrimitive(t: PropertyType) {
-    return (t === (PropertyFlags.Primitive | t));
+    return (t.valueOf() === (PropertyFlags.Primitive | t));
   }
   export function isStruct(t: PropertyType) {
-    return (t === (PropertyFlags.Struct | t));
+    return (t.valueOf() === (PropertyFlags.Struct | t));
   }
   export function isNavigation(t: PropertyType) {
-    return (t === (PropertyFlags.Navigation | t));
+    return (t.valueOf() === (PropertyFlags.Navigation | t));
   }
   export function isEnumeration(t: PropertyType) {
-    return (t === (PropertyFlags.Enumeration | t));
+    return (t.valueOf() === (PropertyFlags.Enumeration | t));
   }
   export function asArray(t: PropertyType): PropertyType {
     return t | PropertyFlags.Array;

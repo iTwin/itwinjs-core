@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as Benchmark from "benchmark";
+import * as benchmark from "benchmark";
 
 /* eslint-disable no-console */
 export async function comparePerformance(...funcs: Array<() => Promise<any>>): Promise<void> {
-  const suite = new Benchmark.Suite();
+  const suite = new benchmark.Suite();
   return new Promise((resolve) => {
 
     funcs.forEach((testFunc, i) => {
@@ -31,7 +31,7 @@ export async function comparePerformance(...funcs: Array<() => Promise<any>>): P
 }
 
 export function comparePerformanceSync(...funcs: Array<() => any>): void {
-  const suite = new Benchmark.Suite();
+  const suite = new benchmark.Suite();
 
   funcs.forEach((testFunc, i) => {
     suite.add(testFunc.name || String.fromCharCode(65 + i), testFunc);

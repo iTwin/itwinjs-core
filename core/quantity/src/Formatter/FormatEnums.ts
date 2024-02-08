@@ -220,25 +220,25 @@ export function getTraitString(trait: FormatTraits) {
 /**  @beta  */
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
   const formatTraitsArr = Array<string>();
-  if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes)
+  if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes.valueOf())
     formatTraitsArr.push("TrailZeroes");
-  if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero)
+  if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero.valueOf())
     formatTraitsArr.push("KeepSingleZero");
-  if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty)
+  if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty.valueOf())
     formatTraitsArr.push("ZeroEmpty");
-  if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint)
+  if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint.valueOf())
     formatTraitsArr.push("KeepDecimalPoint");
-  if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding)
+  if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding.valueOf())
     formatTraitsArr.push("ApplyRounding");
-  if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash)
+  if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash.valueOf())
     formatTraitsArr.push("FractionDash");
-  if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel)
+  if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel.valueOf())
     formatTraitsArr.push("ShowUnitLabel");
-  if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel)
+  if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel.valueOf())
     formatTraitsArr.push("PrependUnitLabel");
-  if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator)
+  if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator.valueOf())
     formatTraitsArr.push("Use1000Separator");
-  if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
+  if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative.valueOf())
     formatTraitsArr.push("ExponentOnlyNegative");
   return formatTraitsArr;
 }

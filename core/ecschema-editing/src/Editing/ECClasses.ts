@@ -16,7 +16,7 @@ import {
 import { assert } from "@itwin/core-bentley";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
-import * as Rules from "../Validation/ECRules";
+import * as rules from "../Validation/ECRules";
 import { MutableProperty } from "./Mutable/MutableProperty";
 
 /**
@@ -257,7 +257,7 @@ export class ECClasses {
 
     mutableClass.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(mutableClass, customAttribute);
+    const diagnostics = rules.validateCustomAttributeInstance(mutableClass, customAttribute);
 
     const result: SchemaItemEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
@@ -293,7 +293,7 @@ export class ECClasses {
 
     property.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(property, customAttribute);
+    const diagnostics = rules.validateCustomAttributeInstance(property, customAttribute);
 
     const result: SchemaItemEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {

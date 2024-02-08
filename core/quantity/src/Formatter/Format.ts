@@ -96,7 +96,7 @@ export class BaseFormat {
 
   /** This method returns true if the formatTrait is set in this Format object. */
   public hasFormatTraitSet(formatTrait: FormatTraits): boolean {
-    return (this._formatTraits & formatTrait) === formatTrait;
+    return (this._formatTraits & formatTrait) === formatTrait.valueOf();
   }
 
   public loadFormatProperties(formatProps: FormatProps) {

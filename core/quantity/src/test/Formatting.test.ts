@@ -726,7 +726,7 @@ describe("Formatting tests:", () => {
       const format = new Format("test");
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
       if (formatData.hasOwnProperty("precision"))
-        assert.isTrue(format.precision === formatData.precision);
+        assert.isTrue(format.precision.valueOf() === formatData.precision);
       assert.isTrue(formatTypeToString(format.type).toUpperCase() === formatData.type.toUpperCase());
       if (formatData.hasOwnProperty("uomSeparator"))
         assert.isTrue(format.uomSeparator === formatData.uomSeparator);
