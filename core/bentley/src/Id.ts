@@ -655,32 +655,42 @@ export namespace Id64 {
   }
 }
 
+export class Id64Sequence {
+  private readonly _briefcaseId;
+  private _localId = 0;
+
+  public constructor(briefcaseId = 0) {
+    if (briefcaseId < 0 || briefcaseId > 0xffffff || Math.floor(briefcaseId) !== briefcaseId)
+      throw new Error("Briefcase Id must be an integer between 0 and 0xffffff");
+    
+    this._briefcaseId = briefcaseId;
+  }
+
+  public getNext(): Id64String {
+    return Id64.fromLocalAndBriefcaseIds(++this._localId, this._briefcaseId);
+  }
+
+  public peekNext(): Id64String {
+    return Id64.fromLocalAndBriefcaseIds(this._localId + 1, this._briefcaseId);
+  }
+}
+
 /**
  * Generates unique [[Id64String]] values in sequence, which are guaranteed not to conflict with Ids associated with persistent elements or models.
  * This is useful for associating stable, non-persistent identifiers with things like [Decorator]($frontend)s.
  * A TransientIdSequence can generate a maximum of (2^40)-2 unique Ids.
  * @public
  */
-export class TransientIdSequence {
-  private _localId: number = 0;
+export class TransientIdSequence extends Id64Sequence {
+  public constructor() {
+    super(0xffffff);
+  }
 
   /** Generate and return the next transient Id64String in the sequence.
    * @deprecated in 3.x. Use [[getNext]].
    */
   public get next(): Id64String {
     return this.getNext();
-  }
-
-  /** Generate and return the next transient Id64String in the sequence. */
-  public getNext(): Id64String {
-    return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff);
-  }
-
-  /** Preview the transient Id64String that will be returned by the next call to [[getNext]].
-   * This is primarily useful for tests.
-   */
-  public peekNext(): Id64String {
-    return Id64.fromLocalAndBriefcaseIds(this._localId + 1, 0xffffff);
   }
 }
 
