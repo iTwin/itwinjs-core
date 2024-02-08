@@ -4,8 +4,8 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-})
+  auth: `${process.env.GITHUB_TOKEN}`
+});
 
 let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
   owner: 'iTwin',
