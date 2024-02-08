@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.4.2
+      '@bentley/imodeljs-native': 4.4.3
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.4.2
+      '@bentley/imodeljs-native': 4.4.3
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -3740,8 +3740,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.4.2:
-    resolution: {integrity: sha512-XOLI0WBJ9TQq00EVxEmvMiF743ww6dj+6rdwQQIroUMzRlQLr6as0jUO0Iv2HAbL1OUgT+f0m7CskYowXW9qFw==}
+  /@bentley/imodeljs-native/4.4.3:
+    resolution: {integrity: sha512-MJ8W+iBU2FBOwnrakE7x6mJFM0VTcEHikaoJoYUktXbRkO9VhMGrlor0Iq5FkDGw09Flinqf6gNY2Ze6SoWmEg==}
     requiresBuild: true
     dev: false
 
@@ -12778,7 +12778,7 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.4
-      vite: 4.5.2
+      vite: 4.5.2_@types+node@18.16.20
     transitivePeerDependencies:
       - rollup
       - supports-color
