@@ -27,6 +27,9 @@ jobs:
       - name: Run invalidate-status-checks.mjs
         run: |
           npm install octokit
+          # npm install dotenv
           node ./.github/workflows/automation-scripts/invalidate-status-checks.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}

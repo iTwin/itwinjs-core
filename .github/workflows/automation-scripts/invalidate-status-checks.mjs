@@ -1,5 +1,7 @@
 import { Octokit, App } from "octokit"
 
+// require('dotenv').config();
+
 const octokit = new Octokit;
 
 let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
