@@ -29,7 +29,7 @@ export class RobotWorldEngine {
     let robotCount: number = 0;
     for (const elemId of elemIds) {
       const elem: Element = iModelDb.elements.getElement(elemId);
-      if (elem.classFullName === RobotWorld.Class.Robot)
+      if (elem.classFullName === RobotWorld.Class.Robot.valueOf())
         ++robotCount;
     }
     return robotCount;

@@ -7,7 +7,7 @@
  */
 
 import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
-import * as RulesetElements from "./RulesetElements";
+import * as rulesetElements from "./RulesetElements";
 
 /** @internal */
 export class PresentationRules extends Schema {
@@ -17,7 +17,7 @@ export class PresentationRules extends Schema {
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(PresentationRules.schemaName)) {
       Schemas.registerSchema(PresentationRules);
-      ClassRegistry.registerModule(RulesetElements, this);
+      ClassRegistry.registerModule(rulesetElements, this);
     }
   }
 }

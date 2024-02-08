@@ -491,7 +491,7 @@ export class ViewAttributes {
 
     const div = document.createElement("div");
 
-    const backgroundSettingsDiv = document.createElement("div")!;
+    const backgroundSettingsDiv = document.createElement("div");
 
     const showOrHideSettings = (show: boolean) => {
       const display = show ? "block" : "none";
@@ -554,7 +554,7 @@ export class ViewAttributes {
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
-    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
+    backgroundSettingsDiv.appendChild(document.createElement("hr"));
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
@@ -633,7 +633,7 @@ export class ViewAttributes {
     const getTerrainSettings = (view: ViewState) => view.displayStyle.settings.backgroundMap.terrainSettings;
     const updateTerrainSettings = (props: TerrainProps) => this._vp.changeBackgroundMapProps({ terrainSettings: props });
 
-    const settingsDiv = document.createElement("div")!;
+    const settingsDiv = document.createElement("div");
     const heightOriginMode: HTMLSelectElement = createComboBox({
       name: "Height Origin Mode: ",
       id: "viewAttr_TerrainHeightOrigin",
@@ -695,7 +695,7 @@ export class ViewAttributes {
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
       bingCheckbox.checked = "DtaBingTerrain" === terrainSettings.providerName;
-      bathyCheckbox.checked = CesiumTerrainAssetId.Bathymetry === terrainSettings.dataSource;
+      bathyCheckbox.checked = CesiumTerrainAssetId.Bathymetry.valueOf() === terrainSettings.dataSource;
     });
 
     return settingsDiv;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
 const dptaElectronMain = async () => {
@@ -15,7 +15,7 @@ const dptaElectronMain = async () => {
   let debug = true;
   process.argv.forEach((arg) => {
     if (arg.split(".").pop() === "json")
-      DisplayPerfRpcInterface.jsonFilePath = arg;
+      displayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "no_debug")
       debug = false;
   });

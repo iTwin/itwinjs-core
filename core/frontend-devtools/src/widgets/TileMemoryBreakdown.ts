@@ -31,7 +31,7 @@ class TileMemoryTracer {
   public numSelected = 0;
 
   public constructor() {
-    for (let i = 0; i < TileMemorySelector.Count; i++)
+    for (let i = 0; i < TileMemorySelector.Count.valueOf(); i++)
       this.counters.push({ numTiles: 0, bytesUsed: 0 });
   }
 
@@ -171,7 +171,7 @@ export class TileMemoryBreakdown {
     row.appendChild(rightCell);
     table.appendChild(row);
 
-    for (let i = 0; i < TileMemorySelector.Count; i++) {
+    for (let i = 0; i < TileMemorySelector.Count.valueOf(); i++) {
       const div = document.createElement("div");
       const elem = document.createElement("text");
       this._statsElements.push(elem);

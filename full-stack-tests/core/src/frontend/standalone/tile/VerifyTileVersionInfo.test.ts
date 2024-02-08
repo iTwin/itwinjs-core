@@ -21,6 +21,6 @@ describe("iMdl format version", () => {
   it("should match between frontend and backend", async () => {
     const intfc = IModelTileRpcInterface.getClient();
     const info = await intfc.queryVersionInfo();
-    assert(info.formatVersion === CurrentImdlVersion.Combined, "CurrentImdlVersion must match IModelTileIO::Version::Current()");
+    assert(info.formatVersion === CurrentImdlVersion.Combined.valueOf(), "CurrentImdlVersion must match IModelTileIO::Version::Current()");
   });
 });

@@ -722,7 +722,7 @@ describe("RulesetsFactory", () => {
 
     describe("invalid conditions", () => {
       for (const invalidValue of [[], {}]) {
-        it(`throws when record value is '${invalidValue}'`, async () => {
+        it(`throws when record value is '${JSON.stringify(invalidValue)}'`, async () => {
           const recordClass: ClassInfo = {
             id: createRandomId(),
             name: "MySchema:MyClass",

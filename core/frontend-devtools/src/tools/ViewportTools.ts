@@ -263,7 +263,7 @@ export abstract class ChangeHiliteTool extends Tool {
     parseColorComponent("b");
 
     const silhouetteArg = args.getInteger("s");
-    if (undefined !== silhouetteArg && silhouetteArg >= Hilite.Silhouette.None && silhouetteArg <= Hilite.Silhouette.Thick)
+    if (undefined !== silhouetteArg && silhouetteArg >= Hilite.Silhouette.None.valueOf() && silhouetteArg <= Hilite.Silhouette.Thick.valueOf())
       silhouette = silhouetteArg;
 
     const v = args.getFloat("v");

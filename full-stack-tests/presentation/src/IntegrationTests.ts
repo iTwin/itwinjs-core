@@ -5,7 +5,7 @@
 
 import * as cpx from "cpx2";
 import * as fs from "fs";
-import Backend from "i18next-http-backend";
+import i18NextBackend from "i18next-http-backend";
 import * as path from "path";
 import rimraf from "rimraf";
 import sinon from "sinon";
@@ -193,7 +193,7 @@ export const testLocalization = new ITwinLocalization({
        * - i18n-http-backend uses fetch if it defined globally
        */
       const fileProtocol = "file://";
-      const request = new Backend().options.request?.bind(this as void);
+      const request = new i18NextBackend().options.request?.bind(this as void);
 
       if (url.startsWith(fileProtocol)) {
         try {

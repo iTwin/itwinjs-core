@@ -49,6 +49,7 @@ export abstract class ArcGisBaseFeatureReader implements ArcGisFeatureReader {
     } else if ( typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
       return (value as Date).toISOString();
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       return `${value}`;
     }
   };

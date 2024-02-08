@@ -112,17 +112,17 @@ export class ClassificationsPanel extends ToolBarDropDown {
       return false;
 
     switch (type.toUpperCase()) {
-      case RealityDataType.REALITYMESH3DTILES:
+      case RealityDataType.REALITYMESH3DTILES.valueOf():
         return true;
-      case RealityDataType.CESIUM3DTILES:
+      case RealityDataType.CESIUM3DTILES.valueOf():
         return true;
-      case RealityDataType.OPC:
+      case RealityDataType.OPC.valueOf():
         return true;
-      case RealityDataType.OSMBUILDINGS:
+      case RealityDataType.OSMBUILDINGS.valueOf():
         return true;
-      case RealityDataType.TERRAIN3DTILES:
+      case RealityDataType.TERRAIN3DTILES.valueOf():
         return true;
-      case RealityDataType.OMR:
+      case RealityDataType.OMR.valueOf():
         return true;
     }
     return false;
@@ -133,7 +133,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       return false;
     if (this.isSupportedType(type)) {
       switch (type.toUpperCase()) {
-        case RealityDataType.OMR:
+        case RealityDataType.OMR.valueOf():
           return false; // this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
         default:
           return true;

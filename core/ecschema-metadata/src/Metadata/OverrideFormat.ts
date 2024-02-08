@@ -61,7 +61,7 @@ export class OverrideFormat {
   public get includeZero(): boolean | undefined { return this.parent.includeZero; }
 
   public hasFormatTrait(formatTrait: FormatTraits) {
-    return (this.parent.formatTraits & formatTrait) === formatTrait;
+    return (this.parent.formatTraits & formatTrait) === formatTrait.valueOf();
   }
 
   /** Returns the format string of this override in the Xml full name format.

@@ -6,5 +6,11 @@ module.exports = [
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-duplicate-enum-values": "off"
+    }
+  },
   ...eslintBaseConfig,
 ];

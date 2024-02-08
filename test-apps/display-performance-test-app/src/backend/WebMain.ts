@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as child_process from "child_process";
+import * as childProcess from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
 /* eslint-disable no-console */
 
 export function getRpcInterfaces() {
-  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+  return [displayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 // Start the Express web server
@@ -37,7 +37,7 @@ function startWebServer() {
   // Run the server...
   appExp.set("port", 3000);
   const announceWebServer = () => { };
-  DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
+  displayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -53,7 +53,7 @@ function startWebServer() {
 
   process.argv.forEach((arg) => {
     if (arg.split(".").pop() === "json")
-      DisplayPerfRpcInterface.jsonFilePath = arg;
+      displayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
       browser = arg;
     else if (arg === "headless")
@@ -94,7 +94,7 @@ function startWebServer() {
   app.set("port", serverConfig.port);
   const announce = () => console.log(`***** Display Performance Testing App listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
-  DisplayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
+  displayPerfRpcInterface.backendServer = app.listen(app.get("port"), announce);
 
   // ---------------------------------------------
   // Start the browser, if given a specific one
@@ -102,25 +102,25 @@ function startWebServer() {
   switch (browser) {
     case "chrome":
       if (process.platform === "darwin") { // Ie, if running on Mac
-        child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
+        childProcess.execSync("open -a \"Google Chrome\" http://localhost:3000");
       } else {
         chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
           startingUrl: "http://localhost:3000",
           chromeFlags,
-        }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
+        }).then((val) => { displayPerfRpcInterface.chrome = val; });
       }
       break;
     case "edge":
-      child_process.execSync("start microsoft-edge:http://localhost:3000");
+      childProcess.execSync("start microsoft-edge:http://localhost:3000");
       break;
     case "safari":
-      child_process.execSync("open -a Safari http://localhost:3000");
+      childProcess.execSync("open -a Safari http://localhost:3000");
       break;
     case "firefox":
       if (process.platform === "darwin") { // Ie, if running on Mac
-        child_process.execSync("open -a firefox http://localhost:3000");
+        childProcess.execSync("open -a firefox http://localhost:3000");
       } else {
-        child_process.execSync("start firefox http://localhost:3000");
+        childProcess.execSync("start firefox http://localhost:3000");
       }
       break;
   }

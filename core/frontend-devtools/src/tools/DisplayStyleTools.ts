@@ -97,10 +97,10 @@ export class ChangeViewFlagsTool extends Tool {
       const name = parts[0].toLowerCase();
       if (name === "rendermode") {
         switch (value) {
-          case RenderMode.SmoothShade:
-          case RenderMode.Wireframe:
-          case RenderMode.HiddenLine:
-          case RenderMode.SolidFill:
+          case RenderMode.SmoothShade.valueOf():
+          case RenderMode.Wireframe.valueOf():
+          case RenderMode.HiddenLine.valueOf():
+          case RenderMode.SolidFill.valueOf():
             vf.renderMode = value;
             vp.invalidateRenderPlan();
             break;

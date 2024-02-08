@@ -42,7 +42,7 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
     return localBriefcases[0];
   } catch (error) {
     if (error instanceof BentleyError) {
-      if (error.errorNumber === IModelStatus.FileAlreadyExists) {
+      if (error.errorNumber === IModelStatus.FileAlreadyExists.valueOf()) {
         // When a download is canceled, the partial briefcase file does not get deleted, which causes
         // any subsequent download attempt to fail with this error number. If that happens, delete the
         // briefcase and try again.
@@ -73,7 +73,7 @@ async function openIModelFile(fileName: string, writable: boolean): Promise<IMod
   try {
     return await BriefcaseConnection.openFile({ fileName, readonly: !writable, key: fileName });
   } catch (err) {
-    if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
+    if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly.valueOf())
       return SnapshotConnection.openFile(fileName);
     else
       throw err;

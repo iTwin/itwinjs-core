@@ -346,7 +346,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
 export function containerTypeToString(type: CustomAttributeContainerType): string {
 
   const testContainerTypeValue = (compareType: CustomAttributeContainerType, otherType: CustomAttributeContainerType) => {
-    return (compareType === (compareType & otherType));
+    return (compareType.valueOf() === (compareType & otherType));
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))

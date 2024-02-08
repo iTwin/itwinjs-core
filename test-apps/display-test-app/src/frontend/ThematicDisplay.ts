@@ -169,7 +169,7 @@ export class ThematicDisplayEditor {
 
     const div = document.createElement("div");
 
-    const thematicControlsDiv = document.createElement("div")!;
+    const thematicControlsDiv = document.createElement("div");
 
     const showHideControls = (show: boolean) => {
       const display = show ? "block" : "none";
@@ -232,7 +232,7 @@ export class ThematicDisplayEditor {
         const props = this.getThematicSettingsProps(view);
         const prevDisplayMode = props.displayMode;
         const newDisplayMode = props.displayMode = Number.parseInt(thing.value, 10);
-        if (ThematicDisplayMode.Slope === newDisplayMode) {
+        if (ThematicDisplayMode.Slope.valueOf() === newDisplayMode) {
           props.range = { low: 0.0, high: 90.0 };
         } else if (ThematicDisplayMode.Slope === prevDisplayMode) {
           this.updateDefaultRange();
@@ -304,7 +304,7 @@ export class ThematicDisplayEditor {
       handler: (thing) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         const mode = Number.parseInt(thing.value, 10);
-        if (mode < ThematicGradientColorScheme.Custom) {
+        if (mode < ThematicGradientColorScheme.Custom.valueOf()) {
           props.gradientSettings!.colorScheme = mode;
         } else {
           props.gradientSettings!.colorScheme = ThematicGradientColorScheme.Custom;
@@ -610,7 +610,7 @@ export class ThematicDisplayEditor {
       name: "Sensor Value: ",
     });
 
-    const sensorsControlsDiv = document.createElement("div")!;
+    const sensorsControlsDiv = document.createElement("div");
 
     createButton({
       parent: sensorsControlsDiv,
@@ -723,7 +723,7 @@ export class ThematicDisplayEditor {
     this._thematicDisplayMode.select.value = settings.displayMode.toString();
 
     const displayMode = Number.parseInt(this._thematicDisplayMode.select.value, 10);
-    if (ThematicDisplayMode.Height === displayMode) {
+    if (ThematicDisplayMode.Height.valueOf() === displayMode) {
       ThematicDisplayEditor._setComboBoxEntries(this._thematicGradientMode, ThematicDisplayEditor._gradientModeEntriesForHeight);
     } else {
       ThematicDisplayEditor._setComboBoxEntries(this._thematicGradientMode, ThematicDisplayEditor._gradientModeEntriesForOthers);

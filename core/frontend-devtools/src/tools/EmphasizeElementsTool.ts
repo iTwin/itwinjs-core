@@ -52,8 +52,8 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   private _type = OverrideType.None;
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
-    if (OverrideType.None === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)) {
-      emph.wantEmphasis = OverrideType.None !== (this._type & OverrideType.Emphasis);
+    if (OverrideType.None.valueOf() === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)) {
+      emph.wantEmphasis = OverrideType.None.valueOf() !== (this._type & OverrideType.Emphasis);
       if (emph.emphasizeSelectedElements(vp, undefined, true)) {
         vp.isFadeOutActive = true;
         return;

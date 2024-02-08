@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
-import * as RulesetElements from "./domain/RulesetElements";
+import * as rulesetElements from "./domain/RulesetElements";
 import { normalizeVersion } from "./Utils";
 
 /**
@@ -125,7 +125,7 @@ export class RulesetEmbedder {
     }> = [];
     const query = `
       SELECT ECInstanceId, JsonProperties
-      FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
+      FROM ${rulesetElements.Ruleset.schema.name}.${rulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
     const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     while (await reader.step()) {
@@ -178,7 +178,7 @@ export class RulesetEmbedder {
 
     // no exact match found - insert a new ruleset element
     const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert);
-    const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
+    const rulesetCode = rulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
     return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
 
@@ -197,7 +197,7 @@ export class RulesetEmbedder {
     const props: DefinitionElementProps = {
       model: model.id,
       code: rulesetCode,
-      classFullName: RulesetElements.Ruleset.classFullName,
+      classFullName: rulesetElements.Ruleset.classFullName,
       jsonProperties: { jsonProperties: ruleset },
     };
 
@@ -210,11 +210,11 @@ export class RulesetEmbedder {
    * Get all rulesets embedded in the iModel.
    */
   public async getRulesets(): Promise<Ruleset[]> {
-    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
+    if (!this._imodel.containsClass(rulesetElements.Ruleset.classFullName))
       return [];
 
     const rulesetList: Ruleset[] = [];
-    this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
+    this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${rulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
         const rulesetElement = this._imodel.elements.getElement({ id: row.id });
@@ -311,7 +311,7 @@ export class RulesetEmbedder {
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
+    if (this._imodel.containsClass(rulesetElements.Ruleset.classFullName))
       return;
 
     // import PresentationRules ECSchema

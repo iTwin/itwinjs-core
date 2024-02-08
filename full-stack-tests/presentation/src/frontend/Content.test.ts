@@ -992,7 +992,7 @@ describe("Content", () => {
       const realRace = Promise.race;
       const rejectedPromise = Promise.reject();
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
+        void (values as Array<Promise<any>>).splice(0, 0, rejectedPromise);
         return realRace.call(Promise, values);
       });
     });

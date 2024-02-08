@@ -9,12 +9,12 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
-export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
+export default class DisplayPerfRpcImpl extends displayPerfRpcInterface {
   private _reporter = new Reporter();
   public override async getDefaultConfigs(): Promise<string> {
     let jsonStr = "";
@@ -24,8 +24,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     } else {
       defaultJsonFile = "./src/backend/DefaultConfig.json";
     }
-    if (IModelJsFs.existsSync(DisplayPerfRpcInterface.jsonFilePath)) {
-      jsonStr = IModelJsFs.readFileSync(DisplayPerfRpcInterface.jsonFilePath).toString();
+    if (IModelJsFs.existsSync(displayPerfRpcInterface.jsonFilePath)) {
+      jsonStr = IModelJsFs.readFileSync(displayPerfRpcInterface.jsonFilePath).toString();
     } else if (IModelJsFs.existsSync(defaultJsonFile)) {
       jsonStr = IModelJsFs.readFileSync(defaultJsonFile).toString();
     }
@@ -173,14 +173,14 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       app.exit();
 
     // Browser only
-    if (DisplayPerfRpcInterface.webServer)
-      DisplayPerfRpcInterface.webServer.close();
+    if (displayPerfRpcInterface.webServer)
+      displayPerfRpcInterface.webServer.close();
 
-    if (DisplayPerfRpcInterface.backendServer)
-      DisplayPerfRpcInterface.backendServer.close();
+    if (displayPerfRpcInterface.backendServer)
+      displayPerfRpcInterface.backendServer.close();
 
-    if (DisplayPerfRpcInterface.chrome)
-      DisplayPerfRpcInterface.chrome.kill();
+    if (displayPerfRpcInterface.chrome)
+      displayPerfRpcInterface.chrome.kill();
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
@@ -243,4 +243,4 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 }
 
 /** Auto-register the impl when this file is included. */
-RpcManager.registerImpl(DisplayPerfRpcInterface, DisplayPerfRpcImpl);
+RpcManager.registerImpl(displayPerfRpcInterface, DisplayPerfRpcImpl);

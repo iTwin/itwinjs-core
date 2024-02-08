@@ -52,7 +52,7 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
-    return key.type === StandardNodeTypes.ECInstancesNode;
+    return key.type === StandardNodeTypes.ECInstancesNode.valueOf();
   }
 
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
@@ -62,7 +62,7 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return key.type === StandardNodeTypes.ECClassGroupingNode;
+    return key.type === StandardNodeTypes.ECClassGroupingNode.valueOf();
   }
 
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
@@ -72,7 +72,7 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return key.type === StandardNodeTypes.ECPropertyGroupingNode;
+    return key.type === StandardNodeTypes.ECPropertyGroupingNode.valueOf();
   }
 
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
@@ -82,7 +82,7 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
+    return key.type === StandardNodeTypes.DisplayLabelGroupingNode.valueOf();
   }
 
   /** Checks if the supplied key is a grouping node key */

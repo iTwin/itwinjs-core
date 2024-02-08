@@ -239,7 +239,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${JSON.stringify(relationship)}, is not a valid RelationshipClassInterface.`);
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);

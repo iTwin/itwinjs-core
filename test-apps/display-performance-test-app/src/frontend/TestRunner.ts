@@ -20,7 +20,7 @@ import {
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -677,7 +677,7 @@ export class TestRunner {
   private async openIModel(): Promise<TestContext> {
     if (this.curConfig.iModelId) {
       if (process.env.IMJS_OIDC_HEADLESS) {
-        const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+        const token = await displayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }
       // Download remote iModel and its saved views
@@ -692,7 +692,7 @@ export class TestRunner {
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
       const iModel = await SnapshotConnection.openFile(filepath);
 
-      const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
+      const esv = await displayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
       let externalSavedViews: ViewStateSpec[] = [];
       if (esv) {
         const json = JSON.parse(esv) as ViewStateSpecProps[];
@@ -715,7 +715,7 @@ export class TestRunner {
     if (!config.iModelName.includes("*"))
       return [config.iModelName];
 
-    const json = await DisplayPerfRpcInterface.getClient().getMatchingFiles(config.iModelLocation, config.iModelName);
+    const json = await displayPerfRpcInterface.getClient().getMatchingFiles(config.iModelLocation, config.iModelName);
     const files = JSON.parse(json);
     const iModels = [];
     for (const file of files) {
@@ -765,7 +765,7 @@ export class TestRunner {
     if (renderComp.missingOptionalFeatures)
       renderData += `Missing Optional Features: ${renderComp.missingOptionalFeatures}"\r\n`;
 
-    await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
+    await displayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
   }
 
@@ -773,7 +773,7 @@ export class TestRunner {
     const outputPath = this.curConfig.outputPath;
     const outputName = this.curConfig.outputName;
     const msg = JSON.stringify([...row]);
-    return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, msg, this.curConfig.csvFormat);
+    return displayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, msg, this.curConfig.csvFormat);
   }
 
   private async logToFile(message: string, opts?: { noAppend?: boolean, noNewLine?: boolean }): Promise<void> {
@@ -781,11 +781,11 @@ export class TestRunner {
       message = `${message}\n`;
 
     const append = !opts?.noAppend;
-    return DisplayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, append, message);
+    return displayPerfRpcInterface.getClient().writeExternalFile(this.curConfig.outputPath, this._logFileName, append, message);
   }
 
   private async logToConsole(message: string): Promise<void> {
-    return DisplayPerfRpcInterface.getClient().consoleLog(message);
+    return displayPerfRpcInterface.getClient().consoleLog(message);
   }
 
   private async logError(message: string): Promise<void> {
@@ -1107,7 +1107,7 @@ export class TestRunner {
     // We need to log here so it gets written to the file.
     const terminateErr = await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
     if (terminateErr || "terminate" === this.curConfig.onException)
-      await DisplayPerfRpcInterface.getClient().terminate();
+      await displayPerfRpcInterface.getClient().terminate();
   }
 }
 
@@ -1441,7 +1441,7 @@ function calcGpuBytes(func: (stats: RenderMemory.Statistics) => void): number {
 async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<void> {
   const img = canvas.toDataURL("image/png");
   const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
-  return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
+  return displayPerfRpcInterface.getClient().savePng(fileName, data);
 }
 
 function setPerformanceMetrics(vp: ScreenViewport, metrics: PerformanceMetrics | undefined): void {

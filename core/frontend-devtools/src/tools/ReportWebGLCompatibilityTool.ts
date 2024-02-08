@@ -17,7 +17,7 @@ export class ReportWebGLCompatibilityTool extends Tool {
   public override async run(_args: any[]): Promise<boolean> {
     const info = IModelApp.queryRenderCompatibility();
     const statuses = ["OK", "Missing Optional Features", "Major Performance Caveat", "Missing Required Features", "Failed to Create Context"];
-    const status = info.status < statuses.length ? statuses[info.status] : "UNKNOWN";
+    const status = info.status.valueOf() < statuses.length ? statuses[info.status] : "UNKNOWN";
     const json = JSON.stringify(info, null, 2); // prettify JSON output
 
     const msg = `Compatibility: ${status}\n${json}`;

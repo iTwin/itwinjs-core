@@ -5,13 +5,13 @@
 
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
 /* eslint-disable no-console */
 
 export function getRpcInterfaces() {
-  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+  return [displayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises

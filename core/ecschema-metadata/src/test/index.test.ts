@@ -4,34 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as ECStringConstants from "../Constants";
-import * as Context from "../Context";
-import * as DelayedPromise from "../DelayedPromise";
-import * as SchemaGraphUtil from "../Deserialization/SchemaGraphUtil";
-import * as ECObjects from "../ECObjects";
-import * as Index from "../ecschema-metadata";
-import * as Exception from "../Exception";
-import * as Interfaces from "../Interfaces";
+import * as ecStringConstants from "../Constants";
+import * as context from "../Context";
+import * as delayedPromise from "../DelayedPromise";
+import * as schemaGraphUtil from "../Deserialization/SchemaGraphUtil";
+import * as ecObjects from "../ECObjects";
+import * as index from "../ecschema-metadata";
+import * as exception from "../Exception";
+import * as interfaces from "../Interfaces";
 import { ECClass, StructClass } from "../Metadata/Class";
-import * as Constant from "../Metadata/Constant";
-import * as CustomAttributeClass from "../Metadata/CustomAttributeClass";
+import * as constant from "../Metadata/Constant";
+import * as customAttributeClass from "../Metadata/CustomAttributeClass";
 import { EntityClass } from "../Metadata/EntityClass";
 import { Enumeration } from "../Metadata/Enumeration";
-import * as Format from "../Metadata/Format";
-import * as InvertedUnit from "../Metadata/InvertedUnit";
-import * as KindOfQuantity from "../Metadata/KindOfQuantity";
-import * as Mixin from "../Metadata/Mixin";
-import * as OverrideFormat from "../Metadata/OverrideFormat";
-import * as Phenomenon from "../Metadata/Phenomenon";
-import * as Property from "../Metadata/Property";
-import * as PropertyCategory from "../Metadata/PropertyCategory";
-import * as RelationshipClass from "../Metadata/RelationshipClass";
+import * as format from "../Metadata/Format";
+import * as invertedUnit from "../Metadata/InvertedUnit";
+import * as kindOfQuantity from "../Metadata/KindOfQuantity";
+import * as mixin from "../Metadata/Mixin";
+import * as overrideFormat from "../Metadata/OverrideFormat";
+import * as phenomenon from "../Metadata/Phenomenon";
+import * as property from "../Metadata/Property";
+import * as propertyCategory from "../Metadata/PropertyCategory";
+import * as relationshipClass from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
-import * as SchemaItem from "../Metadata/SchemaItem";
-import * as Unit from "../Metadata/Unit";
-import * as UnitSystem from "../Metadata/UnitSystem";
-import * as PropertyTypes from "../PropertyTypes";
-import * as SchemaKey from "../SchemaKey";
+import * as schemaItem from "../Metadata/SchemaItem";
+import * as unit from "../Metadata/Unit";
+import * as unitSystem from "../Metadata/UnitSystem";
+import * as propertyTypes from "../PropertyTypes";
+import * as schemaKey from "../SchemaKey";
 
 // new type with specified index signature
 interface Dict {
@@ -39,46 +39,46 @@ interface Dict {
 }
 
 // modules are not iterable. to traverse their members, the imports are spread into an object
-const index: Dict = {
-  ...Index,
+const objectsIndex: Dict = {
+  ...index,
 };
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 const moduleImports: Dict = {
-  ...ECObjects,
-  ...ECStringConstants,
-  ...Context,
-  ...Interfaces,
-  ...DelayedPromise,
-  ...Exception,
-  ...PropertyTypes,
+  ...ecObjects,
+  ...ecStringConstants,
+  ...context,
+  ...interfaces,
+  ...delayedPromise,
+  ...exception,
+  ...propertyTypes,
   Schema,
-  ...SchemaItem,
-  ...SchemaKey,
+  ...schemaItem,
+  ...schemaKey,
   ECClass,
   StructClass,
   EntityClass,
-  ...Mixin,
-  ...RelationshipClass,
-  ...CustomAttributeClass,
+  ...mixin,
+  ...relationshipClass,
+  ...customAttributeClass,
   Enumeration,
-  ...KindOfQuantity,
-  ...Constant,
-  ...Format,
-  ...OverrideFormat,
-  ...InvertedUnit,
-  ...Phenomenon,
-  ...Unit,
-  ...UnitSystem,
-  ...PropertyCategory,
-  ...Property,
-  ...SchemaGraphUtil,
+  ...kindOfQuantity,
+  ...constant,
+  ...format,
+  ...overrideFormat,
+  ...invertedUnit,
+  ...phenomenon,
+  ...unit,
+  ...unitSystem,
+  ...propertyCategory,
+  ...property,
+  ...schemaGraphUtil,
 };
 
 describe("Index", () => {
   it("should successfully import Index module", () => {
-    expect(index).to.not.be.undefined;
+    expect(objectsIndex).to.not.be.undefined;
   });
 
   it("should match the explicit module imports", () => {
@@ -86,13 +86,13 @@ describe("Index", () => {
       if (name.startsWith("Mutable"))
         continue;
 
-      expect(index.hasOwnProperty(name), `The type '${name}' is missing from the index.ts barrel module.`).true;
+      expect(objectsIndex.hasOwnProperty(name), `The type '${name}' is missing from the index.ts barrel module.`).true;
     }
   });
 
   it("Ensure no Mutable classes are exported", () => {
     // eslint-disable-next-line guard-for-in
-    for (const name in index)
+    for (const name in objectsIndex)
       expect(!name.startsWith("Mutable"), `The class '${name}' should not be exported from the index.ts file.`).true;
   });
 });

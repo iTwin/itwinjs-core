@@ -276,7 +276,7 @@ export class Synchronizer {
     // __PUBLISH_EXTRACT_START__ Synchronizer-detectChanges.example-code
     const changeResults = this.detectChanges(sourceItem);
     if (Id64.isValidId64(repositoryLink.id) && changeResults.state === ItemState.New) {
-      const error = `A RepositoryLink element with code=${repositoryLink.code} and id=${repositoryLink.id} already exists in the bim file.
+      const error = `A RepositoryLink element with code=${repositoryLink.code.value} and id=${repositoryLink.id} already exists in the bim file.
       However, no ExternalSourceAspect with scope=${sourceItem.scope} and kind=${sourceItem.kind} was found for this element.
       Maybe RecordDocument was previously called on this file with a different scope or kind.`;
       throw new IModelError(IModelStatus.NotFound, error);
@@ -364,7 +364,7 @@ export class Synchronizer {
     } catch (err) {
       // Unfortunately, the only way we can find out if an aspect is NOT there is by getting an
       // error when asking for it.
-      if (!(err instanceof IModelError) || (err.errorNumber !== IModelStatus.NotFound)) {
+      if (!(err instanceof IModelError) || (err.errorNumber !== IModelStatus.NotFound.valueOf())) {
         throw err;
       }
 

@@ -102,17 +102,17 @@ describe("RealityDataAccess (#integration)", () => {
       return false;
 
     switch (type.toUpperCase()) {
-      case RealityDataType.REALITYMESH3DTILES:
+      case RealityDataType.REALITYMESH3DTILES.valueOf():
         return true;
-      case RealityDataType.CESIUM3DTILES:
+      case RealityDataType.CESIUM3DTILES.valueOf():
         return true;
-      case RealityDataType.OPC:
+      case RealityDataType.OPC.valueOf():
         return true;
-      case RealityDataType.OSMBUILDINGS:
+      case RealityDataType.OSMBUILDINGS.valueOf():
         return true;
-      case RealityDataType.TERRAIN3DTILES:
+      case RealityDataType.TERRAIN3DTILES.valueOf():
         return true;
-      case RealityDataType.OMR:
+      case RealityDataType.OMR.valueOf():
         return true;
     }
     return false;
@@ -123,7 +123,7 @@ describe("RealityDataAccess (#integration)", () => {
       return false;
     if (isSupportedType(type)) {
       switch (type.toUpperCase()) {
-        case RealityDataType.OMR:
+        case RealityDataType.OMR.valueOf():
           return false; // this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
         default:
           return true;
@@ -191,7 +191,7 @@ describe("RealityDataAccess (#integration)", () => {
         expect(rdSource?.isContextShare).to.be.true;
         const pInfo = await rdSource?.getPublisherProductInfo();
         // We expect to be able to return this info for all 3dTile, but it may contain empty string
-        if (keyFromInput.format === RealityDataFormat.ThreeDTile)
+        if (keyFromInput.format === RealityDataFormat.ThreeDTile.valueOf())
           expect(pInfo).not.undefined;
       }
     }
@@ -207,7 +207,7 @@ describe("RealityDataAccess (#integration)", () => {
         expect(rdSource).not.undefined;
         expect(rdSource?.isContextShare).to.be.true;
         // We expect to be able to return this info for all 3dTile
-        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
+        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile.valueOf()) {
           const rootDocument = await rdSource.getRootDocument(undefined);
           const fileInfo = ThreeDTileFormatInterpreter.getFileInfo(rootDocument);
           expect(fileInfo).not.undefined;
@@ -227,7 +227,7 @@ describe("RealityDataAccess (#integration)", () => {
         expect(rdSource?.isContextShare).to.be.true;
         const spatialLocation = await rdSource?.getSpatialLocationAndExtents();
         expect(spatialLocation).not.undefined;
-        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
+        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile.valueOf()) {
           // special check to ensure that position are computed the same way as in other Bentley product
           // using the transform matrix in the reality data 3dTile root file that is used to set ECEFLocation
           // when creating a blankIModelConnection

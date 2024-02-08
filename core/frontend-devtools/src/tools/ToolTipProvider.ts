@@ -27,6 +27,7 @@ class DebugToolTipProvider implements ToolTipProvider {
       if (undefined === value)
         continue;
 
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       html = `${html + key}: ${value.toString()}<br>`;
     }
 

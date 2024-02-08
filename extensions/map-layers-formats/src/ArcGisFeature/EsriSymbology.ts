@@ -18,7 +18,7 @@ function colorFromArray(channels?: number[]) {
 }
 
 /** @internal */
-export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
+export type EsriSymbolPropsType = "esriSFS" | "esriPMS" | "esriSMS" | "esriSLS" | "esriTS" | "CIMSymbolReference";
 
 /** @internal */
 export interface EsriSymbolCommonProps {

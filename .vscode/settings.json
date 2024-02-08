@@ -7,7 +7,7 @@
     "source.fixAll.markdownlint": "explicit"
   },
   "editor.insertSpaces": true,
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "editor.tabSize": 2,
   "eslint.enable": true,
   "eslint.format.enable": true,

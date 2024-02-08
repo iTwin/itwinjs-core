@@ -184,7 +184,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
     if (this._requestTimeout === 0) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout not configured, returning promise without a timeout.`);
-      resultPromise.finally(() => {
+      await resultPromise.finally(() => {
         this._pendingRequests.deleteValue(requestKey);
       });
       return resultPromise;

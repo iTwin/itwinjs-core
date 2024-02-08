@@ -27,7 +27,7 @@ export abstract class RenderTargetDebugControlTool extends Tool {
 }
 
 type DebugControlBoolean =
-  "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
+  "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" |
   "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes" | "displayNormalMaps";
 
 /** Toggles some aspect of a RenderTargetDebugControl for the selected viewport.

@@ -194,6 +194,6 @@ describe("GeoCoord", () => {
     const outPt = Point3d.fromJSON(response.geoCoords[0].p);
 
     expect(Geometry.isSamePoint3dXY(expectedPt, outPt)).to.be.true;
-    expect(response.geoCoords[0].s === 0);
+    expect(response.geoCoords[0].s.valueOf() === 0);
   });
 });

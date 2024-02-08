@@ -171,7 +171,7 @@ describe("#performance DataViz requests", () => {
               fieldDescriptor,
             });
             res.items.map((dv) => {
-              const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
+              const displayValue = dv.displayValue ? (dv.displayValue as string).toString() : "";
               pushValues(distinctValues, displayValue, dv.groupedRawValues);
             });
           }));
@@ -233,7 +233,7 @@ describe("#performance DataViz requests", () => {
             fieldDescriptor: filteredField.getFieldDescriptor(),
           });
           res.items.map((dv) => {
-            const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
+            const displayValue = dv.displayValue ? (dv.displayValue as string).toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           });
           ++requestsCount;
@@ -295,7 +295,7 @@ describe("#performance DataViz requests", () => {
             if (rawValue === undefined || rawValue === null)
               filter += " IS NULL";
             else
-              filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
+              filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue as string}'` : rawValue as string}`;
             return filter;
           }, "");
         };
@@ -377,9 +377,9 @@ describe("#performance DataViz requests", () => {
                       if (rawValue === undefined || rawValue === null)
                         filter += "NULL";
                       else if (filteredProperty.type.toLowerCase() === "string")
-                        filter += `"${rawValue}"`;
+                        filter += `"${rawValue as string}"`;
                       else
-                        filter += rawValue;
+                        filter += rawValue as string;
                       return filter;
                     }, ""),
                     groupByClass: true,
@@ -550,15 +550,15 @@ describe("#performance DataViz requests", () => {
                   break;
                 }
                 assert(Value.isNestedContent(nestedContent));
-                rawValues = nestedContent[0]!.values;
-                displayValues = nestedContent[0]!.displayValues;
+                rawValues = nestedContent[0].values;
+                displayValues = nestedContent[0].displayValues;
               }
               if (!containsValue)
                 continue;
               if (!displayValues.hasOwnProperty(filteredField.name))
                 continue;
 
-              const displayValue = (displayValues[filteredField.name] ?? "").toString();
+              const displayValue = (displayValues[filteredField.name] as string ?? "").toString();
               assert(distinctValues.has(displayValue));
               pushValues(elementEntries, displayValue, item.primaryKeys.map((k) => k.id));
             }

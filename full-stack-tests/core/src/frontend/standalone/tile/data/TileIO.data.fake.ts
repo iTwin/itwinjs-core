@@ -41,7 +41,7 @@ function changeVersion(src: TileTestData, versionMajor?: number, versionMinor?: 
     cylinder: changeTestCaseVersion(src.cylinder, versionMajor, versionMinor),
   };
 
-  dst.unreadable = (dst.versionMajor > CurrentImdlVersion.Major) ? true : undefined;
+  dst.unreadable = (dst.versionMajor > CurrentImdlVersion.Major.valueOf()) ? true : undefined;
 
   if (undefined !== versionMajor && versionMajor > 1 && 1 === src.versionMajor) {
     // Added 4 bytes in v02.00 for empty sub-range bitmask

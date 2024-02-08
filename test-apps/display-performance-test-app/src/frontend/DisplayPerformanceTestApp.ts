@@ -14,7 +14,7 @@ import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
-import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import displayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
 
@@ -78,13 +78,13 @@ export class DisplayPerfTestApp {
       ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line deprecation/deprecation
+    iModelApp.rpcInterfaces = [displayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line deprecation/deprecation
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
       await IModelApp.startup(iModelApp);
 
-    const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
+    const config = await displayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
 
     initializeFrontendTiles({
@@ -119,7 +119,7 @@ export class DisplayPerfTestApp {
   public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<boolean> {
     const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
     const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
-    const client = DisplayPerfRpcInterface.getClient();
+    const client = displayPerfRpcInterface.getClient();
     await client.consoleLog(msg);
     if (logFile)
       await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
@@ -150,7 +150,7 @@ async function signIn(): Promise<void> {
 
 async function main() {
   try {
-    const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
+    const configStr = await displayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
     if (props.signIn)
@@ -161,7 +161,7 @@ async function main() {
   } catch (err: any) {
     await DisplayPerfTestApp.logException(err);
   } finally {
-    await DisplayPerfRpcInterface.getClient().terminate();
+    await displayPerfRpcInterface.getClient().terminate();
   }
 
   return IModelApp.shutdown();
@@ -174,7 +174,7 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [displayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();
