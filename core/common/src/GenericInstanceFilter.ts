@@ -166,9 +166,9 @@ export interface GenericInstanceFilterRelatedInstanceDescription {
 export interface GenericInstanceFilterRelationshipStep {
   /** Full class name of the source class, e.g. `BisCore.Element`. */
   sourceClassName: string;
-  /** Class name of the target class. */
+  /** Full class name of the target class, e.g. `BisCore.Element`. */
   targetClassName: string;
-  /** Class name of the relationship class that should be used to move from source to target. */
+  /** Full class name of the relationship class that should be used to move from source to target, e.g. `BisCore.ElementOwnsChildElements`. */
   relationshipClassName: string;
   /**
    * A flag that describes if this step follows relationship class in forward or backward direction.
