@@ -1,21 +1,18 @@
 # Triggered on a commit to master when imodeljs-native version changes
-#
-# Steps currently include
-#   1. Updating master changelogs using JS script
 
-name: Finalize Release
+name: Invalidate Open PRs when imodeljs-native is updated
 
 on:
   workflow_dispatch:
   push:
     branches:
-    - 'release/*'
+    - 'master'
     paths:
-    - '**/CHANGELOG.md'
+    - '**/core/backend/package.json'
 
 jobs:
   finalize:
-    name: Cherry-pick Changelogs
+    name: Invalidate imodeljs-native status check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,9 +24,9 @@ jobs:
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - name: Run update-changelogs.mjs
+      - name: Run merge-master-to-open-prs.mjs
         run: |
-          npm i -g zx
-          zx --install ./.github/workflows/automation-scripts/merge-master-to-open-prs.mjs
+          npm i -g octokit
+          node ./.github/workflows/automation-scripts/invalidate-status-checks.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
