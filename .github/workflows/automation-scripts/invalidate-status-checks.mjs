@@ -20,7 +20,6 @@ for (let i = 0; i < pull_requests.data.length; i++) {
       repo: 'itwinjs-core',
       sha: `${pr_sha}`,
       state: 'success',
-      target_url: 'https://github.com/iTwin/itwinjs-core',
       description: 'imodeljs-native version is out of date',
       context: '@bentley/imodeljs-native version check',
       headers: {
