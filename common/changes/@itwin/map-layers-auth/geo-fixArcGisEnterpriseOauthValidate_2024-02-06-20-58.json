@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "comment": "Fix an issue preventing Oauth2 authentication on ArcGIS Enterprise servers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-auth"
+}
