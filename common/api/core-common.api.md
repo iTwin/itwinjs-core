@@ -3434,6 +3434,94 @@ export interface FunctionalElementProps extends ElementProps {
     typeDefinition?: RelatedElementProps;
 }
 
+// @beta
+export interface GenericInstanceFilter {
+    filteredClassNames?: string[];
+    propertyClassNames: string[];
+    relatedInstances: GenericInstanceFilterRelatedInstanceDescription[];
+    rules: GenericInstanceFilterRule | GenericInstanceFilterRuleGroup;
+}
+
+// @beta (undocumented)
+export namespace GenericInstanceFilter {
+    export function isFilterRuleGroup(obj: GenericInstanceFilterRule | GenericInstanceFilterRuleGroup): obj is GenericInstanceFilterRuleGroup;
+}
+
+// @beta
+export interface GenericInstanceFilterRelatedInstanceDescription {
+    alias: string;
+    path: GenericInstanceFilterRelationshipStep[];
+}
+
+// @beta
+export interface GenericInstanceFilterRelationshipStep {
+    isForwardRelationship: boolean;
+    relationshipClassName: string;
+    sourceClassName: string;
+    targetClassName: string;
+}
+
+// @beta
+export interface GenericInstanceFilterRule {
+    operator: GenericInstanceFilterRuleOperator;
+    propertyName: string;
+    propertyTypeName: string;
+    sourceAlias: string;
+    value?: GenericInstanceFilterRuleValue;
+}
+
+// @beta
+export interface GenericInstanceFilterRuleGroup {
+    operator: GenericInstanceFilterRuleGroupOperator;
+    rules: Array<GenericInstanceFilterRule | GenericInstanceFilterRuleGroup>;
+}
+
+// @beta
+export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
+
+// @beta
+export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
+
+// @beta
+export interface GenericInstanceFilterRuleValue {
+    // (undocumented)
+    displayValue: string;
+    // (undocumented)
+    rawValue: GenericInstanceFilterRuleValue.Values;
+}
+
+// @beta (undocumented)
+export namespace GenericInstanceFilterRuleValue {
+    // (undocumented)
+    export interface InstanceKey {
+        // (undocumented)
+        className: string;
+        // (undocumented)
+        id: string;
+    }
+    export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey;
+    export function isPoint2d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point2d;
+    export function isPoint3d(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.Point3d;
+    // (undocumented)
+    export interface Point2d {
+        // (undocumented)
+        x: number;
+        // (undocumented)
+        y: number;
+    }
+    // (undocumented)
+    export interface Point3d {
+        // (undocumented)
+        x: number;
+        // (undocumented)
+        y: number;
+        // (undocumented)
+        z: number;
+    }
+    // (undocumented)
+    export type Values = string | number | boolean | Date | GenericInstanceFilterRuleValue.Point2d | GenericInstanceFilterRuleValue.Point3d | GenericInstanceFilterRuleValue.InstanceKey;
+}
+
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
     constructor(data?: GeocentricTransformProps);

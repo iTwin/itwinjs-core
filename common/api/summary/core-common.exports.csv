@@ -280,6 +280,16 @@ public;Frustum
 public;FrustumPlanes
 public;FrustumPlanes
 public;FunctionalElementProps 
+beta;GenericInstanceFilter
+beta;GenericInstanceFilter
+beta;GenericInstanceFilterRelatedInstanceDescription
+beta;GenericInstanceFilterRelationshipStep
+beta;GenericInstanceFilterRule
+beta;GenericInstanceFilterRuleGroup
+beta;GenericInstanceFilterRuleGroupOperator = "and" | "or"
+beta;GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like"
+beta;GenericInstanceFilterRuleValue
+beta;GenericInstanceFilterRuleValue
 public;GeocentricTransform 
 public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
