@@ -451,7 +451,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
    * screen pixels between adjacent heightmap vertices and thus rendering more quickly.
    * @type {Number}
    */
-  public readonly heightmapTerrainQuality = 0.25;
+  public readonly heightmapTerrainQuality = 1;
 
   /**
    * Determines an appropriate geometric error estimate when the geometry comes from a heightmap.
