@@ -24,9 +24,9 @@ jobs:
         run: |
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
-      - name: Run merge-master-to-open-prs.mjs
+      - name: Run invalidate-status-checks.mjs
         run: |
-          npm i -g octokit
+          npm install octokit
           node ./.github/workflows/automation-scripts/invalidate-status-checks.mjs
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
