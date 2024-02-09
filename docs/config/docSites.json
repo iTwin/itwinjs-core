@@ -62,6 +62,7 @@
       "bentley": "core-bentley",
       "common": "core-common",
       "components-react": "components-react",
+      "connector-framework": "connector-framework",
       "core-electron": "core-electron",
       "core-mobile": "core-mobile",
       "core-react": "core-react",
