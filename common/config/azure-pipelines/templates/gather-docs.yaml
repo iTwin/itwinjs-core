@@ -91,15 +91,14 @@ steps:
             SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
             TargetFolder: ${{ parameters.stagingDir }}/reference/
 
-  # Connector Framework
+  # Connector Frameworks
   - template: ./copy-docs-artifact.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 5669 # iTwin.js/iTwin Connector Frameworks/iTwin.connector-framework
       artifactName: Connector-Framework Docs
-      # buildTag: hasDocs
-      specificBuild: 2653673 #temporary until tag is setup.
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
       stagingSteps:
         - task: CopyFiles@2
