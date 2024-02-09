@@ -152,6 +152,7 @@ import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
 import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
+import { OpenCheckpointArgs } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
@@ -836,6 +837,8 @@ export class CheckpointManager {
     static readonly onDownloadV1: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
+    // (undocumented)
+    static toCheckPointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
@@ -4957,8 +4960,8 @@ export class SnapshotDb extends IModelDb {
     static readonly onOpen: BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>;
     // (undocumented)
     static readonly onOpened: BeEvent<(_iModelDb: SnapshotDb) => void>;
-    // (undocumented)
-    static openCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb>;
+    // @beta
+    static openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb>;
     // @internal (undocumented)
     static openCheckpointFromRpc(checkpoint: CheckpointProps): Promise<SnapshotDb>;
     static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb;
@@ -5695,7 +5698,7 @@ export class V2CheckpointManager {
     // (undocumented)
     static cleanup(): void;
     // (undocumented)
-    static readonly cloudCacheName = "v2Checkpoints";
+    static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     // (undocumented)
     static getFolder(): LocalDirName;

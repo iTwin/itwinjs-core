@@ -458,12 +458,14 @@ export class CheckpointManager {
   }
 
   public static async toCheckPointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
+    const changeset = args.changeset ?? await IModelHost.hubAccess.getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
+
     return {
       iModelId: args.iModelId,
       iTwinId: args.iTwinId,
       changeset: {
-        index: args.changeset.index,
-        id: args.changeset.id ?? (await IModelHost.hubAccess.queryChangeset({ ...args, accessToken: await IModelHost.getAccessToken() })).id,
+        index: changeset.index,
+        id: changeset.id ?? (await IModelHost.hubAccess.queryChangeset({ ...args, changeset, accessToken: await IModelHost.getAccessToken() })).id,
       },
     };
   }

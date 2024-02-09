@@ -163,14 +163,18 @@ export interface RequestNewBriefcaseProps {
   asOf?: IModelVersionProps;
 }
 
+/**
+ * Arguments to open a Checkpoint directly from its cloud container
+ * @beta
+ */
 export interface OpenCheckpointArgs {
   readonly iTwinId: GuidString;
 
   /** Id of the iModel */
   readonly iModelId: GuidString;
 
-  /** changeset for the checkpoint */
-  readonly changeset: ChangesetIndexOrId;
+  /** changeset for the checkpoint. If undefined, attempt to open the checkpoint for the latest changeset. */
+  readonly changeset?: ChangesetIndexOrId;
 }
 
 /**

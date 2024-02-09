@@ -2927,7 +2927,10 @@ export class SnapshotDb extends IModelDb {
     return snapshot;
   }
 
-  // Open a Checkpoint directly from a cloud container.
+  /**
+   * Open a Checkpoint directly from its cloud container.
+   * @beta
+   */
   public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
     return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckPointProps(args));
   }
