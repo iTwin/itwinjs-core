@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added `GenericInstanceFilter` definition for storing information necessary for building filtering queries.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
