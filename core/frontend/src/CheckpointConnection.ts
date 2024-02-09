@@ -21,7 +21,7 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
  * An IModelConnection to a Checkpoint of an iModel.
- * @see [CheckpointConnection]($docs/learning/IModelConnection#CheckpointConnection)
+ * @see [CheckpointConnection]($docs/learning/IModelConnection)
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
