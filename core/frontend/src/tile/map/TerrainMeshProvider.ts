@@ -36,6 +36,8 @@ export interface TerrainMeshProviderOptions {
    * A [[TerrainmeshProvider can ignore the request to produce normals, but doing so will prevent lighting and thematic display from applying to its terrain meshes.
    */
   wantNormals: boolean;
+  /** Optionally identifies a specific terrain data source supplied by the [[TerrainMeshProvider]]. */
+  dataSource?: string;
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.requestMeshData]].

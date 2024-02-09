@@ -512,10 +512,20 @@ export abstract class GltfReader {
     else
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-    if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
-
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+
+    // Compute range in tileset/world space.
+    let range = contentRange;
+    const invTransform = transform?.inverse();
+    if (invTransform)
+      range = invTransform.multiplyRange(contentRange);
+
+    // The batch range needs to be in tile coordinate space.
+    // If we computed the content range ourselves, it's already in tile space.
+    // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
+    if (featureTable)
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
+
     const viewFlagOverrides = this.viewFlagOverrides;
     if (transform || viewFlagOverrides) {
       const branch = new GraphicBranch(true);
@@ -525,9 +535,6 @@ export abstract class GltfReader {
       branch.add(renderGraphic);
       renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
     }
-
-    const invTransform = transform?.inverse();
-    const range = invTransform ? invTransform.multiplyRange(contentRange) : contentRange;
 
     return {
       readStatus,
