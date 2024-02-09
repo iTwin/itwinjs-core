@@ -75,7 +75,7 @@ packageClassification:
       "packages": ["connector-framework"],
     },
     {
-      "order": "7",
+      "order": "8",
       "header": "Authorization",
       "packages":
         [
