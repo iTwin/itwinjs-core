@@ -11,7 +11,7 @@ import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itw
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTree, TileTreeOwner, TileTreeReference } from "../internal";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTree, TileTreeOwner, TileTreeReference } from "../internal";
 import { IModelApp } from "../../IModelApp";
 
 /** Position of a map-layer in the display style's map (i.e. background/overlay map)
