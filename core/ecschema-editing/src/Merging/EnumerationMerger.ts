@@ -11,7 +11,7 @@ type EnumeratorDeltaArgs = [AnyEnumerator, keyof AnyEnumerator, string | undefin
 /**
  * @internal
  */
-export default class EnumerationMerger extends SchemaItemMerger<Enumeration> {
+export class EnumerationMerger extends SchemaItemMerger<Enumeration> {
 
   /** Shorthand property to the enumerations editor. */
   private get _editor() {

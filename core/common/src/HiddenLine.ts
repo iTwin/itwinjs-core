@@ -67,7 +67,7 @@ export namespace HiddenLine {
 
       if (undefined !== json.pattern) {
         const pattern = JsonUtils.asInt(json.pattern, hidden ? LinePixels.HiddenLine : LinePixels.Invalid);
-        if (LinePixels.Invalid !== pattern)
+        if (LinePixels.Invalid.valueOf() !== pattern)
           this.pattern = pattern;
       } else if (hidden) {
         this.pattern = LinePixels.HiddenLine;

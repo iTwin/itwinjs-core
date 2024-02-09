@@ -172,7 +172,7 @@ export class GltfReaderProps {
     if (source instanceof Uint8Array) {
       // It may be JSON - check for magic indicating glb.
       const buffer = ByteStream.fromUint8Array(source);
-      if (TileFormat.Gltf !== buffer.readUint32()) {
+      if (TileFormat.Gltf.valueOf() !== buffer.readUint32()) {
         try {
           const utf8Json = utf8ToString(source);
           if (!utf8Json)
@@ -1040,7 +1040,7 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
-    if (meshMode === GltfMeshMode.Points /* && !this._vertexTableRequired */) {
+    if (meshMode === GltfMeshMode.Points.valueOf() /* && !this._vertexTableRequired */) {
       const pointCloud = this.readPointCloud(primitive, undefined !== featureTable);
       if (pointCloud)
         return pointCloud;
@@ -1058,15 +1058,15 @@ export abstract class GltfReader {
 
     let primitiveType: number = -1;
     switch (meshMode) {
-      case GltfMeshMode.Lines:
+      case GltfMeshMode.Lines.valueOf():
         primitiveType = MeshPrimitiveType.Polyline;
         break;
 
-      case GltfMeshMode.Points:
+      case GltfMeshMode.Points.valueOf():
         primitiveType = MeshPrimitiveType.Point;
         break;
 
-      case GltfMeshMode.Triangles:
+      case GltfMeshMode.Triangles.valueOf():
         primitiveType = MeshPrimitiveType.Mesh;
         break;
 
@@ -1135,7 +1135,7 @@ export abstract class GltfReader {
       return undefined;
 
     switch (primitiveType) {
-      case MeshPrimitiveType.Mesh: {
+      case MeshPrimitiveType.Mesh.valueOf(): {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
@@ -1156,9 +1156,9 @@ export abstract class GltfReader {
         break;
       }
 
-      case MeshPrimitiveType.Polyline:
-      case MeshPrimitiveType.Point: {
-        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point === primitiveType))
+      case MeshPrimitiveType.Polyline.valueOf():
+      case MeshPrimitiveType.Point.valueOf(): {
+        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point.valueOf() === primitiveType))
           return undefined;
         break;
       }

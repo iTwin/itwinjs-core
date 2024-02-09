@@ -691,35 +691,35 @@ class PixelBuffer implements Pixel.Buffer {
     let geometryType = px.type;
     let planarity = px.planarity;
 
-    const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
+    const haveFeatureIds = Pixel.Selector.None.valueOf() !== (this._selector & Pixel.Selector.Feature);
     const feature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
     const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
-    if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
+    if (Pixel.Selector.None.valueOf() !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
         distanceFraction = this.decodeDepthRgba(depthAndOrder);
 
         const orderWithPlanarBit = this.decodeRenderOrderRgba(depthAndOrder);
         const order = orderWithPlanarBit & ~RenderOrder.PlanarBit;
-        planarity = (orderWithPlanarBit === order) ? Pixel.Planarity.NonPlanar : Pixel.Planarity.Planar;
+        planarity = (orderWithPlanarBit.valueOf() === order) ? Pixel.Planarity.NonPlanar : Pixel.Planarity.Planar;
         switch (order) {
-          case RenderOrder.None:
+          case RenderOrder.None.valueOf():
             geometryType = Pixel.GeometryType.None;
             planarity = Pixel.Planarity.None;
             break;
-          case RenderOrder.Background:
-          case RenderOrder.BlankingRegion:
-          case RenderOrder.LitSurface:
-          case RenderOrder.UnlitSurface:
+          case RenderOrder.Background.valueOf():
+          case RenderOrder.BlankingRegion.valueOf():
+          case RenderOrder.LitSurface.valueOf():
+          case RenderOrder.UnlitSurface.valueOf():
             geometryType = Pixel.GeometryType.Surface;
             break;
-          case RenderOrder.Linear:
+          case RenderOrder.Linear.valueOf():
             geometryType = Pixel.GeometryType.Linear;
             break;
-          case RenderOrder.Edge:
+          case RenderOrder.Edge.valueOf():
             geometryType = Pixel.GeometryType.Edge;
             break;
-          case RenderOrder.Silhouette:
+          case RenderOrder.Silhouette.valueOf():
             geometryType = Pixel.GeometryType.Silhouette;
             break;
           default:
@@ -757,7 +757,7 @@ class PixelBuffer implements Pixel.Buffer {
     this._selector = selector;
     this._batchState = compositor.target.uniforms.batch.state;
 
-    if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance)) {
+    if (Pixel.Selector.None.valueOf() !== (selector & Pixel.Selector.GeometryAndDistance)) {
       const depthAndOrderBytes = compositor.readDepthAndOrder(rect);
       if (undefined !== depthAndOrderBytes)
         this._depthAndOrder = new Uint32Array(depthAndOrderBytes.buffer);
@@ -765,7 +765,7 @@ class PixelBuffer implements Pixel.Buffer {
         this._selector &= ~Pixel.Selector.GeometryAndDistance;
     }
 
-    if (Pixel.Selector.None !== (selector & Pixel.Selector.Feature)) {
+    if (Pixel.Selector.None.valueOf() !== (selector & Pixel.Selector.Feature)) {
       const features = compositor.readFeatureIds(rect);
       if (undefined !== features)
         this._featureId = new Uint32Array(features.buffer);
@@ -910,7 +910,7 @@ class Compositor extends SceneCompositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
+    if (CompositeFlags.None.valueOf() !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
       this.renderOpaqueAO(commands);
       return;
     }
@@ -1113,7 +1113,7 @@ class Compositor extends SceneCompositor {
 
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     const needComposite = CompositeFlags.None !== compositeFlags;
-    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
+    const needAO = CompositeFlags.None.valueOf() !== (compositeFlags & CompositeFlags.AmbientOcclusion);
     const fbStack = System.instance.frameBufferStack;
 
     if (renderForReadPixels || needAO) {

@@ -115,7 +115,7 @@ export namespace RealityDataSourceKey {
   }
   /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
   export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
-    if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
+    if ((key1.provider === RealityDataProvider.CesiumIonAsset.valueOf()) && key2.provider === RealityDataProvider.CesiumIonAsset.valueOf())
       return true; // ignore other properties for CesiumIonAsset, id is hidden
     if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id)) {
       // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data

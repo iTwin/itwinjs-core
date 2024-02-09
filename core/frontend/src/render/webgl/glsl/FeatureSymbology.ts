@@ -197,7 +197,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const vert = builder.vert;
   addFeatureIndex(vert);
 
-  const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
+  const haveOverrides = FeatureSymbologyOptions.None.valueOf() !== (opts & FeatureSymbologyOptions.HasOverrides);
   if (!haveOverrides) {
     // For pick output we must compute g_featureIndex...
     if (FeatureMode.Pick === mode)
@@ -206,10 +206,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     return true;
   }
 
-  const wantWeight = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Weight);
-  const wantLineCode = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.LineCode);
-  const wantColor = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Color);
-  const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
+  const wantWeight = FeatureSymbologyOptions.None.valueOf() !== (opts & FeatureSymbologyOptions.Weight);
+  const wantLineCode = FeatureSymbologyOptions.None.valueOf() !== (opts & FeatureSymbologyOptions.LineCode);
+  const wantColor = FeatureSymbologyOptions.None.valueOf() !== (opts & FeatureSymbologyOptions.Color);
+  const wantAlpha = FeatureSymbologyOptions.None.valueOf() !== (opts & FeatureSymbologyOptions.Alpha);
   assert(wantColor || !wantAlpha);
 
   addExtractNthBit(vert);
@@ -544,7 +544,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
   const feat = flags.featureMode;
   const isEdgeTestNeeded = flags.isEdgeTestNeeded;
   const isClassified = flags.isClassified;
-  const computeIdInFrag = !flags.isTranslucent && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+  const computeIdInFrag = !flags.isTranslucent && 0 !== flags.isClassified.valueOf() && FeatureMode.Overrides === feat;
 
   const frag = builder.frag;
   const vert = builder.vert;

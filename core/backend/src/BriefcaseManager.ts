@@ -171,7 +171,7 @@ export class BriefcaseManager {
    * @note this does check whether the id was actually acquired by the caller.
    */
   public static isValidBriefcaseId(id: BriefcaseId) {
-    return id >= BriefcaseIdValue.FirstValid && id <= BriefcaseIdValue.LastValid;
+    return id >= BriefcaseIdValue.FirstValid.valueOf() && id <= BriefcaseIdValue.LastValid.valueOf();
   }
 
   /** Acquire a new briefcaseId from iModelHub for the supplied iModelId

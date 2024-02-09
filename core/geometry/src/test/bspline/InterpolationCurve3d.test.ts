@@ -122,7 +122,7 @@ describe("InterpolationCurve3d", () => {
 
 function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number = 0, y0: number = 0, delta: number = 0) {
   const curve = InterpolationCurve3d.create(options);
-  if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${options}`)) {
+  if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${JSON.stringify(options)}`)) {
     if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
       for (const fitPoint of curve.options.fitPoints) {
         const detail = curve.closestPoint(fitPoint, false);

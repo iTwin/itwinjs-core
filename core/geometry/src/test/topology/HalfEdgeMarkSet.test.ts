@@ -135,7 +135,7 @@ describe("HalfEdgeMarkSet", () => {
 
     // Hard to reach lines ..
     // drain the mask pool in the graph ...
-    while (graph.grabMask() !== 0) { }
+    while (graph.grabMask().valueOf() !== 0) { }
     // and all the mark set creations will fail ...
     ck.testUndefined(MarkedHalfEdgeSet.create(graph));
     ck.testUndefined(MarkedEdgeSet.create(graph));

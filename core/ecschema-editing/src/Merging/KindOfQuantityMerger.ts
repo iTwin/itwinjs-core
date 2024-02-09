@@ -9,7 +9,7 @@ import { KindOfQuantityChanges } from "../Validation/SchemaChanges";
 /**
  * @internal
  */
-export default class KindOfQuantityMerger extends SchemaItemMerger<KindOfQuantity> {
+export class KindOfQuantityMerger extends SchemaItemMerger<KindOfQuantity> {
 
   protected override async merge(itemKey: SchemaItemKey, source: KindOfQuantity, changes: KindOfQuantityChanges) {
     for (const presentationUnitChange of changes.presentationUnitChanges.values()) {

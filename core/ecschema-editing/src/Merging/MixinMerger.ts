@@ -9,7 +9,7 @@ import { ClassMerger } from "./ClassMerger";
 /**
  * @internal
  */
-export default class MixinMerger extends ClassMerger<Mixin> {
+export class MixinMerger extends ClassMerger<Mixin> {
 
   protected override async create(schemaKey: SchemaKey, ecClass: Mixin): Promise<SchemaItemEditResults> {
     if (ecClass.appliesTo === undefined) {

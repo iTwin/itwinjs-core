@@ -513,8 +513,8 @@ export class ToolAdmin {
 
   private getMouseButton(button: number) {
     switch (button) {
-      case MouseButton.Middle: return BeButton.Middle;
-      case MouseButton.Right: return BeButton.Reset;
+      case MouseButton.Middle.valueOf(): return BeButton.Middle;
+      case MouseButton.Right.valueOf(): return BeButton.Reset;
       default: return BeButton.Data;
     }
   }

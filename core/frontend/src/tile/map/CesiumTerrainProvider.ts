@@ -199,7 +199,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     cards.dataset.cesiumIonLogoCard = "true";
     let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
-    if (this._assetId === CesiumTerrainAssetId.Bathymetry)
+    if (this._assetId === CesiumTerrainAssetId.Bathymetry.valueOf())
       notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
 
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
@@ -330,13 +330,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       const extensionId = streamBuffer.readUint8();
       const extensionLength = streamBuffer.readUint32();
       switch (extensionId) {
-        case QuantizedMeshExtensionIds.OctEncodedNormals:
+        case QuantizedMeshExtensionIds.OctEncodedNormals.valueOf():
           assert(pointCount * 2 === extensionLength);
           encodedNormalsBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
           streamBuffer.advance(extensionLength);
           break;
 
-        case QuantizedMeshExtensionIds.Metadata:
+        case QuantizedMeshExtensionIds.Metadata.valueOf():
           const stringLength = streamBuffer.readUint32();
           if (stringLength > 0) {
             const strData = streamBuffer.nextBytes(stringLength);

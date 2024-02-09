@@ -1504,7 +1504,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
       const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg}`);
+        throw new IModelError(IModelStatus.NotFound, `Model=${JSON.stringify(modelIdArg)}`);
       }
       return modelJson;
     }
@@ -1529,7 +1529,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the sub-model is not found, cannot be loaded, or fails validation when `modelClass` is specified.
      * @see tryGetSubModel
      */
-    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
+    public getSubModel<T extends Model>(modeledElementId: Id64String   | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
       if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
@@ -1543,7 +1543,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @returns The sub-model or `undefined` if the specified element does not have a sub-model or fails validation when `modelClass` is specified.
      * @see getSubModel
      */
-    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
+    public tryGetSubModel<T extends Model>(modeledElementId: Id64String   | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
       if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
@@ -1675,7 +1675,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
+        throw new IModelError(IModelStatus.NotFound, `reading element=${JSON.stringify(elementId)}`);
       return elementProps;
     }
 
@@ -1697,7 +1697,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
+    public getElementProps<T extends ElementProps>(props: Id64String   | Code | ElementLoadProps): T {
       if (typeof props === "string") {
         props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
       } else if (props instanceof Code) {
@@ -1716,7 +1716,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+    public tryGetElementProps<T extends ElementProps>(elementId: Id64String   | Code | ElementLoadProps): T | undefined {
       if (typeof elementId === "string") {
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       } else if (elementId instanceof Code) {
@@ -1731,10 +1731,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element is not found, cannot be loaded, or fails validation when `elementClass` is specified.
      * @see tryGetElement
      */
-    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
+    public getElement<T extends Element>(elementId: Id64String   | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element)
-        throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+        throw new IModelError(IModelStatus.NotFound, `Element=${JSON.stringify(elementId)}`);
       return element;
     }
 
@@ -1746,7 +1746,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElement
      */
-    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
+    public tryGetElement<T extends Element>(elementId: Id64String   | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
       if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
@@ -2568,7 +2568,7 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned.valueOf()) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
@@ -2704,7 +2704,7 @@ export class BriefcaseDb extends IModelDb {
 
   /** Push changes to iModelHub. */
   public async pushChanges(arg: PushChangesArgs): Promise<void> {
-    if (this.briefcaseId === BriefcaseIdValue.Unassigned)
+    if (this.briefcaseId === BriefcaseIdValue.Unassigned.valueOf())
       return;
 
     if (this.nativeDb.hasUnsavedChanges())

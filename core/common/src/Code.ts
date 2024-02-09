@@ -15,6 +15,7 @@ import { IModel } from "./IModel";
  * @public
  * @extensions
  */
+// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 export type CodeScopeProps = Id64String | GuidString;
 
 /** The parameters that define a Code
@@ -23,6 +24,7 @@ export type CodeScopeProps = Id64String | GuidString;
  */
 export interface CodeProps {
   /** Either the stringified 64-bit Id of the CodeSpec for this code, or the name of the CodeSpec. */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   spec: Id64String | string;
   /** Either the ElementId or the FederationGuid of the element that provides the scope for this code. */
   scope: CodeScopeProps;

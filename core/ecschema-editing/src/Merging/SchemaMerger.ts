@@ -13,14 +13,14 @@ import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaItemMerger } from "./SchemaItemMerger";
 
 import mergeSchemaReferences from "./SchemaReferenceMerger";
-import CAClassMerger from "./CAClassMerger";
-import EnumerationMerger from "./EnumerationMerger";
-import ConstantsMerger from "./ConstantMerger";
-import EntityClassMerger from "./EntityClassMerger";
-import StructClassMerger from "./StructClassMerger";
-import MixinMerger from "./MixinMerger";
+import { CAClassMerger } from "./CAClassMerger";
+import { EnumerationMerger } from "./EnumerationMerger";
+import { ConstantsMerger } from "./ConstantMerger";
+import { EntityClassMerger } from "./EntityClassMerger";
+import { StructClassMerger } from "./StructClassMerger";
+import { MixinMerger } from "./MixinMerger";
 import { mergeCustomAttributes } from "./CustomAttributeMerger";
-import KindOfQuantityMerger from "./KindOfQuantityMerger";
+import { KindOfQuantityMerger } from "./KindOfQuantityMerger";
 
 /**
  * Defines the context of a Schema merging run.

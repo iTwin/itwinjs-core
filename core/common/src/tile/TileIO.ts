@@ -28,14 +28,14 @@ export enum TileFormat {
  */
 export function isKnownTileFormat(format: number) {
   switch (format) {
-    case TileFormat.Unknown:
-    case TileFormat.B3dm:
-    case TileFormat.Gltf:
-    case TileFormat.IModel:
-    case TileFormat.Pnts:
-    case TileFormat.Cmpt:
-    case TileFormat.I3dm:
-    case TileFormat.A3x:
+    case TileFormat.Unknown.valueOf():
+    case TileFormat.B3dm.valueOf():
+    case TileFormat.Gltf.valueOf():
+    case TileFormat.IModel.valueOf():
+    case TileFormat.Pnts.valueOf():
+    case TileFormat.Cmpt.valueOf():
+    case TileFormat.I3dm.valueOf():
+    case TileFormat.A3x.valueOf():
       return true;
     default:
       return false;
@@ -86,7 +86,7 @@ export class TileReadError extends BentleyError {
     super(status, message);
   }
 
-  public get wasCanceled(): boolean { return TileReadStatus.Canceled === this.errorNumber; }
+  public get wasCanceled(): boolean { return TileReadStatus.Canceled.valueOf() === this.errorNumber; }
 }
 
 /** The base header preceding tile data of most formats, identifying the tile format and version of that format.

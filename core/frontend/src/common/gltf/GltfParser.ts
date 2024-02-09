@@ -50,7 +50,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
   if (source instanceof Uint8Array) {
     // It may be JSON - check for magic indicating glb.
     const buffer = ByteStream.fromUint8Array(source);
-    if (TileFormat.Gltf !== buffer.readUint32()) {
+    if (TileFormat.Gltf.valueOf() !== buffer.readUint32()) {
       try {
         const utf8Json = utf8ToString(source);
         if (!utf8Json)
@@ -280,7 +280,7 @@ class GltfParser {
   private parsePrimitive(primitive: GltfMeshPrimitive): Gltf.AnyPrimitive | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
-      case GltfMeshMode.TriangleStrip:
+      case GltfMeshMode.TriangleStrip.valueOf():
         return this.parseTrianglesPrimitive(primitive);
       default:
         // ###TODO_GLTF Make parser support all primitive types. Consumer can choose to do whatever with them.

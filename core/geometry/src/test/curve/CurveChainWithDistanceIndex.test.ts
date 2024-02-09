@@ -36,7 +36,7 @@ describe("CurveChainWithDistanceIndex", () => {
       const pathObject = IModelJson.Reader.parse(JSON.parse(stringData));
       if (pathObject) {
         if (ck.testType(pathObject, Path, "Expect a single path in input file")) {
-          const pathAsPrimitive = CurveChainWithDistanceIndex.createCapture(pathObject)!;
+          const pathAsPrimitive = CurveChainWithDistanceIndex.createCapture(pathObject);
           const origin = pathAsPrimitive.fractionToPoint(0);
           const x0 = -origin.x;
           const y0 = -origin.y;
@@ -62,7 +62,7 @@ describe("CurveChainWithDistanceIndex", () => {
       const pathObject = IModelJson.Reader.parse(JSON.parse(stringData));
       if (ck.testDefined(pathObject, "parse json string")) {
         if (ck.testType(pathObject, Path, "Expect a single path in input file")) {
-          const hzAlignment = CurveChainWithDistanceIndex.createCapture(pathObject)!;
+          const hzAlignment = CurveChainWithDistanceIndex.createCapture(pathObject);
           // const hzAlignment = pathObject.children [1];
           const origin = pathObject.children[0].fractionToPoint(0);
           const x0 = -origin.x;

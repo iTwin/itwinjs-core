@@ -14,6 +14,7 @@ import { Id64String, IDisposable } from "@itwin/core-bentley";
  * @see [[SkySphereImageProps.texture]] and [[SkyCubeImageProps]].
  * @public
  */
+// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 export type TextureImageSpec = Id64String | string;
 
 /** Represents a texture image applied to a surface during rendering.

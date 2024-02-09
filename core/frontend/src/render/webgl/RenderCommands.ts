@@ -99,7 +99,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._batchState = batchState;
     this._layers = new LayerCommandLists(this);
 
-    for (let i = 0; i < RenderPass.COUNT; ++i)
+    for (let i = 0; i < RenderPass.COUNT.valueOf(); ++i)
       this._commands[i] = [];
   }
 

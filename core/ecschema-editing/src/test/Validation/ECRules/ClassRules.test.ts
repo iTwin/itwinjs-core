@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { DelayedPromiseWithProps, ECClassModifier, EntityClass,
   RelationshipClass, Schema, SchemaContext, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
+import { baseClassIsOfDifferentType, baseClassIsSealed, DiagnosticCodes } from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable deprecation/deprecation */
@@ -24,7 +24,7 @@ describe("ClassRule tests", () => {
     const entityClass = new EntityClass(schema, "TestClass");
     entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-    const result = Rules.baseClassIsSealed(entityClass);
+    const result = baseClassIsSealed(entityClass);
 
     expect(result).not.undefined;
     let resultHasEntries = false;
@@ -33,7 +33,7 @@ describe("ClassRule tests", () => {
       expect(diagnostic.ecDefinition).to.equal(entityClass);
       expect(diagnostic.messageArgs).to.eql([entityClass.fullName, baseClass.fullName]);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.BaseClassIsSealed);
+      expect(diagnostic.code).to.equal(DiagnosticCodes.BaseClassIsSealed);
       expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -44,7 +44,7 @@ describe("ClassRule tests", () => {
     const entityClass = new EntityClass(schema, "TestClass");
     entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-    const result = Rules.baseClassIsSealed(entityClass);
+    const result = baseClassIsSealed(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }
@@ -53,7 +53,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsSealed, no base class, rule passes.", async () => {
     const entityClass = new EntityClass(schema, "TestClass");
 
-    const result = Rules.baseClassIsSealed(entityClass);
+    const result = baseClassIsSealed(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }
@@ -65,7 +65,7 @@ describe("ClassRule tests", () => {
     entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
     const baseType = schemaItemTypeToString(baseClass.schemaItemType);
 
-    const result = Rules.baseClassIsOfDifferentType(entityClass);
+    const result = baseClassIsOfDifferentType(entityClass);
     expect(result).not.undefined;
     let resultHasEntries = false;
     for await (const diagnostic of result) {
@@ -73,7 +73,7 @@ describe("ClassRule tests", () => {
       expect(diagnostic.ecDefinition).to.equal(entityClass);
       expect(diagnostic.messageArgs).to.eql([entityClass.fullName, baseClass.fullName, baseType]);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.BaseClassOfDifferentType);
+      expect(diagnostic.code).to.equal(DiagnosticCodes.BaseClassOfDifferentType);
       expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -84,7 +84,7 @@ describe("ClassRule tests", () => {
     const entityClass = new EntityClass(schema, "TestClass");
     entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-    const result = Rules.baseClassIsOfDifferentType(entityClass);
+    const result = baseClassIsOfDifferentType(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }
@@ -93,7 +93,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsOfDifferentType, no base class, rule passes.", async () => {
     const entityClass = new EntityClass(schema, "TestClass");
 
-    const result = Rules.baseClassIsOfDifferentType(entityClass);
+    const result = baseClassIsOfDifferentType(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }

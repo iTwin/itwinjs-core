@@ -424,7 +424,7 @@ export abstract class TextureHandle implements WebGLDisposable {
       const pixels = new Uint8Array(w * h * 4);
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w)!;
+      const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w);
       const url = imageBufferToPngDataUrl(buffer, false);
       openImageDataUrlInNewWindow(url!, "Classifiers");
     }
@@ -779,7 +779,7 @@ export class Texture2DDataUpdater {
 
   public setOvrFlagsAtIndex(index: number, value: OvrFlags) {
     assert(index < this.data.length - 1);
-    assert(value < 0xffff);
+    assert(value.valueOf() < 0xffff);
     this.setByteAtIndex(index, value & 0xff);
     this.setByteAtIndex(index + 1, (value & 0xff00) >> 8);
   }

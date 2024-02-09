@@ -756,7 +756,7 @@ export class AccuSnap implements Decorator {
       if (out)
         out.snapStatus = result.status;
 
-      if (result.status !== SnapStatus.Success)
+      if (result.status !== SnapStatus.Success.valueOf())
         return undefined;
 
       const parseCurve = (json: any): CurvePrimitive | undefined => {

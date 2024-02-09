@@ -45,13 +45,13 @@ function addBoundaryTypeConstants(builder: ShaderBuilder): void {
 /** @internal */
 function setScratchColor(display: number, hilite: FloatRgb, hAlpha: number): void {
   switch (display) {
-    case SpatialClassifierOutsideDisplay.Dimmed:
+    case SpatialClassifierOutsideDisplay.Dimmed.valueOf():
       scratchColor.set(0.0, 0.0, 0.0, 0.3);
       break;
-    case SpatialClassifierOutsideDisplay.Off:
+    case SpatialClassifierOutsideDisplay.Off.valueOf():
       scratchColor.set(0.0, 0.0, 0.0, 0.8);
       break;
-    case SpatialClassifierOutsideDisplay.On:
+    case SpatialClassifierOutsideDisplay.On.valueOf():
       scratchColor.set(0.0, 0.0, 0.0, 0.0);
       break;
     default: // Hilite or ByElementColor (though ByElementColor should never use this shader)

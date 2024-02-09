@@ -462,7 +462,7 @@ export class AccuDraw {
     if (offsetSnap) {
       if (isOnCompassPlane) {
         const zOffset = snapPt.distance(this._rawPointOnPlane);
-        if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE)
+        if (zOffset > Constants.SMALL_ANGLE.valueOf() || zOffset < -Constants.SMALL_ANGLE)
           return true;
       }
     }
@@ -495,9 +495,9 @@ export class AccuDraw {
 
       if ((0 !== locked) && isOnCompassPlane) {
         switch (locked) {
-          case LockedStates.X_BM:
-          case LockedStates.Y_BM:
-          case LockedStates.XY_BM:
+          case LockedStates.X_BM.valueOf():
+          case LockedStates.Y_BM.valueOf():
+          case LockedStates.XY_BM.valueOf():
             return true;
         }
       }
@@ -511,7 +511,7 @@ export class AccuDraw {
     if (!this.isEnabled)
       return false;
 
-    const lastWasIndexed = (0 !== this.indexed);
+    const lastWasIndexed = (0 !== this.indexed.valueOf());
     let pointChanged = false, handled = false;
 
     if (0.0 !== pointActive.z && !vp.isPointAdjustmentRequired)
@@ -808,12 +808,12 @@ export class AccuDraw {
 
       case RotationMode.Context:
         switch (this.flags.contextRotMode) {
-          case ContextMode.XAxis:
+          case ContextMode.XAxis.valueOf():
             this.getRotationFromVector(newRotation, 0);
             clearLocks = (LockedStates.Y_BM !== this.locked || !oldRotation.x.isExactEqual(newRotation.x)); // Try to keep locked axis when tool being unsuspended...
             break;
 
-          case ContextMode.XAxis2:
+          case ContextMode.XAxis2.valueOf():
             if (vp)
               this.getBestViewedRotationFromXVector(newRotation, vp); // Use base rotation axis that results in compass being most closely aligned to view direction....
             else
@@ -821,16 +821,16 @@ export class AccuDraw {
             clearLocks = (LockedStates.Y_BM !== this.locked || !oldRotation.x.isExactEqual(newRotation.x)); // Try to keep locked axis when tool being unsuspended...
             break;
 
-          case ContextMode.YAxis:
+          case ContextMode.YAxis.valueOf():
             this.getRotationFromVector(newRotation, 1);
             clearLocks = (LockedStates.X_BM !== this.locked || !oldRotation.y.isExactEqual(newRotation.y)); // Try to keep locked axis when tool being unsuspended...
             break;
 
-          case ContextMode.ZAxis:
+          case ContextMode.ZAxis.valueOf():
             this.getRotationFromVector(newRotation, 2);
             break;
 
-          case ContextMode.Locked:
+          case ContextMode.Locked.valueOf():
             break;
         }
         break;
@@ -1461,7 +1461,7 @@ export class AccuDraw {
     const isAngle = (ItemField.ANGLE_Item === index);
     let currIndex = this._savedCoords.nSaveValues + 1;
 
-    if (currIndex >= Constants.MAX_SAVED_VALUES)
+    if (currIndex >= Constants.MAX_SAVED_VALUES.valueOf())
       currIndex = 0;
 
     if (this._savedCoords.savedValues[this._savedCoords.nSaveValues] === value && this._savedCoords.savedValIsAngle[this._savedCoords.nSaveValues] === isAngle)
@@ -1474,7 +1474,7 @@ export class AccuDraw {
     } else {
       // don't accept zero
       value = Math.abs(value);
-      if (value < Constants.SMALL_ANGLE)
+      if (value < Constants.SMALL_ANGLE.valueOf())
         return;
     }
 
@@ -1589,7 +1589,7 @@ export class AccuDraw {
     if (this.rotationMode !== this.flags.baseRotation)
       this.setRotationMode(this.flags.baseRotation);
 
-    if (this.compassMode !== this.flags.baseMode)
+    if (this.compassMode.valueOf() !== this.flags.baseMode)
       this.setCompassMode(this.flags.baseMode);
   }
 
@@ -1772,7 +1772,7 @@ export class AccuDraw {
   private getCompassPlanePoint(point: Point3d, vp: Viewport): boolean {
     point.setFrom(this.origin); // Isn't this just planePt?!? Maybe at display time it is not setup yet?!?
     if (this._fieldLocked[ItemField.Z_Item] && vp.view.is3d()) {
-      if (0.0 !== this.delta.z && !(this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE)) {
+      if (0.0 !== this.delta.z && !(this.delta.z < Constants.SMALL_ANGLE.valueOf() && this.delta.z > -Constants.SMALL_ANGLE)) {
         point.addScaledInPlace(this.axes.z, this.delta.z);
         return true;
       }
@@ -1795,7 +1795,7 @@ export class AccuDraw {
     const origin = new Point3d(); // Compass origin is adjusted by active z-lock...
     this.getCompassPlanePoint(origin, vp);
     this._tolerance = vp.pixelsFromInches(this._indexToleranceInches) * vp.getPixelSizeAtPoint(origin);
-    if (Constants.SMALL_ANGLE > this._tolerance)
+    if (Constants.SMALL_ANGLE.valueOf() > this._tolerance)
       this._tolerance = Constants.SMALL_ANGLE;
   }
 
@@ -1862,7 +1862,7 @@ export class AccuDraw {
       if (isOnCompassPlane) {
         if (isRectMode) {
           const zOffset = snapPt.distance(this._rawPointOnPlane);
-          if (zOffset > Constants.SMALL_ANGLE || zOffset < -Constants.SMALL_ANGLE) {
+          if (zOffset > Constants.SMALL_ANGLE.valueOf() || zOffset < -Constants.SMALL_ANGLE) {
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString([this._rawPointOnPlane, this._rawPoint]);
           }
@@ -1906,7 +1906,7 @@ export class AccuDraw {
         if (!index)
           index = this.locked & LockedStates.XY_BM;
 
-        vec = (index === LockedStates.X_BM) ? this.axes.x : this.axes.y;
+        vec = (index === LockedStates.X_BM.valueOf()) ? this.axes.x : this.axes.y;
       } else {
         const deltaVec = this.origin.vectorTo(this.point);
         vec = this.axes.z.crossProduct(deltaVec);
@@ -1931,17 +1931,17 @@ export class AccuDraw {
           pts[0].setFrom(this.planePt.plusScaled(this.axes.y, this.delta.y));
 
         switch (locked) {
-          case LockedStates.X_BM:
+          case LockedStates.X_BM.valueOf():
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString([pts[1], pts[2]]);
             break;
 
-          case LockedStates.Y_BM:
+          case LockedStates.Y_BM.valueOf():
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString([pts[0], pts[1]]);
             break;
 
-          case LockedStates.XY_BM:
+          case LockedStates.XY_BM.valueOf():
             graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
             graphic.addLineString(pts);
             break;
@@ -2209,12 +2209,12 @@ export class AccuDraw {
 
       dotProduct = projectionVector.dotProduct(normalVectorP);
 
-      if (Math.abs(dotProduct) < Constants.SMALL_DELTA)
+      if (Math.abs(dotProduct) < Constants.SMALL_DELTA.valueOf())
         return BentleyStatus.ERROR; // PARALLEL;
 
       distance = (normalVectorP.dotProduct(pointOnPlaneP) - normalVectorP.dotProduct(fromPtP)) / dotProduct;
 
-      if (isCamera && distance < Constants.SMALL_DELTA)
+      if (isCamera && distance < Constants.SMALL_DELTA.valueOf())
         return BentleyStatus.ERROR; // BEHIND_EYE_POINT;
 
       fromPtP.plusScaled(projectionVector, distance, outPtP);
@@ -2233,7 +2233,7 @@ export class AccuDraw {
     if (isSnap) {
       outPtP.setFrom(inPtP);
       const delta = pointOnPlaneP.vectorTo(outPtP);
-      return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA);
+      return (Math.abs(normalVectorP.dotProduct(delta)) < Constants.SMALL_DELTA.valueOf());
     }
     if (BentleyStatus.SUCCESS !== this.constructionPlane(outPtP, inPtP, pointOnPlaneP, normalVectorP, vp, false)) {
       const viewNormal = vp.rotation.getRow(2);
@@ -2351,7 +2351,7 @@ export class AccuDraw {
 
     this.planePt.setFrom(this.origin);
 
-    if (zLocked && !(this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE))
+    if (zLocked && !(this.delta.z < Constants.SMALL_ANGLE.valueOf() && this.delta.z > -Constants.SMALL_ANGLE))
       this.planePt.addScaledInPlace(this.axes.z, this.delta.z);
 
     if (this.locked & LockedStates.VEC_BM) {
@@ -2394,7 +2394,7 @@ export class AccuDraw {
         return;
       }
 
-      this.flags.pointIsOnPlane = (Math.abs(this.axes.z.dotProduct(delta)) < Constants.SMALL_DELTA);
+      this.flags.pointIsOnPlane = (Math.abs(this.axes.z.dotProduct(delta)) < Constants.SMALL_DELTA.valueOf());
     } else {
       mag = delta.magnitude();
       if (mag < minPolarMag) {
@@ -2495,9 +2495,9 @@ export class AccuDraw {
 
     // display index highlight even if snapped
     if (TentativeOrAccuSnap.isHot && this.flags.pointIsOnPlane) {
-      if (Math.abs(rotVec.x) < Constants.SMALL_ANGLE)
+      if (Math.abs(rotVec.x) < Constants.SMALL_ANGLE.valueOf())
         this.indexed |= LockedStates.X_BM;
-      else if (Math.abs(rotVec.y) < Constants.SMALL_ANGLE)
+      else if (Math.abs(rotVec.y) < Constants.SMALL_ANGLE.valueOf())
         this.indexed |= LockedStates.Y_BM;
     }
 
@@ -2537,7 +2537,7 @@ export class AccuDraw {
     this.indexed = 0;
 
     if (zLocked) {
-      this.flags.pointIsOnPlane = (this.delta.z < Constants.SMALL_ANGLE && this.delta.z > -Constants.SMALL_ANGLE);
+      this.flags.pointIsOnPlane = (this.delta.z < Constants.SMALL_ANGLE.valueOf() && this.delta.z > -Constants.SMALL_ANGLE);
       if (!this.flags.pointIsOnPlane)
         this.planePt.addScaledInPlace(this.axes.z, this.delta.z);
       this.hardConstructionPlane(this._rawPointOnPlane, this._rawPoint, this.planePt, this.axes.z, vp, TentativeOrAccuSnap.isHot);
@@ -2621,7 +2621,7 @@ export class AccuDraw {
 
       xyCorrection.y = this.delta.y - this._rawDelta.y;
     } else {
-      const lastDist = (this._rawDelta.y < Constants.SMALL_ANGLE) ? - this._lastDistance : this._lastDistance;
+      const lastDist = (this._rawDelta.y < Constants.SMALL_ANGLE.valueOf()) ? - this._lastDistance : this._lastDistance;
 
       if (!TentativeOrAccuSnap.isHot && ((this.locked & LockedStates.X_BM) || (this.indexed & LockedStates.X_BM)) && !(this.indexed & LockedStates.Y_BM) &&
         Geometry.isDistanceWithinTol(this._rawDelta.y - lastDist, this._tolerance) &&
@@ -2642,16 +2642,16 @@ export class AccuDraw {
     if ((this.locked & LockedStates.X_BM && this.delta.x === 0.0) || (this.locked & LockedStates.Y_BM && this.delta.y === 0.0)) {
       this.indexed |= this.locked; // to display index highlight
     } else if (TentativeOrAccuSnap.isHot) {
-      if (Math.abs(this.delta.x) < Constants.SMALL_ANGLE)
+      if (Math.abs(this.delta.x) < Constants.SMALL_ANGLE.valueOf())
         this.indexed |= LockedStates.X_BM;
-      else if (Math.abs(this.delta.y) < Constants.SMALL_ANGLE)
+      else if (Math.abs(this.delta.y) < Constants.SMALL_ANGLE.valueOf())
         this.indexed |= LockedStates.Y_BM;
     }
 
     const lock = this.locked & LockedStates.XY_BM;
     const index = this.indexed & LockedStates.XY_BM;
 
-    if (lock === LockedStates.Y_BM && index !== LockedStates.X_BM) {
+    if (lock === LockedStates.Y_BM.valueOf() && index !== LockedStates.X_BM.valueOf()) {
       if (this._keyinStatus[ItemField.Y_Item] !== KeyinStatus.Dynamic) {
         if (Math.abs(this._rawDelta.x) < this._threshold)
           return;
@@ -2659,7 +2659,7 @@ export class AccuDraw {
 
       this.newFocus = ItemField.X_Item;
       this.dontMoveFocus = false;
-    } else if (lock === LockedStates.X_BM && index !== LockedStates.Y_BM) {
+    } else if (lock === LockedStates.X_BM.valueOf() && index !== LockedStates.Y_BM.valueOf()) {
       if (this._keyinStatus[ItemField.X_Item] !== KeyinStatus.Dynamic) {
         if (Math.abs(this._rawDelta.y) < this._threshold)
           return;

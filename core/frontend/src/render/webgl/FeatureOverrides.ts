@@ -292,7 +292,7 @@ export class FeatureOverrides implements WebGLDisposable {
     for (const feature of map.iterable(scratchPackedFeature)) {
       const dataIndex = feature.index * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
-      if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
+      if (OvrFlags.None.valueOf() !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter. We can't flash it and don't want to hilite it.
         this._anyOverridden = true;
         continue;
@@ -315,9 +315,9 @@ export class FeatureOverrides implements WebGLDisposable {
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
 
       data.setOvrFlagsAtIndex(dataIndex, newFlags);
-      if (OvrFlags.None !== newFlags) {
+      if (OvrFlags.None.valueOf() !== newFlags) {
         this._anyOverridden = true;
-        this._anyHilited = this._anyHilited || isHilited || OvrFlags.None !== (newFlags & OvrFlags.Emphasized);
+        this._anyHilited = this._anyHilited || isHilited || OvrFlags.None.valueOf() !== (newFlags & OvrFlags.Emphasized);
       }
     }
 
@@ -333,7 +333,7 @@ export class FeatureOverrides implements WebGLDisposable {
     for (let i = 0; i < map.numFeatures; i++) {
       const dataIndex = i * 4 * 2;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
-      if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
+      if (OvrFlags.None.valueOf() !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter and we can't flash it.
         this._anyOverridden = true;
         continue;
@@ -347,7 +347,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
       const newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       data.setOvrFlagsAtIndex(dataIndex, newFlags);
-      if (OvrFlags.None !== newFlags)
+      if (OvrFlags.None.valueOf() !== newFlags)
         this._anyOverridden = true;
     }
 

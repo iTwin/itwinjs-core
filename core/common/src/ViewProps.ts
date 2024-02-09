@@ -267,6 +267,7 @@ export namespace ViewStoreRpc {
    * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
    * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
    */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   export type ViewGroupSpec = IdString | ViewGroupPath;
 
   /** The name for a view. */

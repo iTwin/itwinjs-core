@@ -139,7 +139,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
 
       if (errorCode !== undefined &&
-       (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) ) {
+       (errorCode === ArcGisErrorCode.TokenRequired.valueOf() || errorCode === ArcGisErrorCode.InvalidToken.valueOf()) ) {
 
         if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken ) {
         // **** Legacy token ONLY ***

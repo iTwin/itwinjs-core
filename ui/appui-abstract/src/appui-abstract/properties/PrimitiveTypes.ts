@@ -60,5 +60,6 @@ export namespace Primitives {
   }
 
   /** Raw value */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }

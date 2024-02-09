@@ -26,10 +26,10 @@ enum CharCode {
 
 function isWhitespace(code: number): boolean {
   return (
-    code === CharCode.Space
-    || code === CharCode.Tab
-    || code === CharCode.LineFeed
-    || code === CharCode.CarriageReturn
+    code === CharCode.Space.valueOf()
+    || code === CharCode.Tab.valueOf()
+    || code === CharCode.LineFeed.valueOf()
+    || code === CharCode.CarriageReturn.valueOf()
   );
 }
 const wordSeparators = new Set<number>();

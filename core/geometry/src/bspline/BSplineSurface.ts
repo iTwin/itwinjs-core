@@ -32,6 +32,7 @@ export enum UVSelect {
    */
   VDirection = 1,
   /** index of v direction */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   vDirection = 1,
 }
 /**
@@ -182,7 +183,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   /** Return the number of poles for the `select` direction (0 or 1) */
   public numPolesUV(select: UVSelect): number { return this._numPoles[select]; }
   /** Return the step between adjacent poles for the `select` direction (0 or 1) */
-  public poleStepUV(select: UVSelect): number { return select === 0 ? 1 : this._numPoles[0]; }
+  public poleStepUV(select: UVSelect): number { return select.valueOf() === 0 ? 1 : this._numPoles[0]; }
   /** Confirm that order and pole counts agree for both u and v directions */
   public static validOrderAndPoleCounts(orderU: number, numPolesU: number, orderV: number, numPolesV: number, numUV: number): boolean {
     if (orderU < 2 || numPolesU < orderU)
@@ -449,7 +450,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     const m = this.poleDimension;
     const numU = this.numPolesUV(0);
     const numV = this.numPolesUV(1);
-    if (select === 0) {
+    if (select.valueOf() === 0) {
       // reverse within rows.
       for (let j = 0; j < numV; j++) {
         const rowStart = j * numU * m;

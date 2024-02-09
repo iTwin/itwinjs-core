@@ -299,7 +299,7 @@ export abstract class RpcRequest<TResponse = any> {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory.valueOf() && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
   /* @internal */

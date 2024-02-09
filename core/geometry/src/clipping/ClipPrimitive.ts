@@ -555,8 +555,8 @@ export class ClipShape extends ClipPrimitive {
     blockPoints[2].y = blockPoints[3].y = high.y;
     return ClipShape.createShape(
       blockPoints,
-      (ClipMaskXYZRangePlanes.None !== (clipMask & ClipMaskXYZRangePlanes.ZLow)) ? low.z : undefined,
-      (ClipMaskXYZRangePlanes.None !== (clipMask & ClipMaskXYZRangePlanes.ZHigh)) ? high.z : undefined,
+      (ClipMaskXYZRangePlanes.None.valueOf() !== (clipMask & ClipMaskXYZRangePlanes.ZLow)) ? low.z : undefined,
+      (ClipMaskXYZRangePlanes.None.valueOf() !== (clipMask & ClipMaskXYZRangePlanes.ZHigh)) ? high.z : undefined,
       transform,
       isMask,
       invisible,

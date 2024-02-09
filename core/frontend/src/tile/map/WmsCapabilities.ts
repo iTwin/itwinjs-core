@@ -8,6 +8,7 @@
 
 import { MapSubLayerProps } from "@itwin/core-common";
 import { RequestBasicCredentials } from "../../request/Request";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
 

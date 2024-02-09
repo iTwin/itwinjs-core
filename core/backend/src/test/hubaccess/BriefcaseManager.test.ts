@@ -60,7 +60,7 @@ describe("BriefcaseManager", async () => {
     assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
-    assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
+    assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid.valueOf() && iModel3.briefcaseId <= BriefcaseIdValue.LastValid.valueOf(), "valid briefcaseId");
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);

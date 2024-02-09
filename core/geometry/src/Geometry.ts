@@ -567,11 +567,11 @@ export class Geometry {
    * * `axisIndex === 2` returns `AxisOrder.ZXY`
    */
   public static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder {
-    if (axisIndex === 0)
+    if (axisIndex.valueOf() === 0)
       return AxisOrder.XYZ;
-    if (axisIndex === 1)
+    if (axisIndex.valueOf() === 1)
       return AxisOrder.YZX;
-    if (axisIndex === 2)
+    if (axisIndex.valueOf() === 2)
       return AxisOrder.ZXY;
     return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }

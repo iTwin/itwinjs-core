@@ -9,7 +9,7 @@ import { SchemaItemEditResults } from "../Editing/Editor";
 /**
  * @internal
  */
-export default class EntityClassMerger extends ClassMerger<EntityClass> {
+export class EntityClassMerger extends ClassMerger<EntityClass> {
   protected override async create(schemaKey: SchemaKey, ecClass: EntityClass): Promise<SchemaItemEditResults> {
     return this.context.editor.entities.create(schemaKey, ecClass.name, ecClass.modifier);
   }

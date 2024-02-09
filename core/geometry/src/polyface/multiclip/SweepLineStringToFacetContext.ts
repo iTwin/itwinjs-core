@@ -78,10 +78,10 @@ export class SweepLineStringToFacetContext {
             workCounter++;
             const localClippedPointA = this._localSegmentPoint0.interpolate(this._clipFractions.x0, this._localSegmentPoint1);
             const localClippedPointB = this._localSegmentPoint0.interpolate(this._clipFractions.x1, this._localSegmentPoint1);
-            const worldClippedPointA = this._localFrame.multiplyPoint3d(localClippedPointA)!;
-            const worldClippedPointB = this._localFrame.multiplyPoint3d(localClippedPointB)!;
-            const planePointA = this._localFrame.multiplyXYZ(localClippedPointA.x, localClippedPointA.y, 0.0)!;
-            const planePointB = this._localFrame.multiplyXYZ(localClippedPointB.x, localClippedPointB.y, 0.0)!;
+            const worldClippedPointA = this._localFrame.multiplyPoint3d(localClippedPointA);
+            const worldClippedPointB = this._localFrame.multiplyPoint3d(localClippedPointB);
+            const planePointA = this._localFrame.multiplyXYZ(localClippedPointA.x, localClippedPointA.y, 0.0);
+            const planePointB = this._localFrame.multiplyXYZ(localClippedPointB.x, localClippedPointB.y, 0.0);
             const splitParameter = Geometry.inverseInterpolate01(this._localSegmentPoint0.z, this._localSegmentPoint1.z);
             // emit 1 or 2 panels, oriented so panel normal is always to the left of the line.
             if (splitParameter !== undefined && splitParameter > this._clipFractions.x0 && splitParameter < this._clipFractions.x1) {

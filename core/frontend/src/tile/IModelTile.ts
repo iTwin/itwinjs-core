@@ -108,8 +108,8 @@ export class IModelTile extends Tile {
     streamBuffer.curPos = position;
 
     let content: IModelTileContent = { isLeaf: true };
-    assert(TileFormat.IModel === format);
-    if (format !== TileFormat.IModel)
+    assert(TileFormat.IModel.valueOf() === format);
+    if (format !== TileFormat.IModel.valueOf())
       return content;
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;

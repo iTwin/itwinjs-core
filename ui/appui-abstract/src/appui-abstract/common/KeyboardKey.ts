@@ -41,6 +41,7 @@ export enum SpecialKey {
   ArrowUp = "ArrowUp",
   ArrowDown = "ArrowDown",
   Enter = "Enter",
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Return = "Enter",
   Space = " ",
   Backspace = "Backspace",
@@ -57,5 +58,5 @@ export enum SpecialKey {
  */
 export function isArrowKey(key: string): boolean {
   // eslint-disable-next-line deprecation/deprecation
-  return (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight || key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown);
+  return (key === SpecialKey.ArrowLeft.valueOf() || key === SpecialKey.ArrowRight.valueOf() || key === SpecialKey.ArrowUp.valueOf() || key === SpecialKey.ArrowDown.valueOf());
 }

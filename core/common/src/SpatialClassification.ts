@@ -430,11 +430,11 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
 
 function insideDisplay(display: number): SpatialClassifierInsideDisplay {
   switch (display) {
-    case SpatialClassifierInsideDisplay.Off:
-    case SpatialClassifierInsideDisplay.On:
-    case SpatialClassifierInsideDisplay.Dimmed:
-    case SpatialClassifierInsideDisplay.Hilite:
-    case SpatialClassifierInsideDisplay.ElementColor:
+    case SpatialClassifierInsideDisplay.Off.valueOf():
+    case SpatialClassifierInsideDisplay.On.valueOf():
+    case SpatialClassifierInsideDisplay.Dimmed.valueOf():
+    case SpatialClassifierInsideDisplay.Hilite.valueOf():
+    case SpatialClassifierInsideDisplay.ElementColor.valueOf():
       return display;
     default:
       return SpatialClassifierInsideDisplay.ElementColor;
@@ -443,9 +443,9 @@ function insideDisplay(display: number): SpatialClassifierInsideDisplay {
 
 function outsideDisplay(display: number): SpatialClassifierOutsideDisplay {
   switch (display) {
-    case SpatialClassifierOutsideDisplay.Off:
-    case SpatialClassifierOutsideDisplay.On:
-    case SpatialClassifierOutsideDisplay.Dimmed:
+    case SpatialClassifierOutsideDisplay.Off.valueOf():
+    case SpatialClassifierOutsideDisplay.On.valueOf():
+    case SpatialClassifierOutsideDisplay.Dimmed.valueOf():
       return display;
     default:
       return SpatialClassifierOutsideDisplay.Dimmed;

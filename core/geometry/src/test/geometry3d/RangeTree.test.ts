@@ -188,7 +188,7 @@ describe("IndexedRangeHeap", () => {
     }
     const rangeHeap = RangeTreeOps.createByIndexSplits<CurvePrimitive>(ranges, lines, lines.length, 3, 2)!;
     for (const spacePoint of [Point3d.create(3.8, 2.5), Point3d.create(27.3, 9.5), Point3d.create(-8, bigStep * 0.45)]) {
-      const handler = ClosestPointOnCurvesHandler.create(spacePoint, true)!;
+      const handler = ClosestPointOnCurvesHandler.create(spacePoint, true);
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, spacePoint, 0.2, x0 + bigStep, y0);
       rangeHeap.searchTopDown(handler);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, handler.activeRanges, x0, y0);
@@ -200,7 +200,7 @@ describe("IndexedRangeHeap", () => {
     }
 
     const path = BezierCurve3d.create([Point3d.create(3, 4), Point3d.create(4, 25), Point3d.create(20, 20), Point3d.create(40, 80)])!;
-    const handlerB = ClosestPointOnCurvesHandler.create()!;
+    const handlerB = ClosestPointOnCurvesHandler.create();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, lines, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
     for (let fraction = 0.0; fraction <= 1.0; fraction += 0.04) {

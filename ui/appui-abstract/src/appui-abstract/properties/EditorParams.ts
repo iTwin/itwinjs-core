@@ -99,7 +99,7 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
  * @public
  */
 export const isInputEditorSizeParams = (item: BasePropertyEditorParams): item is InputEditorSizeParams => {
-  return item.type === PropertyEditorParamTypes.InputEditorSize;
+  return item.type === PropertyEditorParamTypes.InputEditorSize.valueOf();
 };
 
 /**
@@ -119,7 +119,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
  * @public
  */
 export const isColorEditorParams = (item: BasePropertyEditorParams): item is ColorEditorParams => {
-  return item.type === PropertyEditorParamTypes.ColorData;
+  return item.type === PropertyEditorParamTypes.ColorData.valueOf();
 };
 
 /**
@@ -140,7 +140,7 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
  * @public
  */
 export const isIconListEditorParams = (item: BasePropertyEditorParams): item is IconListEditorParams => {
-  return item.type === PropertyEditorParamTypes.IconListData;
+  return item.type === PropertyEditorParamTypes.IconListData.valueOf();
 };
 
 /**
@@ -167,7 +167,7 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
  * @public
  */
 export const isButtonGroupEditorParams = (item: BasePropertyEditorParams): item is ButtonGroupEditorParams => {
-  return item.type === PropertyEditorParamTypes.ButtonGroupData;
+  return item.type === PropertyEditorParamTypes.ButtonGroupData.valueOf();
 };
 
 /**
@@ -184,7 +184,7 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
  * @public
  */
 export const isSuppressLabelEditorParams = (item: BasePropertyEditorParams): item is SuppressLabelEditorParams => {
-  return item.type === PropertyEditorParamTypes.SuppressEditorLabel;
+  return item.type === PropertyEditorParamTypes.SuppressEditorLabel.valueOf();
 };
 
 // /**
@@ -329,7 +329,7 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
  * @public
  */
 export const isCustomFormattedNumberParams = (item: BasePropertyEditorParams): item is CustomFormattedNumberParams => {
-  return item.type === PropertyEditorParamTypes.CustomFormattedNumber;
+  return item.type === PropertyEditorParamTypes.CustomFormattedNumber.valueOf();
 };
 
 /**

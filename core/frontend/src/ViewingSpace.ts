@@ -126,7 +126,7 @@ export class ViewingSpace {
 
   /** @internal */
   public getTerrainHeightRange(): Range1d | undefined {
-    const frustum = this.getFrustum()!;
+    const frustum = this.getFrustum();
     const cartoRange = Range2d.createNull();
     for (let i = 0; i < 8; i++) {
       const corner = frustum.getCorner(i);

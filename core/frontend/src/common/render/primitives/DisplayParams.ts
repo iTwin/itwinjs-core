@@ -94,7 +94,7 @@ export class DisplayParams {
     if (this.gradient !== undefined && undefined !== this.gradient.flags) {
       // Even if the gradient is not outlined, produce an outline to be displayed as the region's edges when fill ViewFlag is off.
       const gradFlags: Gradient.Flags = this.gradient.flags;
-      if (0 !== (gradFlags & Gradient.Flags.Outline) || FillFlags.None === (this.fillFlags & FillFlags.Always))
+      if (0 !== (gradFlags & Gradient.Flags.Outline) || FillFlags.None.valueOf() === (this.fillFlags & FillFlags.Always))
         return DisplayParams.RegionEdgeType.Outline;
       return DisplayParams.RegionEdgeType.None;
     }
@@ -105,7 +105,7 @@ export class DisplayParams {
     return DisplayParams.RegionEdgeType.Outline === this.regionEdgeType;
   }
 
-  public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
+  public get hasBlankingFill(): boolean { return FillFlags.Blanking.valueOf() === (this.fillFlags & FillFlags.Blanking); }
   public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
   public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
   public get textureMapping(): TextureMapping | undefined { return undefined !== this.material ? this.material.textureMapping : this._textureMapping; }

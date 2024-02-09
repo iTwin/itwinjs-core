@@ -928,7 +928,7 @@ export class Techniques implements WebGLDisposable {
   }
 
   public getTechnique(id: TechniqueId): Technique {
-    assert(id < this._list.length, "technique index out of bounds");
+    assert(id.valueOf() < this._list.length, "technique index out of bounds");
     return this._list[id];
   }
 
@@ -1093,6 +1093,6 @@ export class Techniques implements WebGLDisposable {
       this._list[techId] = new SingularTechnique(createCompositeProgram(compositeFlags, gl));
     }
 
-    assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
+    assert(this._list.length === TechniqueId.NumBuiltIn.valueOf(), "unexpected number of built-in techniques");
   }
 }

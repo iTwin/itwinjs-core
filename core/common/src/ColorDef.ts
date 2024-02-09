@@ -620,7 +620,7 @@ export class ColorDef {
    */
   public adjustedForContrast(other: ColorDef, alpha?: number): ColorDef {
     const visibility = this.visibilityCheck(other);
-    if (HSVConstants.VISIBILITY_GOAL <= visibility) {
+    if (HSVConstants.VISIBILITY_GOAL.valueOf() <= visibility) {
       return undefined !== alpha ? this.withAlpha(alpha) : this;
     }
 

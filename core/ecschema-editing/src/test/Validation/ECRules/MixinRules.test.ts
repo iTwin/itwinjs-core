@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { DelayedPromiseWithProps, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
-import * as Rules from "../../../Validation/ECRules";
+import { DiagnosticCodes, mixinAppliedToClassMustDeriveFromConstraint } from "../../../Validation/ECRules";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -32,7 +32,7 @@ describe("Mixin Rule Tests", () => {
     (entityClass as MutableEntityClass).addMixin(mixin);
     entityClass.baseClass = new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass);
 
-    const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
+    const result = mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }
@@ -43,7 +43,7 @@ describe("Mixin Rule Tests", () => {
     const mixin = new TestMixin(schema, "TestMixin", entityClass);
     (entityClass as MutableEntityClass).addMixin(mixin);
 
-    const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
+    const result = mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
       expect(false, "Rule should have passed").to.be.true;
     }
@@ -55,7 +55,7 @@ describe("Mixin Rule Tests", () => {
     const entityClass = new EntityClass(schema, "TestClass");
     (entityClass as MutableEntityClass).addMixin(mixin);
 
-    const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
+    const result = mixinAppliedToClassMustDeriveFromConstraint(entityClass);
 
     let resultHasEntries = false;
     for await (const diagnostic of result) {
@@ -63,7 +63,7 @@ describe("Mixin Rule Tests", () => {
       expect(diagnostic.ecDefinition).to.equal(entityClass);
       expect(diagnostic.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
+      expect(diagnostic.code).to.equal(DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
       expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
@@ -77,7 +77,7 @@ describe("Mixin Rule Tests", () => {
     (entityClass as MutableEntityClass).addMixin(mixin);
     entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-    const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
+    const result = mixinAppliedToClassMustDeriveFromConstraint(entityClass);
 
     let resultHasEntries = false;
     for await (const diagnostic of result) {
@@ -85,7 +85,7 @@ describe("Mixin Rule Tests", () => {
       expect(diagnostic.ecDefinition).to.equal(entityClass);
       expect(diagnostic.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
+      expect(diagnostic.code).to.equal(DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
       expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
     }
     expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;

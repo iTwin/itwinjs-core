@@ -56,7 +56,7 @@ export namespace RenderMemory {
     public constructor() {
       super();
       this.consumers = [];
-      for (let i = 0; i < BufferType.COUNT; i++)
+      for (let i = 0; i < BufferType.COUNT.valueOf(); i++)
         this.consumers[i] = new Consumers();
     }
 
@@ -121,7 +121,7 @@ export namespace RenderMemory {
     /** @internal */
     public constructor() {
       this.consumers = [];
-      for (let i = 0; i < ConsumerType.COUNT; i++)
+      for (let i = 0; i < ConsumerType.COUNT.valueOf(); i++)
         this.consumers[i] = new Consumers();
     }
 

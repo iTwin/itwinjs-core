@@ -339,7 +339,7 @@ export class StrokeCountSection {
       const numPrimitive = sections[0].chains[chainIndex].maps.length;
       for (let primitiveIndex = 0; primitiveIndex < numPrimitive; primitiveIndex++) {
         if (sections[0].chains[chainIndex].maps[primitiveIndex].componentData) {
-          const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex]!.componentData!.length;
+          const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex].componentData!.length;
           for (let i = 0; i < numComponent; i++)
             if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, i, callback))
               return false;

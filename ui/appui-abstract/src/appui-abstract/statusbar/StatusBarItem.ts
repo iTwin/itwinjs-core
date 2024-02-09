@@ -19,14 +19,17 @@ export enum StatusBarSection {
   /** area for tool assistance and messages */
   Message = 0,
   /** area for tool assistance and messages */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Left = 0,
   /** items specific to stage/task */
   Stage = 1,
   /** items specific to stage/task */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Center = 1,
   /** Select scope and selection info */
   Selection = 2,
   /** Select scope and selection info */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Right = 2,
   /** items that only show based on context */
   Context = 3,

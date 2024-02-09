@@ -98,7 +98,7 @@ class TestTile extends Tile {
     });
   }
 
-  public resolveRequest(response: TileRequest.Response | "undefined" = new Uint8Array(1)): void {
+  public resolveRequest(response: TileRequest.Response  = new Uint8Array(1)): void {
     if ("undefined" === response)
       response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
 

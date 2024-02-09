@@ -381,7 +381,7 @@ class GraphicsTile extends Tile {
     stream.curPos = position;
 
     // ###TODO: IModelGraphics format wraps IModel format.
-    assert(TileFormat.IModel === format);
+    assert(TileFormat.IModel.valueOf() === format);
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);

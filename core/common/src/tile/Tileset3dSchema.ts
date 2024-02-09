@@ -46,7 +46,7 @@ export namespace Tileset3dSchema {
 
   export type GeometricError = number;
 
-  export type Refinement = "ADD" | "REPLACE" | string;
+  export type Refinement = string;
 
   export type Transform = [
     number, number, number, number,

@@ -144,7 +144,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Determines if a dialog item editor wants a label */
   public static editorWantsLabel(item: DialogItem): boolean {
     if (item.property.editor && item.property.editor.params) {
-      const params = item.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
+      const params = item.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel.valueOf()) as SuppressLabelEditorParams;
       // istanbul ignore else
       if (params)
         return false;

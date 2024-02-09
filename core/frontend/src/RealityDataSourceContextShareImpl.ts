@@ -35,7 +35,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    */
   protected constructor(props: RealityDataSourceProps) {
     // this implementaiton is specific to ContextShare provider
-    assert(props.sourceKey.provider === RealityDataProvider.ContextShare);
+    assert(props.sourceKey.provider === RealityDataProvider.ContextShare.valueOf());
     this.key = props.sourceKey;
     this._isUrlResolved = false;
   }
@@ -44,7 +44,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.ContextShare)
+    if (sourceKey.provider !== RealityDataProvider.ContextShare.valueOf())
       return undefined;
     const rdSource = new RealityDataSourceContextShareImpl({ sourceKey });
     let tilesetUrl: string | undefined;
@@ -58,7 +58,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
   }
 
   public get isContextShare(): boolean {
-    return (this.key.provider === RealityDataProvider.ContextShare);
+    return (this.key.provider === RealityDataProvider.ContextShare.valueOf());
   }
   /**
    * Returns Reality Data if available
@@ -212,10 +212,10 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
     if (fileType === "OMR")
       return undefined;
 
-    if (this.key.format === RealityDataFormat.ThreeDTile) {
+    if (this.key.format === RealityDataFormat.ThreeDTile.valueOf()) {
       const rootDocument = await this.getRootDocument(undefined);
       spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
-    } else if (this.key.format === RealityDataFormat.OPC) {
+    } else if (this.key.format === RealityDataFormat.OPC.valueOf()) {
       if (this.realityData === undefined)
         return undefined;
       const token = await IModelApp.getAccessToken();
@@ -239,7 +239,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    */
   public async getPublisherProductInfo(): Promise<PublisherProductInfo | undefined> {
     let publisherInfo: PublisherProductInfo | undefined;
-    if (this.key.format === RealityDataFormat.ThreeDTile) {
+    if (this.key.format === RealityDataFormat.ThreeDTile.valueOf()) {
       const rootDocument = await this.getRootDocument(undefined);
       publisherInfo = ThreeDTileFormatInterpreter.getPublisherProductInfo(rootDocument);
     }

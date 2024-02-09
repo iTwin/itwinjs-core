@@ -404,7 +404,7 @@ export class GeometryStreamBuilder {
    */
   public get isViewIndependent(): boolean {
     const hdr = this.getHeader();
-    return undefined !== hdr && GeometryStreamFlags.None !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
+    return undefined !== hdr && GeometryStreamFlags.None.valueOf() !== (hdr.flags & GeometryStreamFlags.ViewIndependent);
   }
   public set isViewIndependent(viewIndependent: boolean) {
     if (viewIndependent === this.isViewIndependent)
@@ -726,5 +726,5 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   }
 
   /** @internal */
-  public get isViewIndependent(): boolean { return GeometryStreamFlags.None !== (this.flags & GeometryStreamFlags.ViewIndependent); }
+  public get isViewIndependent(): boolean { return GeometryStreamFlags.None.valueOf() !== (this.flags & GeometryStreamFlags.ViewIndependent); }
 }

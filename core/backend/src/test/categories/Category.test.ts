@@ -47,7 +47,7 @@ describe("Category", () => {
     const subCatId = imodel.elements.queryElementIdByCode(SubCategory.createCode(imodel, priCategoryId, "FieldWeld"))!;
     expect(subCatId).not.to.be.undefined;
     expect(Id64.isValidId64(subCatId)).to.be.true;
-    const subCat = imodel.elements.getElement<SubCategory>(subCatId)!;
+    const subCat = imodel.elements.getElement<SubCategory>(subCatId);
     expect(subCat).not.to.be.undefined;
     expect(subCat).instanceof(SubCategory);
     expect(subCat.isDefaultSubCategory).to.be.true;

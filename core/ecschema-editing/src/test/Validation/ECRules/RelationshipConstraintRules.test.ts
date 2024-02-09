@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
+import { abstractConstraintMustExistWithMultipleConstraints, atLeastOneConstraintClassDefined, DiagnosticCodes } from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
@@ -92,12 +92,12 @@ describe("RelationshipConstraintRule tests", () => {
       schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
-      const sourceResult = Rules.atLeastOneConstraintClassDefined(relationship.source);
+      const sourceResult = atLeastOneConstraintClassDefined(relationship.source);
       for await (const _diagnostic of sourceResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
 
-      const targetResult = Rules.atLeastOneConstraintClassDefined(relationship.target);
+      const targetResult = atLeastOneConstraintClassDefined(relationship.target);
       for await (const _diagnostic of targetResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
@@ -116,19 +116,19 @@ describe("RelationshipConstraintRule tests", () => {
       schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
-      const targetResult = Rules.atLeastOneConstraintClassDefined(relationship.target);
+      const targetResult = atLeastOneConstraintClassDefined(relationship.target);
       for await (const _diagnostic of targetResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
 
-      const sourceResult = Rules.atLeastOneConstraintClassDefined(relationship.source);
+      const sourceResult = atLeastOneConstraintClassDefined(relationship.source);
       let resultHasEntries = false;
       for await (const diagnostic of sourceResult) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).to.equal(relationship.source);
         expect(diagnostic.messageArgs).to.eql(["Source", "TestSchema.BaseRelationship"]);
         expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.AtLeastOneConstraintClassDefined);
+        expect(diagnostic.code).to.equal(DiagnosticCodes.AtLeastOneConstraintClassDefined);
         expect(diagnostic.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
         break;
       }
@@ -148,19 +148,19 @@ describe("RelationshipConstraintRule tests", () => {
       schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
-      const sourceResult = Rules.atLeastOneConstraintClassDefined(relationship.source);
+      const sourceResult = atLeastOneConstraintClassDefined(relationship.source);
       for await (const _diagnostic of sourceResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
 
-      const targetResult = Rules.atLeastOneConstraintClassDefined(relationship.target);
+      const targetResult = atLeastOneConstraintClassDefined(relationship.target);
       let resultHasEntries = false;
       for await (const diagnostic of targetResult) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).to.equal(relationship.target);
         expect(diagnostic.messageArgs).to.eql(["Target", "TestSchema.BaseRelationship"]);
         expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.AtLeastOneConstraintClassDefined);
+        expect(diagnostic.code).to.equal(DiagnosticCodes.AtLeastOneConstraintClassDefined);
         expect(diagnostic.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
         break;
       }
@@ -182,12 +182,12 @@ describe("RelationshipConstraintRule tests", () => {
       schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
       const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
 
-      const sourceResult = Rules.abstractConstraintMustExistWithMultipleConstraints(relationship.source);
+      const sourceResult = abstractConstraintMustExistWithMultipleConstraints(relationship.source);
       for await (const _diagnostic of sourceResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
 
-      const targetResult = Rules.abstractConstraintMustExistWithMultipleConstraints(relationship.target);
+      const targetResult = abstractConstraintMustExistWithMultipleConstraints(relationship.target);
       for await (const _diagnostic of targetResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
@@ -216,12 +216,12 @@ describe("RelationshipConstraintRule tests", () => {
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
-      const sourceResult = Rules.abstractConstraintMustExistWithMultipleConstraints(relationship.source);
+      const sourceResult = abstractConstraintMustExistWithMultipleConstraints(relationship.source);
       for await (const _diagnostic of sourceResult) {
         expect(false, "Rule should have passed").to.be.true;
       }
 
-      const targetResult = Rules.abstractConstraintMustExistWithMultipleConstraints(relationship.target);
+      const targetResult = abstractConstraintMustExistWithMultipleConstraints(relationship.target);
       for await (const _diagnostic of targetResult) {
         expect(false, "Rule should have passed").to.be.true;
       }

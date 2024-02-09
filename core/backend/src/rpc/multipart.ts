@@ -7,14 +7,14 @@
  */
 
 import { BentleyStatus, FormDataCommon, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
-import * as FormData from "form-data";
+import * as formData from "form-data";
 import * as multiparty from "multiparty";
 
 /* eslint-disable deprecation/deprecation */
 
 /** @internal */
 export function createMultipartStream(value: RpcSerializedValue) {
-  const form = new FormData();
+  const form = new formData();
   RpcMultipart.writeValueToForm(form, value);
   // Type information for FormData is lying. It actually extends Stream but not Readable, although it appears to work
   // fine for now.

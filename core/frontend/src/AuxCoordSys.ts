@@ -43,7 +43,7 @@ export enum ACSDisplayOptions {
   Dynamics = (1 << 4),
 }
 
-const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
+const enum ACSDisplaySizes { // eslint-disable-line
   TriadSizeInches = 0.6,
   ArrowBaseStart = 0.3,
   ArrowBaseWidth = 0.2,
@@ -52,6 +52,7 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
   ArrowTipFlange = 0.75,
   ArrowTipWidth = 0.4,
   ZAxisLength = 0.65,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   LabelStart = 0.4,
   LabelEnd = 0.8,
   LabelWidth = 0.15,
@@ -159,9 +160,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
   private getAdjustedColor(inColor: ColorDef, isFill: boolean, viewport: Viewport, options: ACSDisplayOptions): ColorDef {
     let color;
-    if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None) {
+    if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None.valueOf()) {
       color = viewport.hilite.color;
-    } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) {
+    } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None.valueOf()) {
       color = inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor;
     } else {
       color = ColorDef.from(150, 150, 150, 0);
@@ -170,9 +171,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     color = color.adjustedForContrast(viewport.view.backgroundColor);
 
     if (isFill)
-      color = color.withTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
+      color = color.withTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None.valueOf() ? 225 : 200);
     else
-      color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
+      color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None.valueOf() ? 150 : 75);
 
     return color;
   }
@@ -215,7 +216,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
       const linePts2: Point3d[] = [Point3d.create(), Point3d.create()]; // NOTE: Don't use same point array, addPointString/addLineString don't deep copy...
       linePts2[1].z = ACSDisplaySizes.ZAxisLength;
-      builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
+      builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None.valueOf() ? LinePixels.Solid : LinePixels.Code2);
       builder.addLineString(linePts2);
 
       const scale = ACSDisplaySizes.ArrowTipWidth / 2;
@@ -251,7 +252,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     if (1 === axis)
       shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
-    builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
+    builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None.valueOf() ? LinePixels.Solid : LinePixels.Code2);
     builder.addLineString(shapePts);
 
     this.addAxisLabel(builder, axis, options, vp);
@@ -262,7 +263,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
   /** Returns a GraphicBuilder for this AuxCoordSystemState. */
   private createGraphicBuilder(context: DecorateContext, options: ACSDisplayOptions): GraphicBuilder {
-    const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None;
+    const checkOutOfView = (options & ACSDisplayOptions.CheckVisible) !== ACSDisplayOptions.None.valueOf();
     const drawOrigin = this.getOrigin();
 
     if (checkOutOfView && !AuxCoordSystemState.isOriginInView(drawOrigin, context.viewport, true))
@@ -270,9 +271,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
     let pixelSize = context.viewport.pixelsFromInches(ACSDisplaySizes.TriadSizeInches);
 
-    if ((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None)
+    if ((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None.valueOf())
       pixelSize *= 0.8;
-    else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None)
+    else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None.valueOf())
       pixelSize *= 0.9;
 
     const exaggerate = context.viewport.view.getAspectRatioSkew();

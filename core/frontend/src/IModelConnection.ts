@@ -1018,7 +1018,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @returns The properties of the requested element; or `undefined` if no element exists with the specified identifier or the iModel is not open.
      * @throws [IModelError]($common) if the element exists but could not be loaded.
      */
-    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+    public async loadProps(identifier: Id64String   | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
       const imodel = this._iModel;
       return imodel.isOpen ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(imodel.getRpcProps(), identifier, options) : undefined;
     }
@@ -1287,10 +1287,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
-      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
+      if (intValues[1] !== ImageSourceFormat.Jpeg.valueOf() && intValues[1] !== ImageSourceFormat.Png.valueOf())
         throw new NoContentError();
 
-      return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
+      return { format: intValues[1] === ImageSourceFormat.Jpeg.valueOf() ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
   }
 

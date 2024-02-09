@@ -79,7 +79,7 @@ export abstract class RealityTileLoader {
 
   public async loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
-    if (format !== TileFormat.B3dm)
+    if (format !== TileFormat.B3dm.valueOf())
       return {};
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
@@ -98,7 +98,7 @@ export abstract class RealityTileLoader {
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | ImdlReader | undefined;
     switch (format) {
-      case TileFormat.IModel:
+      case TileFormat.IModel.valueOf():
         reader = ImdlReader.create({
           stream: streamBuffer,
           iModel,
@@ -108,7 +108,7 @@ export abstract class RealityTileLoader {
           isCanceled,
         });
         break;
-      case TileFormat.Pnts:
+      case TileFormat.Pnts.valueOf():
         this._containsPointClouds = true;
         const res = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile, system);
         let graphic = res.graphic;
@@ -129,7 +129,7 @@ export abstract class RealityTileLoader {
         }
 
         return { graphic };
-      case TileFormat.B3dm:
+      case TileFormat.B3dm.valueOf():
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         if (reader) {
           // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
@@ -139,10 +139,10 @@ export abstract class RealityTileLoader {
         }
 
         break;
-      case TileFormat.I3dm:
+      case TileFormat.I3dm.valueOf():
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
-      case TileFormat.Gltf:
+      case TileFormat.Gltf.valueOf():
         const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
         if (props) {
           reader = new GltfGraphicsReader(props, {
@@ -156,7 +156,7 @@ export abstract class RealityTileLoader {
         }
 
         break;
-      case TileFormat.Cmpt:
+      case TileFormat.Cmpt.valueOf():
         const header = new CompositeTileHeader(streamBuffer);
         if (!header.isValid)
           return {};

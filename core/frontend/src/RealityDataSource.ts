@@ -177,7 +177,7 @@ export namespace RealityDataSource {
   }
   /** @alpha - OrbitGtBlobProps is alpha */
   export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
-    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
+    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob.valueOf())
       return undefined;
     const splitIds = rdSourceKey.id.split(":");
     const sasTokenIndex = rdSourceKey.id.indexOf(":?");

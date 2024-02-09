@@ -21,11 +21,11 @@ export enum SurfaceType {
 /** @internal */
 export function isValidSurfaceType(value: number): boolean {
   switch (value) {
-    case SurfaceType.Unlit:
-    case SurfaceType.Lit:
-    case SurfaceType.Textured:
-    case SurfaceType.TexturedLit:
-    case SurfaceType.VolumeClassifier:
+    case SurfaceType.Unlit.valueOf():
+    case SurfaceType.Lit.valueOf():
+    case SurfaceType.Textured.valueOf():
+    case SurfaceType.TexturedLit.valueOf():
+    case SurfaceType.VolumeClassifier.valueOf():
       return true;
     default:
       return false;

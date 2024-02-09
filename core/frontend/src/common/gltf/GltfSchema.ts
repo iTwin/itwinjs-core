@@ -483,7 +483,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         // Diffuse texture.
         // eslint-disable-next-line @typescript-eslint/naming-convention
         u_diffuse?: { index: number, texCoord: number };
-        [k: string]: unknown | undefined;
+        [k: string]: unknown;
       };
     };
   };
@@ -538,8 +538,8 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
 
 /** @internal */
 export namespace GltfStructuralMetadata {
-  export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
-  export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
+  export type ClassPropertyType = string;
+  export type ClassPropertyComponentType = string;
 
   // Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
   export interface ClassProperty extends GltfProperty {
@@ -570,7 +570,7 @@ export namespace GltfStructuralMetadata {
   export interface Enum extends GltfProperty {
     values: EnumValue[];
     // Default: UINT16
-    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
+    valueType?: string;
     name?: string;
     description?: string;
   }
@@ -597,8 +597,8 @@ export namespace GltfStructuralMetadata {
     values: GltfId;
     arrayOffsets?: GltfId;
     stringOffsets?: GltfId;
-    arrayOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
-    stringOffsetType?: "UINT8" | "UINT16" | "UINT32" | "UINT64" | string;
+    arrayOffsetType?: string;
+    stringOffsetType?: string;
     offset?: number;
     scale?: number;
     min?: number;

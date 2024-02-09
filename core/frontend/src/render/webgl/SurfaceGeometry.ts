@@ -74,7 +74,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
     // We don't actually know if we have text.
     // We do know that text background color uses blanking fill. So do ImageGraphics, so they're also going to forbid overriding their color.
-    return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
+    return FillFlags.Blanking.valueOf() !== (this.fillFlags & FillFlags.Blanking);
   }
 
   public override get asSurface() { return this; }
@@ -109,7 +109,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public override get isLitSurface() { return this.isLit; }
   public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get renderOrder(): RenderOrder {
-    if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
+    if (FillFlags.Behind.valueOf() === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
 
     let order = this.isLit ? RenderOrder.LitSurface : RenderOrder.UnlitSurface;
@@ -120,7 +120,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public override getColor(target: Target) {
-    if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
+    if (FillFlags.Background.valueOf() === (this.fillFlags & FillFlags.Background))
       return target.uniforms.style.backgroundColorInfo;
     else
       return this.colorInfo;
@@ -147,7 +147,7 @@ export class SurfaceGeometry extends MeshGeometry {
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
-      const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
+      const showFill = FillFlags.Always.valueOf() === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView.valueOf() === (fillFlags & FillFlags.ByView));
       if (!showFill)
         return "none";
     }
@@ -212,10 +212,10 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
-    if (FillFlags.None !== (fillFlags & FillFlags.Background))
+    if (FillFlags.None.valueOf() !== (fillFlags & FillFlags.Background))
       return false; // fill color explicitly from background
 
-    if (FillFlags.None !== (fillFlags & FillFlags.Always))
+    if (FillFlags.None.valueOf() !== (fillFlags & FillFlags.Always))
       return true; // fill displayed even in wireframe
 
     const vf = target.currentViewFlags;
@@ -285,7 +285,7 @@ export class SurfaceGeometry extends MeshGeometry {
         const mode = vf.renderMode;
         if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
           flags[SurfaceBitIndex.TransparencyThreshold] = 1;
-          if (RenderMode.HiddenLine === mode && FillFlags.Always !== (this.fillFlags & FillFlags.Always)) {
+          if (RenderMode.HiddenLine === mode && FillFlags.Always.valueOf() !== (this.fillFlags & FillFlags.Always)) {
             // fill flags test for text - doesn't render with bg fill in hidden line mode.
             flags[SurfaceBitIndex.BackgroundFill] = 1;
           }
@@ -325,9 +325,9 @@ export class SurfaceGeometry extends MeshGeometry {
       case RenderMode.SmoothShade:
         return flags.textures;
       case RenderMode.Wireframe:
-        return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
+        return FillFlags.Always.valueOf() === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView.valueOf() === (fill & FillFlags.ByView));
       default:
-        return FillFlags.Always === (fill & FillFlags.Always);
+        return FillFlags.Always.valueOf() === (fill & FillFlags.Always);
     }
   }
 

@@ -10,7 +10,7 @@ import { MutableCAClass } from "../Editing/Mutable/MutableCAClass";
 /**
  * @internal
  */
-export default class CAClassMerger extends ClassMerger<CustomAttributeClass> {
+export class CAClassMerger extends ClassMerger<CustomAttributeClass> {
 
   protected override async create(schemaKey: SchemaKey, ecClass: CustomAttributeClass): Promise<SchemaItemEditResults> {
     return this.context.editor.customAttributes.create(schemaKey, ecClass.name, ecClass.containerType);

@@ -476,9 +476,9 @@ export class ViewFlags {
 
     let renderMode: RenderMode;
     const renderModeValue = JsonUtils.asInt(json.renderMode);
-    if (renderModeValue < RenderMode.HiddenLine)
+    if (renderModeValue < RenderMode.HiddenLine.valueOf())
       renderMode = RenderMode.Wireframe;
-    else if (renderModeValue > RenderMode.SolidFill)
+    else if (renderModeValue > RenderMode.SolidFill.valueOf())
       renderMode = RenderMode.SmoothShade;
     else
       renderMode = renderModeValue;

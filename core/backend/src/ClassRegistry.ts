@@ -22,7 +22,7 @@ const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 export class ClassRegistry {
   private static readonly _classMap = new Map<string, typeof Entity>();
   /** @internal */
-  public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
+  public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound.valueOf()); }
   /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`); }
   /** @internal */

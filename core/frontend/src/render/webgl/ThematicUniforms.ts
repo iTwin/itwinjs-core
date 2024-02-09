@@ -48,16 +48,16 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public get wantIsoLines(): boolean {
     if (undefined !== this.thematicDisplay)
-      return ThematicDisplayMode.Height === this._displayMode[0] && ThematicGradientMode.IsoLines === this.thematicDisplay.gradientSettings.mode;
+      return ThematicDisplayMode.Height.valueOf() === this._displayMode[0] && ThematicGradientMode.IsoLines === this.thematicDisplay.gradientSettings.mode;
     return false;
   }
 
   public get wantSlopeMode(): boolean {
-    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.Slope === this._displayMode[0] : false;
+    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.Slope.valueOf() === this._displayMode[0] : false;
   }
 
   public get wantHillShadeMode(): boolean {
-    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.HillShade === this._displayMode[0] : false;
+    return (undefined !== this.thematicDisplay) ? ThematicDisplayMode.HillShade.valueOf() === this._displayMode[0] : false;
   }
 
   public get wantGlobalSensorTexture(): boolean {

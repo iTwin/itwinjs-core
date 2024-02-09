@@ -496,11 +496,11 @@ export class LocalHub {
         state: stmt.getValueInteger(1),
       };
       switch (lock.state) {
-        case LockState.None:
+        case LockState.None.valueOf():
           return lock;
-        case LockState.Exclusive:
+        case LockState.Exclusive.valueOf():
           return { ...lock, briefcaseId: stmt.getValueInteger(2) };
-        case LockState.Shared:
+        case LockState.Shared.valueOf():
           return { ...lock, sharedBy: this.querySharedLockHolders(elementId) };
         default:
           throw new Error("illegal lock state");

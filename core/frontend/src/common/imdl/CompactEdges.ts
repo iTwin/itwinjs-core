@@ -53,12 +53,12 @@ function * compactEdgeIterator(visibilityFlags: Uint8Array, vertexIndices: Verte
       flagsIndex++;
     }
 
-    if (ImdlEdgeVisibility.Hidden === visibility)
+    if (ImdlEdgeVisibility.Hidden.valueOf() === visibility)
       continue;
 
     output.index0 = vertexIndices.decodeIndex(i);
     output.index1 = vertexIndices.decodeIndex(i % 3 === 2 ? i - 2 : i + 1);
-    if (ImdlEdgeVisibility.Silhouette === visibility) {
+    if (ImdlEdgeVisibility.Silhouette.valueOf() === visibility) {
       assert(undefined !== normalPairs);
       output.normals = normalPairs[normalIndex++];
     } else {

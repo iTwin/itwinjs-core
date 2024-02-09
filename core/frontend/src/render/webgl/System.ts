@@ -846,8 +846,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override enableDiagnostics(enable: RenderDiagnostics): void {
-    Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
-    Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
+    Debug.printEnabled = RenderDiagnostics.None.valueOf() !== (enable & RenderDiagnostics.DebugOutput);
+    Debug.evaluateEnabled = RenderDiagnostics.None.valueOf() !== (enable & RenderDiagnostics.WebGL);
   }
 
   // RenderSystemDebugControl

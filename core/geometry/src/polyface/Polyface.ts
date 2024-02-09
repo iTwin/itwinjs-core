@@ -75,7 +75,7 @@ export abstract class Polyface extends GeometryQuery {
     indices: number[] | undefined,
     indexPositionA: number,
     indexPositionB: number,
-    data: any | undefined,
+    data: any,
     dataLength: number,
   ): boolean {
     if (indices === undefined && data === undefined)

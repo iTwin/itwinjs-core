@@ -39,7 +39,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     } else {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
-    const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
+    const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC.valueOf();
     this._treeRef = (!useOrbitGtTileTreeReference) ?
       createRealityTileTreeReference({
         iModel,

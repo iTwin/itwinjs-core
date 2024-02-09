@@ -51,7 +51,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     if (this.isSupportedStage) {
       provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
-      provideToStage = (stageUsage === StageUsage.General);
+      provideToStage = (stageUsage === StageUsage.General.valueOf());
     }
 
     return provideToStage ? this.provideToolbarButtonItemsInternal(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData) : [];
@@ -66,7 +66,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     if (this.isSupportedStage) {
       provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
-      provideToStage = (stageUsage === StageUsage.General);
+      provideToStage = (stageUsage === StageUsage.General.valueOf());
     }
 
     return provideToStage ? this.provideStatusBarItemsInternal(stageId, stageUsage, stageAppData) : [];
@@ -83,7 +83,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     if (this.isSupportedStage) {
       provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
-      provideToStage = (stageUsage === StageUsage.General);
+      provideToStage = (stageUsage === StageUsage.General.valueOf());
     }
 
     return provideToStage ? this.provideWidgetsInternal(stageId, stageUsage, location, section, _zoneLocation, stageAppData) : [];

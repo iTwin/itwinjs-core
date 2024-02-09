@@ -75,6 +75,6 @@ const compositeTechniqueIds = [
 
 /** @internal */
 export function computeCompositeTechniqueId(flags: CompositeFlags): TechniqueId {
-  assert(flags >= 0 && flags <= 7);
+  assert(flags.valueOf() >= 0 && flags.valueOf() <= 7);
   return compositeTechniqueIds[flags];
 }

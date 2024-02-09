@@ -33,16 +33,16 @@ export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps
  */
 export namespace EntityReferences {
   export function isModel(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Model;
+    return id[0] === ConcreteEntityTypes.Model.valueOf();
   }
   export function isElement(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Element;
+    return id[0] === ConcreteEntityTypes.Element.valueOf();
   }
   export function isElementAspect(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.ElementAspect;
+    return id[0] === ConcreteEntityTypes.ElementAspect.valueOf();
   }
   export function isRelationship(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Relationship;
+    return id[0] === ConcreteEntityTypes.Relationship.valueOf();
   }
   export function toId64(id: EntityReference) {
     return id.slice(1);

@@ -8,7 +8,7 @@ import { PropertyValueResolver, SchemaItemMerger } from "./SchemaItemMerger";
 /**
  * @internal
  */
-export default class ConstantsMerger extends SchemaItemMerger<Constant> {
+export class ConstantsMerger extends SchemaItemMerger<Constant> {
   /**
    * Creates the property value resolver for [[Constant]] items.
    */

@@ -191,6 +191,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return elementProps;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
   public async loadElementProps(tokenProps: IModelRpcProps, identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
     const props: ElementLoadProps = options ? { ...options } : {};
     if (typeof identifier === "string") {

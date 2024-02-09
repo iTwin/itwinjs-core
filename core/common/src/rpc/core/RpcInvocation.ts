@@ -257,7 +257,7 @@ export class RpcInvocation {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedNoContent && this.request.protocolVersion >= RpcProtocolVersion.IntroducedNoContent;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedNoContent.valueOf() && this.request.protocolVersion >= RpcProtocolVersion.IntroducedNoContent.valueOf();
   }
 
   private supportsStatusCategory() {
@@ -269,7 +269,7 @@ export class RpcInvocation {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory.valueOf() && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory.valueOf();
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {

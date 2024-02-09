@@ -122,9 +122,9 @@ const computeAmbientOcclusionBaseColor = "return computeOpaqueColor();";
 export function createCompositeProgram(flags: CompositeFlags, context: WebGL2RenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
-  const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
-  const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
-  const wantOcclusion = CompositeFlags.None !== (flags & CompositeFlags.AmbientOcclusion);
+  const wantHilite = CompositeFlags.None.valueOf() !== (flags & CompositeFlags.Hilite);
+  const wantTranslucent = CompositeFlags.None.valueOf() !== (flags & CompositeFlags.Translucent);
+  const wantOcclusion = CompositeFlags.None.valueOf() !== (flags & CompositeFlags.AmbientOcclusion);
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;

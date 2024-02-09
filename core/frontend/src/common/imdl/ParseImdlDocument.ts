@@ -75,25 +75,25 @@ class GltfHeader extends TileHeader {
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
-    if (this.version === GltfVersions.Version2 && value5 === GltfVersions.Gltf1SceneFormat)
+    if (this.version === GltfVersions.Version2.valueOf() && value5 === GltfVersions.Gltf1SceneFormat.valueOf())
       this.version = GltfVersions.Version1;
 
-    if (this.version === GltfVersions.Version1) {
+    if (this.version === GltfVersions.Version1.valueOf()) {
       const gltfSceneFormat = value5;
-      if (GltfVersions.Gltf1SceneFormat !== gltfSceneFormat) {
+      if (GltfVersions.Gltf1SceneFormat.valueOf() !== gltfSceneFormat) {
         this.invalidate();
         return;
       }
 
       this.scenePosition = stream.curPos;
       this.binaryPosition = stream.curPos + this.sceneStrLength;
-    } else if (this.version === GltfVersions.Version2) {
+    } else if (this.version === GltfVersions.Version2.valueOf()) {
       const sceneChunkType = value5;
       this.scenePosition = stream.curPos;
       stream.curPos = stream.curPos + this.sceneStrLength;
       const binaryLength = stream.readUint32();
       const binaryChunkType = stream.readUint32();
-      if (GltfV2ChunkTypes.JSON !== sceneChunkType || GltfV2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
+      if (GltfV2ChunkTypes.JSON.valueOf() !== sceneChunkType || GltfV2ChunkTypes.Binary.valueOf() !== binaryChunkType || 0 === binaryLength) {
         this.invalidate();
         return;
       }

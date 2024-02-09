@@ -158,7 +158,7 @@ describe("UiItemsManager", () => {
   });
 
   it("Registered UiProvider should return items since stage is supported ", () => {
-    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider", (_, stageUsage) => stageUsage === StageUsage.General);
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider", (_, stageUsage) => stageUsage === StageUsage.General.valueOf());
     UiItemsManager.register(testUiProvider);
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);

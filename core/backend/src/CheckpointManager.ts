@@ -343,7 +343,7 @@ export class CheckpointManager {
           nativeDb.deleteAllTxns();
         }
 
-        if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
+        if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned.valueOf())
           nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
         CheckpointManager.validateCheckpointGuids(checkpoint, db);

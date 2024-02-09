@@ -77,13 +77,13 @@ export class GlbHeader extends TileHeader {
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
-    if (this.version === GltfVersions.Version2 && word5 === GltfVersions.Gltf1SceneFormat)
+    if (this.version === GltfVersions.Version2.valueOf() && word5 === GltfVersions.Gltf1SceneFormat.valueOf())
       this.version = GltfVersions.Version1;
 
     this.jsonChunk = { offset: stream.curPos, length: jsonLength };
     switch (this.version) {
-      case GltfVersions.Version1:
-        if (GltfVersions.Gltf1SceneFormat !== word5) {
+      case GltfVersions.Version1.valueOf():
+        if (GltfVersions.Gltf1SceneFormat.valueOf() !== word5) {
           this.invalidate();
           return;
         }
@@ -91,8 +91,8 @@ export class GlbHeader extends TileHeader {
         const binaryOffset = stream.curPos + jsonLength;
         this.binaryChunk = { offset: binaryOffset, length: this.gltfLength - binaryOffset };
         break;
-      case GltfVersions.Version2:
-        if (word5 !== GltfV2ChunkTypes.JSON) {
+      case GltfVersions.Version2.valueOf():
+        if (word5 !== GltfV2ChunkTypes.JSON.valueOf()) {
           this.invalidate();
           return;
         }
@@ -106,11 +106,11 @@ export class GlbHeader extends TileHeader {
         let chunk;
         while (chunk = consumeNextChunk(stream)) {
           switch (chunk.type) {
-            case GltfV2ChunkTypes.JSON:
+            case GltfV2ChunkTypes.JSON.valueOf():
               // Only one JSON chunk permitted and it must be the first.
               this.invalidate();
               return;
-            case GltfV2ChunkTypes.Binary:
+            case GltfV2ChunkTypes.Binary.valueOf():
               // At most one binary chunk permitted and it must be the second if present.
               if (this.binaryChunk || this.additionalChunks.length) {
                 this.invalidate();

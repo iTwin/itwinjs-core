@@ -30,7 +30,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps) {
-    assert(props.sourceKey.provider === RealityDataProvider.TilesetUrl || props.sourceKey.provider === RealityDataProvider.OrbitGtBlob);
+    assert(props.sourceKey.provider === RealityDataProvider.TilesetUrl.valueOf() || props.sourceKey.provider === RealityDataProvider.OrbitGtBlob.valueOf());
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
   }
@@ -39,7 +39,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.TilesetUrl)
+    if (sourceKey.provider !== RealityDataProvider.TilesetUrl.valueOf())
       return undefined;
     const rdSource = new RealityDataSourceTilesetUrlImpl({ sourceKey });
     return rdSource;
@@ -125,7 +125,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    */
   public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
-    if (this.key.format === RealityDataFormat.ThreeDTile) {
+    if (this.key.format === RealityDataFormat.ThreeDTile.valueOf()) {
       const rootDocument = await this.getRootDocument(undefined);
       spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
     }

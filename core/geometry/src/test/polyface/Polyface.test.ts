@@ -336,7 +336,7 @@ describe("Polyface.Box", () => {
     }
     // In other planes, the missing facets are NOT perpendicular, and we expect to detect the mismatched projections in the moments.
     const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 0, 0, 1, 2, 3)!;
-    const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB)!;
+    const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB);
     ck.testFalse(MomentData.areEquivalentPrincipalAxes(volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -575,7 +575,7 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
 
     if (polyface) {
       const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.25, 0.25, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10)));
-      const polyfaceA = polyface.cloneTransformed(rotationTransform)!;
+      const polyfaceA = polyface.cloneTransformed(rotationTransform);
       polyfaceA.tryTranslateInPlace(0, 1.5 * (gRange.high.y - gRange.low.y));
       polyfaceA.tryTransformInPlace(transformForPolyface);
 
@@ -1161,7 +1161,7 @@ it("SolidPrimitiveBoundary", () => {
   const z1 = 10.0;
   for (const capped of [true, false]) {
     for (const solid of
-      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
+      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)]) {
       const builder = PolyfaceBuilder.create();
       builder.addGeometryQuery(solid);
       const mesh = builder.claimPolyface();

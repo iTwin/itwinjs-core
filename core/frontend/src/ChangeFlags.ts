@@ -89,7 +89,7 @@ export class ChangeFlags {
   public isSet(flags: ChangeFlag): boolean { return 0 !== (this._flags & flags); }
 
   /** Returns true if all of the specified flags are set. */
-  public areAllSet(flags: ChangeFlag): boolean { return flags === (this._flags & flags); }
+  public areAllSet(flags: ChangeFlag): boolean { return flags.valueOf() === (this._flags & flags); }
 
   /** Returns true if any aspects affecting [[FeatureSymbology.Overrides]] have changed. */
   public get areFeatureOverridesDirty() { return this.isSet(ChangeFlag.Overrides); }

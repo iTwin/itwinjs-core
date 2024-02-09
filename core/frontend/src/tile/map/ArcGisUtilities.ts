@@ -297,7 +297,7 @@ export class ArcGisUtilities {
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
       if (!accessTokenRequired
         && errorCode !== undefined
-        && errorCode === ArcGisErrorCode.TokenRequired ) {
+        && errorCode === ArcGisErrorCode.TokenRequired.valueOf() ) {
         accessTokenRequired = true;
         // If token required
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);

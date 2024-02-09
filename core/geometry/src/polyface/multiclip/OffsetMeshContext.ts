@@ -474,7 +474,7 @@ export class OffsetMeshContext {
   private countBits(mask: HalfEdgeMask): number {
     let n = 0;
     let mask1 = mask;
-    while (mask1 !== 0) {
+    while (mask1.valueOf() !== 0) {
       if (mask1 & 0x01) n++;
       mask1 = mask1 >> 1;
     }
@@ -699,7 +699,7 @@ export class OffsetMeshContext {
     distance: number): boolean {
     const maxDeviationRadians = this.computeAverageNormalAndMaxDeviationAroundVertex(vertexSeed, data);
     if (OffsetMeshContext.stringDebugFunction) {
-      OffsetMeshContext.stringDebugFunction(`XYZ ${HalfEdge.nodeToIdXYZString(vertexSeed)} Average Normal ${data.averageNormal.toJSON()}`);
+      OffsetMeshContext.stringDebugFunction(`XYZ ${HalfEdge.nodeToIdXYZString(vertexSeed)} Average Normal ${JSON.stringify(data.averageNormal.toJSON())}`);
       OffsetMeshContext.stringDebugFunction(`           angle ratio ${data.radiansSum / (2 * Math.PI)}   maxDeviation ${data.maxDeviationRadiansFromAverage}`);
     }
     if (maxDeviationRadians !== undefined && maxDeviationRadians <= maxAllowedDeviationRadians) {
@@ -1005,7 +1005,7 @@ export class OffsetMeshContext {
         vertexSeed = vertexSeedA;
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
         OffsetMeshContext.stringDebugFunction("");
-        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${vertexSeed.getPoint3d().toJSON()} `);
+        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${JSON.stringify(vertexSeed.getPoint3d().toJSON())} `);
         vertexSeed.sumAroundVertex(
           (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node, false, true)); return 0; });
       }
