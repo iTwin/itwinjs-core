@@ -1,4 +1,4 @@
-import Octokit from "octokit"
+import { Octokit, App } from "octokit"
 import dotenv from 'dotenv'
 
 dotenv.config();
