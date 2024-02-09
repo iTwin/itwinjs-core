@@ -42,6 +42,7 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { FacetFaceData } from "../../core-geometry";
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -160,26 +161,29 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
     ck.testExactNumber(normalIndex.length, pointIndex.length, "point, normal index counts match");
 
   for (let i = 0; i < polyface.facetCount; i++) {
-    const faceData = polyface.getFaceDataByFacetIndex(i);  // Ensures we do not get out of bounds exception
-    ck.testTrue(faceData !== undefined);
-    if (shouldCheckParamDistance)
-      ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
+    const faceData = polyface.tryGetFaceData(i);
+    if (ck.testType(faceData, FacetFaceData)) {
+      if (shouldCheckParamDistance)
+        ck.testFalse(faceData.paramDistanceRange.isNull, "paramDistanceRange should not be null");
+    }
   }
 }
 
 describe("Polyface.HelloWorld", () => {
   it("Polyface.HelloWorld", () => {
-    const origin = Point3d.create(1, 2, 3);
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(1, 2, 3);
     const numX = 3;
     const numY = 2;
-
     const polyface0 = Sample.createTriangularUnitGridPolyface(
       origin, Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0),
       numX, numY,
-      true, true, true);    // params, normals, and colors
-
-    // we know .. normal is 001, param is integers . .
+      true, true, true, // params, normals, and colors
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "HelloWorld");
+    // we know that "normal" is 001 and "params" are integer
     ck.testVector3d(Vector3d.unitZ(), polyface0.data.getNormal(0)!, "access normal");
     const point0 = polyface0.data.getPoint(0)!;
     const param0 = polyface0.data.getParam(numX * numY - 1)!;
@@ -195,35 +199,30 @@ describe("Polyface.HelloWorld", () => {
     const numVertex = numX * numY;
     ck.testExactNumber(numVertex, polyface0.pointCount, "known point count in grid");
     ck.testExactNumber(numVertex, polyface0.paramCount, "known param count in grid");
-    const numFacet = 2 * (numX - 1) * (numY - 1);   // 2 triangles per quad !!
-    ck.testExactNumber(numFacet * 4, polyface0.zeroTerminatedIndexCount, "zeroTerminatedIndexCount in triangular grid: (A B C 0)");
-
+    const numFacet = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad
+    ck.testExactNumber(
+      numFacet * 4, polyface0.zeroTerminatedIndexCount, "zeroTerminatedIndexCount in triangular grid: (A B C 0)",
+    );
     ck.testExactNumber(numFacet, 2 * polyface0.colorCount, "known color count in one-color-per-quad grid");
     ck.testExactNumber(1, polyface0.normalCount, "single normal for planar grid");
     const polyface1 = polyface0.clone();
-    const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(),
-      Matrix3d.createScale(-1, 1, 1));
+    const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(), Matrix3d.createScale(-1, 1, 1));
     const polyface2 = polyface0.cloneTransformed(mirrorX);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "HelloWorld");
     const expectedArea = (numX - 1) * (numY - 1);
-    const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad .  .
+    const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad
     const expectedEdgeLength = numExpectedFacets * (2.0 + Math.sqrt(2.0));
     for (const pf of [polyface0, polyface1, polyface2]) {
       const loops = PolyfaceQuery.indexedPolyfaceToLoops(pf);
       ck.testExactNumber(pf.facetCount, loops.children.length, "facet count");
-      // GeometryCoreTestIO.consoleLog("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
-      // GeometryCoreTestIO.consoleLog(loops);
       ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
-      ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
-      ck.testCoordinate(loops.sumLengths(), expectedEdgeLength);
+      ck.testCoordinate(expectedEdgeLength, loops.sumLengths(), "sum of triangle facets perimeter");
       exercisePolyface(ck, pf, true);
     }
-
     ck.checkpoint("Polyface.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
-});
-
-describe("Polyface.HelloWorld", () => {
   it("Polyface.Compress", () => {
     const ck = new Checker();
     const polyface = IndexedPolyface.create(true, true);
@@ -381,12 +380,13 @@ describe("Polyface.Box", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     interface TestCase {
-      data: {localRange: Range3d, localToWorld: Transform, worldClashRange?: Range3d}[];
+      data: { localRange: Range3d, localToWorld: Transform, worldClashRange?: Range3d }[];
       expectedClash: boolean; // each entry is a set of mutually clashing or mutually non-clashing local ranges
       clashRange?: (undefined | Range3d)[][];  // clashRange[i][j] is world range of intersection of data[i] and data[j], defined only for i < j
     }
     const testCases: TestCase[] = [ // from user iModel
-      { data: [
+      {
+        data: [
           {
             localRange: Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722),
             localToWorld: Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()),
@@ -414,7 +414,8 @@ describe("Polyface.Box", () => {
           ],
         ],
       },
-      { data: [
+      {
+        data: [
           {
             localRange: Range3d.createXYZXYZ(1.1546319456101628e-14, -1.4328815911568427e-14, -5.1535165024318985e-14, 11.999999999999943, 0.03199999999999116, 0.031999999999948535),
             localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()),
@@ -442,22 +443,25 @@ describe("Polyface.Box", () => {
           ],
         ],
       },
-      { data: [
+      {
+        data: [
           {
-            localRange: Range3d.createXYZXYZ(-5,-5,-5,5,5,5),
-            localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3,-6,-9), Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(33))),
+            localRange: Range3d.createXYZXYZ(-5, -5, -5, 5, 5, 5),
+            localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3, -6, -9), Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 1), Angle.createDegrees(33))),
           },
           {
-            localRange: Range3d.createXYZXYZ(-2,-2,-2,2,2,2),
-            localToWorld: Transform.createOriginAndMatrix(Point3d.create(5,5,5), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,-1), Angle.createDegrees(-115))),
+            localRange: Range3d.createXYZXYZ(-2, -2, -2, 2, 2, 2),
+            localToWorld: Transform.createOriginAndMatrix(Point3d.create(5, 5, 5), Matrix3d.createRotationAroundVector(Vector3d.create(-1, 1, -1), Angle.createDegrees(-115))),
           },
           {
-            localRange: Range3d.createXYZXYZ(-1,-1,-1,1,1,1),
-            localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10,4,3), Matrix3d.createRotationAroundVector(Vector3d.create(0,1,-1), Angle.createDegrees(245))),
+            localRange: Range3d.createXYZXYZ(-1, -1, -1, 1, 1, 1),
+            localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10, 4, 3), Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, -1), Angle.createDegrees(245))),
           },
         ],
-        expectedClash: false},
-      { data: [
+        expectedClash: false,
+      },
+      {
+        data: [
           {
             localRange: Range3d.createXYZXYZ(7.993605777301127e-15, 1.1483869410966463e-15, -8.895661984809067e-15, 11.999999999999961, 0.03200000000001247, 0.03200000000001958),
             localToWorld: Transform.createRefs(Point3d.create(-118.75022305842617, 45.954529463039, 68.47641991136159), YawPitchRollAngles.createDegrees(-9.408029798593397, 15.000000000007361, 2.455595252575587).toMatrix3d()),
@@ -1513,25 +1517,28 @@ it("IndexValidation", () => {
   const indices = [0, 1, 2, 3, 4, 7, 6, 5];
   const data = [9, 8, 7, 6, 5, 4, 3, 2, 1, 100];
   ck.testFalse(Polyface.areIndicesValid(undefined,
-    - 1, 3,   // range to examine
-    data, 1), "confirm face index range out of bounds detected");
+    -1, 3,   // range to examine
+    data, 1), "one of indices and data cannot be undefined");
   ck.testFalse(Polyface.areIndicesValid(indices,
-    - 1, 3,   // range to examine
-    undefined, 1), "confirm face index range out of bounds detected");
+    -1, 3,   // range to examine
+    undefined, 1), "one of indices and data cannot be undefined");
 
   ck.testFalse(Polyface.areIndicesValid(indices,
-    - 1, 3,   // range to examine
-    data, 1), "confirm face index range out of bounds detected");
+    -1, 3,   // range to examine
+    data, 10), "first index is out of bounds");
 
   ck.testFalse(Polyface.areIndicesValid(indices,
-    10, 3,   // range to examine
-    data, 1), "confirm face index range out of bounds detected");
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    3, 0,   // range to examine
-    data, 1), "confirm face index range out of bounds detected");
+    15, 3,   // range to examine
+    data, 10), "first index is out of bounds");
   ck.testFalse(Polyface.areIndicesValid(indices,
     0, 20,   // range to examine
-    data, 1), "confirm face index range out of bounds detected");
+    data, 1), "second index is out of bounds");
+  ck.testFalse(Polyface.areIndicesValid(indices,
+    3, 0,   // range to examine
+    data, 10), "first index cannot be greater than second index");
+  ck.testFalse(Polyface.areIndicesValid(indices,
+    0, 0,   // range to examine
+    data, 10), "first index and second index cannot be equal");
 
   ck.testFalse(Polyface.areIndicesValid(indices,
     0, 3,   // range to examine
@@ -1541,7 +1548,7 @@ it("IndexValidation", () => {
     data, 10), "validate indices");
   ck.testTrue(Polyface.areIndicesValid(undefined,
     0, 3,   // range to examine
-    undefined, 10), "validate double undefined indices");
+    undefined, 10), "both of indices and data can be undefined");
 
   expect(ck.getNumErrors()).equals(0);
 });

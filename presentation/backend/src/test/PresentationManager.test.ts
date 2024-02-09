@@ -18,9 +18,9 @@ import {
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
   ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, PropertyValueFormat, RegisteredRuleset,
-  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions,
-  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  PresentationError, PresentationIpcEvents, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, PropertyValueFormat,
+  RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope,
+  SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfo, createRandomECInstanceKey, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomId,
@@ -32,11 +32,10 @@ import {
   NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem, PresentationNativePlatformResponseError,
 } from "../presentation-backend/NativePlatform";
 import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
-import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
+import { getKeysForContentRequest, ipcUpdatesHandler, noopUpdatesHandler } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
-import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { stubECSqlReader } from "./Helpers";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -91,7 +90,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             workerConnectionCacheSize: undefined,
@@ -124,7 +123,6 @@ describe("PresentationManager", () => {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
           workerThreadsCount: testThreadsCount,
-          updatesPollInterval: 1,
           caching: {
             hierarchies: hierarchyCacheConfig,
             content: {
@@ -146,7 +144,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
-            isChangeTrackingEnabled: true,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
             workerConnectionCacheSize: 123,
@@ -166,7 +164,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
             workerConnectionCacheSize: undefined,
@@ -186,7 +184,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             workerConnectionCacheSize: undefined,
@@ -203,7 +201,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
             workerConnectionCacheSize: undefined,
@@ -228,7 +226,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
+            updateCallback: noopUpdatesHandler,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
             workerConnectionCacheSize: undefined,
@@ -238,6 +236,13 @@ describe("PresentationManager", () => {
         });
       });
 
+      it("creates with ipc updates handler for IPC hosts", () => {
+        sinon.stub(IpcHost, "isValid").get(() => true);
+        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        using(new PresentationManager(), (_) => {
+          expect(constructorSpy.firstCall.firstArg.updateCallback).to.eq(ipcUpdatesHandler);
+        });
+      });
     });
 
     it("uses addon implementation supplied through props", () => {
@@ -280,26 +285,6 @@ describe("PresentationManager", () => {
           expect(manager.activeLocale).to.eq(locale); // eslint-disable-line deprecation/deprecation
         });
       });
-
-      it("creates an `UpdateTracker` when `updatesPollInterval` is specified and IPC host is available", () => {
-        sinon.stub(IpcHost, "isValid").get(() => true);
-        const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
-        const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
-        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
-          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123 }));
-          expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
-        });
-        expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
-      });
-
-      it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
-        sinon.stub(IpcHost, "isValid").get(() => false);
-        const stub = sinon.stub(UpdatesTracker, "create");
-        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
-          expect(stub).to.not.be.called;
-        });
-      });
-
     });
 
   });
@@ -3159,5 +3144,55 @@ describe("PresentationManager", () => {
       expect(result).to.eq(resultKeys);
     });
 
+  });
+
+  describe("updates handling", () => {
+    describe("ipc", () => {
+      let spy: sinon.SinonSpy<[string, ...any[]], void>;
+      beforeEach(() => {
+        spy = sinon.stub(IpcHost, "send");
+      });
+
+      it("doesn't emit events if there are no updates", () => {
+        ipcUpdatesHandler(undefined);
+        expect(spy).to.not.be.called;
+
+        ipcUpdatesHandler({});
+        expect(spy).to.not.be.called;
+      });
+
+      it("emits events if there are updates", () => {
+        const imodelStub = {
+          getRpcProps: () => ({ key: "imodel-key" }),
+        };
+        sinon.stub(IModelDb, "findByFilename").returns(imodelStub as IModelDb);
+
+        const updates: UpdateInfo = {
+          ["imodel-file-path"]: {
+            "a-ruleset": { hierarchy: "FULL" },
+            "b-ruleset": { content: "FULL" },
+          },
+        };
+        ipcUpdatesHandler(updates);
+
+        const expectedUpdateInfo: UpdateInfo = {
+          ["imodel-key"]: updates["imodel-file-path"],
+        };
+        expect(spy).to.be.calledOnceWithExactly(PresentationIpcEvents.Update, expectedUpdateInfo);
+      });
+
+      it("does not emit events if imodel is not found", () => {
+        sinon.stub(IModelDb, "findByFilename").returns(undefined);
+
+        const updates: UpdateInfo = {
+          ["imodel-File-Path"]: {
+            "a-ruleset": { hierarchy: "FULL" },
+          },
+        };
+        ipcUpdatesHandler(updates);
+
+        expect(spy).to.not.be.called;
+      });
+    });
   });
 });
