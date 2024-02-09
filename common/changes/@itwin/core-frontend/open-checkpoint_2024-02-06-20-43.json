@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "add CheckpointConnection.openForIpc",
+      "comment": "make CheckpointConnection.openRemote work for IPC",
       "type": "none"
     }
   ],
