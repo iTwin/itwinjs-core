@@ -8,7 +8,7 @@
 
 import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, OpenCheckpointArgs, RpcManager, RpcNotFoundResponse, RpcOperation,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -20,10 +20,8 @@ import { IpcApp } from "./IpcApp";
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
- * An IModelConnection to a checkpoint of an iModel, hosted on a remote backend over RPC.
- * Due to the nature of RPC requests, the backend servicing this connection may change over time, and there may even be more than one backend
- * at servicing requests at the same time. For this reason, this type of connection may only be used with Checkpoint iModels that are
- * guaranteed to be the same on every backend. Obviously Checkpoint iModels only allow readonly access.
+ * An IModelConnection to a Checkpoint of an iModel.
+ * @see [CheckpointConnection]($docs/learning/IModelConnection#CheckpointConnection)
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
@@ -49,7 +47,7 @@ export class CheckpointConnection extends IModelConnection {
   /**
    * Open a readonly IModelConnection to a Checkpoint of an iModel.
    */
-  public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
+  public static async openRemote(iTwinId: GuidString, iModelId: GuidString, version = IModelVersion.latest()): Promise<CheckpointConnection> {
     if (undefined === IModelApp.hubAccess)
       throw new Error("Missing an implementation of IModelApp.hubAccess");
 

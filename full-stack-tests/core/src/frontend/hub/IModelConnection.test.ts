@@ -7,7 +7,6 @@ import { Id64, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
-  IpcApp,
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";

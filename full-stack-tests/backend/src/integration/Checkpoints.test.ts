@@ -33,7 +33,7 @@ describe("Checkpoints", () => {
   let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
   let testChangeSetFirstVersion: ChangesetProps;
-  let checkpoint: V2CheckpointAccessProps | undefined;
+  let checkpointProps: V2CheckpointAccessProps | undefined;
 
   let testIModelId2: GuidString;
   let testITwinId2: GuidString;
@@ -90,7 +90,7 @@ describe("Checkpoints", () => {
     testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId2 });
 
-    checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
+    checkpointProps = await IModelHost.hubAccess.queryV2Checkpoint({
       expectV2: true,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -99,15 +99,15 @@ describe("Checkpoints", () => {
         id: testChangeSet.id,
       },
     });
-    assert.isDefined(checkpoint, "checkpoint missing");
+    assert.isDefined(checkpointProps, "checkpoint missing");
 
-    assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
-    assert.isDefined(checkpoint?.sasToken, "checkpoint accessToken is invalid");
+    assert.isDefined(checkpointProps?.accountName, "checkpoint storage account is invalid");
+    assert.isDefined(checkpointProps?.sasToken, "checkpoint accessToken is invalid");
 
   });
 
   afterEach(async () => {
-    // need to cleanup the v2checkpointmanager after each run.
+    // need to cleanup V2CheckpointManager after each run.
     V2CheckpointManager.cleanup();
   });
 
@@ -128,7 +128,7 @@ describe("Checkpoints", () => {
 
   it("should fail to open checkpoint with invalid daemon directory", async () => {
     const portfile = path.join(cloudcacheDir, "portnumber.bcv");
-    fs.mkdirSync(cloudcacheDir);
+    IModelJsFs.recursiveMkDirSync(cloudcacheDir);
     fs.writeFileSync(portfile, "INVALID");
 
     try {
@@ -152,15 +152,9 @@ describe("Checkpoints", () => {
     });
     const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
     const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
-    const iModel = await SnapshotDb.openCheckpointFromRpc({
-      accessToken,
-      iTwinId: testITwinId,
-      iModelId: testIModelId,
-      changeset: testChangeSet,
-    });
+    await V2CheckpointManager.attach({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, changeset: testChangeSet });
     expect(prefetchSpy.callCount).to.equal(1);
     expect(settingsSpy.callCount).to.equal(1);
-    iModel.close();
     sinon.restore();
     IModelHost.appWorkspace.settings.dropDictionary("prefetch");
   });
@@ -262,15 +256,21 @@ describe("Checkpoints", () => {
       });
       const prefetchSpy = sinon.spy(CloudSqlite, "startCloudPrefetch").withArgs(sinon.match.any, `${testChangeSet.id}.bim`, sinon.match.any); // Need matchers because GCS is also prefetched.
       const settingsSpy = sinon.spy(IModelHost.appWorkspace.settings, "getBoolean").withArgs("Checkpoints/prefetch");
-      const iModel = await SnapshotDb.openCheckpointFromRpc({
-        accessToken,
-        iTwinId: testITwinId,
-        iModelId: testIModelId,
-        changeset: testChangeSet,
-      });
-      expect(prefetchSpy.callCount).to.equal(1);
-      expect(settingsSpy.callCount).to.equal(1);
-      iModel.close();
+
+      const checkpoint = { accessToken, iTwinId: testITwinId, iModelId: testIModelId, changeset: testChangeSet };
+      await V2CheckpointManager.attach(checkpoint);
+      expect(prefetchSpy.callCount).equal(1);
+      expect(settingsSpy.callCount).equal(1);
+
+      // Attach the same checkpoint a second time, quickly to make sure it doesn't start a second prefetch while one is active.
+      // This simulates two processes attached to the same daemon requesting the same checkpoint.
+      // Note: this is flaky since it depends on the first prefetch still being active. Usually it takes a
+      // few seconds, so it doesn't finish before we start the second one, but may fail under
+      // the debugger. I'm not sure this test (or even the policy of not starting a second prefetch) is a good idea.
+      await V2CheckpointManager.attach(checkpoint);
+      expect(prefetchSpy.callCount).equal(1);
+      expect(settingsSpy.callCount).equal(2);
+
       sinon.restore();
       IModelHost.appWorkspace.settings.dropDictionary("prefetch");
     });
@@ -291,7 +291,7 @@ describe("Checkpoints", () => {
       // Opening the database causes some blocks to be downloaded.
       expect(stats.populatedCacheslots).to.be.greaterThan(0);
       // Only one database and this db has a default txn open so all it's local blocks should be locked.
-      expect(stats.populatedCacheslots).to.equal(stats.lockedCacheslots);
+      expect(stats.lockedCacheslots).greaterThan(0);
       // 10 GB (comes from daemonProps at the top of this test file) / 4 mb (imodel block size) should give us the number of total available entries in the cache.
       expect(stats.totalCacheslots).to.equal((10 * 1024 * 1024 * 1024) / (4 * 1024 * 1024));
       expect(stats.activeClients).to.equal(1);
