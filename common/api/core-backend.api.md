@@ -838,7 +838,7 @@ export class CheckpointManager {
     // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
-    static toCheckPointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
+    static toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
