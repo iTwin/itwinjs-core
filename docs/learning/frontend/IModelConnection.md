@@ -12,7 +12,7 @@ Various subclasses of [IModelConnection]($frontend) are used depending on the ty
 
 [CheckpointConnection]($frontend) is used to create a **readonly** connection to a Checkpoint of an iModel. A `CheckpointConnection` is initiated via [CheckpointConnection.openRemote]($frontend).
 
-If the current process is a a browser frontend, the connection will to a remote backend over the internet using RPC. In that case, due to the nature of RPC requests, the backend servicing this connection may be servicing many simultaneous frontends, and may even change over time.
+If the current process is a browser frontend, the connection will be to a remote backend over the internet using RPC. In that case, due to the nature of RPC requests, the backend servicing this connection may be servicing many simultaneous frontends, and may even change over time.
 
 If the current process is connected to a private backend over IPC (e.g. on a desktop via Electron), the connection will be to Checkpoint from that backend.
 
