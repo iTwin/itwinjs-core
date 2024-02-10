@@ -2801,7 +2801,7 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   /** Timer used to restart the default txn on the SnapshotDb after some inactivity. This is only used for checkpoints.
-   *  Restarting the default txn lets CloudSqlite know that any blocks that may have been read may be now be ejected.
+   *  Restarting the default txn lets CloudSqlite know that any blocks that may have been read may now be ejected.
    *  Without restarting the default txn, CloudSQLite can get into a state where it can not evict any blocks to make space for more blocks.
    */
   private _restartDefaultTxnTimer?: NodeJS.Timeout;
