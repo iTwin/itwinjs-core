@@ -2932,7 +2932,7 @@ export class SnapshotDb extends IModelDb {
    * @beta
    */
   public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
-    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckPointProps(args));
+    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps(args));
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.

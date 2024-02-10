@@ -457,7 +457,7 @@ export class CheckpointManager {
     return undefined;
   }
 
-  public static async toCheckPointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
+  public static async toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
     const changeset = args.changeset ?? await IModelHost.hubAccess.getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
 
     return {
