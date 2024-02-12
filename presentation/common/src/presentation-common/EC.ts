@@ -334,6 +334,9 @@ export interface RelatedClassInfo {
   /** Is target class handled polymorphically */
   isPolymorphicTargetClass?: boolean;
 
+  /** Optionally, IDs of specific target class instances. */
+  targetInstanceIds?: Id64String[];
+
   /** Information about the ECRelationship */
   relationshipInfo: ClassInfo;
 
@@ -434,6 +437,7 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   sourceClassInfo: TClassInfoJSON;
   targetClassInfo: TClassInfoJSON;
   isPolymorphicTargetClass?: boolean;
+  targetInstanceIds?: Id64String[];
   relationshipInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   isPolymorphicRelationship?: boolean;

@@ -1958,6 +1958,72 @@
       ],
       "description": "Query specifications used in `CustomQueryInstanceNodesSpecification`."
     },
+    "RelatedInstanceByPathSpecification": {
+      "additionalProperties": false,
+      "description": "A type of `RelatedInstanceSpecification` that joins related instances by a relationship path.",
+      "properties": {
+        "alias": {
+          "description": "Specifies an an alias that given to the related instance. The alias can be used to reference the\ninstance in instance filter and customization rules.",
+          "pattern": "^\\w[\\w\\d]*$",
+          "type": "string"
+        },
+        "isRequired": {
+          "description": "Specifies whether to omit the primary instance from the result if the other end of `relationshipPath`\ndoes not yield any related instances.",
+          "type": "boolean"
+        },
+        "relationshipPath": {
+          "$ref": "#/definitions/RelationshipPathSpecification",
+          "description": "Specifies a chain of relationship path specifications\nthat forms a path from the primary instance to the related instances."
+        }
+      },
+      "required": [
+        "alias",
+        "relationshipPath"
+      ],
+      "type": "object"
+    },
+    "RelatedInstanceByTargetInstancesSpecification": {
+      "additionalProperties": false,
+      "description": "A type of `RelatedInstanceSpecification` that joins related instances by target class and instance IDs.",
+      "properties": {
+        "alias": {
+          "description": "Specifies an an alias that given to the related instance. The alias can be used to reference the\ninstance in instance filter and customization rules.",
+          "pattern": "^\\w[\\w\\d]*$",
+          "type": "string"
+        },
+        "isRequired": {
+          "description": "Specifies whether to omit the primary instance from the result if the other end of `relationshipPath`\ndoes not yield any related instances.",
+          "type": "boolean"
+        },
+        "targetInstances": {
+          "additionalProperties": false,
+          "description": "Specifies target class and a list of target ECInstance IDs.",
+          "properties": {
+            "class": {
+              "$ref": "#/definitions/SingleSchemaClassSpecification",
+              "description": "Specification for the target class to join."
+            },
+            "instanceIds": {
+              "description": "Ids of the target instances to join.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "class",
+            "instanceIds"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "alias",
+        "targetInstances"
+      ],
+      "type": "object"
+    },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
       "description": "Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined\nby traversing the hierarchy upwards until an ECInstance node is encountered.",
@@ -2043,28 +2109,15 @@
       "type": "object"
     },
     "RelatedInstanceSpecification": {
-      "additionalProperties": false,
-      "description": "Related instance specification is used in content\nand hierarchy specifications to \"join\" the\nprimary instance with its related instance and allow using the related instance for filtering, customization and grouping.",
-      "properties": {
-        "alias": {
-          "description": "Specifies an an alias that given to the related instance. The alias can be used to reference the\ninstance in instance filter and customization rules.",
-          "pattern": "^\\w[\\w\\d]*$",
-          "type": "string"
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RelatedInstanceByPathSpecification"
         },
-        "isRequired": {
-          "description": "Specifies whether to omit the primary instance from the result if the other end of `relationshipPath`\ndoes not yield any related instances.",
-          "type": "boolean"
-        },
-        "relationshipPath": {
-          "$ref": "#/definitions/RelationshipPathSpecification",
-          "description": "Specifies a chain of relationship path specifications\nthat forms a path from the primary instance to the related instances."
+        {
+          "$ref": "#/definitions/RelatedInstanceByTargetInstancesSpecification"
         }
-      },
-      "required": [
-        "alias",
-        "relationshipPath"
       ],
-      "type": "object"
+      "description": "Related instance specification is used in content\nand hierarchy specifications to \"join\" the\nprimary instance with its related instance and allow using the related instance for filtering, customization and grouping."
     },
     "RelatedPropertiesSpecification": {
       "additionalProperties": false,
