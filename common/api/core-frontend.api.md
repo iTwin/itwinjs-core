@@ -4270,7 +4270,7 @@ export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
 // @internal (undocumented)
-export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?: string): Promise<{
+export function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{
     token?: string;
     url?: string;
 }>;
@@ -13731,6 +13731,7 @@ export abstract class TerrainMeshProvider {
 
 // @public
 export interface TerrainMeshProviderOptions {
+    dataSource?: string;
     exaggeration: number;
     wantNormals: boolean;
     wantSkirts: boolean;

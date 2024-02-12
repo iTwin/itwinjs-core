@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for custom data sources in TerrainSettings, including Cesium ION assets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
