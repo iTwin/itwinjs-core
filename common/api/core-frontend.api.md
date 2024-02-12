@@ -5630,6 +5630,9 @@ export interface GroupMark {
     start: number;
 }
 
+// @internal
+export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
+
 // @internal (undocumented)
 export interface Hilites {
     // (undocumented)
@@ -12660,6 +12663,15 @@ export interface SelectReplaceEvent {
     // (undocumented)
     type: SelectionSetEventType.Replace;
 }
+
+// @internal
+export function setBasicAuthorization(headers: Headers, credentials: RequestBasicCredentials): void;
+
+// @internal (undocumented)
+export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @internal
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
 
 // @public
 export class SetupCameraTool extends PrimitiveTool {

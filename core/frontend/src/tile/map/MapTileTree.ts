@@ -977,13 +977,11 @@ export class MapTileTreeReference extends TileTreeReference {
     let hasLoadedTileTree = false;
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree) {
-      console.log(`initializeLayers skipped not tree`);
       return hasLoadedTileTree;     // Not loaded yet.
     }
 
     tree.layerImageryTrees.length = 0;
     if (0 === this._layerTrees.length) {
-      console.log(`initializeLayers skipped no imagery tree`);
       return !this.isOverlay;
     }
 
