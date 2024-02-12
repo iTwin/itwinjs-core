@@ -1,6 +1,22 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 19:26:22 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Added class merge
+- Added ability to track changes for property minLength, maxLength, minValue, maxValue, extendedTypeName attributes
+- Added ecclass property merging
+- Use Schema Editor instead od Mutable Schema Items directly
+- Removed keyMismatch comparison in schemaDelegate so that two reports are created for each schemaA and schemaB
+- Added full name comparison support for areItemsSameByName in SchemaComparer
+- Removed schemaComparerOptions flag from schemaCompare and added comparison support to compare schemas with different names.
+- Added methods for creating relationship or setting its properties
+- Added Merge function to merge CustomAttributes
+- Added kind of quantity merging
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT
