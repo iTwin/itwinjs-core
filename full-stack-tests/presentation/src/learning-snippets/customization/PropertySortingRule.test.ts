@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset, VariableValueTypes } from "@itwin/presentation-common";
@@ -10,7 +10,6 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
@@ -24,9 +23,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Customization Rules", () => {
-
     describe("PropertySortingRule", () => {
-
       it("uses `priority` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.Priority.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
@@ -35,36 +32,42 @@ describe("Learning Snippets", () => {
         // rule is handled first.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            priority: 1,
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            propertyName: "Roll",
-          }, {
-            ruleType: "PropertySorting",
-            priority: 2,
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              priority: 1,
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              propertyName: "Roll",
+            },
+            {
+              ruleType: "PropertySorting",
+              priority: 2,
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -88,30 +91,35 @@ describe("Learning Snippets", () => {
         // instances by `Pitch` property.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            condition: "TRUE",
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              condition: "TRUE",
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -136,30 +144,35 @@ describe("Learning Snippets", () => {
         // `bis.SpatialViewDefinition` instances by `Pitch` property
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -183,31 +196,36 @@ describe("Learning Snippets", () => {
         // sort instances of the derived classes, `isPolymorphic` attribute needs to be `true`.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            class: { schemaName: "BisCore", className: "ViewDefinition3d" },
-            isPolymorphic: true,
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              class: { schemaName: "BisCore", className: "ViewDefinition3d" },
+              isPolymorphic: true,
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -231,29 +249,34 @@ describe("Learning Snippets", () => {
         // instances of any class by `Pitch` property.
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            propertyName: "Pitch",
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              propertyName: "Pitch",
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -277,30 +300,35 @@ describe("Learning Snippets", () => {
         // instances by `Pitch` property in descending order
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [{
-              specType: "Composite",
-              separator: " x ",
-              parts: [
-                { spec: { specType: "Property", propertyName: "Roll" } },
-                { spec: { specType: "Property", propertyName: "Pitch" } },
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
               ],
-            }],
-          }, {
-            ruleType: "PropertySorting",
-            propertyName: "Pitch",
-            sortAscending: false,
-          }],
+            },
+            {
+              ruleType: "InstanceLabelOverride",
+              class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              values: [
+                {
+                  specType: "Composite",
+                  separator: " x ",
+                  parts: [{ spec: { specType: "Property", propertyName: "Roll" } }, { spec: { specType: "Property", propertyName: "Pitch" } }],
+                },
+              ],
+            },
+            {
+              ruleType: "PropertySorting",
+              propertyName: "Pitch",
+              sortAscending: false,
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
@@ -316,9 +344,6 @@ describe("Learning Snippets", () => {
         expect(nodes[2]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
         expect(nodes[3]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
       });
-
     });
-
   });
-
 });

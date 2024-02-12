@@ -20,7 +20,8 @@
     "test:integration": "",
     "test:performance": "mocha --no-config --grep \"#performance\" --no-timeouts",
     "copy:config": "internal-tools copy-config",
-    "cover": "npm run -s test"
+    "cover": "npm run -s test",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "@itwin/core-backend": "workspace:*",
