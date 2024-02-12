@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 18:15:58 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Add support to create an EcefLocation class directly from a transformation matrix
+- Added `GenericInstanceFilter` definition for storing information necessary for building filtering queries.
+- Add tests for `QueryBinder`.
+- Added support for recoloring geometry intersecting a clip volume
+- Bump @itwin/object-storage-core
+- add additional map types to RenderMaterialAssetMapsProps
+- Custom query parameters can now be configured on map layer objects.
+- make case of pattern_useconstantlod match backend code
+- Add support for transparency in thematic display gradient.
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

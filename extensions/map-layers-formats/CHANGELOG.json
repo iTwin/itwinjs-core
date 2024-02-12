@@ -2,6 +2,27 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "4.4.0",
+      "tag": "@itwin/map-layers-formats_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve documentation"
+          },
+          {
+            "comment": "Custom query parameters can now be configured on map layers objects."
+          },
+          {
+            "comment": "Improved MapFeatureInfo display of decorations outside of project extent."
+          },
+          {
+            "comment": "Added missing `@itwin/core-frontend` peer dependency"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/map-layers-formats_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

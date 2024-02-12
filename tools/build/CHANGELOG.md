@@ -1,6 +1,13 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 18:15:58 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Fix extract api summary script to work with additional '.' symbols in path
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

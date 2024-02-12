@@ -1,6 +1,14 @@
 # Change Log - @itwin/map-layers-auth
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 18:15:58 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Fix legacy token flow for ArcGIS services not supporting Oauth2.
+- Fix an issue preventing Oauth2 authentication on ArcGIS Enterprise servers
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

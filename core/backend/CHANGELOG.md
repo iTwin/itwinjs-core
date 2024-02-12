@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 03 Jan 2024 19:29:41 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Feb 2024 18:15:58 GMT and should not be manually modified.
+
+## 4.4.0
+Mon, 12 Feb 2024 18:15:58 GMT
+
+### Updates
+
+- Inserting, updating and deleting of an element aspect requires exclusive lock on the element that owns it
+- Add changeset reader api
+- Update ChangesetReader API and fix bug.
+- Save changes before closing IModels opened in ReadWrite mode
+- Bump @itwin/object-storage-azure and @itwin/object-storage-core
+- vDirection is deprecated
+- Add `ECDb.getSchemaProps`
+- fix texture remapping in RenderMaterialElement.onCloned
+- Add support for Node 20.
+- make case of pattern_useconstantlod match backend code
+- Fix a breaking internal API change affecting @itwin/imodels-access-backend"
+- Change reserved SQLite keywords from tests.
+- modified getAspects to handle dot separator in full class name
+- lint fix
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT
