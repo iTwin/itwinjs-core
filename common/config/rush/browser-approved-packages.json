@@ -535,6 +535,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "eslint-config-prettier",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
       "name": "express",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -705,6 +709,10 @@
     {
       "name": "playwright",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "prettier",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "raf",
