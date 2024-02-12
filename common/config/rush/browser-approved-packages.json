@@ -536,7 +536,7 @@
     },
     {
       "name": "eslint-config-prettier",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "express",
@@ -712,7 +712,7 @@
     },
     {
       "name": "prettier",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "raf",

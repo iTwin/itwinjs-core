@@ -1938,6 +1938,7 @@ importers:
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^8.44.0
+      eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
       i18next-http-backend: ^1.4.4
@@ -1945,6 +1946,7 @@ importers:
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
       mocha: ^10.2.0
+      prettier: ^3.2.5
       rimraf: ^3.0.2
       sanitize-filename: ^1.6.3
       sinon: ^17.0.1
@@ -2001,10 +2003,12 @@ importers:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 8.44.0
+      eslint-config-prettier: 9.1.0_eslint@8.44.0
       i18next-http-backend: 1.4.4
       internal-tools: link:../../tools/internal
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
+      prettier: 3.2.5
       sanitize-filename: 1.6.3
       typescript: 5.0.2
 
