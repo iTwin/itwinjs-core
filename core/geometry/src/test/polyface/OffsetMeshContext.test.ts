@@ -221,7 +221,7 @@ describe("OffsetMeshContext", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("OffsetSampler", () => {
+  it("OffsetSampler", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
@@ -246,7 +246,7 @@ describe("OffsetMeshContext", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("OffsetOptionsSampler", () => {
+  it("OffsetOptionsSampler", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;

@@ -938,8 +938,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           if (paramA && paramB)
             this.addIndexedQuadParamIndexes(paramA.atUncheckedIndex(i - 1), paramA.atUncheckedIndex(i), paramB.atUncheckedIndex(i - 1), paramB.atUncheckedIndex(i));
         }
-        this._polyface.terminateFacet();
       }
+      this._polyface.terminateFacet();
     }
   }
 
