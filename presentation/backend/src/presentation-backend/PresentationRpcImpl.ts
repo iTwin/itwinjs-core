@@ -111,7 +111,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     try {
       imodel = IModelDb.findByKey(token.key);
       // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
-      await imodel.refreshContainer(RpcTrace.expectCurrentActivity.accessToken);
+      await imodel.refreshContainerForRpc(RpcTrace.expectCurrentActivity.accessToken);
     } catch {
       throw new PresentationError(PresentationStatus.InvalidArgument, "IModelRpcProps doesn't point to a valid iModel");
     }
